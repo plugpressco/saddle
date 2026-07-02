@@ -91,6 +91,16 @@
 			background: var(--s-surface-2);
 		}
 	}
+
+	// Notices inherit wp-admin's legacy offsets (margin: 5px 15px 2px), which
+	// don't fit this layout — the disconnect notice was overlapping the
+	// Connected-apps header. Normalize them into the design system so they
+	// stack cleanly above whatever section they precede.
+	.components-notice {
+		margin: 0 0 20px;
+		border-radius: var(--s-radius);
+		padding: 10px 14px;
+	}
 }
 
 /* ---------- Top bar + nav ---------- */
