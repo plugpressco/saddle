@@ -469,7 +469,7 @@ export default function ConnectWizard( { tier, onExit, onClientsChanged } ) {
 						<p>{ level.one }</p>
 						<p className="saddle-wizard__cando-note">
 							{ __(
-								'Its sign-in key works only for this app and only on this site — you’ll find it listed under Connect. Disconnect it anytime and access ends instantly. Go back without copying and the key is discarded.',
+								'Its sign-in key works only for this app, only on this site, and only through Saddle — it can’t touch the rest of WordPress. Disconnect it anytime and access ends instantly. Go back without copying and the key is discarded.',
 								'saddle'
 							) }
 						</p>

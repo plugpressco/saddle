@@ -54,6 +54,11 @@ final class Saddle {
 		// Must run before REST authentication; priority 1 on plugins_loaded.
 		add_action( 'plugins_loaded', array( 'Saddle_Connection', 'recover_auth_header' ), 1 );
 
+		// Credential scoping: a Saddle-issued Application Password only opens
+		// Saddle's own endpoint — never wp/v2, wp-abilities/v1, or XML-RPC.
+		add_filter( 'rest_request_before_callbacks', array( 'Saddle_Connection', 'scope_credentials' ), 10, 3 );
+		add_action( 'wp_authenticate_application_password_errors', array( 'Saddle_Connection', 'block_xmlrpc_credentials' ), 10, 3 );
+
 		// Always-on infrastructure (independent of the Abilities API).
 		add_action( 'init', array( 'Saddle_Approval', 'register_cpt' ) );
 		add_action( 'init', array( 'Saddle_Log', 'register_cpt' ) );

@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-02T15:06:31+00:00\n"
+"POT-Creation-Date: 2026-07-02T21:24:33+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -612,11 +612,19 @@ msgstr ""
 msgid "Blocked: \"%s\" needs a higher access level than is enabled."
 msgstr ""
 
-#: includes/class-saddle-connection.php:259
+#: includes/class-saddle-connection.php:93
+msgid "This sign-in key was issued by Saddle and works only with Saddle’s endpoint — the rest of the WordPress REST API is off limits to it by design. Use the Saddle tools instead."
+msgstr ""
+
+#: includes/class-saddle-connection.php:127
+msgid "Saddle sign-in keys cannot be used over XML-RPC."
+msgstr ""
+
+#: includes/class-saddle-connection.php:375
 msgid "Saddle can’t edit this server’s configuration automatically. Add the rule shown below by hand or send it to your host."
 msgstr ""
 
-#: includes/class-saddle-connection.php:279
+#: includes/class-saddle-connection.php:395
 msgid "Saddle could not write to .htaccess. Check file permissions, or add the rule by hand."
 msgstr ""
 
@@ -722,40 +730,40 @@ msgstr ""
 msgid "Tiered, default-safe, approval-gated MCP access to posts, pages, and media."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:147
+#: includes/class-saddle-mcp.php:178
 msgid "Authentication required. Connect with a Saddle Application Password."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:162
+#: includes/class-saddle-mcp.php:193
 msgid "Parse error: request body is not valid JSON-RPC."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:171
+#: includes/class-saddle-mcp.php:202
 msgid "Invalid request."
 msgstr ""
 
 #. translators: %s: JSON-RPC method name.
-#: includes/class-saddle-mcp.php:237
+#: includes/class-saddle-mcp.php:268
 #, php-format
 msgid "Method not found: %s"
 msgstr ""
 
-#: includes/class-saddle-mcp.php:255
+#: includes/class-saddle-mcp.php:291
 msgid "Saddle exposes tiered, approval-gated access to this site's posts, pages, and media. Call saddle/get-instructions for the current scope and safety rules before acting."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:296
+#: includes/class-saddle-mcp.php:332
 msgid "Invalid params: a Saddle tool name is required."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-mcp.php:306
+#: includes/class-saddle-mcp.php:342
 #, php-format
 msgid "Tool not found: %s"
 msgstr ""
 
 #. translators: %s: minimum WordPress version.
-#: saddle.php:183
+#: saddle.php:189
 #, php-format
 msgid "Saddle requires WordPress %s or later (the core Abilities API). The MCP server is disabled until you upgrade."
 msgstr ""
@@ -1119,7 +1127,7 @@ msgid "What %s will be able to do"
 msgstr ""
 
 #: admin/src/components/ConnectWizard.jsx:471
-msgid "Its sign-in key works only for this app and only on this site — you’ll find it listed under Connect. Disconnect it anytime and access ends instantly. Go back without copying and the key is discarded."
+msgid "Its sign-in key works only for this app, only on this site, and only through Saddle — it can’t touch the rest of WordPress. Disconnect it anytime and access ends instantly. Go back without copying and the key is discarded."
 msgstr ""
 
 #: admin/src/components/ConnectWizard.jsx:480

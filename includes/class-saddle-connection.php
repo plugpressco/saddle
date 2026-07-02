@@ -34,6 +34,122 @@ class Saddle_Connection {
 	const HTACCESS_MARKER = 'Saddle Authorization Header';
 
 	/**
+	 * Scope Saddle-issued credentials to Saddle's own REST surface.
+	 *
+	 * A core Application Password authenticates the ENTIRE REST API as its
+	 * user — so without this, an agent holding a Saddle key could sidestep
+	 * every Saddle safety layer (tier, pause, per-tool toggles, approval
+	 * gate, audit log) by calling wp/v2 or wp-abilities/v1 directly with the
+	 * same Basic auth. Requests authenticated with a `Saddle: `-prefixed
+	 * Application Password are therefore confined to `saddle/v1` routes:
+	 * the key Saddle issues only opens Saddle's door.
+	 *
+	 * Hooked to `rest_request_before_callbacks` (after auth, before any
+	 * handler runs). Cookie sessions and non-Saddle app passwords are
+	 * untouched.
+	 *
+	 * @param mixed           $response Current response (null unless already decided).
+	 * @param array           $handler  Matched route handler.
+	 * @param WP_REST_Request $request  The request.
+	 * @return mixed WP_Error to refuse, otherwise $response unchanged.
+	 */
+	public static function scope_credentials( $response, $handler, $request ) {
+		if ( null !== $response ) {
+			return $response; // Another callback already decided this request.
+		}
+
+		/**
+		 * Filter whether Saddle-issued credentials are confined to saddle/v1.
+		 *
+		 * @param bool $scope Default true.
+		 */
+		if ( ! apply_filters( 'saddle_scope_credentials', true ) ) {
+			return $response;
+		}
+
+		$uuid = function_exists( 'rest_get_authenticated_app_password' )
+			? rest_get_authenticated_app_password()
+			: null;
+		if ( ! $uuid || ! self::is_saddle_credential( get_current_user_id(), $uuid ) ) {
+			return $response;
+		}
+
+		$route = $request->get_route();
+
+		/**
+		 * Filter the route prefixes a Saddle-issued credential may access.
+		 *
+		 * @param string[] $allowed Route prefixes (leading slash).
+		 */
+		$allowed = (array) apply_filters( 'saddle_credential_allowed_routes', array( '/saddle/v1' ) );
+		foreach ( $allowed as $prefix ) {
+			if ( '' !== (string) $prefix && 0 === strpos( $route, (string) $prefix ) ) {
+				return $response;
+			}
+		}
+
+		return new WP_Error(
+			'saddle_credential_scope',
+			__( 'This sign-in key was issued by Saddle and works only with Saddle’s endpoint — the rest of the WordPress REST API is off limits to it by design. Use the Saddle tools instead.', 'saddle' ),
+			array( 'status' => 403 )
+		);
+	}
+
+	/**
+	 * Refuse Saddle-issued credentials over XML-RPC — the other API surface
+	 * Application Passwords authenticate, with none of Saddle's safety model.
+	 *
+	 * Hooked to `wp_authenticate_application_password_errors`; adding an
+	 * error makes core reject the authentication attempt itself.
+	 *
+	 * @param WP_Error $error Error accumulator core checks after this action.
+	 * @param WP_User  $user  User being authenticated.
+	 * @param array    $item  The matched application password item.
+	 */
+	public static function block_xmlrpc_credentials( $error, $user, $item ) {
+		/**
+		 * Filter whether the current request counts as XML-RPC (overridable
+		 * for tests and unusual gateway setups).
+		 *
+		 * @param bool $is_xmlrpc Default: the XMLRPC_REQUEST constant.
+		 */
+		$is_xmlrpc = apply_filters( 'saddle_is_xmlrpc_request', defined( 'XMLRPC_REQUEST' ) && XMLRPC_REQUEST );
+		if ( ! $is_xmlrpc ) {
+			return;
+		}
+		if ( ! apply_filters( 'saddle_scope_credentials', true ) ) {
+			return;
+		}
+		$prefix = class_exists( 'Saddle_REST_Admin' ) ? Saddle_REST_Admin::CLIENT_PREFIX : 'Saddle: ';
+		if ( isset( $item['name'] ) && 0 === strpos( (string) $item['name'], $prefix ) ) {
+			$error->add(
+				'saddle_credential_scope',
+				__( 'Saddle sign-in keys cannot be used over XML-RPC.', 'saddle' )
+			);
+		}
+	}
+
+	/**
+	 * Whether the given application password UUID is one Saddle issued
+	 * (identified by the `Saddle: ` name prefix) for this user.
+	 *
+	 * @param int    $user_id User the request authenticated as.
+	 * @param string $uuid    Application password UUID.
+	 * @return bool
+	 */
+	private static function is_saddle_credential( $user_id, $uuid ) {
+		if ( ! $user_id || ! class_exists( 'WP_Application_Passwords' ) ) {
+			return false;
+		}
+		$item = WP_Application_Passwords::get_user_application_password( (int) $user_id, (string) $uuid );
+		if ( ! $item || empty( $item['name'] ) ) {
+			return false;
+		}
+		$prefix = class_exists( 'Saddle_REST_Admin' ) ? Saddle_REST_Admin::CLIENT_PREFIX : 'Saddle: ';
+		return 0 === strpos( (string) $item['name'], $prefix );
+	}
+
+	/**
 	 * Recover a stripped Basic Authorization header into the variables core's
 	 * Application Password authenticator reads. Hooked very early (before REST
 	 * auth). Idempotent and side-effect-free when the server already did its job.
