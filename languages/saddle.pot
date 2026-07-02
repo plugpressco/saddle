@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-02T21:24:33+00:00\n"
+"POT-Creation-Date: 2026-07-02T22:18:23+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -641,6 +641,7 @@ msgid "# About this WordPress site"
 msgstr ""
 
 #: includes/class-saddle-context.php:80
+#: admin/src/components/ConnectWizard.jsx:105
 msgid "Name"
 msgstr ""
 
@@ -649,6 +650,7 @@ msgid "Tagline"
 msgstr ""
 
 #: includes/class-saddle-context.php:87
+#: admin/src/components/ConnectWizard.jsx:106
 msgid "Address"
 msgstr ""
 
@@ -748,16 +750,16 @@ msgstr ""
 msgid "Method not found: %s"
 msgstr ""
 
-#: includes/class-saddle-mcp.php:291
+#: includes/class-saddle-mcp.php:327
 msgid "Saddle exposes tiered, approval-gated access to this site's posts, pages, and media. Call saddle/get-instructions for the current scope and safety rules before acting."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:332
+#: includes/class-saddle-mcp.php:368
 msgid "Invalid params: a Saddle tool name is required."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-mcp.php:342
+#: includes/class-saddle-mcp.php:378
 #, php-format
 msgid "Tool not found: %s"
 msgstr ""
@@ -819,61 +821,61 @@ msgid "Connect Claude, Cursor, or another AI app — it takes about a minute."
 msgstr ""
 
 #. translators: %s: date and time.
-#: admin/src/components/ConnectedClients.jsx:190
+#: admin/src/components/ConnectedClients.jsx:198
 #, js-format
 msgid "Last active %s"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:193
+#: admin/src/components/ConnectedClients.jsx:201
 msgid "Hasn’t connected yet — it will on first use"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:205
-#: admin/src/components/ConnectedClients.jsx:241
+#: admin/src/components/ConnectedClients.jsx:213
+#: admin/src/components/ConnectedClients.jsx:249
 msgid "Disconnect"
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/src/components/ConnectedClients.jsx:216
+#: admin/src/components/ConnectedClients.jsx:224
 #, js-format
 msgid "Disconnect “%s”?"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:224
+#: admin/src/components/ConnectedClients.jsx:232
 msgid "Its sign-in key stops working the moment you confirm — the app loses access to this site immediately. This can’t be undone, but you can always connect the app again with a fresh key."
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:234
+#: admin/src/components/ConnectedClients.jsx:242
 msgid "Keep it connected"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:256
+#: admin/src/components/ConnectedClients.jsx:264
 msgid "Connection details & health"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:263
+#: admin/src/components/ConnectedClients.jsx:271
 msgid "Your site’s address for AI apps"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:277
+#: admin/src/components/ConnectedClients.jsx:285
 msgid "Test the endpoint"
 msgstr ""
 
 #. translators: 1: tool count, 2: milliseconds.
-#: admin/src/components/ConnectedClients.jsx:284
+#: admin/src/components/ConnectedClients.jsx:292
 #, js-format
 msgid "%1$d tools · %2$dms"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:291
+#: admin/src/components/ConnectedClients.jsx:299
 msgid "Responding"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:305
+#: admin/src/components/ConnectedClients.jsx:313
 msgid "Endpoint powered by the WordPress MCP Adapter."
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:309
+#: admin/src/components/ConnectedClients.jsx:317
 msgid "Endpoint powered by Saddle’s built-in MCP transport."
 msgstr ""
 
@@ -882,7 +884,7 @@ msgid "Copied!"
 msgstr ""
 
 #: admin/src/components/ConnectionHealth.jsx:33
-#: admin/src/components/ConnectWizard.jsx:524
+#: admin/src/components/ConnectWizard.jsx:480
 msgid "Copy"
 msgstr ""
 
@@ -954,259 +956,240 @@ msgstr ""
 msgid "Check again"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:31
-msgid "Claude Code"
+#: admin/src/components/ConnectWizard.jsx:35
+msgid "Claude"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:33
-#: admin/src/components/ConnectWizard.jsx:86
-msgid "Terminal"
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:34
-msgid "Paste this into your terminal and press Enter. That’s the whole setup."
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:38
-msgid "Run claude in any folder and ask it about your site."
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:45
-msgid "Claude Desktop"
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:47
+#: admin/src/components/ConnectWizard.jsx:36
 msgid "Desktop app"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:48
-msgid "In Claude Desktop: Settings → Developer → Edit Config. Paste this inside, save, and restart the app."
+#: admin/src/components/ConnectWizard.jsx:37
+msgid "In Claude: Settings → Developer → Edit Config. Paste this inside, save, and restart the app."
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:52
-msgid "Restart Claude Desktop, then ask it about your site."
+#: admin/src/components/ConnectWizard.jsx:41
+msgid "Restart Claude, then ask it about your site."
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:45
+msgid "ChatGPT"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:46
+msgid "Web + desktop"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:47
+msgid "In ChatGPT: Settings → Connectors → Create. Paste the address, and use the sign-in details wherever ChatGPT asks for authentication."
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:51
+msgid "Enable the connector in a ChatGPT chat and ask it about your site."
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:58
+msgid "Claude Code"
 msgstr ""
 
 #: admin/src/components/ConnectWizard.jsx:59
+msgid "Terminal"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:60
+msgid "Paste this into your terminal and press Enter. That’s the whole setup."
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:64
+msgid "Run claude in any folder and ask it about your site."
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:71
 msgid "Cursor"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:61
 #: admin/src/components/ConnectWizard.jsx:72
-#: admin/src/components/ConnectWizard.jsx:97
 msgid "Code editor"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:62
+#: admin/src/components/ConnectWizard.jsx:73
 msgid "In Cursor: Settings → MCP → Add new server. Paste this (or save it as .cursor/mcp.json)."
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:66
+#: admin/src/components/ConnectWizard.jsx:77
 msgid "Open Cursor’s chat and ask it about your site."
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:70
-msgid "VS Code"
+#: admin/src/components/ConnectWizard.jsx:81
+msgid "Any MCP app"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:73
-msgid "Create a file named .vscode/mcp.json in your project and paste this in."
+#: admin/src/components/ConnectWizard.jsx:82
+msgid "Everything else"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:77
-msgid "Open Copilot Chat in agent mode and ask it about your site."
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:84
-msgid "Codex"
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:87
-msgid "Open the file ~/.codex/config.toml and paste this at the bottom."
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:91
-msgid "Run codex and ask it about your site."
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:95
-msgid "Antigravity"
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:98
-msgid "In Antigravity, open MCP settings, choose “Add server”, and paste this."
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:102
-msgid "Open Antigravity’s agent panel and ask it about your site."
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:109
-msgid "Another app"
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:111
-msgid "Anything MCP"
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:112
+#: admin/src/components/ConnectWizard.jsx:83
 msgid "Most AI apps accept this standard setup — look for “Add MCP server” in their settings and paste it there."
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:116
+#: admin/src/components/ConnectWizard.jsx:87
 msgid "Open your app and ask it about your site."
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:194
+#: admin/src/components/ConnectWizard.jsx:107
+msgid "Header"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:150
 msgid "Choose app"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:195
+#: admin/src/components/ConnectWizard.jsx:151
 msgid "Paste setup"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:196
+#: admin/src/components/ConnectWizard.jsx:152
 msgid "Say hello"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:203
+#: admin/src/components/ConnectWizard.jsx:159
 msgid "Setup progress"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:228
+#: admin/src/components/ConnectWizard.jsx:184
 msgid "What can you see on my WordPress site?"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:353
+#: admin/src/components/ConnectWizard.jsx:309
 #: admin/src/components/Permissions.jsx:187
 #: admin/src/components/Permissions.jsx:334
 msgid "Cancel"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:372
+#: admin/src/components/ConnectWizard.jsx:328
 msgid "Which app are you connecting?"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:375
+#: admin/src/components/ConnectWizard.jsx:331
 msgid "When you pick an app, WordPress creates a sign-in key just for it and Saddle prepares the whole setup. If you leave before using the key, it’s removed automatically — nothing is left behind."
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:384
+#: admin/src/components/ConnectWizard.jsx:340
 msgid "Application Passwords appear to be turned off — often by a security plugin. Enable them under Users → Profile before connecting."
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:388
+#: admin/src/components/ConnectWizard.jsx:344
 msgid "WordPress turns off app connections on sites that aren’t served over HTTPS (like http://localhost), so this won’t work until then."
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/src/components/ConnectWizard.jsx:432
+#: admin/src/components/ConnectWizard.jsx:388
 #, js-format
 msgid "Set up %s"
 msgstr ""
 
 #. translators: %s: the connection label.
-#: admin/src/components/ConnectWizard.jsx:443
+#: admin/src/components/ConnectWizard.jsx:399
 #, js-format
 msgid "Made for “%s” just now"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:452
-#: admin/src/components/ConnectWizard.jsx:523
+#: admin/src/components/ConnectWizard.jsx:408
+#: admin/src/components/ConnectWizard.jsx:479
 msgid "Copied ✓"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:453
+#: admin/src/components/ConnectWizard.jsx:409
 msgid "Copy setup"
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/src/components/ConnectWizard.jsx:465
+#: admin/src/components/ConnectWizard.jsx:421
 #, js-format
 msgid "What %s will be able to do"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:471
+#: admin/src/components/ConnectWizard.jsx:427
 msgid "Its sign-in key works only for this app, only on this site, and only through Saddle — it can’t touch the rest of WordPress. Disconnect it anytime and access ends instantly. Go back without copying and the key is discarded."
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:480
+#: admin/src/components/ConnectWizard.jsx:436
 msgid "This site runs on a local address, so the app must run on this same computer to reach it."
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:489
-#: admin/src/components/ConnectWizard.jsx:596
+#: admin/src/components/ConnectWizard.jsx:445
+#: admin/src/components/ConnectWizard.jsx:552
 #: admin/src/components/Onboarding.jsx:141
 msgid "Back"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:496
+#: admin/src/components/ConnectWizard.jsx:452
 msgid "I’ve pasted it"
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/src/components/ConnectWizard.jsx:508
+#: admin/src/components/ConnectWizard.jsx:464
 #, js-format
 msgid "Now say hello from %s"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:518
+#: admin/src/components/ConnectWizard.jsx:474
 msgid "Click to copy"
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/src/components/ConnectWizard.jsx:539
+#: admin/src/components/ConnectWizard.jsx:495
 #, js-format
 msgid "Listening for %s — this updates by itself the moment it connects."
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:550
+#: admin/src/components/ConnectWizard.jsx:506
 msgid "Taking longer than expected?"
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/src/components/ConnectWizard.jsx:559
+#: admin/src/components/ConnectWizard.jsx:515
 #, js-format
 msgid "Make sure you saved the setup and %s was restarted or reloaded after pasting."
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:567
+#: admin/src/components/ConnectWizard.jsx:523
 msgid "The app only connects when it’s actually used — ask it something about your site."
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:574
+#: admin/src/components/ConnectWizard.jsx:530
 msgid "This is a local site — the app must run on this same computer."
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:586
+#: admin/src/components/ConnectWizard.jsx:542
 msgid "Show the setup again"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:599
+#: admin/src/components/ConnectWizard.jsx:555
 msgid "Finish later — it’ll connect on first use"
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/src/components/ConnectWizard.jsx:623
+#: admin/src/components/ConnectWizard.jsx:579
 #, js-format
 msgid "%s is connected"
 msgstr ""
 
 #. translators: %s: the human-readable access level.
-#: admin/src/components/ConnectWizard.jsx:630
+#: admin/src/components/ConnectWizard.jsx:586
 #, js-format
 msgid "It just made its first request. Right now it can %s — change that anytime in Permissions."
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:635
+#: admin/src/components/ConnectWizard.jsx:591
 msgid "only read your content"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:636
+#: admin/src/components/ConnectWizard.jsx:592
 msgid "read and edit your content"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:644
+#: admin/src/components/ConnectWizard.jsx:600
 msgid "Done"
 msgstr ""
 

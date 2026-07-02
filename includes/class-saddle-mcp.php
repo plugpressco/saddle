@@ -81,7 +81,7 @@ class Saddle_MCP {
 			self::ADAPTER_SERVER_ID,
 			self::REST_NAMESPACE,
 			ltrim( self::ROUTE, '/' ),
-			'Saddle',
+			self::server_name(),
 			__( 'Tiered, default-safe, approval-gated MCP access to posts, pages, and media.', 'saddle' ),
 			SADDLE_VERSION,
 			array( '\\WP\\MCP\\Transport\\HttpTransport' ),
@@ -234,7 +234,7 @@ class Saddle_MCP {
 						'protocolVersion' => $negotiated,
 						'capabilities'    => array( 'tools' => (object) array() ),
 						'serverInfo'      => array(
-							'name'    => 'Saddle',
+							'name'    => self::server_name(),
 							'version' => SADDLE_VERSION,
 						),
 						// MCP's standard steering channel. Populated so a client
@@ -279,6 +279,42 @@ class Saddle_MCP {
 	 *
 	 * @return string
 	 */
+	/**
+	 * A per-site MCP server slug: "saddle-plugpress".
+	 *
+	 * Used as the server key in every client config the connect wizard
+	 * generates, so a person connecting five Saddle sites sees five distinct
+	 * entries ("saddle-plugpress", "saddle-divitorque", …) instead of a name
+	 * collision — the same pattern claude.ai uses ("claude.ai Gmail").
+	 *
+	 * @return string
+	 */
+	public static function server_slug() {
+		$base = sanitize_title( (string) get_bloginfo( 'name' ) );
+		if ( '' === $base ) {
+			$base = sanitize_title( (string) wp_parse_url( home_url(), PHP_URL_HOST ) );
+		}
+
+		$slug = '' === $base ? 'saddle' : 'saddle-' . $base;
+
+		/**
+		 * Filter the per-site MCP server slug used in generated client configs.
+		 *
+		 * @param string $slug Slug, e.g. "saddle-plugpress".
+		 */
+		return (string) apply_filters( 'saddle_server_slug', $slug );
+	}
+
+	/**
+	 * Human server name for the MCP initialize handshake: "Saddle (PlugPress)".
+	 *
+	 * @return string
+	 */
+	public static function server_name() {
+		$site = trim( (string) get_bloginfo( 'name' ) );
+		return '' === $site ? 'Saddle' : sprintf( 'Saddle (%s)', $site );
+	}
+
 	private static function server_instructions() {
 		if ( class_exists( 'Saddle_Context' ) ) {
 			$text = Saddle_Context::system_context();

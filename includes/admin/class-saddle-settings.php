@@ -127,6 +127,10 @@ class Saddle_Settings {
 					'ns'           => Saddle_REST_Admin::REST_NAMESPACE,
 					'mcpUrl'       => esc_url_raw( rest_url( Saddle_MCP::REST_NAMESPACE . Saddle_MCP::ROUTE ) ),
 					'user'         => $current_user ? $current_user->user_login : '',
+					// Per-site MCP server slug ("saddle-plugpress") so someone
+					// connecting several Saddle sites gets distinct entries in
+					// their client, not five servers all named "saddle".
+					'serverSlug'   => Saddle_MCP::server_slug(),
 					'adapter'      => Saddle::mcp_adapter_available(),
 					// Environment facts so the UI can warn before a connect fails.
 					'appPasswords' => function_exists( 'wp_is_application_passwords_available' ) ? (bool) wp_is_application_passwords_available() : true,

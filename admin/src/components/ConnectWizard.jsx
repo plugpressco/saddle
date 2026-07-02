@@ -18,6 +18,9 @@ import { AppLogo } from './icons';
 
 const MCP_URL = saddleData.mcpUrl || '';
 const USER = saddleData.user || '';
+// Per-site server name ("saddle-plugpress") so five connected sites show as
+// five distinct servers in the client, not five entries all named "saddle".
+const SLUG = saddleData.serverSlug || 'saddle';
 const WHITESPACE = /\s/g;
 const IS_LOCAL = /(?:localhost|127\.0\.0\.1|\.test|\.local)(?::|\/|$)/i.test(
 	MCP_URL
@@ -27,6 +30,29 @@ const IS_LOCAL = /(?:localhost|127\.0\.0\.1|\.test|\.local)(?::|\/|$)/i.test(
 const PATIENCE = 45;
 
 const APPS = [
+	{
+		key: 'claude',
+		label: __( 'Claude', 'saddle' ),
+		kind: __( 'Desktop app', 'saddle' ),
+		how: __(
+			'In Claude: Settings → Developer → Edit Config. Paste this inside, save, and restart the app.',
+			'saddle'
+		),
+		next: __( 'Restart Claude, then ask it about your site.', 'saddle' ),
+	},
+	{
+		key: 'chatgpt',
+		label: __( 'ChatGPT', 'saddle' ),
+		kind: __( 'Web + desktop', 'saddle' ),
+		how: __(
+			'In ChatGPT: Settings → Connectors → Create. Paste the address, and use the sign-in details wherever ChatGPT asks for authentication.',
+			'saddle'
+		),
+		next: __(
+			'Enable the connector in a ChatGPT chat and ask it about your site.',
+			'saddle'
+		),
+	},
 	{
 		key: 'claude-code',
 		label: __( 'Claude Code', 'saddle' ),
@@ -41,19 +67,6 @@ const APPS = [
 		),
 	},
 	{
-		key: 'claude-desktop',
-		label: __( 'Claude Desktop', 'saddle' ),
-		kind: __( 'Desktop app', 'saddle' ),
-		how: __(
-			'In Claude Desktop: Settings → Developer → Edit Config. Paste this inside, save, and restart the app.',
-			'saddle'
-		),
-		next: __(
-			'Restart Claude Desktop, then ask it about your site.',
-			'saddle'
-		),
-	},
-	{
 		key: 'cursor',
 		label: __( 'Cursor', 'saddle' ),
 		kind: __( 'Code editor', 'saddle' ),
@@ -64,45 +77,9 @@ const APPS = [
 		next: __( 'Open Cursor’s chat and ask it about your site.', 'saddle' ),
 	},
 	{
-		key: 'vscode',
-		label: __( 'VS Code', 'saddle' ),
-		kind: __( 'Code editor', 'saddle' ),
-		how: __(
-			'Create a file named .vscode/mcp.json in your project and paste this in.',
-			'saddle'
-		),
-		next: __(
-			'Open Copilot Chat in agent mode and ask it about your site.',
-			'saddle'
-		),
-	},
-	{
-		key: 'codex',
-		label: __( 'Codex', 'saddle' ),
-		kind: __( 'Terminal', 'saddle' ),
-		how: __(
-			'Open the file ~/.codex/config.toml and paste this at the bottom.',
-			'saddle'
-		),
-		next: __( 'Run codex and ask it about your site.', 'saddle' ),
-	},
-	{
-		key: 'antigravity',
-		label: __( 'Antigravity', 'saddle' ),
-		kind: __( 'Code editor', 'saddle' ),
-		how: __(
-			'In Antigravity, open MCP settings, choose “Add server”, and paste this.',
-			'saddle'
-		),
-		next: __(
-			'Open Antigravity’s agent panel and ask it about your site.',
-			'saddle'
-		),
-	},
-	{
 		key: 'other',
-		label: __( 'Another app', 'saddle' ),
-		kind: __( 'Anything MCP', 'saddle' ),
+		label: __( 'Any MCP app', 'saddle' ),
+		kind: __( 'Everything else', 'saddle' ),
 		how: __(
 			'Most AI apps accept this standard setup — look for “Add MCP server” in their settings and paste it there.',
 			'saddle'
@@ -119,14 +96,15 @@ function buildConfig( app, password ) {
 	switch ( app ) {
 		// One CLI command, native HTTP transport.
 		case 'claude-code':
-			return `claude mcp add saddle --transport http ${ MCP_URL } \\\n  --header "${ header }"`;
+			return `claude mcp add ${ SLUG } --transport http ${ MCP_URL } \\\n  --header "${ header }"`;
 
-		// TOML, bridged through mcp-remote.
-		case 'codex':
+		// ChatGPT connects by URL from its Connectors screen — hand over the
+		// address and the sign-in details as plain fields to fill in.
+		case 'chatgpt':
 			return [
-				'[mcp_servers.saddle]',
-				'command = "npx"',
-				`args = ["-y", "mcp-remote", "${ MCP_URL }", "--header", "${ header }"]`,
+				`${ __( 'Name', 'saddle' ) }:    ${ SLUG }`,
+				`${ __( 'Address', 'saddle' ) }: ${ MCP_URL }`,
+				`${ __( 'Header', 'saddle' ) }:  ${ header }`,
 			].join( '\n' );
 
 		// Native HTTP with headers.
@@ -135,7 +113,7 @@ function buildConfig( app, password ) {
 			return JSON.stringify(
 				{
 					mcpServers: {
-						saddle: {
+						[ SLUG ]: {
 							url: MCP_URL,
 							headers: { Authorization: `Basic ${ auth }` },
 						},
@@ -145,28 +123,12 @@ function buildConfig( app, password ) {
 				2
 			);
 
-		// Native HTTP, `servers` shape.
-		case 'vscode':
-			return JSON.stringify(
-				{
-					servers: {
-						saddle: {
-							type: 'http',
-							url: MCP_URL,
-							headers: { Authorization: `Basic ${ auth }` },
-						},
-					},
-				},
-				null,
-				2
-			);
-
-		// Claude Desktop & Antigravity — stdio via mcp-remote.
+		// Claude — stdio via mcp-remote.
 		default:
 			return JSON.stringify(
 				{
 					mcpServers: {
-						saddle: {
+						[ SLUG ]: {
 							command: 'npx',
 							args: [
 								'-y',

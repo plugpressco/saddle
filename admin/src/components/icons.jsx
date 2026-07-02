@@ -8,6 +8,7 @@
  */
 import ClaudeCodeLogo from '@lobehub/icons-static-svg/icons/claudecode-color.svg';
 import ClaudeLogo from '@lobehub/icons-static-svg/icons/claude-color.svg';
+import OpenAILogo from '@lobehub/icons-static-svg/icons/openai.svg';
 import CursorLogo from '@lobehub/icons-static-svg/icons/cursor.svg';
 import CopilotLogo from '@lobehub/icons-static-svg/icons/copilot-color.svg';
 import CodexLogo from '@lobehub/icons-static-svg/icons/codex.svg';
@@ -74,13 +75,16 @@ export function LevelIcon( { name, ...props } ) {
  * Copilot mark. "Another app" gets the MCP logo itself.
  */
 const APP_LOGOS = {
+	claude: ClaudeLogo,
+	chatgpt: OpenAILogo,
 	'claude-code': ClaudeCodeLogo,
-	'claude-desktop': ClaudeLogo,
 	cursor: CursorLogo,
+	other: McpLogo,
+	// Legacy keys — connections made before the card lineup changed.
+	'claude-desktop': ClaudeLogo,
 	vscode: CopilotLogo,
 	codex: CodexLogo,
 	antigravity: AntigravityLogo,
-	other: McpLogo,
 };
 
 // Brand logo for a wizard app key; the MCP mark when unknown.
@@ -97,7 +101,10 @@ export function appKeyFromLabel( label ) {
 		return 'claude-code';
 	}
 	if ( l.includes( 'claude' ) ) {
-		return 'claude-desktop';
+		return 'claude';
+	}
+	if ( l.includes( 'chatgpt' ) || l.includes( 'openai' ) ) {
+		return 'chatgpt';
 	}
 	if ( l.includes( 'cursor' ) ) {
 		return 'cursor';
