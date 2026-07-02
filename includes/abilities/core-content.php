@@ -1693,6 +1693,90 @@ class Saddle_Abilities {
 	 * @param array  $input Writable fields incl. id.
 	 * @return array|WP_Error
 	 */
+	/**
+	 * Which page builder (if any) owns a post's content.
+	 *
+	 * Content and meta signals for the builders whose layouts live in (or are
+	 * keyed off) post_content — the ones a blind `content` write destroys.
+	 *
+	 * @param WP_Post $post Post to inspect.
+	 * @return string|null Builder name, or null for ordinary content.
+	 */
+	private static function builder_signature( $post ) {
+		$content = (string) $post->post_content;
+		$builder = null;
+
+		if ( false !== strpos( $content, '<!-- wp:divi/' ) ) {
+			$builder = 'Divi 5';
+		} elseif ( 'on' === get_post_meta( $post->ID, '_et_pb_use_builder', true ) || false !== strpos( $content, '[et_pb_section' ) ) {
+			$builder = 'Divi (classic)';
+		} elseif ( 'builder' === get_post_meta( $post->ID, '_elementor_edit_mode', true ) ) {
+			$builder = 'Elementor';
+		} elseif ( get_post_meta( $post->ID, '_fl_builder_enabled', true ) ) {
+			$builder = 'Beaver Builder';
+		} elseif ( get_post_meta( $post->ID, '_bricks_page_content_2', true ) ) {
+			$builder = 'Bricks';
+		} elseif ( false !== strpos( $content, '[vc_row' ) ) {
+			$builder = 'WPBakery';
+		} elseif ( get_post_meta( $post->ID, 'ct_builder_shortcodes', true ) ) {
+			$builder = 'Oxygen';
+		} elseif ( get_post_meta( $post->ID, 'breakdance_data', true ) ) {
+			$builder = 'Breakdance';
+		}
+
+		/**
+		 * Filter the detected page builder for a post (null = plain content).
+		 *
+		 * @param string|null $builder Builder name.
+		 * @param WP_Post     $post    The post.
+		 */
+		return apply_filters( 'saddle_builder_signature', $builder, $post );
+	}
+
+	/**
+	 * Refuse a raw `content` overwrite on builder-built posts.
+	 *
+	 * Protecting the layout is safety and lives in free Saddle; EDITING the
+	 * layout is builder tooling (Saddle Pro's divi-* abilities for Divi 5).
+	 *
+	 * @param WP_Post $post Target post.
+	 * @return true|WP_Error
+	 */
+	private static function guard_builder_content( $post ) {
+		/**
+		 * Filter whether builder-built content is protected from raw
+		 * `content` overwrites (default true).
+		 *
+		 * @param bool    $protect Default true.
+		 * @param WP_Post $post    The post.
+		 */
+		if ( ! apply_filters( 'saddle_protect_builder_content', true, $post ) ) {
+			return true;
+		}
+
+		$builder = self::builder_signature( $post );
+		if ( null === $builder ) {
+			return true;
+		}
+
+		$divi5_tools = 'Divi 5' === $builder
+			&& function_exists( 'wp_get_abilities' )
+			&& isset( wp_get_abilities()['saddle/divi-set-page'] );
+
+		return new WP_Error(
+			'saddle_builder_content',
+			sprintf(
+				/* translators: 1: post ID, 2: builder name. */
+				__( 'Post #%1$d is built with %2$s — overwriting its content field would destroy the layout, so Saddle refuses. You can still edit its title, status, excerpt, taxonomy, and meta. ', 'saddle' ),
+				$post->ID,
+				$builder
+			) . ( $divi5_tools
+				? __( 'To change the layout itself, use the saddle/divi-* tools (divi-get-page, divi-edit-module, divi-set-page).', 'saddle' )
+				: __( 'Layout changes need the builder’s own editor — tell the site owner instead of forcing the edit.', 'saddle' ) ),
+			array( 'status' => 409 )
+		);
+	}
+
 	private static function update_of_type( $type, array $input ) {
 		$id = self::require_id( $input );
 		if ( is_wp_error( $id ) ) {
@@ -1718,6 +1802,16 @@ class Saddle_Abilities {
 		$denied = self::authorize_write( $type, $input, (int) $existing->post_author, $id );
 		if ( is_wp_error( $denied ) ) {
 			return $denied;
+		}
+
+		// Builder-content guard: overwriting a page-builder layout's `content`
+		// destroys it, so refuse rather than let an agent do it blind. Other
+		// fields (title, status, meta, terms) remain freely editable.
+		if ( isset( $input['content'] ) ) {
+			$guarded = self::guard_builder_content( $existing );
+			if ( is_wp_error( $guarded ) ) {
+				return $guarded;
+			}
 		}
 
 		$postarr       = self::build_postarr( $type, $input );
