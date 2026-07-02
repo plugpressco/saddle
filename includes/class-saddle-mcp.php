@@ -91,6 +91,37 @@ class Saddle_MCP {
 			array(),
 			array()
 		);
+
+		// Serve the full context in the initialize handshake, so a client that
+		// surfaces `instructions` spares the agent a whole get-instructions
+		// round trip — on shared hosts each round trip is a full WP boot.
+		add_filter( 'mcp_adapter_initialize_response', array( __CLASS__, 'filter_adapter_initialize' ), 10, 2 );
+	}
+
+	/**
+	 * Replace the adapter's default initialize `instructions` (the one-line
+	 * server description) with the same full context get-instructions returns.
+	 *
+	 * @param object $result Initialize result DTO (toArray/fromArray).
+	 * @param object $server The adapter's McpServer instance.
+	 * @return object
+	 */
+	public static function filter_adapter_initialize( $result, $server ) {
+		if (
+			! is_object( $server )
+			|| ! method_exists( $server, 'get_server_id' )
+			|| self::ADAPTER_SERVER_ID !== $server->get_server_id()
+			|| ! is_object( $result )
+			|| ! method_exists( $result, 'toArray' )
+		) {
+			return $result;
+		}
+
+		$data                 = $result->toArray();
+		$data['instructions'] = self::server_instructions();
+
+		$class = get_class( $result );
+		return $class::fromArray( $data );
 	}
 
 	/**
@@ -250,7 +281,12 @@ class Saddle_MCP {
 	 */
 	private static function server_instructions() {
 		if ( class_exists( 'Saddle_Context' ) ) {
-			return Saddle_Context::system_context();
+			$text = Saddle_Context::system_context();
+			$user = Saddle_Context::user();
+			if ( '' !== $user ) {
+				$text .= "\n## Site owner's instructions\n\n" . $user . "\n";
+			}
+			return $text;
 		}
 		return __( 'Saddle exposes tiered, approval-gated access to this site\'s posts, pages, and media. Call saddle/get-instructions for the current scope and safety rules before acting.', 'saddle' );
 	}
