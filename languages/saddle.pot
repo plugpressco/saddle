@@ -1,0 +1,1453 @@
+# Copyright (C) 2026 PlugPress
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Saddle 0.1.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/saddle\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-07-02T15:06:31+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: saddle\n"
+
+#. Plugin Name of the plugin
+#: saddle.php
+#: includes/abilities/core-content.php:26
+#: includes/admin/class-saddle-settings.php:27
+#: includes/admin/class-saddle-settings.php:28
+#: admin/src/components/TopBar.jsx:32
+msgid "Saddle"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: saddle.php
+msgid "https://plugpress.co/saddle"
+msgstr ""
+
+#. Description of the plugin
+#: saddle.php
+msgid "Self-hosted MCP server for WordPress. Tiered, default-safe, approval-gated access to posts, pages, and media for AI agents — with no third-party credential custody."
+msgstr ""
+
+#. Author of the plugin
+#: saddle.php
+msgid "PlugPress"
+msgstr ""
+
+#. Author URI of the plugin
+#: saddle.php
+msgid "https://plugpress.co"
+msgstr ""
+
+#: includes/abilities/core-content.php:27
+msgid "Approval-gated content operations exposed to AI agents by Saddle."
+msgstr ""
+
+#: includes/abilities/core-content.php:46
+msgid "Get site info"
+msgstr ""
+
+#: includes/abilities/core-content.php:47
+msgid "Returns orientation data about this WordPress site: name, tagline, URL, WordPress version, language, content counts (posts, pages, media), the current Saddle access tier, and the connected user. Read-only. Call this first to understand what the site contains before other operations."
+msgstr ""
+
+#: includes/abilities/core-content.php:63
+msgid "Get instructions"
+msgstr ""
+
+#: includes/abilities/core-content.php:64
+msgid "Returns important context about this site (its setup and active plugins) and the site owner's instructions for AI agents. Call this first, before other actions, and follow the guidance it returns. Read-only."
+msgstr ""
+
+#: includes/abilities/core-content.php:80
+msgid "Search content"
+msgstr ""
+
+#: includes/abilities/core-content.php:81
+msgid "Full-text search across posts and pages by keyword. Returns matching items as summaries (id, type, title, status, link, excerpt). Read-only. Use post_type to restrict to \"post\", \"page\", or \"any\"."
+msgstr ""
+
+#: includes/abilities/core-content.php:90
+msgid "Search keywords."
+msgstr ""
+
+#: includes/abilities/core-content.php:96
+msgid "Restrict results to this type."
+msgstr ""
+
+#: includes/abilities/core-content.php:117
+msgid "List posts"
+msgstr ""
+
+#: includes/abilities/core-content.php:118
+msgid "Lists posts as summaries (id, title, status, author, date, link, excerpt). Read-only. Supports filtering by status, author, category, and search term, plus pagination via per_page/page."
+msgstr ""
+
+#: includes/abilities/core-content.php:127
+#: includes/abilities/core-content.php:241
+#: includes/abilities/core-content.php:327
+#: includes/abilities/core-content.php:536
+msgid "Optional keyword filter."
+msgstr ""
+
+#: includes/abilities/core-content.php:131
+msgid "Filter by author user ID."
+msgstr ""
+
+#: includes/abilities/core-content.php:135
+msgid "Filter by category term ID."
+msgstr ""
+
+#: includes/abilities/core-content.php:160
+msgid "Get post"
+msgstr ""
+
+#: includes/abilities/core-content.php:161
+msgid "Returns a single post in full: title, content, excerpt, status, slug, author, dates, categories, tags, featured image, discussion settings, and custom fields (meta). Read-only."
+msgstr ""
+
+#: includes/abilities/core-content.php:163
+msgid "The post ID."
+msgstr ""
+
+#: includes/abilities/core-content.php:173
+msgid "Create post"
+msgstr ""
+
+#: includes/abilities/core-content.php:174
+msgid "Creates a new post and returns its id and summary. Additive (non-destructive). Accepts title, content, excerpt, status (draft/publish/pending/private), slug, author, date, category_ids, tags, featured_media, discussion settings, and custom fields via \"meta\". Defaults to draft status."
+msgstr ""
+
+#: includes/abilities/core-content.php:186
+msgid "Update post"
+msgstr ""
+
+#: includes/abilities/core-content.php:187
+msgid "Updates an existing post by id. Only the fields you pass are changed; omitted fields are left untouched. Accepts the same fields as create-post, including slug, author, and custom fields via \"meta\" (null deletes a key). WordPress stores a revision, so changes are recoverable (non-destructive). Returns the updated summary."
+msgstr ""
+
+#: includes/abilities/core-content.php:199
+msgid "Delete post"
+msgstr ""
+
+#: includes/abilities/core-content.php:200
+msgid "Deletes a post. DESTRUCTIVE — runs through a two-step confirmation: the first call returns a preview and a confirm_token without changing anything; call again with confirm_token to execute. Without \"force\" the post is trashed (recoverable); with force=true it is permanently deleted (not recoverable)."
+msgstr ""
+
+#: includes/abilities/core-content.php:202
+msgid "The post ID to delete."
+msgstr ""
+
+#: includes/abilities/core-content.php:212
+msgid "List post revisions"
+msgstr ""
+
+#: includes/abilities/core-content.php:213
+msgid "Lists the stored revisions of a post or page (id, author, date, title). Read-only. Restoring a revision is not available in this version."
+msgstr ""
+
+#: includes/abilities/core-content.php:215
+msgid "The post or page ID."
+msgstr ""
+
+#: includes/abilities/core-content.php:231
+msgid "List pages"
+msgstr ""
+
+#: includes/abilities/core-content.php:232
+msgid "Lists pages as summaries (id, title, status, parent, menu order, link). Read-only. Supports status filtering and pagination."
+msgstr ""
+
+#: includes/abilities/core-content.php:245
+msgid "Filter by parent page ID."
+msgstr ""
+
+#: includes/abilities/core-content.php:260
+msgid "Get page"
+msgstr ""
+
+#: includes/abilities/core-content.php:261
+msgid "Returns a single page in full: title, content, excerpt, status, slug, author, dates, page template, parent, menu order, featured image, discussion settings, and custom fields (meta). Read-only."
+msgstr ""
+
+#: includes/abilities/core-content.php:263
+msgid "The page ID."
+msgstr ""
+
+#: includes/abilities/core-content.php:273
+msgid "Create page"
+msgstr ""
+
+#: includes/abilities/core-content.php:274
+msgid "Creates a new page and returns its id and summary. Additive (non-destructive). Accepts title, content, excerpt, status, slug, author, date, page template, parent, menu_order, featured_media, discussion settings, and custom fields via \"meta\". Defaults to draft status."
+msgstr ""
+
+#: includes/abilities/core-content.php:286
+msgid "Update page"
+msgstr ""
+
+#: includes/abilities/core-content.php:287
+msgid "Updates an existing page by id. Only the fields you pass are changed. Accepts the same fields as create-page, including slug, author, and custom fields via \"meta\" (null deletes a key). WordPress stores a revision, so changes are recoverable (non-destructive). Returns the updated summary."
+msgstr ""
+
+#: includes/abilities/core-content.php:299
+msgid "Delete page"
+msgstr ""
+
+#: includes/abilities/core-content.php:300
+msgid "Deletes a page. DESTRUCTIVE — two-step confirmation required (preview + confirm_token). Without \"force\" the page is trashed (recoverable); with force=true it is permanently deleted."
+msgstr ""
+
+#: includes/abilities/core-content.php:302
+msgid "The page ID to delete."
+msgstr ""
+
+#: includes/abilities/core-content.php:318
+msgid "List media"
+msgstr ""
+
+#: includes/abilities/core-content.php:319
+msgid "Lists media library items as summaries (id, title, mime type, URL, date, attached post). Read-only. Supports filtering by mime type and parent, plus pagination."
+msgstr ""
+
+#: includes/abilities/core-content.php:331
+msgid "Filter by MIME type or prefix, e.g. \"image\" or \"image/png\"."
+msgstr ""
+
+#: includes/abilities/core-content.php:335
+msgid "Filter by the post the media is attached to."
+msgstr ""
+
+#: includes/abilities/core-content.php:350
+msgid "Get media"
+msgstr ""
+
+#: includes/abilities/core-content.php:351
+msgid "Returns a single media item in full: URL, MIME type, alt text, caption, description, available image sizes, and the post it is attached to. Read-only."
+msgstr ""
+
+#: includes/abilities/core-content.php:353
+#: includes/abilities/core-content.php:408
+msgid "The attachment ID."
+msgstr ""
+
+#: includes/abilities/core-content.php:363
+msgid "Upload media from URL"
+msgstr ""
+
+#: includes/abilities/core-content.php:364
+msgid "Downloads a file from a source URL you provide and adds it to the media library, returning the new attachment id and URL. Additive (non-destructive). This is the only ability that fetches an external URL, and it fetches only the URL you pass. Optionally set title, alt text, caption, description, and the post to attach it to."
+msgstr ""
+
+#: includes/abilities/core-content.php:373
+msgid "Publicly reachable URL of the file to download."
+msgstr ""
+
+#: includes/abilities/core-content.php:377
+msgid "Override the stored filename (with extension)."
+msgstr ""
+
+#: includes/abilities/core-content.php:385
+msgid "Attach the media to this post/page ID."
+msgstr ""
+
+#: includes/abilities/core-content.php:398
+msgid "Update media metadata"
+msgstr ""
+
+#: includes/abilities/core-content.php:399
+msgid "Updates a media item's metadata (title, alt text, caption, description) by id. Does not replace the file. Non-destructive. Returns the updated summary."
+msgstr ""
+
+#: includes/abilities/core-content.php:425
+msgid "Delete media"
+msgstr ""
+
+#: includes/abilities/core-content.php:426
+msgid "Deletes a media item and its files. DESTRUCTIVE and NOT RECOVERABLE — attachments have no trash state in WordPress, so deletion is permanent. Two-step confirmation required (preview + confirm_token)."
+msgstr ""
+
+#: includes/abilities/core-content.php:428
+msgid "The attachment ID to delete."
+msgstr ""
+
+#: includes/abilities/core-content.php:444
+msgid "List categories"
+msgstr ""
+
+#: includes/abilities/core-content.php:445
+msgid "Lists post categories as summaries (id, name, slug, parent, post count, description). Read-only. Supports search and pagination."
+msgstr ""
+
+#: includes/abilities/core-content.php:457
+msgid "Create category"
+msgstr ""
+
+#: includes/abilities/core-content.php:458
+msgid "Creates a post category and returns it. Additive (non-destructive). Accepts name (required), slug, parent category id, and description."
+msgstr ""
+
+#: includes/abilities/core-content.php:470
+msgid "List tags"
+msgstr ""
+
+#: includes/abilities/core-content.php:471
+msgid "Lists post tags as summaries (id, name, slug, post count, description). Read-only. Supports search and pagination."
+msgstr ""
+
+#: includes/abilities/core-content.php:483
+msgid "Create tag"
+msgstr ""
+
+#: includes/abilities/core-content.php:484
+msgid "Creates a post tag and returns it. Additive (non-destructive). Accepts name (required), slug, and description."
+msgstr ""
+
+#: includes/abilities/core-content.php:541
+msgid "Exclude terms that have no posts."
+msgstr ""
+
+#: includes/abilities/core-content.php:559
+msgid "The term name (required)."
+msgstr ""
+
+#: includes/abilities/core-content.php:568
+msgid "Parent category term ID."
+msgstr ""
+
+#: includes/abilities/core-content.php:590
+msgid "Results per page (1–100)."
+msgstr ""
+
+#: includes/abilities/core-content.php:604
+msgid "Page number of results."
+msgstr ""
+
+#: includes/abilities/core-content.php:618
+msgid "Filter by post status."
+msgstr ""
+
+#: includes/abilities/core-content.php:658
+msgid "The single-use token returned by the preview call. Omit on the first call to receive a preview."
+msgstr ""
+
+#: includes/abilities/core-content.php:666
+msgid "If true, permanently delete instead of moving to trash."
+msgstr ""
+
+#: includes/abilities/core-content.php:688
+msgid "The title."
+msgstr ""
+
+#: includes/abilities/core-content.php:692
+msgid "The body content (HTML or blocks)."
+msgstr ""
+
+#: includes/abilities/core-content.php:698
+msgid "Publication status. Defaults to draft on create."
+msgstr ""
+
+#: includes/abilities/core-content.php:703
+msgid "Author user ID."
+msgstr ""
+
+#: includes/abilities/core-content.php:707
+msgid "Publish date in site time, \"YYYY-MM-DD HH:MM:SS\"."
+msgstr ""
+
+#: includes/abilities/core-content.php:719
+msgid "Attachment ID to set as the featured image."
+msgstr ""
+
+#: includes/abilities/core-content.php:724
+msgid "Custom fields (post meta) as key/value pairs. Values may be strings, numbers, booleans, or arrays; pass null as a value to delete that key. Keys starting with an underscore are protected — writable only when the owning plugin registered them as editable. Denied keys are skipped and reported back in \"meta_denied\"; the rest of the request still applies."
+msgstr ""
+
+#: includes/abilities/core-content.php:732
+msgid "Category term IDs to assign."
+msgstr ""
+
+#: includes/abilities/core-content.php:737
+msgid "Tag names to assign (created if missing)."
+msgstr ""
+
+#: includes/abilities/core-content.php:742
+msgid "Page template filename, e.g. \"template-full.php\"."
+msgstr ""
+
+#: includes/abilities/core-content.php:746
+msgid "Parent page ID."
+msgstr ""
+
+#: includes/abilities/core-content.php:750
+msgid "Ordering value among sibling pages."
+msgstr ""
+
+#: includes/abilities/core-content.php:763
+msgid "The ID to update."
+msgstr ""
+
+#. translators: %s: field name.
+#: includes/abilities/core-content.php:808
+#, php-format
+msgid "A numeric \"%s\" is required."
+msgstr ""
+
+#. translators: %s: field name.
+#: includes/abilities/core-content.php:820
+#, php-format
+msgid "The \"%s\" must be a positive integer."
+msgstr ""
+
+#: includes/abilities/core-content.php:838
+msgid "You do not have permission to do that with this item."
+msgstr ""
+
+#: includes/abilities/core-content.php:880
+msgid "You do not have permission to edit this item."
+msgstr ""
+
+#: includes/abilities/core-content.php:886
+msgid "You do not have permission to publish content."
+msgstr ""
+
+#: includes/abilities/core-content.php:893
+msgid "You do not have permission to assign content to another user."
+msgstr ""
+
+#: includes/abilities/core-content.php:1026
+msgid "A non-empty \"query\" is required."
+msgstr ""
+
+#: includes/abilities/core-content.php:1102
+msgid "No post or page with that ID."
+msgstr ""
+
+#: includes/abilities/core-content.php:1211
+#: includes/abilities/core-content.php:1344
+#: includes/abilities/core-content.php:1395
+msgid "No media item with that ID."
+msgstr ""
+
+#: includes/abilities/core-content.php:1239
+msgid "A \"source_url\" is required."
+msgstr ""
+
+#: includes/abilities/core-content.php:1244
+msgid "The \"source_url\" is not a valid, fetchable URL, or it resolves to a disallowed internal address."
+msgstr ""
+
+#: includes/abilities/core-content.php:1250
+msgid "You do not have permission to attach media to that item."
+msgstr ""
+
+#. translators: %s: maximum size, e.g. "64 MB".
+#: includes/abilities/core-content.php:1271
+#, php-format
+msgid "The file exceeds the maximum allowed size (%s)."
+msgstr ""
+
+#. translators: %d: attachment id.
+#: includes/abilities/core-content.php:1324
+#, php-format
+msgid "Uploaded media #%d"
+msgstr ""
+
+#: includes/abilities/core-content.php:1347
+msgid "You do not have permission to edit this media item."
+msgstr ""
+
+#. translators: %d: attachment id.
+#: includes/abilities/core-content.php:1375
+#, php-format
+msgid "Updated media #%d"
+msgstr ""
+
+#: includes/abilities/core-content.php:1398
+msgid "You do not have permission to delete this media item."
+msgstr ""
+
+#. translators: 1: attachment id, 2: title.
+#: includes/abilities/core-content.php:1407
+#, php-format
+msgid "Permanently delete media #%1$d \"%2$s\" and its files. Media has no trash — this cannot be undone."
+msgstr ""
+
+#: includes/abilities/core-content.php:1423
+msgid "WordPress could not delete the media item."
+msgstr ""
+
+#: includes/abilities/core-content.php:1524
+msgid "A \"name\" is required."
+msgstr ""
+
+#. translators: 1: term type, 2: name.
+#: includes/abilities/core-content.php:1550
+#, php-format
+msgid "Created %1$s \"%2$s\""
+msgstr ""
+
+#. translators: %s: post type.
+#: includes/abilities/core-content.php:1632
+#: includes/abilities/core-content.php:1707
+#: includes/abilities/core-content.php:1772
+#, php-format
+msgid "No %s with that ID."
+msgstr ""
+
+#. translators: 1: post type, 2: id, 3: title.
+#: includes/abilities/core-content.php:1675
+#, php-format
+msgid "Created %1$s #%2$d \"%3$s\""
+msgstr ""
+
+#. translators: 1: post type, 2: id, 3: title.
+#: includes/abilities/core-content.php:1739
+#, php-format
+msgid "Updated %1$s #%2$d \"%3$s\""
+msgstr ""
+
+#. translators: 1: type, 2: id, 3: title.
+#: includes/abilities/core-content.php:1789
+#, php-format
+msgid "Permanently delete %1$s #%2$d \"%3$s\". This cannot be undone."
+msgstr ""
+
+#. translators: 1: type, 2: id, 3: title.
+#: includes/abilities/core-content.php:1796
+#, php-format
+msgid "Move %1$s #%2$d \"%3$s\" to the trash. It can be restored from Trash."
+msgstr ""
+
+#: includes/abilities/core-content.php:1819
+msgid "WordPress could not delete the item."
+msgstr ""
+
+#: includes/admin/class-saddle-rest.php:228
+msgid "Unknown access tier."
+msgstr ""
+
+#: includes/admin/class-saddle-rest.php:350
+msgid "MCP Client"
+msgstr ""
+
+#: includes/admin/class-saddle-rest.php:385
+#: includes/admin/class-saddle-rest.php:469
+msgid "Application Passwords are not available on this site."
+msgstr ""
+
+#: includes/admin/class-saddle-rest.php:389
+msgid "Application Passwords are turned off on this site — often because it isn’t served over HTTPS, or a security plugin disabled them."
+msgstr ""
+
+#: includes/admin/class-saddle-rest.php:394
+msgid "AI app"
+msgstr ""
+
+#: includes/admin/class-saddle-rest.php:476
+msgid "No Saddle client with that ID."
+msgstr ""
+
+#: includes/admin/class-saddle-settings.php:88
+msgid "Saddle: the admin UI has not been built yet. Run \"npm install && npm run build\" in the plugin folder."
+msgstr ""
+
+#: includes/class-saddle-approval.php:86
+msgid "Internal error: approval gate was called without an action or executor."
+msgstr ""
+
+#: includes/class-saddle-approval.php:128
+msgid "This is a preview — nothing has changed. To proceed, call this tool again with the same arguments plus \"confirm_token\" set to the value above. The token is single-use and expires in 15 minutes."
+msgstr ""
+
+#: includes/class-saddle-approval.php:143
+msgid "Could not generate a secure confirmation token."
+msgstr ""
+
+#: includes/class-saddle-approval.php:166
+msgid "Could not persist the confirmation token."
+msgstr ""
+
+#: includes/class-saddle-approval.php:220
+msgid "Invalid or already-used confirmation token. Request a new preview to get a fresh token."
+msgstr ""
+
+#: includes/class-saddle-approval.php:236
+msgid "This confirmation token was issued for a different action and cannot be used here."
+msgstr ""
+
+#: includes/class-saddle-approval.php:244
+msgid "This confirmation token was issued for a different item. Preview the exact item you intend to change, then confirm with the token it returns."
+msgstr ""
+
+#: includes/class-saddle-approval.php:252
+msgid "This confirmation token has expired. Request a new preview to get a fresh token."
+msgstr ""
+
+#. translators: %s: tool name.
+#: includes/class-saddle-capabilities.php:221
+#, php-format
+msgid "Blocked: Saddle is paused — \"%s\" was refused."
+msgstr ""
+
+#. translators: %s: tool name.
+#: includes/class-saddle-capabilities.php:225
+#, php-format
+msgid "Blocked: your account lacks permission for \"%s\"."
+msgstr ""
+
+#. translators: %s: tool name.
+#: includes/class-saddle-capabilities.php:229
+#, php-format
+msgid "Blocked: the tool \"%s\" is turned off."
+msgstr ""
+
+#. translators: %s: tool name.
+#: includes/class-saddle-capabilities.php:234
+#, php-format
+msgid "Blocked: \"%s\" needs a higher access level than is enabled."
+msgstr ""
+
+#: includes/class-saddle-connection.php:259
+msgid "Saddle can’t edit this server’s configuration automatically. Add the rule shown below by hand or send it to your host."
+msgstr ""
+
+#: includes/class-saddle-connection.php:279
+msgid "Saddle could not write to .htaccess. Check file permissions, or add the rule by hand."
+msgstr ""
+
+#: includes/class-saddle-context.php:71
+msgid "You may READ content only. You cannot create, edit, or delete anything at the current access level."
+msgstr ""
+
+#: includes/class-saddle-context.php:73
+msgid "You may read content and create or edit posts, pages, and media. Deleting is possible but every deletion first returns a preview and a single-use confirmation token — you must call again with that token to actually delete. Nothing is ever deleted in one step."
+msgstr ""
+
+#: includes/class-saddle-context.php:78
+msgid "# About this WordPress site"
+msgstr ""
+
+#: includes/class-saddle-context.php:80
+msgid "Name"
+msgstr ""
+
+#: includes/class-saddle-context.php:84
+msgid "Tagline"
+msgstr ""
+
+#: includes/class-saddle-context.php:87
+msgid "Address"
+msgstr ""
+
+#: includes/class-saddle-context.php:88
+msgid "WordPress version"
+msgstr ""
+
+#: includes/class-saddle-context.php:89
+msgid "Language"
+msgstr ""
+
+#: includes/class-saddle-context.php:94
+msgid "Timezone"
+msgstr ""
+
+#: includes/class-saddle-context.php:100
+msgid " (block theme)"
+msgstr ""
+
+#: includes/class-saddle-context.php:102
+msgid "Active theme"
+msgstr ""
+
+#: includes/class-saddle-context.php:106
+msgid "# What you are allowed to do"
+msgstr ""
+
+#: includes/class-saddle-context.php:109
+msgid "Saddle exposes core content only: posts, pages, and media."
+msgstr ""
+
+#: includes/class-saddle-context.php:110
+msgid "Stay within the tools Saddle provides. Do not attempt actions outside this scope."
+msgstr ""
+
+#: includes/class-saddle-context.php:116
+msgid "# Content on this site"
+msgstr ""
+
+#: includes/class-saddle-context.php:118
+msgid "Published posts"
+msgstr ""
+
+#: includes/class-saddle-context.php:119
+msgid "Published pages"
+msgstr ""
+
+#. translators: %s: comma-separated list of custom post type labels.
+#: includes/class-saddle-context.php:125
+#, php-format
+msgid "This site also has custom content types Saddle does not manage: %s. Do not try to read or change these."
+msgstr ""
+
+#: includes/class-saddle-context.php:136
+msgid "# Important notes for editing"
+msgstr ""
+
+#. translators: %s: comma-separated multilingual plugin names.
+#: includes/class-saddle-context.php:142
+#, php-format
+msgid "This site is multilingual (%s). Content may exist in several languages; a post you edit is usually one language's version. Confirm which language you are working in before changing content."
+msgstr ""
+
+#. translators: %s: comma-separated page builder names.
+#: includes/class-saddle-context.php:150
+#, php-format
+msgid "A page builder is active (%s). Pages and posts built with it store their layout as special markup inside the content. Overwriting the \"content\" field of a builder page with plain text or HTML will BREAK its layout. Prefer leaving builder-built pages alone unless the user explicitly asks you to change one, and even then change only the specific text they mention."
+msgstr ""
+
+#: includes/class-saddle-context.php:159
+msgid "# Plugins active on this site"
+msgstr ""
+
+#: includes/class-saddle-context.php:161
+msgid "These plugins are active (with versions). Saddle manages core content only; these plugins may expose their own tools separately. Be aware of them when reasoning about the site:"
+msgstr ""
+
+#: includes/class-saddle-mcp.php:85
+msgid "Tiered, default-safe, approval-gated MCP access to posts, pages, and media."
+msgstr ""
+
+#: includes/class-saddle-mcp.php:147
+msgid "Authentication required. Connect with a Saddle Application Password."
+msgstr ""
+
+#: includes/class-saddle-mcp.php:162
+msgid "Parse error: request body is not valid JSON-RPC."
+msgstr ""
+
+#: includes/class-saddle-mcp.php:171
+msgid "Invalid request."
+msgstr ""
+
+#. translators: %s: JSON-RPC method name.
+#: includes/class-saddle-mcp.php:237
+#, php-format
+msgid "Method not found: %s"
+msgstr ""
+
+#: includes/class-saddle-mcp.php:255
+msgid "Saddle exposes tiered, approval-gated access to this site's posts, pages, and media. Call saddle/get-instructions for the current scope and safety rules before acting."
+msgstr ""
+
+#: includes/class-saddle-mcp.php:296
+msgid "Invalid params: a Saddle tool name is required."
+msgstr ""
+
+#. translators: %s: tool name.
+#: includes/class-saddle-mcp.php:306
+#, php-format
+msgid "Tool not found: %s"
+msgstr ""
+
+#. translators: %s: minimum WordPress version.
+#: saddle.php:183
+#, php-format
+msgid "Saddle requires WordPress %s or later (the core Abilities API). The MCP server is disabled until you upgrade."
+msgstr ""
+
+#: admin/src/App.jsx:23
+msgid "Home"
+msgstr ""
+
+#: admin/src/App.jsx:24
+msgid "Permissions"
+msgstr ""
+
+#: admin/src/App.jsx:25
+msgid "Guidance"
+msgstr ""
+
+#: admin/src/App.jsx:26
+msgid "Connect"
+msgstr ""
+
+#: admin/src/App.jsx:222
+msgid "This is expected — clear this warning"
+msgstr ""
+
+#: admin/src/App.jsx:230
+msgid "This site’s address has changed since AI write access was turned on — often a sign of a staging clone or a migration carrying over live credentials. If that wasn’t intentional, review your connected apps and revoke anything unexpected."
+msgstr ""
+
+#: admin/src/components/ConnectedClients.jsx:43
+msgid "Disconnected. That app’s sign-in no longer works."
+msgstr ""
+
+#: admin/src/components/ConnectedClients.jsx:133
+#: admin/src/components/Home.jsx:160
+msgid "Connected apps"
+msgstr ""
+
+#: admin/src/components/ConnectedClients.jsx:136
+msgid "Every app here has its own sign-in you can take away at any moment. They all follow the same rules from Permissions."
+msgstr ""
+
+#: admin/src/components/ConnectedClients.jsx:143
+#: admin/src/components/Home.jsx:145
+msgid "Connect an app"
+msgstr ""
+
+#: admin/src/components/ConnectedClients.jsx:162
+msgid "Nothing connected yet"
+msgstr ""
+
+#: admin/src/components/ConnectedClients.jsx:165
+msgid "Connect Claude, Cursor, or another AI app — it takes about a minute."
+msgstr ""
+
+#. translators: %s: date and time.
+#: admin/src/components/ConnectedClients.jsx:190
+#, js-format
+msgid "Last active %s"
+msgstr ""
+
+#: admin/src/components/ConnectedClients.jsx:193
+msgid "Hasn’t connected yet — it will on first use"
+msgstr ""
+
+#: admin/src/components/ConnectedClients.jsx:205
+#: admin/src/components/ConnectedClients.jsx:241
+msgid "Disconnect"
+msgstr ""
+
+#. translators: %s: the app name.
+#: admin/src/components/ConnectedClients.jsx:216
+#, js-format
+msgid "Disconnect “%s”?"
+msgstr ""
+
+#: admin/src/components/ConnectedClients.jsx:224
+msgid "Its sign-in key stops working the moment you confirm — the app loses access to this site immediately. This can’t be undone, but you can always connect the app again with a fresh key."
+msgstr ""
+
+#: admin/src/components/ConnectedClients.jsx:234
+msgid "Keep it connected"
+msgstr ""
+
+#: admin/src/components/ConnectedClients.jsx:256
+msgid "Connection details & health"
+msgstr ""
+
+#: admin/src/components/ConnectedClients.jsx:263
+msgid "Your site’s address for AI apps"
+msgstr ""
+
+#: admin/src/components/ConnectedClients.jsx:277
+msgid "Test the endpoint"
+msgstr ""
+
+#. translators: 1: tool count, 2: milliseconds.
+#: admin/src/components/ConnectedClients.jsx:284
+#, js-format
+msgid "%1$d tools · %2$dms"
+msgstr ""
+
+#: admin/src/components/ConnectedClients.jsx:291
+msgid "Responding"
+msgstr ""
+
+#: admin/src/components/ConnectedClients.jsx:305
+msgid "Endpoint powered by the WordPress MCP Adapter."
+msgstr ""
+
+#: admin/src/components/ConnectedClients.jsx:309
+msgid "Endpoint powered by Saddle’s built-in MCP transport."
+msgstr ""
+
+#: admin/src/components/ConnectionHealth.jsx:32
+msgid "Copied!"
+msgstr ""
+
+#: admin/src/components/ConnectionHealth.jsx:33
+#: admin/src/components/ConnectWizard.jsx:524
+msgid "Copy"
+msgstr ""
+
+#: admin/src/components/ConnectionHealth.jsx:74
+msgid "The automatic fix didn’t work."
+msgstr ""
+
+#: admin/src/components/ConnectionHealth.jsx:85
+msgid "Checking your server setup…"
+msgstr ""
+
+#: admin/src/components/ConnectionHealth.jsx:100
+msgid "✓ Fixed — sign-in details now reach WordPress. Your AI apps can connect."
+msgstr ""
+
+#: admin/src/components/ConnectionHealth.jsx:104
+msgid "✓ Server check passed — sign-in details reach WordPress correctly."
+msgstr ""
+
+#: admin/src/components/ConnectionHealth.jsx:115
+msgid "We couldn’t verify your server automatically. If AI apps report “unauthorized” even with the right password, ask your host to pass the Authorization header through to WordPress."
+msgstr ""
+
+#: admin/src/components/ConnectionHealth.jsx:129
+msgid "Your server is blocking app sign-ins"
+msgstr ""
+
+#: admin/src/components/ConnectionHealth.jsx:132
+msgid "When an AI app connects, it sends its password in a sign-in header. Your web server removes that header before WordPress can see it, so every connection will fail as “unauthorized” — even with the right password. (The test above can still pass, because your browser signs in a different way.)"
+msgstr ""
+
+#: admin/src/components/ConnectionHealth.jsx:147
+msgid "Fixing…"
+msgstr ""
+
+#: admin/src/components/ConnectionHealth.jsx:148
+msgid "Fix it for me"
+msgstr ""
+
+#: admin/src/components/ConnectionHealth.jsx:155
+msgid "Hide the rule"
+msgstr ""
+
+#: admin/src/components/ConnectionHealth.jsx:156
+msgid "See what this adds"
+msgstr ""
+
+#: admin/src/components/ConnectionHealth.jsx:163
+msgid "Saddle added the rule, but the header still isn’t arriving — something earlier in the chain (a proxy or your host’s own config) is removing it. Send the rule below to your hosting support and ask them to allow the Authorization header."
+msgstr ""
+
+#: admin/src/components/ConnectionHealth.jsx:180
+msgid "Saddle can’t edit this server’s configuration automatically. Add the matching rule below yourself, or send it to your hosting support."
+msgstr ""
+
+#: admin/src/components/ConnectionHealth.jsx:191
+msgid "Apache / LiteSpeed — add to .htaccess"
+msgstr ""
+
+#: admin/src/components/ConnectionHealth.jsx:200
+msgid "nginx — add to the PHP location block"
+msgstr ""
+
+#: admin/src/components/ConnectionHealth.jsx:212
+msgid "Checking…"
+msgstr ""
+
+#: admin/src/components/ConnectionHealth.jsx:213
+msgid "Check again"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:31
+msgid "Claude Code"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:33
+#: admin/src/components/ConnectWizard.jsx:86
+msgid "Terminal"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:34
+msgid "Paste this into your terminal and press Enter. That’s the whole setup."
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:38
+msgid "Run claude in any folder and ask it about your site."
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:45
+msgid "Claude Desktop"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:47
+msgid "Desktop app"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:48
+msgid "In Claude Desktop: Settings → Developer → Edit Config. Paste this inside, save, and restart the app."
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:52
+msgid "Restart Claude Desktop, then ask it about your site."
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:59
+msgid "Cursor"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:61
+#: admin/src/components/ConnectWizard.jsx:72
+#: admin/src/components/ConnectWizard.jsx:97
+msgid "Code editor"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:62
+msgid "In Cursor: Settings → MCP → Add new server. Paste this (or save it as .cursor/mcp.json)."
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:66
+msgid "Open Cursor’s chat and ask it about your site."
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:70
+msgid "VS Code"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:73
+msgid "Create a file named .vscode/mcp.json in your project and paste this in."
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:77
+msgid "Open Copilot Chat in agent mode and ask it about your site."
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:84
+msgid "Codex"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:87
+msgid "Open the file ~/.codex/config.toml and paste this at the bottom."
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:91
+msgid "Run codex and ask it about your site."
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:95
+msgid "Antigravity"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:98
+msgid "In Antigravity, open MCP settings, choose “Add server”, and paste this."
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:102
+msgid "Open Antigravity’s agent panel and ask it about your site."
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:109
+msgid "Another app"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:111
+msgid "Anything MCP"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:112
+msgid "Most AI apps accept this standard setup — look for “Add MCP server” in their settings and paste it there."
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:116
+msgid "Open your app and ask it about your site."
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:194
+msgid "Choose app"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:195
+msgid "Paste setup"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:196
+msgid "Say hello"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:203
+msgid "Setup progress"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:228
+msgid "What can you see on my WordPress site?"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:353
+#: admin/src/components/Permissions.jsx:187
+#: admin/src/components/Permissions.jsx:334
+msgid "Cancel"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:372
+msgid "Which app are you connecting?"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:375
+msgid "When you pick an app, WordPress creates a sign-in key just for it and Saddle prepares the whole setup. If you leave before using the key, it’s removed automatically — nothing is left behind."
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:384
+msgid "Application Passwords appear to be turned off — often by a security plugin. Enable them under Users → Profile before connecting."
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:388
+msgid "WordPress turns off app connections on sites that aren’t served over HTTPS (like http://localhost), so this won’t work until then."
+msgstr ""
+
+#. translators: %s: the app name.
+#: admin/src/components/ConnectWizard.jsx:432
+#, js-format
+msgid "Set up %s"
+msgstr ""
+
+#. translators: %s: the connection label.
+#: admin/src/components/ConnectWizard.jsx:443
+#, js-format
+msgid "Made for “%s” just now"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:452
+#: admin/src/components/ConnectWizard.jsx:523
+msgid "Copied ✓"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:453
+msgid "Copy setup"
+msgstr ""
+
+#. translators: %s: the app name.
+#: admin/src/components/ConnectWizard.jsx:465
+#, js-format
+msgid "What %s will be able to do"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:471
+msgid "Its sign-in key works only for this app and only on this site — you’ll find it listed under Connect. Disconnect it anytime and access ends instantly. Go back without copying and the key is discarded."
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:480
+msgid "This site runs on a local address, so the app must run on this same computer to reach it."
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:489
+#: admin/src/components/ConnectWizard.jsx:596
+#: admin/src/components/Onboarding.jsx:141
+msgid "Back"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:496
+msgid "I’ve pasted it"
+msgstr ""
+
+#. translators: %s: the app name.
+#: admin/src/components/ConnectWizard.jsx:508
+#, js-format
+msgid "Now say hello from %s"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:518
+msgid "Click to copy"
+msgstr ""
+
+#. translators: %s: the app name.
+#: admin/src/components/ConnectWizard.jsx:539
+#, js-format
+msgid "Listening for %s — this updates by itself the moment it connects."
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:550
+msgid "Taking longer than expected?"
+msgstr ""
+
+#. translators: %s: the app name.
+#: admin/src/components/ConnectWizard.jsx:559
+#, js-format
+msgid "Make sure you saved the setup and %s was restarted or reloaded after pasting."
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:567
+msgid "The app only connects when it’s actually used — ask it something about your site."
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:574
+msgid "This is a local site — the app must run on this same computer."
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:586
+msgid "Show the setup again"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:599
+msgid "Finish later — it’ll connect on first use"
+msgstr ""
+
+#. translators: %s: the app name.
+#: admin/src/components/ConnectWizard.jsx:623
+#, js-format
+msgid "%s is connected"
+msgstr ""
+
+#. translators: %s: the human-readable access level.
+#: admin/src/components/ConnectWizard.jsx:630
+#, js-format
+msgid "It just made its first request. Right now it can %s — change that anytime in Permissions."
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:635
+msgid "only read your content"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:636
+msgid "read and edit your content"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:644
+msgid "Done"
+msgstr ""
+
+#: admin/src/components/Guidance.jsx:105
+msgid "Instructions saved."
+msgstr ""
+
+#: admin/src/components/Guidance.jsx:133
+msgid "How your AI should behave"
+msgstr ""
+
+#: admin/src/components/Guidance.jsx:136
+msgid "Every connected AI is told the same things about your site and follows the same instructions from you."
+msgstr ""
+
+#: admin/src/components/Guidance.jsx:145
+msgid "What your AI knows"
+msgstr ""
+
+#: admin/src/components/Guidance.jsx:147
+msgid "Automatic · read-only"
+msgstr ""
+
+#: admin/src/components/Guidance.jsx:151
+msgid "Saddle writes this from your site and its active plugins, and updates it automatically. It’s shown so you can see exactly what your AI is told — you don’t edit it here."
+msgstr ""
+
+#: admin/src/components/Guidance.jsx:171
+msgid "Show readable view"
+msgstr ""
+
+#: admin/src/components/Guidance.jsx:172
+msgid "View exact text"
+msgstr ""
+
+#: admin/src/components/Guidance.jsx:179
+#: admin/src/components/Guidance.jsx:188
+msgid "Your instructions"
+msgstr ""
+
+#: admin/src/components/Guidance.jsx:182
+msgid "Add rules or preferences for every connected AI. For example: “Always save new posts as drafts,” or “Write in a warm, friendly tone.” Leave blank if you have none."
+msgstr ""
+
+#: admin/src/components/Guidance.jsx:193
+msgid "e.g. Always save new posts as drafts for me to review."
+msgstr ""
+
+#: admin/src/components/Guidance.jsx:205
+msgid "Save instructions"
+msgstr ""
+
+#: admin/src/components/Home.jsx:49
+msgid "Created"
+msgstr ""
+
+#: admin/src/components/Home.jsx:50
+msgid "Updated"
+msgstr ""
+
+#: admin/src/components/Home.jsx:51
+msgid "Deleted"
+msgstr ""
+
+#: admin/src/components/Home.jsx:52
+msgid "Uploaded"
+msgstr ""
+
+#: admin/src/components/Home.jsx:64
+msgid "Refused"
+msgstr ""
+
+#: admin/src/components/Home.jsx:110
+msgid "Right now"
+msgstr ""
+
+#: admin/src/components/Home.jsx:114
+msgid "Saddle is paused. Your AI can’t read or change anything until you resume."
+msgstr ""
+
+#: admin/src/components/Home.jsx:122
+#: admin/src/components/TopBar.jsx:52
+msgid "Resume"
+msgstr ""
+
+#: admin/src/components/Home.jsx:129
+msgid "Change what it can do"
+msgstr ""
+
+#: admin/src/components/Home.jsx:137
+msgid "Connect your first app"
+msgstr ""
+
+#: admin/src/components/Home.jsx:139
+msgid "Add an AI app like Claude, Cursor, or VS Code so it can work with your site."
+msgstr ""
+
+#. translators: %d: number of apps.
+#: admin/src/components/Home.jsx:164
+#, js-format
+msgid "%d app"
+msgid_plural "%d apps"
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/src/components/Home.jsx:189
+msgid "Manage apps"
+msgstr ""
+
+#: admin/src/components/Home.jsx:197
+msgid "Recent activity"
+msgstr ""
+
+#: admin/src/components/Home.jsx:218
+msgid "Blocked"
+msgstr ""
+
+#: admin/src/components/Home.jsx:231
+msgid "Nothing yet. Changes your AI makes will show up here."
+msgstr ""
+
+#: admin/src/components/Onboarding.jsx:41
+msgid "Set up Saddle"
+msgstr ""
+
+#: admin/src/components/Onboarding.jsx:58
+msgid "Let an AI help with your content — safely."
+msgstr ""
+
+#: admin/src/components/Onboarding.jsx:64
+msgid "Saddle lets an AI assistant like Claude read and (if you allow it) edit your posts, pages, and media. You stay in control of what it can touch, everything runs on your own site, and nothing is ever deleted without asking you first."
+msgstr ""
+
+#: admin/src/components/Onboarding.jsx:70
+msgid "You choose what it can do"
+msgstr ""
+
+#: admin/src/components/Onboarding.jsx:72
+msgid "Nothing leaves your website"
+msgstr ""
+
+#: admin/src/components/Onboarding.jsx:75
+msgid "Deleting always asks first"
+msgstr ""
+
+#: admin/src/components/Onboarding.jsx:83
+msgid "Get started"
+msgstr ""
+
+#: admin/src/components/Onboarding.jsx:92
+msgid "How much should your AI help?"
+msgstr ""
+
+#: admin/src/components/Onboarding.jsx:95
+msgid "You can change this anytime."
+msgstr ""
+
+#: admin/src/components/Onboarding.jsx:101
+msgid "Safety level"
+msgstr ""
+
+#: admin/src/components/Onboarding.jsx:125
+msgid "Recommended to start"
+msgstr ""
+
+#: admin/src/components/Onboarding.jsx:148
+msgid "Finish without connecting"
+msgstr ""
+
+#: admin/src/components/Onboarding.jsx:156
+msgid "Continue — connect an app"
+msgstr ""
+
+#: admin/src/components/Permissions.jsx:21
+msgid "Read"
+msgstr ""
+
+#: admin/src/components/Permissions.jsx:22
+msgid "Create & edit"
+msgstr ""
+
+#: admin/src/components/Permissions.jsx:23
+msgid "Delete"
+msgstr ""
+
+#: admin/src/components/Permissions.jsx:72
+#: admin/src/components/Permissions.jsx:101
+msgid "Saved."
+msgstr ""
+
+#: admin/src/components/Permissions.jsx:116
+msgid "This lets your AI create and edit content. Deleting will always ask you first."
+msgstr ""
+
+#: admin/src/components/Permissions.jsx:120
+msgid "Your AI will only be able to read. It won’t be able to make any changes."
+msgstr ""
+
+#: admin/src/components/Permissions.jsx:138
+#: admin/src/components/Permissions.jsx:150
+msgid "What your AI can do"
+msgstr ""
+
+#: admin/src/components/Permissions.jsx:141
+msgid "Pick how much your connected apps are allowed to do. You can change this whenever you like."
+msgstr ""
+
+#: admin/src/components/Permissions.jsx:195
+#: admin/src/components/Permissions.jsx:342
+msgid "Save"
+msgstr ""
+
+#. translators: %d: number of tools active at the chosen level.
+#: admin/src/components/Permissions.jsx:212
+#, js-format
+msgid "See everything it can do (%d tool)"
+msgid_plural "See everything it can do (%d tools)"
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/src/components/Permissions.jsx:224
+msgid "Click any tool below to turn it off individually — that stays off no matter which level above is chosen."
+msgstr ""
+
+#: admin/src/components/Permissions.jsx:251
+msgid "on"
+msgstr ""
+
+#: admin/src/components/Permissions.jsx:252
+#: admin/src/components/Permissions.jsx:292
+msgid "off"
+msgstr ""
+
+#: admin/src/components/Permissions.jsx:300
+msgid "asks first"
+msgstr ""
+
+#: admin/src/components/Permissions.jsx:322
+msgid "Individual tool changes aren’t saved yet."
+msgstr ""
+
+#: admin/src/components/TopBar.jsx:41
+msgid "Paused"
+msgstr ""
+
+#: admin/src/components/TopBar.jsx:53
+msgid "Pause"
+msgstr ""
+
+#: admin/src/components/TopBar.jsx:62
+msgid "Sections"
+msgstr ""

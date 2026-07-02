@@ -1,0 +1,6 @@
+/node_modules
+/vendor
+/tests/.wp
+.DS_Store
+*.log
+/dist

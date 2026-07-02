@@ -1,0 +1,33 @@
+# Files and folders excluded from the distributed plugin zip (wp dist-archive).
+# admin/src is kept — WordPress.org requires human-readable source for the
+# compiled admin/build assets.
+
+/.git
+/.github
+/.claude
+/node_modules
+/.distignore
+/.gitignore
+/.editorconfig
+/package.json
+/package-lock.json
+/composer.json
+/composer.lock
+/phpcs.xml
+/phpcs.xml.dist
+/phpunit.xml
+/phpunit.xml.dist
+/webpack.config.js
+/vendor
+/tests
+
+# Internal development docs (not shipped to users)
+/BUILD-GUIDE.md
+/MVP-PLAN.md
+/CLAUDE.md
+/admin/DESIGN-ALIGNMENT.md
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.log

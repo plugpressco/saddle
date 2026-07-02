@@ -1,0 +1,31 @@
+/**
+ * React entry point for the Saddle admin UI.
+ */
+import apiFetch from '@wordpress/api-fetch';
+import { createRoot } from '@wordpress/element';
+import App from './App';
+import './style.scss';
+
+const data = window.saddleData || {};
+
+// Authenticate REST calls with the logged-in admin's cookie + nonce, and route
+// relative paths through the site's REST root.
+if ( data.nonce ) {
+	apiFetch.use( apiFetch.createNonceMiddleware( data.nonce ) );
+}
+if ( data.root ) {
+	apiFetch.use( apiFetch.createRootURLMiddleware( data.root ) );
+}
+
+const mount = () => {
+	const el = document.getElementById( 'saddle-root' );
+	if ( el ) {
+		createRoot( el ).render( <App /> );
+	}
+};
+
+if ( document.readyState === 'loading' ) {
+	document.addEventListener( 'DOMContentLoaded', mount );
+} else {
+	mount();
+}

@@ -1,0 +1,25 @@
+{
+	"name": "saddle",
+	"version": "0.1.0",
+	"description": "Self-hosted MCP server for WordPress — admin UI build.",
+	"author": "PlugPress",
+	"license": "GPL-2.0-or-later",
+	"private": true,
+	"scripts": {
+		"build": "wp-scripts build admin/src/index.js --output-path=admin/build",
+		"start": "wp-scripts start admin/src/index.js --output-path=admin/build",
+		"lint:js": "wp-scripts lint-js admin/src",
+		"format": "wp-scripts format admin/src",
+		"package": "npm run build && grunt release",
+		"package:patch": "npm run build && grunt release:patch",
+		"package:minor": "npm run build && grunt release:minor",
+		"package:major": "npm run build && grunt release:major"
+	},
+	"devDependencies": {
+		"@wordpress/scripts": "^27.9.0",
+		"grunt": "^1.6.1",
+		"grunt-contrib-clean": "^2.0.1",
+		"grunt-contrib-compress": "^2.0.0",
+		"grunt-contrib-copy": "^1.0.0"
+	}
+}
