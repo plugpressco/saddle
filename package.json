@@ -16,6 +16,7 @@
 		"package:major": "npm run build && grunt release:major"
 	},
 	"devDependencies": {
+		"@lobehub/icons-static-svg": "^1.91.0",
 		"@wordpress/scripts": "^27.9.0",
 		"grunt": "^1.6.1",
 		"grunt-contrib-clean": "^2.0.1",

@@ -1,10 +1,18 @@
 /**
- * Small inline SVG icons — monochrome, currentColor, stroke-based.
+ * Small inline SVG icons — monochrome, currentColor, stroke-based — plus the
+ * AI app brand logos from @lobehub/icons-static-svg (MIT).
  *
- * Deliberately local rather than pulling @wordpress/icons: that package isn't
- * reliably enqueued in every wp-admin context, and inline SVGs give a
+ * The UI icons stay local rather than pulling @wordpress/icons: that package
+ * isn't reliably enqueued in every wp-admin context, and inline SVGs give a
  * consistent, restrained, premium look we fully control.
  */
+import ClaudeCodeLogo from '@lobehub/icons-static-svg/icons/claudecode-color.svg';
+import ClaudeLogo from '@lobehub/icons-static-svg/icons/claude-color.svg';
+import CursorLogo from '@lobehub/icons-static-svg/icons/cursor.svg';
+import CopilotLogo from '@lobehub/icons-static-svg/icons/copilot-color.svg';
+import CodexLogo from '@lobehub/icons-static-svg/icons/codex.svg';
+import AntigravityLogo from '@lobehub/icons-static-svg/icons/antigravity-color.svg';
+import McpLogo from '@lobehub/icons-static-svg/icons/mcp.svg';
 
 const base = {
 	width: 20,
@@ -56,4 +64,56 @@ const LEVEL_ICONS = { read: IconRead, write: IconWrite };
 export function LevelIcon( { name, ...props } ) {
 	const Cmp = LEVEL_ICONS[ name ] || IconRead;
 	return <Cmp { ...props } />;
+}
+
+/* ---------- AI app brand logos ----------
+ *
+ * From @lobehub/icons-static-svg (MIT, imported at the top of this file),
+ * bundled at build time via @svgr. VS Code has no lobe icon (the set is
+ * AI-focused) — its MCP setup runs Copilot agent mode, so it wears the
+ * Copilot mark. "Another app" gets the MCP logo itself.
+ */
+const APP_LOGOS = {
+	'claude-code': ClaudeCodeLogo,
+	'claude-desktop': ClaudeLogo,
+	cursor: CursorLogo,
+	vscode: CopilotLogo,
+	codex: CodexLogo,
+	antigravity: AntigravityLogo,
+	other: McpLogo,
+};
+
+// Brand logo for a wizard app key; the MCP mark when unknown.
+export function AppLogo( { app, ...props } ) {
+	const Cmp = APP_LOGOS[ app ] || McpLogo;
+	return <Cmp aria-hidden="true" focusable="false" { ...props } />;
+}
+
+// Best-effort app key from a stored connection label ("Claude Code 2" →
+// claude-code), for the connected-apps list where only the name survives.
+export function appKeyFromLabel( label ) {
+	const l = ( label || '' ).toLowerCase();
+	if ( l.includes( 'claude code' ) ) {
+		return 'claude-code';
+	}
+	if ( l.includes( 'claude' ) ) {
+		return 'claude-desktop';
+	}
+	if ( l.includes( 'cursor' ) ) {
+		return 'cursor';
+	}
+	if (
+		l.includes( 'vs code' ) ||
+		l.includes( 'vscode' ) ||
+		l.includes( 'copilot' )
+	) {
+		return 'vscode';
+	}
+	if ( l.includes( 'codex' ) ) {
+		return 'codex';
+	}
+	if ( l.includes( 'antigravity' ) ) {
+		return 'antigravity';
+	}
+	return 'other';
 }

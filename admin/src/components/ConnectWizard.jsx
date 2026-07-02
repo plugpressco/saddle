@@ -14,6 +14,7 @@ import { Button, Notice, Spinner } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { api, saddleData, levelFor } from '../api';
 import ConnectionHealth from './ConnectionHealth';
+import { AppLogo } from './icons';
 
 const MCP_URL = saddleData.mcpUrl || '';
 const USER = saddleData.user || '';
@@ -29,7 +30,6 @@ const APPS = [
 	{
 		key: 'claude-code',
 		label: __( 'Claude Code', 'saddle' ),
-		mark: 'CC',
 		kind: __( 'Terminal', 'saddle' ),
 		how: __(
 			'Paste this into your terminal and press Enter. That’s the whole setup.',
@@ -43,7 +43,6 @@ const APPS = [
 	{
 		key: 'claude-desktop',
 		label: __( 'Claude Desktop', 'saddle' ),
-		mark: 'Cl',
 		kind: __( 'Desktop app', 'saddle' ),
 		how: __(
 			'In Claude Desktop: Settings → Developer → Edit Config. Paste this inside, save, and restart the app.',
@@ -57,7 +56,6 @@ const APPS = [
 	{
 		key: 'cursor',
 		label: __( 'Cursor', 'saddle' ),
-		mark: 'Cu',
 		kind: __( 'Code editor', 'saddle' ),
 		how: __(
 			'In Cursor: Settings → MCP → Add new server. Paste this (or save it as .cursor/mcp.json).',
@@ -68,7 +66,6 @@ const APPS = [
 	{
 		key: 'vscode',
 		label: __( 'VS Code', 'saddle' ),
-		mark: 'VS',
 		kind: __( 'Code editor', 'saddle' ),
 		how: __(
 			'Create a file named .vscode/mcp.json in your project and paste this in.',
@@ -82,7 +79,6 @@ const APPS = [
 	{
 		key: 'codex',
 		label: __( 'Codex', 'saddle' ),
-		mark: 'Cx',
 		kind: __( 'Terminal', 'saddle' ),
 		how: __(
 			'Open the file ~/.codex/config.toml and paste this at the bottom.',
@@ -93,7 +89,6 @@ const APPS = [
 	{
 		key: 'antigravity',
 		label: __( 'Antigravity', 'saddle' ),
-		mark: 'Ag',
 		kind: __( 'Code editor', 'saddle' ),
 		how: __(
 			'In Antigravity, open MCP settings, choose “Add server”, and paste this.',
@@ -107,7 +102,6 @@ const APPS = [
 	{
 		key: 'other',
 		label: __( 'Another app', 'saddle' ),
-		mark: '+',
 		kind: __( 'Anything MCP', 'saddle' ),
 		how: __(
 			'Most AI apps accept this standard setup — look for “Add MCP server” in their settings and paste it there.',
@@ -408,7 +402,7 @@ export default function ConnectWizard( { tier, onExit, onClientsChanged } ) {
 									{ creating === a.key ? (
 										<Spinner />
 									) : (
-										a.mark
+										<AppLogo app={ a.key } />
 									) }
 								</span>
 								<span className="saddle-appcard__label">

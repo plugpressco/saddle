@@ -12,7 +12,7 @@ import { Button, Notice, Spinner, Modal } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { saddleData, api } from '../api';
 import ConnectionHealth from './ConnectionHealth';
-import { IconConnect } from './icons';
+import { IconConnect, AppLogo, appKeyFromLabel } from './icons';
 
 const MCP_URL = saddleData.mcpUrl || '';
 
@@ -180,6 +180,14 @@ export default function Apps( {
 								}` }
 								aria-hidden="true"
 							/>
+							<span
+								className="saddle-appsrow__logo"
+								aria-hidden="true"
+							>
+								<AppLogo
+									app={ appKeyFromLabel( c.label || c.name ) }
+								/>
+							</span>
 							<span className="saddle-appsrow__name">
 								{ c.label || c.name }
 							</span>
