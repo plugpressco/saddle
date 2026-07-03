@@ -4,7 +4,7 @@ Tags: mcp, ai, model context protocol, application passwords, automation
 Requires at least: 6.9
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 0.1.0
+Stable tag: 0.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -76,6 +76,13 @@ Deletion is only possible at the Write tier, and even then every delete requires
 That is the entire purpose of an MCP server: to let an AI assistant you control act on your site. Saddle's design exists to make that power explicit, tiered, default-safe, and confirmable — rather than implicit.
 
 == Changelog ==
+
+= 0.2.0 =
+* New: native block design abilities — agents build and edit pages with real, validated editor blocks (get/set-blocks, add/edit/move/remove-block, insert-block-pattern, block schemas, theme.json design tokens, pattern browsing).
+* New: builder-content guard — raw content writes can never destroy a page-builder layout.
+* New: connect wizard issues credentials directly (no authorize-screen bounce) with per-site server names.
+* Security: Saddle-issued application passwords only open Saddle's own endpoint.
+* Improved: full site context served in the MCP initialize handshake; taxonomy abilities; activity log surfaced in Home.
 
 = 0.1.0 =
 * Initial release: tiered, default-safe, approval-gated MCP access to posts, pages, and media.
