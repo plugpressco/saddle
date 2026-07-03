@@ -72,7 +72,13 @@ class Saddle_Blocks_Author {
 
 		$type       = trim( $node['type'] );
 		$block_type = WP_Block_Type_Registry::get_instance()->get_registered( $type );
-		if ( ! $block_type ) {
+		$curated    = in_array( $type, Saddle_Blocks_Schema::curated_types(), true );
+
+		// Curated types are authorable even without a server-side registration:
+		// several core blocks (e.g. core/heading, core/image on some builds)
+		// register only in the editor's JS, and Saddle owns their markup
+		// contract regardless. Everything else needs the registry.
+		if ( ! $block_type && ! $curated ) {
 			return new WP_Error(
 				'saddle_unknown_block',
 				sprintf(
@@ -143,8 +149,10 @@ class Saddle_Blocks_Author {
 	/**
 	 * Compose the canonical block for a type.
 	 *
-	 * @param string        $type       Block type name.
-	 * @param WP_Block_Type $block_type Registered type.
+	 * @param string             $type       Block type name.
+	 * @param WP_Block_Type|null $block_type Registered type (null only for
+	 *                                       curated types, which the switch
+	 *                                       below fully handles).
 	 * @param array         $attrs      Authored attributes.
 	 * @param mixed         $content    Authored content payload.
 	 * @param array[]       $children   Expanded child blocks.

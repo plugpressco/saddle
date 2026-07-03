@@ -78,6 +78,27 @@ class Saddle_Blocks_Schema {
 			);
 		}
 
+		// Curated types missing from the server registry (some core blocks
+		// register only in the editor's JS) are still fully authorable —
+		// surface them so agents don't conclude they're unavailable.
+		$listed = wp_list_pluck( $out, 'name' );
+		foreach ( array_diff( $curated, array_keys( WP_Block_Type_Registry::get_instance()->get_all_registered() ) ) as $name ) {
+			if ( in_array( $name, $listed, true ) ) {
+				continue;
+			}
+			$summary = self::curated_summary( $name );
+			if ( '' !== $category && $category !== $summary['category'] ) {
+				continue;
+			}
+			if ( '' !== $search
+				&& false === strpos( strtolower( $summary['name'] ), $search )
+				&& false === strpos( strtolower( $summary['title'] ), $search )
+				&& false === strpos( strtolower( $summary['purpose'] ), $search ) ) {
+				continue;
+			}
+			$out[] = $summary;
+		}
+
 		usort(
 			$out,
 			static function ( $a, $b ) {
@@ -85,6 +106,41 @@ class Saddle_Blocks_Schema {
 			}
 		);
 		return $out;
+	}
+
+	/**
+	 * Catalog summary for a curated type absent from the server registry.
+	 *
+	 * @param string $name Curated block type name.
+	 * @return array
+	 */
+	private static function curated_summary( $name ) {
+		$known = array(
+			'core/paragraph' => array( __( 'Paragraph', 'saddle' ), 'text', __( 'A paragraph of rich text.', 'saddle' ) ),
+			'core/heading'   => array( __( 'Heading', 'saddle' ), 'text', __( 'A heading (h1–h6) that structures the page.', 'saddle' ) ),
+			'core/list'      => array( __( 'List', 'saddle' ), 'text', __( 'A bulleted or numbered list.', 'saddle' ) ),
+			'core/list-item' => array( __( 'List item', 'saddle' ), 'text', __( 'One item inside a list.', 'saddle' ) ),
+			'core/quote'     => array( __( 'Quote', 'saddle' ), 'text', __( 'A visually emphasized quotation.', 'saddle' ) ),
+			'core/code'      => array( __( 'Code', 'saddle' ), 'text', __( 'Preformatted code, displayed verbatim.', 'saddle' ) ),
+			'core/image'     => array( __( 'Image', 'saddle' ), 'media', __( 'A single image with optional caption.', 'saddle' ) ),
+			'core/button'    => array( __( 'Button', 'saddle' ), 'design', __( 'A call-to-action link styled as a button.', 'saddle' ) ),
+			'core/buttons'   => array( __( 'Buttons', 'saddle' ), 'design', __( 'A row of buttons.', 'saddle' ) ),
+			'core/group'     => array( __( 'Group', 'saddle' ), 'design', __( 'A container that groups blocks, e.g. as a banded section.', 'saddle' ) ),
+			'core/columns'   => array( __( 'Columns', 'saddle' ), 'design', __( 'A multi-column row; holds core/column children.', 'saddle' ) ),
+			'core/column'    => array( __( 'Column', 'saddle' ), 'design', __( 'One column inside core/columns.', 'saddle' ) ),
+			'core/separator' => array( __( 'Separator', 'saddle' ), 'design', __( 'A horizontal divider between sections.', 'saddle' ) ),
+			'core/spacer'    => array( __( 'Spacer', 'saddle' ), 'design', __( 'Vertical whitespace of a set height.', 'saddle' ) ),
+			'core/html'      => array( __( 'Custom HTML', 'saddle' ), 'widgets', __( 'Raw HTML rendered verbatim. Last resort — prefer real blocks.', 'saddle' ) ),
+		);
+		$info  = isset( $known[ $name ] ) ? $known[ $name ] : array( $name, '', '' );
+
+		return array(
+			'name'      => $name,
+			'title'     => $info[0],
+			'category'  => $info[1],
+			'authoring' => 'content',
+			'purpose'   => $info[2],
+		);
 	}
 
 	/**
@@ -114,6 +170,23 @@ class Saddle_Blocks_Schema {
 	public static function describe( $name ) {
 		$type = WP_Block_Type_Registry::get_instance()->get_registered( $name );
 		if ( ! $type ) {
+			// Curated types stay describable without a server registration —
+			// authoring guidance is Saddle's own; only the attribute list
+			// depends on the registry.
+			if ( in_array( $name, self::curated_types(), true ) ) {
+				$summary = self::curated_summary( $name );
+				return array(
+					'name'        => $name,
+					'title'       => $summary['title'],
+					'description' => $summary['purpose'],
+					'category'    => $summary['category'],
+					'dynamic'     => false,
+					'attributes'  => (object) array(),
+					'note'        => __( 'This block registers only in the editor\'s JS on this site, so its attribute list is not exposed here — but Saddle authors it fully; follow the example below.', 'saddle' ),
+					'authoring'   => self::authoring_guidance( $name, 'content' ),
+				);
+			}
+
 			return new WP_Error(
 				'saddle_unknown_block',
 				sprintf(

@@ -328,6 +328,32 @@ class Saddle_Blocks_Test extends WP_UnitTestCase {
 		$this->assertSame( 'core/paragraph', $read['nodes'][0]['type'] );
 	}
 
+	public function test_curated_types_stay_authorable_without_server_registration() {
+		// Live WP builds exist where core/heading and core/image register only
+		// in the editor's JS (seen on Studio's WP 7.0 runtime). Saddle owns the
+		// curated markup contracts, so authoring must not depend on the registry.
+		$registry = WP_Block_Type_Registry::get_instance();
+		$saved    = $registry->unregister( 'core/heading' );
+
+		try {
+			$block = Saddle_Blocks_Author::expand_node( array( 'type' => 'core/heading', 'content' => 'Still works' ) );
+			$this->assertNotWPError( $block );
+			$this->assertStringContainsString( '<h2 class="wp-block-heading">Still works</h2>', $block['innerHTML'] );
+
+			$schema = Saddle_Blocks_Schema::describe( 'core/heading' );
+			$this->assertNotWPError( $schema );
+			$this->assertSame( 'content', $schema['authoring']['mode'] );
+
+			$names = wp_list_pluck( Saddle_Blocks_Schema::catalog( 'heading' ), 'name' );
+			$this->assertContains( 'core/heading', $names, 'The catalog must surface curated types missing from the registry.' );
+
+			$unknown = Saddle_Blocks_Author::expand_node( array( 'type' => 'acme/imaginary', 'content' => 'x' ) );
+			$this->assertWPError( $unknown, 'Non-curated unregistered types must still be refused.' );
+		} finally {
+			register_block_type( $saved );
+		}
+	}
+
 	/* -------- design vocabulary reads -------- */
 
 	public function test_vocabulary_reads_return_catalog_schema_and_tokens() {
