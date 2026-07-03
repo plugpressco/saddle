@@ -6,6 +6,10 @@ Read this before touching code. It encodes decisions already made — don't re-d
 
 Self-hosted WordPress MCP server. v0.1 scope: tiered, approval-gated CRUD for posts, pages, and media. Nothing else is in scope right now — see the scope lock in `MVP-PLAN.md` before adding anything.
 
+## Distribution status (decided 2026-07-03)
+
+**There is no WP.org submission planned right now.** The "WordPress.org submission" section in `MVP-PLAN.md` is parked — don't surface it as pending work, don't remind about readme disclosures or submission prep in status summaries, and don't spend effort on WP.org-specific compliance beyond what good practice already requires. Distribution channel is undecided/self-hosted for now. Revisit only when Fahim explicitly reopens it.
+
 ## The three non-negotiables
 
 These came out of reverse-engineering three competitors (Vibe AI, Novamira, AI Engine) and finding each fails at least one. Check every PR against all three before merge:

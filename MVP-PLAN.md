@@ -70,7 +70,9 @@ Ordered roughly by value, not all required before starting the next:
 
 ---
 
-## WordPress.org submission — flagging early given mailyard's review experience
+## WordPress.org submission — PARKED (2026-07-03): no submission planned right now, see CLAUDE.md "Distribution status"
+
+> Kept for reference only. Do not treat anything below as pending work until the decision is explicitly reopened.
 
 Saddle is, structurally, **more** of an "external services" / "AI integration" surface than mailyard was — it's the entire product, not one feature. Expect WP.org review scrutiny on:
 - **External services disclosure**: even though there's no relay server, the plugin connects to MCP clients and the `upload_media` ability fetches arbitrary user-specified URLs — both need clear plain-language disclosure in `readme.txt`, written before submission, not bolted on after a reviewer flags it (same lesson from mailyard's review cycle).
