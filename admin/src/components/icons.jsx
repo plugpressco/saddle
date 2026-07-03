@@ -88,9 +88,13 @@ const APP_LOGOS = {
 };
 
 // Brand logo for a wizard app key; the MCP mark when unknown.
+//
+// The svg imports above resolve to data-URI strings in the wp-scripts build
+// (the default export is the asset URL, not a component), so these render as
+// <img> — rendering them as JSX tags crashes React with InvalidCharacterError.
 export function AppLogo( { app, ...props } ) {
-	const Cmp = APP_LOGOS[ app ] || McpLogo;
-	return <Cmp aria-hidden="true" focusable="false" { ...props } />;
+	const src = APP_LOGOS[ app ] || McpLogo;
+	return <img src={ src } alt="" aria-hidden="true" width="20" height="20" { ...props } />;
 }
 
 // Best-effort app key from a stored connection label ("Claude Code 2" →
