@@ -1702,7 +1702,7 @@ class Saddle_Abilities {
 	 * @param WP_Post $post Post to inspect.
 	 * @return string|null Builder name, or null for ordinary content.
 	 */
-	private static function builder_signature( $post ) {
+	public static function builder_signature( $post ) {
 		$content = (string) $post->post_content;
 		$builder = null;
 

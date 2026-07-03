@@ -106,8 +106,15 @@ class Saddle_Context {
 		$lines[] = __( '# What you are allowed to do', 'saddle' );
 		$lines[] = '';
 		$lines[] = '- ' . $allowed;
-		$lines[] = '- ' . __( 'Saddle exposes core content only: posts, pages, and media.', 'saddle' );
+		$lines[] = '- ' . __( 'Saddle exposes core content only: posts, pages, media, and their block structure.', 'saddle' );
 		$lines[] = '- ' . __( 'Stay within the tools Saddle provides. Do not attempt actions outside this scope.', 'saddle' );
+		$lines[] = '';
+
+		$lines[] = __( '# Designing pages with blocks', 'saddle' );
+		$lines[] = '';
+		$lines[] = '- ' . __( 'For page layouts, use the structured block tools (get-blocks, set-blocks, add/edit/move/remove-block) instead of writing a raw "content" string — they compose real editor blocks that stay editable in the block editor, and every change is validated before it is saved.', 'saddle' );
+		$lines[] = '- ' . __( 'Match the site\'s design, don\'t invent one: read get-design-tokens first and use its preset slugs for colors, font sizes, and spacing. For common sections (hero, features, CTA), check list-block-patterns — inserting a theme-styled pattern beats hand-composing.', 'saddle' );
+		$lines[] = '- ' . __( 'Before composing a block type you haven\'t used, read get-block-schema for its exact authoring syntax. Never fake a layout by dumping raw HTML into a single block.', 'saddle' );
 		$lines[] = '';
 
 		// Content landscape — orient the agent to what exists, and name public

@@ -276,7 +276,42 @@ class Saddle_Tree {
 
 		$tree[ $index ]['innerBlocks'] = $child;
 		// Keep serializer bookkeeping consistent with the new child count.
-		$tree[ $index ]['innerContent'] = array_fill( 0, count( $child ), null );
+		$tree[ $index ]['innerContent'] = self::rebalance_inner_content( $tree[ $index ]['innerContent'], count( $child ) );
 		return $tree;
+	}
+
+	/**
+	 * Rebuild an innerContent array for a new child count, preserving the
+	 * container's own markup.
+	 *
+	 * Gutenberg containers carry wrapper HTML around their child placeholders
+	 * (e.g. core/group: '<div class="wp-block-group">', null…, '</div>');
+	 * Divi containers carry none (all nulls). Keep the leading and trailing
+	 * HTML chunks and fit exactly $count null placeholders between them.
+	 *
+	 * @param mixed $inner_content Existing innerContent.
+	 * @param int   $count         New child count.
+	 * @return array
+	 */
+	protected static function rebalance_inner_content( $inner_content, $count ) {
+		$inner_content = is_array( $inner_content ) ? array_values( $inner_content ) : array();
+
+		$lead = array();
+		foreach ( $inner_content as $chunk ) {
+			if ( ! is_string( $chunk ) ) {
+				break;
+			}
+			$lead[] = $chunk;
+		}
+
+		$trail = array();
+		for ( $i = count( $inner_content ) - 1; $i >= count( $lead ); $i-- ) {
+			if ( ! is_string( $inner_content[ $i ] ) ) {
+				break;
+			}
+			array_unshift( $trail, $inner_content[ $i ] );
+		}
+
+		return array_merge( $lead, array_fill( 0, max( 0, (int) $count ), null ), $trail );
 	}
 }

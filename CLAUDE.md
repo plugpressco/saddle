@@ -34,7 +34,10 @@ package.json                            — React build (@wordpress/scripts)
 composer.json                           — dev-only: PHPUnit test deps (not shipped, see .distignore)
 phpunit.xml.dist                        — PHPUnit config for the test suite
 includes/
-  class-saddle-tree.php                 — builder-agnostic block-tree engine (parse/address/mutate/serialize); validation profiles built on top (Saddle Pro's Divi profile extends it; native Gutenberg profile planned — see PRO-PLAN.md free/pro line)
+  class-saddle-tree.php                 — builder-agnostic block-tree engine (parse/address/mutate/serialize); validation profiles built on top (Saddle Pro's Divi profile and the native Gutenberg profile below both extend it)
+  class-saddle-blocks-tree.php          — Gutenberg VALIDATION PROFILE: registry placement contracts (parent/ancestor/allowedBlocks), rejects builder namespaces, tolerates JS-only/classic blocks already present
+  class-saddle-blocks-author.php        — Gutenberg authoring layer: {type, content, attrs, children} → editor-valid markup (preset/style classes computed) for the curated core blocks; dynamic blocks attrs-only; raw "html" escape hatch
+  class-saddle-blocks-schema.php        — block-type catalog + per-type schemas (WP_Block_Type_Registry), theme.json design tokens, block-pattern summaries
   class-saddle-capabilities.php         — tier system (read/write/admin), single source of truth for permission_callback
   class-saddle-approval.php             — dry-run + confirm-token gate, single-use, 15-min TTL, target-bound
   class-saddle-log.php                  — activity log (saddle_log private CPT); records executed mutations, never reads
@@ -42,7 +45,8 @@ includes/
   class-saddle-ecosystem.php            — PARKED, not instantiated, see scope lock
   class-saddle-mcp.php                  — MCP transport: registers the custom server on the official WP\MCP Adapter; built-in JSON-RPC transport kept as a fallback when the adapter is absent. VERIFIED live on WP 7.0.
   abilities/
-    core-content.php                    — all 23 post/page/media/taxonomy abilities + get-instructions (dash-named ids)
+    core-content.php                    — 23 post/page/media/taxonomy abilities + get-instructions (dash-named ids)
+    blocks.php                          — 11 native block design abilities (get/set-blocks, add/edit/move/remove-block, insert-block-pattern, list-block-types, get-block-schema, get-design-tokens, list-block-patterns); builder pages refused (total abilities: 34)
   admin/
     class-saddle-rest.php               — REST API for the React UI (settings, connect-url, clients, capabilities, context, audit-log)
     class-saddle-settings.php           — admin menu page, mounts the React root div, enqueues build assets

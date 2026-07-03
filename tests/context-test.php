@@ -19,7 +19,7 @@ class Saddle_Context_Test extends WP_UnitTestCase {
 		$ctx = Saddle_Context::system_context();
 
 		$this->assertStringContainsString( 'READ content only', $ctx );
-		$this->assertStringContainsString( 'posts, pages, and media', $ctx );
+		$this->assertStringContainsString( 'posts, pages, media, and their block structure', $ctx );
 	}
 
 	public function test_context_describes_the_approval_gate_at_write_tier() {

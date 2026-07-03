@@ -31,6 +31,9 @@ define( 'SADDLE_MIN_WP', '6.9' );
  * scope (see MVP-PLAN.md). Do not require it without reopening that decision.
  */
 require_once SADDLE_DIR . 'includes/class-saddle-tree.php';
+require_once SADDLE_DIR . 'includes/class-saddle-blocks-tree.php';
+require_once SADDLE_DIR . 'includes/class-saddle-blocks-author.php';
+require_once SADDLE_DIR . 'includes/class-saddle-blocks-schema.php';
 require_once SADDLE_DIR . 'includes/class-saddle-capabilities.php';
 require_once SADDLE_DIR . 'includes/class-saddle-approval.php';
 require_once SADDLE_DIR . 'includes/class-saddle-context.php';
@@ -72,8 +75,10 @@ final class Saddle {
 		// The MCP surface and abilities require core's Abilities API (WP 6.9+).
 		if ( self::abilities_api_available() ) {
 			require_once SADDLE_DIR . 'includes/abilities/core-content.php';
+			require_once SADDLE_DIR . 'includes/abilities/blocks.php';
 			add_action( 'wp_abilities_api_categories_init', 'saddle_register_ability_category' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_abilities' );
+			add_action( 'wp_abilities_api_init', 'saddle_register_block_abilities' );
 
 			// Wire the MCP transport after all plugins have loaded. This MUST be
 			// deferred (see setup_mcp_transport) so the bundled adapter can't
