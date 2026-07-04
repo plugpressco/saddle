@@ -429,6 +429,12 @@ export default function ConnectWizard( { tier, onExit, onClientsChanged } ) {
 								'saddle'
 							) }
 						</p>
+						<p className="saddle-wizard__cando-note">
+							{ __(
+								'The key appears only this once, inside the setup above. Saddle keeps just its name and last four characters — never the key itself.',
+								'saddle'
+							) }
+						</p>
 					</div>
 
 					{ IS_LOCAL && (
@@ -590,6 +596,12 @@ export default function ConnectWizard( { tier, onExit, onClientsChanged } ) {
 							level.key === 'read'
 								? __( 'only read your content', 'saddle' )
 								: __( 'read and edit your content', 'saddle' )
+						) }
+					</p>
+					<p className="saddle-wizard__lead saddle-wizard__lead--muted">
+						{ __(
+							'Manage or disconnect it anytime from the Connect tab.',
+							'saddle'
 						) }
 					</p>
 					<div className="saddle-wizard__actions saddle-wizard__actions--center">

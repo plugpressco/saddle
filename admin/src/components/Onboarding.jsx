@@ -7,7 +7,7 @@ import { useState } from '@wordpress/element';
 import { Button, Notice } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { api, LEVELS } from '../api';
-import { LevelIcon } from './icons';
+import { LevelIcon, BrandMark } from './icons';
 
 export default function Onboarding( { tier, onTierSaved, onFinish } ) {
 	const [ step, setStep ] = useState( 1 );
@@ -35,7 +35,7 @@ export default function Onboarding( { tier, onTierSaved, onFinish } ) {
 		<div className="saddle-setup">
 			<div className="saddle-setup__head">
 				<span className="saddle-setup__mark" aria-hidden="true">
-					S
+					<BrandMark />
 				</span>
 				<span className="saddle-setup__kicker">
 					{ __( 'Set up Saddle', 'saddle' ) }

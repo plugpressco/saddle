@@ -2,9 +2,16 @@
  * Slim, persistent top bar: brand, the current safety status in plain words,
  * and the three-section nav. Calm and quiet — the status is the point.
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
 import { levelFor } from '../api';
+import { ThemeIcon, BrandMark } from './icons';
+
+const THEME_LABELS = {
+	system: __( 'System theme', 'saddle' ),
+	light: __( 'Light theme', 'saddle' ),
+	dark: __( 'Dark theme', 'saddle' ),
+};
 
 export default function TopBar( {
 	tier,
@@ -14,6 +21,8 @@ export default function TopBar( {
 	paused,
 	onTogglePause,
 	pausing,
+	theme,
+	onCycleTheme,
 } ) {
 	const level = levelFor( tier );
 	let tone = level.key === 'read' ? 'safe' : 'active';
@@ -26,7 +35,7 @@ export default function TopBar( {
 			<div className="saddle-top__row">
 				<div className="saddle-top__brand">
 					<span className="saddle-top__mark" aria-hidden="true">
-						S
+						<BrandMark />
 					</span>
 					<span className="saddle-top__name">
 						{ __( 'Saddle', 'saddle' ) }
@@ -52,6 +61,23 @@ export default function TopBar( {
 								? __( 'Resume', 'saddle' )
 								: __( 'Pause', 'saddle' ) }
 						</Button>
+					) }
+					{ onCycleTheme && (
+						<button
+							type="button"
+							className="saddle-top__theme"
+							onClick={ onCycleTheme }
+							title={ sprintf(
+								/* translators: %s: current theme label. */
+								__( '%s — click to change', 'saddle' ),
+								THEME_LABELS[ theme ] || THEME_LABELS.system
+							) }
+							aria-label={
+								THEME_LABELS[ theme ] || THEME_LABELS.system
+							}
+						>
+							<ThemeIcon mode={ theme } />
+						</button>
 					) }
 				</div>
 			</div>

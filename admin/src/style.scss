@@ -1,12 +1,18 @@
 /**
  * Saddle admin styles — calm, modern, person-first.
  *
- * Token-driven (CSS custom properties on .saddle-app), monochrome with semantic
- * color reserved for status. Phase 2 can retarget to inbees/outbees by swapping
- * token values; the structure and interaction stay put. See DESIGN-ALIGNMENT.md.
+ * Token-driven: one palette definition per theme (mixins below), emitted as
+ * CSS custom properties on both the page body (so portaled surfaces like
+ * Modal inherit them) and .saddle-app. Monochrome with semantic color
+ * reserved for status. Dark mode: system preference by default, overridden
+ * by a server-rendered body class (saddle-theme-light / saddle-theme-dark)
+ * that the TopBar toggle flips live. See DESIGN-ALIGNMENT.md.
  */
 
-.saddle-app {
+@mixin s-palette-light {
+	color-scheme: light;
+
+	--s-canvas: #f7f7f8;
 	--s-bg: #fff;
 	--s-fg: #171717;
 	--s-fg-muted: #5c5c5c;
@@ -29,17 +35,124 @@
 
 	--s-focus: #0070f3;
 
-	--s-radius: 8px;
-	--s-radius-lg: 14px;
-	--s-radius-pill: 999px;
+	// Inverse surface (the sticky apply bar): dark-on-light theme.
+	--s-inverse-bg: #171717;
+	--s-inverse-fg: #fff;
+	--s-inverse-fg-muted: #d4d4d4;
+	--s-inverse-btn-bg: #fff;
+	--s-inverse-btn-fg: #171717;
+	--s-inverse-btn-hover: #ededed;
+	--s-inverse-tint: rgba( 255, 255, 255, 0.08 );
+
+	// Code panels stay dark in both themes by design.
+	--s-code-bg: #0a0a0a;
+	--s-code-border: #0a0a0a;
+	--s-code-fg: #ededed;
+
 	--s-shadow-sm: 0 1px 2px rgba( 0, 0, 0, 0.04 );
 	--s-shadow-md: 0 2px 8px rgba( 0, 0, 0, 0.06 );
 	--s-shadow-lg: 0 12px 40px rgba( 0, 0, 0, 0.14 );
+}
+
+@mixin s-palette-dark {
+	color-scheme: dark;
+
+	--s-canvas: #09090b;
+	--s-bg: #131316;
+	--s-fg: #ededed;
+	--s-fg-muted: #a1a1aa;
+	--s-fg-subtle: #70707b;
+	--s-border: #26262b;
+	--s-border-strong: #3f3f46;
+	--s-surface-2: #18181b;
+	--s-surface-3: #1f1f23;
+
+	--s-action: #ededed;
+	--s-action-hover: #fff;
+	--s-on-action: #171717;
+
+	--s-safe: #3dd6a3;
+	--s-safe-bg: #0d2b21;
+	--s-active: #e0a83c;
+	--s-active-bg: #2a2010;
+	--s-danger: #f4707f;
+	--s-danger-bg: #331418;
+
+	--s-focus: #4c8dff;
+
+	// Inverse surface flips to light-on-dark.
+	--s-inverse-bg: #ededed;
+	--s-inverse-fg: #171717;
+	--s-inverse-fg-muted: #57575e;
+	--s-inverse-btn-bg: #171717;
+	--s-inverse-btn-fg: #fff;
+	--s-inverse-btn-hover: #000;
+	--s-inverse-tint: rgba( 0, 0, 0, 0.07 );
+
+	--s-code-bg: #0a0a0a;
+	--s-code-border: #26262b;
+	--s-code-fg: #ededed;
+
+	--s-shadow-sm: 0 1px 2px rgba( 0, 0, 0, 0.5 );
+	--s-shadow-md: 0 2px 8px rgba( 0, 0, 0, 0.5 );
+	--s-shadow-lg: 0 12px 40px rgba( 0, 0, 0, 0.65 );
+}
+
+// Light is the default; system dark applies unless the user chose light;
+// an explicit dark choice wins regardless of system.
+body.toplevel_page_saddle,
+.saddle-app {
+	@include s-palette-light;
+}
+
+@media ( prefers-color-scheme: dark ) {
+	body.toplevel_page_saddle:not( .saddle-theme-light ),
+	body.toplevel_page_saddle:not( .saddle-theme-light ) .saddle-app {
+		@include s-palette-dark;
+	}
+}
+
+body.toplevel_page_saddle.saddle-theme-dark,
+body.toplevel_page_saddle.saddle-theme-dark .saddle-app {
+	@include s-palette-dark;
+}
+
+// ---------- App shell: Saddle owns its canvas on this screen ----------
+// Scoped to the page body class, so nothing leaks to the rest of wp-admin.
+body.toplevel_page_saddle {
+	#wpcontent {
+		padding-inline-start: 0;
+		background: var(--s-canvas);
+	}
+
+	#wpbody-content {
+		padding-bottom: 0;
+		background: var(--s-canvas);
+		min-height: calc( 100vh - var( --wp-admin--admin-bar--height, 32px ) );
+		box-sizing: border-box;
+	}
+
+	.wrap {
+		margin: 0;
+	}
+
+	// The app provides its own quiet ending; wp-admin's footer breaks the calm.
+	#wpfooter {
+		display: none;
+	}
+}
+
+.saddle-app {
+	--s-radius: 8px;
+	--s-radius-lg: 14px;
+	--s-radius-pill: 999px;
 	--s-ease: cubic-bezier( 0.4, 0, 0.2, 1 );
 	--s-dur: 160ms;
 
-	max-width: 960px;
-	margin: 24px auto 56px;
+	box-sizing: border-box;
+	max-width: 1008px; // 960 content + side padding
+	margin: 0 auto;
+	padding: 28px 24px 72px;
 	color: var(--s-fg);
 	-webkit-font-smoothing: antialiased;
 
@@ -68,6 +181,7 @@
 
 	.components-button.is-primary {
 		background: var(--s-action);
+		color: var(--s-on-action);
 		border-radius: 7px;
 		box-shadow: none;
 		padding: 6px 16px;
@@ -77,6 +191,7 @@
 
 		&:hover:not( :disabled ) {
 			background: var(--s-action-hover);
+			color: var(--s-on-action);
 		}
 	}
 
@@ -100,6 +215,112 @@
 		margin: 0 0 20px;
 		border-radius: var(--s-radius);
 		padding: 10px 14px;
+		background: var(--s-surface-3);
+		color: var(--s-fg);
+
+		&.is-warning {
+			background: var(--s-active-bg);
+		}
+
+		&.is-error {
+			background: var(--s-danger-bg);
+		}
+
+		&.is-success {
+			background: var(--s-safe-bg);
+		}
+	}
+
+	// Form fields follow the theme (core assumes a light admin).
+	textarea,
+	input[type='text'] {
+		background: var(--s-bg);
+		color: var(--s-fg);
+		border-color: var(--s-border-strong);
+	}
+
+	// wp-admin hardcodes heading and link colors for a light admin; inside
+	// the app they follow the theme tokens instead.
+	h1,
+	h2,
+	h3,
+	h4 {
+		color: inherit;
+	}
+
+	a:not( [class] ),
+	a.components-button.is-link {
+		color: var(--s-focus);
+	}
+}
+
+// Portaled @wordpress/components surfaces (Modal renders on <body>, outside
+// .saddle-app) — theme them from the body-scoped tokens.
+body.toplevel_page_saddle {
+	.components-modal__screen-overlay {
+		background: rgba( 0, 0, 0, 0.55 );
+	}
+
+	.components-modal__frame {
+		background: var(--s-bg);
+		color: var(--s-fg);
+	}
+
+	.components-modal__header {
+		border-bottom-color: var(--s-border);
+
+		h1,
+		.components-button {
+			color: var(--s-fg);
+		}
+	}
+}
+
+/* ---------- Foreign notices (quarantined wp-admin notices) ---------- */
+
+.saddle-foreign {
+	margin-bottom: 16px;
+
+	&__toggle {
+		appearance: none;
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		padding: 4px 10px;
+		background: none;
+		border: 1px solid var(--s-border);
+		border-radius: var(--s-radius-pill);
+		font-size: 12px;
+		color: var(--s-fg-subtle);
+		cursor: pointer;
+		transition: color var(--s-dur) var(--s-ease),
+			border-color var(--s-dur) var(--s-ease);
+
+		&:hover {
+			color: var(--s-fg-muted);
+			border-color: var(--s-border-strong);
+		}
+	}
+
+	&__caret {
+		font-size: 10px;
+		line-height: 1;
+	}
+
+	// Foreign notices were written for a light admin — keep them on a light
+	// island in both themes rather than restyling markup we don't own.
+	&__list {
+		margin-top: 10px;
+		color-scheme: light;
+
+		.notice,
+		div.updated,
+		div.error {
+			position: relative;
+			margin: 0 0 8px;
+			background: #fff;
+			color: #1e1e1e;
+		}
 	}
 }
 
@@ -190,6 +411,33 @@
 		height: 7px;
 		border-radius: 50%;
 		background: currentColor;
+	}
+
+	&__theme {
+		appearance: none;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 30px;
+		height: 30px;
+		padding: 0;
+		background: none;
+		border: none;
+		border-radius: var(--s-radius);
+		color: var(--s-fg-subtle);
+		cursor: pointer;
+		transition: color var(--s-dur) var(--s-ease),
+			background var(--s-dur) var(--s-ease);
+
+		svg {
+			width: 17px;
+			height: 17px;
+		}
+
+		&:hover {
+			color: var(--s-fg);
+			background: var(--s-surface-3);
+		}
 	}
 }
 
@@ -465,12 +713,12 @@
 	}
 
 	&__statement {
-		margin: 8px 0 18px;
-		font-size: 19px;
-		line-height: 1.45;
-		font-weight: 500;
-		letter-spacing: -0.01em;
-		max-width: 60ch;
+		margin: 10px 0 20px;
+		font-size: 21px;
+		line-height: 1.4;
+		font-weight: 550;
+		letter-spacing: -0.015em;
+		max-width: 56ch;
 		text-wrap: pretty;
 	}
 }
@@ -936,8 +1184,8 @@
 	justify-content: space-between;
 	gap: 16px;
 	padding: 14px 16px;
-	background: var(--s-fg);
-	color: #fff;
+	background: var(--s-inverse-bg);
+	color: var(--s-inverse-fg);
 	border-radius: var(--s-radius-lg);
 	box-shadow: var(--s-shadow-lg);
 
@@ -954,19 +1202,20 @@
 	}
 
 	.components-button.is-primary {
-		background: #fff;
-		color: var(--s-fg);
+		background: var(--s-inverse-btn-bg);
+		color: var(--s-inverse-btn-fg);
 
 		&:hover:not( :disabled ) {
-			background: #ededed;
+			background: var(--s-inverse-btn-hover);
+			color: var(--s-inverse-btn-fg);
 		}
 	}
 	.components-button.is-tertiary {
-		color: #d4d4d4;
+		color: var(--s-inverse-fg-muted);
 
 		&:hover:not( :disabled ) {
-			color: #fff;
-			background: rgba( 255, 255, 255, 0.08 );
+			color: var(--s-inverse-fg);
+			background: var(--s-inverse-tint);
 		}
 	}
 }
@@ -1187,10 +1436,25 @@
 	font-family: ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace;
 
 	&--dark {
-		background: #0a0a0a;
-		border-color: #0a0a0a;
-		color: #ededed;
+		background: var(--s-code-bg);
+		border-color: var(--s-code-border);
+		color: var(--s-code-fg);
 	}
+}
+
+.saddle-apps__footnote {
+	margin: 12px 2px 0;
+	font-size: 12px;
+	color: var(--s-fg-subtle);
+
+	a {
+		color: var(--s-fg-muted);
+	}
+}
+
+.saddle-wizard__lead--muted {
+	color: var(--s-fg-subtle);
+	font-size: 13px;
 }
 
 /* ---------- Connect wizard ---------- */

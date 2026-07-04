@@ -4,7 +4,7 @@ Tags: mcp, ai, model context protocol, application passwords, automation
 Requires at least: 6.9
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 0.2.1
+Stable tag: 0.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -76,6 +76,13 @@ Deletion is only possible at the Write tier, and even then every delete requires
 That is the entire purpose of an MCP server: to let an AI assistant you control act on your site. Saddle's design exists to make that power explicit, tiered, default-safe, and confirmable — rather than implicit.
 
 == Changelog ==
+
+= 0.3.0 =
+* New: dark mode — follows your system by default, with a per-user toggle in the top bar.
+* New: Saddle owns its screen — a calm full-height canvas; notices from other plugins are tucked behind a quiet disclosure instead of piling above the app.
+* New: connected apps show their key's last four characters, and the UI now says where keys live and that they're shown only once.
+* Improved: one Save bar on Permissions — level and individual tool changes apply together.
+* New: a real Saddle brand mark and admin menu icon.
 
 = 0.2.1 =
 * Fix: the Connect tab could crash when rendering app logos.

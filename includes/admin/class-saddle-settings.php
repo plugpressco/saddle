@@ -29,12 +29,27 @@ class Saddle_Settings {
 			'manage_options',
 			self::PAGE_SLUG,
 			array( __CLASS__, 'render_page' ),
-			'dashicons-rest-api',
+			self::menu_icon(),
 			81
 		);
 
 		// Remember the hook suffix so enqueue only fires on our page.
 		self::$hook_suffix = $hook;
+
+		add_action( 'in_admin_header', array( __CLASS__, 'setup_notice_quarantine' ) );
+	}
+
+	/**
+	 * The Saddle brand mark as a base64 SVG for the admin menu.
+	 *
+	 * Fills only (no strokes) so core's svg-painter recolors it to match the
+	 * active admin color scheme. Same path as icons.jsx's <BrandMark />.
+	 *
+	 * @return string data: URI.
+	 */
+	private static function menu_icon() {
+		$svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="black" d="M12 4c-4.4 0-8 3.6-8 8v7a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-6.5a3.5 3.5 0 1 1 7 0V19a1 1 0 0 0 1 1H19a1 1 0 0 0 1-1v-7c0-4.4-3.6-8-8-8Z"/></svg>';
+		return 'data:image/svg+xml;base64,' . base64_encode( $svg ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- Standard wp-admin menu icon embedding.
 	}
 
 	/**
@@ -43,6 +58,67 @@ class Saddle_Settings {
 	 * @var string
 	 */
 	private static $hook_suffix = '';
+
+	/**
+	 * Output-buffer level when the notice capture opened (0 = not capturing).
+	 *
+	 * @var int
+	 */
+	private static $notice_buffer_level = 0;
+
+	/**
+	 * On Saddle's screen only: capture other plugins' admin notices instead of
+	 * letting them pile above the app.
+	 *
+	 * Saddle's own PHP notices register at priority 0 so they print BEFORE the
+	 * buffer opens at priority 1; everything after (other plugins default to
+	 * 10, plus all_admin_notices output) lands in a hidden container the React
+	 * app surfaces behind a quiet disclosure. Notices are moved, not deleted —
+	 * dismiss buttons and inline handlers keep working.
+	 */
+	public static function setup_notice_quarantine() {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( ! $screen || $screen->id !== self::$hook_suffix ) {
+			return;
+		}
+		add_action( 'admin_notices', array( __CLASS__, 'begin_notice_capture' ), 1 );
+		add_action( 'all_admin_notices', array( __CLASS__, 'end_notice_capture' ), PHP_INT_MAX );
+	}
+
+	/**
+	 * Open the capture buffer (admin_notices priority 1).
+	 */
+	public static function begin_notice_capture() {
+		ob_start();
+		self::$notice_buffer_level = ob_get_level();
+	}
+
+	/**
+	 * Close the capture buffer and print its contents into the hidden
+	 * quarantine container (all_admin_notices, last).
+	 *
+	 * Degrades safely: if a notice callback closed our buffer, nothing is
+	 * captured and notices show exactly as they do today.
+	 */
+	public static function end_notice_capture() {
+		if ( ! self::$notice_buffer_level || ob_get_level() < self::$notice_buffer_level ) {
+			self::$notice_buffer_level = 0;
+			return;
+		}
+		// A notice callback may have opened buffers it never closed — flush
+		// them down into ours so their output isn't lost.
+		while ( ob_get_level() > self::$notice_buffer_level ) {
+			ob_end_flush();
+		}
+		$html                      = ob_get_clean();
+		self::$notice_buffer_level = 0;
+
+		if ( '' === trim( (string) $html ) ) {
+			return;
+		}
+		// Captured wp-admin output, re-emitted verbatim in a hidden container.
+		echo '<div id="saddle-foreign-notices" hidden>' . $html . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	}
 
 	/**
 	 * Render the mount point for the React app.
@@ -80,6 +156,7 @@ class Saddle_Settings {
 		$script_path = $build_dir . 'index.js';
 		if ( ! file_exists( $script_path ) ) {
 			// No build at all — show a helpful note instead of a blank page.
+			// Priority 0 keeps it ahead of the notice quarantine.
 			add_action(
 				'admin_notices',
 				function () {
@@ -88,7 +165,8 @@ class Saddle_Settings {
 						echo esc_html__( 'Saddle: the admin UI has not been built yet. Run "npm install && npm run build" in the plugin folder.', 'saddle' );
 						echo '</p></div>';
 					}
-				}
+				},
+				0
 			);
 			return;
 		}
@@ -117,6 +195,19 @@ class Saddle_Settings {
 		wp_set_script_translations( 'saddle-admin', 'saddle' );
 
 		$current_user = wp_get_current_user();
+		$theme        = (string) get_user_meta( get_current_user_id(), 'saddle_admin_theme', true );
+		$theme        = in_array( $theme, array( 'light', 'dark' ), true ) ? $theme : 'system';
+
+		// Server-rendered theme class — the tokens switch before first paint,
+		// so an explicit light/dark choice never flashes the other theme.
+		if ( 'system' !== $theme ) {
+			add_filter(
+				'admin_body_class',
+				static function ( $classes ) use ( $theme ) {
+					return $classes . ' saddle-theme-' . $theme;
+				}
+			);
+		}
 
 		wp_add_inline_script(
 			'saddle-admin',
@@ -135,6 +226,10 @@ class Saddle_Settings {
 					// Environment facts so the UI can warn before a connect fails.
 					'appPasswords' => function_exists( 'wp_is_application_passwords_available' ) ? (bool) wp_is_application_passwords_available() : true,
 					'ssl'          => is_ssl(),
+					'theme'        => $theme,
+					// Where WordPress itself lists these credentials — linked
+					// from the Connect tab for transparency.
+					'profileUrl'   => esc_url_raw( admin_url( 'profile.php#application-passwords-section' ) ),
 				)
 			) . ';',
 			'before'

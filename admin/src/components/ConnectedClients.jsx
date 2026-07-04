@@ -203,6 +203,7 @@ export default function Apps( {
 											'saddle'
 									  ) }
 								{ c.last_ip ? ` · ${ c.last_ip }` : '' }
+								{ c.hint ? ` · ${ __( 'key', 'saddle' ) } ····${ c.hint }` : '' }
 							</span>
 							<Button
 								variant="link"
@@ -215,6 +216,20 @@ export default function Apps( {
 						</li>
 					) ) }
 				</ul>
+			) }
+
+			{ clients.length > 0 && (
+				<p className="saddle-apps__footnote">
+					{ __(
+						'These keys also appear under Users → Profile → Application Passwords — same keys, either place works for revoking.',
+						'saddle'
+					) }{ ' ' }
+					{ window.saddleData?.profileUrl && (
+						<a href={ window.saddleData.profileUrl }>
+							{ __( 'View there', 'saddle' ) }
+						</a>
+					) }
+				</p>
 			) }
 
 			{ confirmRevoke && (

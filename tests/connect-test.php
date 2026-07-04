@@ -182,6 +182,48 @@ class Saddle_Connect_Test extends WP_UnitTestCase {
 		$this->assertNotContains( 'Saddle: Cursor', $names );
 	}
 
+	public function test_client_hint_is_last_four_captured_at_issuance() {
+		$req = new WP_REST_Request( 'POST', '/saddle/v1/clients' );
+		$req->set_param( 'name', 'Hinted App' );
+
+		$data = Saddle_REST_Admin::create_client( $req )->get_data();
+		$expected = substr( str_replace( ' ', '', $data['password'] ), -4 );
+
+		$this->assertSame( $expected, $data['hint'], 'Create response must carry the last four of the raw key.' );
+
+		// The clients list carries the same hint…
+		$clients = Saddle_REST_Admin::get_clients()->get_data()['clients'];
+		$row     = array_values( array_filter( $clients, fn( $c ) => $c['uuid'] === $data['uuid'] ) )[0];
+		$this->assertSame( $expected, $row['hint'] );
+
+		// …and never anything longer than four characters, anywhere.
+		$this->assertSame( 4, strlen( $row['hint'] ) );
+	}
+
+	public function test_client_hint_is_null_for_credentials_issued_outside_saddle() {
+		$this->issue_password( 'Saddle: Legacy App' );
+
+		$clients = Saddle_REST_Admin::get_clients()->get_data()['clients'];
+		$row     = array_values( array_filter( $clients, fn( $c ) => 'Saddle: Legacy App' === $c['name'] ) )[0];
+		$this->assertNull( $row['hint'], 'Pre-existing credentials have no captured hint.' );
+	}
+
+	public function test_revoke_removes_the_stored_hint() {
+		$req = new WP_REST_Request( 'POST', '/saddle/v1/clients' );
+		$req->set_param( 'name', 'Short Lived' );
+		$data = Saddle_REST_Admin::create_client( $req )->get_data();
+
+		$hints = get_user_meta( $this->admin, 'saddle_client_hints', true );
+		$this->assertArrayHasKey( $data['uuid'], $hints );
+
+		$del = new WP_REST_Request( 'DELETE', '/saddle/v1/clients/' . $data['uuid'] );
+		$del->set_param( 'uuid', $data['uuid'] );
+		Saddle_REST_Admin::revoke_client( $del );
+
+		$hints = get_user_meta( $this->admin, 'saddle_client_hints', true );
+		$this->assertTrue( ! is_array( $hints ) || ! isset( $hints[ $data['uuid'] ] ), 'Revoke must drop the stored hint.' );
+	}
+
 	public function test_revoke_refuses_non_saddle_credentials() {
 		list( , $item ) = $this->issue_password( 'Not A Saddle Client' );
 

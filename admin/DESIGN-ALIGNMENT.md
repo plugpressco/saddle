@@ -1,10 +1,15 @@
 # Saddle — Design Alignment
 
-Read this before writing or expanding any CSS in `admin/src/`. The current
-`style.scss` is a deliberate placeholder, not a design decision — see Build
-Guide Step 6.
+> **DECIDED (2026-07-04, Fahim):** the monochrome identity is now intentional,
+> not a placeholder. Saddle keeps its own near-black/white, OpenAI/Apple-register
+> look — one restrained accent reserved for status/safety — with light AND dark
+> themes driven by the `s-palette-*` mixins in `style.scss`. The earlier
+> "align to inbees/outbees" directive below is SUPERSEDED; kept for history.
+> The brand mark is the stirrup-arch SVG (`<BrandMark />` in `icons.jsx`,
+> mirrored as the admin-menu icon in `class-saddle-settings.php`) — keep the
+> two paths in sync. Don't re-litigate this in future sessions.
 
-## The rule
+## The former rule (superseded)
 
 Do **not** invent a visual design from memory or taste. Saddle has to read as
 "the same workspace" as the rest of the PlugPress portfolio (inbees/outbees).

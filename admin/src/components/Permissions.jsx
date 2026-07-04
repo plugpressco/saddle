@@ -36,14 +36,15 @@ export default function Permissions( {
 	const [ localDisabled, setLocalDisabled ] = useState( () =>
 		savedDisabledSet( caps )
 	);
-	const [ savingAbilities, setSavingAbilities ] = useState( false );
 
 	const dirty = choice !== levelKey( savedTier );
 
 	const savedDisabled = useMemo( () => savedDisabledSet( caps ), [ caps ] );
-	const abilitiesDirty =
-		localDisabled.size !== savedDisabled.size ||
-		[ ...localDisabled ].some( ( s ) => ! savedDisabled.has( s ) );
+	const abilityDelta =
+		[ ...localDisabled ].filter( ( s ) => ! savedDisabled.has( s ) ).length +
+		[ ...savedDisabled ].filter( ( s ) => ! localDisabled.has( s ) ).length;
+	const abilitiesDirty = abilityDelta > 0;
+	const pending = dirty || abilitiesDirty;
 
 	const toggleAbility = ( short ) => {
 		setLocalDisabled( ( prev ) => {
@@ -57,29 +58,6 @@ export default function Permissions( {
 		} );
 	};
 
-	const saveAbilities = () => {
-		setSavingAbilities( true );
-		api( 'abilities', {
-			method: 'POST',
-			data: { disabled: [ ...localDisabled ] },
-		} )
-			.then( () => {
-				if ( onCapsChanged ) {
-					onCapsChanged();
-				}
-				setNotice( {
-					type: 'success',
-					message: __( 'Saved.', 'saddle' ),
-				} );
-			} )
-			.catch( ( e ) =>
-				setNotice( { type: 'error', message: e.message } )
-			)
-			.finally( () => setSavingAbilities( false ) );
-	};
-
-	const cancelAbilities = () => setLocalDisabled( savedDisabled );
-
 	const byLane = useMemo( () => {
 		const groups = { look: [], change: [], remove: [] };
 		caps.forEach( ( c ) => groups[ c.lane ]?.push( c ) );
@@ -89,22 +67,66 @@ export default function Permissions( {
 		return groups;
 	}, [ caps ] );
 
+	// One Save applies everything pending — the level and any individual tool
+	// changes — in a single gesture. A half that fails stays dirty and says so;
+	// the half that saved is settled.
 	const apply = () => {
 		setSaving( true );
 		setNotice( null );
-		api( 'settings', { method: 'POST', data: { tier: choice } } )
-			.then( ( res ) => {
-				onTierSaved( res.tier, res.domain_warning );
-				setChoice( levelKey( res.tier ) );
-				setNotice( {
-					type: 'success',
-					message: __( 'Saved.', 'saddle' ),
-				} );
+
+		const jobs = [];
+		if ( dirty ) {
+			jobs.push(
+				api( 'settings', {
+					method: 'POST',
+					data: { tier: choice },
+				} ).then( ( res ) => {
+					onTierSaved( res.tier, res.domain_warning );
+					setChoice( levelKey( res.tier ) );
+				} )
+			);
+		}
+		if ( abilitiesDirty ) {
+			jobs.push(
+				api( 'abilities', {
+					method: 'POST',
+					data: { disabled: [ ...localDisabled ] },
+				} ).then( () => {
+					if ( onCapsChanged ) {
+						onCapsChanged();
+					}
+				} )
+			);
+		}
+
+		Promise.allSettled( jobs )
+			.then( ( results ) => {
+				const failed = results.filter(
+					( r ) => r.status === 'rejected'
+				);
+				if ( ! failed.length ) {
+					setNotice( {
+						type: 'success',
+						message: __( 'Saved.', 'saddle' ),
+					} );
+				} else {
+					setNotice( {
+						type: 'error',
+						message:
+							failed[ 0 ].reason?.message ||
+							__(
+								'Some changes could not be saved — they’re still marked below.',
+								'saddle'
+							),
+					} );
+				}
 			} )
-			.catch( ( e ) =>
-				setNotice( { type: 'error', message: e.message } )
-			)
 			.finally( () => setSaving( false ) );
+	};
+
+	const cancel = () => {
+		setChoice( levelKey( savedTier ) );
+		setLocalDisabled( savedDisabled );
 	};
 
 	const enabledCount = caps.filter(
@@ -172,31 +194,6 @@ export default function Permissions( {
 					</button>
 				) ) }
 			</div>
-
-			{ dirty && (
-				<div className="saddle-applybar">
-					<div className="saddle-applybar__summary">
-						<span>{ deltaLine }</span>
-					</div>
-					<div className="saddle-applybar__actions">
-						<Button
-							variant="tertiary"
-							onClick={ () => setChoice( levelKey( savedTier ) ) }
-							disabled={ saving }
-						>
-							{ __( 'Cancel', 'saddle' ) }
-						</Button>
-						<Button
-							variant="primary"
-							onClick={ apply }
-							isBusy={ saving }
-							disabled={ saving }
-						>
-							{ __( 'Save', 'saddle' ) }
-						</Button>
-					</div>
-				</div>
-			) }
 
 			<button
 				type="button"
@@ -315,29 +312,43 @@ export default function Permissions( {
 				</div>
 			) }
 
-			{ abilitiesDirty && (
+			{ pending && (
 				<div className="saddle-applybar">
 					<div className="saddle-applybar__summary">
 						<span>
-							{ __(
-								'Individual tool changes aren’t saved yet.',
-								'saddle'
-							) }
+							{ [
+								dirty ? deltaLine : null,
+								abilitiesDirty
+									? sprintf(
+											/* translators: %d: number of individually-toggled tools. */
+											_n(
+												'%d tool changed.',
+												'%d tools changed.',
+												abilityDelta,
+												'saddle'
+											),
+											abilityDelta
+									  )
+									: null,
+							]
+								.filter( Boolean )
+								.join( ' ' ) }{ ' ' }
+							{ __( 'Not saved yet.', 'saddle' ) }
 						</span>
 					</div>
 					<div className="saddle-applybar__actions">
 						<Button
 							variant="tertiary"
-							onClick={ cancelAbilities }
-							disabled={ savingAbilities }
+							onClick={ cancel }
+							disabled={ saving }
 						>
 							{ __( 'Cancel', 'saddle' ) }
 						</Button>
 						<Button
 							variant="primary"
-							onClick={ saveAbilities }
-							isBusy={ savingAbilities }
-							disabled={ savingAbilities }
+							onClick={ apply }
+							isBusy={ saving }
+							disabled={ saving }
 						>
 							{ __( 'Save', 'saddle' ) }
 						</Button>

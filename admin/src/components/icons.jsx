@@ -28,6 +28,24 @@ const base = {
 	focusable: false,
 };
 
+// The Saddle brand mark (a stirrup arch). Same path as the PHP admin-menu
+// icon in class-saddle-settings.php — keep the two in sync.
+export function BrandMark( props ) {
+	return (
+		<svg
+			viewBox="0 0 24 24"
+			width="20"
+			height="20"
+			fill="currentColor"
+			aria-hidden="true"
+			focusable="false"
+			{ ...props }
+		>
+			<path d="M12 4c-4.4 0-8 3.6-8 8v7a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-6.5a3.5 3.5 0 1 1 7 0V19a1 1 0 0 0 1 1H19a1 1 0 0 0 1-1v-7c0-4.4-3.6-8-8-8Z" />
+		</svg>
+	);
+}
+
 // Eye — the "read" / just-looking level.
 export function IconRead( props ) {
 	return (
@@ -57,6 +75,43 @@ export function IconConnect( props ) {
 			<path d="M12 16v6" />
 		</svg>
 	);
+}
+
+// Sun — light theme.
+export function IconSun( props ) {
+	return (
+		<svg { ...base } { ...props }>
+			<circle cx="12" cy="12" r="4" />
+			<path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+		</svg>
+	);
+}
+
+// Moon — dark theme.
+export function IconMoon( props ) {
+	return (
+		<svg { ...base } { ...props }>
+			<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" />
+		</svg>
+	);
+}
+
+// Half-filled circle — follow the system theme.
+export function IconThemeAuto( props ) {
+	return (
+		<svg { ...base } { ...props }>
+			<circle cx="12" cy="12" r="9" />
+			<path d="M12 3a9 9 0 0 1 0 18Z" fill="currentColor" stroke="none" />
+		</svg>
+	);
+}
+
+// Map a theme mode to its icon component.
+const THEME_ICONS = { system: IconThemeAuto, light: IconSun, dark: IconMoon };
+
+export function ThemeIcon( { mode, ...props } ) {
+	const Cmp = THEME_ICONS[ mode ] || IconThemeAuto;
+	return <Cmp { ...props } />;
 }
 
 // Map a level key to its icon component.

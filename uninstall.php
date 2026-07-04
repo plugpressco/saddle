@@ -25,6 +25,10 @@ foreach ( $saddle_options as $saddle_option ) {
 	delete_option( $saddle_option );
 }
 
+// Per-user data: admin theme preference and credential last-4 hints.
+delete_metadata( 'user', 0, 'saddle_admin_theme', '', true );
+delete_metadata( 'user', 0, 'saddle_client_hints', '', true );
+
 // Clear scheduled GC.
 $timestamp = wp_next_scheduled( 'saddle_gc_tokens' );
 if ( $timestamp ) {

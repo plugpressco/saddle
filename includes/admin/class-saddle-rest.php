@@ -58,6 +58,11 @@ class Saddle_REST_Admin {
 							'type'     => 'boolean',
 							'required' => false,
 						),
+						'theme'     => array(
+							'type'     => 'string',
+							'required' => false,
+							'enum'     => array( 'system', 'light', 'dark' ),
+						),
 					),
 				),
 			)
@@ -201,6 +206,7 @@ class Saddle_REST_Admin {
 				'default'        => Saddle_Capabilities::DEFAULT_TIER,
 				'onboarded'      => (bool) get_option( 'saddle_onboarded', false ),
 				'paused'         => Saddle_Capabilities::is_paused(),
+				'theme'          => (string) get_user_meta( get_current_user_id(), 'saddle_admin_theme', true ) ?: 'system',
 				'domain_warning' => ! Saddle_Capabilities::domain_matches_recorded(),
 				'domain'         => array(
 					'current'  => Saddle_Capabilities::current_domain(),
@@ -231,6 +237,17 @@ class Saddle_REST_Admin {
 
 		if ( array_key_exists( 'onboarded', $params ) ) {
 			update_option( 'saddle_onboarded', (bool) $request->get_param( 'onboarded' ) );
+		}
+
+		// Theme is a personal preference, not site state — user meta, and
+		// "system" (the default) simply clears it.
+		if ( array_key_exists( 'theme', $params ) ) {
+			$theme = (string) $request->get_param( 'theme' );
+			if ( 'system' === $theme ) {
+				delete_user_meta( get_current_user_id(), 'saddle_admin_theme' );
+			} else {
+				update_user_meta( get_current_user_id(), 'saddle_admin_theme', $theme );
+			}
 		}
 
 		if ( array_key_exists( 'paused', $params ) ) {
@@ -413,6 +430,17 @@ class Saddle_REST_Admin {
 
 		list( $raw_password, $item ) = $created;
 
+		// Remember the key's last four characters (card-last4 style) so the
+		// Connect tab can say WHICH key a row is. Core stores only a hash, and
+		// this is the single moment the raw secret exists — never persisted
+		// whole, and four characters of a 24-char random secret enable nothing.
+		$hint  = substr( str_replace( ' ', '', $raw_password ), -4 );
+		$hints = get_user_meta( $user->ID, 'saddle_client_hints', true );
+		$hints = is_array( $hints ) ? $hints : array();
+
+		$hints[ $item['uuid'] ] = $hint;
+		update_user_meta( $user->ID, 'saddle_client_hints', $hints );
+
 		return new WP_REST_Response(
 			array(
 				'uuid'       => $item['uuid'],
@@ -421,6 +449,7 @@ class Saddle_REST_Admin {
 				'password'   => $raw_password,
 				'user_login' => $user->user_login,
 				'created'    => isset( $item['created'] ) ? (int) $item['created'] : 0,
+				'hint'       => $hint,
 			),
 			201
 		);
@@ -436,6 +465,9 @@ class Saddle_REST_Admin {
 		$clients = array();
 
 		if ( class_exists( 'WP_Application_Passwords' ) ) {
+			$hints = get_user_meta( $user_id, 'saddle_client_hints', true );
+			$hints = is_array( $hints ) ? $hints : array();
+
 			$passwords = WP_Application_Passwords::get_user_application_passwords( $user_id );
 			foreach ( (array) $passwords as $item ) {
 				if ( empty( $item['name'] ) || 0 !== strpos( $item['name'], self::CLIENT_PREFIX ) ) {
@@ -448,6 +480,9 @@ class Saddle_REST_Admin {
 					'created'   => isset( $item['created'] ) ? (int) $item['created'] : 0,
 					'last_used' => isset( $item['last_used'] ) ? $item['last_used'] : null,
 					'last_ip'   => isset( $item['last_ip'] ) ? $item['last_ip'] : null,
+					// Last four of the key, captured at issuance; null for
+					// credentials from before this feature existed.
+					'hint'      => isset( $hints[ $item['uuid'] ] ) ? (string) $hints[ $item['uuid'] ] : null,
 				);
 			}
 		}
@@ -479,6 +514,17 @@ class Saddle_REST_Admin {
 		$result = WP_Application_Passwords::delete_application_password( $user_id, $uuid );
 		if ( is_wp_error( $result ) ) {
 			return $result;
+		}
+
+		// Drop the stored last-4 hint along with the credential.
+		$hints = get_user_meta( $user_id, 'saddle_client_hints', true );
+		if ( is_array( $hints ) && isset( $hints[ $uuid ] ) ) {
+			unset( $hints[ $uuid ] );
+			if ( $hints ) {
+				update_user_meta( $user_id, 'saddle_client_hints', $hints );
+			} else {
+				delete_user_meta( $user_id, 'saddle_client_hints' );
+			}
 		}
 
 		return new WP_REST_Response( array( 'revoked' => true, 'uuid' => $uuid ), 200 );

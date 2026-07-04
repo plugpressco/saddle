@@ -7,9 +7,9 @@
  * (the apps). Connecting an app is a focused, full-panel wizard — one step at
  * a time — not a page of forms. All the protocol machinery stays out of sight.
  */
-import { useState, useEffect, useCallback } from '@wordpress/element';
+import { useState, useEffect, useCallback, useRef } from '@wordpress/element';
 import { Spinner, Notice } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf, _n } from '@wordpress/i18n';
 import { api } from './api';
 import TopBar from './components/TopBar';
 import Onboarding from './components/Onboarding';
@@ -34,6 +34,74 @@ const tabFromHash = () => {
 	return TABS.some( ( t ) => t.name === h ) ? h : 'home';
 };
 
+/**
+ * Other plugins' admin notices, captured server-side into a hidden container
+ * (see Saddle_Settings::setup_notice_quarantine), surfaced behind a quiet
+ * disclosure instead of piling above the app. Nodes are MOVED into the panel
+ * — not re-rendered — so their own dismiss buttons and handlers keep working.
+ */
+function ForeignNotices() {
+	const [ count, setCount ] = useState( 0 );
+	const [ open, setOpen ] = useState( false );
+	const holderRef = useRef( null );
+	const movedRef = useRef( false );
+
+	useEffect( () => {
+		const source = document.getElementById( 'saddle-foreign-notices' );
+		if ( source ) {
+			setCount( source.children.length );
+		}
+	}, [] );
+
+	useEffect( () => {
+		if ( ! open || movedRef.current || ! holderRef.current ) {
+			return;
+		}
+		const source = document.getElementById( 'saddle-foreign-notices' );
+		if ( ! source ) {
+			return;
+		}
+		while ( source.firstChild ) {
+			holderRef.current.appendChild( source.firstChild );
+		}
+		movedRef.current = true;
+	}, [ open ] );
+
+	if ( ! count ) {
+		return null;
+	}
+
+	return (
+		<div className="saddle-foreign">
+			<button
+				type="button"
+				className="saddle-foreign__toggle"
+				onClick={ () => setOpen( ! open ) }
+				aria-expanded={ open }
+			>
+				{ sprintf(
+					/* translators: %d: number of notices. */
+					_n(
+						'%d notice from other plugins',
+						'%d notices from other plugins',
+						count,
+						'saddle'
+					),
+					count
+				) }
+				<span className="saddle-foreign__caret" aria-hidden="true">
+					{ open ? '▴' : '▾' }
+				</span>
+			</button>
+			<div
+				ref={ holderRef }
+				className="saddle-foreign__list"
+				hidden={ ! open }
+			/>
+		</div>
+	);
+}
+
 export default function App() {
 	const [ tier, setTier ] = useState( null );
 	const [ tiers, setTiers ] = useState( [ 'read', 'write', 'admin' ] );
@@ -47,6 +115,7 @@ export default function App() {
 	const [ error, setError ] = useState( null );
 	const [ tab, setTabState ] = useState( tabFromHash );
 	const [ wizardOpen, setWizardOpen ] = useState( false );
+	const [ theme, setTheme ] = useState( window.saddleData?.theme || 'system' );
 
 	// Navigating writes the hash; state follows the hashchange event, so
 	// back/forward and direct #links all land in the same code path.
@@ -149,6 +218,24 @@ export default function App() {
 		}
 	};
 
+	// Theme cycles system → dark → light. The body class flips immediately
+	// (the CSS tokens key off it); persistence is best-effort in the background.
+	const cycleTheme = () => {
+		const order = [ 'system', 'dark', 'light' ];
+		const next = order[ ( order.indexOf( theme ) + 1 ) % order.length ];
+		setTheme( next );
+		document.body.classList.remove(
+			'saddle-theme-light',
+			'saddle-theme-dark'
+		);
+		if ( next !== 'system' ) {
+			document.body.classList.add( `saddle-theme-${ next }` );
+		}
+		api( 'settings', { method: 'POST', data: { theme: next } } ).catch(
+			() => {}
+		);
+	};
+
 	const togglePause = () => {
 		const next = ! paused;
 		setPausing( true );
@@ -205,7 +292,11 @@ export default function App() {
 				paused={ paused }
 				onTogglePause={ togglePause }
 				pausing={ pausing }
+				theme={ theme }
+				onCycleTheme={ cycleTheme }
 			/>
+
+			{ ! wizardOpen && <ForeignNotices /> }
 
 			{ error && (
 				<Notice status="error" isDismissible={ false }>
