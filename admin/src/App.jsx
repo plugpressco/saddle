@@ -2,10 +2,11 @@
  * Saddle admin — a guided, person-first workspace.
  *
  * First run shows a short setup that flows straight into connecting the first
- * app. After that, four plain-language sections: Home (status + next step),
- * Permissions (what the AI can do), Guidance (what it's told), and Connect
- * (the apps). Connecting an app is a focused, full-panel wizard — one step at
- * a time — not a page of forms. All the protocol machinery stays out of sight.
+ * app. After that, five plain-language sections: Home (status + next step),
+ * Permissions (what the AI can do), Guidance (what it's told), Connect (the
+ * apps), and Activity (the full record of what they've done). Connecting an
+ * app is a focused, full-panel wizard — one step at a time — not a page of
+ * forms. All the protocol machinery stays out of sight.
  */
 import { useState, useEffect, useCallback, useRef } from '@wordpress/element';
 import { Spinner, Notice } from '@wordpress/components';
@@ -17,6 +18,7 @@ import Home from './components/Home';
 import Permissions from './components/Permissions';
 import Guidance from './components/Guidance';
 import Apps from './components/ConnectedClients';
+import Activity from './components/Activity';
 import ConnectWizard from './components/ConnectWizard';
 
 const TABS = [
@@ -24,6 +26,7 @@ const TABS = [
 	{ name: 'permissions', title: __( 'Permissions', 'saddle' ) },
 	{ name: 'guidance', title: __( 'Guidance', 'saddle' ) },
 	{ name: 'connect', title: __( 'Connect', 'saddle' ) },
+	{ name: 'activity', title: __( 'Activity', 'saddle' ) },
 ];
 
 // The URL hash is the single source of truth for the active section, so a
@@ -354,6 +357,7 @@ export default function App() {
 							/>
 						) }
 						{ tab === 'guidance' && <Guidance /> }
+						{ tab === 'activity' && <Activity /> }
 						{ tab === 'connect' && (
 							<Apps
 								clients={ clients }

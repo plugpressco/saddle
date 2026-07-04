@@ -85,24 +85,49 @@ class Saddle_Log {
 	/**
 	 * Recent log entries, newest first.
 	 *
-	 * @param int $per_page Entries per page (1–100).
-	 * @param int $page     Page number.
+	 * @param int    $per_page Entries per page (1–100).
+	 * @param int    $page     Page number.
+	 * @param string $type     Optional filter: 'executed' | 'denied' | '' (all).
 	 * @return array{entries:array[],total:int,total_pages:int,page:int}
 	 */
-	public static function query( $per_page = 20, $page = 1 ) {
+	public static function query( $per_page = 20, $page = 1, $type = '' ) {
 		$per_page = max( 1, min( 100, (int) $per_page ) );
 		$page     = max( 1, (int) $page );
 
-		$q = new WP_Query(
-			array(
-				'post_type'      => self::CPT,
-				'post_status'    => 'publish',
-				'posts_per_page' => $per_page,
-				'paged'          => $page,
-				'orderby'        => 'date',
-				'order'          => 'DESC',
-			)
+		$args = array(
+			'post_type'      => self::CPT,
+			'post_status'    => 'publish',
+			'posts_per_page' => $per_page,
+			'paged'          => $page,
+			'orderby'        => 'date',
+			'order'          => 'DESC',
 		);
+
+		// Optional type filter. Entries predating the type meta are executed
+		// mutations, so "executed" must also match rows with no meta at all.
+		if ( 'denied' === $type ) {
+			$args['meta_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Bounded private CPT (GC'd at 1000 rows).
+				array(
+					'key'   => '_saddle_type',
+					'value' => 'denied',
+				),
+			);
+		} elseif ( 'executed' === $type ) {
+			$args['meta_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Bounded private CPT (GC'd at 1000 rows).
+				'relation' => 'OR',
+				array(
+					'key'     => '_saddle_type',
+					'compare' => 'NOT EXISTS',
+				),
+				array(
+					'key'     => '_saddle_type',
+					'value'   => 'denied',
+					'compare' => '!=',
+				),
+			);
+		}
+
+		$q = new WP_Query( $args );
 
 		$entries = array();
 		foreach ( $q->posts as $post ) {

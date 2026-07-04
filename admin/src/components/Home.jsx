@@ -195,6 +195,13 @@ export default function Home( {
 				<section className="saddle-card">
 					<div className="saddle-card__head">
 						<h2>{ __( 'Recent activity', 'saddle' ) }</h2>
+						<button
+							type="button"
+							className="saddle-card__link"
+							onClick={ () => onNavigate( 'activity' ) }
+						>
+							{ __( 'View all', 'saddle' ) }
+						</button>
 					</div>
 					{ activity &&
 					activity.enabled &&

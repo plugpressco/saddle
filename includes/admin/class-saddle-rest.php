@@ -539,9 +539,11 @@ class Saddle_REST_Admin {
 	public static function get_audit_log( WP_REST_Request $request ) {
 		$per_page = (int) ( $request->get_param( 'per_page' ) ?: 20 );
 		$page     = (int) ( $request->get_param( 'page' ) ?: 1 );
+		$type     = (string) $request->get_param( 'type' );
+		$type     = in_array( $type, array( 'executed', 'denied' ), true ) ? $type : '';
 
 		$result = class_exists( 'Saddle_Log' )
-			? Saddle_Log::query( $per_page, $page )
+			? Saddle_Log::query( $per_page, $page, $type )
 			: array( 'entries' => array(), 'total' => 0, 'total_pages' => 0, 'page' => 1 );
 
 		/**
