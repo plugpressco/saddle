@@ -120,6 +120,112 @@ class Saddle_REST_Admin {
 
 		register_rest_route(
 			self::REST_NAMESPACE,
+			'/skills',
+			array(
+				array(
+					'methods'             => 'GET',
+					'callback'            => array( __CLASS__, 'get_skills' ),
+					'permission_callback' => array( __CLASS__, 'can_manage' ),
+				),
+				array(
+					'methods'             => 'POST',
+					'callback'            => array( __CLASS__, 'install_skill' ),
+					'permission_callback' => array( __CLASS__, 'can_manage' ),
+					'args'                => array(
+						'md' => array(
+							'type'     => 'string',
+							'required' => true,
+						),
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::REST_NAMESPACE,
+			'/skills/(?P<slug>[a-z0-9-]+)',
+			array(
+				array(
+					'methods'             => 'POST',
+					'callback'            => array( __CLASS__, 'update_skill' ),
+					'permission_callback' => array( __CLASS__, 'can_manage' ),
+					'args'                => array(
+						'enabled' => array(
+							'type'     => 'boolean',
+							'required' => true,
+						),
+					),
+				),
+				array(
+					'methods'             => 'DELETE',
+					'callback'            => array( __CLASS__, 'delete_skill' ),
+					'permission_callback' => array( __CLASS__, 'can_manage' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::REST_NAMESPACE,
+			'/memory',
+			array(
+				array(
+					'methods'             => 'GET',
+					'callback'            => array( __CLASS__, 'get_memory' ),
+					'permission_callback' => array( __CLASS__, 'can_manage' ),
+				),
+				array(
+					'methods'             => 'POST',
+					'callback'            => array( __CLASS__, 'save_memory' ),
+					'permission_callback' => array( __CLASS__, 'can_manage' ),
+					'args'                => array(
+						'text' => array(
+							'type'     => 'string',
+							'required' => true,
+						),
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::REST_NAMESPACE,
+			'/memory-settings',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( __CLASS__, 'update_memory_settings' ),
+				'permission_callback' => array( __CLASS__, 'can_manage' ),
+			)
+		);
+
+		register_rest_route(
+			self::REST_NAMESPACE,
+			'/memory-clear-agent',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( __CLASS__, 'clear_agent_memory' ),
+				'permission_callback' => array( __CLASS__, 'can_manage' ),
+			)
+		);
+
+		register_rest_route(
+			self::REST_NAMESPACE,
+			'/memory/(?P<key>[a-z0-9-]+)',
+			array(
+				array(
+					'methods'             => 'POST',
+					'callback'            => array( __CLASS__, 'update_memory_entry' ),
+					'permission_callback' => array( __CLASS__, 'can_manage' ),
+				),
+				array(
+					'methods'             => 'DELETE',
+					'callback'            => array( __CLASS__, 'delete_memory_entry' ),
+					'permission_callback' => array( __CLASS__, 'can_manage' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::REST_NAMESPACE,
 			'/connect-url',
 			array(
 				'methods'             => 'GET',
@@ -275,6 +381,187 @@ class Saddle_REST_Admin {
 	public static function update_context( WP_REST_Request $request ) {
 		Saddle_Context::set_user( (string) $request->get_param( 'user' ) );
 		return self::get_context();
+	}
+
+	/**
+	 * GET /skills — every installed skill, with bodies, for the Guidance UI.
+	 *
+	 * @return WP_REST_Response
+	 */
+	public static function get_skills() {
+		return new WP_REST_Response( array( 'skills' => Saddle_Skills::all( true ) ), 200 );
+	}
+
+	/**
+	 * POST /skills — install (or update) a skill from raw SKILL.md text.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function install_skill( WP_REST_Request $request ) {
+		$result = Saddle_Skills::install( (string) $request->get_param( 'md' ), 'owner-upload' );
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+		return self::get_skills();
+	}
+
+	/**
+	 * POST /skills/{slug} — enable or disable a skill.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function update_skill( WP_REST_Request $request ) {
+		$ok = Saddle_Skills::set_enabled(
+			(string) $request->get_param( 'slug' ),
+			(bool) $request->get_param( 'enabled' )
+		);
+		if ( ! $ok ) {
+			return new WP_Error( 'saddle_skill_not_found', __( 'No skill with that name.', 'saddle' ), array( 'status' => 404 ) );
+		}
+		return self::get_skills();
+	}
+
+	/**
+	 * DELETE /skills/{slug} — remove a skill permanently.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function delete_skill( WP_REST_Request $request ) {
+		if ( ! Saddle_Skills::delete( (string) $request->get_param( 'slug' ) ) ) {
+			return new WP_Error( 'saddle_skill_not_found', __( 'No skill with that name.', 'saddle' ), array( 'status' => 404 ) );
+		}
+		return self::get_skills();
+	}
+
+	/**
+	 * GET /memory — every entry, the memory options, and a preview of the
+	 * exact core block agents receive at session start (the owner's ground
+	 * truth for "what does Saddle remember").
+	 *
+	 * @return WP_REST_Response
+	 */
+	public static function get_memory() {
+		return new WP_REST_Response(
+			array(
+				'entries'  => Saddle_Memory::all(),
+				'settings' => array(
+					'autoinject_agent' => (bool) get_option( Saddle_Memory::OPTION_AUTOINJECT, false ),
+					'core_budget'      => (int) get_option( Saddle_Memory::OPTION_CORE_BUDGET, Saddle_Memory::DEFAULT_CORE_BUDGET ),
+					'max_entries'      => Saddle_Memory::max_entries(),
+				),
+				'preview'  => Saddle_Memory::core_block(),
+			),
+			200
+		);
+	}
+
+	/**
+	 * POST /memory — the owner saves (or updates) an entry. Owner-authored,
+	 * so it participates in the injected core block by default.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function save_memory( WP_REST_Request $request ) {
+		$result = Saddle_Memory::remember(
+			array(
+				'key'        => (string) $request->get_param( 'key' ),
+				'text'       => (string) $request->get_param( 'text' ),
+				'type'       => (string) $request->get_param( 'type' ),
+				'tags'       => $request->get_param( 'tags' ),
+				'importance' => $request->get_param( 'importance' ),
+			),
+			'owner'
+		);
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+		return self::get_memory();
+	}
+
+	/**
+	 * POST /memory/{key} — pin/unpin, importance, or content edits.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function update_memory_entry( WP_REST_Request $request ) {
+		$fields = array();
+		$params = $request->get_json_params();
+		$params = is_array( $params ) ? $params : array();
+		foreach ( array( 'pinned', 'importance', 'text', 'type', 'tags' ) as $field ) {
+			if ( array_key_exists( $field, $params ) ) {
+				$fields[ $field ] = $params[ $field ];
+			}
+		}
+
+		$result = Saddle_Memory::update_entry( (string) $request->get_param( 'key' ), $fields );
+		if ( null === $result ) {
+			return new WP_Error( 'saddle_memory_not_found', __( 'No memory entry with that key.', 'saddle' ), array( 'status' => 404 ) );
+		}
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+		return self::get_memory();
+	}
+
+	/**
+	 * DELETE /memory/{key}.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function delete_memory_entry( WP_REST_Request $request ) {
+		if ( ! Saddle_Memory::forget( (string) $request->get_param( 'key' ) ) ) {
+			return new WP_Error( 'saddle_memory_not_found', __( 'No memory entry with that key.', 'saddle' ), array( 'status' => 404 ) );
+		}
+		return self::get_memory();
+	}
+
+	/**
+	 * POST /memory-settings — the master toggles (agent auto-inject, budget).
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response
+	 */
+	public static function update_memory_settings( WP_REST_Request $request ) {
+		$params = $request->get_json_params();
+		$params = is_array( $params ) ? $params : array();
+
+		if ( array_key_exists( 'autoinject_agent', $params ) ) {
+			update_option( Saddle_Memory::OPTION_AUTOINJECT, (bool) $params['autoinject_agent'] );
+		}
+		if ( array_key_exists( 'core_budget', $params ) ) {
+			update_option( Saddle_Memory::OPTION_CORE_BUDGET, max( 200, min( 10000, (int) $params['core_budget'] ) ) );
+		}
+
+		return self::get_memory();
+	}
+
+	/**
+	 * POST /memory-clear-agent — the one-click "clear agent memory".
+	 *
+	 * @return WP_REST_Response
+	 */
+	public static function clear_agent_memory() {
+		$removed = Saddle_Memory::clear_agent();
+		if ( $removed && class_exists( 'Saddle_Log' ) ) {
+			Saddle_Log::record(
+				array(
+					'action'  => 'clear-agent-memory',
+					'target'  => 'memory',
+					'summary' => sprintf(
+						/* translators: %d: entries removed. */
+						__( 'Owner cleared all agent-written memory (%d entries).', 'saddle' ),
+						$removed
+					),
+				)
+			);
+		}
+		return self::get_memory();
 	}
 
 	/**

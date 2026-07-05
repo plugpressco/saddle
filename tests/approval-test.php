@@ -179,6 +179,48 @@ class Saddle_Approval_Test extends WP_UnitTestCase {
 		$this->assertSame( 0, $calls );
 	}
 
+	/**
+	 * A token previewed for a reversible action (trash) must not confirm the
+	 * irreversible version (permanent delete). Regression: the token bound only
+	 * action + target, so adding force=true on confirm silently escalated a
+	 * "recoverable" preview into a permanent, unrecoverable deletion.
+	 */
+	public function test_token_bound_to_recoverability_rejects_more_destructive_confirm() {
+		$preview = Saddle_Approval::gate( $this->gate_args( $calls, array( 'bind' => 'trash' ) ) );
+		$token   = $preview['confirm_token'];
+
+		$args   = $this->gate_args(
+			$calls,
+			array(
+				'bind'  => 'permanent',
+				'input' => array( 'confirm_token' => $token ),
+			)
+		);
+		$result = Saddle_Approval::gate( $args );
+
+		$this->assertWPError( $result );
+		$this->assertSame( 'saddle_token_bind_mismatch', $result->get_error_code() );
+		$this->assertSame( 0, $calls, 'A trash preview must never confirm a permanent delete.' );
+	}
+
+	/** A confirm whose recoverability matches the preview still executes. */
+	public function test_matching_recoverability_confirms() {
+		$preview = Saddle_Approval::gate( $this->gate_args( $calls, array( 'bind' => 'permanent' ) ) );
+		$token   = $preview['confirm_token'];
+
+		$args   = $this->gate_args(
+			$calls,
+			array(
+				'bind'  => 'permanent',
+				'input' => array( 'confirm_token' => $token ),
+			)
+		);
+		$result = Saddle_Approval::gate( $args );
+
+		$this->assertSame( array( 'executed' => true ), $result );
+		$this->assertSame( 1, $calls, 'A matching-recoverability confirm must execute exactly once.' );
+	}
+
 	/** Even a failed lookup burns the record — a mismatched token can't be retried. */
 	public function test_mismatched_token_is_still_single_use() {
 		$preview = Saddle_Approval::gate( $this->gate_args( $calls ) );

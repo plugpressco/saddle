@@ -1042,6 +1042,13 @@ body.toplevel_page_saddle {
 	margin-top: 12px;
 }
 
+.saddle-guide__actions--stack {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	align-items: flex-start;
+}
+
 /* ---------- Lanes + chips (Permissions detail) ---------- */
 
 .saddle-lanes__hint {
@@ -2165,5 +2172,55 @@ body.toplevel_page_saddle {
 		display: flex;
 		justify-content: center;
 		margin-top: 4px;
+	}
+}
+
+/* Skills — owner-installed playbooks (Guidance tab) */
+.saddle-skills {
+	list-style: none;
+	margin: 12px 0;
+	padding: 0;
+	border: 1px solid var(--s-border);
+	border-radius: var(--s-radius);
+	overflow: hidden;
+
+	&__row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 8px 16px;
+		margin: 0;
+		padding: 10px 14px;
+
+		& + & {
+			border-top: 1px solid var(--s-border);
+		}
+	}
+
+	&__main {
+		flex: 1 1 260px;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-width: 0;
+	}
+
+	&__desc {
+		font-size: 12px;
+		color: var(--s-fg-muted);
+	}
+
+	&__controls {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		flex: 0 0 auto;
+	}
+
+	&__body {
+		flex-basis: 100%;
+		margin: 8px 0 0;
+		max-height: 320px;
+		overflow: auto;
 	}
 }

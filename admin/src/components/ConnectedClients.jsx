@@ -203,7 +203,11 @@ export default function Apps( {
 											'saddle'
 									  ) }
 								{ c.last_ip ? ` · ${ c.last_ip }` : '' }
-								{ c.hint ? ` · ${ __( 'key', 'saddle' ) } ····${ c.hint }` : '' }
+								{ c.hint
+									? ` · ${ __( 'key', 'saddle' ) } ····${
+											c.hint
+									  }`
+									: '' }
 							</span>
 							<Button
 								variant="link"

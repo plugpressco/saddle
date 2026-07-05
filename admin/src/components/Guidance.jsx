@@ -1,20 +1,24 @@
 /**
  * Guidance — how your AI should behave.
  *
- * Two parts, in plain terms:
+ * Three parts, in plain terms:
  *  - "What your AI knows" — the read-only context Saddle writes automatically
  *    from your site and active plugins, shown for transparency.
  *  - "Your instructions" — free text you write for every connected AI.
+ *  - "Skills" — named playbook files (.md) you install; every AI sees the
+ *    list and reads a playbook when a task matches it.
  */
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useRef } from '@wordpress/element';
 import {
 	TextareaControl,
+	ToggleControl,
 	Button,
 	Notice,
 	Spinner,
 } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { api } from '../api';
+import Memory from './Memory';
 
 // Render the auto-generated context (lightweight markdown: `# headings`,
 // `- bullets`, paragraphs) as a readable document instead of raw monospace, so
@@ -79,6 +83,9 @@ export default function Guidance() {
 	const [ saving, setSaving ] = useState( false );
 	const [ notice, setNotice ] = useState( null );
 	const [ showRaw, setShowRaw ] = useState( false );
+	const [ skills, setSkills ] = useState( [] );
+	const [ openSkill, setOpenSkill ] = useState( null );
+	const fileInput = useRef( null );
 
 	useEffect( () => {
 		api( 'context' )
@@ -91,7 +98,62 @@ export default function Guidance() {
 				setNotice( { type: 'error', message: e.message } )
 			)
 			.finally( () => setLoading( false ) );
+		api( 'skills' )
+			.then( ( res ) => setSkills( res.skills || [] ) )
+			.catch( () => {} );
 	}, [] );
+
+	// The context preview shows the skills index too — refresh it after any
+	// skill change so the owner always sees exactly what agents will see.
+	const refreshContext = () =>
+		api( 'context' )
+			.then( ( res ) => setSystem( res.system || '' ) )
+			.catch( () => {} );
+
+	const installSkillFile = ( file ) => {
+		if ( ! file ) {
+			return;
+		}
+		file.text().then( ( md ) => {
+			api( 'skills', { method: 'POST', data: { md } } )
+				.then( ( res ) => {
+					setSkills( res.skills || [] );
+					setNotice( {
+						type: 'success',
+						message: __( 'Skill installed.', 'saddle' ),
+					} );
+					refreshContext();
+				} )
+				.catch( ( e ) =>
+					setNotice( { type: 'error', message: e.message } )
+				);
+		} );
+	};
+
+	const toggleSkill = ( skill ) => {
+		api( `skills/${ skill.name }`, {
+			method: 'POST',
+			data: { enabled: ! skill.enabled },
+		} )
+			.then( ( res ) => {
+				setSkills( res.skills || [] );
+				refreshContext();
+			} )
+			.catch( ( e ) =>
+				setNotice( { type: 'error', message: e.message } )
+			);
+	};
+
+	const removeSkill = ( skill ) => {
+		api( `skills/${ skill.name }`, { method: 'DELETE' } )
+			.then( ( res ) => {
+				setSkills( res.skills || [] );
+				refreshContext();
+			} )
+			.catch( ( e ) =>
+				setNotice( { type: 'error', message: e.message } )
+			);
+	};
 
 	const save = () => {
 		setSaving( true );
@@ -206,6 +268,110 @@ export default function Guidance() {
 					</Button>
 				</div>
 			</section>
+
+			{ /* Skills — named playbooks agents load on demand */ }
+			<section className="saddle-guide__block">
+				<div className="saddle-guide__head">
+					<h3>{ __( 'Skills', 'saddle' ) }</h3>
+				</div>
+				<p className="saddle-guide__hint">
+					{ __(
+						'Skills are playbook files (.md) that teach your AI how to do specific jobs on this site — “how we publish a post”, “our SEO checklist”. Every connected AI sees the list of skills and reads one when a task matches. Only you can add them; a skill can never grant your AI more access than the level you chose.',
+						'saddle'
+					) }
+				</p>
+
+				{ skills.length > 0 && (
+					<ul className="saddle-skills">
+						{ skills.map( ( skill ) => (
+							<li
+								key={ skill.name }
+								className="saddle-skills__row"
+							>
+								<div className="saddle-skills__main">
+									<strong>{ skill.name }</strong>
+									<span className="saddle-skills__desc">
+										{ skill.description }
+									</span>
+								</div>
+								<div className="saddle-skills__controls">
+									<ToggleControl
+										__nextHasNoMarginBottom
+										checked={ skill.enabled }
+										onChange={ () => toggleSkill( skill ) }
+										label={ __( 'On', 'saddle' ) }
+									/>
+									<Button
+										variant="link"
+										onClick={ () =>
+											setOpenSkill(
+												openSkill === skill.name
+													? null
+													: skill.name
+											)
+										}
+									>
+										{ openSkill === skill.name
+											? __( 'Hide', 'saddle' )
+											: __( 'View', 'saddle' ) }
+									</Button>
+									<Button
+										variant="link"
+										isDestructive
+										onClick={ () => {
+											if (
+												// eslint-disable-next-line no-alert
+												window.confirm(
+													sprintf(
+														/* translators: %s: skill name. */
+														__(
+															'Delete the skill “%s”? This cannot be undone.',
+															'saddle'
+														),
+														skill.name
+													)
+												)
+											) {
+												removeSkill( skill );
+											}
+										} }
+									>
+										{ __( 'Delete', 'saddle' ) }
+									</Button>
+								</div>
+								{ openSkill === skill.name && (
+									<pre className="saddle-code saddle-skills__body">
+										{ skill.body }
+									</pre>
+								) }
+							</li>
+						) ) }
+					</ul>
+				) }
+
+				<div className="saddle-guide__actions">
+					<input
+						ref={ fileInput }
+						type="file"
+						accept=".md,text/markdown,text/plain"
+						style={ { display: 'none' } }
+						onChange={ ( e ) => {
+							installSkillFile( e.target.files?.[ 0 ] );
+							e.target.value = '';
+						} }
+					/>
+					<Button
+						variant="secondary"
+						onClick={ () => fileInput.current?.click() }
+					>
+						{ __( 'Add skill (.md file)', 'saddle' ) }
+					</Button>
+				</div>
+			</section>
+
+			{ /* Memory — governed cross-session store; pinning changes the
+			     injected context, so refresh the preview above on change. */ }
+			<Memory onChanged={ refreshContext } />
 		</div>
 	);
 }

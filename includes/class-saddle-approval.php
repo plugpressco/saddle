@@ -66,6 +66,17 @@ class Saddle_Approval {
 	 *     @type string   $action  Stable action identifier, e.g. 'delete_post'.
 	 *                             The token is bound to this — a token issued for
 	 *                             one action cannot confirm another.
+	 *     @type string   $target  Item the action affects (e.g. post id). The
+	 *                             token is bound to this too — a token previewed
+	 *                             for one item cannot be replayed against another.
+	 *     @type string   $bind    Optional. Any confirmation-relevant parameter
+	 *                             that changes what the confirmed action does —
+	 *                             most importantly recoverability (trash vs.
+	 *                             permanent delete). Folded into the token
+	 *                             identity so a preview shown for a reversible
+	 *                             action can't be confirmed into an irreversible
+	 *                             one. Keep it out of $action/$target so logging
+	 *                             stays clean.
 	 *     @type string   $summary One-line plain-language description of the
 	 *                             effect, shown in the preview.
 	 *     @type array    $preview Structured detail of what will change.
@@ -79,6 +90,7 @@ class Saddle_Approval {
 	public static function gate( array $args ) {
 		$action  = isset( $args['action'] ) ? (string) $args['action'] : '';
 		$target  = isset( $args['target'] ) ? (string) $args['target'] : '';
+		$bind    = isset( $args['bind'] ) ? (string) $args['bind'] : '';
 		$input   = ( isset( $args['input'] ) && is_array( $args['input'] ) ) ? $args['input'] : array();
 		$execute = isset( $args['execute'] ) ? $args['execute'] : null;
 
@@ -92,7 +104,7 @@ class Saddle_Approval {
 		// both the action AND the specific target, so a token previewed for one
 		// item cannot be replayed to act on a different item.
 		if ( '' !== $token ) {
-			$ok = self::consume_token( $token, $action, $target );
+			$ok = self::consume_token( $token, $action, $target, $bind );
 			if ( is_wp_error( $ok ) ) {
 				return $ok;
 			}
@@ -113,7 +125,7 @@ class Saddle_Approval {
 		}
 
 		// Dry-run path: issue a token, return a preview, mutate nothing.
-		$new_token = self::issue_token( $action, $target );
+		$new_token = self::issue_token( $action, $target, $bind );
 		if ( is_wp_error( $new_token ) ) {
 			return $new_token;
 		}
@@ -134,9 +146,11 @@ class Saddle_Approval {
 	 *
 	 * @param string $action Action identifier.
 	 * @param string $target Target identifier the token is bound to (e.g. post id).
+	 * @param string $bind   Confirmation-relevant parameter bound to the token
+	 *                       (e.g. permanent-vs-trash); '' when the action has none.
 	 * @return string|WP_Error 32-char hex token, or WP_Error on failure.
 	 */
-	private static function issue_token( $action, $target = '' ) {
+	private static function issue_token( $action, $target = '', $bind = '' ) {
 		try {
 			$token = bin2hex( random_bytes( 16 ) );
 		} catch ( \Exception $e ) {
@@ -168,6 +182,7 @@ class Saddle_Approval {
 
 		update_post_meta( $post_id, '_saddle_action', $action );
 		update_post_meta( $post_id, '_saddle_target', $target );
+		update_post_meta( $post_id, '_saddle_bind', $bind );
 		update_post_meta( $post_id, '_saddle_expires', time() + self::TOKEN_TTL );
 
 		return $token;
@@ -194,9 +209,11 @@ class Saddle_Approval {
 	 * @param string $token  Candidate token.
 	 * @param string $action Action the token must be bound to.
 	 * @param string $target Target the token must be bound to (e.g. post id).
+	 * @param string $bind   Confirmation-relevant parameter the token must be
+	 *                       bound to (e.g. permanent-vs-trash); '' when none.
 	 * @return true|WP_Error
 	 */
-	public static function consume_token( $token, $action, $target = '' ) {
+	public static function consume_token( $token, $action, $target = '', $bind = '' ) {
 		// WP_Query's `title` parameter is an exact match (since WP 4.4), which is
 		// the security property we need — a partial match would let a prefix of a
 		// valid token confirm an action. We match on the token's hash, since only
@@ -225,6 +242,7 @@ class Saddle_Approval {
 		$post_id        = (int) $query->posts[0];
 		$stored_action  = get_post_meta( $post_id, '_saddle_action', true );
 		$stored_target  = (string) get_post_meta( $post_id, '_saddle_target', true );
+		$stored_bind    = (string) get_post_meta( $post_id, '_saddle_bind', true );
 		$expires        = (int) get_post_meta( $post_id, '_saddle_expires', true );
 
 		// Single-use: burn the token now, before any further branching.
@@ -242,6 +260,17 @@ class Saddle_Approval {
 			return new WP_Error(
 				'saddle_token_target_mismatch',
 				__( 'This confirmation token was issued for a different item. Preview the exact item you intend to change, then confirm with the token it returns.', 'saddle' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		// A token previewed for a reversible action (e.g. move to trash) must not
+		// be replayed to confirm an irreversible one (permanent delete). The
+		// recoverability-relevant parameter is part of the bound identity.
+		if ( $stored_bind !== (string) $bind ) {
+			return new WP_Error(
+				'saddle_token_bind_mismatch',
+				__( 'This confirmation token was issued for a less destructive version of this action (for example, moving to trash rather than permanently deleting). Preview the exact action you intend, then confirm with the token it returns.', 'saddle' ),
 				array( 'status' => 403 )
 			);
 		}

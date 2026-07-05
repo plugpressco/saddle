@@ -1897,6 +1897,9 @@ class Saddle_Abilities {
 			array(
 				'action'  => $action,
 				'target'  => (string) $id,
+				// Bind permanence into the token: a "move to trash" preview must
+				// not be confirmable into a permanent, unrecoverable delete.
+				'bind'    => $force ? 'permanent' : 'trash',
 				'summary' => $summary,
 				'preview' => array(
 					'id'                      => $id,

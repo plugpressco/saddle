@@ -20,7 +20,11 @@ const timeOf = ( gmt ) => {
 const dayLabel = ( d ) => {
 	const today = new Date();
 	const that = new Date( d.getFullYear(), d.getMonth(), d.getDate() );
-	const now = new Date( today.getFullYear(), today.getMonth(), today.getDate() );
+	const now = new Date(
+		today.getFullYear(),
+		today.getMonth(),
+		today.getDate()
+	);
 	const days = Math.round( ( now - that ) / 86400000 );
 	if ( days === 0 ) {
 		return __( 'Today', 'saddle' );
@@ -32,7 +36,9 @@ const dayLabel = ( d ) => {
 		weekday: 'short',
 		month: 'short',
 		day: 'numeric',
-		...( d.getFullYear() !== today.getFullYear() ? { year: 'numeric' } : {} ),
+		...( d.getFullYear() !== today.getFullYear()
+			? { year: 'numeric' }
+			: {} ),
 	} );
 };
 
@@ -184,9 +190,7 @@ export default function Activity() {
 								<li
 									key={ `${ g.label }-${ i }` }
 									className={ `saddle-activity__row${
-										e.type === 'denied'
-											? ' is-denied'
-											: ''
+										e.type === 'denied' ? ' is-denied' : ''
 									}` }
 								>
 									<span

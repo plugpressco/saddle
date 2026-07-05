@@ -19,8 +19,9 @@ export const TIER_RANK = { read: 0, write: 1, admin: 2 };
 export const tierUnlocks = ( siteTier, abilityTier ) =>
 	( TIER_RANK[ siteTier ] ?? 0 ) >= ( TIER_RANK[ abilityTier ] ?? 0 );
 
-// The two safety levels we present to people. "admin" exists in the backend
-// but behaves like "write" today, so we keep the human-facing choice to two.
+// The three safety levels we present to people. "admin" adds site-management
+// power (plugins, themes, options) and is a deliberate, separate opt-in — it is
+// never bundled into "writing".
 export const LEVELS = [
 	{
 		key: 'read',
@@ -38,10 +39,20 @@ export const LEVELS = [
 		short: 'Creates and edits content. Every deletion previews and asks first.',
 		recommended: false,
 	},
+	{
+		key: 'admin',
+		icon: 'admin',
+		title: 'Managing the site',
+		one: 'Your AI can also manage plugins, themes, and settings. Overwrites and deletions always ask you first.',
+		short: 'Also manages plugins, themes, and settings. Changes ask first.',
+		recommended: false,
+	},
 ];
 
-// Map any backend tier to the human-facing level key (admin → write).
-export const levelKey = ( tier ) => ( tier === 'read' ? 'read' : 'write' );
+// Map any backend tier to the human-facing level key. Unknown tiers fall back
+// to the safest level.
+export const levelKey = ( tier ) =>
+	LEVELS.some( ( l ) => l.key === tier ) ? tier : 'read';
 
 // Find the level descriptor for a backend tier.
 export const levelFor = ( tier ) =>

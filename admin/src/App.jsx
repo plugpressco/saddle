@@ -118,7 +118,9 @@ export default function App() {
 	const [ error, setError ] = useState( null );
 	const [ tab, setTabState ] = useState( tabFromHash );
 	const [ wizardOpen, setWizardOpen ] = useState( false );
-	const [ theme, setTheme ] = useState( window.saddleData?.theme || 'system' );
+	const [ theme, setTheme ] = useState(
+		window.saddleData?.theme || 'system'
+	);
 
 	// Navigating writes the hash; state follows the hashchange event, so
 	// back/forward and direct #links all land in the same code path.

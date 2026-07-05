@@ -66,6 +66,18 @@ export function IconWrite( props ) {
 	);
 }
 
+// Sliders — the "manage the site" / admin level.
+export function IconAdmin( props ) {
+	return (
+		<svg { ...base } { ...props }>
+			<path d="M4 6h11M19 6h1M4 12h1M9 12h11M4 18h7M15 18h5" />
+			<circle cx="17" cy="6" r="2" />
+			<circle cx="7" cy="12" r="2" />
+			<circle cx="13" cy="18" r="2" />
+		</svg>
+	);
+}
+
 // Plug — connecting an app.
 export function IconConnect( props ) {
 	return (
@@ -115,7 +127,7 @@ export function ThemeIcon( { mode, ...props } ) {
 }
 
 // Map a level key to its icon component.
-const LEVEL_ICONS = { read: IconRead, write: IconWrite };
+const LEVEL_ICONS = { read: IconRead, write: IconWrite, admin: IconAdmin };
 
 export function LevelIcon( { name, ...props } ) {
 	const Cmp = LEVEL_ICONS[ name ] || IconRead;
@@ -149,7 +161,16 @@ const APP_LOGOS = {
 // <img> — rendering them as JSX tags crashes React with InvalidCharacterError.
 export function AppLogo( { app, ...props } ) {
 	const src = APP_LOGOS[ app ] || McpLogo;
-	return <img src={ src } alt="" aria-hidden="true" width="20" height="20" { ...props } />;
+	return (
+		<img
+			src={ src }
+			alt=""
+			aria-hidden="true"
+			width="20"
+			height="20"
+			{ ...props }
+		/>
+	);
 }
 
 // Best-effort app key from a stored connection label ("Claude Code 2" →

@@ -153,6 +153,58 @@ class Saddle_Log {
 	}
 
 	/**
+	 * Recent EXECUTED changes for agent context ("recent changes recall").
+	 *
+	 * Only executed mutations, never denials — blocked attempts are owner-facing
+	 * noise, not orientation an agent needs. Recency-bounded so a dormant site
+	 * serves nothing stale.
+	 *
+	 * @param int $limit Maximum entries (1–50).
+	 * @param int $days  Recency window in days.
+	 * @return array[] Entries: date, action, target, summary. Newest first.
+	 */
+	public static function recent_executed( $limit = 15, $days = 30 ) {
+		$limit = max( 1, min( 50, (int) $limit ) );
+
+		$q = new WP_Query(
+			array(
+				'post_type'      => self::CPT,
+				'post_status'    => 'publish',
+				'posts_per_page' => $limit,
+				'orderby'        => 'date',
+				'order'          => 'DESC',
+				'date_query'     => array(
+					array( 'after' => max( 1, (int) $days ) . ' days ago' ),
+				),
+				'meta_query'     => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Bounded private CPT (GC'd at 1000 rows).
+					'relation' => 'OR',
+					array(
+						'key'     => '_saddle_type',
+						'compare' => 'NOT EXISTS',
+					),
+					array(
+						'key'     => '_saddle_type',
+						'value'   => 'denied',
+						'compare' => '!=',
+					),
+				),
+				'no_found_rows'  => true,
+			)
+		);
+
+		$entries = array();
+		foreach ( $q->posts as $post ) {
+			$entries[] = array(
+				'date'    => $post->post_date_gmt,
+				'action'  => (string) get_post_meta( $post->ID, '_saddle_action', true ),
+				'target'  => (string) get_post_meta( $post->ID, '_saddle_target', true ),
+				'summary' => $post->post_title,
+			);
+		}
+		return $entries;
+	}
+
+	/**
 	 * Trim the log to a bounded number of entries (keeps it from growing without
 	 * limit). Wired to the same hourly cron as the approval-token GC.
 	 */

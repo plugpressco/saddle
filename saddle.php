@@ -3,7 +3,7 @@
  * Plugin Name:       Saddle
  * Plugin URI:        https://plugpress.co/saddle
  * Description:       Self-hosted MCP server for WordPress. Tiered, default-safe, approval-gated access to posts, pages, and media for AI agents — with no third-party credential custody.
- * Version:           0.4.0
+ * Version:           0.8.0
  * Requires at least: 6.9
  * Requires PHP:      8.0
  * Author:            PlugPress
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SADDLE_VERSION', '0.4.0' );
+define( 'SADDLE_VERSION', '0.8.0' );
 define( 'SADDLE_FILE', __FILE__ );
 define( 'SADDLE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SADDLE_URL', plugin_dir_url( __FILE__ ) );
@@ -34,11 +34,28 @@ require_once SADDLE_DIR . 'includes/class-saddle-tree.php';
 require_once SADDLE_DIR . 'includes/class-saddle-blocks-tree.php';
 require_once SADDLE_DIR . 'includes/class-saddle-blocks-author.php';
 require_once SADDLE_DIR . 'includes/class-saddle-blocks-schema.php';
+require_once SADDLE_DIR . 'includes/class-saddle-blocks-echo.php';
+require_once SADDLE_DIR . 'includes/lint/interface-saddle-lint-accessor.php';
+require_once SADDLE_DIR . 'includes/lint/class-saddle-lint.php';
+require_once SADDLE_DIR . 'includes/lint/class-saddle-lint-rule.php';
+require_once SADDLE_DIR . 'includes/lint/class-saddle-lint-color.php';
+require_once SADDLE_DIR . 'includes/lint/class-saddle-lint-gutenberg-accessor.php';
+require_once SADDLE_DIR . 'includes/lint/rules/class-rule-empty-title.php';
+require_once SADDLE_DIR . 'includes/lint/rules/class-rule-button-contrast.php';
+require_once SADDLE_DIR . 'includes/lint/rules/class-rule-ghost-button.php';
+require_once SADDLE_DIR . 'includes/lint/rules/class-rule-double-background.php';
+require_once SADDLE_DIR . 'includes/lint/rules/class-rule-mixed-accents.php';
+require_once SADDLE_DIR . 'includes/lint/rules/class-rule-unaligned-buttons.php';
+require_once SADDLE_DIR . 'includes/lint/rules/class-rule-section-padding.php';
+require_once SADDLE_DIR . 'includes/lint/rules/class-rule-featured-plan.php';
 require_once SADDLE_DIR . 'includes/class-saddle-capabilities.php';
 require_once SADDLE_DIR . 'includes/class-saddle-approval.php';
 require_once SADDLE_DIR . 'includes/class-saddle-context.php';
+require_once SADDLE_DIR . 'includes/class-saddle-skills.php';
+require_once SADDLE_DIR . 'includes/class-saddle-memory.php';
 require_once SADDLE_DIR . 'includes/class-saddle-log.php';
 require_once SADDLE_DIR . 'includes/class-saddle-connection.php';
+require_once SADDLE_DIR . 'includes/class-saddle-integrations.php';
 require_once SADDLE_DIR . 'includes/class-saddle-mcp.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-settings.php';
@@ -65,20 +82,41 @@ final class Saddle {
 		// Always-on infrastructure (independent of the Abilities API).
 		add_action( 'init', array( 'Saddle_Approval', 'register_cpt' ) );
 		add_action( 'init', array( 'Saddle_Log', 'register_cpt' ) );
+		add_action( 'init', array( 'Saddle_Skills', 'register_cpt' ) );
+		add_action( 'init', array( 'Saddle_Memory', 'register_cpt' ) );
+
+		// Skills index + core memory ride the same context every session
+		// receives (the initialize handshake + get-instructions), via the
+		// shared filter.
+		add_filter( 'saddle_system_context', array( 'Saddle_Skills', 'append_index' ) );
+		add_filter( 'saddle_system_context', array( 'Saddle_Memory', 'append_context' ) );
 		add_action( 'rest_api_init', array( 'Saddle_REST_Admin', 'register_routes' ) );
 		add_action( 'rest_api_init', array( 'Saddle_Connection', 'register_routes' ) );
 		add_action( 'admin_menu', array( 'Saddle_Settings', 'register_menu' ) );
 		add_action( 'admin_enqueue_scripts', array( 'Saddle_Settings', 'enqueue_assets' ) );
 		add_action( Saddle_Approval::GC_HOOK, array( 'Saddle_Approval', 'gc' ) );
 		add_action( Saddle_Approval::GC_HOOK, array( 'Saddle_Log', 'gc' ) );
+		add_action( Saddle_Approval::GC_HOOK, array( 'Saddle_Memory', 'gc' ) );
 
 		// The MCP surface and abilities require core's Abilities API (WP 6.9+).
 		if ( self::abilities_api_available() ) {
 			require_once SADDLE_DIR . 'includes/abilities/core-content.php';
 			require_once SADDLE_DIR . 'includes/abilities/blocks.php';
+			require_once SADDLE_DIR . 'includes/abilities/site.php';
+			require_once SADDLE_DIR . 'includes/abilities/context.php';
+			require_once SADDLE_DIR . 'includes/abilities/lint.php';
+			require_once SADDLE_DIR . 'includes/abilities/memory.php';
 			add_action( 'wp_abilities_api_categories_init', 'saddle_register_ability_category' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_block_abilities' );
+			add_action( 'wp_abilities_api_init', 'saddle_register_site_abilities' );
+			add_action( 'wp_abilities_api_init', 'saddle_register_context_abilities' );
+			add_action( 'wp_abilities_api_init', 'saddle_register_lint_abilities' );
+			add_action( 'wp_abilities_api_init', 'saddle_register_memory_abilities' );
+			// First-party integration wrappers run late (30) so the partner
+			// plugins' own abilities exist to discover.
+			add_action( 'wp_abilities_api_init', array( 'Saddle_Integrations', 'register_wrappers' ), 30 );
+			add_filter( 'saddle_system_context', array( 'Saddle_Integrations', 'append_context' ) );
 
 			// Wire the MCP transport after all plugins have loaded. This MUST be
 			// deferred (see setup_mcp_transport) so the bundled adapter can't

@@ -41,7 +41,8 @@ export default function Permissions( {
 
 	const savedDisabled = useMemo( () => savedDisabledSet( caps ), [ caps ] );
 	const abilityDelta =
-		[ ...localDisabled ].filter( ( s ) => ! savedDisabled.has( s ) ).length +
+		[ ...localDisabled ].filter( ( s ) => ! savedDisabled.has( s ) )
+			.length +
 		[ ...savedDisabled ].filter( ( s ) => ! localDisabled.has( s ) ).length;
 	const abilitiesDirty = abilityDelta > 0;
 	const pending = dirty || abilitiesDirty;
@@ -133,16 +134,23 @@ export default function Permissions( {
 		( c ) => tierUnlocks( choice, c.tier ) && ! localDisabled.has( c.short )
 	).length;
 
-	const deltaLine =
-		choice === 'write'
-			? __(
-					'This lets your AI create and edit content. Deleting will always ask you first.',
-					'saddle'
-			  )
-			: __(
-					'Your AI will only be able to read. It won’t be able to make any changes.',
-					'saddle'
-			  );
+	let deltaLine;
+	if ( choice === 'admin' ) {
+		deltaLine = __(
+			'This also lets your AI manage plugins, themes, and site settings. Overwrites and deletions always ask you first.',
+			'saddle'
+		);
+	} else if ( choice === 'write' ) {
+		deltaLine = __(
+			'This lets your AI create and edit content. Deleting will always ask you first.',
+			'saddle'
+		);
+	} else {
+		deltaLine = __(
+			'Your AI will only be able to read. It won’t be able to make any changes.',
+			'saddle'
+		);
+	}
 
 	return (
 		<div className="saddle-perm">

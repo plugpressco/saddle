@@ -20,6 +20,11 @@ $saddle_options = array(
 	'saddle_disabled_abilities', // Saddle_Capabilities::DISABLED_OPTION
 	'saddle_paused',            // Saddle_Capabilities::PAUSED_OPTION
 	'saddle_tier_domain',       // Saddle_Capabilities::TIER_DOMAIN_OPTION
+	'saddle_memory_recent_changes',
+	'saddle_memory_recent_limit',
+	'saddle_memory_max_entries',      // Saddle_Memory::OPTION_MAX_ENTRIES
+	'saddle_memory_autoinject_agent', // Saddle_Memory::OPTION_AUTOINJECT
+	'saddle_memory_core_budget',      // Saddle_Memory::OPTION_CORE_BUDGET
 );
 foreach ( $saddle_options as $saddle_option ) {
 	delete_option( $saddle_option );
@@ -41,10 +46,11 @@ if ( class_exists( 'Saddle_Connection' ) ) {
 	Saddle_Connection::remove_htaccess_fix();
 }
 
-// Remove any leftover approval tokens and activity-log entries (private CPTs).
+// Remove any leftover approval tokens, activity-log entries, installed
+// skills, and memory entries (private CPTs).
 $saddle_posts = get_posts(
 	array(
-		'post_type'      => array( 'saddle_approval', 'saddle_log' ),
+		'post_type'      => array( 'saddle_approval', 'saddle_log', 'saddle_skill', 'saddle_memory' ),
 		'post_status'    => 'any',
 		'posts_per_page' => -1,
 		'fields'         => 'ids',

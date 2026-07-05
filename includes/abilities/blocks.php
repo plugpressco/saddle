@@ -149,7 +149,7 @@ function saddle_register_block_abilities() {
 		'saddle/set-blocks',
 		array(
 			'label'               => __( 'Build page blocks', 'saddle' ),
-			'description'         => __( 'Replaces a post or page\'s entire content with a new block tree — the bulk-build tool for "design this page". Each node is {"type","content","attrs","children"}: "content" carries the text/media payload and Saddle composes editor-valid markup (see saddle/get-block-schema per type); "attrs" are block attributes — use preset slugs from saddle/get-design-tokens for colors and sizes. The tree is validated against each block\'s placement rules and rejected with per-node errors if invalid — nothing partial is saved. The previous content is kept as a WordPress revision. Refuses page-builder-built posts.', 'saddle' ),
+			'description'         => __( 'Replaces a post or page\'s entire content with a new block tree — the bulk-build tool for "design this page". Each node is {"type","content","attrs","children"}: "content" carries the text/media payload and Saddle composes editor-valid markup (see saddle/get-block-schema per type); "attrs" are block attributes — use preset slugs from saddle/get-design-tokens for colors and sizes. The tree is validated against each block\'s placement rules and rejected with per-node errors if invalid — nothing partial is saved. If the response carries "warnings", those attributes will silently not render (unknown attribute, preset slug, or style group) — fix and re-edit. The previous content is kept as a WordPress revision. Refuses page-builder-built posts.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -210,7 +210,7 @@ function saddle_register_block_abilities() {
 		'saddle/edit-block',
 		array(
 			'label'               => __( 'Edit block', 'saddle' ),
-			'description'         => __( 'Rewrites one addressed block on a post or page. Provide "content" and/or "attrs" — the block is recomposed from its existing values with yours applied (same authoring semantics as saddle/set-blocks), children are kept untouched. The result is validated before saving, and the previous state is kept as a revision.', 'saddle' ),
+			'description'         => __( 'Rewrites one addressed block on a post or page. Provide "content" and/or "attrs" — the block is recomposed from its existing values with yours applied (same authoring semantics as saddle/set-blocks), children are kept untouched. The result is validated before saving, and the previous state is kept as a revision. Response "warnings" flag attributes that will silently not render.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -458,11 +458,14 @@ class Saddle_Blocks_Abilities {
 			)
 		);
 
-		return array(
-			'id'      => $post->ID,
-			'blocks'  => $count,
-			'link'    => get_permalink( $post ),
-			'note'    => __( 'The previous content is recoverable from the post\'s revisions.', 'saddle' ),
+		return self::with_warnings(
+			array(
+				'id'      => $post->ID,
+				'blocks'  => $count,
+				'link'    => get_permalink( $post ),
+				'note'    => __( 'The previous content is recoverable from the post\'s revisions.', 'saddle' ),
+			),
+			Saddle_Blocks_Echo::check_nodes( $nodes )
 		);
 	}
 
@@ -521,11 +524,14 @@ class Saddle_Blocks_Abilities {
 			)
 		);
 
-		return array(
-			'id'     => $post->ID,
-			'added'  => $address,
-			'blocks' => $count,
-			'note'   => __( 'Addresses shift after edits — re-read the page before addressing other nodes.', 'saddle' ),
+		return self::with_warnings(
+			array(
+				'id'     => $post->ID,
+				'added'  => $address,
+				'blocks' => $count,
+				'note'   => __( 'Addresses shift after edits — re-read the page before addressing other nodes.', 'saddle' ),
+			),
+			Saddle_Blocks_Echo::check_node( $node, $address )
 		);
 	}
 
@@ -618,10 +624,13 @@ class Saddle_Blocks_Abilities {
 			)
 		);
 
-		return array(
-			'id'     => $post->ID,
-			'edited' => $address,
-			'blocks' => $count,
+		return self::with_warnings(
+			array(
+				'id'     => $post->ID,
+				'edited' => $address,
+				'blocks' => $count,
+			),
+			Saddle_Blocks_Echo::check_attrs( (string) $node['blockName'], $attrs_patch, $address )
 		);
 	}
 
@@ -851,6 +860,22 @@ class Saddle_Blocks_Abilities {
 	/* ---------------------------------------------------------------------
 	 * Shared plumbing
 	 * ------------------------------------------------------------------- */
+
+	/**
+	 * Attach applied-vs-ignored echo warnings to a successful write response.
+	 * The write already landed — warnings tell the agent which of its style
+	 * intentions did NOT take effect, so it can correct instead of assuming.
+	 *
+	 * @param array    $result   Ability response.
+	 * @param string[] $warnings Echo warnings (possibly empty).
+	 * @return array
+	 */
+	private static function with_warnings( array $result, array $warnings ) {
+		if ( $warnings ) {
+			$result['warnings'] = array_values( $warnings );
+		}
+		return $result;
+	}
 
 	/**
 	 * Refuse builder-built posts: their layout belongs to the builder's own
