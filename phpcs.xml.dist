@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ruleset name="Saddle">
-	<description>WPCS + PHP compatibility for Saddle (TASKS.md item 12b).</description>
+	<description>WPCS + PHP compatibility for Saddle.</description>
 
 	<file>saddle.php</file>
 	<file>uninstall.php</file>

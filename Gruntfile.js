@@ -85,12 +85,8 @@ module.exports = function ( grunt ) {
 							'!.editorconfig',
 							// Internal docs (never shipped to users).
 							'!BUILD-GUIDE.md',
-							'!MVP-PLAN.md',
-							'!DESIGN-PLAN.md',
-							'!PRO-PLAN.md',
-							'!AGENT-CONTEXT-PLAN.md',
-							'!MEMORY-PLAN.md',
 							'!CLAUDE.md',
+							'!STATUS.md',
 							'!README.md',
 							'!admin/DESIGN-ALIGNMENT.md',
 							// Dev caches.
