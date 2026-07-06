@@ -94,9 +94,14 @@ function buildConfig( app, password ) {
 	const header = `Authorization: Basic ${ auth }`;
 
 	switch ( app ) {
-		// One CLI command, native HTTP transport.
+		// One CLI command, native HTTP transport. User scope, not the default
+		// local scope: local binds the server to the exact directory string the
+		// command runs in, so it silently fails to load from any other folder
+		// (or even the same folder reached via different path casing). A site
+		// credential belongs to the user, not to whatever cwd they happened to
+		// be in — user scope makes "run claude in any folder" actually true.
 		case 'claude-code':
-			return `claude mcp add ${ SLUG } --transport http ${ MCP_URL } \\\n  --header "${ header }"`;
+			return `claude mcp add ${ SLUG } --scope user --transport http ${ MCP_URL } \\\n  --header "${ header }"`;
 
 		// ChatGPT connects by URL from its Connectors screen — hand over the
 		// address and the sign-in details as plain fields to fill in.

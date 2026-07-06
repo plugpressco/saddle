@@ -108,7 +108,7 @@ class Saddle_Integrations {
 		$wrapper      = 'saddle/' . $short;
 
 		// Collision — never overwrite an existing saddle ability. (Checked via
-		// the full list: wp_get_ability() fires a notice on a miss.)
+		// the full list: wp_get_ability() fires a notice on a miss).
 		if ( isset( wp_get_abilities()[ $wrapper ] ) ) {
 			return;
 		}
@@ -122,6 +122,13 @@ class Saddle_Integrations {
 
 		$schema = $ability->get_input_schema();
 		if ( $destructive && is_array( $schema ) ) {
+			// A source ability may declare `properties` as an (object) cast of
+			// an empty array (the house style for no-input schemas); normalize
+			// to an array before adding our field, or the assignment below
+			// fatals on PHP 8 ("Cannot use object of type stdClass as array").
+			if ( isset( $schema['properties'] ) && is_object( $schema['properties'] ) ) {
+				$schema['properties'] = (array) $schema['properties'];
+			}
 			// The gate's handshake field, added the same way Saddle's own
 			// destructive abilities declare it.
 			$schema['properties']['confirm_token'] = array(
@@ -157,11 +164,11 @@ class Saddle_Integrations {
 	 * @param string $name        Source ability name (waggle/update-seo-meta).
 	 * @param string $title       Integration title.
 	 * @param bool   $destructive Whether the source flags itself destructive.
-	 * @param bool   $readonly    Whether the source is read-only.
+	 * @param bool   $is_readonly Whether the source is read-only.
 	 * @return callable
 	 */
-	private static function executor( $short, $name, $title, $destructive, $readonly ) {
-		return static function ( $input = null ) use ( $short, $name, $title, $destructive, $readonly ) {
+	private static function executor( $short, $name, $title, $destructive, $is_readonly ) {
+		return static function ( $input = null ) use ( $short, $name, $title, $destructive, $is_readonly ) {
 			$input  = is_array( $input ) ? $input : array();
 			$all    = wp_get_abilities();
 			$source = isset( $all[ $name ] ) ? $all[ $name ] : null;
@@ -214,7 +221,10 @@ class Saddle_Integrations {
 							'' !== $target ? "#{$target}" : __( 'the given input', 'saddle' ),
 							$title
 						),
-						'preview' => array( 'tool' => $name, 'input' => $input ),
+						'preview' => array(
+							'tool'  => $name,
+							'input' => $input,
+						),
 						'input'   => $input,
 						'execute' => $delegate,
 					)
@@ -223,7 +233,7 @@ class Saddle_Integrations {
 
 			$result = $delegate();
 
-			if ( ! $readonly && ! is_wp_error( $result ) && class_exists( 'Saddle_Log' ) ) {
+			if ( ! $is_readonly && ! is_wp_error( $result ) && class_exists( 'Saddle_Log' ) ) {
 				Saddle_Log::record(
 					array(
 						'action'  => $short,
@@ -277,6 +287,6 @@ class Saddle_Integrations {
 			return $context;
 		}
 
-		return rtrim( (string) $context ) . "\n\n" . "First-party integrations:\n" . implode( "\n", $lines ) . "\n";
+		return rtrim( (string) $context ) . "\n\nFirst-party integrations:\n" . implode( "\n", $lines ) . "\n";
 	}
 }

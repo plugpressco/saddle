@@ -101,18 +101,18 @@ class Saddle_Lint {
 	 * Depth-first walk.
 	 *
 	 * @param array[]     $blocks Sibling blocks.
-	 * @param string|null $parent Parent address.
+	 * @param string|null $parent_address Parent address.
 	 * @param int         $depth  Depth from root.
 	 * @param array       $nodes  Accumulator (by reference).
 	 */
-	private static function walk( array $blocks, $parent, $depth, array &$nodes ) {
+	private static function walk( array $blocks, $parent_address, $depth, array &$nodes ) {
 		foreach ( array_values( $blocks ) as $i => $block ) {
-			$address = null === $parent ? (string) $i : $parent . '.' . $i;
+			$address = null === $parent_address ? (string) $i : $parent_address . '.' . $i;
 			$nodes[] = array(
 				'address' => $address,
 				'type'    => (string) $block['blockName'],
 				'block'   => $block,
-				'parent'  => $parent,
+				'parent'  => $parent_address,
 				'depth'   => $depth,
 			);
 			if ( ! empty( $block['innerBlocks'] ) && is_array( $block['innerBlocks'] ) ) {

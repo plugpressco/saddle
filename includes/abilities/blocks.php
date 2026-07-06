@@ -23,7 +23,6 @@ defined( 'ABSPATH' ) || exit;
  * Register the block design abilities. Hooked to `wp_abilities_api_init`.
  */
 function saddle_register_block_abilities() {
-
 	/*
 	 * ---------------------------------------------------------------------
 	 * Design vocabulary (read)
@@ -460,10 +459,10 @@ class Saddle_Blocks_Abilities {
 
 		return self::with_warnings(
 			array(
-				'id'      => $post->ID,
-				'blocks'  => $count,
-				'link'    => get_permalink( $post ),
-				'note'    => __( 'The previous content is recoverable from the post\'s revisions.', 'saddle' ),
+				'id'     => $post->ID,
+				'blocks' => $count,
+				'link'   => get_permalink( $post ),
+				'note'   => __( 'The previous content is recoverable from the post\'s revisions.', 'saddle' ),
 			),
 			Saddle_Blocks_Echo::check_nodes( $nodes )
 		);
@@ -857,9 +856,11 @@ class Saddle_Blocks_Abilities {
 		);
 	}
 
-	/* ---------------------------------------------------------------------
+	/*
+	---------------------------------------------------------------------
 	 * Shared plumbing
-	 * ------------------------------------------------------------------- */
+	 * -------------------------------------------------------------------
+	 */
 
 	/**
 	 * Attach applied-vs-ignored echo warnings to a successful write response.
@@ -936,17 +937,17 @@ class Saddle_Blocks_Abilities {
 	 * Resolve an append/insert position against a parent's child count.
 	 *
 	 * @param array[] $tree     Block tree.
-	 * @param string  $parent   Parent address ('' = top level).
+	 * @param string  $parent_address Parent address ('' = top level).
 	 * @param int     $position Requested index (-1 = append).
 	 * @return int|WP_Error
 	 */
-	private static function resolve_position( array $tree, $parent, $position ) {
-		if ( '' === $parent ) {
+	private static function resolve_position( array $tree, $parent_address, $position ) {
+		if ( '' === $parent_address ) {
 			$sibling_count = count( $tree );
 		} else {
-			$parent_node = Saddle_Blocks_Tree::get( $tree, $parent );
+			$parent_node = Saddle_Blocks_Tree::get( $tree, $parent_address );
 			if ( ! $parent_node ) {
-				return new WP_Error( 'saddle_bad_address', sprintf( 'No block at address %s.', $parent ) );
+				return new WP_Error( 'saddle_bad_address', sprintf( 'No block at address %s.', $parent_address ) );
 			}
 			$sibling_count = count( $parent_node['innerBlocks'] );
 		}

@@ -300,6 +300,16 @@ class Saddle_REST_Admin {
 	}
 
 	/**
+	 * The current admin's saved dashboard theme preference.
+	 *
+	 * @return string One of: system, light, dark.
+	 */
+	private static function admin_theme() {
+		$theme = (string) get_user_meta( get_current_user_id(), 'saddle_admin_theme', true );
+		return '' !== $theme ? $theme : 'system';
+	}
+
+	/**
 	 * GET /settings.
 	 *
 	 * @return WP_REST_Response
@@ -312,7 +322,7 @@ class Saddle_REST_Admin {
 				'default'        => Saddle_Capabilities::DEFAULT_TIER,
 				'onboarded'      => (bool) get_option( 'saddle_onboarded', false ),
 				'paused'         => Saddle_Capabilities::is_paused(),
-				'theme'          => (string) get_user_meta( get_current_user_id(), 'saddle_admin_theme', true ) ?: 'system',
+				'theme'          => self::admin_theme(),
 				'domain_warning' => ! Saddle_Capabilities::domain_matches_recorded(),
 				'domain'         => array(
 					'current'  => Saddle_Capabilities::current_domain(),
@@ -704,7 +714,7 @@ class Saddle_REST_Admin {
 		$suffix   = 2;
 		while ( WP_Application_Passwords::application_name_exists_for_user( $user->ID, $app_name ) ) {
 			$app_name = self::CLIENT_PREFIX . $name . ' ' . $suffix;
-			$suffix++;
+			++$suffix;
 		}
 
 		$created = WP_Application_Passwords::create_new_application_password(
@@ -814,7 +824,13 @@ class Saddle_REST_Admin {
 			}
 		}
 
-		return new WP_REST_Response( array( 'revoked' => true, 'uuid' => $uuid ), 200 );
+		return new WP_REST_Response(
+			array(
+				'revoked' => true,
+				'uuid'    => $uuid,
+			),
+			200
+		);
 	}
 
 	/**
@@ -824,14 +840,21 @@ class Saddle_REST_Admin {
 	 * @return WP_REST_Response
 	 */
 	public static function get_audit_log( WP_REST_Request $request ) {
-		$per_page = (int) ( $request->get_param( 'per_page' ) ?: 20 );
-		$page     = (int) ( $request->get_param( 'page' ) ?: 1 );
+		$per_page = (int) $request->get_param( 'per_page' );
+		$per_page = $per_page > 0 ? $per_page : 20;
+		$page     = (int) $request->get_param( 'page' );
+		$page     = $page > 0 ? $page : 1;
 		$type     = (string) $request->get_param( 'type' );
 		$type     = in_array( $type, array( 'executed', 'denied' ), true ) ? $type : '';
 
 		$result = class_exists( 'Saddle_Log' )
 			? Saddle_Log::query( $per_page, $page, $type )
-			: array( 'entries' => array(), 'total' => 0, 'total_pages' => 0, 'page' => 1 );
+			: array(
+				'entries'     => array(),
+				'total'       => 0,
+				'total_pages' => 0,
+				'page'        => 1,
+			);
 
 		/**
 		 * Filter the audit-log entries surfaced in the admin UI.

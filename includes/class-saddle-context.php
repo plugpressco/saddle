@@ -96,7 +96,7 @@ class Saddle_Context {
 
 		$theme = wp_get_theme();
 		if ( $theme && $theme->exists() ) {
-			$block = function_exists( 'wp_is_block_theme' ) && wp_is_block_theme()
+			$block   = function_exists( 'wp_is_block_theme' ) && wp_is_block_theme()
 				? __( ' (block theme)', 'saddle' )
 				: '';
 			$lines[] = sprintf( '- %s: %s%s', __( 'Active theme', 'saddle' ), $theme->get( 'Name' ), $block );
@@ -249,7 +249,13 @@ class Saddle_Context {
 	 * @return string[]
 	 */
 	private static function other_public_post_types() {
-		$types  = get_post_types( array( 'public' => true, '_builtin' => false ), 'objects' );
+		$types  = get_post_types(
+			array(
+				'public'   => true,
+				'_builtin' => false,
+			),
+			'objects'
+		);
 		$labels = array();
 		foreach ( $types as $type ) {
 			$labels[] = isset( $type->labels->name ) && $type->labels->name ? $type->labels->name : $type->name;

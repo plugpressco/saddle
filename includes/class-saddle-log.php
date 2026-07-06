@@ -46,6 +46,8 @@ class Saddle_Log {
 	 * the action it is recording.
 	 *
 	 * @param array $args {
+	 *     Log entry fields.
+	 *
 	 *     @type string $action  Short action key, e.g. 'create-post', 'delete-post'.
 	 *     @type string $summary Human-readable one-line description.
 	 *     @type string $target  Target identifier (e.g. post id). Optional.
@@ -131,8 +133,8 @@ class Saddle_Log {
 
 		$entries = array();
 		foreach ( $q->posts as $post ) {
-			$user = $post->post_author ? get_userdata( $post->post_author ) : null;
-			$type = (string) get_post_meta( $post->ID, '_saddle_type', true );
+			$user      = $post->post_author ? get_userdata( $post->post_author ) : null;
+			$type      = (string) get_post_meta( $post->ID, '_saddle_type', true );
 			$entries[] = array(
 				'date'    => $post->post_date_gmt,
 				'action'  => (string) get_post_meta( $post->ID, '_saddle_action', true ),
@@ -223,7 +225,7 @@ class Saddle_Log {
 			array(
 				'post_type'      => self::CPT,
 				'post_status'    => 'publish',
-				'posts_per_page' => 200,
+				'posts_per_page' => 200, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page -- Bounded GC batch trimming a private log CPT to its cap.
 				'offset'         => $max,
 				'orderby'        => 'date',
 				'order'          => 'DESC',

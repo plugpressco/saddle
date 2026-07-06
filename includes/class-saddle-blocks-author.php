@@ -142,9 +142,11 @@ class Saddle_Blocks_Author {
 		return $block;
 	}
 
-	/* ---------------------------------------------------------------------
+	/*
+	---------------------------------------------------------------------
 	 * Per-block templates
-	 * ------------------------------------------------------------------- */
+	 * -------------------------------------------------------------------
+	 */
 
 	/**
 	 * Compose the canonical block for a type.
@@ -153,10 +155,10 @@ class Saddle_Blocks_Author {
 	 * @param WP_Block_Type|null $block_type Registered type (null only for
 	 *                                       curated types, which the switch
 	 *                                       below fully handles).
-	 * @param array         $attrs      Authored attributes.
-	 * @param mixed         $content    Authored content payload.
-	 * @param array[]       $children   Expanded child blocks.
-	 * @param string        $address    Position for error messages.
+	 * @param array              $attrs      Authored attributes.
+	 * @param mixed              $content    Authored content payload.
+	 * @param array[]            $children   Expanded child blocks.
+	 * @param string             $address    Position for error messages.
 	 * @return array|WP_Error
 	 */
 	private static function compose( $type, $block_type, array $attrs, $content, array $children, $address ) {
@@ -353,9 +355,11 @@ class Saddle_Blocks_Author {
 		);
 	}
 
-	/* ---------------------------------------------------------------------
+	/*
+	---------------------------------------------------------------------
 	 * Markup + block-array helpers
-	 * ------------------------------------------------------------------- */
+	 * -------------------------------------------------------------------
+	 */
 
 	/**
 	 * The preset/style classes a block's saved markup must carry for its
@@ -427,11 +431,11 @@ class Saddle_Blocks_Author {
 	 * @param string   $name    Tag name.
 	 * @param string[] $classes Class list (may be empty).
 	 * @param string   $style   Inline CSS (may be '').
-	 * @param bool     $void    Self-closing (hr).
+	 * @param bool     $self_closing Self-closing (hr).
 	 * @param array    $extra   Extra attribute map (values pre-escaped).
 	 * @return string
 	 */
-	private static function tag( $name, array $classes, $style = '', $void = false, array $extra = array() ) {
+	private static function tag( $name, array $classes, $style = '', $self_closing = false, array $extra = array() ) {
 		$html = '<' . $name;
 		if ( $classes ) {
 			$html .= ' class="' . esc_attr( implode( ' ', $classes ) ) . '"';
@@ -442,7 +446,7 @@ class Saddle_Blocks_Author {
 		foreach ( $extra as $key => $value ) {
 			$html .= ' ' . $key . '="' . $value . '"';
 		}
-		return $html . ( $void ? '/>' : '>' );
+		return $html . ( $self_closing ? '/>' : '>' );
 	}
 
 	/**
