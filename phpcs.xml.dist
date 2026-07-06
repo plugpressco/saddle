@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<ruleset name="Saddle">
+	<description>WPCS + PHP compatibility for Saddle (TASKS.md item 12b).</description>
+
+	<file>saddle.php</file>
+	<file>uninstall.php</file>
+	<file>includes</file>
+
+	<!-- Vendored WP MCP Adapter library — not ours to lint. -->
+	<exclude-pattern>includes/lib/*</exclude-pattern>
+
+	<arg value="sp"/>
+	<arg name="extensions" value="php"/>
+	<arg name="parallel" value="8"/>
+
+	<rule ref="WordPress">
+		<!-- Class filenames are pinned by the architecture map in CLAUDE.md
+		     (class-saddle-*.php, one class per file). WPCS wants
+		     class-saddle-mcp.php to be named after the class token exactly;
+		     renaming 29 files to satisfy a cosmetic sniff is churn with no
+		     runtime benefit and would break the documented map. -->
+		<exclude name="WordPress.Files.FileName.InvalidClassFileName"/>
+		<!-- Ability files intentionally pair a registration function with the
+		     handler class in one file (the decided per-integration layout);
+		     the mixed function/OO layout is deliberate, not an accident. -->
+		<exclude name="Universal.Files.SeparateFunctionsFromOO.Mixed"/>
+		<!-- Docblock summaries are frequently the ability id itself
+		     (e.g. "saddle/lint-page.") or another code identifier, which are
+		     intentionally lowercase; capitalizing them would corrupt the
+		     reference. -->
+		<exclude name="Generic.Commenting.DocComment.ShortNotCapital"/>
+		<exclude name="Generic.Commenting.DocComment.LongNotCapital"/>
+	</rule>
+
+	<rule ref="PHPCompatibilityWP"/>
+	<config name="testVersion" value="8.0-"/>
+	<config name="minimum_wp_version" value="7.0"/>
+</ruleset>

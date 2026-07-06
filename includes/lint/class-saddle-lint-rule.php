@@ -32,7 +32,7 @@ abstract class Saddle_Lint_Rule {
 	/**
 	 * Check the page and return violations.
 	 *
-	 * @param array[]             $nodes    Flat node list (see class doc).
+	 * @param array[]              $nodes    Flat node list (see class doc).
 	 * @param Saddle_Lint_Accessor $accessor Builder accessor.
 	 * @return array[] Violations: address, severity, message, fix_hint.
 	 */
@@ -60,13 +60,13 @@ abstract class Saddle_Lint_Rule {
 	 * The direct children of an address, in order.
 	 *
 	 * @param array[]     $nodes  Flat node list.
-	 * @param string|null $parent Parent address (null = roots).
+	 * @param string|null $parent_address Parent address (null = roots).
 	 * @return array[]
 	 */
-	protected function children( array $nodes, $parent ) {
+	protected function children( array $nodes, $parent_address ) {
 		$out = array();
 		foreach ( $nodes as $node ) {
-			if ( $node['parent'] === $parent ) {
+			if ( $node['parent'] === $parent_address ) {
 				$out[] = $node;
 			}
 		}

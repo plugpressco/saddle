@@ -28,7 +28,6 @@ defined( 'ABSPATH' ) || exit;
  * Register the site-management abilities. Hooked to `wp_abilities_api_init`.
  */
 function saddle_register_site_abilities() {
-
 	/*
 	 * ---------------------------------------------------------------------
 	 * Plugins
@@ -304,9 +303,11 @@ class Saddle_Site_Abilities {
 	 */
 	const REWRITE_OPTIONS = array( 'permalink_structure', 'category_base', 'tag_base' );
 
-	/* ---------------------------------------------------------------------
+	/*
+	---------------------------------------------------------------------
 	 * Plugins
-	 * ------------------------------------------------------------------- */
+	 * -------------------------------------------------------------------
+	 */
 
 	/**
 	 * saddle/list-plugins.
@@ -416,17 +417,19 @@ class Saddle_Site_Abilities {
 		);
 	}
 
-	/* ---------------------------------------------------------------------
+	/*
+	---------------------------------------------------------------------
 	 * Themes
-	 * ------------------------------------------------------------------- */
+	 * -------------------------------------------------------------------
+	 */
 
 	/**
 	 * saddle/list-themes.
 	 *
-	 * @param mixed $input Ability input.
+	 * @param mixed $input Ability input (unused; the ability takes no arguments).
 	 * @return array
 	 */
-	public static function list_themes( $input = null ) {
+	public static function list_themes( $input = null ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Fixed ability-callback signature.
 		$active = get_stylesheet();
 		$themes = array();
 		foreach ( wp_get_themes() as $stylesheet => $theme ) {
@@ -488,9 +491,11 @@ class Saddle_Site_Abilities {
 		);
 	}
 
-	/* ---------------------------------------------------------------------
+	/*
+	---------------------------------------------------------------------
 	 * Options
-	 * ------------------------------------------------------------------- */
+	 * -------------------------------------------------------------------
+	 */
 
 	/**
 	 * saddle/list-options.
@@ -624,10 +629,10 @@ class Saddle_Site_Abilities {
 					}
 
 					return array(
-						'updated'          => true,
-						'name'             => $name,
-						'value'            => $value,
-						'rewrite_flushed'  => $rewrites,
+						'updated'         => true,
+						'name'            => $name,
+						'value'           => $value,
+						'rewrite_flushed' => $rewrites,
 					);
 				},
 			)
@@ -675,7 +680,7 @@ class Saddle_Site_Abilities {
 		}
 
 		$positive_ints = array( 'posts_per_page', 'posts_per_rss', 'comments_per_page' );
-		if ( in_array( $name, $positive_ints, true ) && ( ! is_numeric( $value ) || (int) $value < 1 || (float) $value !== (float) (int) $value ) ) {
+		if ( in_array( $name, $positive_ints, true ) && ( ! is_numeric( $value ) || (int) $value < 1 || (float) (int) $value !== (float) $value ) ) {
 			return new WP_Error( 'saddle_bad_setting_value', sprintf( /* translators: %s: option name. */ __( '"%s" must be a positive whole number.', 'saddle' ), $name ), array( 'status' => 400 ) );
 		}
 
@@ -747,17 +752,19 @@ class Saddle_Site_Abilities {
 		return '' === $str ? '(empty)' : mb_substr( $str, 0, 80 );
 	}
 
-	/* ---------------------------------------------------------------------
+	/*
+	---------------------------------------------------------------------
 	 * Maintenance
-	 * ------------------------------------------------------------------- */
+	 * -------------------------------------------------------------------
+	 */
 
 	/**
 	 * saddle/flush-cache.
 	 *
-	 * @param mixed $input Ability input.
+	 * @param mixed $input Ability input (unused; the ability takes no arguments).
 	 * @return array
 	 */
-	public static function flush_cache( $input = null ) {
+	public static function flush_cache( $input = null ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Fixed ability-callback signature.
 		$flushed = wp_cache_flush();
 
 		self::log( 'flush-cache', 'object-cache', __( 'Flushed the object cache.', 'saddle' ) );
@@ -767,9 +774,11 @@ class Saddle_Site_Abilities {
 		);
 	}
 
-	/* ---------------------------------------------------------------------
+	/*
+	---------------------------------------------------------------------
 	 * Helpers
-	 * ------------------------------------------------------------------- */
+	 * -------------------------------------------------------------------
+	 */
 
 	/**
 	 * The effective option allowlist: the default set plus any keys added via

@@ -97,10 +97,10 @@ class Saddle_Context_Abilities {
 	/**
 	 * saddle/list-skills.
 	 *
-	 * @param mixed $input Ability input (unused).
+	 * @param mixed $input Ability input (unused; the ability takes no arguments).
 	 * @return array
 	 */
-	public static function list_skills( $input = null ) {
+	public static function list_skills( $input = null ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Fixed ability-callback signature.
 		$skills = array_values(
 			array_filter(
 				Saddle_Skills::all( false ),

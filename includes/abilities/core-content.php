@@ -33,7 +33,6 @@ function saddle_register_ability_category() {
  * Register all content abilities. Hooked to `wp_abilities_api_init`.
  */
 function saddle_register_abilities() {
-
 	/*
 	 * ---------------------------------------------------------------------
 	 * General (read)
@@ -491,9 +490,11 @@ function saddle_register_abilities() {
 	);
 }
 
-/* =========================================================================
+/*
+=========================================================================
  * Schema helpers
- * ========================================================================= */
+ * =========================================================================
+ */
 
 /**
  * Build the `meta` array for an ability with explicit annotations.
@@ -502,19 +503,19 @@ function saddle_register_abilities() {
  * catalog (and the admin UI's Capability Map) can introspect it without parsing
  * the permission_callback closure. Per CLAUDE.md, tier is declared, not inferred.
  *
- * @param bool   $readonly    Whether the ability only reads.
+ * @param bool   $is_readonly Whether the ability only reads.
  * @param bool   $destructive Whether the ability may destroy data.
  * @param bool   $idempotent  Whether repeated identical calls are no-ops.
  * @param string $tier        Minimum access tier ('read'|'write'|'admin').
  * @return array
  */
-function saddle_ability_meta( $readonly, $destructive, $idempotent, $tier = 'read' ) {
+function saddle_ability_meta( $is_readonly, $destructive, $idempotent, $tier = 'read' ) {
 	return array(
 		'show_in_rest' => true,
 		'mcp'          => array( 'public' => true ),
 		'saddle'       => array( 'tier' => $tier ),
 		'annotations'  => array(
-			'readonly'    => (bool) $readonly,
+			'readonly'    => (bool) $is_readonly,
 			'destructive' => (bool) $destructive,
 			'idempotent'  => (bool) $idempotent,
 		),
@@ -757,7 +758,7 @@ function saddle_writable_schema( $type, $is_update ) {
 	);
 
 	if ( $is_update ) {
-		$props['id']         = array(
+		$props['id']          = array(
 			'type'        => 'integer',
 			'minimum'     => 1,
 			'description' => __( 'The ID to update.', 'saddle' ),
@@ -769,13 +770,15 @@ function saddle_writable_schema( $type, $is_update ) {
 	return $schema;
 }
 
-/* =========================================================================
+/*
+=========================================================================
  * Execute callbacks
  *
  * Tier and capability enforcement happen in each ability's permission_callback
  * (see Saddle_Capabilities). Destructive callbacks route their mutation through
  * Saddle_Approval::gate(). These methods assume permission has already passed.
- * ========================================================================= */
+ * =========================================================================
+ */
 
 /**
  * Implementations for the content abilities.
@@ -927,7 +930,11 @@ class Saddle_Abilities {
 			$ips[] = $host;
 		} else {
 			foreach ( array( DNS_A, DNS_AAAA ) as $dns_type ) {
-				$records = @dns_get_record( $host, $dns_type );
+				// Silenced by design: this is an SSRF pre-flight resolving a
+				// user-supplied host to reject internal targets. A lookup
+				// failure just means "no records" — we must not warn or throw
+				// on an attacker-chosen name, only fall through to refusal.
+				$records = @dns_get_record( $host, $dns_type ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- see comment above.
 				if ( is_array( $records ) ) {
 					foreach ( $records as $record ) {
 						if ( ! empty( $record['ip'] ) ) {
@@ -975,11 +982,18 @@ class Saddle_Abilities {
 		return (bool) apply_filters( 'saddle_source_url_is_safe', $safe, $url, $ips );
 	}
 
-	/* --------------------------------------------------------------------- */
-	/* General                                                               */
+	/*
+	---------------------------------------------------------------------
+	*/
+
+	/*
+	General
+	*/
 	/* --------------------------------------------------------------------- */
 
 	/**
+	 * Return basic site identity, content counts, access tier, and the connected user.
+	 *
 	 * @return array Site orientation data.
 	 */
 	public static function get_site_info() {
@@ -1006,6 +1020,8 @@ class Saddle_Abilities {
 	}
 
 	/**
+	 * Return the auto-generated site context and the owner's instructions for agents.
+	 *
 	 * @return array Site context and the owner's instructions for agents.
 	 */
 	public static function get_instructions() {
@@ -1016,6 +1032,8 @@ class Saddle_Abilities {
 	}
 
 	/**
+	 * Search posts and pages by keyword.
+	 *
 	 * @param mixed $input { query, post_type, per_page, page }.
 	 * @return array|WP_Error
 	 */
@@ -1044,11 +1062,18 @@ class Saddle_Abilities {
 		return self::collection( $query, array( __CLASS__, 'post_summary' ) );
 	}
 
-	/* --------------------------------------------------------------------- */
-	/* Posts                                                                 */
+	/*
+	---------------------------------------------------------------------
+	*/
+
+	/*
+	Posts
+	*/
 	/* --------------------------------------------------------------------- */
 
 	/**
+	 * List posts.
+	 *
 	 * @param mixed $input List filters.
 	 * @return array
 	 */
@@ -1057,6 +1082,8 @@ class Saddle_Abilities {
 	}
 
 	/**
+	 * Fetch a single post by ID.
+	 *
 	 * @param mixed $input { id }.
 	 * @return array|WP_Error
 	 */
@@ -1065,6 +1092,8 @@ class Saddle_Abilities {
 	}
 
 	/**
+	 * Create a post.
+	 *
 	 * @param mixed $input Writable fields.
 	 * @return array|WP_Error
 	 */
@@ -1073,6 +1102,8 @@ class Saddle_Abilities {
 	}
 
 	/**
+	 * Update an existing post.
+	 *
 	 * @param mixed $input Writable fields incl. id.
 	 * @return array|WP_Error
 	 */
@@ -1081,6 +1112,8 @@ class Saddle_Abilities {
 	}
 
 	/**
+	 * Delete a post through the approval gate.
+	 *
 	 * @param mixed $input { id, force, confirm_token }.
 	 * @return array|WP_Error
 	 */
@@ -1089,6 +1122,8 @@ class Saddle_Abilities {
 	}
 
 	/**
+	 * List revisions for a post or page.
+	 *
 	 * @param mixed $input { id }.
 	 * @return array|WP_Error
 	 */
@@ -1106,10 +1141,10 @@ class Saddle_Abilities {
 		$out       = array();
 		foreach ( $revisions as $rev ) {
 			$out[] = array(
-				'id'        => $rev->ID,
-				'author'    => (int) $rev->post_author,
-				'date_gmt'  => $rev->post_date_gmt,
-				'title'     => $rev->post_title,
+				'id'       => $rev->ID,
+				'author'   => (int) $rev->post_author,
+				'date_gmt' => $rev->post_date_gmt,
+				'title'    => $rev->post_title,
 			);
 		}
 
@@ -1120,11 +1155,18 @@ class Saddle_Abilities {
 		);
 	}
 
-	/* --------------------------------------------------------------------- */
-	/* Pages                                                                 */
+	/*
+	---------------------------------------------------------------------
+	*/
+
+	/*
+	Pages
+	*/
 	/* --------------------------------------------------------------------- */
 
 	/**
+	 * List pages.
+	 *
 	 * @param mixed $input List filters.
 	 * @return array
 	 */
@@ -1133,6 +1175,8 @@ class Saddle_Abilities {
 	}
 
 	/**
+	 * Fetch a single page by ID.
+	 *
 	 * @param mixed $input { id }.
 	 * @return array|WP_Error
 	 */
@@ -1141,6 +1185,8 @@ class Saddle_Abilities {
 	}
 
 	/**
+	 * Create a page.
+	 *
 	 * @param mixed $input Writable fields.
 	 * @return array|WP_Error
 	 */
@@ -1149,6 +1195,8 @@ class Saddle_Abilities {
 	}
 
 	/**
+	 * Update an existing page.
+	 *
 	 * @param mixed $input Writable fields incl. id.
 	 * @return array|WP_Error
 	 */
@@ -1157,6 +1205,8 @@ class Saddle_Abilities {
 	}
 
 	/**
+	 * Delete a page through the approval gate.
+	 *
 	 * @param mixed $input { id, force, confirm_token }.
 	 * @return array|WP_Error
 	 */
@@ -1164,11 +1214,18 @@ class Saddle_Abilities {
 		return self::delete_of_type( 'page', 'delete_page', self::args( $input ) );
 	}
 
-	/* --------------------------------------------------------------------- */
-	/* Media                                                                 */
+	/*
+	---------------------------------------------------------------------
+	*/
+
+	/*
+	Media
+	*/
 	/* --------------------------------------------------------------------- */
 
 	/**
+	 * List media library attachments.
+	 *
 	 * @param mixed $input List filters.
 	 * @return array
 	 */
@@ -1197,6 +1254,8 @@ class Saddle_Abilities {
 	}
 
 	/**
+	 * Fetch a single media item by ID.
+	 *
 	 * @param mixed $input { id }.
 	 * @return array|WP_Error
 	 */
@@ -1330,6 +1389,8 @@ class Saddle_Abilities {
 	}
 
 	/**
+	 * Update a media item's title, alt text, caption, or description.
+	 *
 	 * @param mixed $input { id, title, alt, caption, description }.
 	 * @return array|WP_Error
 	 */
@@ -1381,6 +1442,8 @@ class Saddle_Abilities {
 	}
 
 	/**
+	 * Permanently delete a media item through the approval gate.
+	 *
 	 * @param mixed $input { id, confirm_token }.
 	 * @return array|WP_Error
 	 */
@@ -1409,11 +1472,11 @@ class Saddle_Abilities {
 					$post->post_title
 				),
 				'preview' => array(
-					'id'                    => $id,
-					'title'                 => $post->post_title,
-					'mime_type'             => $post->post_mime_type,
-					'url'                   => wp_get_attachment_url( $id ),
-					'recoverable'           => false,
+					'id'                      => $id,
+					'title'                   => $post->post_title,
+					'mime_type'               => $post->post_mime_type,
+					'url'                     => wp_get_attachment_url( $id ),
+					'recoverable'             => false,
 					'will_delete_permanently' => true,
 				),
 				'input'   => $input,
@@ -1432,11 +1495,18 @@ class Saddle_Abilities {
 		);
 	}
 
-	/* --------------------------------------------------------------------- */
-	/* Taxonomies                                                            */
+	/*
+	---------------------------------------------------------------------
+	*/
+
+	/*
+	Taxonomies
+	*/
 	/* --------------------------------------------------------------------- */
 
 	/**
+	 * List categories.
+	 *
 	 * @param mixed $input List filters.
 	 * @return array|WP_Error
 	 */
@@ -1445,6 +1515,8 @@ class Saddle_Abilities {
 	}
 
 	/**
+	 * List tags.
+	 *
 	 * @param mixed $input List filters.
 	 * @return array|WP_Error
 	 */
@@ -1453,6 +1525,8 @@ class Saddle_Abilities {
 	}
 
 	/**
+	 * Create a category.
+	 *
 	 * @param mixed $input { name, slug, parent, description }.
 	 * @return array|WP_Error
 	 */
@@ -1461,6 +1535,8 @@ class Saddle_Abilities {
 	}
 
 	/**
+	 * Create a tag.
+	 *
 	 * @param mixed $input { name, slug, description }.
 	 * @return array|WP_Error
 	 */
@@ -1573,8 +1649,13 @@ class Saddle_Abilities {
 		);
 	}
 
-	/* --------------------------------------------------------------------- */
-	/* Shared post/page implementations                                      */
+	/*
+	---------------------------------------------------------------------
+	*/
+
+	/*
+	Shared post/page implementations
+	*/
 	/* --------------------------------------------------------------------- */
 
 	/**
@@ -1687,13 +1768,6 @@ class Saddle_Abilities {
 	}
 
 	/**
-	 * Update a post/page.
-	 *
-	 * @param string $type  'post'|'page'.
-	 * @param array  $input Writable fields incl. id.
-	 * @return array|WP_Error
-	 */
-	/**
 	 * Which page builder (if any) owns a post's content.
 	 *
 	 * Content and meta signals for the builders whose layouts live in (or are
@@ -1777,6 +1851,13 @@ class Saddle_Abilities {
 		);
 	}
 
+	/**
+	 * Update a post/page.
+	 *
+	 * @param string $type  'post'|'page'.
+	 * @param array  $input Writable fields incl. id.
+	 * @return array|WP_Error
+	 */
 	private static function update_of_type( $type, array $input ) {
 		$id = self::require_id( $input );
 		if ( is_wp_error( $id ) ) {
@@ -2075,14 +2156,19 @@ class Saddle_Abilities {
 					return is_string( $leaf ) ? wp_kses_post( $leaf ) : $leaf;
 				}
 			);
-			update_post_meta( $id, $key, wp_slash_strings_only( $value ) );
+			update_post_meta( $id, $key, wp_slash( $value ) );
 		}
 
 		return $denied;
 	}
 
-	/* --------------------------------------------------------------------- */
-	/* Formatting helpers                                                    */
+	/*
+	---------------------------------------------------------------------
+	*/
+
+	/*
+	Formatting helpers
+	*/
 	/* --------------------------------------------------------------------- */
 
 	/**
@@ -2113,14 +2199,14 @@ class Saddle_Abilities {
 	 */
 	public static function post_summary( $post ) {
 		return array(
-			'id'         => $post->ID,
-			'type'       => $post->post_type,
-			'title'      => $post->post_title,
-			'status'     => $post->post_status,
-			'author'     => (int) $post->post_author,
-			'date_gmt'   => $post->post_date_gmt,
-			'link'       => get_permalink( $post ),
-			'excerpt'    => wp_strip_all_tags( get_the_excerpt( $post ) ),
+			'id'       => $post->ID,
+			'type'     => $post->post_type,
+			'title'    => $post->post_title,
+			'status'   => $post->post_status,
+			'author'   => (int) $post->post_author,
+			'date_gmt' => $post->post_date_gmt,
+			'link'     => get_permalink( $post ),
+			'excerpt'  => wp_strip_all_tags( get_the_excerpt( $post ) ),
 		);
 	}
 
@@ -2201,11 +2287,18 @@ class Saddle_Abilities {
 		return $meta;
 	}
 
-	/* --------------------------------------------------------------------- */
-	/* Input normalization                                                   */
+	/*
+	---------------------------------------------------------------------
+	*/
+
+	/*
+	Input normalization
+	*/
 	/* --------------------------------------------------------------------- */
 
 	/**
+	 * Clamp the per_page input to 1-100, defaulting to 20.
+	 *
 	 * @param array $input Input.
 	 * @return int
 	 */
@@ -2215,6 +2308,8 @@ class Saddle_Abilities {
 	}
 
 	/**
+	 * Normalize the page input to a positive integer, defaulting to 1.
+	 *
 	 * @param array $input Input.
 	 * @return int
 	 */
@@ -2224,6 +2319,8 @@ class Saddle_Abilities {
 	}
 
 	/**
+	 * Validate the status filter, falling back to 'any'.
+	 *
 	 * @param array $input Input.
 	 * @return string|string[]
 	 */
@@ -2237,6 +2334,8 @@ class Saddle_Abilities {
 	}
 
 	/**
+	 * Validate the orderby input, falling back to 'date'.
+	 *
 	 * @param array $input Input.
 	 * @return string
 	 */
@@ -2246,6 +2345,8 @@ class Saddle_Abilities {
 	}
 
 	/**
+	 * Normalize the order input to ASC or DESC, defaulting to DESC.
+	 *
 	 * @param array $input Input.
 	 * @return string
 	 */

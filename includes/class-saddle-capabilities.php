@@ -307,7 +307,7 @@ class Saddle_Capabilities {
 		if ( '' === $recorded ) {
 			return true;
 		}
-		return $recorded === self::current_domain();
+		return self::current_domain() === $recorded;
 	}
 
 	/**

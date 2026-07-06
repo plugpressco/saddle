@@ -79,12 +79,53 @@ class Saddle_Scoping_Test extends WP_UnitTestCase {
 		}
 	}
 
-	public function test_saddle_credential_still_reaches_saddle_routes() {
+	public function test_saddle_credential_still_reaches_the_mcp_endpoint() {
 		$this->authenticate_with( 'Saddle: Claude Code' );
 
-		// Public Saddle route — must not be caught by the scope wall.
-		$res = rest_do_request( new WP_REST_Request( 'GET', '/saddle/v1/auth-probe' ) );
-		$this->assertSame( 200, $res->get_status() );
+		$req = new WP_REST_Request( 'POST', '/saddle/v1/mcp' );
+		$req->set_header( 'Content-Type', 'application/json' );
+		$req->set_body(
+			wp_json_encode(
+				array(
+					'jsonrpc' => '2.0',
+					'id'      => 1,
+					'method'  => 'initialize',
+					'params'  => array( 'protocolVersion' => '2025-11-25' ),
+				)
+			)
+		);
+
+		$res = rest_do_request( $req );
+		$this->assertSame( 200, $res->get_status(), 'The MCP endpoint is the one door a Saddle key must open.' );
+	}
+
+	public function test_saddle_credential_is_refused_on_saddles_own_control_plane() {
+		$this->authenticate_with( 'Saddle: Claude Code' );
+
+		// The credential authenticates as the admin who issued it, so without
+		// the scope wall each of these manage_options routes would let an
+		// agent undo the safety model (raise its tier, re-enable tools,
+		// install skills, mint or revoke credentials). Each request carries
+		// valid params so it clears core's arg validation and actually
+		// reaches the scope wall — proving the wall, not a 400, is the refusal.
+		$control_plane = array(
+			array( 'GET', '/saddle/v1/settings', array() ),
+			array( 'POST', '/saddle/v1/settings', array( 'tier' => 'admin', 'paused' => false ) ),
+			array( 'POST', '/saddle/v1/abilities', array( 'disabled' => array() ) ),
+			array( 'POST', '/saddle/v1/skills', array( 'md' => '# x' ) ),
+			array( 'GET', '/saddle/v1/clients', array() ),
+			array( 'POST', '/saddle/v1/clients', array( 'name' => 'rogue' ) ),
+		);
+
+		foreach ( $control_plane as $call ) {
+			$req = new WP_REST_Request( $call[0], $call[1] );
+			foreach ( $call[2] as $param => $value ) {
+				$req->set_param( $param, $value );
+			}
+			$res = rest_do_request( $req );
+			$this->assertSame( 403, $res->get_status(), "{$call[0]} {$call[1]} must be refused for a Saddle-issued key." );
+			$this->assertSame( 'saddle_credential_scope', $res->as_error()->get_error_code(), "{$call[0]} {$call[1]} must be blocked by the scope wall specifically." );
+		}
 	}
 
 	public function test_non_saddle_credential_is_untouched() {

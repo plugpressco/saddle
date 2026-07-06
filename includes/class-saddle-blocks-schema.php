@@ -307,24 +307,56 @@ class Saddle_Blocks_Schema {
 			),
 			'core/buttons'   => array(
 				'type'     => 'core/buttons',
-				'children' => array( array( 'type' => 'core/button', 'content' => 'Get started', 'attrs' => array( 'url' => '/signup' ) ) ),
+				'children' => array(
+					array(
+						'type'    => 'core/button',
+						'content' => 'Get started',
+						'attrs'   => array( 'url' => '/signup' ),
+					),
+				),
 			),
 			'core/group'     => array(
 				'type'     => 'core/group',
 				'attrs'    => array( 'backgroundColor' => 'a-palette-slug-from-get-design-tokens' ),
-				'children' => array( array( 'type' => 'core/paragraph', 'content' => '…' ) ),
+				'children' => array(
+					array(
+						'type'    => 'core/paragraph',
+						'content' => '…',
+					),
+				),
 			),
 			'core/columns'   => array(
 				'type'     => 'core/columns',
 				'children' => array(
-					array( 'type' => 'core/column', 'children' => array( array( 'type' => 'core/paragraph', 'content' => 'Left' ) ) ),
-					array( 'type' => 'core/column', 'children' => array( array( 'type' => 'core/paragraph', 'content' => 'Right' ) ) ),
+					array(
+						'type'     => 'core/column',
+						'children' => array(
+							array(
+								'type'    => 'core/paragraph',
+								'content' => 'Left',
+							),
+						),
+					),
+					array(
+						'type'     => 'core/column',
+						'children' => array(
+							array(
+								'type'    => 'core/paragraph',
+								'content' => 'Right',
+							),
+						),
+					),
 				),
 			),
 			'core/column'    => array(
 				'type'     => 'core/column',
 				'attrs'    => array( 'width' => '33.33%' ),
-				'children' => array( array( 'type' => 'core/paragraph', 'content' => '…' ) ),
+				'children' => array(
+					array(
+						'type'    => 'core/paragraph',
+						'content' => '…',
+					),
+				),
 			),
 			'core/separator' => array( 'type' => 'core/separator' ),
 			'core/spacer'    => array(
@@ -360,16 +392,16 @@ class Saddle_Blocks_Schema {
 		$settings = WP_Theme_JSON_Resolver::get_merged_data()->get_settings();
 
 		$out = array(
-			'colors'       => self::presets( $settings, array( 'color', 'palette' ) ),
-			'gradients'    => self::presets( $settings, array( 'color', 'gradients' ) ),
-			'font_sizes'   => self::presets( $settings, array( 'typography', 'fontSizes' ) ),
+			'colors'        => self::presets( $settings, array( 'color', 'palette' ) ),
+			'gradients'     => self::presets( $settings, array( 'color', 'gradients' ) ),
+			'font_sizes'    => self::presets( $settings, array( 'typography', 'fontSizes' ) ),
 			'font_families' => self::presets( $settings, array( 'typography', 'fontFamilies' ) ),
 			'spacing_sizes' => self::presets( $settings, array( 'spacing', 'spacingSizes' ) ),
-			'layout'       => array(
+			'layout'        => array(
 				'content_width' => isset( $settings['layout']['contentSize'] ) ? $settings['layout']['contentSize'] : null,
 				'wide_width'    => isset( $settings['layout']['wideSize'] ) ? $settings['layout']['wideSize'] : null,
 			),
-			'usage'        => __( 'Prefer these presets over hardcoded values so pages inherit the site\'s design: use the SLUG in block attrs ({"backgroundColor":"<color slug>"}, {"textColor":"<color slug>"}, {"fontSize":"<size slug>"}), and var(--wp--preset--color--<slug>) / var(--wp--preset--spacing--<slug>) inside a "style" object. Entries are listed theme-first — theme entries are this site\'s actual brand.', 'saddle' ),
+			'usage'         => __( 'Prefer these presets over hardcoded values so pages inherit the site\'s design: use the SLUG in block attrs ({"backgroundColor":"<color slug>"}, {"textColor":"<color slug>"}, {"fontSize":"<size slug>"}), and var(--wp--preset--color--<slug>) / var(--wp--preset--spacing--<slug>) inside a "style" object. Entries are listed theme-first — theme entries are this site\'s actual brand.', 'saddle' ),
 		);
 
 		return $out;

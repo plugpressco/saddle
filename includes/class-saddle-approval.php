@@ -63,6 +63,8 @@ class Saddle_Approval {
 	 * Gate a destructive action behind a preview + confirm-token handshake.
 	 *
 	 * @param array $args {
+	 *     Gate arguments.
+	 *
 	 *     @type string   $action  Stable action identifier, e.g. 'delete_post'.
 	 *                             The token is bound to this — a token issued for
 	 *                             one action cannot confirm another.
@@ -239,11 +241,11 @@ class Saddle_Approval {
 			);
 		}
 
-		$post_id        = (int) $query->posts[0];
-		$stored_action  = get_post_meta( $post_id, '_saddle_action', true );
-		$stored_target  = (string) get_post_meta( $post_id, '_saddle_target', true );
-		$stored_bind    = (string) get_post_meta( $post_id, '_saddle_bind', true );
-		$expires        = (int) get_post_meta( $post_id, '_saddle_expires', true );
+		$post_id       = (int) $query->posts[0];
+		$stored_action = get_post_meta( $post_id, '_saddle_action', true );
+		$stored_target = (string) get_post_meta( $post_id, '_saddle_target', true );
+		$stored_bind   = (string) get_post_meta( $post_id, '_saddle_bind', true );
+		$expires       = (int) get_post_meta( $post_id, '_saddle_expires', true );
 
 		// Single-use: burn the token now, before any further branching.
 		wp_delete_post( $post_id, true );
@@ -297,6 +299,7 @@ class Saddle_Approval {
 				'posts_per_page' => 100,
 				'fields'         => 'ids',
 				'no_found_rows'  => true,
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Hourly GC over a tiny private token CPT; the meta filter is the point of the sweep.
 				'meta_query'     => array(
 					array(
 						'key'     => '_saddle_expires',

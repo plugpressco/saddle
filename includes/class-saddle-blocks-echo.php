@@ -203,7 +203,7 @@ class Saddle_Blocks_Echo {
 	 */
 	private static function preset_slugs( array $path ) {
 		static $memo = array();
-		$key = implode( '.', $path );
+		$key         = implode( '.', $path );
 		if ( array_key_exists( $key, $memo ) ) {
 			return $memo[ $key ];
 		}

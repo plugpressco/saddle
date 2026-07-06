@@ -41,8 +41,13 @@ class Saddle_Connection {
 	 * every Saddle safety layer (tier, pause, per-tool toggles, approval
 	 * gate, audit log) by calling wp/v2 or wp-abilities/v1 directly with the
 	 * same Basic auth. Requests authenticated with a `Saddle: `-prefixed
-	 * Application Password are therefore confined to `saddle/v1` routes:
-	 * the key Saddle issues only opens Saddle's door.
+	 * Application Password are therefore confined to the MCP endpoint alone —
+	 * NOT the whole saddle/v1 namespace, because that namespace also carries
+	 * Saddle's own control plane (settings/tier, per-tool toggles, skills,
+	 * client issuance), and a key that can raise its own tier or mint fresh
+	 * credentials would undo the entire safety model. Control-plane routes
+	 * require a cookie session; the key Saddle issues only opens the tools
+	 * door.
 	 *
 	 * Hooked to `rest_request_before_callbacks` (after auth, before any
 	 * handler runs). Cookie sessions and non-Saddle app passwords are
@@ -79,9 +84,18 @@ class Saddle_Connection {
 		/**
 		 * Filter the route prefixes a Saddle-issued credential may access.
 		 *
+		 * Defaults to the MCP endpoint only. Widening this to all of
+		 * `/saddle/v1` would let a connected agent drive Saddle's own
+		 * control plane (raise its tier, re-enable tools, mint credentials)
+		 * with plain Basic auth — widen deliberately, and never to a prefix
+		 * that carries admin routes.
+		 *
 		 * @param string[] $allowed Route prefixes (leading slash).
 		 */
-		$allowed = (array) apply_filters( 'saddle_credential_allowed_routes', array( '/saddle/v1' ) );
+		$allowed = (array) apply_filters(
+			'saddle_credential_allowed_routes',
+			array( '/' . Saddle_MCP::REST_NAMESPACE . Saddle_MCP::ROUTE )
+		);
 		foreach ( $allowed as $prefix ) {
 			if ( '' !== (string) $prefix && 0 === strpos( $route, (string) $prefix ) ) {
 				return $response;
@@ -156,7 +170,7 @@ class Saddle_Connection {
 	 */
 	public static function recover_auth_header() {
 		// Only bother for REST/API traffic — never touch normal browser requests.
-		$uri = isset( $_SERVER['REQUEST_URI'] ) ? (string) $_SERVER['REQUEST_URI'] : '';
+		$uri = isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( (string) $_SERVER['REQUEST_URI'] ) ) : '';
 		if ( false === strpos( $uri, 'wp-json' ) && false === strpos( $uri, 'rest_route' ) ) {
 			return;
 		}
@@ -171,12 +185,13 @@ class Saddle_Connection {
 			return;
 		}
 
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode -- decoding a standard RFC 7617 Basic credential, not obfuscated code.
 		$decoded = base64_decode( trim( substr( $header, 6 ) ), true );
 		if ( false === $decoded || false === strpos( $decoded, ':' ) ) {
 			return;
 		}
 
-		list( $user, $pass ) = explode( ':', $decoded, 2 );
+		list( $user, $pass )      = explode( ':', $decoded, 2 );
 		$_SERVER['PHP_AUTH_USER'] = $user;
 		$_SERVER['PHP_AUTH_PW']   = $pass;
 	}
@@ -189,7 +204,7 @@ class Saddle_Connection {
 	public static function authorization_header() {
 		foreach ( array( 'HTTP_AUTHORIZATION', 'REDIRECT_HTTP_AUTHORIZATION' ) as $key ) {
 			if ( ! empty( $_SERVER[ $key ] ) ) {
-				return trim( (string) $_SERVER[ $key ] );
+				return trim( sanitize_text_field( wp_unslash( (string) $_SERVER[ $key ] ) ) );
 			}
 		}
 
@@ -292,7 +307,7 @@ class Saddle_Connection {
 			'is_ssl'                  => is_ssl(),
 			'server'                  => self::server_software(),
 			'endpoint'                => rest_url( ltrim( Saddle_MCP::REST_NAMESPACE . Saddle_MCP::ROUTE, '/' ) ),
-			'auth_header'             => $auth_header, // 'ok' | 'stripped' | 'unknown'
+			'auth_header'             => $auth_header, // One of: ok, stripped, unknown.
 			'htaccess_fixable'        => ( 'stripped' === $auth_header ) && self::htaccess_fixable(),
 			'fix_snippet'             => self::fix_snippet(),
 		);
@@ -322,9 +337,13 @@ class Saddle_Connection {
 			$url,
 			array(
 				'timeout'     => 5,
+				// Loopback to our own rest_url with a throwaway credential —
+				// local dev/staging often serves a self-signed cert, and the
+				// probe reads only a boolean, never trusting the response body.
 				'sslverify'   => false,
 				'redirection' => 0,
 				'cookies'     => array(),
+				// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- building a standard RFC 7617 Basic header for the loopback probe.
 				'headers'     => array( 'Authorization' => 'Basic ' . base64_encode( 'saddle-probe:x' ) ),
 			)
 		);
@@ -359,6 +378,7 @@ class Saddle_Connection {
 			return false;
 		}
 
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_is_writable -- read-only capability probe; the actual write goes through core's insert_with_markers().
 		return file_exists( $path ) ? is_writable( $path ) : is_writable( dirname( $path ) );
 	}
 
@@ -410,6 +430,7 @@ class Saddle_Connection {
 	 */
 	public static function remove_htaccess_fix() {
 		$path = self::htaccess_path();
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_is_writable -- read-only capability probe; the actual write goes through core's insert_with_markers().
 		if ( '' === $path || ! file_exists( $path ) || ! is_writable( $path ) ) {
 			return;
 		}
@@ -460,6 +481,6 @@ class Saddle_Connection {
 	 * @return string
 	 */
 	public static function server_software() {
-		return isset( $_SERVER['SERVER_SOFTWARE'] ) ? (string) $_SERVER['SERVER_SOFTWARE'] : '';
+		return isset( $_SERVER['SERVER_SOFTWARE'] ) ? sanitize_text_field( wp_unslash( (string) $_SERVER['SERVER_SOFTWARE'] ) ) : '';
 	}
 }

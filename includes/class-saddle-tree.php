@@ -24,10 +24,11 @@ defined( 'ABSPATH' ) || exit;
  * the tree revision they were read from.
  */
 class Saddle_Tree {
-
-	/* ---------------------------------------------------------------------
+	/*
+	---------------------------------------------------------------------
 	 * Parse / serialize
-	 * ------------------------------------------------------------------- */
+	 * -------------------------------------------------------------------
+	 */
 
 	/**
 	 * Parse page content into a block tree, dropping the whitespace-only
@@ -69,9 +70,11 @@ class Saddle_Tree {
 		return $clean;
 	}
 
-	/* ---------------------------------------------------------------------
+	/*
+	---------------------------------------------------------------------
 	 * Addressing + node operations
-	 * ------------------------------------------------------------------- */
+	 * -------------------------------------------------------------------
+	 */
 
 	/**
 	 * Flatten a tree into an addressable node list.
@@ -140,10 +143,10 @@ class Saddle_Tree {
 		return self::mutate_list(
 			$tree,
 			$parent_address,
-			static function ( array $list ) use ( $position, $block ) {
-				$at = max( 0, min( count( $list ), (int) $position ) );
-				array_splice( $list, $at, 0, array( $block ) );
-				return $list;
+			static function ( array $children ) use ( $position, $block ) {
+				$at = max( 0, min( count( $children ), (int) $position ) );
+				array_splice( $children, $at, 0, array( $block ) );
+				return $children;
 			}
 		);
 	}
@@ -162,15 +165,15 @@ class Saddle_Tree {
 		return self::mutate_list(
 			$tree,
 			implode( '.', $path ),
-			static function ( array $list ) use ( $index, $address ) {
-				if ( ! isset( $list[ $index ] ) ) {
+			static function ( array $children ) use ( $index, $address ) {
+				if ( ! isset( $children[ $index ] ) ) {
 					return new WP_Error(
 						'saddle_bad_address',
 						sprintf( 'No block at address %s.', $address )
 					);
 				}
-				array_splice( $list, (int) $index, 1 );
-				return $list;
+				array_splice( $children, (int) $index, 1 );
+				return $children;
 			}
 		);
 	}
@@ -190,15 +193,15 @@ class Saddle_Tree {
 		return self::mutate_list(
 			$tree,
 			implode( '.', $path ),
-			static function ( array $list ) use ( $index, $block, $address ) {
-				if ( ! isset( $list[ $index ] ) ) {
+			static function ( array $children ) use ( $index, $block, $address ) {
+				if ( ! isset( $children[ $index ] ) ) {
 					return new WP_Error(
 						'saddle_bad_address',
 						sprintf( 'No block at address %s.', $address )
 					);
 				}
-				$list[ (int) $index ] = $block;
-				return $list;
+				$children[ (int) $index ] = $block;
+				return $children;
 			}
 		);
 	}
@@ -249,14 +252,14 @@ class Saddle_Tree {
 	 *
 	 * @param array[]  $tree           Block tree.
 	 * @param string   $parent_address Address of the container ('' = root list).
-	 * @param callable $fn             array $list → array|WP_Error.
+	 * @param callable $mutator        array $children → array|WP_Error.
 	 * @return array[]|WP_Error
 	 */
-	protected static function mutate_list( array $tree, $parent_address, callable $fn ) {
+	protected static function mutate_list( array $tree, $parent_address, callable $mutator ) {
 		$path = self::path( $parent_address );
 
 		if ( ! $path ) {
-			$result = $fn( $tree );
+			$result = $mutator( $tree );
 			return is_wp_error( $result ) ? $result : array_values( $result );
 		}
 
@@ -269,7 +272,7 @@ class Saddle_Tree {
 		}
 
 		$rest  = implode( '.', array_slice( $path, 1 ) );
-		$child = self::mutate_list( $tree[ $index ]['innerBlocks'], $rest, $fn );
+		$child = self::mutate_list( $tree[ $index ]['innerBlocks'], $rest, $mutator );
 		if ( is_wp_error( $child ) ) {
 			return $child;
 		}
@@ -304,8 +307,10 @@ class Saddle_Tree {
 			$lead[] = $chunk;
 		}
 
-		$trail = array();
-		for ( $i = count( $inner_content ) - 1; $i >= count( $lead ); $i-- ) {
+		$trail      = array();
+		$total      = count( $inner_content );
+		$lead_count = count( $lead );
+		for ( $i = $total - 1; $i >= $lead_count; $i-- ) {
 			if ( ! is_string( $inner_content[ $i ] ) ) {
 				break;
 			}

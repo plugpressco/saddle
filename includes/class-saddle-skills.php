@@ -136,9 +136,9 @@ class Saddle_Skills {
 		$seen   = array();
 
 		foreach ( self::posts() as $post ) {
-			$skill                    = self::shape( $post, $with_body );
-			$seen[ $skill['name'] ]   = true;
-			$skills[]                 = $skill;
+			$skill                  = self::shape( $post, $with_body );
+			$seen[ $skill['name'] ] = true;
+			$skills[]               = $skill;
 		}
 
 		foreach ( self::builtins() as $skill ) {
@@ -293,9 +293,11 @@ class Saddle_Skills {
 		return $context . "\n" . implode( "\n", $lines ) . "\n";
 	}
 
-	/* ---------------------------------------------------------------------
+	/*
+	---------------------------------------------------------------------
 	 * Internals
-	 * ------------------------------------------------------------------- */
+	 * -------------------------------------------------------------------
+	 */
 
 	/**
 	 * Parse and sanitize raw SKILL.md text into name/description/when/body.

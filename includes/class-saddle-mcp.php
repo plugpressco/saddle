@@ -225,7 +225,7 @@ class Saddle_MCP {
 
 		switch ( $method ) {
 			case 'initialize':
-				$requested = isset( $params['protocolVersion'] ) && is_string( $params['protocolVersion'] ) ? $params['protocolVersion'] : '';
+				$requested  = isset( $params['protocolVersion'] ) && is_string( $params['protocolVersion'] ) ? $params['protocolVersion'] : '';
 				$negotiated = in_array( $requested, self::SUPPORTED_PROTOCOL_VERSIONS, true ) ? $requested : self::PROTOCOL_VERSION;
 
 				return self::result_envelope(
@@ -273,13 +273,6 @@ class Saddle_MCP {
 	}
 
 	/**
-	 * Concise steering delivered in the `initialize` result's `instructions`
-	 * field. Reuses the same context Saddle exposes via the get-instructions
-	 * ability, so the two never drift.
-	 *
-	 * @return string
-	 */
-	/**
 	 * A per-site MCP server slug: "saddle-plugpress".
 	 *
 	 * Used as the server key in every client config the connect wizard
@@ -315,6 +308,13 @@ class Saddle_MCP {
 		return '' === $site ? 'Saddle' : sprintf( 'Saddle (%s)', $site );
 	}
 
+	/**
+	 * Concise steering delivered in the `initialize` result's `instructions`
+	 * field. Reuses the same context Saddle exposes via the get-instructions
+	 * ability, so the two never drift.
+	 *
+	 * @return string
+	 */
 	private static function server_instructions() {
 		if ( class_exists( 'Saddle_Context' ) ) {
 			$text = Saddle_Context::system_context();
@@ -388,7 +388,7 @@ class Saddle_MCP {
 		// denial or failure before invoking the execute_callback — so no separate
 		// permission pre-check is needed here. (Build Guide Step 1 calls for
 		// confirming this against the installed 6.9 core; the contract is
-		// documented, but verify on first boot.)
+		// documented, but verify on first boot).
 		$outcome = $ability->execute( $arguments );
 
 		if ( is_wp_error( $outcome ) ) {
@@ -454,10 +454,10 @@ class Saddle_MCP {
 	/**
 	 * Build a JSON-RPC error envelope.
 	 *
-	 * @param mixed       $id      Request id.
-	 * @param int         $code    JSON-RPC error code.
-	 * @param string      $message Error message.
-	 * @param array|null  $data    Optional structured error data.
+	 * @param mixed      $id      Request id.
+	 * @param int        $code    JSON-RPC error code.
+	 * @param string     $message Error message.
+	 * @param array|null $data    Optional structured error data.
 	 * @return array
 	 */
 	private static function error_envelope( $id, $code, $message, $data = null ) {
