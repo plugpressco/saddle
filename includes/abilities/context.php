@@ -1,7 +1,7 @@
 <?php
 /**
  * Agent-context abilities — skills and recent-changes recall (Phase 1 of the
- * Agent Context System, see AGENT-CONTEXT-PLAN.md).
+ * Agent Context System, see https://github.com/plugpressco/saddle/issues/9).
  *
  * All read-tier: this surface serves owner-authored playbooks and Saddle's own
  * change log. There is deliberately NO ability that writes a skill — skills are

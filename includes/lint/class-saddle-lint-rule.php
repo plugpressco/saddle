@@ -9,7 +9,7 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * One rule = one small class: an id() and a check() over the flat node list
- * (DESIGN-PLAN.md §2.1). The base class carries only the violation format and
+ * (https://github.com/plugpressco/saddle/issues/10 §2.1). The base class carries only the violation format and
  * the tree-shape helpers every rule needs; design judgment lives in the
  * subclasses, builder knowledge lives in the accessor.
  *

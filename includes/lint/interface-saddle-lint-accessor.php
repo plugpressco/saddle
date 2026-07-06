@@ -11,7 +11,7 @@ defined( 'ABSPATH' ) || exit;
  * How lint rules read design facts off a raw block node.
  *
  * This interface is the ONLY builder-specific part of the lint engine
- * (DESIGN-PLAN.md §2.1): rules never reach into builder attrs directly, they
+ * (https://github.com/plugpressco/saddle/issues/10 §2.1): rules never reach into builder attrs directly, they
  * ask an accessor. Free Saddle implements it for Gutenberg; Saddle Pro's Divi
  * driver implements it for Divi 5; Elementor/Bricks follow later.
  *

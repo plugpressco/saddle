@@ -9,7 +9,7 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * The L3 archival memory store and its L2 core injection
- * (AGENT-CONTEXT-PLAN.md Phase 2).
+ * (https://github.com/plugpressco/saddle/issues/9, Phase 2).
  *
  * Agents write facts, preferences, and decisions here mid-session
  * (`remember`), search them on demand (`recall`), and delete them

@@ -4,7 +4,7 @@
  *
  * Every rule is pinned BOTH ways — the violation fires on the bad fixture
  * and stays silent on the clean one (a lint that cries wolf gets ignored,
- * DESIGN-PLAN.md §2.1). Plus the engine contract: rules registered through
+ * https://github.com/plugpressco/saddle/issues/10 §2.1). Plus the engine contract: rules registered through
  * the one filter, violations shaped {address, rule, severity, message,
  * fix_hint}, builder pages resolved through the accessor filter.
  *

@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
  * served on demand through the `saddle/get-skill` ability. That keeps twenty
  * skills from bloating every session while still making each discoverable.
  *
- * Trust model (see AGENT-CONTEXT-PLAN.md): a skill is text the agent will
+ * Trust model (see https://github.com/plugpressco/saddle/issues/9): a skill is text the agent will
  * follow, so installation is OWNER-ONLY — there is deliberately no ability
  * that writes a skill. Agents read; owners install. And a skill never grants
  * capability: it can only orchestrate existing gated tools.

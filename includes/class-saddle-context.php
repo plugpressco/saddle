@@ -176,7 +176,7 @@ class Saddle_Context {
 		// Recent-changes recall: what connected agents changed lately, from
 		// Saddle's own activity log. Saddle-generated fact, not agent prose —
 		// the one memory layer that is safe to auto-serve (values are escaped
-		// and truncated; see AGENT-CONTEXT-PLAN.md §8).
+		// and truncated; see https://github.com/plugpressco/saddle/issues/9 §8).
 		$recent = self::recent_changes_lines();
 		if ( ! empty( $recent ) ) {
 			$lines = array_merge( $lines, $recent );

@@ -2,7 +2,7 @@
 /**
  * Agent memory abilities: remember / recall / forget.
  *
- * The L3 archival layer's tool surface (AGENT-CONTEXT-PLAN.md §7). Grammar
+ * The L3 archival layer's tool surface (https://github.com/plugpressco/saddle/issues/9 §7). Grammar
  * mirrors Anthropic's memory tools so Claude clients map with zero
  * friction. Writes are write-tier and logged; nothing written here is
  * auto-served to future sessions unless the owner pins it (or flips the

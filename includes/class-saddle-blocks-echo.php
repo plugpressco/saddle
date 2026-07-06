@@ -9,7 +9,7 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Detects the silent no-op: an attribute the agent wrote that the editor
- * will never act on (DESIGN-PLAN.md §2.2). Three checks, all against what
+ * will never act on (https://github.com/plugpressco/saddle/issues/10 §2.2). Three checks, all against what
  * THIS site actually registers:
  *
  *  1. Unknown attribute keys — not in the block type's registered attributes

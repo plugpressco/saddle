@@ -4,7 +4,7 @@
  *
  * PHP-native dispatch only. There is deliberately NO raw code execution, NO
  * shell WP-CLI passthrough, and NO direct database access here — see the scope
- * lock in MVP-PLAN.md and CLAUDE.md. Every operation calls a first-party
+ * lock in https://github.com/plugpressco/saddle/issues/12 and CLAUDE.md. Every operation calls a first-party
  * WordPress PHP API (activate_plugin(), switch_theme(), update_option(),
  * wp_cache_flush(), …), so an agent gets the practical outcome of a WP-CLI
  * command without Saddle ever becoming a code-execution endpoint.

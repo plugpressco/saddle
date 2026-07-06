@@ -8,7 +8,7 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Runs design-quality rules over a parsed block tree (DESIGN-PLAN.md §2.1).
+ * Runs design-quality rules over a parsed block tree (https://github.com/plugpressco/saddle/issues/10 §2.1).
  *
  * The engine is generic: it flattens the tree into an addressable node list,
  * hands that list plus a builder accessor to each rule, and collects

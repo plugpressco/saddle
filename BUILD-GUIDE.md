@@ -109,15 +109,15 @@ Read `admin/DESIGN-ALIGNMENT.md` in full. The short version: get the real inbees
 
 ---
 
-## Step 7 — Phase 2 kickoff (only after v0.1 exit criteria in MVP-PLAN.md are all checked off)
+## Step 7 — Phase 2 kickoff (only after v0.1 exit criteria in the [Finalized Plan](https://github.com/plugpressco/saddle/issues/12) are all checked off)
 
-Work the Phase 2 list in `MVP-PLAN.md` in the order given. Audit log first — it's the cheapest high-value item and closes the last "stub" in the REST layer.
+Work the Phase 2 list in the [Finalized Plan](https://github.com/plugpressco/saddle/issues/12) in the order given. Audit log first — it's the cheapest high-value item and closes the last "stub" in the REST layer.
 
 ---
 
 ## Before WordPress.org submission
 
-Re-read the "WordPress.org submission" section in `MVP-PLAN.md`. Draft the external-services disclosure language early — this is the section most likely to cause review delays based on the mailyard precedent, and it's better written calmly in advance than reactively after a reviewer flags it.
+Re-read the "WordPress.org submission" section in the [Finalized Plan](https://github.com/plugpressco/saddle/issues/12). Draft the external-services disclosure language early — this is the section most likely to cause review delays based on the mailyard precedent, and it's better written calmly in advance than reactively after a reviewer flags it.
 
 ---
 

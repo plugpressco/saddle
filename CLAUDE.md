@@ -3,13 +3,13 @@
 Read this before touching code. It encodes decisions already made — don't re-derive
 or re-litigate them mid-session, follow them. If something here seems wrong, flag it
 to Fahim explicitly rather than silently deviating. Then read `BUILD-GUIDE.md` for
-execution order and `MVP-PLAN.md` for scope.
+execution order and the [Finalized Plan](https://github.com/plugpressco/saddle/issues/12) for scope.
 
 ## What this is
 
 Self-hosted WordPress MCP server: tiered, approval-gated CRUD for posts, pages, and
-media, plus builder-agnostic block tooling. Check the scope lock in `MVP-PLAN.md`
-before adding anything not already there.
+media, plus builder-agnostic block tooling. Check the scope lock in the
+[Finalized Plan](https://github.com/plugpressco/saddle/issues/12) before adding anything not already there.
 
 **Distribution:** no WP.org submission planned (decided 2026-07-03) — self-hosted
 only for now. Don't spend effort on WP.org-specific compliance beyond normal good
@@ -56,7 +56,7 @@ the credential directly via
 through `wp-admin/authorize-application.php`. Don't add a custom auth layer without a
 specific, written reason core's flow can't satisfy.
 
-## Architecture map (current, not aspirational — MVP-PLAN.md flags stub vs. real)
+## Architecture map (current, not aspirational — the [Finalized Plan](https://github.com/plugpressco/saddle/issues/12) flags stub vs. real)
 
 ```
 saddle.php                    — bootstrap; wires hooks, defers MCP transport to plugins_loaded
@@ -116,7 +116,7 @@ tests/                        — PHPUnit integration suite (SQLite-backed, real
   three competitors checked for this project.
 - Don't add raw PHP execution or shell WP-CLI as a power-user convenience here. If
   ever built, it's a separate, clearly-labeled addon — never silently available in
-  core (see Phase 3 in MVP-PLAN.md).
+  core (see Phase 3 in the [Finalized Plan](https://github.com/plugpressco/saddle/issues/12)).
 - Don't change the default tier away from `read`, even temporarily for testing.
 - Don't build a custom OAuth server "for nicer UX" without confirming core's
   Authorize Application flow is actually insufficient first — it almost certainly
