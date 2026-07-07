@@ -68,14 +68,6 @@ class Saddle_Settings {
 	private static $notice_buffer_level = 0;
 
 	/**
-	 * The current user's admin theme (system|light|dark), for the pre-paint
-	 * theme boot. Set in enqueue_assets, consumed by print_theme_boot.
-	 *
-	 * @var string
-	 */
-	private static $theme = 'system';
-
-	/**
 	 * On Saddle's screen only: capture other plugins' admin notices instead of
 	 * letting them pile above the app.
 	 *
@@ -127,24 +119,6 @@ class Saddle_Settings {
 		}
 		// Captured wp-admin output, re-emitted verbatim in a hidden container.
 		echo '<div id="saddle-foreign-notices" hidden>' . $html . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-	}
-
-	/**
-	 * Print the pre-paint theme attribute on <body>.
-	 *
-	 * Runs at the top of the admin content (in_admin_header), before the app
-	 * bundle (footer) and before #saddle-root paints, so the design-system
-	 * tokens resolve to the right theme with no flash.
-	 */
-	public static function print_theme_boot() {
-		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
-		if ( ! $screen || $screen->id !== self::$hook_suffix ) {
-			return;
-		}
-		printf(
-			'<script>document.body.dataset.ppTheme=%s;</script>',
-			wp_json_encode( self::$theme )
-		);
 	}
 
 	/**
@@ -233,23 +207,15 @@ class Saddle_Settings {
 		wp_set_script_translations( 'saddle-admin', 'saddle' );
 
 		$current_user = wp_get_current_user();
-		$theme        = (string) get_user_meta( get_current_user_id(), 'saddle_admin_theme', true );
-		$theme        = in_array( $theme, array( 'light', 'dark' ), true ) ? $theme : 'system';
-		self::$theme  = $theme;
 
-		// The design system reads its --pp-* tokens from a .pp-scope ancestor,
-		// so the page body carries it (portaled overlays inherit the tokens too).
+		// The design system (light-only) reads its --pp-* tokens from a .pp-scope
+		// ancestor, so the page body carries it (portaled overlays inherit too).
 		add_filter(
 			'admin_body_class',
 			static function ( $classes ) {
 				return $classes . ' pp-scope';
 			}
 		);
-
-		// Set data-pp-theme on <body> before the app paints, so an explicit
-		// light/dark choice (or a system user's OS preference) never flashes the
-		// other theme. The useTheme hook keeps it in sync after mount.
-		add_action( 'in_admin_header', array( __CLASS__, 'print_theme_boot' ) );
 
 		wp_add_inline_script(
 			'saddle-admin',
@@ -268,7 +234,6 @@ class Saddle_Settings {
 					// Environment facts so the UI can warn before a connect fails.
 					'appPasswords' => function_exists( 'wp_is_application_passwords_available' ) ? (bool) wp_is_application_passwords_available() : true,
 					'ssl'          => is_ssl(),
-					'theme'        => $theme,
 					// Where WordPress itself lists these credentials — linked
 					// from the Connect tab for transparency.
 					'profileUrl'   => esc_url_raw( admin_url( 'profile.php#application-passwords-section' ) ),

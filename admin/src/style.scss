@@ -2,17 +2,14 @@
  * Saddle admin styles — calm, modern, person-first.
  *
  * Powered by the PlugPress design system (@plugpress/ui): every --s-* token
- * aliases a shared --pp-* token (below), so Saddle rides the DS palette and
- * dark mode. Monochrome with semantic color reserved for status. Dark mode is
- * driven by the DS data-pp-theme attribute the TopBar toggle flips live via
- * the useTheme hook. See DESIGN-ALIGNMENT.md.
+ * aliases a shared --pp-* token (below), so Saddle rides the DS palette.
+ * Monochrome with semantic color reserved for status. Light-only (the design
+ * system dropped dark mode in v0.2.0). See DESIGN-ALIGNMENT.md.
  */
 
-// Every --s-* token now aliases a shared design-system --pp-* token, so
-// Saddle's whole stylesheet rides the DS palette and its dark mode. Theming is
-// driven by the DS data-pp-theme attribute (set on <body> by useTheme), which
-// flips the --pp-* values — the aliases below follow automatically. The old
-// s-palette-light/dark mixins and saddle-theme-* classes are retired.
+// Every --s-* token aliases a shared design-system --pp-* token, so Saddle's
+// whole stylesheet rides the DS palette. The old s-palette-light/dark mixins
+// and saddle-theme-* classes are retired.
 //
 // Requires the page body to carry .pp-scope and .saddle-app to carry .pp-app
 // (both are applied) so the --pp-* tokens resolve here.

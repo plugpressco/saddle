@@ -9,7 +9,6 @@
  * forms. All the protocol machinery stays out of sight.
  */
 import { useState, useEffect, useCallback, useRef } from '@wordpress/element';
-import { useTheme } from '@plugpress/ui';
 import { Spinner, Notice } from './ui';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { api } from './api';
@@ -119,17 +118,6 @@ export default function App() {
 	const [ error, setError ] = useState( null );
 	const [ tab, setTabState ] = useState( tabFromHash );
 	const [ wizardOpen, setWizardOpen ] = useState( false );
-
-	// Theme cycles system → dark → light via the design-system hook, which sets
-	// data-pp-theme on <body> (so portaled surfaces inherit it) and persists the
-	// choice best-effort in the background.
-	const { theme, cycle: cycleTheme } = useTheme( {
-		initial: window.saddleData?.theme || 'system',
-		persist: ( next ) =>
-			api( 'settings', { method: 'POST', data: { theme: next } } ).catch(
-				() => {}
-			),
-	} );
 
 	// Navigating writes the hash; state follows the hashchange event, so
 	// back/forward and direct #links all land in the same code path.
@@ -288,8 +276,6 @@ export default function App() {
 				paused={ paused }
 				onTogglePause={ togglePause }
 				pausing={ pausing }
-				theme={ theme }
-				onCycleTheme={ cycleTheme }
 			/>
 
 			{ ! wizardOpen && <ForeignNotices /> }
