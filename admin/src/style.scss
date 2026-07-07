@@ -1,120 +1,66 @@
 /**
  * Saddle admin styles — calm, modern, person-first.
  *
- * Token-driven: one palette definition per theme (mixins below), emitted as
- * CSS custom properties on both the page body (so portaled surfaces like
- * Modal inherit them) and .saddle-app. Monochrome with semantic color
- * reserved for status. Dark mode: system preference by default, overridden
- * by a server-rendered body class (saddle-theme-light / saddle-theme-dark)
- * that the TopBar toggle flips live. See DESIGN-ALIGNMENT.md.
+ * Powered by the PlugPress design system (@plugpress/ui): every --s-* token
+ * aliases a shared --pp-* token (below), so Saddle rides the DS palette and
+ * dark mode. Monochrome with semantic color reserved for status. Dark mode is
+ * driven by the DS data-pp-theme attribute the TopBar toggle flips live via
+ * the useTheme hook. See DESIGN-ALIGNMENT.md.
  */
 
-@mixin s-palette-light {
-	color-scheme: light;
+// Every --s-* token now aliases a shared design-system --pp-* token, so
+// Saddle's whole stylesheet rides the DS palette and its dark mode. Theming is
+// driven by the DS data-pp-theme attribute (set on <body> by useTheme), which
+// flips the --pp-* values — the aliases below follow automatically. The old
+// s-palette-light/dark mixins and saddle-theme-* classes are retired.
+//
+// Requires the page body to carry .pp-scope and .saddle-app to carry .pp-app
+// (both are applied) so the --pp-* tokens resolve here.
+body.toplevel_page_saddle,
+.saddle-app {
+	// Neutrals + status — resolve straight to the shared tokens.
+	--s-canvas: var( --pp-canvas );
+	--s-bg: var( --pp-surface );
+	--s-fg: var( --pp-text );
+	--s-fg-muted: var( --pp-text-secondary );
+	--s-fg-subtle: var( --pp-text-muted );
+	--s-border: var( --pp-border );
+	--s-border-strong: var( --pp-border-strong );
+	--s-surface-2: var( --pp-surface-alt );
+	--s-surface-3: var( --pp-surface-hover );
 
-	--s-canvas: #f7f7f8;
-	--s-bg: #fff;
-	--s-fg: #171717;
-	--s-fg-muted: #5c5c5c;
-	--s-fg-subtle: #8f8f8f;
-	--s-border: #eaeaea;
-	--s-border-strong: #d9d9d9;
-	--s-surface-2: #fafafa;
-	--s-surface-3: #f3f3f4;
+	--s-action: var( --pp-action );
+	--s-action-hover: var( --pp-action-hover );
+	--s-on-action: var( --pp-on-action );
 
-	--s-action: #171717;
-	--s-action-hover: #000;
-	--s-on-action: #fff;
+	--s-safe: var( --pp-success );
+	--s-safe-bg: var( --pp-success-bg );
+	--s-active: var( --pp-warning );
+	--s-active-bg: var( --pp-warning-bg );
+	--s-danger: var( --pp-danger );
+	--s-danger-bg: var( --pp-danger-bg );
 
-	--s-safe: #067a57;
-	--s-safe-bg: #ecf7f2;
-	--s-active: #9a5b00;
-	--s-active-bg: #fbf3e6;
-	--s-danger: #d1293d;
-	--s-danger-bg: #fdecee;
+	--s-focus: var( --pp-focus );
 
-	--s-focus: #0070f3;
-
-	// Inverse surface (the sticky apply bar): dark-on-light theme.
-	--s-inverse-bg: #171717;
-	--s-inverse-fg: #fff;
-	--s-inverse-fg-muted: #d4d4d4;
-	--s-inverse-btn-bg: #fff;
-	--s-inverse-btn-fg: #171717;
-	--s-inverse-btn-hover: #ededed;
-	--s-inverse-tint: rgba( 255, 255, 255, 0.08 );
+	// Inverse sticky-bar surface: the DS action tokens ARE Saddle's inverse
+	// intent (near-black bar in light, near-white in dark). Muted text + tint
+	// are the on-action color at reduced alpha, so they flip with the theme too.
+	--s-inverse-bg: var( --pp-action );
+	--s-inverse-fg: var( --pp-on-action );
+	--s-inverse-fg-muted: color-mix( in srgb, var( --pp-on-action ) 66%, transparent );
+	--s-inverse-btn-bg: var( --pp-on-action );
+	--s-inverse-btn-fg: var( --pp-action );
+	--s-inverse-btn-hover: color-mix( in srgb, var( --pp-on-action ) 90%, var( --pp-action ) );
+	--s-inverse-tint: color-mix( in srgb, var( --pp-on-action ) 8%, transparent );
 
 	// Code panels stay dark in both themes by design.
-	--s-code-bg: #0a0a0a;
-	--s-code-border: #0a0a0a;
-	--s-code-fg: #ededed;
-
-	--s-shadow-sm: 0 1px 2px rgba( 0, 0, 0, 0.04 );
-	--s-shadow-md: 0 2px 8px rgba( 0, 0, 0, 0.06 );
-	--s-shadow-lg: 0 12px 40px rgba( 0, 0, 0, 0.14 );
-}
-
-@mixin s-palette-dark {
-	color-scheme: dark;
-
-	--s-canvas: #09090b;
-	--s-bg: #131316;
-	--s-fg: #ededed;
-	--s-fg-muted: #a1a1aa;
-	--s-fg-subtle: #70707b;
-	--s-border: #26262b;
-	--s-border-strong: #3f3f46;
-	--s-surface-2: #18181b;
-	--s-surface-3: #1f1f23;
-
-	--s-action: #ededed;
-	--s-action-hover: #fff;
-	--s-on-action: #171717;
-
-	--s-safe: #3dd6a3;
-	--s-safe-bg: #0d2b21;
-	--s-active: #e0a83c;
-	--s-active-bg: #2a2010;
-	--s-danger: #f4707f;
-	--s-danger-bg: #331418;
-
-	--s-focus: #4c8dff;
-
-	// Inverse surface flips to light-on-dark.
-	--s-inverse-bg: #ededed;
-	--s-inverse-fg: #171717;
-	--s-inverse-fg-muted: #57575e;
-	--s-inverse-btn-bg: #171717;
-	--s-inverse-btn-fg: #fff;
-	--s-inverse-btn-hover: #000;
-	--s-inverse-tint: rgba( 0, 0, 0, 0.07 );
-
 	--s-code-bg: #0a0a0a;
 	--s-code-border: #26262b;
 	--s-code-fg: #ededed;
 
-	--s-shadow-sm: 0 1px 2px rgba( 0, 0, 0, 0.5 );
-	--s-shadow-md: 0 2px 8px rgba( 0, 0, 0, 0.5 );
-	--s-shadow-lg: 0 12px 40px rgba( 0, 0, 0, 0.65 );
-}
-
-// Light is the default; system dark applies unless the user chose light;
-// an explicit dark choice wins regardless of system.
-body.toplevel_page_saddle,
-.saddle-app {
-	@include s-palette-light;
-}
-
-@media ( prefers-color-scheme: dark ) {
-	body.toplevel_page_saddle:not( .saddle-theme-light ),
-	body.toplevel_page_saddle:not( .saddle-theme-light ) .saddle-app {
-		@include s-palette-dark;
-	}
-}
-
-body.toplevel_page_saddle.saddle-theme-dark,
-body.toplevel_page_saddle.saddle-theme-dark .saddle-app {
-	@include s-palette-dark;
+	--s-shadow-sm: var( --pp-shadow-sm );
+	--s-shadow-md: var( --pp-shadow-md );
+	--s-shadow-lg: var( --pp-shadow-lg );
 }
 
 // ---------- App shell: Saddle owns its canvas on this screen ----------
@@ -2223,4 +2169,38 @@ body.toplevel_page_saddle {
 		max-height: 320px;
 		overflow: auto;
 	}
+}
+
+// ---------- @plugpress/ui compat-shim wrappers ----------
+// Small layout helpers for the WP-component API adapted in admin/src/ui.jsx.
+
+// ToggleControl → Switch + label/help row.
+.saddle-toggle-row {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+
+	&__text {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+
+	&__label {
+		font-size: 13px;
+		color: var(--s-fg);
+	}
+
+	&__help {
+		font-size: 12px;
+		color: var(--s-fg-muted);
+	}
+}
+
+// Notice `actions` rendered as trailing links.
+.saddle-notice__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin-top: 8px;
 }

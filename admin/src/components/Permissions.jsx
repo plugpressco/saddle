@@ -6,7 +6,7 @@
  * what's included — invisible for everyone else. Nothing saves until you apply.
  */
 import { useState, useMemo } from '@wordpress/element';
-import { Button, Notice } from '@wordpress/components';
+import { Button, Notice } from '../ui';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { api, LEVELS, levelKey, tierUnlocks } from '../api';
 import { LevelIcon } from './icons';

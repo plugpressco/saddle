@@ -4,7 +4,7 @@
  * user's AI actually talking to their site, not with more settings.
  */
 import { useState } from '@wordpress/element';
-import { Button, Notice } from '@wordpress/components';
+import { Button, Notice } from '../ui';
 import { __ } from '@wordpress/i18n';
 import { api, LEVELS } from '../api';
 import { LevelIcon, BrandMark } from './icons';

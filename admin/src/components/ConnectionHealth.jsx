@@ -8,7 +8,7 @@
  * LiteSpeed, can write the standard forwarding rule itself.
  */
 import { useState, useEffect } from '@wordpress/element';
-import { Button, Spinner } from '@wordpress/components';
+import { Button, Spinner } from '../ui';
 import { __ } from '@wordpress/i18n';
 import { api } from '../api';
 

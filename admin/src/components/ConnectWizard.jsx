@@ -10,7 +10,7 @@
  * just-created credential is quietly revoked — no orphan keys.
  */
 import { useState, useEffect, useRef, useCallback } from '@wordpress/element';
-import { Button, Notice, Spinner } from '@wordpress/components';
+import { Button, Notice, Spinner } from '../ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { api, saddleData, levelFor } from '../api';
 import ConnectionHealth from './ConnectionHealth';

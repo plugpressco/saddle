@@ -3,7 +3,7 @@
  * and the three-section nav. Calm and quiet — the status is the point.
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { Button } from '@wordpress/components';
+import { Button } from '../ui';
 import { levelFor } from '../api';
 import { ThemeIcon, BrandMark } from './icons';
 

@@ -15,7 +15,7 @@ import {
 	Button,
 	Notice,
 	Spinner,
-} from '@wordpress/components';
+} from '../ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { api } from '../api';
 

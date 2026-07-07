@@ -30,7 +30,8 @@ class Saddle_Settings {
 			self::PAGE_SLUG,
 			array( __CLASS__, 'render_page' ),
 			self::menu_icon(),
-			81
+			// PlugPress ecosystem menu band (see @plugpress/ui php/menu-positions.php).
+			'58.20'
 		);
 
 		// Remember the hook suffix so enqueue only fires on our page.
@@ -65,6 +66,14 @@ class Saddle_Settings {
 	 * @var int
 	 */
 	private static $notice_buffer_level = 0;
+
+	/**
+	 * The current user's admin theme (system|light|dark), for the pre-paint
+	 * theme boot. Set in enqueue_assets, consumed by print_theme_boot.
+	 *
+	 * @var string
+	 */
+	private static $theme = 'system';
 
 	/**
 	 * On Saddle's screen only: capture other plugins' admin notices instead of
@@ -118,6 +127,24 @@ class Saddle_Settings {
 		}
 		// Captured wp-admin output, re-emitted verbatim in a hidden container.
 		echo '<div id="saddle-foreign-notices" hidden>' . $html . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	}
+
+	/**
+	 * Print the pre-paint theme attribute on <body>.
+	 *
+	 * Runs at the top of the admin content (in_admin_header), before the app
+	 * bundle (footer) and before #saddle-root paints, so the design-system
+	 * tokens resolve to the right theme with no flash.
+	 */
+	public static function print_theme_boot() {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( ! $screen || $screen->id !== self::$hook_suffix ) {
+			return;
+		}
+		printf(
+			'<script>document.body.dataset.ppTheme=%s;</script>',
+			wp_json_encode( self::$theme )
+		);
 	}
 
 	/**
@@ -179,15 +206,26 @@ class Saddle_Settings {
 			true
 		);
 
-		// wp-scripts emits the stylesheet imported from index.js as
-		// "style-index.css" (the convention for a source file named style.scss).
-		// Fall back to "index.css" in case the build convention changes.
-		$style_file = file_exists( $build_dir . 'style-index.css' ) ? 'style-index.css' : 'index.css';
-		if ( file_exists( $build_dir . $style_file ) ) {
+		// wp-scripts (default config) emits two stylesheets: "index.css" holds the
+		// plain-CSS imports (the @plugpress/ui design system), and
+		// "style-index.css" holds the compiled style.scss (Saddle's own rules,
+		// which alias the design-system --pp-* tokens). Load the design system
+		// first, then Saddle on top so its higher-specificity rules win.
+		$ds_dep = array( 'wp-components' );
+		if ( file_exists( $build_dir . 'index.css' ) ) {
+			wp_enqueue_style(
+				'saddle-admin-ds',
+				$build_url . 'index.css',
+				array( 'wp-components' ),
+				$asset['version']
+			);
+			$ds_dep = array( 'wp-components', 'saddle-admin-ds' );
+		}
+		if ( file_exists( $build_dir . 'style-index.css' ) ) {
 			wp_enqueue_style(
 				'saddle-admin',
-				$build_url . $style_file,
-				array( 'wp-components' ),
+				$build_url . 'style-index.css',
+				$ds_dep,
 				$asset['version']
 			);
 		}
@@ -197,17 +235,21 @@ class Saddle_Settings {
 		$current_user = wp_get_current_user();
 		$theme        = (string) get_user_meta( get_current_user_id(), 'saddle_admin_theme', true );
 		$theme        = in_array( $theme, array( 'light', 'dark' ), true ) ? $theme : 'system';
+		self::$theme  = $theme;
 
-		// Server-rendered theme class — the tokens switch before first paint,
-		// so an explicit light/dark choice never flashes the other theme.
-		if ( 'system' !== $theme ) {
-			add_filter(
-				'admin_body_class',
-				static function ( $classes ) use ( $theme ) {
-					return $classes . ' saddle-theme-' . $theme;
-				}
-			);
-		}
+		// The design system reads its --pp-* tokens from a .pp-scope ancestor,
+		// so the page body carries it (portaled overlays inherit the tokens too).
+		add_filter(
+			'admin_body_class',
+			static function ( $classes ) {
+				return $classes . ' pp-scope';
+			}
+		);
+
+		// Set data-pp-theme on <body> before the app paints, so an explicit
+		// light/dark choice (or a system user's OS preference) never flashes the
+		// other theme. The useTheme hook keeps it in sync after mount.
+		add_action( 'in_admin_header', array( __CLASS__, 'print_theme_boot' ) );
 
 		wp_add_inline_script(
 			'saddle-admin',

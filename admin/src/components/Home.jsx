@@ -4,7 +4,7 @@
  * is set up yet.
  */
 import { useState, useEffect } from '@wordpress/element';
-import { Button } from '@wordpress/components';
+import { Button } from '../ui';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { api, levelFor } from '../api';
 

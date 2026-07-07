@@ -6,7 +6,7 @@
  * "Show more". Reads are never logged (see Saddle_Log), and the page says so.
  */
 import { useState, useEffect, useCallback } from '@wordpress/element';
-import { Button, Spinner, Notice } from '@wordpress/components';
+import { Button, Spinner, Notice } from '../ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { api } from '../api';
 

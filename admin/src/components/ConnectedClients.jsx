@@ -8,7 +8,7 @@
  */
 import { useState } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
-import { Button, Notice, Spinner, Modal } from '@wordpress/components';
+import { Button, Notice, Spinner, Modal } from '../ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { saddleData, api } from '../api';
 import ConnectionHealth from './ConnectionHealth';

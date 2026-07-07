@@ -9,7 +9,8 @@
  * forms. All the protocol machinery stays out of sight.
  */
 import { useState, useEffect, useCallback, useRef } from '@wordpress/element';
-import { Spinner, Notice } from '@wordpress/components';
+import { useTheme } from '@plugpress/ui';
+import { Spinner, Notice } from './ui';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { api } from './api';
 import TopBar from './components/TopBar';
@@ -118,9 +119,17 @@ export default function App() {
 	const [ error, setError ] = useState( null );
 	const [ tab, setTabState ] = useState( tabFromHash );
 	const [ wizardOpen, setWizardOpen ] = useState( false );
-	const [ theme, setTheme ] = useState(
-		window.saddleData?.theme || 'system'
-	);
+
+	// Theme cycles system → dark → light via the design-system hook, which sets
+	// data-pp-theme on <body> (so portaled surfaces inherit it) and persists the
+	// choice best-effort in the background.
+	const { theme, cycle: cycleTheme } = useTheme( {
+		initial: window.saddleData?.theme || 'system',
+		persist: ( next ) =>
+			api( 'settings', { method: 'POST', data: { theme: next } } ).catch(
+				() => {}
+			),
+	} );
 
 	// Navigating writes the hash; state follows the hashchange event, so
 	// back/forward and direct #links all land in the same code path.
@@ -223,24 +232,6 @@ export default function App() {
 		}
 	};
 
-	// Theme cycles system → dark → light. The body class flips immediately
-	// (the CSS tokens key off it); persistence is best-effort in the background.
-	const cycleTheme = () => {
-		const order = [ 'system', 'dark', 'light' ];
-		const next = order[ ( order.indexOf( theme ) + 1 ) % order.length ];
-		setTheme( next );
-		document.body.classList.remove(
-			'saddle-theme-light',
-			'saddle-theme-dark'
-		);
-		if ( next !== 'system' ) {
-			document.body.classList.add( `saddle-theme-${ next }` );
-		}
-		api( 'settings', { method: 'POST', data: { theme: next } } ).catch(
-			() => {}
-		);
-	};
-
 	const togglePause = () => {
 		const next = ! paused;
 		setPausing( true );
@@ -269,7 +260,7 @@ export default function App() {
 
 	if ( loading ) {
 		return (
-			<div className="saddle-app saddle-app--loading">
+			<div className="pp-app saddle-app saddle-app--loading">
 				<Spinner />
 			</div>
 		);
@@ -277,7 +268,7 @@ export default function App() {
 
 	if ( ! onboarded ) {
 		return (
-			<div className="saddle-app saddle-app--setup">
+			<div className="pp-app saddle-app saddle-app--setup">
 				<Onboarding
 					tier={ tier }
 					onTierSaved={ setTier }
@@ -288,7 +279,7 @@ export default function App() {
 	}
 
 	return (
-		<div className="saddle-app">
+		<div className="pp-app saddle-app">
 			<TopBar
 				tier={ tier }
 				tabs={ wizardOpen ? null : TABS }

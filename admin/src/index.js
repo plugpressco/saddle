@@ -4,6 +4,11 @@
 import apiFetch from '@wordpress/api-fetch';
 import { createRoot } from '@wordpress/element';
 import App from './App';
+
+// PlugPress design system: shared tokens + components, then Saddle's monochrome
+// accent, then Saddle's own styles (which now alias the --pp-* tokens).
+import '@plugpress/ui/ui.css';
+import '@plugpress/ui/tokens/accents/saddle.css';
 import './style.scss';
 
 const data = window.saddleData || {};
