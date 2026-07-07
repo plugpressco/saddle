@@ -1,0 +1,57 @@
+name: Release
+
+# Self-hosted distribution for free Saddle: on a version tag, build the
+# production zip and publish it as a GitHub Release asset (the downloadable
+# artifact). No WordPress.org / Freemius / marketplace upload involved.
+#
+# Release flow:
+#   grunt bump:patch   (or minor/major) — updates the version everywhere
+#   git commit -am "release vX.Y.Z" && git tag vX.Y.Z && git push --follow-tags
+#   → this workflow builds saddle-<version>.zip and attaches it to the release.
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & publish zip
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify tag matches the plugin version
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          HDR="$(grep -m1 -oE 'Version:[[:space:]]*[0-9.]+' saddle.php | grep -oE '[0-9.]+')"
+          echo "tag=$TAG  header=$HDR"
+          if [ "$TAG" != "$HDR" ]; then
+            echo "::error::Tag v$TAG does not match the plugin header version $HDR. Run 'grunt bump' and commit before tagging."
+            exit 1
+          fi
+          echo "VERSION=$TAG" >> "$GITHUB_ENV"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install build tooling
+        run: npm ci
+
+      - name: Build admin assets
+        run: npm run build
+
+      - name: Build plugin zip
+        run: npx grunt build
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/saddle-${{ env.VERSION }}.zip
+          fail_on_unmatched_files: true
+          generate_release_notes: true
