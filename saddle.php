@@ -103,6 +103,7 @@ final class Saddle {
 			require_once SADDLE_DIR . 'includes/abilities/core-content.php';
 			require_once SADDLE_DIR . 'includes/abilities/blocks.php';
 			require_once SADDLE_DIR . 'includes/abilities/site.php';
+			require_once SADDLE_DIR . 'includes/abilities/users.php';
 			require_once SADDLE_DIR . 'includes/abilities/context.php';
 			require_once SADDLE_DIR . 'includes/abilities/lint.php';
 			require_once SADDLE_DIR . 'includes/abilities/memory.php';
@@ -110,6 +111,7 @@ final class Saddle {
 			add_action( 'wp_abilities_api_init', 'saddle_register_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_block_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_site_abilities' );
+			add_action( 'wp_abilities_api_init', 'saddle_register_user_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_context_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_lint_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_memory_abilities' );
