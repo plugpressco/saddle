@@ -63,7 +63,7 @@ saddle.php                    — bootstrap; wires hooks, defers MCP transport t
 includes/
   class-saddle-tree.php       — builder-agnostic block-tree engine (parse/address/mutate/serialize)
   class-saddle-blocks-*.php   — Gutenberg validation profile, authoring layer, schema/tokens, applied-vs-ignored echo
-  lint/                       — design lint engine (DESIGN-PLAN §2.1): Saddle_Lint runner + Saddle_Lint_Accessor
+  lint/                       — design lint engine: Saddle_Lint runner + Saddle_Lint_Accessor
                                  interface (only builder-specific surface) + 8 rules; Saddle Pro plugs Divi in
   class-saddle-capabilities.php — tier system (read/write/admin), single source of truth for permission_callback
   class-saddle-approval.php   — dry-run + confirm-token gate, single-use, 15-min TTL, target-bound
