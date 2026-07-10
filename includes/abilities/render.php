@@ -52,6 +52,28 @@ function saddle_register_render_abilities() {
 			'meta'                => saddle_ability_meta( true, false, true, 'read' ),
 		)
 	);
+
+	wp_register_ability(
+		'saddle/get-preview-url',
+		array(
+			'label'               => __( 'Get a preview URL', 'saddle' ),
+			'description'         => __( 'Returns a short-lived, signed URL that renders the post\'s CURRENT saved layout on the site\'s own front end — drafts included, no login needed, expires in about 5 minutes. This is how you SEE real pixels: open the URL in your own browser and screenshot it (Saddle never renders or sends anything anywhere). The page is noindex and the link opens only this one post; treat it as ephemeral and do not share it.', 'saddle' ),
+			'category'            => 'saddle',
+			'input_schema'        => array(
+				'type'       => 'object',
+				'required'   => array( 'post_id' ),
+				'properties' => array(
+					'post_id' => array(
+						'type'        => 'integer',
+						'description' => __( 'The post or page to preview.', 'saddle' ),
+					),
+				),
+			),
+			'execute_callback'    => array( 'Saddle_Render_Abilities', 'get_preview_url' ),
+			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'get-preview-url' ),
+			'meta'                => saddle_ability_meta( true, false, false, 'read' ),
+		)
+	);
 }
 
 /**
@@ -107,6 +129,39 @@ class Saddle_Render_Abilities {
 			array(
 				'note' => __( 'Effective persisted styles with presets/tokens resolved — what the saved state means, not a browser screenshot.', 'saddle' ),
 			)
+		);
+	}
+
+	/**
+	 * saddle/get-preview-url.
+	 *
+	 * A preview link exposes unpublished content to whoever holds it, so the
+	 * caller must be allowed to SEE that content first: published posts need
+	 * read access, anything else needs edit rights — a read-only viewer must
+	 * not mint a window into someone's draft.
+	 *
+	 * @param array $input Ability input.
+	 * @return array|WP_Error
+	 */
+	public static function get_preview_url( $input = null ) {
+		$input = is_array( $input ) ? $input : array();
+		$post  = get_post( isset( $input['post_id'] ) ? (int) $input['post_id'] : 0 );
+		if ( ! $post || ! in_array( $post->post_type, array( 'post', 'page' ), true ) ) {
+			return new WP_Error( 'saddle_not_found', __( 'No post or page with that ID.', 'saddle' ), array( 'status' => 404 ) );
+		}
+
+		$cap = 'publish' === $post->post_status ? 'read_post' : 'edit_post';
+		if ( ! current_user_can( $cap, $post->ID ) ) {
+			return new WP_Error( 'saddle_forbidden', __( 'You cannot preview this post.', 'saddle' ), array( 'status' => 403 ) );
+		}
+
+		$minted = Saddle_Preview::mint( $post );
+
+		return array(
+			'id'         => $post->ID,
+			'url'        => $minted['url'],
+			'expires_in' => $minted['expires_in'],
+			'note'       => __( 'Open and screenshot this in YOUR browser — it renders the current saved layout (drafts included) on the site\'s own front end, is noindex, opens only this post, and expires. Do not share it.', 'saddle' ),
 		);
 	}
 
