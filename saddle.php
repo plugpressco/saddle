@@ -52,6 +52,9 @@ require_once SADDLE_DIR . 'includes/lint/rules/class-rule-featured-plan.php';
 require_once SADDLE_DIR . 'includes/lint/rules/class-rule-text-contrast.php';
 require_once SADDLE_DIR . 'includes/lint/rules/class-rule-missing-alt.php';
 require_once SADDLE_DIR . 'includes/lint/rules/class-rule-heading-order.php';
+require_once SADDLE_DIR . 'includes/render/interface-saddle-render-accessor.php';
+require_once SADDLE_DIR . 'includes/render/class-saddle-render.php';
+require_once SADDLE_DIR . 'includes/render/class-saddle-render-gutenberg-accessor.php';
 require_once SADDLE_DIR . 'includes/class-saddle-capabilities.php';
 require_once SADDLE_DIR . 'includes/class-saddle-approval.php';
 require_once SADDLE_DIR . 'includes/class-saddle-context.php';
@@ -110,6 +113,7 @@ final class Saddle {
 			require_once SADDLE_DIR . 'includes/abilities/users.php';
 			require_once SADDLE_DIR . 'includes/abilities/context.php';
 			require_once SADDLE_DIR . 'includes/abilities/lint.php';
+			require_once SADDLE_DIR . 'includes/abilities/render.php';
 			require_once SADDLE_DIR . 'includes/abilities/memory.php';
 			add_action( 'wp_abilities_api_categories_init', 'saddle_register_ability_category' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_abilities' );
@@ -118,6 +122,7 @@ final class Saddle {
 			add_action( 'wp_abilities_api_init', 'saddle_register_user_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_context_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_lint_abilities' );
+			add_action( 'wp_abilities_api_init', 'saddle_register_render_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_memory_abilities' );
 			// First-party integration wrappers run late (30) so the partner
 			// plugins' own abilities exist to discover.
