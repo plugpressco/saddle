@@ -250,6 +250,11 @@ class Saddle_Settings {
 					// Where WordPress itself lists these credentials — linked
 					// from the Connect tab for transparency.
 					'profileUrl'   => esc_url_raw( admin_url( 'profile.php#application-passwords-section' ) ),
+					// Header chrome: plugin version + outbound links (filterable so
+					// the real docs/review URLs are configurable without a rebuild).
+					'version'      => SADDLE_VERSION,
+					'docsUrl'      => esc_url_raw( apply_filters( 'saddle_docs_url', 'https://plugpress.co/saddle/docs' ) ),
+					'rateUrl'      => esc_url_raw( apply_filters( 'saddle_rate_url', 'https://plugpress.co/saddle/#reviews' ) ),
 				)
 			) . ';',
 			'before'

@@ -276,70 +276,70 @@ export default function App() {
 				pausing={ pausing }
 			/>
 
-			{ ! wizardOpen && <ForeignNotices /> }
+			<div className="saddle-content" id="pp-main">
+				{ ! wizardOpen && <ForeignNotices /> }
 
-			{ error && <Notice tone="danger">{ error }</Notice> }
+				{ error && <Notice tone="danger">{ error }</Notice> }
 
-			{ domainWarning && ! wizardOpen && (
-				<Notice tone="warning">
-					{ __(
-						'This site’s address has changed since AI write access was turned on — often a sign of a staging clone or a migration carrying over live credentials. If that wasn’t intentional, review your connected apps and revoke anything unexpected.',
-						'saddle'
-					) }
-					<span className="saddle-notice__actions">
-						<Button
-							variant="link"
-							size="sm"
-							onClick={ clearDomainWarning }
-						>
-							{ __(
-								'This is expected — clear this warning',
-								'saddle'
-							) }
-						</Button>
-					</span>
-				</Notice>
-			) }
-
-			<div className="saddle-panel">
-				{ wizardOpen ? (
-					<ConnectWizard
-						tier={ tier }
-						onExit={ closeWizard }
-						onClientsChanged={ loadClients }
-					/>
-				) : (
-					<div className="saddle-tabpane" key={ tab }>
-						{ tab === 'home' && (
-							<Home
-								tier={ tier }
-								clients={ clients }
-								onNavigate={ setTab }
-								onConnect={ openWizard }
-								paused={ paused }
-								onResume={ togglePause }
-							/>
+				{ domainWarning && ! wizardOpen && (
+					<Notice tone="warning">
+						{ __(
+							'This site’s address has changed since AI write access was turned on — often a sign of a staging clone or a migration carrying over live credentials. If that wasn’t intentional, review your connected apps and revoke anything unexpected.',
+							'saddle'
 						) }
-						{ tab === 'permissions' && (
-							<Permissions
-								caps={ caps }
-								savedTier={ tier }
-								onTierSaved={ handleTierSaved }
-								onCapsChanged={ loadCaps }
-							/>
-						) }
-						{ tab === 'guidance' && <Guidance /> }
-						{ tab === 'activity' && <Activity /> }
-						{ tab === 'connect' && (
-							<Apps
-								clients={ clients }
-								loading={ false }
-								onConnect={ openWizard }
-								onClientsChanged={ loadClients }
-							/>
-						) }
-					</div>
+						<span className="saddle-notice__actions">
+							<Button
+								variant="link"
+								size="sm"
+								onClick={ clearDomainWarning }
+							>
+								{ __(
+									'This is expected — clear this warning',
+									'saddle'
+								) }
+							</Button>
+						</span>
+					</Notice>
 				) }
+
+				<div className="saddle-panel">
+					{ wizardOpen ? (
+						<ConnectWizard
+							tier={ tier }
+							onExit={ closeWizard }
+							onClientsChanged={ loadClients }
+						/>
+					) : (
+						<div className="saddle-tabpane" key={ tab }>
+							{ tab === 'home' && (
+								<Home
+									tier={ tier }
+									clients={ clients }
+									onNavigate={ setTab }
+									onConnect={ openWizard }
+								/>
+							) }
+							{ tab === 'permissions' && (
+								<Permissions
+									caps={ caps }
+									savedTier={ tier }
+									onTierSaved={ handleTierSaved }
+									onCapsChanged={ loadCaps }
+								/>
+							) }
+							{ tab === 'guidance' && <Guidance /> }
+							{ tab === 'activity' && <Activity /> }
+							{ tab === 'connect' && (
+								<Apps
+									clients={ clients }
+									loading={ false }
+									onConnect={ openWizard }
+									onClientsChanged={ loadClients }
+								/>
+							) }
+						</div>
+					) }
+				</div>
 			</div>
 		</div>
 		);

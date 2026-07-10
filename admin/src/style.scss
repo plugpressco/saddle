@@ -93,9 +93,8 @@ body.toplevel_page_saddle {
 	--s-dur: 160ms;
 
 	box-sizing: border-box;
-	max-width: 1008px; // 960 content + side padding
-	margin: 0 auto;
-	padding: 28px 24px 72px;
+	// Full-bleed wrapper: the header spans edge-to-edge; the width constraint
+	// lives on .saddle-top__inner and .saddle-content instead.
 	color: var(--s-fg);
 	-webkit-font-smoothing: antialiased;
 
@@ -105,8 +104,12 @@ body.toplevel_page_saddle {
 		padding: 120px 0;
 	}
 
+	// Onboarding is a separate return branch (no .saddle-content) — keep it a
+	// centered narrow column.
 	&--setup {
 		max-width: 620px;
+		margin: 0 auto;
+		padding: 28px 24px 72px;
 	}
 
 	button:focus-visible,
@@ -160,20 +163,52 @@ body.toplevel_page_saddle {
 
 /* ---------- Top bar + nav ---------- */
 
+// Full-bleed header: the bar background + hairline span the whole content area;
+// its contents stay aligned to the centered column via __inner. Sticky under the
+// wp-admin bar (the CSS var tracks the 32→46px change at ≤782px automatically).
 .saddle-top {
-	margin-bottom: 24px;
+	position: sticky;
+	top: var( --wp-admin--admin-bar--height, 32px );
+	z-index: 20;
+	background: var(--s-bg);
+	border-bottom: 1px solid var(--s-border);
+
+	&__inner {
+		max-width: 1008px;
+		margin: 0 auto;
+		padding: 0 24px;
+	}
 
 	&__row {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding-bottom: 16px;
+		gap: 16px;
+		padding: 14px 0 10px;
 	}
 
 	&__brand {
 		display: flex;
 		align-items: center;
 		gap: 10px;
+	}
+
+	&__version {
+		font-size: 12px;
+		font-weight: 550;
+		color: var(--s-fg-subtle);
+		background: var(--s-surface-3);
+		padding: 2px 8px;
+		border-radius: var(--s-radius-pill);
+		font-variant-numeric: tabular-nums;
+	}
+
+	&__sep {
+		width: 1px;
+		height: 20px;
+		background: var(--s-border);
+		flex: 0 0 auto;
+		margin: 0 2px;
 	}
 
 	&__mark {
@@ -199,7 +234,7 @@ body.toplevel_page_saddle {
 	&__right {
 		display: flex;
 		align-items: center;
-		gap: 10px;
+		gap: 8px;
 	}
 
 	&__status {
@@ -229,9 +264,19 @@ body.toplevel_page_saddle {
 
 }
 
-// The section nav rides the design system's Tabs; only spacing is ours.
+// The section nav rides the design system's Tabs. Drop its own hairline so it
+// doesn't double the header bar's border-bottom; nudge down 1px so the active
+// tab's accent underline sits on the bar hairline.
 .saddle-nav {
-	margin-bottom: 0;
+	border-bottom: none;
+	margin-bottom: -1px;
+}
+
+// The centered content column beneath the full-bleed header.
+.saddle-content {
+	max-width: 1008px;
+	margin: 0 auto;
+	padding: 24px 24px 72px;
 }
 
 /* Section switches ease in rather than snapping. */
@@ -240,7 +285,7 @@ body.toplevel_page_saddle {
 }
 
 .saddle-panel {
-	padding-top: 28px;
+	padding-top: 0;
 }
 
 /* ---------- Onboarding ---------- */

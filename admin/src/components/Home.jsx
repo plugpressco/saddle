@@ -6,7 +6,6 @@
 import { useState, useEffect } from '@wordpress/element';
 import {
 	Button,
-	Hero,
 	CalloutCard,
 	CardGrid,
 	Card,
@@ -18,14 +17,7 @@ import {
 	StatusDot,
 } from '@plugpress/ui';
 import { __, sprintf, _n } from '@wordpress/i18n';
-import { api, levelFor } from '../api';
-
-// Safety tone → design-system tone for the hero.
-const HERO_TONES = {
-	safe: 'success',
-	active: 'warning',
-	paused: 'default',
-};
+import { api } from '../api';
 
 const WHEN_FMT = new Intl.DateTimeFormat( undefined, {
 	dateStyle: 'medium',
@@ -93,19 +85,7 @@ const shortLabel = ( entry ) => {
 	return entry.summary || entry.action || '—';
 };
 
-export default function Home( {
-	tier,
-	clients,
-	onNavigate,
-	onConnect,
-	paused,
-	onResume,
-} ) {
-	const level = levelFor( tier );
-	let tone = level.key === 'read' ? 'safe' : 'active';
-	if ( paused ) {
-		tone = 'paused';
-	}
+export default function Home( { clients, onNavigate, onConnect } ) {
 	const hasApps = clients.length > 0;
 
 	const [ activity, setActivity ] = useState( null );
@@ -123,34 +103,6 @@ export default function Home( {
 
 	return (
 		<div className="saddle-home">
-			{ /* What the AI can do — the hero statement */ }
-			<Hero
-				tone={ HERO_TONES[ tone ] }
-				eyebrow={ __( 'Right now', 'saddle' ) }
-				title={
-					paused
-						? __(
-								'Saddle is paused. Your AI can’t read or change anything until you resume.',
-								'saddle'
-						  )
-						: level.one
-				}
-				actions={
-					paused ? (
-						<Button variant="secondary" onClick={ onResume }>
-							{ __( 'Resume', 'saddle' ) }
-						</Button>
-					) : (
-						<Button
-							variant="secondary"
-							onClick={ () => onNavigate( 'permissions' ) }
-						>
-							{ __( 'Change what it can do', 'saddle' ) }
-						</Button>
-					)
-				}
-			/>
-
 			{ /* When no apps yet, make connecting the clear next step */ }
 			{ ! hasApps && (
 				<CalloutCard
