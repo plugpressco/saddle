@@ -55,6 +55,7 @@ require_once SADDLE_DIR . 'includes/lint/rules/class-rule-heading-order.php';
 require_once SADDLE_DIR . 'includes/render/interface-saddle-render-accessor.php';
 require_once SADDLE_DIR . 'includes/render/class-saddle-render.php';
 require_once SADDLE_DIR . 'includes/render/class-saddle-render-gutenberg-accessor.php';
+require_once SADDLE_DIR . 'includes/preview/class-saddle-preview.php';
 require_once SADDLE_DIR . 'includes/class-saddle-capabilities.php';
 require_once SADDLE_DIR . 'includes/class-saddle-approval.php';
 require_once SADDLE_DIR . 'includes/class-saddle-context.php';
@@ -87,6 +88,9 @@ final class Saddle {
 		add_action( 'wp_authenticate_application_password_errors', array( 'Saddle_Connection', 'block_xmlrpc_credentials' ), 10, 3 );
 
 		// Always-on infrastructure (independent of the Abilities API).
+		// The preview serving path stays up even when minting isn't — an
+		// outstanding token must keep working for its full (short) life.
+		Saddle_Preview::register();
 		add_action( 'init', array( 'Saddle_Approval', 'register_cpt' ) );
 		add_action( 'init', array( 'Saddle_Log', 'register_cpt' ) );
 		add_action( 'init', array( 'Saddle_Skills', 'register_cpt' ) );
