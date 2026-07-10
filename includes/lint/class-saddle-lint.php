@@ -127,13 +127,14 @@ class Saddle_Lint {
 	}
 
 	/**
-	 * Document-order comparison of two violations by dot address.
+	 * Document-order comparison of two violations by dot address. Public:
+	 * the verify engine sorts its merged findings with the same ordering.
 	 *
 	 * @param array $a First violation.
 	 * @param array $b Second violation.
 	 * @return int
 	 */
-	private static function compare_addresses( array $a, array $b ) {
+	public static function compare_addresses( array $a, array $b ) {
 		$pa = '' === $a['address'] ? array() : array_map( 'intval', explode( '.', $a['address'] ) );
 		$pb = '' === $b['address'] ? array() : array_map( 'intval', explode( '.', $b['address'] ) );
 
