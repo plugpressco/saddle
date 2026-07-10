@@ -31,11 +31,19 @@ retired 2026-07-06; don't recreate it).
 Out of reverse-engineering three competitors (Vibe AI, Novamira, AI Engine) and
 finding each fails at least one. Check every PR against all three before merge:
 
-1. **No third-party custody.** Nothing — tokens, site data, tool-call traffic — ever
-   leaves the user's own WordPress install to a server you control. No relay, no
-   proxy. If you're about to add `wp_remote_post`/`wp_remote_get` to an external host
-   for anything other than fetching a resource the user explicitly requested, stop
-   and ask first.
+1. **No third-party custody of site data.** Nothing — Application Passwords, site
+   content, MCP tool-call traffic, agent data — ever leaves the user's own WordPress
+   install. No relay, no proxy. The **one** disclosed exception is the Freemius
+   account/licensing channel (`includes/freemius.php`; Saddle is the Freemius parent
+   product so Saddle Pro can attach as an add-on) — it carries licensing/opt-in-only
+   diagnostics, NEVER site content or tool-call traffic, and usage tracking stays
+   opt-in (we never force it). That exception aside: if you're about to add
+   `wp_remote_post`/`wp_remote_get` to an external host for anything other than
+   fetching a resource the user explicitly requested, stop and ask first.
+   _(Decided 2026-07-11 with Fahim: adopt Freemius for the free+Pro monetization
+   funnel via the add-on model; this consciously carves the licensing channel out
+   of the original "nothing leaves, full stop" rule — the site-data promise is
+   unchanged.)_
 2. **Default-safe, not opt-out-unsafe.** New installs default to the `read` tier.
    Never change this default. Power is something the user turns on, never something
    they have to turn off.

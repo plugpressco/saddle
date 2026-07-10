@@ -10,10 +10,12 @@
 		"start": "wp-scripts start admin/src/index.js --output-path=admin/build",
 		"lint:js": "wp-scripts lint-js admin/src",
 		"format": "wp-scripts format admin/src",
-		"package": "npm run build && grunt release",
-		"package:patch": "npm run build && grunt release:patch",
-		"package:minor": "npm run build && grunt release:minor",
-		"package:major": "npm run build && grunt release:major"
+		"vendor:dist": "composer install --no-dev --optimize-autoloader --quiet",
+		"vendor:dev": "composer install --quiet",
+		"package": "npm run build && npm run vendor:dist && grunt release && npm run vendor:dev",
+		"package:patch": "npm run build && npm run vendor:dist && grunt release:patch && npm run vendor:dev",
+		"package:minor": "npm run build && npm run vendor:dist && grunt release:minor && npm run vendor:dev",
+		"package:major": "npm run build && npm run vendor:dist && grunt release:major && npm run vendor:dev"
 	},
 	"devDependencies": {
 		"@lobehub/icons-static-svg": "^1.91.0",

@@ -66,7 +66,11 @@ module.exports = function ( grunt ) {
 							'**',
 							// Development-only / never-shipped.
 							'!node_modules/**',
-							'!vendor/**',
+							// NOTE: vendor/ IS shipped — the Freemius SDK is runtime
+							// code (fs_dynamic_init). Run `composer install --no-dev`
+							// before packaging so only production deps land in the zip
+							// (the `package` npm scripts do this). Stripping vendor/
+							// would fatal the plugin on activation.
 							'!tests/**',
 							'!dist/**',
 							'!.git/**',

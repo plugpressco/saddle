@@ -24,6 +24,16 @@ define( 'SADDLE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SADDLE_URL', plugin_dir_url( __FILE__ ) );
 define( 'SADDLE_MIN_WP', '6.9' );
 
+// Composer autoload (Freemius SDK). Optional at runtime: without vendor/ the
+// account/licensing layer stays dormant and the plugin still runs.
+if ( file_exists( SADDLE_DIR . 'vendor/autoload.php' ) ) {
+	require_once SADDLE_DIR . 'vendor/autoload.php';
+}
+
+// Freemius — the ecosystem account + add-ons host (Saddle is the PARENT product;
+// Saddle Pro attaches as an add-on). Init early, before the rest of the plugin.
+require_once SADDLE_DIR . 'includes/freemius.php';
+
 /**
  * Load plugin classes.
  *

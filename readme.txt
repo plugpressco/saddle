@@ -18,7 +18,7 @@ Most "AI for WordPress" tools ask you to hand your content or credentials to a t
 
 = Three commitments =
 
-1. **No third-party credential custody.** Saddle runs entirely inside your WordPress install. Your tokens, your content, and your tool-call traffic never pass through a relay or proxy operated by us or anyone else. Authentication uses WordPress core's Application Passwords; Saddle never sees or stores a separate password.
+1. **No third-party credential custody.** Saddle runs entirely inside your WordPress install. Your tokens, your content, and your tool-call traffic never pass through a relay or proxy operated by us or anyone else. Authentication uses WordPress core's Application Passwords; Saddle never sees or stores a separate password. (The one external connection is the optional Freemius account layer used to manage the paid Saddle Pro add-on — it never carries your content or tool-call traffic, and usage analytics are strictly opt-in. See *External services* below.)
 2. **Default-safe access levels.** A fresh install starts at the **Read** level — agents can look but not touch. Writing, deleting, and site management are powers you explicitly turn on, never things you have to turn off.
 3. **Two-step confirmation on destructive actions.** Deleting or overwriting never happens in a single call. The first call returns a preview and a single-use confirmation token and changes nothing; only a second call carrying that token executes the change. Tokens are single-use and expire after 15 minutes.
 
@@ -54,9 +54,11 @@ Saddle bundles the **WordPress MCP Adapter** library (`WP\MCP`, GPLv2-or-later) 
 
 == External services ==
 
-Saddle does not phone home. It sends **no** analytics, telemetry, or usage data anywhere, and it never relays your data through a service we operate. The MCP endpoint Saddle adds (`/wp-json/saddle/v1/mcp`) is an **inbound** authenticated endpoint on your own site.
+Your **content, credentials, and MCP tool-call traffic never leave your site** — they are never relayed through a service we operate. The MCP endpoint Saddle adds (`/wp-json/saddle/v1/mcp`) is an **inbound** authenticated endpoint on your own site.
 
-There are two outbound behaviors, both initiated by you and both to hosts you choose:
+Saddle connects to one external service, **Freemius** (freemius.com), for account and license management of the optional paid **Saddle Pro** add-on. This is the framework that lets you buy, activate, and receive updates for Pro. It is used for licensing only — it never receives your site content, your posts and pages, your Application Passwords, or any MCP/agent traffic. On activation Freemius asks whether to share **anonymous** usage diagnostics (plugin/theme/PHP versions, and your admin email) to help improve the product; this is **opt-in** — choose "Skip" and nothing is sent. You can find Freemius's terms and privacy policy at https://freemius.com/privacy/ .
+
+Two further outbound behaviors, both initiated by you and both to hosts you choose:
 
 * **`upload-media` — fetching a URL you or your agent provide.** When you ask an agent to add a file to your media library by URL, Saddle uses WordPress's own HTTP API to download that specific URL to your server. It contacts only the host in the supplied URL. This is the same mechanism WordPress core uses for "insert from URL."
 * **Endpoint self-check — a request to your own site.** To confirm the MCP endpoint is reachable, Saddle may make a single request to your site's own REST URL. This contacts only your site; no data is sent off-site.
@@ -64,7 +66,7 @@ There are two outbound behaviors, both initiated by you and both to hosts you ch
 == Privacy ==
 
 * Authentication is handled entirely by WordPress core Application Passwords. Saddle stores only its settings (access level, per-tool toggles, your instructions, installed Skills) and short-lived, single-use confirmation tokens that auto-expire after 15 minutes.
-* No personal data is sent off-site by Saddle.
+* Saddle sends no site content, credentials, or MCP/agent traffic off-site. The only external connection is the optional Freemius account/licensing layer for Saddle Pro (see *External services*), whose usage diagnostics are opt-in.
 * Uninstalling removes Saddle's settings, its activity log, confirmation tokens, and installed Skills. Your Application Passwords are left intact so you can revoke them yourself.
 
 == Installation ==

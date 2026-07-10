@@ -18,7 +18,8 @@
 /phpunit.xml
 /phpunit.xml.dist
 /webpack.config.js
-/vendor
+# vendor/ IS shipped — the Freemius SDK is runtime code. Run
+# `composer install --no-dev` before archiving so only production deps ship.
 /tests
 
 # Build output (never nest a prior archive into a new one).
