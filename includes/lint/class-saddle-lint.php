@@ -82,6 +82,11 @@ class Saddle_Lint {
 			new Saddle_Lint_Rule_Unaligned_Buttons(),
 			new Saddle_Lint_Rule_Section_Padding(),
 			new Saddle_Lint_Rule_Featured_Plan(),
+			// Accessibility (closed-loop scope); these need the companion
+			// style accessor and stay silent on accessors without it.
+			new Saddle_Lint_Rule_Text_Contrast(),
+			new Saddle_Lint_Rule_Missing_Alt(),
+			new Saddle_Lint_Rule_Heading_Order(),
 		);
 	}
 

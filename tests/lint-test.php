@@ -230,6 +230,117 @@ class Saddle_Lint_Test extends WP_UnitTestCase {
 		$this->assertSame( array(), $this->by_rule( $violations, 'no-featured-plan' ) );
 	}
 
+	/* -------- text-contrast -------- */
+
+	private function paragraph( $attrs = array(), $text = 'Copy.' ) {
+		$json = $attrs ? ' ' . wp_json_encode( $attrs ) : '';
+		return '<!-- wp:paragraph' . $json . ' --><p>' . $text . '</p><!-- /wp:paragraph -->';
+	}
+
+	private function heading( $attrs = array(), $text = 'Title' ) {
+		$json = $attrs ? ' ' . wp_json_encode( $attrs ) : '';
+		return '<!-- wp:heading' . $json . ' --><h2 class="wp-block-heading">' . $text . '</h2><!-- /wp:heading -->';
+	}
+
+	public function test_text_contrast_fires_against_nearest_ancestor_background() {
+		$markup     = $this->group(
+			array( 'style' => array( 'color' => array( 'background' => '#888888' ) ) ),
+			// One unpainted level between — the rule walks UP like a browser paints.
+			$this->group(
+				array(),
+				$this->paragraph( array( 'style' => array( 'color' => array( 'text' => '#777777' ) ) ) )
+			)
+		);
+		$violations = $this->by_rule( $this->lint( $markup ), 'text-contrast' );
+		$this->assertCount( 1, $violations );
+		$this->assertSame( '0.0.0', $violations[0]['address'] );
+		$this->assertSame( 'error', $violations[0]['severity'] );
+	}
+
+	public function test_text_contrast_large_text_gets_the_3_to_1_threshold() {
+		// #8a8a8a on #ffffff ≈ 3.45:1 — passes large text, fails normal text.
+		$markup     = $this->group(
+			array( 'style' => array( 'color' => array( 'background' => '#ffffff' ) ) ),
+			$this->heading( array( 'style' => array( 'color' => array( 'text' => '#8a8a8a' ) ) ) ) .
+			$this->paragraph( array( 'style' => array( 'color' => array( 'text' => '#8a8a8a' ) ) ) )
+		);
+		$violations = $this->by_rule( $this->lint( $markup ), 'text-contrast' );
+		$this->assertCount( 1, $violations, 'Only the paragraph fails; the heading is large text.' );
+		$this->assertSame( '0.1', $violations[0]['address'] );
+	}
+
+	public function test_text_contrast_silent_on_clean_pairs_unknown_backgrounds_and_buttons() {
+		$violations = $this->lint(
+			// AA pair.
+			$this->group(
+				array( 'style' => array( 'color' => array( 'background' => '#1a2b3c' ) ) ),
+				$this->paragraph( array( 'style' => array( 'color' => array( 'text' => '#ffffff' ) ) ) )
+			) .
+			// Text color set but NO background anywhere up the chain — never guessed.
+			$this->paragraph( array( 'style' => array( 'color' => array( 'text' => '#777777' ) ) ) ) .
+			// A bad button is button-contrast's finding, not a duplicate here.
+			$this->button( array( 'style' => array( 'color' => array( 'background' => '#f5f5f5', 'text' => '#ffffff' ) ) ) )
+		);
+		$this->assertSame( array(), $this->by_rule( $violations, 'text-contrast' ) );
+		$this->assertCount( 1, $this->by_rule( $violations, 'button-contrast' ) );
+	}
+
+	/* -------- missing-alt-text -------- */
+
+	public function test_missing_alt_fires_on_bare_content_image() {
+		$violations = $this->by_rule(
+			$this->lint( '<!-- wp:image {"id":5} --><figure class="wp-block-image"><img src="x.jpg"/></figure><!-- /wp:image -->' ),
+			'missing-alt-text'
+		);
+		$this->assertCount( 1, $violations );
+		$this->assertSame( 'warn', $violations[0]['severity'] );
+	}
+
+	public function test_missing_alt_silent_on_described_images_and_decorative_media() {
+		$violations = $this->lint(
+			'<!-- wp:image {"id":5} --><figure class="wp-block-image"><img src="x.jpg" alt="A brown dog"/></figure><!-- /wp:image -->' .
+			// Covers are background media — decorative by convention.
+			'<!-- wp:cover {"url":"x.jpg"} --><div class="wp-block-cover"><img class="wp-block-cover__image-background" src="x.jpg"/></div><!-- /wp:cover -->' .
+			$this->paragraph()
+		);
+		$this->assertSame( array(), $this->by_rule( $violations, 'missing-alt-text' ) );
+	}
+
+	/* -------- heading-order -------- */
+
+	public function test_heading_order_fires_on_skipped_level_and_second_h1() {
+		$markup     = $this->heading( array( 'level' => 1 ), 'Page' ) .
+			$this->heading( array(), 'Section' ) .          // h2 — fine.
+			$this->heading( array( 'level' => 4 ), 'Deep' ) . // h2 → h4 skips h3.
+			$this->heading( array( 'level' => 1 ), 'Again' ); // second h1.
+		$violations = $this->by_rule( $this->lint( $markup ), 'heading-order' );
+		$this->assertCount( 2, $violations );
+		$this->assertSame( '2', $violations[0]['address'] );
+		$this->assertSame( '3', $violations[1]['address'] );
+	}
+
+	public function test_heading_order_silent_on_clean_outline_and_upward_moves() {
+		$violations = $this->lint(
+			$this->heading( array( 'level' => 3 ), 'Starts deep' ) . // First heading is never judged.
+			$this->heading( array( 'level' => 4 ), 'Child' ) .
+			$this->heading( array(), 'Back up' )                     // h4 → h2 is a new section, fine.
+		);
+		$this->assertSame( array(), $this->by_rule( $violations, 'heading-order' ) );
+	}
+
+	public function test_a11y_rules_skip_on_a_base_only_accessor() {
+		// The companion feature-detect: a legacy accessor gets zero a11y
+		// findings and zero fatals.
+		$tree       = Saddle_Tree::parse(
+			$this->heading( array( 'level' => 4 ) ) .
+			'<!-- wp:image {"id":5} --><figure class="wp-block-image"><img src="x.jpg"/></figure><!-- /wp:image -->'
+		);
+		$violations = Saddle_Lint::run( $tree, new Saddle_Test_Legacy_Accessor() );
+		foreach ( array( 'text-contrast', 'missing-alt-text', 'heading-order' ) as $rule ) {
+			$this->assertSame( array(), $this->by_rule( $violations, $rule ) );
+		}
+	}
+
 	/* -------- engine contract -------- */
 
 	public function test_rules_register_through_the_single_filter() {
