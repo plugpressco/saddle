@@ -4,7 +4,7 @@ Tags: mcp, ai, application passwords, agents, automation
 Requires at least: 6.9
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 0.8.0
+Stable tag: 0.9.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -120,6 +120,12 @@ Your AI can now read and change your WordPress Settings pages — site title, ta
 Adds Skills (installable .md playbooks that teach your AI your conventions) and automatic recent-changes recall so a new session knows what changed last time. Fully backward compatible.
 
 == Changelog ==
+
+= 0.9.0 =
+* New: verify-page — one scored report (0-100) over a page's SAVED state: structural problems, style settings the editor silently ignores, and design/accessibility violations, each at a fixable node address. Your AI builds, verifies, fixes what was flagged, and re-verifies — it ends on evidence, not on a write call saying "ok".
+* New: render-node — your AI can now SEE what it built: a node's effective styles (presets and tokens resolved to real values) and its rendered HTML, or a whole-page section outline to drill into. No more styling blind.
+* New: get-preview-url — a signed, short-lived link that renders the page's current saved layout (drafts included) on your own site's front end, so an AI with a browser can screenshot its own work. The link is noindex, opens only that one post, expires in minutes, and nothing ever leaves your site.
+* New: accessibility checks in page lint — text contrast against the real background it sits on (WCAG AA), images missing alt text, and broken heading order (skipped levels, duplicate h1s).
 
 = 0.8.0 =
 * New: Memory — your AI can remember facts about your site (remember, recall, forget) so a new session starts already knowing them. You stay in control: entries an AI saved on its own are only found when searched for, until you pin them; pinned notes and your own notes are shown to every session automatically. A Memory panel in Guidance shows everything stored, who saved it, and a preview of exactly what gets shared.
