@@ -9,22 +9,30 @@
  */
 import { useState, useEffect } from '@wordpress/element';
 import {
-	TextareaControl,
-	TextControl,
-	ToggleControl,
 	Button,
-	Notice,
 	Spinner,
-} from '../ui';
+	Card,
+	CardHeader,
+	CardContent,
+	Field,
+	Input,
+	Textarea,
+	Switch,
+	CodeBlock,
+	RowList,
+	Row,
+	useConfirm,
+	toast,
+} from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { api } from '../api';
 
 export default function Memory( { onChanged } ) {
+	const confirm = useConfirm();
 	const [ entries, setEntries ] = useState( [] );
 	const [ settings, setSettings ] = useState( null );
 	const [ preview, setPreview ] = useState( '' );
 	const [ loading, setLoading ] = useState( true );
-	const [ notice, setNotice ] = useState( null );
 	const [ openKey, setOpenKey ] = useState( null );
 	const [ showPreview, setShowPreview ] = useState( false );
 	const [ draft, setDraft ] = useState( { key: '', text: '' } );
@@ -40,7 +48,7 @@ export default function Memory( { onChanged } ) {
 	useEffect( () => {
 		api( 'memory' )
 			.then( apply )
-			.catch( ( e ) => setNotice( { type: 'error', message: e.message } ) )
+			.catch( ( e ) => toast.error( e.message ) )
 			.finally( () => setLoading( false ) );
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [] );
@@ -48,7 +56,7 @@ export default function Memory( { onChanged } ) {
 	const call = ( path, options ) =>
 		api( path, options )
 			.then( apply )
-			.catch( ( e ) => setNotice( { type: 'error', message: e.message } ) );
+			.catch( ( e ) => toast.error( e.message ) );
 
 	const addEntry = () => {
 		if ( ! draft.text.trim() ) {
@@ -64,6 +72,43 @@ export default function Memory( { onChanged } ) {
 		} );
 	};
 
+	const forgetEntry = async ( entry ) => {
+		const ok = await confirm( {
+			title: sprintf(
+				/* translators: %s: entry key. */
+				__( 'Forget “%s”?', 'saddle' ),
+				entry.key
+			),
+			description: __( 'This cannot be undone.', 'saddle' ),
+			danger: true,
+			confirmLabel: __( 'Forget', 'saddle' ),
+			cancelLabel: __( 'Cancel', 'saddle' ),
+		} );
+		if ( ok ) {
+			call( `memory/${ entry.key }`, { method: 'DELETE' } );
+		}
+	};
+
+	const clearAgentMemory = async ( count ) => {
+		const ok = await confirm( {
+			title: __( 'Clear AI-written memory?', 'saddle' ),
+			description: sprintf(
+				/* translators: %d: entry count. */
+				__(
+					'Delete all %d AI-written memory entries? Your own entries are kept.',
+					'saddle'
+				),
+				count
+			),
+			danger: true,
+			confirmLabel: __( 'Clear it', 'saddle' ),
+			cancelLabel: __( 'Cancel', 'saddle' ),
+		} );
+		if ( ok ) {
+			call( 'memory-clear-agent', { method: 'POST' } );
+		}
+	};
+
 	if ( loading ) {
 		return <Spinner />;
 	}
@@ -71,205 +116,213 @@ export default function Memory( { onChanged } ) {
 	const agentCount = entries.filter( ( e ) => e.source !== 'owner' ).length;
 
 	return (
-		<section className="saddle-guide__block">
-			{ notice && (
-				<Notice
-					status={ notice.type }
-					isDismissible
-					onRemove={ () => setNotice( null ) }
-				>
-					{ notice.message }
-				</Notice>
-			) }
-
-			<div className="saddle-guide__head">
-				<h3>{ __( 'Memory', 'saddle' ) }</h3>
-			</div>
-			<p className="saddle-guide__hint">
-				{ __(
+		<Card className="saddle-guide__block">
+			<CardHeader
+				title={ __( 'Memory', 'saddle' ) }
+				description={ __(
 					'Things worth knowing between sessions — saved by you here, or noted by your AI with its memory tools. Nothing an AI writes is served to future sessions unless you pin it (or turn on auto-include below); until then it’s only found when an AI searches its memory. Memory is background information — it can never change what your AI is allowed to do.',
 					'saddle'
 				) }
-			</p>
+			/>
+			<CardContent>
+				{ preview !== '' && (
+					<>
+						<Button
+							variant="link"
+							onClick={ () => setShowPreview( ( v ) => ! v ) }
+						>
+							{ showPreview
+								? __(
+										'Hide what every session is told',
+										'saddle'
+								  )
+								: __(
+										'Show what every session is told',
+										'saddle'
+								  ) }
+						</Button>
+						{ showPreview && (
+							<CodeBlock
+								className="saddle-guide__system"
+								code={ preview }
+								copy={ false }
+							/>
+						) }
+					</>
+				) }
 
-			{ preview !== '' && (
-				<>
-					<Button
-						variant="link"
-						onClick={ () => setShowPreview( ( v ) => ! v ) }
-					>
-						{ showPreview
-							? __( 'Hide what every session is told', 'saddle' )
-							: __( 'Show what every session is told', 'saddle' ) }
-					</Button>
-					{ showPreview && (
-						<pre className="saddle-code saddle-guide__system">
-							{ preview }
-						</pre>
-					) }
-				</>
-			) }
-
-			{ entries.length > 0 && (
-				<ul className="saddle-skills">
-					{ entries.map( ( entry ) => (
-						<li key={ entry.key } className="saddle-skills__row">
-							<div className="saddle-skills__main">
-								<strong>{ entry.key }</strong>
-								<span className="saddle-skills__desc">
-									{ entry.source === 'owner'
-										? __( 'You', 'saddle' )
-										: sprintf(
-												/* translators: %s: client name. */
-												__( 'AI · %s', 'saddle' ),
-												entry.client ||
-													__( 'unknown', 'saddle' )
-										  ) }
-									{ ' · ' }
-									{ entry.type }
-									{ entry.pinned &&
-										' · ' + __( 'pinned', 'saddle' ) }
-								</span>
-							</div>
-							<div className="saddle-skills__controls">
-								<ToggleControl
-									__nextHasNoMarginBottom
-									checked={ entry.pinned }
-									onChange={ () =>
-										call( `memory/${ entry.key }`, {
-											method: 'POST',
-											data: { pinned: ! entry.pinned },
-										} )
+				{ entries.length > 0 && (
+					<RowList className="saddle-rows">
+						{ entries.map( ( entry ) => (
+							<div key={ entry.key }>
+								<Row
+									title={ entry.key }
+									description={
+										( entry.source === 'owner'
+											? __( 'You', 'saddle' )
+											: sprintf(
+													/* translators: %s: client name. */
+													__( 'AI · %s', 'saddle' ),
+													entry.client ||
+														__(
+															'unknown',
+															'saddle'
+														)
+											  ) ) +
+										' · ' +
+										entry.type +
+										( entry.pinned
+											? ' · ' + __( 'pinned', 'saddle' )
+											: '' )
 									}
-									label={ __( 'Pin', 'saddle' ) }
-								/>
-								<Button
-									variant="link"
-									onClick={ () =>
-										setOpenKey(
-											openKey === entry.key
-												? null
-												: entry.key
-										)
-									}
-								>
-									{ openKey === entry.key
-										? __( 'Hide', 'saddle' )
-										: __( 'View', 'saddle' ) }
-								</Button>
-								<Button
-									variant="link"
-									isDestructive
-									onClick={ () => {
-										if (
-											// eslint-disable-next-line no-alert
-											window.confirm(
-												sprintf(
+									actions={
+										<>
+											<Switch
+												checked={ entry.pinned }
+												onChange={ () =>
+													call(
+														`memory/${ entry.key }`,
+														{
+															method: 'POST',
+															data: {
+																pinned: ! entry.pinned,
+															},
+														}
+													)
+												}
+												aria-label={ sprintf(
 													/* translators: %s: entry key. */
 													__(
-														'Forget “%s”? This cannot be undone.',
+														'Pin “%s” so every session is told it',
 														'saddle'
 													),
 													entry.key
-												)
-											)
-										) {
-											call( `memory/${ entry.key }`, {
-												method: 'DELETE',
-											} );
-										}
-									} }
-								>
-									{ __( 'Delete', 'saddle' ) }
-								</Button>
+												) }
+											/>
+											<Button
+												variant="link"
+												onClick={ () =>
+													setOpenKey(
+														openKey === entry.key
+															? null
+															: entry.key
+													)
+												}
+											>
+												{ openKey === entry.key
+													? __( 'Hide', 'saddle' )
+													: __( 'View', 'saddle' ) }
+											</Button>
+											<Button
+												variant="link"
+												className="saddle-link-danger"
+												onClick={ () =>
+													forgetEntry( entry )
+												}
+											>
+												{ __( 'Delete', 'saddle' ) }
+											</Button>
+										</>
+									}
+								/>
+								{ openKey === entry.key && (
+									<CodeBlock
+										className="saddle-rows__body"
+										code={ entry.text }
+										copy={ false }
+									/>
+								) }
 							</div>
-							{ openKey === entry.key && (
-								<pre className="saddle-code saddle-skills__body">
-									{ entry.text }
-								</pre>
-							) }
-						</li>
-					) ) }
-				</ul>
-			) }
+						) ) }
+					</RowList>
+				) }
 
-			{ /* Owner adds a durable note (served by default — it's yours). */ }
-			<div className="saddle-guide__actions saddle-guide__actions--stack">
-				<TextareaControl
-					label={ __( 'Add something to remember', 'saddle' ) }
-					value={ draft.text }
-					onChange={ ( text ) =>
-						setDraft( ( d ) => ( { ...d, text } ) )
-					}
-					rows={ 2 }
-					placeholder={ __(
-						'e.g. The pricing page is “Plans” (page 42) — update it, never create a new one.',
-						'saddle'
-					) }
-				/>
-				<TextControl
-					label={ __( 'Name (optional)', 'saddle' ) }
-					value={ draft.key }
-					onChange={ ( key ) =>
-						setDraft( ( d ) => ( { ...d, key } ) )
-					}
-					placeholder={ __( 'e.g. pricing-page', 'saddle' ) }
-				/>
-				<Button
-					variant="secondary"
-					onClick={ addEntry }
-					isBusy={ adding }
-					disabled={ adding || ! draft.text.trim() }
-				>
-					{ __( 'Remember this', 'saddle' ) }
-				</Button>
-			</div>
-
-			{ settings && (
+				{ /* Owner adds a durable note (served by default — it's yours). */ }
 				<div className="saddle-guide__actions saddle-guide__actions--stack">
-					<ToggleControl
-						__nextHasNoMarginBottom
-						checked={ settings.autoinject_agent }
-						onChange={ ( value ) =>
-							call( 'memory-settings', {
-								method: 'POST',
-								data: { autoinject_agent: value },
-							} )
-						}
-						label={ __(
-							'Auto-include AI-written memory (off is safest — pin entries instead)',
-							'saddle'
-						) }
-					/>
-					{ agentCount > 0 && (
-						<Button
-							variant="secondary"
-							isDestructive
-							onClick={ () => {
-								if (
-									// eslint-disable-next-line no-alert
-									window.confirm(
-										sprintf(
-											/* translators: %d: entry count. */
-											__(
-												'Delete all %d AI-written memory entries? Your own entries are kept.',
-												'saddle'
-											),
-											agentCount
-										)
-									)
-								) {
-									call( 'memory-clear-agent', {
-										method: 'POST',
-									} );
+					<Field label={ __( 'Add something to remember', 'saddle' ) }>
+						{ ( a11y ) => (
+							<Textarea
+								{ ...a11y }
+								value={ draft.text }
+								onChange={ ( e ) =>
+									setDraft( ( d ) => ( {
+										...d,
+										text: e.target.value,
+									} ) )
 								}
-							} }
-						>
-							{ __( 'Clear AI-written memory', 'saddle' ) }
-						</Button>
-					) }
+								rows={ 2 }
+								placeholder={ __(
+									'e.g. The pricing page is “Plans” (page 42) — update it, never create a new one.',
+									'saddle'
+								) }
+							/>
+						) }
+					</Field>
+					<Field label={ __( 'Name (optional)', 'saddle' ) }>
+						{ ( a11y ) => (
+							<Input
+								{ ...a11y }
+								value={ draft.key }
+								onChange={ ( e ) =>
+									setDraft( ( d ) => ( {
+										...d,
+										key: e.target.value,
+									} ) )
+								}
+								placeholder={ __(
+									'e.g. pricing-page',
+									'saddle'
+								) }
+							/>
+						) }
+					</Field>
+					<Button
+						variant="secondary"
+						onClick={ addEntry }
+						loading={ adding }
+						disabled={ adding || ! draft.text.trim() }
+					>
+						{ __( 'Remember this', 'saddle' ) }
+					</Button>
 				</div>
-			) }
-		</section>
+
+				{ settings && (
+					<div className="saddle-guide__actions saddle-guide__actions--stack">
+						<label className="saddle-toggle-row">
+							<Switch
+								checked={ settings.autoinject_agent }
+								onChange={ ( value ) =>
+									call( 'memory-settings', {
+										method: 'POST',
+										data: { autoinject_agent: value },
+									} )
+								}
+								aria-label={ __(
+									'Auto-include AI-written memory',
+									'saddle'
+								) }
+							/>
+							<span>
+								{ __(
+									'Auto-include AI-written memory (off is safest — pin entries instead)',
+									'saddle'
+								) }
+							</span>
+						</label>
+						{ agentCount > 0 && (
+							<Button
+								variant="secondary"
+								className="saddle-link-danger"
+								onClick={ () =>
+									clearAgentMemory( agentCount )
+								}
+							>
+								{ __( 'Clear AI-written memory', 'saddle' ) }
+							</Button>
+						) }
+					</div>
+				) }
+			</CardContent>
+		</Card>
 	);
 }

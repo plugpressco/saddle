@@ -93,8 +93,13 @@ tests/                        — PHPUnit integration suite (SQLite-backed, real
   tool — write them like documentation, not code comments.
 - No `eval()`, `proc_open`, `shell_exec`, `exec()` anywhere. Grep for these four
   before every release.
-- React: `@wordpress/components` only — no separate UI kit, no Tailwind, until
-  `DESIGN-ALIGNMENT.md` says otherwise.
+- React UI: **`@plugpress/ui`** (github tag pin in package.json) is the UI kit —
+  import primitives directly from `@plugpress/ui`. No `@wordpress/components`,
+  no Tailwind, no second kit. Product-specific pieces (BrandMark, LevelIcon,
+  AppLogo, the Permissions lanes/chips, the activity timeline) stay in-plugin,
+  styled on `--pp-*` tokens. Light-only — no theme toggles. The brand mark is
+  single-sourced from `assets/brand/mark.svg` (React SVGR import + PHP menu
+  icon read the same file). See `admin/DESIGN-ALIGNMENT.md`.
 
 ## Testing checklist before any release
 

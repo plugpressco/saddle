@@ -3,9 +3,17 @@
  * and the three-section nav. Calm and quiet — the status is the point.
  */
 import { __ } from '@wordpress/i18n';
-import { Button } from '../ui';
+import { Button, Tabs, StatusDot } from '@plugpress/ui';
 import { levelFor } from '../api';
 import { BrandMark } from './icons';
+
+// Safety tone → design-system dot tone. Read-only is the calm state; any
+// write power shows as "attention", paused as switched-off.
+const DOT_TONES = {
+	safe: 'success',
+	active: 'warning',
+	paused: 'neutral',
+};
 
 export default function TopBar( {
 	tier,
@@ -38,15 +46,15 @@ export default function TopBar( {
 					<span
 						className={ `saddle-top__status saddle-top__status--${ tone }` }
 					>
-						<span className="saddle-top__dot" aria-hidden="true" />
+						<StatusDot tone={ DOT_TONES[ tone ] } />
 						{ paused ? __( 'Paused', 'saddle' ) : level.title }
 					</span>
 					{ onTogglePause && (
 						<Button
-							variant="tertiary"
-							size="small"
+							variant="ghost"
+							size="sm"
 							onClick={ onTogglePause }
-							isBusy={ pausing }
+							loading={ pausing }
 							disabled={ pausing }
 						>
 							{ paused
@@ -58,26 +66,16 @@ export default function TopBar( {
 			</div>
 
 			{ tabs && tabs.length > 0 && (
-				<nav
+				<Tabs
 					className="saddle-nav"
 					aria-label={ __( 'Sections', 'saddle' ) }
-				>
-					{ tabs.map( ( t ) => (
-						<button
-							key={ t.name }
-							type="button"
-							aria-current={
-								active === t.name ? 'page' : undefined
-							}
-							className={ `saddle-nav__item${
-								active === t.name ? ' is-active' : ''
-							}` }
-							onClick={ () => onSelect( t.name ) }
-						>
-							{ t.title }
-						</button>
-					) ) }
-				</nav>
+					items={ tabs.map( ( t ) => ( {
+						value: t.name,
+						label: t.title,
+					} ) ) }
+					value={ active }
+					onChange={ onSelect }
+				/>
 			) }
 		</header>
 	);

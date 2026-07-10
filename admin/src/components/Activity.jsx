@@ -6,7 +6,14 @@
  * "Show more". Reads are never logged (see Saddle_Log), and the page says so.
  */
 import { useState, useEffect, useCallback } from '@wordpress/element';
-import { Button, Spinner, Notice } from '../ui';
+import {
+	Button,
+	Spinner,
+	Notice,
+	FilterTabs,
+	EmptyState,
+	Badge,
+} from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { api } from '../api';
 
@@ -122,25 +129,16 @@ export default function Activity() {
 				) }
 			</p>
 
-			<div
-				className="saddle-activity__filters"
-				role="tablist"
-				aria-label={ __( 'Filter activity', 'saddle' ) }
-			>
-				{ FILTERS.map( ( f ) => (
-					<button
-						key={ f.key }
-						type="button"
-						role="tab"
-						aria-selected={ filter === f.key }
-						className={ `saddle-activity__filter${
-							filter === f.key ? ' is-active' : ''
-						}` }
-						onClick={ () => pickFilter( f.key ) }
-					>
-						{ f.label }
-					</button>
-				) ) }
+			<div className="saddle-activity__filters">
+				<FilterTabs
+					aria-label={ __( 'Filter activity', 'saddle' ) }
+					items={ FILTERS.map( ( f ) => ( {
+						value: f.key,
+						label: f.label,
+					} ) ) }
+					value={ filter }
+					onChange={ pickFilter }
+				/>
 				{ total > 0 && (
 					<span className="saddle-activity__total">
 						{ sprintf(
@@ -153,11 +151,7 @@ export default function Activity() {
 				) }
 			</div>
 
-			{ error && (
-				<Notice status="error" isDismissible={ false }>
-					{ error }
-				</Notice>
-			) }
+			{ error && <Notice tone="danger">{ error }</Notice> }
 
 			{ loading && (
 				<div className="saddle-activity__loading">
@@ -166,17 +160,24 @@ export default function Activity() {
 			) }
 
 			{ ! loading && entries.length === 0 && ! error && (
-				<div className="saddle-activity__empty">
-					{ filter === 'denied'
-						? __(
-								'Nothing has been blocked. When an app tries something outside its permissions, the attempt shows up here.',
-								'saddle'
-						  )
-						: __(
-								'No activity yet. Once a connected app makes a change, it shows up here.',
-								'saddle'
-						  ) }
-				</div>
+				<EmptyState
+					title={
+						filter === 'denied'
+							? __( 'Nothing has been blocked', 'saddle' )
+							: __( 'No activity yet', 'saddle' )
+					}
+					description={
+						filter === 'denied'
+							? __(
+									'When an app tries something outside its permissions, the attempt shows up here.',
+									'saddle'
+							  )
+							: __(
+									'Once a connected app makes a change, it shows up here.',
+									'saddle'
+							  )
+					}
+				/>
 			) }
 
 			{ ! loading &&
@@ -203,12 +204,12 @@ export default function Activity() {
 										</span>
 										<span className="saddle-activity__meta">
 											{ e.type === 'denied' && (
-												<span className="saddle-activity__badge">
+												<Badge tone="danger">
 													{ __(
 														'Blocked',
 														'saddle'
 													) }
-												</span>
+												</Badge>
 											) }
 											{ e.action && (
 												<code className="saddle-activity__action">
@@ -244,7 +245,7 @@ export default function Activity() {
 					<Button
 						variant="secondary"
 						onClick={ () => load( page + 1, filter, true ) }
-						isBusy={ more }
+						loading={ more }
 						disabled={ more }
 					>
 						{ __( 'Show more', 'saddle' ) }

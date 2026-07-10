@@ -8,35 +8,9 @@
  * LiteSpeed, can write the standard forwarding rule itself.
  */
 import { useState, useEffect } from '@wordpress/element';
-import { Button, Spinner } from '../ui';
+import { Button, Spinner, CodeBlock, CalloutCard } from '@plugpress/ui';
 import { __ } from '@wordpress/i18n';
 import { api } from '../api';
-
-function Snippet( { label, code } ) {
-	const [ copied, setCopied ] = useState( false );
-
-	const copy = () => {
-		if ( window.navigator && window.navigator.clipboard ) {
-			window.navigator.clipboard.writeText( code );
-			setCopied( true );
-			window.setTimeout( () => setCopied( false ), 1500 );
-		}
-	};
-
-	return (
-		<div className="saddle-health__snippet">
-			<div className="saddle-config__bar">
-				<span className="saddle-config__path">{ label }</span>
-				<Button variant="secondary" onClick={ copy }>
-					{ copied
-						? __( 'Copied!', 'saddle' )
-						: __( 'Copy', 'saddle' ) }
-				</Button>
-			</div>
-			<pre className="saddle-code saddle-code--dark">{ code }</pre>
-		</div>
-	);
-}
 
 export default function ConnectionHealth() {
 	const [ report, setReport ] = useState( null );
@@ -124,23 +98,21 @@ export default function ConnectionHealth() {
 	const snippets = report.fix_snippet || {};
 
 	return (
-		<div className="saddle-health saddle-health--warn">
-			<p className="saddle-health__title">
-				{ __( 'Your server is blocking app sign-ins', 'saddle' ) }
-			</p>
-			<p className="saddle-health__body">
-				{ __(
-					'When an AI app connects, it sends its password in a sign-in header. Your web server removes that header before WordPress can see it, so every connection will fail as “unauthorized” — even with the right password. (The test above can still pass, because your browser signs in a different way.)',
-					'saddle'
-				) }
-			</p>
-
+		<CalloutCard
+			className="saddle-health"
+			tone="warning"
+			title={ __( 'Your server is blocking app sign-ins', 'saddle' ) }
+			description={ __(
+				'When an AI app connects, it sends its password in a sign-in header. Your web server removes that header before WordPress can see it, so every connection will fail as “unauthorized” — even with the right password. (The test above can still pass, because your browser signs in a different way.)',
+				'saddle'
+			) }
+		>
 			{ report.htaccess_fixable && fixOutcome !== 'still_stripped' && (
 				<div className="saddle-health__actions">
 					<Button
 						variant="primary"
 						onClick={ applyFix }
-						isBusy={ fixing }
+						loading={ fixing }
 						disabled={ fixing }
 					>
 						{ fixing
@@ -187,7 +159,8 @@ export default function ConnectionHealth() {
 			{ ( showSnippets || ! report.htaccess_fixable ) && (
 				<>
 					{ snippets.apache && (
-						<Snippet
+						<CodeBlock
+							dark
 							label={ __(
 								'Apache / LiteSpeed — add to .htaccess',
 								'saddle'
@@ -196,7 +169,8 @@ export default function ConnectionHealth() {
 						/>
 					) }
 					{ snippets.nginx && (
-						<Snippet
+						<CodeBlock
+							dark
 							label={ __(
 								'nginx — add to the PHP location block',
 								'saddle'
@@ -212,6 +186,6 @@ export default function ConnectionHealth() {
 					? __( 'Checking…', 'saddle' )
 					: __( 'Check again', 'saddle' ) }
 			</Button>
-		</div>
+		</CalloutCard>
 	);
 }

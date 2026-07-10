@@ -9,7 +9,15 @@
  * forms. All the protocol machinery stays out of sight.
  */
 import { useState, useEffect, useCallback, useRef } from '@wordpress/element';
-import { Spinner, Notice } from './ui';
+import {
+	TooltipProvider,
+	ConfirmProvider,
+	Toaster,
+	Spinner,
+	Notice,
+	Button,
+	Collapsible,
+} from '@plugpress/ui';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { api } from './api';
 import TopBar from './components/TopBar';
@@ -74,40 +82,31 @@ function ForeignNotices() {
 		return null;
 	}
 
+	// Collapsible keeps its panel mounted (hidden attr) when closed, so the
+	// moved notice nodes — with their own dismiss handlers — survive toggling.
 	return (
-		<div className="saddle-foreign">
-			<button
-				type="button"
-				className="saddle-foreign__toggle"
-				onClick={ () => setOpen( ! open ) }
-				aria-expanded={ open }
-			>
-				{ sprintf(
-					/* translators: %d: number of notices. */
-					_n(
-						'%d notice from other plugins',
-						'%d notices from other plugins',
-						count,
-						'saddle'
-					),
-					count
-				) }
-				<span className="saddle-foreign__caret" aria-hidden="true">
-					{ open ? '▴' : '▾' }
-				</span>
-			</button>
-			<div
-				ref={ holderRef }
-				className="saddle-foreign__list"
-				hidden={ ! open }
-			/>
-		</div>
+		<Collapsible
+			className="saddle-foreign"
+			open={ open }
+			onOpenChange={ setOpen }
+			trigger={ sprintf(
+				/* translators: %d: number of notices. */
+				_n(
+					'%d notice from other plugins',
+					'%d notices from other plugins',
+					count,
+					'saddle'
+				),
+				count
+			) }
+		>
+			<div ref={ holderRef } className="saddle-foreign__list" />
+		</Collapsible>
 	);
 }
 
 export default function App() {
 	const [ tier, setTier ] = useState( null );
-	const [ tiers, setTiers ] = useState( [ 'read', 'write', 'admin' ] );
 	const [ caps, setCaps ] = useState( [] );
 	const [ clients, setClients ] = useState( [] );
 	const [ onboarded, setOnboarded ] = useState( true );
@@ -147,9 +146,6 @@ export default function App() {
 			api( 'capabilities' ).then( ( res ) => {
 				setCaps( res.capabilities || [] );
 				setTier( res.current_tier );
-				if ( res.tiers ) {
-					setTiers( res.tiers );
-				}
 			} ),
 		[]
 	);
@@ -246,16 +242,19 @@ export default function App() {
 		}
 	};
 
+	// One provider mount for every state (loading / setup / main): tooltips,
+	// the useConfirm dialog, and toasts are available everywhere, and portaled
+	// overlays pick up tokens from the pp-scope body class.
+	let view;
+
 	if ( loading ) {
-		return (
+		view = (
 			<div className="pp-app saddle-app saddle-app--loading">
 				<Spinner />
 			</div>
 		);
-	}
-
-	if ( ! onboarded ) {
-		return (
+	} else if ( ! onboarded ) {
+		view = (
 			<div className="pp-app saddle-app saddle-app--setup">
 				<Onboarding
 					tier={ tier }
@@ -264,9 +263,8 @@ export default function App() {
 				/>
 			</div>
 		);
-	}
-
-	return (
+	} else {
+		view = (
 		<div className="pp-app saddle-app">
 			<TopBar
 				tier={ tier }
@@ -280,30 +278,26 @@ export default function App() {
 
 			{ ! wizardOpen && <ForeignNotices /> }
 
-			{ error && (
-				<Notice status="error" isDismissible={ false }>
-					{ error }
-				</Notice>
-			) }
+			{ error && <Notice tone="danger">{ error }</Notice> }
 
 			{ domainWarning && ! wizardOpen && (
-				<Notice
-					status="warning"
-					isDismissible={ false }
-					actions={ [
-						{
-							label: __(
-								'This is expected — clear this warning',
-								'saddle'
-							),
-							onClick: clearDomainWarning,
-						},
-					] }
-				>
+				<Notice tone="warning">
 					{ __(
 						'This site’s address has changed since AI write access was turned on — often a sign of a staging clone or a migration carrying over live credentials. If that wasn’t intentional, review your connected apps and revoke anything unexpected.',
 						'saddle'
 					) }
+					<span className="saddle-notice__actions">
+						<Button
+							variant="link"
+							size="sm"
+							onClick={ clearDomainWarning }
+						>
+							{ __(
+								'This is expected — clear this warning',
+								'saddle'
+							) }
+						</Button>
+					</span>
 				</Notice>
 			) }
 
@@ -329,7 +323,6 @@ export default function App() {
 						{ tab === 'permissions' && (
 							<Permissions
 								caps={ caps }
-								tiers={ tiers }
 								savedTier={ tier }
 								onTierSaved={ handleTierSaved }
 								onCapsChanged={ loadCaps }
@@ -349,5 +342,15 @@ export default function App() {
 				) }
 			</div>
 		</div>
+		);
+	}
+
+	return (
+		<TooltipProvider>
+			<ConfirmProvider>
+				{ view }
+				<Toaster />
+			</ConfirmProvider>
+		</TooltipProvider>
 	);
 }

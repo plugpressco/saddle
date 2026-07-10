@@ -10,7 +10,18 @@
  * just-created credential is quietly revoked — no orphan keys.
  */
 import { useState, useEffect, useRef, useCallback } from '@wordpress/element';
-import { Button, Notice, Spinner } from '../ui';
+import {
+	Button,
+	Notice,
+	Spinner,
+	Steps,
+	CardRadioGroup,
+	CodeBlock,
+	Snippet,
+	LiveIndicator,
+	CalloutCard,
+	useCopy,
+} from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { api, saddleData, levelFor } from '../api';
 import ConnectionHealth from './ConnectionHealth';
@@ -152,36 +163,10 @@ function buildConfig( app, password ) {
 }
 
 const STEPS = [
-	__( 'Choose app', 'saddle' ),
-	__( 'Paste setup', 'saddle' ),
-	__( 'Say hello', 'saddle' ),
+	{ label: __( 'Choose app', 'saddle' ) },
+	{ label: __( 'Paste setup', 'saddle' ) },
+	{ label: __( 'Say hello', 'saddle' ) },
 ];
-
-function Progress( { current } ) {
-	return (
-		<ol
-			className="saddle-wizard__progress"
-			aria-label={ __( 'Setup progress', 'saddle' ) }
-		>
-			{ STEPS.map( ( label, i ) => {
-				let state = 'todo';
-				if ( i < current ) {
-					state = 'done';
-				} else if ( i === current ) {
-					state = 'now';
-				}
-				return (
-					<li key={ label } className={ `is-${ state }` }>
-						<span className="saddle-wizard__dot" aria-hidden="true">
-							{ i < current ? '✓' : i + 1 }
-						</span>
-						{ label }
-					</li>
-				);
-			} ) }
-		</ol>
-	);
-}
 
 /**
  * The example first message. Kept short so it fits one line in most apps.
@@ -194,8 +179,10 @@ export default function ConnectWizard( { tier, onExit, onClientsChanged } ) {
 	const [ creating, setCreating ] = useState( null ); // app key mid-create
 	const [ cred, setCred ] = useState( null ); // { uuid, password, label }
 	const [ error, setError ] = useState( null );
-	const [ copied, setCopied ] = useState( null ); // 'config' | 'prompt'
+	// The gate for "I've pasted it": the setup must have been copied at least
+	// once. Also what decides whether backing out revokes the fresh credential.
 	const [ everCopied, setEverCopied ] = useState( false );
+	const { copied: configCopied, copy: copyConfig } = useCopy();
 	const [ patienceUp, setPatienceUp ] = useState( false );
 	const level = levelFor( tier );
 
@@ -288,26 +275,19 @@ export default function ConnectWizard( { tier, onExit, onClientsChanged } ) {
 		return () => window.clearTimeout( t );
 	}, [ step ] );
 
-	/* ----- clipboard ----- */
-
-	const copy = ( what, text ) => {
-		if ( window.navigator && window.navigator.clipboard ) {
-			window.navigator.clipboard.writeText( text );
-		}
-		setCopied( what );
-		setEverCopied( true );
-		window.setTimeout( () => setCopied( null ), 1600 );
-	};
-
 	const config = cred ? buildConfig( app, cred.password ) : '';
 
 	return (
 		<div className="saddle-wizard">
 			<div className="saddle-wizard__top">
-				<Progress current={ step } />
+				<Steps
+					aria-label={ __( 'Setup progress', 'saddle' ) }
+					steps={ STEPS }
+					current={ step }
+				/>
 				{ step < 3 && (
 					<Button
-						variant="tertiary"
+						variant="ghost"
 						className="saddle-wizard__cancel"
 						onClick={ () => exit( false ) }
 					>
@@ -317,11 +297,7 @@ export default function ConnectWizard( { tier, onExit, onClientsChanged } ) {
 			</div>
 
 			{ error && (
-				<Notice
-					status="error"
-					isDismissible
-					onRemove={ () => setError( null ) }
-				>
+				<Notice tone="danger" onDismiss={ () => setError( null ) }>
 					{ error }
 				</Notice>
 			) }
@@ -340,7 +316,7 @@ export default function ConnectWizard( { tier, onExit, onClientsChanged } ) {
 					</p>
 
 					{ ! saddleData.appPasswords && (
-						<Notice status="warning" isDismissible={ false }>
+						<Notice tone="warning">
 							{ saddleData.ssl
 								? __(
 										'Application Passwords appear to be turned off — often by a security plugin. Enable them under Users → Profile before connecting.',
@@ -353,34 +329,26 @@ export default function ConnectWizard( { tier, onExit, onClientsChanged } ) {
 						</Notice>
 					) }
 
-					<div className="saddle-wizard__apps">
-						{ APPS.map( ( a ) => (
-							<button
-								key={ a.key }
-								type="button"
-								className="saddle-appcard"
-								disabled={ !! creating }
-								onClick={ () => pick( a.key ) }
-							>
-								<span
-									className="saddle-appcard__mark"
-									aria-hidden="true"
-								>
-									{ creating === a.key ? (
-										<Spinner />
-									) : (
-										<AppLogo app={ a.key } />
-									) }
-								</span>
-								<span className="saddle-appcard__label">
-									{ a.label }
-								</span>
-								<span className="saddle-appcard__kind">
-									{ a.kind }
-								</span>
-							</button>
-						) ) }
-					</div>
+					<CardRadioGroup
+						className="saddle-wizard__apps"
+						aria-label={ __(
+							'Which app are you connecting?',
+							'saddle'
+						) }
+						onChange={ pick }
+						options={ APPS.map( ( a ) => ( {
+							value: a.key,
+							icon:
+								creating === a.key ? (
+									<Spinner />
+								) : (
+									<AppLogo app={ a.key } />
+								),
+							title: a.label,
+							description: a.kind,
+							disabled: !! creating,
+						} ) ) }
+					/>
 				</div>
 			) }
 
@@ -397,37 +365,39 @@ export default function ConnectWizard( { tier, onExit, onClientsChanged } ) {
 					<p className="saddle-wizard__lead">{ activeApp.how }</p>
 
 					<div className="saddle-wizard__config">
-						<div className="saddle-wizard__configbar">
-							<span>
-								{ sprintf(
-									/* translators: %s: the connection label. */
-									__( 'Made for “%s” just now', 'saddle' ),
-									cred.label
-								) }
-							</span>
-							<Button
-								variant="primary"
-								onClick={ () => copy( 'config', config ) }
-							>
-								{ copied === 'config'
-									? __( 'Copied ✓', 'saddle' )
-									: __( 'Copy setup', 'saddle' ) }
-							</Button>
-						</div>
-						<pre className="saddle-code saddle-code--dark">
-							{ config }
-						</pre>
+						<CodeBlock
+							dark
+							copy={ false }
+							label={ sprintf(
+								/* translators: %s: the connection label. */
+								__( 'Made for “%s” just now', 'saddle' ),
+								cred.label
+							) }
+							code={ config }
+						/>
+						<Button
+							variant="primary"
+							className="saddle-wizard__copy"
+							onClick={ () => {
+								copyConfig( config );
+								setEverCopied( true );
+							} }
+						>
+							{ configCopied
+								? __( 'Copied ✓', 'saddle' )
+								: __( 'Copy setup', 'saddle' ) }
+						</Button>
 					</div>
 
-					<div className="saddle-wizard__cando">
-						<span className="saddle-wizard__cando-label">
-							{ sprintf(
-								/* translators: %s: the app name. */
-								__( 'What %s will be able to do', 'saddle' ),
-								activeApp.label
-							) }
-						</span>
-						<p>{ level.one }</p>
+					<CalloutCard
+						className="saddle-wizard__cando"
+						title={ sprintf(
+							/* translators: %s: the app name. */
+							__( 'What %s will be able to do', 'saddle' ),
+							activeApp.label
+						) }
+						description={ level.one }
+					>
 						<p className="saddle-wizard__cando-note">
 							{ __(
 								'Its sign-in key works only for this app, only on this site, and only through Saddle — it can’t touch the rest of WordPress. Disconnect it anytime and access ends instantly. Go back without copying and the key is discarded.',
@@ -440,7 +410,7 @@ export default function ConnectWizard( { tier, onExit, onClientsChanged } ) {
 								'saddle'
 							) }
 						</p>
-					</div>
+					</CalloutCard>
 
 					{ IS_LOCAL && (
 						<p className="saddle-wizard__hint">
@@ -452,7 +422,7 @@ export default function ConnectWizard( { tier, onExit, onClientsChanged } ) {
 					) }
 
 					<div className="saddle-wizard__actions">
-						<Button variant="tertiary" onClick={ backToPick }>
+						<Button variant="ghost" onClick={ backToPick }>
 							{ __( 'Back', 'saddle' ) }
 						</Button>
 						<Button
@@ -478,47 +448,38 @@ export default function ConnectWizard( { tier, onExit, onClientsChanged } ) {
 					</h2>
 					<p className="saddle-wizard__lead">{ activeApp.next }</p>
 
-					<button
-						type="button"
+					<Snippet
 						className="saddle-wizard__prompt"
-						onClick={ () => copy( 'prompt', HELLO_PROMPT ) }
-						title={ __( 'Click to copy', 'saddle' ) }
-					>
-						<span>“{ HELLO_PROMPT }”</span>
-						<span className="saddle-wizard__prompt-copy">
-							{ copied === 'prompt'
-								? __( 'Copied ✓', 'saddle' )
-								: __( 'Copy', 'saddle' ) }
-						</span>
-					</button>
+						value={ HELLO_PROMPT }
+						label={ __( 'Try asking', 'saddle' ) }
+					/>
 
 					<div
 						className="saddle-wizard__listening"
 						role="status"
 						aria-live="polite"
 					>
-						<span
-							className="saddle-wizard__pulse"
-							aria-hidden="true"
-						/>
-						{ sprintf(
-							/* translators: %s: the app name. */
-							__(
-								'Listening for %s — this updates by itself the moment it connects.',
-								'saddle'
-							),
-							activeApp.label
-						) }
+						<LiveIndicator>
+							{ sprintf(
+								/* translators: %s: the app name. */
+								__(
+									'Listening for %s — this updates by itself the moment it connects.',
+									'saddle'
+								),
+								activeApp.label
+							) }
+						</LiveIndicator>
 					</div>
 
 					{ patienceUp && (
-						<div className="saddle-wizard__trouble">
-							<h3>
-								{ __(
-									'Taking longer than expected?',
-									'saddle'
-								) }
-							</h3>
+						<CalloutCard
+							className="saddle-wizard__trouble"
+							tone="warning"
+							title={ __(
+								'Taking longer than expected?',
+								'saddle'
+							) }
+						>
 							<ul>
 								<li>
 									{ sprintf(
@@ -547,17 +508,17 @@ export default function ConnectWizard( { tier, onExit, onClientsChanged } ) {
 							</ul>
 							<ConnectionHealth />
 							<Button
-								variant="tertiary"
+								variant="ghost"
 								onClick={ () => setStep( 1 ) }
 							>
 								{ __( 'Show the setup again', 'saddle' ) }
 							</Button>
-						</div>
+						</CalloutCard>
 					) }
 
 					<div className="saddle-wizard__actions">
 						<Button
-							variant="tertiary"
+							variant="ghost"
 							onClick={ () => setStep( 1 ) }
 						>
 							{ __( 'Back', 'saddle' ) }

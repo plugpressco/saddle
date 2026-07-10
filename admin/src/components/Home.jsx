@@ -4,9 +4,28 @@
  * is set up yet.
  */
 import { useState, useEffect } from '@wordpress/element';
-import { Button } from '../ui';
+import {
+	Button,
+	Hero,
+	CalloutCard,
+	CardGrid,
+	Card,
+	CardHeader,
+	CardContent,
+	Badge,
+	RowList,
+	Row,
+	StatusDot,
+} from '@plugpress/ui';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { api, levelFor } from '../api';
+
+// Safety tone → design-system tone for the hero.
+const HERO_TONES = {
+	safe: 'success',
+	active: 'warning',
+	paused: 'default',
+};
 
 const WHEN_FMT = new Intl.DateTimeFormat( undefined, {
 	dateStyle: 'medium',
@@ -105,144 +124,154 @@ export default function Home( {
 	return (
 		<div className="saddle-home">
 			{ /* What the AI can do — the hero statement */ }
-			<section className={ `saddle-hero saddle-hero--${ tone }` }>
-				<span className="saddle-hero__label">
-					{ __( 'Right now', 'saddle' ) }
-				</span>
-				<p className="saddle-hero__statement">
-					{ paused
+			<Hero
+				tone={ HERO_TONES[ tone ] }
+				eyebrow={ __( 'Right now', 'saddle' ) }
+				title={
+					paused
 						? __(
 								'Saddle is paused. Your AI can’t read or change anything until you resume.',
 								'saddle'
 						  )
-						: level.one }
-				</p>
-				{ paused ? (
-					<Button variant="secondary" onClick={ onResume }>
-						{ __( 'Resume', 'saddle' ) }
-					</Button>
-				) : (
-					<Button
-						variant="secondary"
-						onClick={ () => onNavigate( 'permissions' ) }
-					>
-						{ __( 'Change what it can do', 'saddle' ) }
-					</Button>
-				) }
-			</section>
+						: level.one
+				}
+				actions={
+					paused ? (
+						<Button variant="secondary" onClick={ onResume }>
+							{ __( 'Resume', 'saddle' ) }
+						</Button>
+					) : (
+						<Button
+							variant="secondary"
+							onClick={ () => onNavigate( 'permissions' ) }
+						>
+							{ __( 'Change what it can do', 'saddle' ) }
+						</Button>
+					)
+				}
+			/>
 
 			{ /* When no apps yet, make connecting the clear next step */ }
 			{ ! hasApps && (
-				<section className="saddle-nextstep">
-					<h2>{ __( 'Connect your first app', 'saddle' ) }</h2>
-					<p>
-						{ __(
-							'Add an AI app like Claude, Cursor, or VS Code so it can work with your site.',
-							'saddle'
-						) }
-					</p>
-					<Button variant="primary" onClick={ onConnect }>
-						{ __( 'Connect an app', 'saddle' ) }
-					</Button>
-				</section>
+				<CalloutCard
+					title={ __( 'Connect your first app', 'saddle' ) }
+					description={ __(
+						'Add an AI app like Claude, Cursor, or VS Code so it can work with your site.',
+						'saddle'
+					) }
+					action={
+						<Button variant="primary" onClick={ onConnect }>
+							{ __( 'Connect an app', 'saddle' ) }
+						</Button>
+					}
+				/>
 			) }
 
-			<div
-				className={ `saddle-cards${
-					hasApps ? '' : ' saddle-cards--single'
-				}` }
-			>
+			<CardGrid className="saddle-cards" min={ 300 }>
 				{ /* Connected apps — only once there's something to show; the
 				     next-step section above owns the empty state. */ }
 				{ hasApps && (
-					<section className="saddle-card">
-						<div className="saddle-card__head">
-							<h2>{ __( 'Connected apps', 'saddle' ) }</h2>
-							<span className="saddle-card__count">
-								{ sprintf(
-									/* translators: %d: number of apps. */
-									_n(
-										'%d app',
-										'%d apps',
-										clients.length,
-										'saddle'
-									),
-									clients.length
-								) }
-							</span>
-						</div>
-						<ul className="saddle-applist">
-							{ clients.slice( 0, 4 ).map( ( c ) => (
-								<li key={ c.uuid }>
-									<span
-										className="saddle-applist__dot"
-										aria-hidden="true"
+					<Card>
+						<CardHeader
+							title={ __( 'Connected apps', 'saddle' ) }
+							actions={
+								<Badge>
+									{ sprintf(
+										/* translators: %d: number of apps. */
+										_n(
+											'%d app',
+											'%d apps',
+											clients.length,
+											'saddle'
+										),
+										clients.length
+									) }
+								</Badge>
+							}
+						/>
+						<CardContent>
+							<RowList>
+								{ clients.slice( 0, 4 ).map( ( c ) => (
+									<Row
+										key={ c.uuid }
+										icon={ <StatusDot tone="success" /> }
+										title={ c.label || c.name }
 									/>
-									{ c.label || c.name }
-								</li>
-							) ) }
-						</ul>
-						<Button
-							variant="link"
-							onClick={ () => onNavigate( 'connect' ) }
-						>
-							{ __( 'Manage apps', 'saddle' ) }
-						</Button>
-					</section>
+								) ) }
+							</RowList>
+							<Button
+								variant="link"
+								onClick={ () => onNavigate( 'connect' ) }
+							>
+								{ __( 'Manage apps', 'saddle' ) }
+							</Button>
+						</CardContent>
+					</Card>
 				) }
 
 				{ /* Recent activity */ }
-				<section className="saddle-card">
-					<div className="saddle-card__head">
-						<h2>{ __( 'Recent activity', 'saddle' ) }</h2>
-						<button
-							type="button"
-							className="saddle-card__link"
-							onClick={ () => onNavigate( 'activity' ) }
-						>
-							{ __( 'View all', 'saddle' ) }
-						</button>
-					</div>
-					{ activity &&
-					activity.enabled &&
-					activity.entries.length > 0 ? (
-						<ul className="saddle-activitylist">
-							{ activity.entries.slice( 0, 6 ).map( ( e, i ) => (
-								<li
-									key={ i }
-									className={
-										e.type === 'denied'
-											? 'is-denied'
-											: undefined
-									}
-								>
-									<span
-										className="saddle-activitylist__summary"
-										title={ e.summary || undefined }
-									>
-										{ e.type === 'denied' && (
-											<span className="saddle-activitylist__badge">
-												{ __( 'Blocked', 'saddle' ) }
+				<Card>
+					<CardHeader
+						title={ __( 'Recent activity', 'saddle' ) }
+						actions={
+							<Button
+								variant="link"
+								size="sm"
+								onClick={ () => onNavigate( 'activity' ) }
+							>
+								{ __( 'View all', 'saddle' ) }
+							</Button>
+						}
+					/>
+					<CardContent>
+						{ activity &&
+						activity.enabled &&
+						activity.entries.length > 0 ? (
+							<ul className="saddle-activitylist">
+								{ activity.entries
+									.slice( 0, 6 )
+									.map( ( e, i ) => (
+										<li
+											key={ i }
+											className={
+												e.type === 'denied'
+													? 'is-denied'
+													: undefined
+											}
+										>
+											<span
+												className="saddle-activitylist__summary"
+												title={
+													e.summary || undefined
+												}
+											>
+												{ e.type === 'denied' && (
+													<Badge tone="danger">
+														{ __(
+															'Blocked',
+															'saddle'
+														) }
+													</Badge>
+												) }
+												{ shortLabel( e ) }
 											</span>
-										) }
-										{ shortLabel( e ) }
-									</span>
-									<span className="saddle-activitylist__target">
-										{ formatWhen( e.date ) }
-									</span>
-								</li>
-							) ) }
-						</ul>
-					) : (
-						<p className="saddle-card__empty">
-							{ __(
-								'Nothing yet. Changes your AI makes will show up here.',
-								'saddle'
-							) }
-						</p>
-					) }
-				</section>
-			</div>
+											<span className="saddle-activitylist__target">
+												{ formatWhen( e.date ) }
+											</span>
+										</li>
+									) ) }
+							</ul>
+						) : (
+							<p className="saddle-card__empty">
+								{ __(
+									'Nothing yet. Changes your AI makes will show up here.',
+									'saddle'
+								) }
+							</p>
+						) }
+					</CardContent>
+				</Card>
+			</CardGrid>
 		</div>
 	);
 }

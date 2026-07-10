@@ -6,7 +6,7 @@
  * what's included — invisible for everyone else. Nothing saves until you apply.
  */
 import { useState, useMemo } from '@wordpress/element';
-import { Button, Notice } from '../ui';
+import { CardRadioGroup, Collapsible, ApplyBar, toast } from '@plugpress/ui';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { api, LEVELS, levelKey, tierUnlocks } from '../api';
 import { LevelIcon } from './icons';
@@ -31,7 +31,6 @@ export default function Permissions( {
 } ) {
 	const [ choice, setChoice ] = useState( levelKey( savedTier ) );
 	const [ saving, setSaving ] = useState( false );
-	const [ notice, setNotice ] = useState( null );
 	const [ showAll, setShowAll ] = useState( false );
 	const [ localDisabled, setLocalDisabled ] = useState( () =>
 		savedDisabledSet( caps )
@@ -73,7 +72,6 @@ export default function Permissions( {
 	// the half that saved is settled.
 	const apply = () => {
 		setSaving( true );
-		setNotice( null );
 
 		const jobs = [];
 		if ( dirty ) {
@@ -106,20 +104,15 @@ export default function Permissions( {
 					( r ) => r.status === 'rejected'
 				);
 				if ( ! failed.length ) {
-					setNotice( {
-						type: 'success',
-						message: __( 'Saved.', 'saddle' ),
-					} );
+					toast.success( __( 'Saved.', 'saddle' ) );
 				} else {
-					setNotice( {
-						type: 'error',
-						message:
-							failed[ 0 ].reason?.message ||
+					toast.error(
+						failed[ 0 ].reason?.message ||
 							__(
 								'Some changes could not be saved — they’re still marked below.',
 								'saddle'
-							),
-					} );
+							)
+					);
 				}
 			} )
 			.finally( () => setSaving( false ) );
@@ -154,16 +147,6 @@ export default function Permissions( {
 
 	return (
 		<div className="saddle-perm">
-			{ notice && (
-				<Notice
-					status={ notice.type }
-					isDismissible
-					onRemove={ () => setNotice( null ) }
-				>
-					{ notice.message }
-				</Notice>
-			) }
-
 			<h2 className="saddle-perm__title">
 				{ __( 'What your AI can do', 'saddle' ) }
 			</h2>
@@ -174,45 +157,23 @@ export default function Permissions( {
 				) }
 			</p>
 
-			<div
-				className="saddle-levels"
-				role="radiogroup"
+			<CardRadioGroup
 				aria-label={ __( 'What your AI can do', 'saddle' ) }
-			>
-				{ LEVELS.map( ( lvl ) => (
-					<button
-						key={ lvl.key }
-						type="button"
-						role="radio"
-						aria-checked={ choice === lvl.key }
-						className={ `saddle-levelcard${
-							choice === lvl.key ? ' is-active' : ''
-						}` }
-						onClick={ () => setChoice( lvl.key ) }
-					>
-						<span className="saddle-levelcard__glyph">
-							<LevelIcon name={ lvl.icon } />
-						</span>
-						<span className="saddle-levelcard__title">
-							{ lvl.title }
-						</span>
-						<span className="saddle-levelcard__desc">
-							{ lvl.short }
-						</span>
-					</button>
-				) ) }
-			</div>
+				value={ choice }
+				onChange={ setChoice }
+				options={ LEVELS.map( ( lvl ) => ( {
+					value: lvl.key,
+					icon: <LevelIcon name={ lvl.icon } />,
+					title: lvl.title,
+					description: lvl.short,
+				} ) ) }
+			/>
 
-			<button
-				type="button"
-				className="saddle-disclosure"
-				aria-expanded={ showAll }
-				onClick={ () => setShowAll( ( v ) => ! v ) }
-			>
-				<span className="saddle-disclosure__caret" aria-hidden="true">
-					{ showAll ? '▾' : '▸' }
-				</span>
-				{ sprintf(
+			<Collapsible
+				className="saddle-perm__all"
+				open={ showAll }
+				onOpenChange={ setShowAll }
+				trigger={ sprintf(
 					/* translators: %d: number of tools active at the chosen level. */
 					_n(
 						'See everything it can do (%d tool)',
@@ -222,18 +183,14 @@ export default function Permissions( {
 					),
 					enabledCount
 				) }
-			</button>
-
-			{ showAll && (
+			>
 				<p className="saddle-lanes__hint">
 					{ __(
 						'Click any tool below to turn it off individually — that stays off no matter which level above is chosen.',
 						'saddle'
 					) }
 				</p>
-			) }
 
-			{ showAll && (
 				<div className="saddle-lanes">
 					{ LANES.map( ( lane ) => {
 						const items = byLane[ lane.key ] || [];
@@ -318,50 +275,37 @@ export default function Permissions( {
 						);
 					} ) }
 				</div>
-			) }
+			</Collapsible>
 
 			{ pending && (
-				<div className="saddle-applybar">
-					<div className="saddle-applybar__summary">
-						<span>
-							{ [
-								dirty ? deltaLine : null,
-								abilitiesDirty
-									? sprintf(
-											/* translators: %d: number of individually-toggled tools. */
-											_n(
-												'%d tool changed.',
-												'%d tools changed.',
-												abilityDelta,
-												'saddle'
-											),
-											abilityDelta
-									  )
-									: null,
-							]
-								.filter( Boolean )
-								.join( ' ' ) }{ ' ' }
-							{ __( 'Not saved yet.', 'saddle' ) }
-						</span>
-					</div>
-					<div className="saddle-applybar__actions">
-						<Button
-							variant="tertiary"
-							onClick={ cancel }
-							disabled={ saving }
-						>
-							{ __( 'Cancel', 'saddle' ) }
-						</Button>
-						<Button
-							variant="primary"
-							onClick={ apply }
-							isBusy={ saving }
-							disabled={ saving }
-						>
-							{ __( 'Save', 'saddle' ) }
-						</Button>
-					</div>
-				</div>
+				<ApplyBar
+					message={
+						[
+							dirty ? deltaLine : null,
+							abilitiesDirty
+								? sprintf(
+										/* translators: %d: number of individually-toggled tools. */
+										_n(
+											'%d tool changed.',
+											'%d tools changed.',
+											abilityDelta,
+											'saddle'
+										),
+										abilityDelta
+								  )
+								: null,
+						]
+							.filter( Boolean )
+							.join( ' ' ) +
+						' ' +
+						__( 'Not saved yet.', 'saddle' )
+					}
+					saveLabel={ __( 'Save', 'saddle' ) }
+					discardLabel={ __( 'Cancel', 'saddle' ) }
+					saving={ saving }
+					onSave={ apply }
+					onDiscard={ cancel }
+				/>
 			) }
 		</div>
 	);

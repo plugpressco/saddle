@@ -1,48 +1,48 @@
 # Saddle — Design Alignment
 
-> **DECIDED (2026-07-04, Fahim):** the monochrome identity is now intentional,
-> not a placeholder. Saddle keeps its own near-black/white, OpenAI/Apple-register
-> look — one restrained accent reserved for status/safety — with light AND dark
-> themes driven by the `s-palette-*` mixins in `style.scss`. The earlier
-> "align to inbees/outbees" directive below is SUPERSEDED; kept for history.
-> The brand mark is the stirrup-arch SVG (`<BrandMark />` in `icons.jsx`,
-> mirrored as the admin-menu icon in `class-saddle-settings.php`) — keep the
-> two paths in sync. Don't re-litigate this in future sessions.
-
-## The former rule (superseded)
-
-Do **not** invent a visual design from memory or taste. Saddle has to read as
-"the same workspace" as the rest of the PlugPress portfolio (inbees/outbees).
-That means pulling real values, not approximating them.
-
-## Before you touch styles, gather the real reference
-
-1. **Get the real inbees/outbees source.** Find the actual plugin admin code in
-   the PlugPress monorepo (or the installed plugins). Do not work from
-   screenshots or memory.
-2. **Extract real tokens, don't guess:**
-   - Color palette (primary, surface, border, text, success/warning/error).
-   - Font family and the type scale (sizes, weights, line-heights).
-   - Spacing scale and border-radius conventions.
-   - Any logo / icon assets and how they're sized.
-3. **Check for a shared component package.** If inbees/outbees pull from a shared
-   PlugPress design-system package (React components or a token file), Saddle
-   should consume that same package rather than re-implementing it. Re-using it
-   is the whole point of "same workspace."
+> **DECIDED (2026-07-10, Fahim):** the admin UI is fully migrated to
+> **`@plugpress/ui` v0.3.0** — the shared PlugPress design system — which is
+> exactly the "shared component package" outcome the original research called
+> for. Import primitives directly from `@plugpress/ui`; the old
+> `admin/src/ui.jsx` compat shim is deleted. The system is **light-only**
+> (dark mode was removed from the DS in v0.2.0 — the dark-theme and
+> `s-palette-*` mentions below are historical). The 2026-07-04 monochrome
+> identity **stands**, now expressed through `tokens/accents/saddle.css`
+> (a fully monochrome accent) on top of the shared `--pp-*` tokens;
+> `style.scss` keeps only product-specific pieces (setup shell, permissions
+> lanes/chips, activity timeline, wizard flourishes) aliased to those tokens.
+> The brand mark is **single-sourced** from `assets/brand/mark.svg` — React's
+> `<BrandMark />` (SVGR import) and the PHP admin-menu icon
+> (`class-saddle-settings.php`, `file_get_contents` + recolor) both read that
+> one file; edit the SVG once to rebrand every surface.
+> Don't re-litigate any of this in future sessions.
 
 ## Constraints that still apply
 
-- `@wordpress/components` only for UI primitives (see CLAUDE.md). No Tailwind,
-  no styled-components, no separate UI kit — unless this research concludes a
-  shared PlugPress package is the established pattern and overrides that.
+- UI primitives come from `@plugpress/ui` only — no `@wordpress/components`,
+  no Tailwind, no styled-components, no second UI kit.
 - The Settings page must remain a single mounted React root (`#saddle-root`).
-- Don't regress accessibility: keep `@wordpress/components` semantics (labels,
-  focus states) intact when restyling.
+- Don't regress accessibility: labels, focus rings, `role`/`aria-*` semantics,
+  and `prefers-reduced-motion` support must survive any restyling.
+- Light-only: never add a theme toggle.
+- Portaled DS overlays (dialogs, dropdowns, toasts) read tokens from the
+  `pp-scope` class on `<body>` (added via `admin_body_class`) — keep it.
+- Stylesheet order: the DS bundle (`index.css` → handle `saddle-admin-ds`)
+  loads before Saddle's own `style-index.css` so product rules win.
 
-## Done when
+---
 
-- `admin/src/style.scss` is built from real reference material (tokens traceable
-  to inbees/outbees source, not invented).
-- A real Saddle icon replaces the placeholder `dashicons-rest-api` menu icon.
-- Side by side with inbees/outbees, the Saddle settings page is recognizably the
-  same product family.
+## History
+
+> **DECIDED (2026-07-04, Fahim):** the monochrome identity is intentional,
+> not a placeholder. Saddle keeps its own near-black/white, OpenAI/Apple-register
+> look — one restrained accent reserved for status/safety. The earlier
+> "align to inbees/outbees" directive below is SUPERSEDED; kept for history.
+
+### The former rule (superseded)
+
+Do **not** invent a visual design from memory or taste. Saddle has to read as
+"the same workspace" as the rest of the PlugPress portfolio (inbees/outbees).
+That means pulling real values, not approximating them — and if a shared
+PlugPress design-system package exists, consume it rather than re-implementing
+it. (That package now exists: `@plugpress/ui`. It happened.)

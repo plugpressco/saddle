@@ -111,8 +111,7 @@ body.toplevel_page_saddle {
 
 	button:focus-visible,
 	[role='radio']:focus-visible,
-	a:focus-visible,
-	.components-button:focus-visible {
+	a:focus-visible {
 		outline: 2px solid var(--s-focus);
 		outline-offset: 2px;
 		box-shadow: none;
@@ -120,66 +119,6 @@ body.toplevel_page_saddle {
 
 	button {
 		touch-action: manipulation;
-	}
-
-	.components-button.is-primary {
-		background: var(--s-action);
-		color: var(--s-on-action);
-		border-radius: 7px;
-		box-shadow: none;
-		padding: 6px 16px;
-		height: auto;
-		min-height: 38px;
-		transition: background var(--s-dur) var(--s-ease);
-
-		&:hover:not( :disabled ) {
-			background: var(--s-action-hover);
-			color: var(--s-on-action);
-		}
-	}
-
-	.components-button.is-secondary {
-		box-shadow: inset 0 0 0 1px var(--s-border-strong);
-		border-radius: 7px;
-		color: var(--s-fg);
-		min-height: 38px;
-
-		&:hover:not( :disabled ) {
-			box-shadow: inset 0 0 0 1px var(--s-fg-subtle);
-			background: var(--s-surface-2);
-		}
-	}
-
-	// Notices inherit wp-admin's legacy offsets (margin: 5px 15px 2px), which
-	// don't fit this layout — the disconnect notice was overlapping the
-	// Connected-apps header. Normalize them into the design system so they
-	// stack cleanly above whatever section they precede.
-	.components-notice {
-		margin: 0 0 20px;
-		border-radius: var(--s-radius);
-		padding: 10px 14px;
-		background: var(--s-surface-3);
-		color: var(--s-fg);
-
-		&.is-warning {
-			background: var(--s-active-bg);
-		}
-
-		&.is-error {
-			background: var(--s-danger-bg);
-		}
-
-		&.is-success {
-			background: var(--s-safe-bg);
-		}
-	}
-
-	// Form fields follow the theme (core assumes a light admin).
-	textarea,
-	input[type='text'] {
-		background: var(--s-bg);
-		color: var(--s-fg);
-		border-color: var(--s-border-strong);
 	}
 
 	// wp-admin hardcodes heading and link colors for a light admin; inside
@@ -191,64 +130,16 @@ body.toplevel_page_saddle {
 		color: inherit;
 	}
 
-	a:not( [class] ),
-	a.components-button.is-link {
+	a:not( [class] ) {
 		color: var(--s-focus);
-	}
-}
-
-// Portaled @wordpress/components surfaces (Modal renders on <body>, outside
-// .saddle-app) — theme them from the body-scoped tokens.
-body.toplevel_page_saddle {
-	.components-modal__screen-overlay {
-		background: rgba( 0, 0, 0, 0.55 );
-	}
-
-	.components-modal__frame {
-		background: var(--s-bg);
-		color: var(--s-fg);
-	}
-
-	.components-modal__header {
-		border-bottom-color: var(--s-border);
-
-		h1,
-		.components-button {
-			color: var(--s-fg);
-		}
 	}
 }
 
 /* ---------- Foreign notices (quarantined wp-admin notices) ---------- */
 
+// Trigger/caret chrome comes from the design system's Collapsible.
 .saddle-foreign {
 	margin-bottom: 16px;
-
-	&__toggle {
-		appearance: none;
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		padding: 4px 10px;
-		background: none;
-		border: 1px solid var(--s-border);
-		border-radius: var(--s-radius-pill);
-		font-size: 12px;
-		color: var(--s-fg-subtle);
-		cursor: pointer;
-		transition: color var(--s-dur) var(--s-ease),
-			border-color var(--s-dur) var(--s-ease);
-
-		&:hover {
-			color: var(--s-fg-muted);
-			border-color: var(--s-border-strong);
-		}
-	}
-
-	&__caret {
-		font-size: 10px;
-		line-height: 1;
-	}
 
 	// Foreign notices were written for a light admin — keep them on a light
 	// island in both themes rather than restyling markup we don't own.
@@ -309,19 +200,6 @@ body.toplevel_page_saddle {
 		display: flex;
 		align-items: center;
 		gap: 10px;
-
-		// The pause/resume control stays monochrome — no default link-blue.
-		.components-button.is-tertiary {
-			color: var(--s-fg-muted);
-			padding: 4px 8px;
-			height: auto;
-			min-height: 0;
-
-			&:hover:not( :disabled ) {
-				color: var(--s-fg);
-				background: var(--s-surface-3);
-			}
-		}
 	}
 
 	&__status {
@@ -349,69 +227,11 @@ body.toplevel_page_saddle {
 		}
 	}
 
-	&__dot {
-		width: 7px;
-		height: 7px;
-		border-radius: 50%;
-		background: currentColor;
-	}
-
-	&__theme {
-		appearance: none;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 30px;
-		height: 30px;
-		padding: 0;
-		background: none;
-		border: none;
-		border-radius: var(--s-radius);
-		color: var(--s-fg-subtle);
-		cursor: pointer;
-		transition: color var(--s-dur) var(--s-ease),
-			background var(--s-dur) var(--s-ease);
-
-		svg {
-			width: 17px;
-			height: 17px;
-		}
-
-		&:hover {
-			color: var(--s-fg);
-			background: var(--s-surface-3);
-		}
-	}
 }
 
+// The section nav rides the design system's Tabs; only spacing is ours.
 .saddle-nav {
-	display: flex;
-	gap: 4px;
-	border-bottom: 1px solid var(--s-border);
-
-	&__item {
-		appearance: none;
-		border: 0;
-		background: transparent;
-		padding: 10px 14px;
-		font-size: 14px;
-		font-weight: 550;
-		color: var(--s-fg-muted);
-		cursor: pointer;
-		border-bottom: 2px solid transparent;
-		margin-bottom: -1px;
-		transition: color var(--s-dur) var(--s-ease),
-			border-color var(--s-dur) var(--s-ease);
-
-		&:hover {
-			color: var(--s-fg);
-		}
-
-		&.is-active {
-			color: var(--s-fg);
-			border-bottom-color: var(--s-action);
-		}
-	}
+	margin-bottom: 0;
 }
 
 /* Section switches ease in rather than snapping. */
@@ -494,15 +314,6 @@ body.toplevel_page_saddle {
 		margin-top: 28px;
 	}
 
-	&__connect {
-		display: flex;
-		align-items: flex-end;
-		gap: 12px;
-
-		.components-base-control {
-			flex: 1 1 auto;
-		}
-	}
 }
 
 .saddle-promises {
@@ -542,227 +353,21 @@ body.toplevel_page_saddle {
 	}
 }
 
-/* ---------- Level cards (onboarding + permissions) ---------- */
-
-.saddle-levels {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 14px;
-
-	@media ( max-width: 660px ) {
-		grid-template-columns: 1fr;
-	}
-}
-
-.saddle-levelcard {
-	position: relative;
-	text-align: left;
-	appearance: none;
-	cursor: pointer;
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-	padding: 20px;
-	border-radius: var(--s-radius-lg);
-	background: var(--s-bg);
-	border: 1px solid var(--s-border-strong);
-	transition: border-color var(--s-dur) var(--s-ease),
-		box-shadow var(--s-dur) var(--s-ease),
-		background var(--s-dur) var(--s-ease);
-
-	&:hover {
-		border-color: var(--s-fg-subtle);
-	}
-
-	&.is-active {
-		border-color: var(--s-action);
-		box-shadow: inset 0 0 0 1px var(--s-action);
-		background: var(--s-surface-2);
-	}
-
-	&__glyph {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 40px;
-		height: 40px;
-		margin-bottom: 4px;
-		border-radius: 10px;
-		background: var(--s-surface-3);
-		color: var(--s-fg);
-
-		svg {
-			width: 22px;
-			height: 22px;
-		}
-	}
-
-	&.is-active &__glyph {
-		background: var(--s-action);
-		color: var(--s-on-action);
-	}
-
-	&__title {
-		font-size: 16px;
-		font-weight: 620;
-		letter-spacing: -0.01em;
-	}
-
-	&__desc {
-		font-size: 13px;
-		line-height: 1.5;
-		color: var(--s-fg-muted);
-	}
-
-	&__rec {
-		margin-top: 4px;
-		align-self: flex-start;
-		font-size: 11px;
-		font-weight: 600;
-		color: var(--s-safe);
-		background: var(--s-safe-bg);
-		padding: 3px 9px;
-		border-radius: var(--s-radius-pill);
-	}
-}
-
 /* ---------- Home ---------- */
-
-.saddle-hero {
-	border: 1px solid var(--s-border);
-	border-radius: var(--s-radius-lg);
-	background: var(--s-bg);
-	box-shadow: var(--s-shadow-sm);
-	padding: 24px;
-	border-left: 4px solid var(--s-fg-subtle);
-
-	&--safe {
-		border-left-color: var(--s-safe);
-	}
-	&--active {
-		border-left-color: var(--s-active);
-	}
-	&--paused {
-		border-left-color: var(--s-fg-subtle);
-		background: var(--s-surface-2);
-	}
-
-	&__label {
-		font-size: 12px;
-		font-weight: 600;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
-		color: var(--s-fg-subtle);
-	}
-
-	&__statement {
-		margin: 10px 0 20px;
-		font-size: 21px;
-		line-height: 1.4;
-		font-weight: 550;
-		letter-spacing: -0.015em;
-		max-width: 56ch;
-		text-wrap: pretty;
-	}
-}
-
-.saddle-nextstep {
-	margin-top: 16px;
-	padding: 24px;
-	border-radius: var(--s-radius-lg);
-	background: var(--s-surface-2);
-	border: 1px solid var(--s-border);
-
-	h2 {
-		margin: 0 0 6px;
-		font-size: 17px;
-		font-weight: 620;
-		letter-spacing: -0.01em;
-	}
-	p {
-		margin: 0 0 16px;
-		color: var(--s-fg-muted);
-		font-size: 14px;
-		max-width: 60ch;
-	}
-}
+// Hero, next-step callout, cards, and app rows come from the design system;
+// only the compact activity list (no DS timeline primitive) stays ours.
 
 .saddle-cards {
 	margin-top: 16px;
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 16px;
-
-	// With no apps yet, the next-step section owns that story and the
-	// activity card takes the full row.
-	&--single {
-		grid-template-columns: 1fr;
-	}
-
-	@media ( max-width: 782px ) {
-		grid-template-columns: 1fr;
-	}
 }
 
-.saddle-card {
-	// Critical: without this, a long unbreakable string in one card (e.g. an
-	// activity summary) forces its grid track past 1fr and squeezes the sibling
-	// card. min-width:0 lets the track shrink so ellipsis works.
-	min-width: 0;
-	border: 1px solid var(--s-border);
-	border-radius: var(--s-radius-lg);
-	background: var(--s-bg);
-	box-shadow: var(--s-shadow-sm);
-	padding: 20px;
-
-	&__head {
-		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: 8px 12px;
-		flex-wrap: wrap;
-		margin-bottom: 14px;
-
-		h2 {
-			margin: 0;
-			font-size: 15px;
-			font-weight: 620;
-			letter-spacing: -0.01em;
-		}
-	}
-
-	&__count {
-		flex: 0 0 auto;
-		font-size: 12px;
-		color: var(--s-fg-subtle);
-		font-variant-numeric: tabular-nums;
-	}
-
-	&__link {
-		appearance: none;
-		flex: 0 0 auto;
-		padding: 0;
-		background: none;
-		border: none;
-		font-size: 12px;
-		color: var(--s-fg-subtle);
-		cursor: pointer;
-
-		&:hover {
-			color: var(--s-fg);
-			text-decoration: underline;
-		}
-	}
-
-	&__empty {
-		margin: 0 0 12px;
-		font-size: 13px;
-		line-height: 1.55;
-		color: var(--s-fg-muted);
-	}
+.saddle-card__empty {
+	margin: 0 0 12px;
+	font-size: 13px;
+	line-height: 1.55;
+	color: var(--s-fg-muted);
 }
 
-.saddle-applist,
 .saddle-activitylist {
 	list-style: none;
 	margin: 0 0 12px;
@@ -774,23 +379,9 @@ body.toplevel_page_saddle {
 	li {
 		display: flex;
 		align-items: center;
-		gap: 9px;
-		font-size: 14px;
-	}
-}
-
-.saddle-applist__dot {
-	width: 8px;
-	height: 8px;
-	border-radius: 50%;
-	background: var(--s-safe);
-	flex: 0 0 auto;
-}
-
-.saddle-activitylist {
-	li {
 		justify-content: space-between;
 		gap: 12px;
+		font-size: 14px;
 	}
 
 	&__summary {
@@ -798,20 +389,11 @@ body.toplevel_page_saddle {
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
-	}
 
-	&__badge {
-		display: inline-block;
-		margin-right: 8px;
-		padding: 1px 7px;
-		border-radius: var(--s-radius-pill);
-		font-size: 10px;
-		font-weight: 600;
-		letter-spacing: 0.02em;
-		text-transform: uppercase;
-		color: var(--s-danger);
-		background: var(--s-danger-bg);
-		vertical-align: middle;
+		.pp-badge {
+			margin-right: 8px;
+			vertical-align: middle;
+		}
 	}
 
 	&__target {
@@ -837,27 +419,19 @@ body.toplevel_page_saddle {
 	max-width: 62ch;
 }
 
-.saddle-disclosure {
-	appearance: none;
-	background: transparent;
-	border: 0;
-	cursor: pointer;
-	display: inline-flex;
-	align-items: center;
-	gap: 8px;
+// Disclosures ("See everything…", "Connection details & health") ride the
+// design system's Collapsible; give them breathing room above.
+.saddle-perm__all,
+.saddle-apps__more {
 	margin-top: 24px;
-	padding: 6px 0;
-	font-size: 13px;
-	font-weight: 550;
-	color: var(--s-fg-muted);
+}
 
-	&:hover {
-		color: var(--s-fg);
-	}
+// Quiet destructive row action (e.g. Disconnect) — link button, danger ink.
+.saddle-link-danger {
+	color: var(--pp-danger);
 
-	&__caret {
-		font-size: 11px;
-		color: var(--s-fg-subtle);
+	&:hover:not( :disabled ) {
+		color: var(--pp-danger);
 	}
 }
 
@@ -876,12 +450,8 @@ body.toplevel_page_saddle {
 	max-width: 64ch;
 }
 
+// Each guidance section is a DS Card; only the rhythm between them is ours.
 .saddle-guide__block {
-	background: var(--s-bg);
-	border: 1px solid var(--s-border);
-	border-radius: var(--s-radius-lg);
-	box-shadow: var(--s-shadow-sm);
-	padding: 20px 22px 22px;
 	margin-bottom: 16px;
 
 	&:last-child {
@@ -939,38 +509,6 @@ body.toplevel_page_saddle {
 
 .saddle-guide__rawtoggle {
 	margin-top: 10px;
-}
-
-.saddle-guide__head {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	margin-bottom: 6px;
-
-	h3 {
-		margin: 0;
-		font-size: 15px;
-		font-weight: 620;
-		letter-spacing: -0.01em;
-	}
-}
-
-.saddle-guide__badge {
-	font-size: 11px;
-	font-weight: 550;
-	color: var(--s-fg-subtle);
-	background: var(--s-surface-3);
-	border-radius: var(--s-radius-pill);
-	padding: 3px 10px;
-}
-
-.saddle-guide__hint {
-	margin: 0 0 12px;
-	font-size: 13px;
-	line-height: 1.55;
-	color: var(--s-fg-muted);
-	max-width: 70ch;
-	text-wrap: pretty;
 }
 
 .saddle-guide__system {
@@ -1139,212 +677,9 @@ body.toplevel_page_saddle {
 	}
 }
 
-/* ---------- Apply bar (Permissions) ---------- */
-
-.saddle-applybar {
-	position: sticky;
-	bottom: 16px;
-	margin-top: 20px;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 16px;
-	padding: 14px 16px;
-	background: var(--s-inverse-bg);
-	color: var(--s-inverse-fg);
-	border-radius: var(--s-radius-lg);
-	box-shadow: var(--s-shadow-lg);
-
-	&__summary {
-		font-size: 13px;
-		line-height: 1.45;
-		min-width: 0;
-	}
-
-	&__actions {
-		display: flex;
-		gap: 8px;
-		flex: 0 0 auto;
-	}
-
-	.components-button.is-primary {
-		background: var(--s-inverse-btn-bg);
-		color: var(--s-inverse-btn-fg);
-
-		&:hover:not( :disabled ) {
-			background: var(--s-inverse-btn-hover);
-			color: var(--s-inverse-btn-fg);
-		}
-	}
-	.components-button.is-tertiary {
-		color: var(--s-inverse-fg-muted);
-
-		&:hover:not( :disabled ) {
-			color: var(--s-inverse-fg);
-			background: var(--s-inverse-tint);
-		}
-	}
-}
-
 /* ---------- Connect tab (apps management) ---------- */
-
-.saddle-apps__head {
-	display: flex;
-	align-items: flex-start;
-	justify-content: space-between;
-	gap: 16px;
-	margin-bottom: 18px;
-
-	.components-button.is-primary {
-		flex-shrink: 0;
-	}
-}
-
-.saddle-apps__title {
-	margin: 0 0 6px;
-	font-size: 20px;
-	font-weight: 640;
-	letter-spacing: -0.02em;
-}
-
-.saddle-apps__lead {
-	margin: 0;
-	color: var(--s-fg-muted);
-	font-size: 13px;
-	line-height: 1.55;
-	max-width: 58ch;
-	text-wrap: pretty;
-}
-
-/* Empty state — the whole card is the call to action. */
-.saddle-apps__empty {
-	appearance: none;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 6px;
-	width: 100%;
-	padding: 44px 24px;
-	background: var(--s-bg);
-	border: 1.5px dashed var(--s-border-strong);
-	border-radius: var(--s-radius-lg);
-	cursor: pointer;
-	transition: border-color var(--s-dur) var(--s-ease),
-		background var(--s-dur) var(--s-ease);
-
-	&:hover {
-		border-color: var(--s-fg-subtle);
-		background: var(--s-surface-2);
-	}
-
-	&-icon {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 42px;
-		height: 42px;
-		border-radius: 50%;
-		background: var(--s-surface-3);
-		color: var(--s-fg-muted);
-		margin-bottom: 4px;
-	}
-
-	&-title {
-		font-size: 15px;
-		font-weight: 620;
-		letter-spacing: -0.01em;
-	}
-
-	&-sub {
-		font-size: 13px;
-		color: var(--s-fg-muted);
-	}
-}
-
-.saddle-apps__list {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-	background: var(--s-bg);
-	border: 1px solid var(--s-border);
-	border-radius: var(--s-radius-lg);
-	box-shadow: var(--s-shadow-sm);
-	overflow: hidden;
-}
-
-.saddle-appsrow {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	padding: 14px 18px;
-	border-bottom: 1px solid var(--s-border);
-
-	&:last-child {
-		border-bottom: 0;
-	}
-
-	&__dot {
-		flex-shrink: 0;
-		width: 8px;
-		height: 8px;
-		border-radius: 50%;
-		background: var(--s-border-strong);
-
-		&.is-live {
-			background: var(--s-safe);
-			box-shadow: 0 0 0 3px var(--s-safe-bg);
-		}
-	}
-
-	&__logo {
-		display: flex;
-		align-items: center;
-		flex-shrink: 0;
-		// Lobe brand logos size via font-size (1em square).
-		font-size: 18px;
-		color: var(--s-fg);
-	}
-
-	&__name {
-		font-size: 14px;
-		font-weight: 600;
-		letter-spacing: -0.01em;
-		white-space: nowrap;
-	}
-
-	&__meta {
-		flex: 1;
-		min-width: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		font-size: 12.5px;
-		color: var(--s-fg-subtle);
-	}
-
-	&__action {
-		flex-shrink: 0;
-	}
-}
-
-/* Disconnect confirmation dialog. */
-.saddle-confirm {
-	max-width: 420px;
-
-	&__body {
-		margin: 0 0 20px;
-		font-size: 13.5px;
-		line-height: 1.6;
-		color: var(--s-fg-muted);
-		text-wrap: pretty;
-	}
-
-	&__actions {
-		display: flex;
-		justify-content: flex-end;
-		gap: 8px;
-	}
-}
+// Header, empty state, app rows, the disconnect confirm, and the endpoint
+// snippet all come from the design system now.
 
 /* Advanced: endpoint details + health, behind the disclosure. */
 .saddle-apps__advanced {
@@ -1353,28 +688,9 @@ body.toplevel_page_saddle {
 	background: var(--s-surface-2);
 	border: 1px solid var(--s-border);
 	border-radius: var(--s-radius-lg);
-}
 
-.saddle-apps__endpoint {
-	margin-bottom: 14px;
-
-	&-label {
-		display: block;
-		margin-bottom: 6px;
-		font-size: 11px;
-		font-weight: 600;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
-		color: var(--s-fg-subtle);
-	}
-
-	code {
-		display: inline-block;
-		padding: 7px 11px;
-		background: var(--s-bg);
-		border: 1px solid var(--s-border);
-		border-radius: var(--s-radius);
-		font-size: 12.5px;
+	.pp-snippet {
+		margin-bottom: 14px;
 	}
 }
 
@@ -1388,24 +704,6 @@ body.toplevel_page_saddle {
 	margin: 14px 0 0;
 	font-size: 12px;
 	color: var(--s-fg-subtle);
-}
-
-.saddle-code {
-	margin: 12px 0 0;
-	padding: 14px 16px;
-	background: var(--s-surface-2);
-	border: 1px solid var(--s-border);
-	border-radius: var(--s-radius);
-	overflow-x: auto;
-	font-size: 12.5px;
-	line-height: 1.6;
-	font-family: ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace;
-
-	&--dark {
-		background: var(--s-code-bg);
-		border-color: var(--s-code-border);
-		color: var(--s-code-fg);
-	}
 }
 
 .saddle-apps__footnote {
@@ -1442,60 +740,6 @@ body.toplevel_page_saddle {
 	margin-bottom: 30px;
 }
 
-.saddle-wizard__progress {
-	display: flex;
-	align-items: center;
-	gap: 22px;
-	margin: 0;
-	padding: 0;
-	list-style: none;
-
-	li {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		font-size: 12.5px;
-		font-weight: 600;
-		color: var(--s-fg-subtle);
-		transition: color var(--s-dur) var(--s-ease);
-
-		&.is-now {
-			color: var(--s-fg);
-
-			.saddle-wizard__dot {
-				background: var(--s-action);
-				border-color: var(--s-action);
-				color: var(--s-on-action);
-			}
-		}
-
-		&.is-done {
-			color: var(--s-safe);
-
-			.saddle-wizard__dot {
-				background: var(--s-safe-bg);
-				border-color: transparent;
-				color: var(--s-safe);
-			}
-		}
-	}
-}
-
-.saddle-wizard__dot {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 22px;
-	height: 22px;
-	border: 1.5px solid var(--s-border-strong);
-	border-radius: 50%;
-	font-size: 11px;
-	font-variant-numeric: tabular-nums;
-	transition: background var(--s-dur) var(--s-ease),
-		color var(--s-dur) var(--s-ease),
-		border-color var(--s-dur) var(--s-ease);
-}
-
 /* Each step slides gently into place. */
 .saddle-wizard__step {
 	max-width: 640px;
@@ -1530,139 +774,27 @@ body.toplevel_page_saddle {
 	text-wrap: pretty;
 }
 
-.saddle-wizard__apps {
-	display: grid;
-	grid-template-columns: repeat( 5, minmax( 0, 1fr ) );
-	gap: 12px;
-
-	@media ( max-width: 960px ) {
-		grid-template-columns: repeat( 3, minmax( 0, 1fr ) );
-	}
-
-	@media ( max-width: 600px ) {
-		grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
-	}
+// Lobe brand logos in the app picker size via font-size (1em square).
+.saddle-wizard__apps .pp-selcard__icon {
+	font-size: 24px;
 }
 
-.saddle-appcard {
-	appearance: none;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 2px;
-	padding: 24px 10px 18px;
-	background: var(--s-bg);
-	border: 1px solid var(--s-border);
-	border-radius: var(--s-radius-lg);
-	cursor: pointer;
-	transition: border-color var(--s-dur) var(--s-ease),
-		transform var(--s-dur) var(--s-ease),
-		box-shadow var(--s-dur) var(--s-ease);
-
-	&:hover:not( :disabled ) {
-		border-color: var(--s-fg-subtle);
-		transform: translateY( -2px );
-		box-shadow: var(--s-shadow-md);
-	}
-
-	&:focus-visible {
-		outline: 2px solid var(--s-fg);
-		outline-offset: 2px;
-	}
-
-	&:disabled {
-		opacity: 0.55;
-		cursor: default;
-	}
-
-	&__mark {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 46px;
-		height: 46px;
-		margin-bottom: 10px;
-		background: var(--s-surface-3);
-		border: 1px solid var(--s-border);
-		border-radius: 14px;
-		color: var(--s-fg);
-		transition: transform var(--s-dur) var(--s-ease);
-
-		img {
-			display: block;
-			width: 26px;
-			height: 26px;
-		}
-	}
-
-	&:hover:not( :disabled ) &__mark {
-		transform: scale( 1.06 );
-	}
-
-	&__label {
-		font-size: 13.5px;
-		font-weight: 620;
-		letter-spacing: -0.01em;
-		white-space: nowrap;
-	}
-
-	&__kind {
-		font-size: 11.5px;
-		color: var(--s-fg-subtle);
-	}
-}
-
+/* The generated setup: DS CodeBlock + our own primary copy button below it. */
 .saddle-wizard__config {
 	margin: 0 0 18px;
 }
 
-.saddle-wizard__configbar {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 12px;
-	padding: 9px 9px 9px 14px;
-	background: var(--s-surface-3);
-	border: 1px solid var(--s-border);
-	border-bottom: 0;
-	border-radius: var(--s-radius) var(--s-radius) 0 0;
-	font-size: 12.5px;
-	color: var(--s-fg-muted);
-
-	& + .saddle-code {
-		margin-top: 0;
-		border-radius: 0 0 var(--s-radius) var(--s-radius);
-	}
+.saddle-wizard__copy {
+	margin-top: 10px;
 }
 
 /* What this app will be able to do — always visible where the key is issued. */
 .saddle-wizard__cando {
 	margin: 0 0 16px;
-	padding: 14px 16px;
-	background: var(--s-surface-2);
-	border: 1px solid var(--s-border);
-	border-left: 3px solid var(--s-safe);
-	border-radius: var(--s-radius);
-
-	&-label {
-		display: block;
-		margin-bottom: 6px;
-		font-size: 11px;
-		font-weight: 600;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
-		color: var(--s-fg-subtle);
-	}
-
-	p {
-		margin: 0 0 6px;
-		font-size: 14px;
-		line-height: 1.5;
-	}
 
 	&-note {
-		margin: 0 !important;
-		font-size: 12.5px !important;
+		margin: 6px 0 0;
+		font-size: 12.5px;
 		color: var(--s-fg-muted);
 	}
 }
@@ -1685,90 +817,21 @@ body.toplevel_page_saddle {
 	}
 }
 
-/* The example first message — click anywhere on it to copy. */
 .saddle-wizard__prompt {
-	appearance: none;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 12px;
-	width: 100%;
-	padding: 16px 18px;
-	background: var(--s-surface-2);
-	border: 1px solid var(--s-border-strong);
-	border-radius: var(--s-radius-lg);
-	font-size: 15px;
-	letter-spacing: -0.01em;
-	text-align: left;
-	cursor: pointer;
-	transition: border-color var(--s-dur) var(--s-ease),
-		background var(--s-dur) var(--s-ease);
-
-	&:hover {
-		border-color: var(--s-fg-subtle);
-		background: var(--s-bg);
-	}
-
-	&-copy {
-		flex-shrink: 0;
-		font-size: 12.5px;
-		font-weight: 600;
-		color: var(--s-fg-muted);
-	}
+	margin-bottom: 6px;
 }
 
 .saddle-wizard__listening {
 	display: flex;
 	align-items: center;
-	gap: 12px;
 	margin-top: 22px;
 	font-size: 13.5px;
 	color: var(--s-fg-muted);
 }
 
-.saddle-wizard__pulse {
-	position: relative;
-	flex-shrink: 0;
-	width: 10px;
-	height: 10px;
-	border-radius: 50%;
-	background: var(--s-safe);
-
-	&::after {
-		content: '';
-		position: absolute;
-		inset: -4px;
-		border: 2px solid var(--s-safe);
-		border-radius: 50%;
-		animation: saddle-pulse 1.8s var(--s-ease) infinite;
-	}
-}
-
-@keyframes saddle-pulse {
-	0% {
-		transform: scale( 0.55 );
-		opacity: 0.8;
-	}
-	70%,
-	100% {
-		transform: scale( 1.5 );
-		opacity: 0;
-	}
-}
-
 .saddle-wizard__trouble {
 	margin-top: 22px;
-	padding: 16px 18px;
-	background: var(--s-surface-2);
-	border: 1px solid var(--s-border);
-	border-radius: var(--s-radius-lg);
 	animation: saddle-step-in 0.28s var(--s-ease) both;
-
-	h3 {
-		margin: 0 0 8px;
-		font-size: 14px;
-		font-weight: 620;
-	}
 
 	ul {
 		margin: 0 0 10px;
@@ -1833,20 +896,9 @@ body.toplevel_page_saddle {
 	}
 }
 
-.saddle-testresult {
-	font-size: 13px;
-	font-weight: 600;
-	font-variant-numeric: tabular-nums;
-
-	&--ok {
-		color: var(--s-safe);
-	}
-	&--err {
-		color: var(--s-danger);
-	}
-}
-
-/* Server-side connection health (auth-header self-check). */
+/* Server-side connection health (auth-header self-check). The warning card
+   itself is the design system's CalloutCard; these style its innards and the
+   one-line status paragraphs. */
 .saddle-health {
 	margin-top: 14px;
 	font-size: 13px;
@@ -1867,21 +919,6 @@ body.toplevel_page_saddle {
 		color: var(--s-fg-subtle);
 	}
 
-	&--warn {
-		border: 1px solid var(--s-border-strong);
-		border-left: 3px solid var(--s-active);
-		background: var(--s-active-bg);
-		border-radius: var(--s-radius);
-		padding: 14px 16px;
-	}
-
-	&__title {
-		margin: 0 0 6px;
-		font-size: 14px;
-		font-weight: 600;
-		color: var(--s-fg);
-	}
-
 	&__body {
 		margin: 0 0 12px;
 		color: var(--s-fg-muted);
@@ -1898,38 +935,6 @@ body.toplevel_page_saddle {
 		gap: 12px;
 		margin-bottom: 12px;
 	}
-
-	&__snippet {
-		margin: 0 0 12px;
-	}
-}
-
-/* Shared header bar above a dark code block (health snippets, etc.). */
-.saddle-config__bar {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 12px;
-	padding: 8px 8px 8px 14px;
-	background: var(--s-surface-3);
-	border: 1px solid var(--s-border);
-	border-bottom: 0;
-	border-radius: var(--s-radius) var(--s-radius) 0 0;
-
-	& + .saddle-code {
-		margin-top: 0;
-		border-radius: 0 0 var(--s-radius) var(--s-radius);
-	}
-}
-
-.saddle-config__path {
-	font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-	font-size: 12px;
-	color: var(--s-fg-muted);
-	min-width: 0;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
 }
 
 /* ---------- Motion preferences ---------- */
@@ -1960,37 +965,12 @@ body.toplevel_page_saddle {
 		max-width: 64ch;
 	}
 
+	// The pills themselves are the design system's FilterTabs.
 	&__filters {
 		display: flex;
 		align-items: center;
 		gap: 6px;
 		margin-bottom: 20px;
-	}
-
-	&__filter {
-		appearance: none;
-		padding: 5px 13px;
-		background: none;
-		border: 1px solid var(--s-border);
-		border-radius: var(--s-radius-pill);
-		font-size: 12.5px;
-		font-weight: 550;
-		color: var(--s-fg-muted);
-		cursor: pointer;
-		transition: color var(--s-dur) var(--s-ease),
-			border-color var(--s-dur) var(--s-ease),
-			background var(--s-dur) var(--s-ease);
-
-		&:hover {
-			border-color: var(--s-border-strong);
-			color: var(--s-fg);
-		}
-
-		&.is-active {
-			background: var(--s-action);
-			border-color: var(--s-action);
-			color: var(--s-on-action);
-		}
 	}
 
 	&__total {
@@ -2004,18 +984,6 @@ body.toplevel_page_saddle {
 		display: flex;
 		justify-content: center;
 		padding: 60px 0;
-	}
-
-	&__empty {
-		padding: 48px 24px;
-		text-align: center;
-		font-size: 13.5px;
-		color: var(--s-fg-muted);
-		background: var(--s-surface-2);
-		border: 1px dashed var(--s-border-strong);
-		border-radius: var(--s-radius-lg);
-		max-width: 52ch;
-		margin-inline: auto;
 	}
 
 	&__day {
@@ -2086,15 +1054,6 @@ body.toplevel_page_saddle {
 		color: var(--s-fg-subtle);
 	}
 
-	&__badge {
-		padding: 0 7px;
-		border-radius: var(--s-radius-pill);
-		background: var(--s-danger-bg);
-		color: var(--s-danger);
-		font-weight: 650;
-		line-height: 17px;
-	}
-
 	&__action {
 		padding: 1px 6px;
 		background: var(--s-surface-3);
@@ -2118,83 +1077,30 @@ body.toplevel_page_saddle {
 	}
 }
 
-/* Skills — owner-installed playbooks (Guidance tab) */
-.saddle-skills {
-	list-style: none;
+/* Skills + memory rows (Guidance tab) — DS RowList with an expandable body. */
+.saddle-rows {
 	margin: 12px 0;
-	padding: 0;
-	border: 1px solid var(--s-border);
-	border-radius: var(--s-radius);
-	overflow: hidden;
-
-	&__row {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 8px 16px;
-		margin: 0;
-		padding: 10px 14px;
-
-		& + & {
-			border-top: 1px solid var(--s-border);
-		}
-	}
-
-	&__main {
-		flex: 1 1 260px;
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-		min-width: 0;
-	}
-
-	&__desc {
-		font-size: 12px;
-		color: var(--s-fg-muted);
-	}
-
-	&__controls {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		flex: 0 0 auto;
-	}
 
 	&__body {
-		flex-basis: 100%;
-		margin: 8px 0 0;
+		margin: 8px 0 12px;
 		max-height: 320px;
 		overflow: auto;
 	}
 }
 
-// ---------- @plugpress/ui compat-shim wrappers ----------
-// Small layout helpers for the WP-component API adapted in admin/src/ui.jsx.
-
-// ToggleControl → Switch + label/help row.
+// A Switch with its visible label beside it.
 .saddle-toggle-row {
 	display: flex;
 	align-items: flex-start;
 	gap: 10px;
 
-	&__text {
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-	}
-
-	&__label {
+	span {
 		font-size: 13px;
 		color: var(--s-fg);
 	}
-
-	&__help {
-		font-size: 12px;
-		color: var(--s-fg-muted);
-	}
 }
 
-// Notice `actions` rendered as trailing links.
+// Trailing action links inside a DS Notice (e.g. the domain warning).
 .saddle-notice__actions {
 	display: flex;
 	flex-wrap: wrap;
