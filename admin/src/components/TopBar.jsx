@@ -81,27 +81,27 @@ export default function TopBar( {
 						<span className="saddle-top__sep" aria-hidden="true" />
 
 						{ saddleData.docsUrl && (
-							<Button asChild variant="ghost" size="sm">
-								<a
-									href={ saddleData.docsUrl }
-									target="_blank"
-									rel="noreferrer"
-								>
-									<ExternalLinkIcon size={ 14 } />
-									{ __( 'Docs', 'saddle' ) }
-								</a>
+							<Button
+								href={ saddleData.docsUrl }
+								target="_blank"
+								rel="noreferrer"
+								variant="ghost"
+								size="sm"
+							>
+								<ExternalLinkIcon size={ 14 } />
+								{ __( 'Docs', 'saddle' ) }
 							</Button>
 						) }
 						{ saddleData.rateUrl && (
-							<Button asChild variant="secondary" size="sm">
-								<a
-									href={ saddleData.rateUrl }
-									target="_blank"
-									rel="noreferrer"
-								>
-									<StarIcon size={ 14 } />
-									{ __( 'Rate Saddle', 'saddle' ) }
-								</a>
+							<Button
+								href={ saddleData.rateUrl }
+								target="_blank"
+								rel="noreferrer"
+								variant="secondary"
+								size="sm"
+							>
+								<StarIcon size={ 14 } />
+								{ __( 'Rate Saddle', 'saddle' ) }
 							</Button>
 						) }
 					</div>
