@@ -446,7 +446,7 @@ class Saddle_Blocks_Abilities {
 			return $count;
 		}
 
-		self::log(
+		Saddle_Log::record_action(
 			'set-blocks',
 			$post->ID,
 			sprintf(
@@ -511,7 +511,7 @@ class Saddle_Blocks_Abilities {
 		}
 
 		$address = '' === $parent ? (string) $at : $parent . '.' . $at;
-		self::log(
+		Saddle_Log::record_action(
 			'add-block',
 			$post->ID,
 			sprintf(
@@ -611,7 +611,7 @@ class Saddle_Blocks_Abilities {
 			return $count;
 		}
 
-		self::log(
+		Saddle_Log::record_action(
 			'edit-block',
 			$post->ID,
 			sprintf(
@@ -688,7 +688,7 @@ class Saddle_Blocks_Abilities {
 		}
 
 		$new_address = '' === $dest ? (string) $at : $dest . '.' . $at;
-		self::log(
+		Saddle_Log::record_action(
 			'move-block',
 			$post->ID,
 			sprintf(
@@ -756,7 +756,7 @@ class Saddle_Blocks_Abilities {
 		if ( 0 === $child_count ) {
 			$result = $execute();
 			if ( ! is_wp_error( $result ) ) {
-				self::log(
+				Saddle_Log::record_action(
 					'remove-block',
 					$post->ID,
 					sprintf(
@@ -836,7 +836,7 @@ class Saddle_Blocks_Abilities {
 		}
 
 		$address = '' === $parent ? (string) $at : $parent . '.' . $at;
-		self::log(
+		Saddle_Log::record_action(
 			'insert-block-pattern',
 			$post->ID,
 			sprintf(
@@ -1005,24 +1005,5 @@ class Saddle_Blocks_Abilities {
 		}
 
 		return count( Saddle_Blocks_Tree::flatten( $tree ) );
-	}
-
-	/**
-	 * Record a mutation in the activity log.
-	 *
-	 * @param string $action  Ability short name.
-	 * @param int    $post_id Target post.
-	 * @param string $summary Plain-language summary.
-	 */
-	private static function log( $action, $post_id, $summary ) {
-		if ( class_exists( 'Saddle_Log' ) ) {
-			Saddle_Log::record(
-				array(
-					'action'  => $action,
-					'target'  => (string) $post_id,
-					'summary' => $summary,
-				)
-			);
-		}
 	}
 }

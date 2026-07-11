@@ -374,7 +374,7 @@ class Saddle_Site_Abilities {
 			return new WP_Error( 'saddle_activate_failed', $result->get_error_message(), array( 'status' => 500 ) );
 		}
 
-		self::log( 'activate-plugin', $file, sprintf( /* translators: %s: plugin file. */ __( 'Activated plugin %s.', 'saddle' ), $file ) );
+		Saddle_Log::record_action( 'activate-plugin', $file, sprintf( /* translators: %s: plugin file. */ __( 'Activated plugin %s.', 'saddle' ), $file ) );
 
 		return array(
 			'activated' => true,
@@ -409,7 +409,7 @@ class Saddle_Site_Abilities {
 
 		deactivate_plugins( $file, false );
 
-		self::log( 'deactivate-plugin', $file, sprintf( /* translators: %s: plugin file. */ __( 'Deactivated plugin %s.', 'saddle' ), $file ) );
+		Saddle_Log::record_action( 'deactivate-plugin', $file, sprintf( /* translators: %s: plugin file. */ __( 'Deactivated plugin %s.', 'saddle' ), $file ) );
 
 		return array(
 			'deactivated' => true,
@@ -482,7 +482,7 @@ class Saddle_Site_Abilities {
 
 		switch_theme( $stylesheet );
 
-		self::log( 'activate-theme', $stylesheet, sprintf( /* translators: %s: theme name. */ __( 'Switched active theme to %s.', 'saddle' ), $theme->get( 'Name' ) ) );
+		Saddle_Log::record_action( 'activate-theme', $stylesheet, sprintf( /* translators: %s: theme name. */ __( 'Switched active theme to %s.', 'saddle' ), $theme->get( 'Name' ) ) );
 
 		return array(
 			'activated'  => true,
@@ -767,7 +767,7 @@ class Saddle_Site_Abilities {
 	public static function flush_cache( $input = null ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Fixed ability-callback signature.
 		$flushed = wp_cache_flush();
 
-		self::log( 'flush-cache', 'object-cache', __( 'Flushed the object cache.', 'saddle' ) );
+		Saddle_Log::record_action( 'flush-cache', 'object-cache', __( 'Flushed the object cache.', 'saddle' ) );
 
 		return array(
 			'flushed' => (bool) $flushed,
@@ -911,25 +911,6 @@ class Saddle_Site_Abilities {
 	private static function load_plugin_api() {
 		if ( ! function_exists( 'get_plugins' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
-		}
-	}
-
-	/**
-	 * Record a successful mutation to the activity log.
-	 *
-	 * @param string     $action  Short action key.
-	 * @param int|string $target  Target id.
-	 * @param string     $summary Human-readable description.
-	 */
-	private static function log( $action, $target, $summary ) {
-		if ( class_exists( 'Saddle_Log' ) ) {
-			Saddle_Log::record(
-				array(
-					'action'  => $action,
-					'target'  => (string) $target,
-					'summary' => $summary,
-				)
-			);
 		}
 	}
 }

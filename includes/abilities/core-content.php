@@ -844,26 +844,6 @@ class Saddle_Abilities {
 	}
 
 	/**
-	 * Record a successful mutation to the activity log. No-op if logging is
-	 * unavailable. Reads never call this.
-	 *
-	 * @param string     $action  Short action key, e.g. 'create-post'.
-	 * @param int|string $target  Target id.
-	 * @param string     $summary Human-readable description.
-	 */
-	private static function log( $action, $target, $summary ) {
-		if ( class_exists( 'Saddle_Log' ) ) {
-			Saddle_Log::record(
-				array(
-					'action'  => $action,
-					'target'  => (string) $target,
-					'summary' => $summary,
-				)
-			);
-		}
-	}
-
-	/**
 	 * Enforce the meta capabilities that wp_insert_post()/wp_update_post() do
 	 * not check themselves: editing a specific object, publishing, and assigning
 	 * content to another author. The tier + generic-cap check in the
@@ -1375,7 +1355,7 @@ class Saddle_Abilities {
 			update_post_meta( $attachment_id, '_wp_attachment_image_alt', sanitize_text_field( $input['alt'] ) );
 		}
 
-		self::log(
+		Saddle_Log::record_action(
 			'upload-media',
 			$attachment_id,
 			sprintf(
@@ -1428,7 +1408,7 @@ class Saddle_Abilities {
 			update_post_meta( $id, '_wp_attachment_image_alt', sanitize_text_field( $input['alt'] ) );
 		}
 
-		self::log(
+		Saddle_Log::record_action(
 			'update-media',
 			$id,
 			sprintf(
@@ -1618,7 +1598,7 @@ class Saddle_Abilities {
 
 		$term  = get_term( $result['term_id'], $taxonomy );
 		$label = ( 'category' === $taxonomy ) ? 'category' : 'tag';
-		self::log(
+		Saddle_Log::record_action(
 			'create-' . $label,
 			$result['term_id'],
 			sprintf(
@@ -1748,7 +1728,7 @@ class Saddle_Abilities {
 		$meta_denied = self::apply_terms_and_meta( $type, $id, $input );
 
 		$post = get_post( $id );
-		self::log(
+		Saddle_Log::record_action(
 			'create-' . $type,
 			$id,
 			sprintf(
@@ -1906,7 +1886,7 @@ class Saddle_Abilities {
 		$meta_denied = self::apply_terms_and_meta( $type, $id, $input );
 
 		$post = get_post( $id );
-		self::log(
+		Saddle_Log::record_action(
 			'update-' . $type,
 			$id,
 			sprintf(

@@ -140,7 +140,7 @@ class Saddle_Memory_Abilities {
 			return $entry;
 		}
 
-		self::log(
+		Saddle_Log::record_action(
 			'remember',
 			$entry['key'],
 			sprintf(
@@ -220,7 +220,7 @@ class Saddle_Memory_Abilities {
 			);
 		}
 
-		self::log(
+		Saddle_Log::record_action(
 			'forget',
 			$key,
 			sprintf(
@@ -231,24 +231,5 @@ class Saddle_Memory_Abilities {
 		);
 
 		return array( 'forgotten' => $key );
-	}
-
-	/**
-	 * Record a memory mutation in the activity log.
-	 *
-	 * @param string $action  Ability short name.
-	 * @param string $target  Entry key.
-	 * @param string $summary Plain-language summary.
-	 */
-	private static function log( $action, $target, $summary ) {
-		if ( class_exists( 'Saddle_Log' ) ) {
-			Saddle_Log::record(
-				array(
-					'action'  => $action,
-					'target'  => (string) $target,
-					'summary' => $summary,
-				)
-			);
-		}
 	}
 }

@@ -85,6 +85,25 @@ class Saddle_Log {
 	}
 
 	/**
+	 * Record a successful mutation from an ability, in the shape ability classes
+	 * use. Thin convenience over record() so the four ability groups don't each
+	 * repeat the same array-building wrapper. Reads never call this.
+	 *
+	 * @param string     $action  Short action key, e.g. 'create-post'.
+	 * @param int|string $target  Target id.
+	 * @param string     $summary Human-readable description.
+	 */
+	public static function record_action( $action, $target, $summary ) {
+		self::record(
+			array(
+				'action'  => $action,
+				'target'  => (string) $target,
+				'summary' => $summary,
+			)
+		);
+	}
+
+	/**
 	 * Recent log entries, newest first.
 	 *
 	 * @param int    $per_page Entries per page (1–100).
