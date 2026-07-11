@@ -402,6 +402,10 @@ body.toplevel_page_saddle {
 // Hero, next-step callout, cards, and app rows come from the design system;
 // only the compact activity list (no DS timeline primitive) stays ours.
 
+.saddle-stats {
+	margin-bottom: 20px;
+}
+
 .saddle-cards {
 	margin-top: 16px;
 }

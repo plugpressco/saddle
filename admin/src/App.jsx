@@ -17,6 +17,7 @@ import {
 	Notice,
 	Button,
 	Collapsible,
+	SkipLink,
 } from '@plugpress/ui';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { api } from './api';
@@ -266,6 +267,9 @@ export default function App() {
 	} else {
 		view = (
 		<div className="pp-app saddle-app">
+			<SkipLink href="#pp-main">
+				{ __( 'Skip to content', 'saddle' ) }
+			</SkipLink>
 			<TopBar
 				tier={ tier }
 				tabs={ wizardOpen ? null : TABS }

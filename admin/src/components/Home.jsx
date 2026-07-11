@@ -15,9 +15,19 @@ import {
 	RowList,
 	Row,
 	StatusDot,
+	StatCard,
+	StatGrid,
 } from '@plugpress/ui';
-import { __, sprintf, _n } from '@wordpress/i18n';
-import { api } from '../api';
+import { __ } from '@wordpress/i18n';
+import { api, levelFor } from '../api';
+
+// Compact tile labels for the access level — the shared LEVELS titles
+// ("Just reading" …) read as sentences; a stat value wants one word.
+const LEVEL_STAT_LABEL = {
+	read: __( 'Read-only', 'saddle' ),
+	write: __( 'Read & write', 'saddle' ),
+	admin: __( 'Admin', 'saddle' ),
+};
 
 const WHEN_FMT = new Intl.DateTimeFormat( undefined, {
 	dateStyle: 'medium',
@@ -85,7 +95,7 @@ const shortLabel = ( entry ) => {
 	return entry.summary || entry.action || '—';
 };
 
-export default function Home( { clients, onNavigate, onConnect } ) {
+export default function Home( { tier, clients, onNavigate, onConnect } ) {
 	const hasApps = clients.length > 0;
 
 	const [ activity, setActivity ] = useState( null );
@@ -101,8 +111,27 @@ export default function Home( { clients, onNavigate, onConnect } ) {
 			.catch( () => setActivity( { enabled: false, entries: [] } ) );
 	}, [] );
 
+	const level = levelFor( tier );
+
 	return (
 		<div className="saddle-home">
+			{ /* At-a-glance tiles: what's connected, what power it has, and how
+			     much it has done. Values come from data already loaded. */ }
+			<StatGrid className="saddle-stats" min={ 180 }>
+				<StatCard
+					label={ __( 'Connected apps', 'saddle' ) }
+					value={ clients.length }
+				/>
+				<StatCard
+					label={ __( 'Access level', 'saddle' ) }
+					value={ LEVEL_STAT_LABEL[ level.key ] || level.title }
+				/>
+				<StatCard
+					label={ __( 'Actions logged', 'saddle' ) }
+					value={ activity ? activity.entries.length : '—' }
+				/>
+			</StatGrid>
+
 			{ /* When no apps yet, make connecting the clear next step */ }
 			{ ! hasApps && (
 				<CalloutCard
@@ -126,20 +155,6 @@ export default function Home( { clients, onNavigate, onConnect } ) {
 					<Card>
 						<CardHeader
 							title={ __( 'Connected apps', 'saddle' ) }
-							actions={
-								<Badge>
-									{ sprintf(
-										/* translators: %d: number of apps. */
-										_n(
-											'%d app',
-											'%d apps',
-											clients.length,
-											'saddle'
-										),
-										clients.length
-									) }
-								</Badge>
-							}
 						/>
 						<CardContent>
 							<RowList>
