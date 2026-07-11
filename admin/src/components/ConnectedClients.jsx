@@ -8,7 +8,20 @@
  */
 import { useState } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
-import { Button, Notice, Spinner, Modal } from '../ui';
+import {
+	Button,
+	Spinner,
+	Collapsible,
+	PageHeader,
+	EmptyState,
+	RowList,
+	Row,
+	StatusDot,
+	Badge,
+	Snippet,
+	useConfirm,
+	toast,
+} from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { saddleData, api } from '../api';
 import ConnectionHealth from './ConnectionHealth';
@@ -29,29 +42,41 @@ export default function Apps( {
 	onConnect,
 	onClientsChanged,
 } ) {
-	const [ notice, setNotice ] = useState( null );
-	const [ confirmRevoke, setConfirmRevoke ] = useState( null );
+	const confirm = useConfirm();
 	const [ showAdvanced, setShowAdvanced ] = useState( false );
 	const [ test, setTest ] = useState( null );
 
-	const revoke = ( uuid ) => {
-		setConfirmRevoke( null );
-		api( `clients/${ uuid }`, { method: 'DELETE' } )
+	const askRevoke = async ( c ) => {
+		const ok = await confirm( {
+			title: sprintf(
+				/* translators: %s: the app name. */
+				__( 'Disconnect “%s”?', 'saddle' ),
+				c.label || c.name
+			),
+			description: __(
+				'Its sign-in key stops working the moment you confirm — the app loses access to this site immediately. This can’t be undone, but you can always connect the app again with a fresh key.',
+				'saddle'
+			),
+			danger: true,
+			confirmLabel: __( 'Disconnect', 'saddle' ),
+			cancelLabel: __( 'Keep it connected', 'saddle' ),
+		} );
+		if ( ! ok ) {
+			return;
+		}
+		api( `clients/${ c.uuid }`, { method: 'DELETE' } )
 			.then( () => {
-				setNotice( {
-					type: 'success',
-					message: __(
+				toast.success(
+					__(
 						'Disconnected. That app’s sign-in no longer works.',
 						'saddle'
-					),
-				} );
+					)
+				);
 				if ( onClientsChanged ) {
 					onClientsChanged();
 				}
 			} )
-			.catch( ( e ) =>
-				setNotice( { type: 'error', message: e.message } )
-			);
+			.catch( ( e ) => toast.error( e.message ) );
 	};
 
 	// Live round-trip against the MCP endpoint using the admin session. The
@@ -117,82 +142,63 @@ export default function Apps( {
 
 	return (
 		<div className="saddle-apps">
-			{ notice && (
-				<Notice
-					status={ notice.type }
-					isDismissible
-					onRemove={ () => setNotice( null ) }
-				>
-					{ notice.message }
-				</Notice>
-			) }
-
-			<div className="saddle-apps__head">
-				<div>
-					<h2 className="saddle-apps__title">
-						{ __( 'Connected apps', 'saddle' ) }
-					</h2>
-					<p className="saddle-apps__lead">
-						{ __(
-							'Every app here has its own sign-in you can take away at any moment. They all follow the same rules from Permissions.',
-							'saddle'
-						) }
-					</p>
-				</div>
-				<Button variant="primary" onClick={ onConnect }>
-					{ __( 'Connect an app', 'saddle' ) }
-				</Button>
-			</div>
+			<PageHeader
+				title={ __( 'Connected apps', 'saddle' ) }
+				description={ __(
+					'Every app here has its own sign-in you can take away at any moment. They all follow the same rules from Permissions.',
+					'saddle'
+				) }
+				actions={
+					<Button variant="primary" onClick={ onConnect }>
+						{ __( 'Connect an app', 'saddle' ) }
+					</Button>
+				}
+			/>
 
 			{ loading && <Spinner /> }
 
 			{ ! loading && clients.length === 0 && (
-				<button
-					type="button"
-					className="saddle-apps__empty"
-					onClick={ onConnect }
-				>
-					<span
-						className="saddle-apps__empty-icon"
-						aria-hidden="true"
-					>
-						<IconConnect />
-					</span>
-					<span className="saddle-apps__empty-title">
-						{ __( 'Nothing connected yet', 'saddle' ) }
-					</span>
-					<span className="saddle-apps__empty-sub">
-						{ __(
-							'Connect Claude, Cursor, or another AI app — it takes about a minute.',
-							'saddle'
-						) }
-					</span>
-				</button>
+				<EmptyState
+					icon={ <IconConnect /> }
+					title={ __( 'Nothing connected yet', 'saddle' ) }
+					description={ __(
+						'Connect Claude, Cursor, or another AI app — it takes about a minute.',
+						'saddle'
+					) }
+					actions={
+						<Button variant="primary" onClick={ onConnect }>
+							{ __( 'Connect an app', 'saddle' ) }
+						</Button>
+					}
+				/>
 			) }
 
 			{ ! loading && clients.length > 0 && (
-				<ul className="saddle-apps__list">
+				<RowList>
 					{ clients.map( ( c ) => (
-						<li key={ c.uuid } className="saddle-appsrow">
-							<span
-								className={ `saddle-appsrow__dot${
-									c.last_used ? ' is-live' : ''
-								}` }
-								aria-hidden="true"
-							/>
-							<span
-								className="saddle-appsrow__logo"
-								aria-hidden="true"
-							>
+						<Row
+							key={ c.uuid }
+							icon={
 								<AppLogo
-									app={ appKeyFromLabel( c.label || c.name ) }
+									app={ appKeyFromLabel(
+										c.label || c.name
+									) }
 								/>
-							</span>
-							<span className="saddle-appsrow__name">
-								{ c.label || c.name }
-							</span>
-							<span className="saddle-appsrow__meta">
-								{ c.last_used
+							}
+							title={
+								<>
+									<StatusDot
+										tone={
+											c.last_used
+												? 'success'
+												: 'neutral'
+										}
+									/>{ ' ' }
+									{ c.label || c.name }
+								</>
+							}
+							description={
+								( c.last_used
 									? sprintf(
 											/* translators: %s: date and time. */
 											__( 'Last active %s', 'saddle' ),
@@ -201,25 +207,26 @@ export default function Apps( {
 									: __(
 											'Hasn’t connected yet — it will on first use',
 											'saddle'
-									  ) }
-								{ c.last_ip ? ` · ${ c.last_ip }` : '' }
-								{ c.hint
+									  ) ) +
+								( c.last_ip ? ` · ${ c.last_ip }` : '' ) +
+								( c.hint
 									? ` · ${ __( 'key', 'saddle' ) } ····${
 											c.hint
 									  }`
-									: '' }
-							</span>
-							<Button
-								variant="link"
-								isDestructive
-								className="saddle-appsrow__action"
-								onClick={ () => setConfirmRevoke( c ) }
-							>
-								{ __( 'Disconnect', 'saddle' ) }
-							</Button>
-						</li>
+									: '' )
+							}
+							actions={
+								<Button
+									variant="link"
+									className="saddle-link-danger"
+									onClick={ () => askRevoke( c ) }
+								>
+									{ __( 'Disconnect', 'saddle' ) }
+								</Button>
+							}
+						/>
 					) ) }
-				</ul>
+				</RowList>
 			) }
 
 			{ clients.length > 0 && (
@@ -236,77 +243,33 @@ export default function Apps( {
 				</p>
 			) }
 
-			{ confirmRevoke && (
-				<Modal
-					title={ sprintf(
-						/* translators: %s: the app name. */
-						__( 'Disconnect “%s”?', 'saddle' ),
-						confirmRevoke.label || confirmRevoke.name
-					) }
-					onRequestClose={ () => setConfirmRevoke( null ) }
-					className="saddle-confirm"
-					size="small"
-				>
-					<p className="saddle-confirm__body">
-						{ __(
-							'Its sign-in key stops working the moment you confirm — the app loses access to this site immediately. This can’t be undone, but you can always connect the app again with a fresh key.',
+			<Collapsible
+				className="saddle-apps__more"
+				open={ showAdvanced }
+				onOpenChange={ setShowAdvanced }
+				trigger={ __( 'Connection details & health', 'saddle' ) }
+			>
+				<div className="saddle-apps__advanced">
+					<Snippet
+						label={ __(
+							'Your site’s address for AI apps',
 							'saddle'
 						) }
-					</p>
-					<div className="saddle-confirm__actions">
-						<Button
-							variant="tertiary"
-							onClick={ () => setConfirmRevoke( null ) }
-						>
-							{ __( 'Keep it connected', 'saddle' ) }
-						</Button>
-						<Button
-							variant="primary"
-							isDestructive
-							onClick={ () => revoke( confirmRevoke.uuid ) }
-						>
-							{ __( 'Disconnect', 'saddle' ) }
-						</Button>
-					</div>
-				</Modal>
-			) }
-
-			<button
-				type="button"
-				className="saddle-disclosure"
-				aria-expanded={ showAdvanced }
-				onClick={ () => setShowAdvanced( ( v ) => ! v ) }
-			>
-				<span className="saddle-disclosure__caret" aria-hidden="true">
-					{ showAdvanced ? '▾' : '▸' }
-				</span>
-				{ __( 'Connection details & health', 'saddle' ) }
-			</button>
-
-			{ showAdvanced && (
-				<div className="saddle-apps__advanced">
-					<div className="saddle-apps__endpoint">
-						<span className="saddle-apps__endpoint-label">
-							{ __(
-								'Your site’s address for AI apps',
-								'saddle'
-							) }
-						</span>
-						<code>{ MCP_URL }</code>
-					</div>
+						value={ MCP_URL }
+					/>
 					<div className="saddle-apps__test">
 						<Button
 							variant="secondary"
 							onClick={ runTest }
-							isBusy={ test && test.state === 'running' }
+							loading={ test && test.state === 'running' }
 							disabled={ test && test.state === 'running' }
 						>
 							{ __( 'Test the endpoint', 'saddle' ) }
 						</Button>
 						{ test && test.state === 'ok' && (
-							<span className="saddle-testresult saddle-testresult--ok">
+							<Badge tone="success">
 								{ test.count !== null
-									? `✓ ${ sprintf(
+									? sprintf(
 											/* translators: 1: tool count, 2: milliseconds. */
 											__(
 												'%1$d tools · %2$dms',
@@ -314,16 +277,14 @@ export default function Apps( {
 											),
 											test.count,
 											test.ms
-									  ) }`
-									: `✓ ${ __( 'Responding', 'saddle' ) } · ${
+									  )
+									: `${ __( 'Responding', 'saddle' ) } · ${
 											test.ms
 									  }ms` }
-							</span>
+							</Badge>
 						) }
 						{ test && test.state === 'error' && (
-							<span className="saddle-testresult saddle-testresult--err">
-								{ `✕ ${ test.message }` }
-							</span>
+							<Badge tone="danger">{ test.message }</Badge>
 						) }
 					</div>
 					<ConnectionHealth />
@@ -339,7 +300,7 @@ export default function Apps( {
 							  ) }
 					</p>
 				</div>
-			) }
+			</Collapsible>
 		</div>
 	);
 }

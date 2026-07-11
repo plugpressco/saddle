@@ -4,7 +4,7 @@
  * user's AI actually talking to their site, not with more settings.
  */
 import { useState } from '@wordpress/element';
-import { Button, Notice } from '../ui';
+import { Button, Notice, CardRadioGroup } from '@plugpress/ui';
 import { __ } from '@wordpress/i18n';
 import { api, LEVELS } from '../api';
 import { LevelIcon, BrandMark } from './icons';
@@ -46,11 +46,7 @@ export default function Onboarding( { tier, onTierSaved, onFinish } ) {
 				</span>
 			</div>
 
-			{ error && (
-				<Notice status="error" isDismissible={ false }>
-					{ error }
-				</Notice>
-			) }
+			{ error && <Notice tone="danger">{ error }</Notice> }
 
 			{ step === 1 && (
 				<div className="saddle-setup__body">
@@ -95,46 +91,24 @@ export default function Onboarding( { tier, onTierSaved, onFinish } ) {
 						{ __( 'You can change this anytime.', 'saddle' ) }
 					</p>
 
-					<div
-						className="saddle-levels"
-						role="radiogroup"
+					<CardRadioGroup
 						aria-label={ __( 'Safety level', 'saddle' ) }
-					>
-						{ LEVELS.map( ( lvl ) => (
-							<button
-								key={ lvl.key }
-								type="button"
-								role="radio"
-								aria-checked={ choice === lvl.key }
-								className={ `saddle-levelcard${
-									choice === lvl.key ? ' is-active' : ''
-								}` }
-								onClick={ () => setChoice( lvl.key ) }
-							>
-								<span className="saddle-levelcard__glyph">
-									<LevelIcon name={ lvl.icon } />
-								</span>
-								<span className="saddle-levelcard__title">
-									{ lvl.title }
-								</span>
-								<span className="saddle-levelcard__desc">
-									{ lvl.short }
-								</span>
-								{ lvl.recommended && (
-									<span className="saddle-levelcard__rec">
-										{ __(
-											'Recommended to start',
-											'saddle'
-										) }
-									</span>
-								) }
-							</button>
-						) ) }
-					</div>
+						value={ choice }
+						onChange={ setChoice }
+						options={ LEVELS.map( ( lvl ) => ( {
+							value: lvl.key,
+							icon: <LevelIcon name={ lvl.icon } />,
+							title: lvl.title,
+							description: lvl.short,
+							badge: lvl.recommended
+								? __( 'Recommended to start', 'saddle' )
+								: undefined,
+						} ) ) }
+					/>
 
 					<div className="saddle-setup__actions">
 						<Button
-							variant="tertiary"
+							variant="ghost"
 							onClick={ () => setStep( 1 ) }
 							disabled={ saving }
 						>
@@ -150,7 +124,7 @@ export default function Onboarding( { tier, onTierSaved, onFinish } ) {
 						<Button
 							variant="primary"
 							onClick={ () => saveLevel( { connect: true } ) }
-							isBusy={ saving }
+							loading={ saving }
 							disabled={ saving }
 						>
 							{ __( 'Continue — connect an app', 'saddle' ) }

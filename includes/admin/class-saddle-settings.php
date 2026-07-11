@@ -43,13 +43,26 @@ class Saddle_Settings {
 	/**
 	 * The Saddle brand mark as a base64 SVG for the admin menu.
 	 *
-	 * Fills only (no strokes) so core's svg-painter recolors it to match the
-	 * active admin color scheme. Same path as icons.jsx's <BrandMark />.
+	 * Single-sourced from assets/brand/mark.svg — the same file React's
+	 * <BrandMark /> renders — so one SVG edit rebrands every surface. The
+	 * file uses fill="currentColor"; swapped to a literal fill here (no
+	 * strokes) so core's svg-painter recolors it to match the active admin
+	 * color scheme.
 	 *
 	 * @return string data: URI.
 	 */
 	private static function menu_icon() {
-		$svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="black" d="M12 4c-4.4 0-8 3.6-8 8v7a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-6.5a3.5 3.5 0 1 1 7 0V19a1 1 0 0 0 1 1H19a1 1 0 0 0 1-1v-7c0-4.4-3.6-8-8-8Z"/></svg>';
+		$svg = file_exists( SADDLE_DIR . 'assets/brand/mark.svg' )
+			? file_get_contents( SADDLE_DIR . 'assets/brand/mark.svg' ) // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local plugin file, not a remote request.
+			: false;
+
+		if ( ! $svg ) {
+			// Fallback: the mark as of 0.9.0, so a broken build still has an icon.
+			$svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="black" d="M12 4c-4.4 0-8 3.6-8 8v7a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-6.5a3.5 3.5 0 1 1 7 0V19a1 1 0 0 0 1 1H19a1 1 0 0 0 1-1v-7c0-4.4-3.6-8-8-8Z"/></svg>';
+		}
+
+		$svg = str_replace( 'currentColor', 'black', $svg );
+
 		return 'data:image/svg+xml;base64,' . base64_encode( $svg ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- Standard wp-admin menu icon embedding.
 	}
 
@@ -149,7 +162,7 @@ class Saddle_Settings {
 			$asset = require $asset_php;
 		} else {
 			$asset = array(
-				'dependencies' => array( 'react', 'wp-element', 'wp-components', 'wp-api-fetch', 'wp-i18n' ),
+				'dependencies' => array( 'react', 'react-dom', 'wp-element', 'wp-api-fetch', 'wp-i18n' ),
 				'version'      => SADDLE_VERSION,
 			);
 		}
@@ -185,15 +198,15 @@ class Saddle_Settings {
 		// "style-index.css" holds the compiled style.scss (Saddle's own rules,
 		// which alias the design-system --pp-* tokens). Load the design system
 		// first, then Saddle on top so its higher-specificity rules win.
-		$ds_dep = array( 'wp-components' );
+		$ds_dep = array();
 		if ( file_exists( $build_dir . 'index.css' ) ) {
 			wp_enqueue_style(
 				'saddle-admin-ds',
 				$build_url . 'index.css',
-				array( 'wp-components' ),
+				array(),
 				$asset['version']
 			);
-			$ds_dep = array( 'wp-components', 'saddle-admin-ds' );
+			$ds_dep = array( 'saddle-admin-ds' );
 		}
 		if ( file_exists( $build_dir . 'style-index.css' ) ) {
 			wp_enqueue_style(
@@ -237,6 +250,11 @@ class Saddle_Settings {
 					// Where WordPress itself lists these credentials — linked
 					// from the Connect tab for transparency.
 					'profileUrl'   => esc_url_raw( admin_url( 'profile.php#application-passwords-section' ) ),
+					// Header chrome: plugin version + outbound links (filterable so
+					// the real docs/review URLs are configurable without a rebuild).
+					'version'      => SADDLE_VERSION,
+					'docsUrl'      => esc_url_raw( apply_filters( 'saddle_docs_url', 'https://plugpress.co/saddle/docs' ) ),
+					'rateUrl'      => esc_url_raw( apply_filters( 'saddle_rate_url', 'https://plugpress.co/saddle/#reviews' ) ),
 				)
 			) . ';',
 			'before'

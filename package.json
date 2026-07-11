@@ -24,6 +24,6 @@
 		"grunt-contrib-copy": "^1.0.0"
 	},
 	"dependencies": {
-		"@plugpress/ui": "github:plugpressco/plugpress-ui#v0.2.0"
+		"@plugpress/ui": "github:plugpressco/plugpress-ui#v0.8.2"
 	}
 }
