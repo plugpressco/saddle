@@ -133,4 +133,85 @@ class Saddle_Connection_Test extends WP_UnitTestCase {
 		unset( $_SERVER['HTTP_AUTHORIZATION'], $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] );
 		$this->assertFalse( Saddle_Connection::rest_auth_probe()->get_data()['received'] );
 	}
+
+	/* -------- legible 401s: revoked key vs stripped header (#36) -------- */
+
+	public function test_request_carried_credentials_true_from_php_auth_user() {
+		unset( $_SERVER['HTTP_AUTHORIZATION'], $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] );
+		$_SERVER['PHP_AUTH_USER'] = 'someone';
+		$this->assertTrue( Saddle_Connection::request_carried_credentials() );
+	}
+
+	public function test_request_carried_credentials_true_from_basic_header() {
+		unset( $_SERVER['PHP_AUTH_USER'] );
+		$_SERVER['HTTP_AUTHORIZATION'] = 'Basic ' . base64_encode( 'u:p' );
+		$this->assertTrue( Saddle_Connection::request_carried_credentials() );
+	}
+
+	public function test_request_carried_credentials_false_when_absent() {
+		unset( $_SERVER['PHP_AUTH_USER'], $_SERVER['HTTP_AUTHORIZATION'], $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] );
+		$this->assertFalse( Saddle_Connection::request_carried_credentials() );
+	}
+
+	public function test_authenticated_gate_reports_stripped_header_when_no_credentials() {
+		wp_set_current_user( 0 );
+		unset( $_SERVER['PHP_AUTH_USER'], $_SERVER['HTTP_AUTHORIZATION'], $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] );
+
+		$result = Saddle_MCP::authenticated();
+		$this->assertWPError( $result );
+		$this->assertSame( 'saddle_no_credentials', $result->get_error_code() );
+		$data = $result->get_error_data();
+		$this->assertSame( 401, $data['status'] );
+		$this->assertSame( 'no_credentials', $data['reason'] );
+	}
+
+	public function test_authenticated_gate_reports_rejected_key_when_credentials_present() {
+		wp_set_current_user( 0 );
+		unset( $_SERVER['HTTP_AUTHORIZATION'], $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] );
+		$_SERVER['PHP_AUTH_USER'] = 'someone';
+
+		$result = Saddle_MCP::authenticated();
+		$this->assertWPError( $result );
+		$this->assertSame( 'saddle_credential_rejected', $result->get_error_code() );
+		$this->assertSame( 'credential_rejected', $result->get_error_data()['reason'] );
+	}
+
+	public function test_explain_auth_error_relabels_core_401_on_mcp_endpoint() {
+		$_SERVER['REQUEST_URI'] = '/wp-json/saddle/v1/mcp';
+		unset( $_SERVER['HTTP_AUTHORIZATION'], $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] );
+		$_SERVER['PHP_AUTH_USER'] = 'someone';
+
+		$core = new WP_Error( 'rest_not_logged_in', 'Sorry.', array( 'status' => 401 ) );
+		$out  = Saddle_Connection::explain_auth_error( $core );
+
+		$this->assertWPError( $out );
+		$this->assertSame( 'saddle_credential_rejected', $out->get_error_code() );
+	}
+
+	public function test_explain_auth_error_ignores_non_mcp_requests() {
+		$_SERVER['REQUEST_URI']   = '/wp-json/wp/v2/posts';
+		$_SERVER['PHP_AUTH_USER'] = 'someone';
+
+		$core = new WP_Error( 'rest_not_logged_in', 'Sorry.', array( 'status' => 401 ) );
+		$out  = Saddle_Connection::explain_auth_error( $core );
+
+		$this->assertSame( 'rest_not_logged_in', $out->get_error_code() );
+	}
+
+	public function test_explain_auth_error_ignores_stripped_header_request() {
+		// No credentials present → this is the header-stripping case, handled by
+		// the route gate, not this relabeler. Leave core's result untouched.
+		$_SERVER['REQUEST_URI'] = '/wp-json/saddle/v1/mcp';
+		unset( $_SERVER['PHP_AUTH_USER'], $_SERVER['HTTP_AUTHORIZATION'], $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] );
+
+		$core = new WP_Error( 'rest_not_logged_in', 'Sorry.', array( 'status' => 401 ) );
+		$out  = Saddle_Connection::explain_auth_error( $core );
+
+		$this->assertSame( 'rest_not_logged_in', $out->get_error_code() );
+	}
+
+	public function test_explain_auth_error_passes_through_non_errors() {
+		$this->assertTrue( Saddle_Connection::explain_auth_error( true ) );
+		$this->assertNull( Saddle_Connection::explain_auth_error( null ) );
+	}
 }

@@ -16,41 +16,9 @@ import {
 } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { api } from '../api';
+import { clock, groupByDay } from '../activity-format';
 
 const PER_PAGE = 25;
-
-const timeOf = ( gmt ) => {
-	const d = new Date( gmt.endsWith( 'Z' ) ? gmt : gmt + 'Z' );
-	return isNaN( d.getTime() ) ? null : d;
-};
-
-const dayLabel = ( d ) => {
-	const today = new Date();
-	const that = new Date( d.getFullYear(), d.getMonth(), d.getDate() );
-	const now = new Date(
-		today.getFullYear(),
-		today.getMonth(),
-		today.getDate()
-	);
-	const days = Math.round( ( now - that ) / 86400000 );
-	if ( days === 0 ) {
-		return __( 'Today', 'saddle' );
-	}
-	if ( days === 1 ) {
-		return __( 'Yesterday', 'saddle' );
-	}
-	return d.toLocaleDateString( undefined, {
-		weekday: 'short',
-		month: 'short',
-		day: 'numeric',
-		...( d.getFullYear() !== today.getFullYear()
-			? { year: 'numeric' }
-			: {} ),
-	} );
-};
-
-const clock = ( d ) =>
-	d.toLocaleTimeString( undefined, { hour: 'numeric', minute: '2-digit' } );
 
 const FILTERS = [
 	{ key: '', label: __( 'Everything', 'saddle' ) },
@@ -105,17 +73,7 @@ export default function Activity() {
 	};
 
 	// Group into days, preserving order.
-	const groups = [];
-	entries.forEach( ( e ) => {
-		const d = timeOf( e.date );
-		const label = d ? dayLabel( d ) : __( 'Earlier', 'saddle' );
-		const last = groups[ groups.length - 1 ];
-		if ( last && last.label === label ) {
-			last.items.push( { ...e, d } );
-		} else {
-			groups.push( { label, items: [ { ...e, d } ] } );
-		}
-	} );
+	const groups = groupByDay( entries );
 
 	return (
 		<div className="saddle-activity">

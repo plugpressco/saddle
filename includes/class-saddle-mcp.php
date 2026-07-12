@@ -167,16 +167,45 @@ class Saddle_MCP {
 	/**
 	 * Transport-level gate: an authenticated WordPress user must be resolved.
 	 *
+	 * A failed request can be here for two very different reasons that both look
+	 * like a bare 401 to the caller — and each needs a different fix:
+	 *
+	 *   - Credentials reached PHP but core rejected them: the Application
+	 *     Password was revoked/deleted (or is wrong). Fix = reconnect the app.
+	 *   - No credentials reached PHP at all: the host likely stripped the
+	 *     `Authorization` header in transit. Fix = the connection self-check /
+	 *     .htaccess forwarding rule.
+	 *
+	 * In practice core's own authenticator short-circuits a *rejected* credential
+	 * before the route runs (see {@see Saddle_Connection::explain_auth_error()},
+	 * which relabels that 401); this gate is reached mainly for the
+	 * no-credentials case, but it still distinguishes both defensively.
+	 *
 	 * @return bool|WP_Error
 	 */
 	public static function authenticated() {
 		if ( is_user_logged_in() ) {
 			return true;
 		}
+
+		if ( class_exists( 'Saddle_Connection' ) && Saddle_Connection::request_carried_credentials() ) {
+			return new WP_Error(
+				'saddle_credential_rejected',
+				__( 'Your sign-in key was rejected — it was most likely revoked or removed. Reconnect the app from Saddle to issue a fresh key.', 'saddle' ),
+				array(
+					'status' => 401,
+					'reason' => 'credential_rejected',
+				)
+			);
+		}
+
 		return new WP_Error(
-			'saddle_not_authenticated',
-			__( 'Authentication required. Connect with a Saddle Application Password.', 'saddle' ),
-			array( 'status' => 401 )
+			'saddle_no_credentials',
+			__( 'The request arrived without a sign-in key. If you did connect one, your host may be stripping the Authorization header — open Saddle and run the connection check to confirm and fix it.', 'saddle' ),
+			array(
+				'status' => 401,
+				'reason' => 'no_credentials',
+			)
 		);
 	}
 
@@ -336,22 +365,50 @@ class Saddle_MCP {
 		$tools = array();
 
 		foreach ( self::saddle_abilities() as $name => $ability ) {
-			$schema = $ability->get_input_schema();
-			if ( empty( $schema ) ) {
-				$schema = array(
-					'type'       => 'object',
-					'properties' => (object) array(),
-				);
-			}
-
 			$tools[] = array(
 				'name'        => $name,
 				'description' => $ability->get_description(),
-				'inputSchema' => $schema,
+				'inputSchema' => self::normalize_input_schema( $ability->get_input_schema() ),
 			);
 		}
 
 		return $tools;
+	}
+
+	/**
+	 * Coerce an ability's input schema into an MCP-compliant object schema.
+	 *
+	 * MCP requires every tool's `inputSchema` to be a JSON object whose
+	 * `properties` map (when present) is itself a JSON object. PHP serializes an
+	 * empty array as `[]`, so a no-argument ability that declares
+	 * `'properties' => array()` — the shape some partner abilities wrapped via
+	 * Saddle_Integrations arrive in — emits `"properties": []`. Strict clients
+	 * reject the whole tools/list over that single mismatch, so we force the map
+	 * to serialize as `{}` by casting it to an object. The official MCP Adapter
+	 * transport already normalizes this; this keeps the built-in JSON-RPC
+	 * fallback byte-for-byte compatible.
+	 *
+	 * @param mixed $schema Raw input schema from the ability.
+	 * @return array MCP-compliant object schema.
+	 */
+	private static function normalize_input_schema( $schema ) {
+		if ( ! is_array( $schema ) || empty( $schema ) ) {
+			return array(
+				'type'       => 'object',
+				'properties' => (object) array(),
+			);
+		}
+
+		if ( ! isset( $schema['type'] ) ) {
+			$schema['type'] = 'object';
+		}
+
+		// Force the properties map to serialize as a JSON object, never `[]`.
+		if ( array_key_exists( 'properties', $schema ) && is_array( $schema['properties'] ) ) {
+			$schema['properties'] = (object) $schema['properties'];
+		}
+
+		return $schema;
 	}
 
 	/**

@@ -22,12 +22,26 @@ import {
 	CodeBlock,
 	RowList,
 	Row,
+	Collapsible,
+	Drawer,
 	useConfirm,
 	toast,
 } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { api } from '../api';
 import Memory from './Memory';
+import HelpTip from './HelpTip';
+
+// A card title with an optional "?" help affordance beside it — keeps the long
+// explanation off the page while staying one hover/tap away.
+function Heading( { children, help } ) {
+	return (
+		<span className="saddle-guide__heading">
+			{ children }
+			{ help && <HelpTip label={ help } /> }
+		</span>
+	);
+}
 
 // Render the auto-generated context (lightweight markdown: `# headings`,
 // `- bullets`, paragraphs) as a readable document instead of raw monospace, so
@@ -94,7 +108,7 @@ export default function Guidance() {
 	const [ loadError, setLoadError ] = useState( null );
 	const [ showRaw, setShowRaw ] = useState( false );
 	const [ skills, setSkills ] = useState( [] );
-	const [ openSkill, setOpenSkill ] = useState( null );
+	const [ drawerSkill, setDrawerSkill ] = useState( null );
 	const fileInput = useRef( null );
 
 	useEffect( () => {
@@ -200,14 +214,20 @@ export default function Guidance() {
 				) }
 			</p>
 
-			{ /* Read-only, auto-generated */ }
+			{ /* Read-only, auto-generated — kept collapsed so it never crowds
+			     the page; the detail lives one click away. */ }
 			<Card className="saddle-guide__block">
 				<CardHeader
-					title={ __( 'What your AI knows', 'saddle' ) }
-					description={ __(
-						'Saddle writes this from your site and its active plugins, and updates it automatically. It’s shown so you can see exactly what your AI is told — you don’t edit it here.',
-						'saddle'
-					) }
+					title={
+						<Heading
+							help={ __(
+								'Saddle writes this from your site and its active plugins and keeps it current. It’s shown for transparency — you don’t edit it here.',
+								'saddle'
+							) }
+						>
+							{ __( 'What your AI knows', 'saddle' ) }
+						</Heading>
+					}
 					actions={
 						<Badge>
 							{ __( 'Automatic · read-only', 'saddle' ) }
@@ -215,36 +235,46 @@ export default function Guidance() {
 					}
 				/>
 				<CardContent>
-					{ showRaw ? (
-						<CodeBlock
-							className="saddle-guide__system"
-							code={ system }
-						/>
-					) : (
-						<div className="saddle-doc saddle-guide__system">
-							{ renderContext( system ) }
-						</div>
-					) }
-					<Button
-						variant="link"
-						className="saddle-guide__rawtoggle"
-						onClick={ () => setShowRaw( ( v ) => ! v ) }
+					<Collapsible
+						className="saddle-guide__reveal"
+						trigger={ __( 'Show what your AI is told', 'saddle' ) }
 					>
-						{ showRaw
-							? __( 'Show readable view', 'saddle' )
-							: __( 'View exact text', 'saddle' ) }
-					</Button>
+						{ showRaw ? (
+							<CodeBlock
+								className="saddle-guide__system"
+								code={ system }
+							/>
+						) : (
+							<div className="saddle-doc saddle-guide__system">
+								{ renderContext( system ) }
+							</div>
+						) }
+						<Button
+							variant="link"
+							className="saddle-guide__rawtoggle"
+							onClick={ () => setShowRaw( ( v ) => ! v ) }
+						>
+							{ showRaw
+								? __( 'Show readable view', 'saddle' )
+								: __( 'View exact text', 'saddle' ) }
+						</Button>
+					</Collapsible>
 				</CardContent>
 			</Card>
 
 			{ /* Editable owner instructions */ }
 			<Card className="saddle-guide__block">
 				<CardHeader
-					title={ __( 'Your instructions', 'saddle' ) }
-					description={ __(
-						'Add rules or preferences for every connected AI. For example: “Always save new posts as drafts,” or “Write in a warm, friendly tone.” Leave blank if you have none.',
-						'saddle'
-					) }
+					title={
+						<Heading
+							help={ __(
+								'Rules or preferences every connected AI follows — e.g. “Always save new posts as drafts,” or “Write in a warm, friendly tone.” Leave blank if you have none.',
+								'saddle'
+							) }
+						>
+							{ __( 'Your instructions', 'saddle' ) }
+						</Heading>
+					}
 				/>
 				<CardContent>
 					<Textarea
@@ -273,104 +303,106 @@ export default function Guidance() {
 			{ /* Skills — named playbooks agents load on demand */ }
 			<Card className="saddle-guide__block">
 				<CardHeader
-					title={ __( 'Skills', 'saddle' ) }
-					description={ __(
-						'Skills are playbook files (.md) that teach your AI how to do specific jobs on this site — “how we publish a post”, “our SEO checklist”. Every connected AI sees the list of skills and reads one when a task matches. Only you can add them; a skill can never grant your AI more access than the level you chose.',
-						'saddle'
-					) }
-				/>
-				<CardContent>
-					{ skills.length > 0 && (
-						<RowList className="saddle-rows">
-							{ skills.map( ( skill ) => (
-								<div key={ skill.name }>
-									<Row
-										title={ skill.name }
-										description={ skill.description }
-										actions={
-											<>
-												<Switch
-													checked={ skill.enabled }
-													onChange={ () =>
-														toggleSkill( skill )
-													}
-													aria-label={ sprintf(
-														/* translators: %s: skill name. */
-														__(
-															'Enable the skill “%s”',
-															'saddle'
-														),
-														skill.name
-													) }
-												/>
-												<Button
-													variant="link"
-													onClick={ () =>
-														setOpenSkill(
-															openSkill ===
-																skill.name
-																? null
-																: skill.name
-														)
-													}
-												>
-													{ openSkill === skill.name
-														? __(
-																'Hide',
-																'saddle'
-														  )
-														: __(
-																'View',
-																'saddle'
-														  ) }
-												</Button>
-												<Button
-													variant="link"
-													className="saddle-link-danger"
-													onClick={ () =>
-														removeSkill( skill )
-													}
-												>
-													{ __(
-														'Delete',
-														'saddle'
-													) }
-												</Button>
-											</>
-										}
-									/>
-									{ openSkill === skill.name && (
-										<CodeBlock
-											className="saddle-rows__body"
-											code={ skill.body }
-											copy={ false }
-										/>
-									) }
-								</div>
-							) ) }
-						</RowList>
-					) }
-
-					<div className="saddle-guide__actions">
-						<input
-							ref={ fileInput }
-							type="file"
-							accept=".md,text/markdown,text/plain"
-							style={ { display: 'none' } }
-							onChange={ ( e ) => {
-								installSkillFile( e.target.files?.[ 0 ] );
-								e.target.value = '';
-							} }
-						/>
+					title={
+						<Heading
+							help={ __(
+								'Playbook files (.md) that teach your AI specific jobs on this site — “how we publish a post”, “our SEO checklist.” Every connected AI sees the list and reads one when a task matches. Only you can add them, and a skill can never grant more access than the level you chose.',
+								'saddle'
+							) }
+						>
+							{ __( 'Skills', 'saddle' ) }
+						</Heading>
+					}
+					actions={
 						<Button
 							variant="secondary"
+							size="sm"
 							onClick={ () => fileInput.current?.click() }
 						>
-							{ __( 'Add skill (.md file)', 'saddle' ) }
+							{ __( 'Add skill', 'saddle' ) }
 						</Button>
-					</div>
+					}
+				/>
+				<CardContent>
+					<input
+						ref={ fileInput }
+						type="file"
+						accept=".md,text/markdown,text/plain"
+						style={ { display: 'none' } }
+						onChange={ ( e ) => {
+							installSkillFile( e.target.files?.[ 0 ] );
+							e.target.value = '';
+						} }
+					/>
+					{ skills.length > 0 ? (
+						<RowList className="saddle-rows">
+							{ skills.map( ( skill ) => (
+								<Row
+									key={ skill.name }
+									title={ skill.name }
+									description={ skill.description }
+									actions={
+										<>
+											<Switch
+												checked={ skill.enabled }
+												onChange={ () =>
+													toggleSkill( skill )
+												}
+												aria-label={ sprintf(
+													/* translators: %s: skill name. */
+													__(
+														'Enable the skill “%s”',
+														'saddle'
+													),
+													skill.name
+												) }
+											/>
+											<Button
+												variant="link"
+												onClick={ () =>
+													setDrawerSkill( skill )
+												}
+											>
+												{ __( 'View', 'saddle' ) }
+											</Button>
+											<Button
+												variant="link"
+												className="saddle-link-danger"
+												onClick={ () =>
+													removeSkill( skill )
+												}
+											>
+												{ __( 'Delete', 'saddle' ) }
+											</Button>
+										</>
+									}
+								/>
+							) ) }
+						</RowList>
+					) : (
+						<p className="saddle-card__empty">
+							{ __(
+								'No skills yet. Add a .md playbook to teach your AI a repeatable job.',
+								'saddle'
+							) }
+						</p>
+					) }
 				</CardContent>
 			</Card>
+
+			{ /* One slide-over shows the full playbook for whichever skill the
+			     owner opened — keeps long bodies out of the list. */ }
+			<Drawer
+				open={ !! drawerSkill }
+				onOpenChange={ ( open ) => ! open && setDrawerSkill( null ) }
+				title={ drawerSkill?.name }
+				description={ drawerSkill?.description }
+				size="lg"
+			>
+				{ drawerSkill && (
+					<CodeBlock code={ drawerSkill.body } copy={ false } />
+				) }
+			</Drawer>
 
 			{ /* Memory — governed cross-session store; pinning changes the
 			     injected context, so refresh the preview above on change. */ }

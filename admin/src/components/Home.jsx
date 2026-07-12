@@ -20,6 +20,21 @@ import {
 } from '@plugpress/ui';
 import { __ } from '@wordpress/i18n';
 import { api, levelFor } from '../api';
+import { parseEntryDate, relativeWhen, shortLabel } from '../activity-format';
+import HelpTip from './HelpTip';
+
+// Stat label + inline "?" — the explanation rides a tooltip so the tile stays
+// a single clean number.
+const StatLabel = ( { children, help } ) => (
+	<span className="saddle-stat__label">
+		{ children }
+		<HelpTip label={ help } />
+	</span>
+);
+
+// How many recent entries the Home preview shows; the full record lives on the
+// Activity screen. Kept small so the fetch stays light.
+const PREVIEW_COUNT = 6;
 
 // Compact tile labels for the access level — the shared LEVELS titles
 // ("Just reading" …) read as sentences; a stat value wants one word.
@@ -29,86 +44,25 @@ const LEVEL_STAT_LABEL = {
 	admin: __( 'Admin', 'saddle' ),
 };
 
-const WHEN_FMT = new Intl.DateTimeFormat( undefined, {
-	dateStyle: 'medium',
-	timeStyle: 'short',
-} );
-const RELATIVE_FMT = new Intl.RelativeTimeFormat( undefined, {
-	numeric: 'auto',
-} );
-
-// "5 minutes ago" for fresh entries, the plain date once it's history.
-const timeAgo = ( d ) => {
-	const mins = Math.round( ( d.getTime() - Date.now() ) / 60000 );
-	if ( mins > -1 ) {
-		return RELATIVE_FMT.format( 0, 'minute' ); // "now"-ish
-	}
-	if ( mins > -60 ) {
-		return RELATIVE_FMT.format( mins, 'minute' );
-	}
-	const hours = Math.round( mins / 60 );
-	if ( hours > -24 ) {
-		return RELATIVE_FMT.format( hours, 'hour' );
-	}
-	const days = Math.round( hours / 24 );
-	if ( days > -7 ) {
-		return RELATIVE_FMT.format( days, 'day' );
-	}
-	return WHEN_FMT.format( d );
-};
-
-// The API returns GMT timestamps as "YYYY-MM-DD HH:MM:SS".
-const formatWhen = ( gmt ) => {
-	if ( ! gmt ) {
-		return '';
-	}
-	const d = new Date( `${ gmt.replace( ' ', 'T' ) }Z` );
-	return isNaN( d.getTime() ) ? '' : timeAgo( d );
-};
-
-const VERBS = {
-	create: __( 'Created', 'saddle' ),
-	update: __( 'Updated', 'saddle' ),
-	delete: __( 'Deleted', 'saddle' ),
-	upload: __( 'Uploaded', 'saddle' ),
-};
-
-// The stored summary doubles as the approval-preview text, so it's verbose
-// ("Move post #635 … It can be restored from Trash."). For the activity feed we
-// derive a short label from the action + target and keep the full summary as a
-// hover title. Denied entries already carry a "Blocked" badge, so we drop the
-// redundant "Blocked: " prefix from their summary.
-const shortLabel = ( entry ) => {
-	if ( entry.type === 'denied' ) {
-		return (
-			( entry.summary || '' ).replace( /^Blocked:\s*/i, '' ) ||
-			__( 'Refused', 'saddle' )
-		);
-	}
-	const m = ( entry.action || '' ).match(
-		/^(create|update|delete|upload)[-_](post|page|media|category|tag)/
-	);
-	if ( m && VERBS[ m[ 1 ] ] ) {
-		const at = entry.target ? ` #${ entry.target }` : '';
-		return `${ VERBS[ m[ 1 ] ] } ${ m[ 2 ] }${ at }`;
-	}
-	return entry.summary || entry.action || '—';
-};
-
 export default function Home( { tier, clients, onNavigate, onConnect } ) {
 	const hasApps = clients.length > 0;
 
 	const [ activity, setActivity ] = useState( null );
 
 	useEffect( () => {
-		api( 'audit-log' )
+		// Only the preview page is needed here; `total` is the full count for
+		// the "Actions logged" tile regardless of page size.
+		api( `audit-log?per_page=${ PREVIEW_COUNT }` )
 			.then( ( res ) =>
 				setActivity( {
 					enabled: !! res.enabled,
 					entries: res.entries || [],
+					total: res.total || 0,
 				} )
 			)
-			.catch( () => setActivity( { enabled: false, entries: [] } ) );
+			.catch( () =>
+				setActivity( { enabled: false, entries: [], total: 0 } )
+			);
 	}, [] );
 
 	const level = levelFor( tier );
@@ -123,12 +77,30 @@ export default function Home( { tier, clients, onNavigate, onConnect } ) {
 					value={ clients.length }
 				/>
 				<StatCard
-					label={ __( 'Access level', 'saddle' ) }
+					label={
+						<StatLabel
+							help={ __(
+								'The most any connected app can do right now. Change it on the Permissions tab.',
+								'saddle'
+							) }
+						>
+							{ __( 'Access level', 'saddle' ) }
+						</StatLabel>
+					}
 					value={ LEVEL_STAT_LABEL[ level.key ] || level.title }
 				/>
 				<StatCard
-					label={ __( 'Actions logged', 'saddle' ) }
-					value={ activity ? activity.entries.length : '—' }
+					label={
+						<StatLabel
+							help={ __(
+								'Changes and blocked attempts recorded so far. Reading your site is never logged.',
+								'saddle'
+							) }
+						>
+							{ __( 'Actions logged', 'saddle' ) }
+						</StatLabel>
+					}
+					value={ activity ? activity.total : '—' }
 				/>
 			</StatGrid>
 
@@ -196,7 +168,7 @@ export default function Home( { tier, clients, onNavigate, onConnect } ) {
 						activity.entries.length > 0 ? (
 							<ul className="saddle-activitylist">
 								{ activity.entries
-									.slice( 0, 6 )
+									.slice( 0, PREVIEW_COUNT )
 									.map( ( e, i ) => (
 										<li
 											key={ i }
@@ -208,9 +180,7 @@ export default function Home( { tier, clients, onNavigate, onConnect } ) {
 										>
 											<span
 												className="saddle-activitylist__summary"
-												title={
-													e.summary || undefined
-												}
+												title={ e.summary || undefined }
 											>
 												{ e.type === 'denied' && (
 													<Badge tone="danger">
@@ -223,7 +193,9 @@ export default function Home( { tier, clients, onNavigate, onConnect } ) {
 												{ shortLabel( e ) }
 											</span>
 											<span className="saddle-activitylist__target">
-												{ formatWhen( e.date ) }
+												{ relativeWhen(
+													parseEntryDate( e.date )
+												) }
 											</span>
 										</li>
 									) ) }
