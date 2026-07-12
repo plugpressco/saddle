@@ -601,7 +601,7 @@ class Saddle_REST_Admin {
 			'Divi'            => array( 'divi-' ),
 			'Integrations'    => array( 'waggle-', 'knovia-' ),
 			'Memory & skills' => array( 'remember', 'recall', 'forget', 'skill', 'instructions' ),
-			'Blocks & layout' => array( 'block', 'render-node', 'verify-page', 'lint-page', 'preview' ),
+			'Blocks & layout' => array( 'block', 'render-node', 'verify-page', 'lint-page', 'preview', 'recipe' ),
 			'Users'           => array( 'user' ),
 			'Site & settings' => array( 'option', 'plugin', 'theme', 'cache', 'site-info' ),
 			'Content'         => array( 'post', 'page', 'media', 'categor', 'tag', 'revision', 'search' ),

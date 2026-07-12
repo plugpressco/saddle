@@ -406,6 +406,48 @@ class Saddle_Blocks_Test extends WP_UnitTestCase {
 		$this->assertSame( 'gcid-x', $ds['colors'][0]['id'] );
 	}
 
+	public function test_section_recipes_list_and_apply_cleanly() {
+		$list = $this->run_ability( 'list-section-recipes' );
+		$this->assertNotWPError( $list );
+		$names = wp_list_pluck( $list['recipes'], 'name' );
+		$this->assertSame(
+			array( 'hero', 'features', 'pricing', 'testimonials', 'cta', 'faq' ),
+			$names
+		);
+
+		// Every recipe's node tree must apply through set-blocks without warnings.
+		foreach ( $names as $name ) {
+			$recipe = $this->run_ability( 'get-section-recipe', array( 'name' => $name ) );
+			$this->assertNotWPError( $recipe, "get-section-recipe {$name}" );
+			$this->assertNotEmpty( $recipe['nodes'], "{$name} has nodes" );
+
+			$id  = $this->page( '<!-- wp:paragraph --><p>seed</p><!-- /wp:paragraph -->' );
+			$set = $this->run_ability( 'set-blocks', array( 'post_id' => $id, 'nodes' => $recipe['nodes'] ) );
+			$this->assertNotWPError( $set, "set-blocks {$name}" );
+			$this->assertArrayNotHasKey( 'warnings', $set, "{$name} inserts without applied-vs-ignored warnings" );
+		}
+	}
+
+	public function test_unknown_section_recipe_errors() {
+		$r = $this->run_ability( 'get-section-recipe', array( 'name' => 'nope' ) );
+		$this->assertWPError( $r );
+		$this->assertSame( 'saddle_unknown_recipe', $r->get_error_code() );
+	}
+
+	public function test_section_recipe_filter_lets_a_builder_override() {
+		add_filter(
+			'saddle_section_recipe',
+			static function () {
+				return array( 'builder' => 'divi', 'nodes' => array( array( 'type' => 'divi/section' ) ) );
+			}
+		);
+		$r = $this->run_ability( 'get-section-recipe', array( 'name' => 'hero' ) );
+		remove_all_filters( 'saddle_section_recipe' );
+
+		$this->assertSame( 'divi', $r['builder'] );
+		$this->assertSame( 'divi/section', $r['nodes'][0]['type'] );
+	}
+
 	public function test_bootstrap_design_system_gates_before_writing() {
 		Saddle_Capabilities::set_tier( 'admin' );
 

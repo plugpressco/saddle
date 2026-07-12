@@ -125,6 +125,45 @@ function saddle_register_block_abilities() {
 	);
 
 	wp_register_ability(
+		'saddle/list-section-recipes',
+		array(
+			'label'               => __( 'List section recipes', 'saddle' ),
+			'description'         => __( 'Lists Saddle\'s built-in section recipes — ready-to-insert blueprints for common page sections (hero, features, pricing, testimonials, call-to-action, FAQ) — as {name, title, description}. Read-only. Get one with get-section-recipe, then insert it and swap in real copy and design tokens. Building from a recipe beats composing a section from scratch.', 'saddle' ),
+			'category'            => 'saddle',
+			'input_schema'        => array(
+				'type'       => 'object',
+				'default'    => (object) array(),
+				'properties' => (object) array(),
+			),
+			'execute_callback'    => array( 'Saddle_Blocks_Abilities', 'list_section_recipes' ),
+			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'list-section-recipes' ),
+			'meta'                => saddle_ability_meta( true, false, true, 'read' ),
+		)
+	);
+
+	wp_register_ability(
+		'saddle/get-section-recipe',
+		array(
+			'label'               => __( 'Get a section recipe', 'saddle' ),
+			'description'         => __( 'Returns one section recipe as a ready-to-insert node tree in Saddle\'s authoring format ({type, content, attrs, children}), matched to the site\'s builder — core blocks on a block theme, the builder\'s modules when a page builder is active. Read-only. Pass it (with real copy substituted) to set-blocks / add-block, or to the builder\'s set-page. After inserting, apply colors and sizes from get-design-system.', 'saddle' ),
+			'category'            => 'saddle',
+			'input_schema'        => array(
+				'type'       => 'object',
+				'required'   => array( 'name' ),
+				'properties' => array(
+					'name' => array(
+						'type'        => 'string',
+						'description' => __( 'Recipe name from list-section-recipes (e.g. "hero", "features", "pricing", "testimonials", "cta", "faq").', 'saddle' ),
+					),
+				),
+			),
+			'execute_callback'    => array( 'Saddle_Blocks_Abilities', 'get_section_recipe' ),
+			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'get-section-recipe' ),
+			'meta'                => saddle_ability_meta( true, false, true, 'read' ),
+		)
+	);
+
+	wp_register_ability(
 		'saddle/get-design-system',
 		array(
 			'label'               => __( 'Get design system', 'saddle' ),
@@ -426,6 +465,74 @@ class Saddle_Blocks_Abilities {
 	 */
 	public static function get_design_system() {
 		return Saddle_Blocks_Schema::design_system();
+	}
+
+	/**
+	 * saddle/list-section-recipes.
+	 *
+	 * @return array
+	 */
+	public static function list_section_recipes() {
+		$out = array();
+		foreach ( Saddle_Recipes::catalog() as $name => $meta ) {
+			$out[] = array(
+				'name'        => $name,
+				'title'       => $meta['title'],
+				'description' => $meta['description'],
+			);
+		}
+		return array(
+			'recipes' => $out,
+			'usage'   => __( 'Get one with get-section-recipe, substitute real copy, insert with set-blocks/add-block (or the builder\'s set-page), then apply colors and sizes from get-design-system.', 'saddle' ),
+		);
+	}
+
+	/**
+	 * saddle/get-section-recipe.
+	 *
+	 * @param array $input Ability input.
+	 * @return array|WP_Error
+	 */
+	public static function get_section_recipe( $input = null ) {
+		$name    = is_array( $input ) && isset( $input['name'] ) ? sanitize_key( (string) $input['name'] ) : '';
+		$catalog = Saddle_Recipes::catalog();
+		if ( '' === $name || ! isset( $catalog[ $name ] ) ) {
+			return new WP_Error(
+				'saddle_unknown_recipe',
+				sprintf(
+					/* translators: %s: comma-separated recipe names. */
+					__( 'Unknown recipe. Available: %s.', 'saddle' ),
+					implode( ', ', array_keys( $catalog ) )
+				),
+				array( 'status' => 400 )
+			);
+		}
+
+		$nodes   = Saddle_Recipes::gutenberg( $name );
+		$builder = 'block-theme';
+
+		/**
+		 * Let a page-builder addon supply its own node tree for a recipe name,
+		 * so the recipe vocabulary is shared across builders. Return
+		 * array( 'builder' => '<slug>', 'nodes' => array(...) ) to override.
+		 *
+		 * @param array|null $override Builder-specific recipe, or null.
+		 * @param string     $name     Recipe name.
+		 * @param array      $nodes    The default (Gutenberg) node tree.
+		 */
+		$override = apply_filters( 'saddle_section_recipe', null, $name, $nodes );
+		if ( is_array( $override ) && ! empty( $override['nodes'] ) ) {
+			$nodes   = $override['nodes'];
+			$builder = isset( $override['builder'] ) ? (string) $override['builder'] : 'custom';
+		}
+
+		return array(
+			'name'    => $name,
+			'title'   => $catalog[ $name ]['title'],
+			'builder' => $builder,
+			'nodes'   => $nodes,
+			'usage'   => __( 'Insert these nodes (with real copy) via set-blocks/add-block on a block theme, or the builder\'s set-page/add-module. The recipe is intentionally token-free — apply colors and sizes from get-design-system after inserting.', 'saddle' ),
+		);
 	}
 
 	/**
