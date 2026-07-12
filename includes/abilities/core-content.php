@@ -934,13 +934,16 @@ class Saddle_Abilities {
 			}
 		}
 
-		// If PHP can't resolve the host (some hosts disable dns_get_record /
-		// gethostbyname even when HTTP fetches still work), fail OPEN rather than
-		// break every legitimate upload. The literal-IP path above already blocks
-		// the primary metadata SSRF (e.g. http://169.254.169.254/), and
-		// wp_http_validate_url() plus download_url()'s redirect re-validation
-		// still apply. The residual DNS-rebinding TOCTOU is acknowledged.
-		$safe = true;
+		// Fail CLOSED when the host resolved to nothing. If PHP can't resolve the
+		// host (some locked-down hosts disable dns_get_record / gethostbyname even
+		// where HTTP fetches still work) we can't prove the target is external, so
+		// we refuse rather than let an unverifiable name through — an internal
+		// name that only resolves at fetch time would otherwise slip past this
+		// pre-flight. A trusted/NAT'd environment that legitimately can't resolve
+		// here can allow the source via the `saddle_source_url_is_safe` filter
+		// below (the WP_Error returned to the agent names that escape hatch). The
+		// residual DNS-rebinding TOCTOU on names that DO resolve is acknowledged.
+		$safe = ! empty( $ips );
 		foreach ( $ips as $ip ) {
 			if ( ! filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) ) {
 				$safe = false;
@@ -1280,7 +1283,7 @@ class Saddle_Abilities {
 
 		$url = esc_url_raw( trim( $input['source_url'] ) );
 		if ( ! wp_http_validate_url( $url ) || ! self::source_url_is_safe( $url ) ) {
-			return new WP_Error( 'saddle_invalid_source_url', __( 'The "source_url" is not a valid, fetchable URL, or it resolves to a disallowed internal address.', 'saddle' ), array( 'status' => 400 ) );
+			return new WP_Error( 'saddle_invalid_source_url', __( 'The "source_url" is not a valid, fetchable URL, or it resolves to a disallowed internal address. If the host is external but cannot be resolved on this server, the site owner can allow it via the "saddle_source_url_is_safe" filter.', 'saddle' ), array( 'status' => 400 ) );
 		}
 
 		// If attaching to a post, require permission to edit that post.
