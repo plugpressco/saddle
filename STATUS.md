@@ -1,9 +1,6 @@
-# STATUS
-
-**Tier:** build
-**Board:** [PlugPress HQ](https://github.com/orgs/plugpressco/projects/3)
-
 ## Last session
+2026-07-12 (release) — **Saddle 1.0.0 — production-ready.** Bumped to 1.0.0 (header/constant/readme/package), added the 1.0.0 changelog, and built a clean release zip (`dist/saddle-1.0.0.zip`, 825 KB, bundled WP\MCP, no dev cruft). Release gate: suite 324 green, php -l clean, no eval/shell, outbound HTTP limited to the loopback self-check. PR #58 merged to main. **Remaining to publish: tag `v1.0.0` + GitHub release (and any WP.org/self-host upload) — not yet done.**
+
 2026-07-12 (late) — **Design-system unify (#5) + section recipes (#6) shipped, both live-verified on Divi 5.8.1.**
 - **#5 closed:** unified `get-design-system` (one shape; theme.json on block themes, Divi Global Data via the `saddle_design_system` filter — free PR #55 / Pro #35), gated `bootstrap-design-system` seeder (free #56 / Pro #36, verified gate→apply→read), and a shared `Saddle_Context::design_numbers()` hard-numbers section in every builder's system context.
 - **#6 closed:** `list-section-recipes` + `get-section-recipe` (free #57) with six token-free section blueprints (hero/features/pricing/testimonials/CTA/FAQ) for Gutenberg, and Divi bodies via the `saddle_section_recipe` filter (Pro #37). All 12 apply cleanly and score verify-page **97–100**.
