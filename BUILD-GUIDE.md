@@ -41,7 +41,7 @@ curl -i -u "username:application_password" \
   -H "Accept: application/json, text/event-stream" \
   -d '{"jsonrpc":"2.0","id":0,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"smoke","version":"1"}}}'
 
-# 2. tools/list — expect all 19 tools (send the session id from step 1)
+# 2. tools/list — expect every registered saddle/ tool (send the session id from step 1)
 curl -u "username:application_password" \
   -X POST https://yoursite.test/wp-json/saddle/v1/mcp \
   -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
