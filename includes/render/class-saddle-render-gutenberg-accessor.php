@@ -22,6 +22,9 @@ class Saddle_Render_Gutenberg_Accessor implements Saddle_Render_Accessor {
 	 */
 	private $facts;
 
+	/**
+	 * Wire up the Gutenberg lint accessor that resolves the node's attrs.
+	 */
 	public function __construct() {
 		$this->facts = new Saddle_Lint_Gutenberg_Accessor();
 	}
