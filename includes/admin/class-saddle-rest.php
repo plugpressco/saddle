@@ -583,6 +583,49 @@ class Saddle_REST_Admin {
 	 *
 	 * @return WP_REST_Response
 	 */
+	/**
+	 * Group an ability under a human-readable category so the Permissions UI can
+	 * present ~55 free (plus any add-on) abilities as scannable groups instead of
+	 * one flat wall of chips. First matching rule wins; add-ons refine their own
+	 * abilities via the `saddle_ability_category` filter (e.g. Saddle Pro splits
+	 * its `divi-*` abilities into Divi pages / Design system / Templates).
+	 *
+	 * @param string $short Ability id without the `saddle/` prefix.
+	 * @param string $name  Full ability id.
+	 * @return string Category label.
+	 */
+	private static function category_for( $short, $name ) {
+		$rules = array(
+			// label => substrings (first hit wins).
+			'Divi'            => array( 'divi-' ),
+			'Integrations'    => array( 'waggle-', 'knovia-' ),
+			'Memory & skills' => array( 'remember', 'recall', 'forget', 'skill', 'instructions' ),
+			'Blocks & layout' => array( 'block', 'render-node', 'verify-page', 'lint-page', 'preview', 'design-tokens' ),
+			'Users'           => array( 'user' ),
+			'Site & settings' => array( 'option', 'plugin', 'theme', 'cache', 'site-info' ),
+			'Content'         => array( 'post', 'page', 'media', 'categor', 'tag', 'revision', 'search' ),
+		);
+
+		$category = 'Other';
+		foreach ( $rules as $label => $needles ) {
+			foreach ( $needles as $needle ) {
+				if ( false !== strpos( $short, $needle ) ) {
+					$category = $label;
+					break 2;
+				}
+			}
+		}
+
+		/**
+		 * Filter an ability's Permissions-UI category label.
+		 *
+		 * @param string $category Derived category label.
+		 * @param string $short    Ability id without the `saddle/` prefix.
+		 * @param string $name     Full ability id.
+		 */
+		return (string) apply_filters( 'saddle_ability_category', $category, $short, $name );
+	}
+
 	public static function get_capabilities() {
 		$catalog   = array();
 		$abilities = function_exists( 'wp_get_abilities' ) ? wp_get_abilities() : array();
@@ -619,6 +662,7 @@ class Saddle_REST_Admin {
 				'readonly'    => $readonly,
 				'destructive' => $destructive,
 				'lane'        => $lane,
+				'category'    => self::category_for( $short, $name ),
 				'enabled'     => Saddle_Capabilities::is_ability_enabled( $short ),
 			);
 		}

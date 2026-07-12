@@ -23,6 +23,22 @@ const LANES = [
 	{ key: 'remove', title: __( 'Delete', 'saddle' ) },
 ];
 
+// Group a lane's capabilities into alphabetically-ordered category buckets so a
+// crowded lane (≈100 chips once add-ons like Divi are active) stays scannable.
+const groupByCategory = ( items ) => {
+	const map = new Map();
+	items.forEach( ( c ) => {
+		const key = c.category || __( 'Other', 'saddle' );
+		if ( ! map.has( key ) ) {
+			map.set( key, [] );
+		}
+		map.get( key ).push( c );
+	} );
+	return [ ...map.entries() ]
+		.map( ( [ category, list ] ) => ( { category, list } ) )
+		.sort( ( a, b ) => a.category.localeCompare( b.category ) );
+};
+
 export default function Permissions( {
 	caps,
 	savedTier,
@@ -32,9 +48,18 @@ export default function Permissions( {
 	const [ choice, setChoice ] = useState( levelKey( savedTier ) );
 	const [ saving, setSaving ] = useState( false );
 	const [ showAll, setShowAll ] = useState( false );
+	const [ query, setQuery ] = useState( '' );
 	const [ localDisabled, setLocalDisabled ] = useState( () =>
 		savedDisabledSet( caps )
 	);
+
+	// Free text filter across a tool's name/id/description. Empty matches all.
+	const q = query.trim().toLowerCase();
+	const matchesQuery = ( c ) =>
+		! q ||
+		c.label.toLowerCase().includes( q ) ||
+		c.short.toLowerCase().includes( q ) ||
+		( c.description || '' ).toLowerCase().includes( q );
 
 	const dirty = choice !== levelKey( savedTier );
 
@@ -191,12 +216,23 @@ export default function Permissions( {
 					) }
 				</p>
 
+				<input
+					type="search"
+					className="saddle-lanes__filter"
+					value={ query }
+					onChange={ ( e ) => setQuery( e.target.value ) }
+					placeholder={ __( 'Filter tools…', 'saddle' ) }
+					aria-label={ __( 'Filter tools by name', 'saddle' ) }
+				/>
+
 				<div className="saddle-lanes">
 					{ LANES.map( ( lane ) => {
-						const items = byLane[ lane.key ] || [];
-						const laneOn = items.some( ( c ) =>
+						const all = byLane[ lane.key ] || [];
+						const items = all.filter( matchesQuery );
+						const laneOn = all.some( ( c ) =>
 							tierUnlocks( choice, c.tier )
 						);
+						const groups = groupByCategory( items );
 						return (
 							<section
 								key={ lane.key }
@@ -218,59 +254,85 @@ export default function Permissions( {
 									className="saddle-lane__rail"
 									aria-hidden="true"
 								/>
-								<ul className="saddle-chips">
-									{ items.map( ( c ) => {
-										const on = tierUnlocks(
-											choice,
-											c.tier
-										);
-										const disabled = localDisabled.has(
-											c.short
-										);
-										return (
-											<li key={ c.name }>
-												<button
-													type="button"
-													className={ `saddle-chip${
-														on
-															? ' is-on'
-															: ' is-off'
-													}${
-														disabled
-															? ' is-disabled'
-															: ''
-													}` }
-													aria-pressed={ ! disabled }
-													title={ c.description }
-													onClick={ () =>
-														toggleAbility( c.short )
-													}
-												>
-													<span className="saddle-chip__label">
-														{ c.label }
-													</span>
-													{ disabled ? (
-														<span className="saddle-chip__off">
-															{ __(
-																'off',
-																'saddle'
-															) }
-														</span>
-													) : (
-														c.destructive && (
-															<span className="saddle-chip__shield">
-																{ __(
-																	'asks first',
-																	'saddle'
+								{ groups.length === 0 && q ? (
+									<p className="saddle-lane__empty">
+										{ __( 'No matches', 'saddle' ) }
+									</p>
+								) : (
+									groups.map( ( { category, list } ) => (
+										<div
+											key={ category }
+											className="saddle-catgroup"
+										>
+											<h4 className="saddle-catgroup__title">
+												{ category }
+												<span className="saddle-catgroup__count">
+													{ list.length }
+												</span>
+											</h4>
+											<ul className="saddle-chips">
+												{ list.map( ( c ) => {
+													const on = tierUnlocks(
+														choice,
+														c.tier
+													);
+													const disabled =
+														localDisabled.has(
+															c.short
+														);
+													return (
+														<li key={ c.name }>
+															<button
+																type="button"
+																className={ `saddle-chip${
+																	on
+																		? ' is-on'
+																		: ' is-off'
+																}${
+																	disabled
+																		? ' is-disabled'
+																		: ''
+																}` }
+																aria-pressed={
+																	! disabled
+																}
+																title={
+																	c.description
+																}
+																onClick={ () =>
+																	toggleAbility(
+																		c.short
+																	)
+																}
+															>
+																<span className="saddle-chip__label">
+																	{ c.label }
+																</span>
+																{ disabled ? (
+																	<span className="saddle-chip__off">
+																		{ __(
+																			'off',
+																			'saddle'
+																		) }
+																	</span>
+																) : (
+																	c.destructive && (
+																		<span className="saddle-chip__shield">
+																			{ __(
+																				'asks first',
+																				'saddle'
+																			) }
+																		</span>
+																	)
 																) }
-															</span>
-														)
-													) }
-												</button>
-											</li>
-										);
-									} ) }
-								</ul>
+															</button>
+														</li>
+													);
+												} ) }
+											</ul>
+										</div>
+									) )
+								) }
 							</section>
 						);
 					} ) }
