@@ -4,6 +4,14 @@
 **Board:** [PlugPress HQ](https://github.com/orgs/plugpressco/projects/3)
 
 ## Last session
+2026-07-12 (late) — **Design-system unify (#5) + section recipes (#6) shipped, both live-verified on Divi 5.8.1.**
+- **#5 closed:** unified `get-design-system` (one shape; theme.json on block themes, Divi Global Data via the `saddle_design_system` filter — free PR #55 / Pro #35), gated `bootstrap-design-system` seeder (free #56 / Pro #36, verified gate→apply→read), and a shared `Saddle_Context::design_numbers()` hard-numbers section in every builder's system context.
+- **#6 closed:** `list-section-recipes` + `get-section-recipe` (free #57) with six token-free section blueprints (hero/features/pricing/testimonials/CTA/FAQ) for Gutenberg, and Divi bodies via the `saddle_section_recipe` filter (Pro #37). All 12 apply cleanly and score verify-page **97–100**.
+- Suite: free **324** green, Pro **158** green. Saddle+Pro remain symlinked on divi-dev; test content cleaned.
+
+**Only feature-backlog left:** free has none open; Pro has #1 Rank Math, #2 CF7 (both deferred by decision), #3 Elementor (deferred), #4 hygiene tail (4 minor items).
+
+## Last session
 2026-07-12 (evening) — **Live divi-dev verification passed; epic #22 closed.** Drove the full round via `studio wp` against `~/Workspace/wp/divi-dev` (WP 7.0.1, Divi 5.8.1): reads, page writes, approval gate, **design-system GlobalData writes verified against Divi's own reader**, the closed loop (seed bad → verify flags → fix by address → re-verify **92→100**), and a signed preview URL (curl: HTTP 200 + noindex + rendered content). Found + fixed one live bug — the Divi authoring layer silently dropped unknown node keys (`content` vs `fields`); now rejects them (saddle-pro PR #33). Closed **#4** and **#22** with a findings log (details in #4's closing comment). The 4 UI PRs (#51–#54) were also reviewed + merged this day. **All audit issues now closed.**
 
 Earlier 2026-07-12 — **Audit-backlog execution (P0–P4)**. Cleared the audit issues #36–#46 filed this day:
