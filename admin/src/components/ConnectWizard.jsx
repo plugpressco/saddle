@@ -88,6 +88,42 @@ const APPS = [
 		next: __( 'Open Cursor’s chat and ask it about your site.', 'saddle' ),
 	},
 	{
+		key: 'gemini-cli',
+		label: __( 'Gemini CLI', 'saddle' ),
+		kind: __( 'Terminal', 'saddle' ),
+		how: __(
+			'Paste this into your terminal and press Enter. That’s the whole setup.',
+			'saddle'
+		),
+		next: __(
+			'Run gemini in any folder and ask it about your site.',
+			'saddle'
+		),
+	},
+	{
+		key: 'vscode',
+		label: __( 'VS Code', 'saddle' ),
+		kind: __( 'Copilot (agent mode)', 'saddle' ),
+		how: __(
+			'Save this as .vscode/mcp.json in your project, then start the server from the MCP: List Servers command.',
+			'saddle'
+		),
+		next: __(
+			'Open Copilot Chat in agent mode and ask it about your site.',
+			'saddle'
+		),
+	},
+	{
+		key: 'windsurf',
+		label: __( 'Windsurf', 'saddle' ),
+		kind: __( 'Code editor', 'saddle' ),
+		how: __(
+			'In Windsurf: open the Cascade MCP settings and “Add custom server”, or save this into ~/.codeium/windsurf/mcp_config.json.',
+			'saddle'
+		),
+		next: __( 'Open Cascade and ask it about your site.', 'saddle' ),
+	},
+	{
 		key: 'other',
 		label: __( 'Any MCP app', 'saddle' ),
 		kind: __( 'Everything else', 'saddle' ),
@@ -113,6 +149,43 @@ function buildConfig( app, password ) {
 		// be in — user scope makes "run claude in any folder" actually true.
 		case 'claude-code':
 			return `claude mcp add ${ SLUG } --scope user --transport http ${ MCP_URL } \\\n  --header "${ header }"`;
+
+		// Gemini CLI — one command, native HTTP transport, user scope (so it
+		// loads from any folder, same reasoning as Claude Code above).
+		case 'gemini-cli':
+			return `gemini mcp add --scope user --transport http ${ SLUG } ${ MCP_URL } \\\n  --header "${ header }"`;
+
+		// VS Code (Copilot agent mode) — .vscode/mcp.json uses `servers` (not
+		// `mcpServers`) with an explicit `type: "http"`.
+		case 'vscode':
+			return JSON.stringify(
+				{
+					servers: {
+						[ SLUG ]: {
+							type: 'http',
+							url: MCP_URL,
+							headers: { Authorization: `Basic ${ auth }` },
+						},
+					},
+				},
+				null,
+				2
+			);
+
+		// Windsurf (Cascade) — mcp_config.json uses `serverUrl` for remote HTTP.
+		case 'windsurf':
+			return JSON.stringify(
+				{
+					mcpServers: {
+						[ SLUG ]: {
+							serverUrl: MCP_URL,
+							headers: { Authorization: `Basic ${ auth }` },
+						},
+					},
+				},
+				null,
+				2
+			);
 
 		// ChatGPT connects by URL from its Connectors screen — hand over the
 		// address and the sign-in details as plain fields to fill in.
@@ -517,10 +590,7 @@ export default function ConnectWizard( { tier, onExit, onClientsChanged } ) {
 					) }
 
 					<div className="saddle-wizard__actions">
-						<Button
-							variant="ghost"
-							onClick={ () => setStep( 1 ) }
-						>
+						<Button variant="ghost" onClick={ () => setStep( 1 ) }>
 							{ __( 'Back', 'saddle' ) }
 						</Button>
 						<Button variant="link" onClick={ () => exit( false ) }>
