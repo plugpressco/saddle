@@ -67,8 +67,8 @@ class Saddle_MCP {
 	 * Uses the same namespace/route as the built-in transport, so the endpoint
 	 * URL (/wp-json/saddle/v1/mcp) is identical whether the adapter is present or
 	 * not. Exposing our abilities as an explicit tool list (rather than relying
-	 * on the adapter's default discover/execute meta-tools) surfaces all 19
-	 * abilities as first-class MCP tools with their own schemas.
+	 * on the adapter's default discover/execute meta-tools) surfaces every
+	 * registered `saddle/` ability as a first-class MCP tool with its own schema.
 	 *
 	 * @param object $adapter The McpAdapter instance passed by the action.
 	 */
