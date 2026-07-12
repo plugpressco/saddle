@@ -381,4 +381,47 @@ class Saddle_Blocks_Test extends WP_UnitTestCase {
 		$this->assertNotWPError( $patterns );
 		$this->assertArrayHasKey( 'patterns', $patterns );
 	}
+
+	public function test_get_design_system_returns_unified_shape() {
+		$ds = $this->run_ability( 'get-design-system' );
+		$this->assertNotWPError( $ds );
+		foreach ( array( 'builder', 'colors', 'fonts', 'font_sizes', 'spacing', 'variables', 'presets', 'usage' ) as $key ) {
+			$this->assertArrayHasKey( $key, $ds, "get-design-system must expose {$key}" );
+		}
+	}
+
+	public function test_design_system_filter_lets_a_builder_override() {
+		add_filter(
+			'saddle_design_system',
+			static function ( $shape ) {
+				$shape['builder'] = 'divi';
+				$shape['colors']  = array( array( 'id' => 'gcid-x', 'value' => '#123456' ) );
+				return $shape;
+			}
+		);
+		$ds = $this->run_ability( 'get-design-system' );
+		remove_all_filters( 'saddle_design_system' );
+
+		$this->assertSame( 'divi', $ds['builder'] );
+		$this->assertSame( 'gcid-x', $ds['colors'][0]['id'] );
+	}
+
+	public function test_bootstrap_design_system_gates_before_writing() {
+		Saddle_Capabilities::set_tier( 'admin' );
+
+		// Preview: a fresh call returns a confirm_token and does not apply.
+		$preview = $this->run_ability( 'bootstrap-design-system', array( 'force' => true ) );
+		$this->assertNotWPError( $preview );
+		$this->assertArrayHasKey( 'confirm_token', $preview );
+		$this->assertNotEmpty( $preview['preview']['colors'] );
+
+		// Without a builder to handle the seed, applying reports applied=false
+		// rather than half-writing a theme.json.
+		$applied = $this->run_ability(
+			'bootstrap-design-system',
+			array( 'force' => true, 'confirm_token' => $preview['confirm_token'] )
+		);
+		$this->assertNotWPError( $applied );
+		$this->assertFalse( $applied['applied'] );
+	}
 }

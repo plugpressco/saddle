@@ -95,6 +95,36 @@ function saddle_register_block_abilities() {
 	);
 
 	wp_register_ability(
+		'saddle/bootstrap-design-system',
+		array(
+			'label'               => __( 'Bootstrap a design system', 'saddle' ),
+			'description'         => __( 'Seeds a coherent starter design system on a site that has none — a neutral palette with one accent, a type scale, and an 8px spacing scale — so an agent has real tokens to build against instead of inventing values. Admin-tier and confirmation-gated: it returns a preview of exactly what it will write, and only applies on a second call with the confirm_token. Refuses (unless "force" is true) when the site already has a substantial design system. On Divi it writes Divi Global Data; on a block theme, set tokens in the Site Editor (not yet automated).', 'saddle' ),
+			'category'            => 'saddle',
+			'input_schema'        => array(
+				'type'       => 'object',
+				'default'    => (object) array(),
+				'properties' => array(
+					'accent'        => array(
+						'type'        => 'string',
+						'description' => __( 'Optional accent color as a hex value (e.g. "#2563eb"). Defaults to a neutral blue.', 'saddle' ),
+					),
+					'force'         => array(
+						'type'        => 'boolean',
+						'description' => __( 'Seed even if the site already has a design system. Off by default.', 'saddle' ),
+					),
+					'confirm_token' => array(
+						'type'        => 'string',
+						'description' => __( 'The token from the preview response; pass it to apply.', 'saddle' ),
+					),
+				),
+			),
+			'execute_callback'    => array( 'Saddle_Blocks_Abilities', 'bootstrap_design_system' ),
+			'permission_callback' => Saddle_Capabilities::permission( 'admin', 'edit_theme_options', 'bootstrap-design-system' ),
+			'meta'                => saddle_ability_meta( false, true, false, 'admin' ),
+		)
+	);
+
+	wp_register_ability(
 		'saddle/get-design-system',
 		array(
 			'label'               => __( 'Get design system', 'saddle' ),
@@ -396,6 +426,83 @@ class Saddle_Blocks_Abilities {
 	 */
 	public static function get_design_system() {
 		return Saddle_Blocks_Schema::design_system();
+	}
+
+	/**
+	 * saddle/bootstrap-design-system — seed a starter design system (gated).
+	 *
+	 * @param array $input Ability input.
+	 * @return array|WP_Error
+	 */
+	public static function bootstrap_design_system( $input = null ) {
+		$input = is_array( $input ) ? $input : array();
+
+		// Refuse on a site that already has a real design system, unless forced —
+		// this is a fresh-site tool, not a re-theming one.
+		if ( empty( $input['force'] ) ) {
+			$existing = Saddle_Blocks_Schema::design_system();
+			if ( ! empty( $existing['colors'] ) && count( $existing['colors'] ) >= 4 ) {
+				return new WP_Error(
+					'saddle_design_system_exists',
+					__( 'This site already has a design system (read it with get-design-system). Pass "force": true to seed a starter set anyway.', 'saddle' ),
+					array( 'status' => 409 )
+				);
+			}
+		}
+
+		$accent = isset( $input['accent'] ) && is_string( $input['accent'] ) && preg_match( '/^#[0-9a-fA-F]{6}$/', trim( $input['accent'] ) )
+			? strtolower( trim( $input['accent'] ) )
+			: '#2563eb';
+
+		// The starter spec: a neutral palette + one accent, a type scale, and an
+		// 8px spacing scale. Builder-agnostic; the builder maps it to its store.
+		$spec = array(
+			'colors'  => array(
+				array( 'slug' => 'brand-accent', 'name' => 'Accent', 'value' => $accent ),
+				array( 'slug' => 'brand-ink', 'name' => 'Ink', 'value' => '#1a1a1a' ),
+				array( 'slug' => 'brand-body', 'name' => 'Body', 'value' => '#4b5563' ),
+				array( 'slug' => 'brand-muted', 'name' => 'Muted', 'value' => '#9ca3af' ),
+				array( 'slug' => 'brand-line', 'name' => 'Line', 'value' => '#e5e7eb' ),
+				array( 'slug' => 'brand-surface', 'name' => 'Surface', 'value' => '#ffffff' ),
+			),
+			'type'    => array( 16, 20, 24, 32, 44, 60 ),
+			'spacing' => array( 8, 16, 24, 32, 48, 64, 96 ),
+		);
+
+		return Saddle_Approval::gate(
+			array(
+				'action'  => 'bootstrap-design-system',
+				'target'  => 'site',
+				'bind'    => substr( hash( 'sha256', wp_json_encode( $spec ) ), 0, 16 ),
+				'summary' => __( 'Seed a starter design system: 6 brand colors (one accent), a 6-step type scale, and a 7-step 8px spacing scale. Existing tokens are not removed.', 'saddle' ),
+				'preview' => $spec,
+				'input'   => $input,
+				'execute' => static function () use ( $spec ) {
+					/**
+					 * Let a page-builder addon apply the starter spec to its own
+					 * design store (Saddle Pro seeds Divi Global Data). Return an
+					 * array to report what was written; null means "not handled".
+					 *
+					 * @param array|null $result Applied result, or null if unhandled.
+					 * @param array      $spec   The starter design spec.
+					 */
+					$result = apply_filters( 'saddle_bootstrap_design_system', null, $spec );
+					if ( is_array( $result ) ) {
+						return $result;
+					}
+
+					// No builder handled it. On a block theme the palette belongs
+					// in user global styles / the Site Editor; automating that
+					// write is deferred, so guide the owner rather than write a
+					// half-applied theme.json.
+					return array(
+						'applied' => false,
+						'spec'    => $spec,
+						'note'    => __( 'No page builder handled the seed. On a block theme, add these colors and sizes in Appearance → Editor → Styles; automated block-theme seeding is not available yet.', 'saddle' ),
+					);
+				},
+			)
+		);
 	}
 
 	/**
