@@ -365,22 +365,50 @@ class Saddle_MCP {
 		$tools = array();
 
 		foreach ( self::saddle_abilities() as $name => $ability ) {
-			$schema = $ability->get_input_schema();
-			if ( empty( $schema ) ) {
-				$schema = array(
-					'type'       => 'object',
-					'properties' => (object) array(),
-				);
-			}
-
 			$tools[] = array(
 				'name'        => $name,
 				'description' => $ability->get_description(),
-				'inputSchema' => $schema,
+				'inputSchema' => self::normalize_input_schema( $ability->get_input_schema() ),
 			);
 		}
 
 		return $tools;
+	}
+
+	/**
+	 * Coerce an ability's input schema into an MCP-compliant object schema.
+	 *
+	 * MCP requires every tool's `inputSchema` to be a JSON object whose
+	 * `properties` map (when present) is itself a JSON object. PHP serializes an
+	 * empty array as `[]`, so a no-argument ability that declares
+	 * `'properties' => array()` — the shape some partner abilities wrapped via
+	 * Saddle_Integrations arrive in — emits `"properties": []`. Strict clients
+	 * reject the whole tools/list over that single mismatch, so we force the map
+	 * to serialize as `{}` by casting it to an object. The official MCP Adapter
+	 * transport already normalizes this; this keeps the built-in JSON-RPC
+	 * fallback byte-for-byte compatible.
+	 *
+	 * @param mixed $schema Raw input schema from the ability.
+	 * @return array MCP-compliant object schema.
+	 */
+	private static function normalize_input_schema( $schema ) {
+		if ( ! is_array( $schema ) || empty( $schema ) ) {
+			return array(
+				'type'       => 'object',
+				'properties' => (object) array(),
+			);
+		}
+
+		if ( ! isset( $schema['type'] ) ) {
+			$schema['type'] = 'object';
+		}
+
+		// Force the properties map to serialize as a JSON object, never `[]`.
+		if ( array_key_exists( 'properties', $schema ) && is_array( $schema['properties'] ) ) {
+			$schema['properties'] = (object) $schema['properties'];
+		}
+
+		return $schema;
 	}
 
 	/**
