@@ -2,9 +2,10 @@
  * Saddle admin — a guided, person-first workspace.
  *
  * First run shows a short setup that flows straight into connecting the first
- * app. After that, five plain-language sections: Home (status + next step),
- * Permissions (what the AI can do), Guidance (what it's told), Connect (the
- * apps), and Activity (the full record of what they've done). Connecting an
+ * app. After that, plain-language sections: Home (status + next step),
+ * Permissions (what the AI can do), Guidance (what it's told), Memory (its
+ * governed cross-session store), Connect (the apps), and Activity (the full
+ * record of what they've done). Connecting an
  * app is a focused, full-panel wizard — one step at a time — not a page of
  * forms. All the protocol machinery stays out of sight.
  */
@@ -26,6 +27,7 @@ import Onboarding from './components/Onboarding';
 import Home from './components/Home';
 import Permissions from './components/Permissions';
 import Guidance from './components/Guidance';
+import Memory from './components/Memory';
 import Apps from './components/ConnectedClients';
 import Activity from './components/Activity';
 import ConnectWizard from './components/ConnectWizard';
@@ -34,6 +36,7 @@ const TABS = [
 	{ name: 'home', title: __( 'Home', 'saddle' ) },
 	{ name: 'permissions', title: __( 'Permissions', 'saddle' ) },
 	{ name: 'guidance', title: __( 'Guidance', 'saddle' ) },
+	{ name: 'memory', title: __( 'Memory', 'saddle' ) },
 	{ name: 'connect', title: __( 'Connect', 'saddle' ) },
 	{ name: 'activity', title: __( 'Activity', 'saddle' ) },
 ];
@@ -266,86 +269,87 @@ export default function App() {
 		);
 	} else {
 		view = (
-		<div className="pp-app saddle-app">
-			<SkipLink href="#pp-main">
-				{ __( 'Skip to content', 'saddle' ) }
-			</SkipLink>
-			<TopBar
-				tier={ tier }
-				tabs={ wizardOpen ? null : TABS }
-				active={ tab }
-				onSelect={ setTab }
-				paused={ paused }
-				onTogglePause={ togglePause }
-				pausing={ pausing }
-			/>
+			<div className="pp-app saddle-app">
+				<SkipLink href="#pp-main">
+					{ __( 'Skip to content', 'saddle' ) }
+				</SkipLink>
+				<TopBar
+					tier={ tier }
+					tabs={ wizardOpen ? null : TABS }
+					active={ tab }
+					onSelect={ setTab }
+					paused={ paused }
+					onTogglePause={ togglePause }
+					pausing={ pausing }
+				/>
 
-			<div className="saddle-content" id="pp-main">
-				{ ! wizardOpen && <ForeignNotices /> }
+				<div className="saddle-content" id="pp-main">
+					{ ! wizardOpen && <ForeignNotices /> }
 
-				{ error && <Notice tone="danger">{ error }</Notice> }
+					{ error && <Notice tone="danger">{ error }</Notice> }
 
-				{ domainWarning && ! wizardOpen && (
-					<Notice tone="warning">
-						{ __(
-							'This site’s address has changed since AI write access was turned on — often a sign of a staging clone or a migration carrying over live credentials. If that wasn’t intentional, review your connected apps and revoke anything unexpected.',
-							'saddle'
-						) }
-						<span className="saddle-notice__actions">
-							<Button
-								variant="link"
-								size="sm"
-								onClick={ clearDomainWarning }
-							>
-								{ __(
-									'This is expected — clear this warning',
-									'saddle'
-								) }
-							</Button>
-						</span>
-					</Notice>
-				) }
-
-				<div className="saddle-panel">
-					{ wizardOpen ? (
-						<ConnectWizard
-							tier={ tier }
-							onExit={ closeWizard }
-							onClientsChanged={ loadClients }
-						/>
-					) : (
-						<div className="saddle-tabpane" key={ tab }>
-							{ tab === 'home' && (
-								<Home
-									tier={ tier }
-									clients={ clients }
-									onNavigate={ setTab }
-									onConnect={ openWizard }
-								/>
+					{ domainWarning && ! wizardOpen && (
+						<Notice tone="warning">
+							{ __(
+								'This site’s address has changed since AI write access was turned on — often a sign of a staging clone or a migration carrying over live credentials. If that wasn’t intentional, review your connected apps and revoke anything unexpected.',
+								'saddle'
 							) }
-							{ tab === 'permissions' && (
-								<Permissions
-									caps={ caps }
-									savedTier={ tier }
-									onTierSaved={ handleTierSaved }
-									onCapsChanged={ loadCaps }
-								/>
-							) }
-							{ tab === 'guidance' && <Guidance /> }
-							{ tab === 'activity' && <Activity /> }
-							{ tab === 'connect' && (
-								<Apps
-									clients={ clients }
-									loading={ false }
-									onConnect={ openWizard }
-									onClientsChanged={ loadClients }
-								/>
-							) }
-						</div>
+							<span className="saddle-notice__actions">
+								<Button
+									variant="link"
+									size="sm"
+									onClick={ clearDomainWarning }
+								>
+									{ __(
+										'This is expected — clear this warning',
+										'saddle'
+									) }
+								</Button>
+							</span>
+						</Notice>
 					) }
+
+					<div className="saddle-panel">
+						{ wizardOpen ? (
+							<ConnectWizard
+								tier={ tier }
+								onExit={ closeWizard }
+								onClientsChanged={ loadClients }
+							/>
+						) : (
+							<div className="saddle-tabpane" key={ tab }>
+								{ tab === 'home' && (
+									<Home
+										tier={ tier }
+										clients={ clients }
+										onNavigate={ setTab }
+										onConnect={ openWizard }
+									/>
+								) }
+								{ tab === 'permissions' && (
+									<Permissions
+										caps={ caps }
+										savedTier={ tier }
+										onTierSaved={ handleTierSaved }
+										onCapsChanged={ loadCaps }
+									/>
+								) }
+								{ tab === 'guidance' && <Guidance /> }
+								{ tab === 'memory' && <Memory /> }
+								{ tab === 'activity' && <Activity /> }
+								{ tab === 'connect' && (
+									<Apps
+										clients={ clients }
+										loading={ false }
+										onConnect={ openWizard }
+										onClientsChanged={ loadClients }
+									/>
+								) }
+							</div>
+						) }
+					</div>
 				</div>
 			</div>
-		</div>
 		);
 	}
 

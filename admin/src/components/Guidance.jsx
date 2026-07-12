@@ -29,7 +29,6 @@ import {
 } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { api } from '../api';
-import Memory from './Memory';
 import HelpTip from './HelpTip';
 
 // A card title with an optional "?" help affordance beside it — keeps the long
@@ -403,10 +402,6 @@ export default function Guidance() {
 					<CodeBlock code={ drawerSkill.body } copy={ false } />
 				) }
 			</Drawer>
-
-			{ /* Memory — governed cross-session store; pinning changes the
-			     injected context, so refresh the preview above on change. */ }
-			<Memory onChanged={ refreshContext } />
 		</div>
 	);
 }
