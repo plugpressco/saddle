@@ -4,7 +4,16 @@
 **Board:** [PlugPress HQ](https://github.com/orgs/plugpressco/projects/3)
 
 ## Last session
-2026-07-12 — **Home/Activity dedupe + two bug fixes** (working tree, not committed): Home ("dashboard") and Activity ("audit") share the same `audit-log` data but each re-derived date/label logic. Extracted the pure helpers into new **`admin/src/activity-format.js`** (`parseEntryDate`, `relativeWhen`, `dayLabel`, `clock`, `shortLabel`, `groupByDay`); both screens now import from it (layouts stay distinct on purpose). Fixed along the way: (1) inconsistent timestamp parsing — Activity built `"… …Z"` vs Home's ISO `"…T…Z"`, now one canonical parse; (2) Home's "Actions logged" tile used `entries.length` (capped at the page size ⇒ under-counted busy sites) — now uses the endpoint's real `total`, and Home fetches only `per_page=6`. `npm run build` green; new module + Activity lint-clean (one pre-existing prettier nit in Home untouched).
+2026-07-12 — **Audit-backlog execution (P0–P4)**. Cleared the audit issues #36–#46 filed this day:
+- **Merged to main:** #47 untangle (legible 401s #36, inputSchema normalization, admin dedupe), #48 SSRF fail-closed (#38) + execute()-contract regression test (#39), #49 **CI now provisions real WP core + SQLite so PHPUnit runs green on GitHub** (#42) — verified green (7 jobs, WP 6.9/latest × PHP 8.1/8.2/8.3), also made phpcs warnings non-blocking + fixed a real docblock error, #50 ability-count doc drift (#41, actual **55**).
+- **Open PRs — need visual QA, not merged** (I can't drive the browser headlessly): #51 Permissions category grouping + filter (#43, server `category_for()` + `saddle_ability_category` filter), #52 wizard presets for Gemini CLI / VS Code / Windsurf (#46), #53 Home connection-health tile (#45), #54 Memory promoted to its own tab (#44).
+- Suite on main: **318 green**.
+
+**Next up:** review + merge the four UI PRs (#51–#54) after a click-through. Then the live divi-dev round-trip (epic #22's last gate, tracked in #4). Optional 0.11.0 release bundling the security + CI + UI work.
+
+---
+
+### Earlier 2026-07-12 — **Home/Activity dedupe + two bug fixes** (now merged in #47): Home ("dashboard") and Activity ("audit") share the same `audit-log` data but each re-derived date/label logic. Extracted the pure helpers into new **`admin/src/activity-format.js`** (`parseEntryDate`, `relativeWhen`, `dayLabel`, `clock`, `shortLabel`, `groupByDay`); both screens now import from it (layouts stay distinct on purpose). Fixed along the way: (1) inconsistent timestamp parsing — Activity built `"… …Z"` vs Home's ISO `"…T…Z"`, now one canonical parse; (2) Home's "Actions logged" tile used `entries.length` (capped at the page size ⇒ under-counted busy sites) — now uses the endpoint's real `total`, and Home fetches only `per_page=6`. `npm run build` green; new module + Activity lint-clean (one pre-existing prettier nit in Home untouched).
 
 2026-07-12 — **[#36](https://github.com/plugpressco/saddle/issues/36) legible connection failures (revoked key vs stripped header)** — code done in working tree, not yet committed:
 - `Saddle_MCP::authenticated()` now returns two distinct 401s instead of one generic `saddle_not_authenticated`: `saddle_credential_rejected` (reason `credential_rejected`, "reconnect the app") when Basic credentials reached PHP, vs `saddle_no_credentials` (reason `no_credentials`, "your host may be stripping the Authorization header — run the connection check") when none did.
