@@ -113,8 +113,13 @@ class Saddle_Context {
 		$lines[] = __( '# Designing pages with blocks', 'saddle' );
 		$lines[] = '';
 		$lines[] = '- ' . __( 'For page layouts, use the structured block tools (get-blocks, set-blocks, add/edit/move/remove-block) instead of writing a raw "content" string — they compose real editor blocks that stay editable in the block editor, and every change is validated before it is saved.', 'saddle' );
-		$lines[] = '- ' . __( 'Match the site\'s design, don\'t invent one: read get-design-tokens first and use its preset slugs for colors, font sizes, and spacing. For common sections (hero, features, CTA), check list-block-patterns — inserting a theme-styled pattern beats hand-composing.', 'saddle' );
+		$lines[] = '- ' . __( 'Match the site\'s design, don\'t invent one: read get-design-system first (one shape for any builder) and use its color/size slugs or ids for colors, fonts, and spacing. For common sections (hero, features, CTA), check list-block-patterns — inserting a theme-styled pattern beats hand-composing.', 'saddle' );
 		$lines[] = '- ' . __( 'Before composing a block type you haven\'t used, read get-block-schema for its exact authoring syntax. Never fake a layout by dumping raw HTML into a single block.', 'saddle' );
+		$lines[] = '';
+
+		foreach ( self::design_numbers() as $line ) {
+			$lines[] = $line;
+		}
 		$lines[] = '';
 
 		// Content landscape — orient the agent to what exists, and name public
@@ -229,6 +234,26 @@ class Saddle_Context {
 		$lines[] = '';
 
 		return $lines;
+	}
+
+	/**
+	 * The shared "what good design means in numbers" section — builder-agnostic
+	 * hard numbers served to every agent (Gutenberg or a page builder), so the
+	 * design bar doesn't live only inside one builder's skill. A builder addon
+	 * can reuse these lines instead of restating them.
+	 *
+	 * @return string[] Markdown lines.
+	 */
+	public static function design_numbers() {
+		return array(
+			__( '# What "designed" means, in numbers', 'saddle' ),
+			'',
+			'- ' . __( 'Type scale: hero/display 44–64px, section headings 28–40px, body 16–18px with line-height 1.5–1.7. Establish a clear step between levels — don\'t set everything near the same size.', 'saddle' ),
+			'- ' . __( 'Line length: keep body text to ~50–75 characters per line (roughly a 600–720px max width for a text column), never full-bleed paragraphs.', 'saddle' ),
+			'- ' . __( 'Spacing on an 8px system (8/16/24/32/48/64/96): generous section padding (~64–96px top/bottom on desktop), consistent gaps within a group, and more space BETWEEN groups than inside them.', 'saddle' ),
+			'- ' . __( 'Color: one dominant neutral background, one text color, and a SINGLE accent used sparingly for emphasis and calls to action. Body text must hit WCAG AA contrast (≥ 4.5:1; ≥ 3:1 for large headings).', 'saddle' ),
+			'- ' . __( 'Rhythm: align to a consistent content width, reuse the same handful of spacing/size steps across the page, and prefer one strong idea per section over dense walls of content.', 'saddle' ),
+		);
 	}
 
 	/**

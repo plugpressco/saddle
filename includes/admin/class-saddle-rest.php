@@ -597,10 +597,11 @@ class Saddle_REST_Admin {
 	private static function category_for( $short, $name ) {
 		$rules = array(
 			// label => substrings (first hit wins).
+			'Design system'   => array( 'design-system', 'design-tokens', 'bootstrap-design' ),
 			'Divi'            => array( 'divi-' ),
 			'Integrations'    => array( 'waggle-', 'knovia-' ),
 			'Memory & skills' => array( 'remember', 'recall', 'forget', 'skill', 'instructions' ),
-			'Blocks & layout' => array( 'block', 'render-node', 'verify-page', 'lint-page', 'preview', 'design-tokens' ),
+			'Blocks & layout' => array( 'block', 'render-node', 'verify-page', 'lint-page', 'preview' ),
 			'Users'           => array( 'user' ),
 			'Site & settings' => array( 'option', 'plugin', 'theme', 'cache', 'site-info' ),
 			'Content'         => array( 'post', 'page', 'media', 'categor', 'tag', 'revision', 'search' ),
