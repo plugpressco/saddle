@@ -95,6 +95,23 @@ function saddle_register_block_abilities() {
 	);
 
 	wp_register_ability(
+		'saddle/get-design-system',
+		array(
+			'label'               => __( 'Get design system', 'saddle' ),
+			'description'         => __( 'Returns this site\'s design system in ONE builder-agnostic shape — colors, fonts, font sizes, spacing, layout widths, plus builder-native design variables and module presets when a page builder is active. On a block theme it reads theme.json; on Divi (with Saddle Pro) it reads Divi\'s Global Data. Read this FIRST when designing a page, and use the returned slugs/ids instead of hardcoded values so everything you build inherits the real brand. Read-only.', 'saddle' ),
+			'category'            => 'saddle',
+			'input_schema'        => array(
+				'type'       => 'object',
+				'default'    => (object) array(),
+				'properties' => (object) array(),
+			),
+			'execute_callback'    => array( 'Saddle_Blocks_Abilities', 'get_design_system' ),
+			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'get-design-system' ),
+			'meta'                => saddle_ability_meta( true, false, true, 'read' ),
+		)
+	);
+
+	wp_register_ability(
 		'saddle/list-block-patterns',
 		array(
 			'label'               => __( 'List block patterns', 'saddle' ),
@@ -370,6 +387,15 @@ class Saddle_Blocks_Abilities {
 	 */
 	public static function get_design_tokens() {
 		return Saddle_Blocks_Schema::design_tokens();
+	}
+
+	/**
+	 * saddle/get-design-system — one builder-agnostic design-system shape.
+	 *
+	 * @return array
+	 */
+	public static function get_design_system() {
+		return Saddle_Blocks_Schema::design_system();
 	}
 
 	/**
