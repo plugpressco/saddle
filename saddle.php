@@ -34,6 +34,7 @@ require_once SADDLE_DIR . 'includes/class-saddle-tree.php';
 require_once SADDLE_DIR . 'includes/class-saddle-blocks-tree.php';
 require_once SADDLE_DIR . 'includes/class-saddle-blocks-author.php';
 require_once SADDLE_DIR . 'includes/class-saddle-blocks-schema.php';
+require_once SADDLE_DIR . 'includes/class-saddle-recipes.php';
 require_once SADDLE_DIR . 'includes/class-saddle-blocks-echo.php';
 require_once SADDLE_DIR . 'includes/lint/interface-saddle-lint-accessor.php';
 require_once SADDLE_DIR . 'includes/lint/interface-saddle-lint-style-accessor.php';
