@@ -4,7 +4,9 @@
 **Board:** [PlugPress HQ](https://github.com/orgs/plugpressco/projects/3)
 
 ## Last session
-2026-07-12 — **Audit-backlog execution (P0–P4)**. Cleared the audit issues #36–#46 filed this day:
+2026-07-12 (evening) — **Live divi-dev verification passed; epic #22 closed.** Drove the full round via `studio wp` against `~/Workspace/wp/divi-dev` (WP 7.0.1, Divi 5.8.1): reads, page writes, approval gate, **design-system GlobalData writes verified against Divi's own reader**, the closed loop (seed bad → verify flags → fix by address → re-verify **92→100**), and a signed preview URL (curl: HTTP 200 + noindex + rendered content). Found + fixed one live bug — the Divi authoring layer silently dropped unknown node keys (`content` vs `fields`); now rejects them (saddle-pro PR #33). Closed **#4** and **#22** with a findings log (details in #4's closing comment). The 4 UI PRs (#51–#54) were also reviewed + merged this day. **All audit issues now closed.**
+
+Earlier 2026-07-12 — **Audit-backlog execution (P0–P4)**. Cleared the audit issues #36–#46 filed this day:
 - **Merged to main:** #47 untangle (legible 401s #36, inputSchema normalization, admin dedupe), #48 SSRF fail-closed (#38) + execute()-contract regression test (#39), #49 **CI now provisions real WP core + SQLite so PHPUnit runs green on GitHub** (#42) — verified green (7 jobs, WP 6.9/latest × PHP 8.1/8.2/8.3), also made phpcs warnings non-blocking + fixed a real docblock error, #50 ability-count doc drift (#41, actual **55**).
 - **Open PRs — need visual QA, not merged** (I can't drive the browser headlessly): #51 Permissions category grouping + filter (#43, server `category_for()` + `saddle_ability_category` filter), #52 wizard presets for Gemini CLI / VS Code / Windsurf (#46), #53 Home connection-health tile (#45), #54 Memory promoted to its own tab (#44).
 - Suite on main: **318 green**.
