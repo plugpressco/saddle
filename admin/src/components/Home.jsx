@@ -36,6 +36,10 @@ const StatLabel = ( { children, help } ) => (
 // Activity screen. Kept small so the fetch stays light.
 const PREVIEW_COUNT = 6;
 
+// Session cache for the connection self-check so re-opening Home doesn't re-run
+// the loopback probe. Reset on full reload, which is the right granularity.
+let healthCache = null;
+
 // Compact tile labels for the access level — the shared LEVELS titles
 // ("Just reading" …) read as sentences; a stat value wants one word.
 const LEVEL_STAT_LABEL = {
@@ -48,6 +52,7 @@ export default function Home( { tier, clients, onNavigate, onConnect } ) {
 	const hasApps = clients.length > 0;
 
 	const [ activity, setActivity ] = useState( null );
+	const [ health, setHealth ] = useState( healthCache );
 
 	useEffect( () => {
 		// Only the preview page is needed here; `total` is the full count for
@@ -65,7 +70,33 @@ export default function Home( { tier, clients, onNavigate, onConnect } ) {
 			);
 	}, [] );
 
+	useEffect( () => {
+		if ( healthCache ) {
+			return; // Already probed this session.
+		}
+		// Runs the loopback header probe once; the tile shows a skeleton until
+		// it lands, so Home never blocks on it.
+		api( 'self-check' )
+			.then( ( res ) => {
+				healthCache = { status: res.status || 'unknown' };
+				setHealth( healthCache );
+			} )
+			.catch( () => {
+				healthCache = { status: 'unknown' };
+				setHealth( healthCache );
+			} );
+	}, [] );
+
 	const level = levelFor( tier );
+	const healthOk = health && health.status === 'ok';
+	const healthProblem =
+		health && health.status !== 'ok' && health.status !== 'unknown';
+	let healthValue = '—';
+	if ( healthOk ) {
+		healthValue = __( 'Healthy', 'saddle' );
+	} else if ( healthProblem ) {
+		healthValue = __( 'Needs a fix', 'saddle' );
+	}
 
 	return (
 		<div className="saddle-home">
@@ -102,7 +133,41 @@ export default function Home( { tier, clients, onNavigate, onConnect } ) {
 					}
 					value={ activity ? activity.total : '—' }
 				/>
+				<StatCard
+					label={
+						<StatLabel
+							help={ __(
+								'Whether apps can reach your site. If your host strips the Authorization header, connections fail — fix it from the Connect tab.',
+								'saddle'
+							) }
+						>
+							{ __( 'Connection', 'saddle' ) }
+						</StatLabel>
+					}
+					value={ healthValue }
+				/>
 			</StatGrid>
+
+			{ /* A stripped Authorization header (or app passwords off) breaks
+			     every connection — surface it here with a path to the fix. */ }
+			{ healthProblem && (
+				<CalloutCard
+					tone="warning"
+					title={ __( 'Connections may not work', 'saddle' ) }
+					description={ __(
+						'Your server looks like it blocks the sign-in header apps need, or Application Passwords are turned off. Open Connect to check and fix it.',
+						'saddle'
+					) }
+					action={
+						<Button
+							variant="primary"
+							onClick={ () => onNavigate( 'connect' ) }
+						>
+							{ __( 'Check connection', 'saddle' ) }
+						</Button>
+					}
+				/>
+			) }
 
 			{ /* When no apps yet, make connecting the clear next step */ }
 			{ ! hasApps && (
