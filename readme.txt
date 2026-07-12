@@ -4,7 +4,7 @@ Tags: mcp, ai, application passwords, agents, automation
 Requires at least: 6.9
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 0.10.0
+Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -120,6 +120,16 @@ Your AI can now read and change your WordPress Settings pages — site title, ta
 Adds Skills (installable .md playbooks that teach your AI your conventions) and automatic recent-changes recall so a new session knows what changed last time. Fully backward compatible.
 
 == Changelog ==
+
+= 1.0.0 =
+* Saddle is production-ready. This release rounds out design and finishes a full security, reliability, and interface pass.
+* New: get-design-system — one command returns your site's whole design system (colors, fonts, sizes, spacing, layout) in a single shape, whether your site is a block theme or built with a page builder, so your AI builds with your real brand instead of inventing one.
+* New: bootstrap-design-system — on a fresh site with no design system yet, seed a coherent starter set (a neutral palette with one accent, a type scale, and an 8px spacing scale). It previews exactly what it will create and only applies after you confirm.
+* New: section recipes — list-section-recipes and get-section-recipe give your AI ready-to-build blueprints for the common page sections (hero, features, pricing, testimonials, call-to-action, FAQ), so a page starts from a sound structure instead of a blank canvas.
+* New: every AI session is now told what good design means in concrete numbers (type scale, line length, an 8px spacing system, one accent, and WCAG AA contrast), so results look intentional rather than generic.
+* Improved: the Permissions screen groups tools by category with a filter box, so the full tool list stays scannable; Memory now has its own tab; Home shows a connection-health tile; and the connect wizard adds one-step setup for Gemini CLI, VS Code, and Windsurf.
+* Improved: connection problems now read clearly — a revoked key and a host that strips the sign-in header are told apart, each with the right fix.
+* Hardened: the media-import guard now fails safe on hosts that can't resolve a name, and the permission checks behind every tool call are pinned by tests.
 
 = 0.9.0 =
 * New: verify-page — one scored report (0-100) over a page's SAVED state: structural problems, style settings the editor silently ignores, and design/accessibility violations, each at a fixable node address. Your AI builds, verifies, fixes what was flagged, and re-verifies — it ends on evidence, not on a write call saying "ok".
