@@ -443,9 +443,10 @@ class Saddle_MCP {
 		// Per the Abilities API contract, WP_Ability::execute() normalizes and
 		// validates input, runs the permission_callback, and returns WP_Error on
 		// denial or failure before invoking the execute_callback — so no separate
-		// permission pre-check is needed here. (Build Guide Step 1 calls for
-		// confirming this against the installed 6.9 core; the contract is
-		// documented, but verify on first boot).
+		// permission pre-check is needed here. Verified against WP 6.9 core
+		// (class-wp-ability.php: execute() calls check_permissions() first and
+		// short-circuits unless it returns true) and pinned by
+		// Saddle_MCP_Transport_Test::test_tools_call_enforces_tier_before_executing().
 		$outcome = $ability->execute( $arguments );
 
 		if ( is_wp_error( $outcome ) ) {
