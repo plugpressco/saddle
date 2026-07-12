@@ -225,6 +225,79 @@ class Saddle_Connection {
 	}
 
 	/**
+	 * Whether Basic credentials actually reached PHP on the current request.
+	 *
+	 * True when core surfaced them (`PHP_AUTH_USER`) or {@see self::recover_auth_header()}
+	 * recovered them, or when a raw `Basic` Authorization header is still readable.
+	 * A 401 with credentials present means they were rejected (revoked/wrong); a 401
+	 * with none present means they never arrived (stripped header).
+	 *
+	 * @return bool
+	 */
+	public static function request_carried_credentials() {
+		if ( ! empty( $_SERVER['PHP_AUTH_USER'] ) ) {
+			return true;
+		}
+		$header = self::authorization_header();
+		return '' !== $header && 0 === stripos( $header, 'basic ' );
+	}
+
+	/**
+	 * Whether the current request is aimed at Saddle's MCP endpoint.
+	 *
+	 * Read from the request URI because this runs at `rest_authentication_errors`,
+	 * before the REST route is resolved.
+	 *
+	 * @return bool
+	 */
+	private static function targets_mcp_endpoint() {
+		$uri = isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( (string) $_SERVER['REQUEST_URI'] ) ) : '';
+		if ( '' === $uri ) {
+			return false;
+		}
+		$path = Saddle_MCP::REST_NAMESPACE . Saddle_MCP::ROUTE; // e.g. saddle/v1/mcp.
+		return false !== strpos( $uri, $path ) || false !== strpos( rawurldecode( $uri ), $path );
+	}
+
+	/**
+	 * Relabel core's generic application-password 401 into a legible one when the
+	 * request targets Saddle's MCP endpoint and credentials were actually present.
+	 *
+	 * Core rejects a revoked/invalid Application Password at
+	 * `rest_authentication_errors` — before the route's permission_callback runs —
+	 * so {@see Saddle_MCP::authenticated()} never sees it. Without this, the owner
+	 * gets an opaque "invalid username/password" and can't tell a revoked key from
+	 * a header problem. Scoped to Saddle's own endpoint so no other REST auth error
+	 * is touched.
+	 *
+	 * @param WP_Error|null|true $errors Current authentication result.
+	 * @return WP_Error|null|true
+	 */
+	public static function explain_auth_error( $errors ) {
+		if ( ! is_wp_error( $errors ) ) {
+			return $errors;
+		}
+		if ( ! self::targets_mcp_endpoint() || ! self::request_carried_credentials() ) {
+			return $errors;
+		}
+
+		$data   = $errors->get_error_data();
+		$status = is_array( $data ) && isset( $data['status'] ) ? (int) $data['status'] : (int) $data;
+		if ( 401 !== $status && 403 !== $status ) {
+			return $errors;
+		}
+
+		return new WP_Error(
+			'saddle_credential_rejected',
+			__( 'Your sign-in key was rejected — it was most likely revoked or removed. Reconnect the app from Saddle to issue a fresh key.', 'saddle' ),
+			array(
+				'status' => 401,
+				'reason' => 'credential_rejected',
+			)
+		);
+	}
+
+	/**
 	 * Register the connection-health REST routes (admin diagnostics + a tiny
 	 * public probe used only by the loopback self-check).
 	 */

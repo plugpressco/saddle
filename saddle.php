@@ -88,6 +88,11 @@ final class Saddle {
 		add_filter( 'rest_request_before_callbacks', array( 'Saddle_Connection', 'scope_credentials' ), 10, 3 );
 		add_action( 'wp_authenticate_application_password_errors', array( 'Saddle_Connection', 'block_xmlrpc_credentials' ), 10, 3 );
 
+		// Make a bare 401 legible: a revoked/rejected key (reconnect) reads
+		// differently from a stripped Authorization header (host config). Late
+		// priority so core has already produced its auth result to relabel.
+		add_filter( 'rest_authentication_errors', array( 'Saddle_Connection', 'explain_auth_error' ), 20 );
+
 		// Always-on infrastructure (independent of the Abilities API).
 		// The preview serving path stays up even when minting isn't — an
 		// outstanding token must keep working for its full (short) life.
