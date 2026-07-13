@@ -64,6 +64,7 @@ require_once SADDLE_DIR . 'includes/class-saddle-context.php';
 require_once SADDLE_DIR . 'includes/class-saddle-skills.php';
 require_once SADDLE_DIR . 'includes/class-saddle-memory.php';
 require_once SADDLE_DIR . 'includes/class-saddle-log.php';
+require_once SADDLE_DIR . 'includes/class-saddle-unsplash.php';
 require_once SADDLE_DIR . 'includes/class-saddle-connection.php';
 require_once SADDLE_DIR . 'includes/class-saddle-integrations.php';
 require_once SADDLE_DIR . 'includes/class-saddle-mcp.php';
@@ -110,6 +111,7 @@ final class Saddle {
 		add_filter( 'saddle_system_context', array( 'Saddle_Memory', 'append_context' ) );
 		add_action( 'rest_api_init', array( 'Saddle_REST_Admin', 'register_routes' ) );
 		add_action( 'rest_api_init', array( 'Saddle_Connection', 'register_routes' ) );
+		Saddle_Unsplash::register_admin_hooks();
 		add_action( 'admin_menu', array( 'Saddle_Settings', 'register_menu' ) );
 		add_action( 'admin_enqueue_scripts', array( 'Saddle_Settings', 'enqueue_assets' ) );
 		add_action( Saddle_Approval::GC_HOOK, array( 'Saddle_Approval', 'gc' ) );
@@ -127,6 +129,7 @@ final class Saddle {
 			require_once SADDLE_DIR . 'includes/abilities/render.php';
 			require_once SADDLE_DIR . 'includes/abilities/verify.php';
 			require_once SADDLE_DIR . 'includes/abilities/memory.php';
+			require_once SADDLE_DIR . 'includes/abilities/unsplash.php';
 			add_action( 'wp_abilities_api_categories_init', 'saddle_register_ability_category' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_block_abilities' );
@@ -137,6 +140,7 @@ final class Saddle {
 			add_action( 'wp_abilities_api_init', 'saddle_register_render_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_verify_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_memory_abilities' );
+			add_action( 'wp_abilities_api_init', 'saddle_register_unsplash_abilities' );
 			// First-party integration wrappers run late (30) so the partner
 			// plugins' own abilities exist to discover.
 			add_action( 'wp_abilities_api_init', array( 'Saddle_Integrations', 'register_wrappers' ), 30 );

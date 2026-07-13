@@ -1,7 +1,7 @@
 /**
- * Home — the calm status screen. Answers, at a glance: what can the AI do right
- * now, what's connected, and what (if anything) it has done. Adapts when nothing
- * is set up yet.
+ * Dashboard — the calm status screen. Answers, at a glance: what can the AI do
+ * right now, what's connected, and what (if anything) it has done. Adapts when
+ * nothing is set up yet.
  */
 import { useState, useEffect } from '@wordpress/element';
 import {
@@ -17,27 +17,29 @@ import {
 	StatusDot,
 	StatCard,
 	StatGrid,
+	PageHeader,
+	HelpTip,
 } from '@plugpress/ui';
 import { __ } from '@wordpress/i18n';
 import { api, levelFor } from '../api';
 import { parseEntryDate, relativeWhen, shortLabel } from '../activity-format';
-import HelpTip from './HelpTip';
 
 // Stat label + inline "?" — the explanation rides a tooltip so the tile stays
-// a single clean number.
+// a single clean number (DS HelpTip: content via children, 14px icon).
 const StatLabel = ( { children, help } ) => (
 	<span className="saddle-stat__label">
 		{ children }
-		<HelpTip label={ help } />
+		<HelpTip>{ help }</HelpTip>
 	</span>
 );
 
-// How many recent entries the Home preview shows; the full record lives on the
-// Activity screen. Kept small so the fetch stays light.
+// How many recent entries the Dashboard preview shows; the full record lives on
+// the Activity screen. Kept small so the fetch stays light.
 const PREVIEW_COUNT = 6;
 
-// Session cache for the connection self-check so re-opening Home doesn't re-run
-// the loopback probe. Reset on full reload, which is the right granularity.
+// Session cache for the connection self-check so re-opening the Dashboard
+// doesn't re-run the loopback probe. Reset on full reload, which is the right
+// granularity.
 let healthCache = null;
 
 // Compact tile labels for the access level — the shared LEVELS titles
@@ -48,7 +50,7 @@ const LEVEL_STAT_LABEL = {
 	admin: __( 'Admin', 'saddle' ),
 };
 
-export default function Home( { tier, clients, onNavigate, onConnect } ) {
+export default function Dashboard( { tier, clients, onNavigate, onConnect } ) {
 	const hasApps = clients.length > 0;
 
 	const [ activity, setActivity ] = useState( null );
@@ -100,6 +102,14 @@ export default function Home( { tier, clients, onNavigate, onConnect } ) {
 
 	return (
 		<div className="saddle-home">
+			<PageHeader
+				title={ __( 'Dashboard', 'saddle' ) }
+				description={ __(
+					'What your AI can do right now, what’s connected, and what it has done.',
+					'saddle'
+				) }
+			/>
+
 			{ /* At-a-glance tiles: what's connected, what power it has, and how
 			     much it has done. Values come from data already loaded. */ }
 			<StatGrid className="saddle-stats" min={ 180 }>
@@ -207,7 +217,7 @@ export default function Home( { tier, clients, onNavigate, onConnect } ) {
 								variant="link"
 								onClick={ () => onNavigate( 'connect' ) }
 							>
-								{ __( 'Manage apps', 'saddle' ) }
+								{ __( 'Manage connections', 'saddle' ) }
 							</Button>
 						</CardContent>
 					</Card>

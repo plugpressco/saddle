@@ -216,29 +216,43 @@ class Saddle_MCP {
 	 * @return WP_REST_Response
 	 */
 	public static function handle( WP_REST_Request $request ) {
-		$body = $request->get_json_params();
+		// Stray output during dispatch — a PHP warning from any plugin, an
+		// echo in a hook — would prepend to the JSON-RPC body and corrupt the
+		// response. Buffer everything the handlers print and discard it; the
+		// response object below is the only thing the client may receive.
+		$ob_level = ob_get_level();
+		ob_start();
+		try {
+			$body = $request->get_json_params();
 
-		if ( ! is_array( $body ) || array() === $body ) {
-			return new WP_REST_Response( self::error_envelope( null, -32700, __( 'Parse error: request body is not valid JSON-RPC.', 'saddle' ) ), 200 );
-		}
-
-		// A JSON array (sequential integer keys) is a batch of requests.
-		$is_batch = array_keys( $body ) === range( 0, count( $body ) - 1 );
-
-		if ( $is_batch ) {
-			$responses = array();
-			foreach ( $body as $single ) {
-				$result = is_array( $single ) ? self::dispatch( $single ) : self::error_envelope( null, -32600, __( 'Invalid request.', 'saddle' ) );
-				if ( null !== $result ) {
-					$responses[] = $result;
-				}
+			if ( ! is_array( $body ) || array() === $body ) {
+				return new WP_REST_Response( self::error_envelope( null, -32700, __( 'Parse error: request body is not valid JSON-RPC.', 'saddle' ) ), 200 );
 			}
-			// All-notification batches yield no responses; reply with 204-equivalent empty body.
-			return new WP_REST_Response( empty( $responses ) ? null : $responses, 200 );
-		}
 
-		$response = self::dispatch( $body );
-		return new WP_REST_Response( $response, 200 );
+			// A JSON array (sequential integer keys) is a batch of requests.
+			$is_batch = array_keys( $body ) === range( 0, count( $body ) - 1 );
+
+			if ( $is_batch ) {
+				$responses = array();
+				foreach ( $body as $single ) {
+					$result = is_array( $single ) ? self::dispatch( $single ) : self::error_envelope( null, -32600, __( 'Invalid request.', 'saddle' ) );
+					if ( null !== $result ) {
+						$responses[] = $result;
+					}
+				}
+				// All-notification batches yield no responses; reply with 204-equivalent empty body.
+				return new WP_REST_Response( empty( $responses ) ? null : $responses, 200 );
+			}
+
+			$response = self::dispatch( $body );
+			return new WP_REST_Response( $response, 200 );
+		} finally {
+			// Handlers may open/close buffers of their own — unwind exactly
+			// back to where this method started, never past it.
+			while ( ob_get_level() > $ob_level ) {
+				ob_end_clean();
+			}
+		}
 	}
 
 	/**

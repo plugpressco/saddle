@@ -13,6 +13,7 @@ import {
 	FilterTabs,
 	EmptyState,
 	Badge,
+	PageHeader,
 } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { api } from '../api';
@@ -77,15 +78,13 @@ export default function Activity() {
 
 	return (
 		<div className="saddle-activity">
-			<h2 className="saddle-activity__title">
-				{ __( 'Activity', 'saddle' ) }
-			</h2>
-			<p className="saddle-activity__lead">
-				{ __(
+			<PageHeader
+				title={ __( 'Activity', 'saddle' ) }
+				description={ __(
 					'Everything your connected apps have changed through Saddle — and every attempt that was blocked. Reading is never logged; only changes are.',
 					'saddle'
 				) }
-			</p>
+			/>
 
 			<div className="saddle-activity__filters">
 				<FilterTabs

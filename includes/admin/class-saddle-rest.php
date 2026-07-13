@@ -328,6 +328,12 @@ class Saddle_REST_Admin {
 					'current'  => Saddle_Capabilities::current_domain(),
 					'recorded' => Saddle_Capabilities::recorded_tier_domain(),
 				),
+				// The key itself never leaves the server — only whether one is
+				// set, plus a last-4 hint so the owner can recognize it.
+				'unsplash'       => array(
+					'configured' => Saddle_Unsplash::is_configured(),
+					'key_hint'   => Saddle_Unsplash::key_hint(),
+				),
 			),
 			200
 		);
@@ -368,6 +374,15 @@ class Saddle_REST_Admin {
 
 		if ( array_key_exists( 'paused', $params ) ) {
 			Saddle_Capabilities::set_paused( (bool) $request->get_param( 'paused' ) );
+		}
+
+		// Key absent from the body ⇒ untouched; '' or null ⇒ cleared;
+		// non-empty ⇒ validated and saved.
+		if ( array_key_exists( 'unsplash_access_key', $params ) ) {
+			$saved = Saddle_Unsplash::set_key( (string) $request->get_param( 'unsplash_access_key' ) );
+			if ( is_wp_error( $saved ) ) {
+				return $saved;
+			}
 		}
 
 		return self::get_settings();
@@ -575,15 +590,6 @@ class Saddle_REST_Admin {
 	}
 
 	/**
-	 * GET /capabilities — the introspectable catalog powering the Capability Map.
-	 *
-	 * Returns every `saddle/` ability with its label, description, required tier,
-	 * and behavioral flags, grouped into a "lane" (look / change / remove) so the
-	 * UI can show, per tier, exactly what agents can and cannot do.
-	 *
-	 * @return WP_REST_Response
-	 */
-	/**
 	 * Group an ability under a human-readable category so the Permissions UI can
 	 * present ~55 free (plus any add-on) abilities as scannable groups instead of
 	 * one flat wall of chips. First matching rule wins; add-ons refine their own
@@ -599,7 +605,7 @@ class Saddle_REST_Admin {
 			// label => substrings (first hit wins).
 			'Design system'   => array( 'design-system', 'design-tokens', 'bootstrap-design' ),
 			'Divi'            => array( 'divi-' ),
-			'Integrations'    => array( 'waggle-', 'knovia-' ),
+			'Integrations'    => array( 'waggle-', 'knovia-', 'unsplash-' ),
 			'Memory & skills' => array( 'remember', 'recall', 'forget', 'skill', 'instructions' ),
 			'Blocks & layout' => array( 'block', 'render-node', 'verify-page', 'lint-page', 'preview', 'recipe' ),
 			'Users'           => array( 'user' ),
@@ -627,6 +633,15 @@ class Saddle_REST_Admin {
 		return (string) apply_filters( 'saddle_ability_category', $category, $short, $name );
 	}
 
+	/**
+	 * GET /capabilities — the introspectable catalog powering the Capability Map.
+	 *
+	 * Returns every `saddle/` ability with its label, description, required tier,
+	 * and behavioral flags, grouped into a "lane" (look / change / remove) so the
+	 * UI can show, per tier, exactly what agents can and cannot do.
+	 *
+	 * @return WP_REST_Response
+	 */
 	public static function get_capabilities() {
 		$catalog   = array();
 		$abilities = function_exists( 'wp_get_abilities' ) ? wp_get_abilities() : array();

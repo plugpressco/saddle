@@ -72,9 +72,9 @@ includes/
   class-saddle-integrations.php — free first-party integration engine (wraps waggle/* as saddle/waggle-*,
                                  full safety model applied on top; saddle_integrations filter)
   class-saddle-mcp.php        — MCP transport on the official WP\MCP Adapter, JSON-RPC fallback
-  abilities/                  — core-content (23), blocks (11), site (9, admin-tier settings), context (3),
-                                 memory (3), render (2), users (2), lint (1), verify (1) — 55 free abilities
-                                 as of 0.10.0 (the Permissions UI is the authoritative live list)
+  abilities/                  — core-content (23), blocks (15), site (9, admin-tier settings), context (3),
+                                 memory (3), unsplash (2), render (2), users (2), lint (1), verify (1) — 61 free
+                                 abilities as of 1.0.0 (the Permissions UI is the authoritative live list)
   class-saddle-skills.php     — skills store (saddle_skill CPT), owner-installed .md playbooks
   class-saddle-memory.php     — agent memory store (saddle_memory CPT); trust split — agent entries are
                                  recall-only until owner-pinned, autoinject defaults OFF

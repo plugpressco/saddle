@@ -60,6 +60,7 @@ There are two outbound behaviors, both initiated by you and both to hosts you ch
 
 * **`upload-media` — fetching a URL you or your agent provide.** When you ask an agent to add a file to your media library by URL, Saddle uses WordPress's own HTTP API to download that specific URL to your server. It contacts only the host in the supplied URL. This is the same mechanism WordPress core uses for "insert from URL."
 * **Endpoint self-check — a request to your own site.** To confirm the MCP endpoint is reachable, Saddle may make a single request to your site's own REST URL. This contacts only your site; no data is sent off-site.
+* **Unsplash — only if you add your own key.** If you configure an Unsplash Access Key on the Integrations screen, the `unsplash-search` and `unsplash-import` tools talk directly from your site to the Unsplash API (`api.unsplash.com` / `images.unsplash.com`) using that key, sending only the search keywords or photo id. No key, no requests — and nothing is ever routed through a server we operate. See Unsplash's terms at https://unsplash.com/api-terms and privacy policy at https://unsplash.com/privacy.
 
 == Privacy ==
 
@@ -123,6 +124,8 @@ Adds Skills (installable .md playbooks that teach your AI your conventions) and 
 
 = 1.0.0 =
 * Saddle is production-ready. This release rounds out design and finishes a full security, reliability, and interface pass.
+* New: Unsplash stock photos — your AI can search Unsplash's free photo library and import photos straight into your media library (unsplash-search / unsplash-import). You add your own free Unsplash key on the new Integrations screen; searches go directly from your site to Unsplash — never through anyone else's server — and nothing happens until you add a key. Imports automatically carry alt text and the photographer credit Unsplash requires, a photo you already imported is reused instead of downloaded twice, and both the Media screen and list-media can filter to Unsplash imports.
+* New: the dashboard moved to a sidebar layout — screens are grouped (Your AI: Permissions, Guidance, Memory · Connect: Apps, Integrations · Monitor: Activity), your safety status is always visible at the bottom of the rail, and a new Settings screen holds the master pause switch plus read-only connection facts.
 * New: get-design-system — one command returns your site's whole design system (colors, fonts, sizes, spacing, layout) in a single shape, whether your site is a block theme or built with a page builder, so your AI builds with your real brand instead of inventing one.
 * New: bootstrap-design-system — on a fresh site with no design system yet, seed a coherent starter set (a neutral palette with one accent, a type scale, and an 8px spacing scale). It previews exactly what it will create and only applies after you confirm.
 * New: section recipes — list-section-recipes and get-section-recipe give your AI ready-to-build blueprints for the common page sections (hero, features, pricing, testimonials, call-to-action, FAQ), so a page starts from a sound structure instead of a blank canvas.

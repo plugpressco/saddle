@@ -26,6 +26,7 @@ $saddle_options = array(
 	'saddle_memory_autoinject_agent', // Saddle_Memory::OPTION_AUTOINJECT.
 	'saddle_memory_core_budget',      // Saddle_Memory::OPTION_CORE_BUDGET.
 	'saddle_preview_secret',          // Saddle_Preview::OPTION.
+	'saddle_unsplash_access_key',     // Saddle_Unsplash::OPTION.
 );
 foreach ( $saddle_options as $saddle_option ) {
 	delete_option( $saddle_option );

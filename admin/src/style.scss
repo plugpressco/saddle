@@ -93,8 +93,8 @@ body.toplevel_page_saddle {
 	--s-dur: 160ms;
 
 	box-sizing: border-box;
-	// Full-bleed wrapper: the header spans edge-to-edge; the width constraint
-	// lives on .saddle-top__inner and .saddle-content instead.
+	// The DS AppShell owns the layout: sticky rail + centered AppContent
+	// column. This wrapper only carries tokens and typography.
 	color: var(--s-fg);
 	-webkit-font-smoothing: antialiased;
 
@@ -104,12 +104,18 @@ body.toplevel_page_saddle {
 		padding: 120px 0;
 	}
 
-	// Onboarding is a separate return branch (no .saddle-content) — keep it a
-	// centered narrow column.
+	// Onboarding is a separate return branch (no shell) — same 960 column as
+	// the app pages so finishing setup doesn't jump widths; the step content
+	// keeps a 640px centered reading measure (mirrors .saddle-wizard__step).
 	&--setup {
-		max-width: 620px;
+		max-width: 960px;
 		margin: 0 auto;
 		padding: 28px 24px 72px;
+
+		.saddle-setup__body {
+			max-width: 640px;
+			margin-inline: auto;
+		}
 	}
 
 	button:focus-visible,
@@ -161,131 +167,137 @@ body.toplevel_page_saddle {
 	}
 }
 
-/* ---------- Top bar + nav ---------- */
+/* ---------- Shell: DS AppShell sidebar variant ---------- */
+// The rail, groups, footer pinning, and the <782px icon-rail collapse are all
+// design-system behavior (.pp-shell / .pp-nav / .pp-content). Saddle only adds
+// its accent-tinted active row, the safety pill, and the content rhythm.
 
-// Full-bleed header: the bar background + hairline span the whole content area;
-// its contents stay aligned to the centered column via __inner. Sticky under the
-// wp-admin bar (the CSS var tracks the 32→46px change at ≤782px automatically).
-.saddle-top {
+// Refined active state: the DS already tints the icon accent; add a calm
+// saddle-tinted chip so the active row reads at a glance (Waggle parity).
+.saddle-app .pp-nav__item[aria-current='page'] {
+	background: color-mix(in srgb, var(--pp-accent) 12%, var(--pp-surface));
+}
+
+// Slim sticky context bar above the content column. pp-shell__main is not a
+// scroll container (the document scrolls), so the bar sticks to the viewport
+// below the wp-admin bar — the same offset the DS rail uses. Negative margins
+// cancel pp-shell__main's padding so the bar runs edge-to-edge with a
+// full-width hairline.
+.saddle-topbar {
 	position: sticky;
-	top: var( --wp-admin--admin-bar--height, 32px );
-	z-index: 20;
-	background: var(--s-bg);
+	top: var(--wp-admin--admin-bar--height, 32px);
+	z-index: var(--pp-z-sticky);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	height: 48px;
+	margin: calc(-1 * var(--pp-space-6)) calc(-1 * var(--pp-space-6))
+		var(--pp-space-5);
+	padding: 0 var(--pp-space-6);
+	background: var(--pp-surface-glass);
+	-webkit-backdrop-filter: saturate(180%) blur(8px);
+	backdrop-filter: saturate(180%) blur(8px);
 	border-bottom: 1px solid var(--s-border);
 
-	&__inner {
-		max-width: 1008px;
-		margin: 0 auto;
-		padding: 0 24px;
-	}
-
-	&__row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 16px;
-		padding: 14px 0 10px;
-	}
-
-	&__brand {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-	}
-
-	&__version {
-		font-size: 12px;
-		font-weight: 550;
-		color: var(--s-fg-subtle);
-		background: var(--s-surface-3);
-		padding: 2px 8px;
-		border-radius: var(--s-radius-pill);
-		font-variant-numeric: tabular-nums;
-	}
-
-	&__sep {
-		width: 1px;
-		height: 20px;
-		background: var(--s-border);
-		flex: 0 0 auto;
-		margin: 0 2px;
-	}
-
-	&__mark {
-		width: 34px;
-		height: 34px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: var(--s-action);
-		color: var(--s-on-action);
-		border-radius: 9px;
-		font-size: 17px;
-		font-weight: 650;
-		letter-spacing: -0.03em;
-	}
-
-	&__name {
-		font-size: 18px;
-		font-weight: 640;
-		letter-spacing: -0.02em;
-	}
-
-	&__right {
+	&__context {
 		display: flex;
 		align-items: center;
 		gap: 8px;
-	}
-
-	&__status {
-		display: inline-flex;
-		align-items: center;
-		gap: 7px;
+		min-width: 0;
 		font-size: 13px;
-		font-weight: 550;
-		padding: 5px 12px 5px 10px;
-		border-radius: var(--s-radius-pill);
-		background: var(--s-surface-3);
-		color: var(--s-fg-muted);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	&__group,
+	&__sep {
+		color: var(--s-fg-subtle);
+	}
+	&__title {
+		font-weight: 600;
+		color: var(--s-fg);
+	}
+}
 
-		&--safe {
-			background: var(--s-safe-bg);
-			color: var(--s-safe);
-		}
-		&--active {
-			background: var(--s-active-bg);
-			color: var(--s-active);
-		}
-		&--paused {
-			background: var(--s-surface-3);
-			color: var(--s-fg-subtle);
-		}
+// The safety-status pill on the topbar's right — the tone signal the old
+// rail pill carried, now a button that jumps to Settings.
+.saddle-status-pill {
+	appearance: none;
+	border: none;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	flex: 0 0 auto;
+	gap: 7px;
+	padding: 5px 12px;
+	border-radius: var(--s-radius-pill);
+	font: inherit;
+	font-size: 12px;
+	font-weight: 550;
+	background: var(--s-surface-3);
+	color: var(--s-fg-muted);
+
+	&--safe {
+		background: var(--s-safe-bg);
+		color: var(--s-safe);
+	}
+	&--active {
+		background: var(--s-active-bg);
+		color: var(--s-active);
+	}
+	&--paused {
+		background: var(--s-surface-3);
+		color: var(--s-fg-subtle);
+	}
+}
+
+// The version stamp under the rail footer links. AppNav 0.9.0 has no meta
+// slot, so it lives in the footer node; hidden on the <782px icon rail.
+.saddle-rail-version {
+	display: block;
+	padding: 6px 10px 2px;
+	font-size: 11px;
+	color: var(--s-fg-subtle);
+}
+
+@media (max-width: 782px) {
+	.saddle-topbar {
+		padding: 0 var(--pp-space-4);
 	}
 
+	.saddle-rail-version {
+		display: none;
+	}
 }
 
-// The section nav rides the design system's Tabs. Drop its own hairline so it
-// doesn't double the header bar's border-bottom; nudge down 1px so the active
-// tab's accent underline sits on the bar hairline.
-.saddle-nav {
-	border-bottom: none;
-	margin-bottom: -1px;
+@media (max-width: 600px) {
+	.saddle-topbar__group,
+	.saddle-topbar__sep {
+		display: none;
+	}
 }
 
-// The centered content column beneath the full-bleed header.
-.saddle-content {
-	max-width: 1008px;
-	margin: 0 auto;
-	padding: 24px 24px 72px;
+// The content column stacks its direct children (notices, the page pane) with
+// one rhythm. Pages keep their own internal spacing — they predate the shell.
+.saddle-app .pp-content {
+	display: grid;
+	gap: var(--pp-space-5);
+	align-content: start;
+}
+
+// New pages built for the shell stack their cards on the same rhythm.
+.saddle-integrations,
+.saddle-settings,
+.saddle-memory {
+	display: grid;
+	gap: var(--pp-space-5);
+	align-content: start;
 }
 
 /* Section switches ease in rather than snapping. */
 .saddle-tabpane {
 	animation: saddle-step-in 0.24s var(--s-ease) both;
-}
-
-.saddle-panel {
-	padding-top: 0;
 }
 
 /* ---------- Onboarding ---------- */
@@ -455,19 +467,6 @@ body.toplevel_page_saddle {
 
 /* ---------- Permissions ---------- */
 
-.saddle-perm__title {
-	margin: 0 0 4px;
-	font-size: 20px;
-	font-weight: 640;
-	letter-spacing: -0.02em;
-}
-
-.saddle-perm__lead {
-	margin: 0 0 20px;
-	color: var(--s-fg-muted);
-	max-width: 62ch;
-}
-
 // Disclosures ("See everything…", "Connection details & health") ride the
 // design system's Collapsible; give them breathing room above.
 .saddle-perm__all,
@@ -485,19 +484,6 @@ body.toplevel_page_saddle {
 }
 
 /* ---------- Guidance ---------- */
-
-.saddle-guide__title {
-	margin: 0 0 4px;
-	font-size: 20px;
-	font-weight: 640;
-	letter-spacing: -0.02em;
-}
-
-.saddle-guide__lead {
-	margin: 0 0 24px;
-	color: var(--s-fg-muted);
-	max-width: 64ch;
-}
 
 // Each guidance section is a DS Card; only the rhythm between them is ours.
 .saddle-guide__block {
@@ -554,6 +540,37 @@ body.toplevel_page_saddle {
 			color: var(--s-fg-muted);
 		}
 	}
+
+	// Bare variant for drawer prose — typography only, no panel chrome.
+	&--bare {
+		border: none;
+		background: none;
+		padding: 0;
+		max-height: none;
+		overflow: visible;
+	}
+}
+
+/* ---------- Memory ---------- */
+
+// Compose column — form reading measure, never card-wide at 960.
+.saddle-memory__compose {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	align-items: flex-start;
+	width: 100%;
+	max-width: 560px;
+
+	.pp-field {
+		width: 100%;
+	}
+}
+
+.saddle-memory__empty {
+	margin: 0;
+	font-size: 13px;
+	color: var(--s-fg-subtle);
 }
 
 .saddle-guide__rawtoggle {
@@ -1211,4 +1228,48 @@ body.toplevel_page_saddle {
 	flex-wrap: wrap;
 	gap: 12px;
 	margin-top: 8px;
+}
+
+/* Unsplash key card (Integrations tab) — entry form or masked status row.
+   Spacing comes from the page's grid rhythm. */
+.saddle-unsplash {
+	&__hint {
+		margin: 8px 0 12px;
+		font-size: 12px;
+		color: var(--s-fg-muted);
+	}
+
+	&__actions {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	&__configured {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		flex-wrap: wrap;
+		gap: 8px;
+
+		span {
+			font-size: 13px;
+			color: var(--s-fg);
+		}
+	}
+}
+
+/* Integrations page — partner-detection hint under the rows. */
+.saddle-integrations__hint {
+	margin: 12px 0 0;
+	font-size: 12px;
+	color: var(--s-fg-muted);
+}
+
+/* Settings page — About card's link row. */
+.saddle-settings__links {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 8px;
 }

@@ -41,6 +41,7 @@ export default function Apps( {
 	loading,
 	onConnect,
 	onClientsChanged,
+	onClientRemoved,
 } ) {
 	const confirm = useConfirm();
 	const [ showAdvanced, setShowAdvanced ] = useState( false );
@@ -66,6 +67,11 @@ export default function Apps( {
 		}
 		api( `clients/${ c.uuid }`, { method: 'DELETE' } )
 			.then( () => {
+				// Optimistic: the row disappears immediately on DELETE
+				// success; the refetch below only reconciles with the server.
+				if ( onClientRemoved ) {
+					onClientRemoved( c.uuid );
+				}
 				toast.success(
 					__(
 						'Disconnected. That app’s sign-in no longer works.',
@@ -180,18 +186,14 @@ export default function Apps( {
 							key={ c.uuid }
 							icon={
 								<AppLogo
-									app={ appKeyFromLabel(
-										c.label || c.name
-									) }
+									app={ appKeyFromLabel( c.label || c.name ) }
 								/>
 							}
 							title={
 								<>
 									<StatusDot
 										tone={
-											c.last_used
-												? 'success'
-												: 'neutral'
+											c.last_used ? 'success' : 'neutral'
 										}
 									/>{ ' ' }
 									{ c.label || c.name }

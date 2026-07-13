@@ -6,7 +6,14 @@
  * what's included — invisible for everyone else. Nothing saves until you apply.
  */
 import { useState, useMemo } from '@wordpress/element';
-import { CardRadioGroup, Collapsible, ApplyBar, toast } from '@plugpress/ui';
+import {
+	CardRadioGroup,
+	Collapsible,
+	ApplyBar,
+	toast,
+	PageHeader,
+	Tooltip,
+} from '@plugpress/ui';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { api, LEVELS, levelKey, tierUnlocks } from '../api';
 import { LevelIcon } from './icons';
@@ -172,15 +179,13 @@ export default function Permissions( {
 
 	return (
 		<div className="saddle-perm">
-			<h2 className="saddle-perm__title">
-				{ __( 'What your AI can do', 'saddle' ) }
-			</h2>
-			<p className="saddle-perm__lead">
-				{ __(
+			<PageHeader
+				title={ __( 'Permissions', 'saddle' ) }
+				description={ __(
 					'Pick how much your connected apps are allowed to do. You can change this whenever you like.',
 					'saddle'
 				) }
-			</p>
+			/>
 
 			<CardRadioGroup
 				aria-label={ __( 'What your AI can do', 'saddle' ) }
@@ -282,50 +287,55 @@ export default function Permissions( {
 														);
 													return (
 														<li key={ c.name }>
-															<button
-																type="button"
-																className={ `saddle-chip${
-																	on
-																		? ' is-on'
-																		: ' is-off'
-																}${
-																	disabled
-																		? ' is-disabled'
-																		: ''
-																}` }
-																aria-pressed={
-																	! disabled
-																}
-																title={
+															<Tooltip
+																content={
 																	c.description
 																}
-																onClick={ () =>
-																	toggleAbility(
-																		c.short
-																	)
-																}
 															>
-																<span className="saddle-chip__label">
-																	{ c.label }
-																</span>
-																{ disabled ? (
-																	<span className="saddle-chip__off">
-																		{ __(
-																			'off',
-																			'saddle'
-																		) }
+																<button
+																	type="button"
+																	className={ `saddle-chip${
+																		on
+																			? ' is-on'
+																			: ' is-off'
+																	}${
+																		disabled
+																			? ' is-disabled'
+																			: ''
+																	}` }
+																	aria-pressed={
+																		! disabled
+																	}
+																	onClick={ () =>
+																		toggleAbility(
+																			c.short
+																		)
+																	}
+																>
+																	<span className="saddle-chip__label">
+																		{
+																			c.label
+																		}
 																	</span>
-																) : (
-																	c.destructive && (
-																		<span className="saddle-chip__shield">
+																	{ disabled ? (
+																		<span className="saddle-chip__off">
 																			{ __(
-																				'asks first',
+																				'off',
 																				'saddle'
 																			) }
 																		</span>
-																	)
-																) }
-															</button>
+																	) : (
+																		c.destructive && (
+																			<span className="saddle-chip__shield">
+																				{ __(
+																					'asks first',
+																					'saddle'
+																				) }
+																			</span>
+																		)
+																	) }
+																</button>
+															</Tooltip>
 														</li>
 													);
 												} ) }

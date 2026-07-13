@@ -320,7 +320,7 @@ class Saddle_Site_Abilities {
 		$status = isset( $input['status'] ) ? (string) $input['status'] : 'all';
 
 		self::load_plugin_api();
-		$all     = get_plugins();
+		$all     = Saddle_Context::get_plugins_quietly();
 		$network = is_multisite() ? (array) get_site_option( 'active_sitewide_plugins', array() ) : array();
 
 		$plugins = array();
@@ -883,7 +883,7 @@ class Saddle_Site_Abilities {
 		}
 
 		self::load_plugin_api();
-		$all = get_plugins();
+		$all = Saddle_Context::get_plugins_quietly();
 
 		if ( isset( $all[ $id ] ) ) {
 			return $id;

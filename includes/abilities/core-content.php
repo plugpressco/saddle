@@ -315,7 +315,7 @@ function saddle_register_abilities() {
 		'saddle/list-media',
 		array(
 			'label'               => __( 'List media', 'saddle' ),
-			'description'         => __( 'Lists media library items as summaries (id, title, mime type, URL, date, attached post). Read-only. Supports filtering by mime type and parent, plus pagination.', 'saddle' ),
+			'description'         => __( 'Lists media library items as summaries (id, title, mime type, URL, date, attached post). Read-only. Supports filtering by mime type, parent, and source ("unsplash" lists everything imported from Unsplash, with the total count), plus pagination.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -332,6 +332,11 @@ function saddle_register_abilities() {
 					'parent'    => array(
 						'type'        => 'integer',
 						'description' => __( 'Filter by the post the media is attached to.', 'saddle' ),
+					),
+					'source'    => array(
+						'type'        => 'string',
+						'enum'        => array( 'unsplash' ),
+						'description' => __( 'Only media imported from this source. "unsplash" answers what was downloaded from Unsplash and how many.', 'saddle' ),
 					),
 					'per_page'  => saddle_per_page_schema(),
 					'page'      => saddle_page_schema(),
@@ -1231,6 +1236,14 @@ class Saddle_Abilities {
 		if ( ! empty( $input['parent'] ) ) {
 			$args['post_parent'] = (int) $input['parent'];
 		}
+		if ( isset( $input['source'] ) && 'unsplash' === $input['source'] ) {
+			$args['meta_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Bounded, paginated lookup on a Saddle-owned key.
+				array(
+					'key'     => Saddle_Unsplash::META_ID,
+					'compare' => 'EXISTS',
+				),
+			);
+		}
 
 		$query = new WP_Query( $args );
 		return self::collection( $query, array( __CLASS__, 'media_summary' ) );
@@ -1269,27 +1282,21 @@ class Saddle_Abilities {
 	}
 
 	/**
-	 * Download a URL into the media library. The only outbound fetch in Saddle.
+	 * Fetch a remote file and sideload it into the media library. Shared by
+	 * upload-media and unsplash-import: URL validation (including the SSRF
+	 * guard), the size cap, and the temp-file lifecycle live here exactly once.
 	 *
-	 * @param mixed $input Upload fields.
-	 * @return array|WP_Error
+	 * @param string $url      Remote file URL.
+	 * @param string $filename Explicit filename; '' derives one from the URL
+	 *                         path (Unsplash-style extensionless URLs need the
+	 *                         explicit name or wp_check_filetype rejects them).
+	 * @param int    $post_id  Post to attach to, or 0.
+	 * @return int|WP_Error Attachment ID.
 	 */
-	public static function upload_media( $input = null ) {
-		$input = self::args( $input );
-
-		if ( ! isset( $input['source_url'] ) || ! is_string( $input['source_url'] ) || '' === trim( $input['source_url'] ) ) {
-			return new WP_Error( 'saddle_missing_source_url', __( 'A "source_url" is required.', 'saddle' ), array( 'status' => 400 ) );
-		}
-
-		$url = esc_url_raw( trim( $input['source_url'] ) );
+	public static function sideload_url_to_library( $url, $filename = '', $post_id = 0 ) {
+		$url = esc_url_raw( (string) $url );
 		if ( ! wp_http_validate_url( $url ) || ! self::source_url_is_safe( $url ) ) {
 			return new WP_Error( 'saddle_invalid_source_url', __( 'The "source_url" is not a valid, fetchable URL, or it resolves to a disallowed internal address. If the host is external but cannot be resolved on this server, the site owner can allow it via the "saddle_source_url_is_safe" filter.', 'saddle' ), array( 'status' => 400 ) );
-		}
-
-		// If attaching to a post, require permission to edit that post.
-		$post_id = isset( $input['post_id'] ) ? (int) $input['post_id'] : 0;
-		if ( $post_id > 0 && ! current_user_can( 'edit_post', $post_id ) ) {
-			return self::forbidden( __( 'You do not have permission to attach media to that item.', 'saddle' ) );
 		}
 
 		require_once ABSPATH . 'wp-admin/includes/file.php';
@@ -1317,10 +1324,7 @@ class Saddle_Abilities {
 			);
 		}
 
-		$filename = '';
-		if ( ! empty( $input['filename'] ) && is_string( $input['filename'] ) ) {
-			$filename = sanitize_file_name( $input['filename'] );
-		}
+		$filename = sanitize_file_name( (string) $filename );
 		if ( '' === $filename ) {
 			$path     = wp_parse_url( $url, PHP_URL_PATH );
 			$filename = $path ? sanitize_file_name( basename( $path ) ) : 'saddle-upload';
@@ -1338,6 +1342,38 @@ class Saddle_Abilities {
 				wp_delete_file( $tmp );
 			}
 			return new WP_Error( 'saddle_sideload_failed', $attachment_id->get_error_message(), array( 'status' => 500 ) );
+		}
+
+		return (int) $attachment_id;
+	}
+
+	/**
+	 * Download a URL into the media library.
+	 *
+	 * @param mixed $input Upload fields.
+	 * @return array|WP_Error
+	 */
+	public static function upload_media( $input = null ) {
+		$input = self::args( $input );
+
+		if ( ! isset( $input['source_url'] ) || ! is_string( $input['source_url'] ) || '' === trim( $input['source_url'] ) ) {
+			return new WP_Error( 'saddle_missing_source_url', __( 'A "source_url" is required.', 'saddle' ), array( 'status' => 400 ) );
+		}
+
+		// If attaching to a post, require permission to edit that post.
+		$post_id = isset( $input['post_id'] ) ? (int) $input['post_id'] : 0;
+		if ( $post_id > 0 && ! current_user_can( 'edit_post', $post_id ) ) {
+			return self::forbidden( __( 'You do not have permission to attach media to that item.', 'saddle' ) );
+		}
+
+		$filename = '';
+		if ( ! empty( $input['filename'] ) && is_string( $input['filename'] ) ) {
+			$filename = sanitize_file_name( $input['filename'] );
+		}
+
+		$attachment_id = self::sideload_url_to_library( trim( $input['source_url'] ), $filename, $post_id );
+		if ( is_wp_error( $attachment_id ) ) {
+			return $attachment_id;
 		}
 
 		// Apply optional metadata.

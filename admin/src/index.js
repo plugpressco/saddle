@@ -7,7 +7,10 @@ import App from './App';
 
 // PlugPress design system: shared tokens + components, then Saddle's monochrome
 // accent, then Saddle's own styles (which now alias the --pp-* tokens).
+// The resolver can't follow the package `exports` map for CSS; webpack can.
+// eslint-disable-next-line import/no-unresolved
 import '@plugpress/ui/ui.css';
+// eslint-disable-next-line import/no-unresolved
 import '@plugpress/ui/tokens/accents/saddle.css';
 import './style.scss';
 

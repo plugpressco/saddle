@@ -26,18 +26,19 @@ import {
 	Drawer,
 	useConfirm,
 	toast,
+	PageHeader,
+	HelpTip,
 } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { api } from '../api';
-import HelpTip from './HelpTip';
-
 // A card title with an optional "?" help affordance beside it — keeps the long
-// explanation off the page while staying one hover/tap away.
+// explanation off the page while staying one hover/tap away. Rides the DS
+// HelpTip (content via children; 14px icon).
 function Heading( { children, help } ) {
 	return (
 		<span className="saddle-guide__heading">
 			{ children }
-			{ help && <HelpTip label={ help } /> }
+			{ help && <HelpTip>{ help }</HelpTip> }
 		</span>
 	);
 }
@@ -203,15 +204,13 @@ export default function Guidance() {
 		<div className="saddle-guide">
 			{ loadError && <Notice tone="danger">{ loadError }</Notice> }
 
-			<h2 className="saddle-guide__title">
-				{ __( 'How your AI should behave', 'saddle' ) }
-			</h2>
-			<p className="saddle-guide__lead">
-				{ __(
+			<PageHeader
+				title={ __( 'Guidance', 'saddle' ) }
+				description={ __(
 					'Every connected AI is told the same things about your site and follows the same instructions from you.',
 					'saddle'
 				) }
-			</p>
+			/>
 
 			{ /* Read-only, auto-generated — kept collapsed so it never crowds
 			     the page; the detail lives one click away. */ }

@@ -344,18 +344,49 @@ class Saddle_Context {
 	}
 
 	/**
+	 * Core's get_plugins() with PHP warnings scoped out.
+	 *
+	 * get_plugins() is_dir()-probes every entry in WP_PLUGIN_DIR; on hosts
+	 * with open_basedir a symlinked plugin whose target sits outside the
+	 * allowed paths makes that probe emit a warning. During an MCP tool call
+	 * or context build that warning would prepend to the JSON body and can
+	 * corrupt the response, so the enumeration runs under a scoped handler
+	 * that swallows warnings — nothing else, and only for this call.
+	 *
+	 * @return array Same shape as get_plugins().
+	 */
+	public static function get_plugins_quietly() {
+		if ( ! function_exists( 'get_plugins' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+		if ( ! function_exists( 'get_plugins' ) ) {
+			return array();
+		}
+
+		set_error_handler( // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_set_error_handler -- Scoped to one core call and restored in finally; see docblock.
+			static function () {
+				return true;
+			},
+			E_WARNING
+		);
+		try {
+			$plugins = get_plugins();
+		} finally {
+			restore_error_handler();
+		}
+
+		return is_array( $plugins ) ? $plugins : array();
+	}
+
+	/**
 	 * Active plugins as "Name (version)" strings (best effort). Saddle itself is
 	 * excluded.
 	 *
 	 * @return string[]
 	 */
 	private static function active_plugin_names() {
-		if ( ! function_exists( 'get_plugins' ) ) {
-			require_once ABSPATH . 'wp-admin/includes/plugin.php';
-		}
-
 		$active = (array) get_option( 'active_plugins', array() );
-		$all    = function_exists( 'get_plugins' ) ? get_plugins() : array();
+		$all    = self::get_plugins_quietly();
 		$self   = plugin_basename( SADDLE_FILE );
 
 		$names = array();
