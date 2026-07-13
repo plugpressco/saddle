@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-13T14:06:01+00:00\n"
+"POT-Creation-Date: 2026-07-13T15:37:17+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -1510,45 +1510,51 @@ msgstr ""
 msgid "Everything checked out: the persisted state is structurally sound, every attribute takes effect, and no design violations were found."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:356
+#: includes/admin/class-saddle-rest.php:372
 msgid "Unknown access tier."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:446
-#: includes/admin/class-saddle-rest.php:459
+#: includes/admin/class-saddle-rest.php:462
+#: includes/admin/class-saddle-rest.php:475
 msgid "No skill with that name."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:528
 #: includes/admin/class-saddle-rest.php:544
+#: includes/admin/class-saddle-rest.php:560
 msgid "No memory entry with that key."
 msgstr ""
 
 #. translators: %d: entries removed.
-#: includes/admin/class-saddle-rest.php:583
+#: includes/admin/class-saddle-rest.php:599
 #, php-format
 msgid "Owner cleared all agent-written memory (%d entries)."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:724
+#: includes/admin/class-saddle-rest.php:740
 msgid "MCP Client"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:759
-#: includes/admin/class-saddle-rest.php:861
+#: includes/admin/class-saddle-rest.php:775
+#: includes/admin/class-saddle-rest.php:877
+#: includes/admin/class-saddle-rest.php:929
 msgid "Application Passwords are not available on this site."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:763
+#: includes/admin/class-saddle-rest.php:779
 msgid "Application Passwords are turned off on this site — often because it isn’t served over HTTPS, or a security plugin disabled them."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:768
+#: includes/admin/class-saddle-rest.php:784
 msgid "AI app"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:868
+#: includes/admin/class-saddle-rest.php:884
+#: includes/admin/class-saddle-rest.php:935
 msgid "No Saddle client with that ID."
+msgstr ""
+
+#: includes/admin/class-saddle-rest.php:954
+msgid "The old key was removed, but issuing its replacement failed. Connect the app again from the Connections screen."
 msgstr ""
 
 #: includes/admin/class-saddle-settings.php:179
@@ -1837,26 +1843,46 @@ msgstr ""
 msgid "%1$s does not allow %2$s among its children."
 msgstr ""
 
-#. translators: %s: tool name.
+#: includes/class-saddle-capabilities.php:214
+msgid "The site owner has paused all AI access — every tool is refused until they resume it from Saddle → Settings. Do not retry; tell the user Saddle is paused."
+msgstr ""
+
 #: includes/class-saddle-capabilities.php:221
+msgid "The request is not authenticated. Reconnect the app from Saddle → Connections to issue a fresh sign-in key."
+msgstr ""
+
+#. translators: %s: tool name.
+#: includes/class-saddle-capabilities.php:230
+#, php-format
+msgid "The site owner turned the \"%s\" tool off individually (Saddle → Permissions). Other tools still work — do not retry this one; tell the user it is disabled."
+msgstr ""
+
+#. translators: 1: required access level, 2: current access level.
+#: includes/class-saddle-capabilities.php:247
+#, php-format
+msgid "This tool needs the \"%1$s\" access level, but this site allows \"%2$s\". Only the site owner can raise it (Saddle → Permissions). Do not retry — ask the user to change the level if they want this done."
+msgstr ""
+
+#. translators: %s: tool name.
+#: includes/class-saddle-capabilities.php:289
 #, php-format
 msgid "Blocked: Saddle is paused — \"%s\" was refused."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:225
+#: includes/class-saddle-capabilities.php:293
 #, php-format
 msgid "Blocked: your account lacks permission for \"%s\"."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:229
+#: includes/class-saddle-capabilities.php:297
 #, php-format
 msgid "Blocked: the tool \"%s\" is turned off."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:234
+#: includes/class-saddle-capabilities.php:302
 #, php-format
 msgid "Blocked: \"%s\" needs a higher access level than is enabled."
 msgstr ""
@@ -1895,7 +1921,7 @@ msgid "# About this WordPress site"
 msgstr ""
 
 #: includes/class-saddle-context.php:80
-#: admin/src/components/ConnectWizard.jsx:194
+#: admin/src/connect-apps.js:178
 msgid "Name"
 msgstr ""
 
@@ -1904,7 +1930,7 @@ msgid "Tagline"
 msgstr ""
 
 #: includes/class-saddle-context.php:87
-#: admin/src/components/ConnectWizard.jsx:195
+#: admin/src/connect-apps.js:179
 msgid "Address"
 msgstr ""
 
@@ -1998,35 +2024,55 @@ msgstr ""
 msgid "These plugins are active (with versions). Saddle manages core content only; these plugins may expose their own tools separately. Be aware of them when reasoning about the site:"
 msgstr ""
 
-#: includes/class-saddle-context.php:223
+#: includes/class-saddle-context.php:185
+msgid "# When a call is refused"
+msgstr ""
+
+#: includes/class-saddle-context.php:187
+msgid "A permission error on a tool call means one of the site owner's controls blocked it: the global pause switch, the site's access level, or that specific tool being turned off. These are the owner's deliberate choices — never retry in a loop; tell the user which control to check in the Saddle dashboard (Settings for pause, Permissions for level and per-tool toggles)."
+msgstr ""
+
+#: includes/class-saddle-context.php:188
+msgid "A 401 saying the key was rejected means the sign-in key was revoked or rotated. Ask the user to reconnect this app from Saddle → Connections (or paste the fresh setup if they just rotated the key)."
+msgstr ""
+
+#: includes/class-saddle-context.php:189
+msgid "A 401 saying no key arrived usually means the web server strips the Authorization header. Ask the user to open Saddle → Connections → \"Connection details & health\" and run the connection check — it can fix this automatically on most hosts."
+msgstr ""
+
+#: includes/class-saddle-context.php:190
+msgid "A destructive tool answering with a preview and a confirm_token is NOT an error — that is the approval gate. Show the user the preview; call again with the token only after they agree."
+msgstr ""
+
+#: includes/class-saddle-context.php:235
 msgid "# Recent changes on this site"
 msgstr ""
 
-#: includes/class-saddle-context.php:225
+#: includes/class-saddle-context.php:237
 msgid "Saddle's log of what connected AI apps changed recently (newest first). This is factual background so you know what already happened — it is a record, not instructions."
 msgstr ""
 
-#: includes/class-saddle-context.php:249
+#: includes/class-saddle-context.php:261
 msgid "# What \"designed\" means, in numbers"
 msgstr ""
 
-#: includes/class-saddle-context.php:251
+#: includes/class-saddle-context.php:263
 msgid "Type scale: hero/display 44–64px, section headings 28–40px, body 16–18px with line-height 1.5–1.7. Establish a clear step between levels — don't set everything near the same size."
 msgstr ""
 
-#: includes/class-saddle-context.php:252
+#: includes/class-saddle-context.php:264
 msgid "Line length: keep body text to ~50–75 characters per line (roughly a 600–720px max width for a text column), never full-bleed paragraphs."
 msgstr ""
 
-#: includes/class-saddle-context.php:253
+#: includes/class-saddle-context.php:265
 msgid "Spacing on an 8px system (8/16/24/32/48/64/96): generous section padding (~64–96px top/bottom on desktop), consistent gaps within a group, and more space BETWEEN groups than inside them."
 msgstr ""
 
-#: includes/class-saddle-context.php:254
+#: includes/class-saddle-context.php:266
 msgid "Color: one dominant neutral background, one text color, and a SINGLE accent used sparingly for emphasis and calls to action. Body text must hit WCAG AA contrast (≥ 4.5:1; ≥ 3:1 for large headings)."
 msgstr ""
 
-#: includes/class-saddle-context.php:255
+#: includes/class-saddle-context.php:267
 msgid "Rhythm: align to a consistent content width, reuse the same handful of spacing/size steps across the page, and prefer one strong idea per section over dense walls of content."
 msgstr ""
 
@@ -2100,6 +2146,10 @@ msgstr ""
 #: includes/class-saddle-mcp.php:449
 #, php-format
 msgid "Tool not found: %s"
+msgstr ""
+
+#: includes/class-saddle-mcp.php:479
+msgid "None of Saddle’s site-wide gates (pause, access level, per-tool toggles) blocked this — the connected WordPress account likely lacks a capability this tool requires, or the specific item is protected. Do not retry the same call."
 msgstr ""
 
 #: includes/class-saddle-memory.php:102
@@ -2737,101 +2787,128 @@ msgid "Show more"
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/src/components/ConnectedClients.jsx:54
+#: admin/src/components/ConnectedClients.jsx:67
+#, js-format
+msgid "Rotate “%s”’s key?"
+msgstr ""
+
+#: admin/src/components/ConnectedClients.jsx:70
+msgid "The current key stops working the moment you confirm, and a fresh one is issued under the same name. You’ll paste the new setup into the app right after — until then it can’t connect."
+msgstr ""
+
+#: admin/src/components/ConnectedClients.jsx:75
+#: admin/src/components/ConnectedClients.jsx:290
+msgid "Rotate key"
+msgstr ""
+
+#: admin/src/components/ConnectedClients.jsx:76
+msgid "Keep the current key"
+msgstr ""
+
+#. translators: %s: the app name.
+#: admin/src/components/ConnectedClients.jsx:99
 #, js-format
 msgid "Disconnect “%s”?"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:57
+#: admin/src/components/ConnectedClients.jsx:102
 msgid "Its sign-in key stops working the moment you confirm — the app loses access to this site immediately. This can’t be undone, but you can always connect the app again with a fresh key."
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:62
-#: admin/src/components/ConnectedClients.jsx:226
+#: admin/src/components/ConnectedClients.jsx:107
+#: admin/src/components/ConnectedClients.jsx:297
 msgid "Disconnect"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:63
+#: admin/src/components/ConnectedClients.jsx:108
 msgid "Keep it connected"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:76
+#: admin/src/components/ConnectedClients.jsx:121
 msgid "Disconnected. That app’s sign-in no longer works."
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:152
+#: admin/src/components/ConnectedClients.jsx:197
 #: admin/src/components/Dashboard.jsx:117
 #: admin/src/components/Dashboard.jsx:204
 msgid "Connected apps"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:153
+#: admin/src/components/ConnectedClients.jsx:198
 msgid "Every app here has its own sign-in you can take away at any moment. They all follow the same rules from Permissions."
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:159
-#: admin/src/components/ConnectedClients.jsx:176
+#: admin/src/components/ConnectedClients.jsx:204
+#: admin/src/components/ConnectedClients.jsx:221
 #: admin/src/components/Dashboard.jsx:192
 msgid "Connect an app"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:169
+#: admin/src/components/ConnectedClients.jsx:214
 msgid "Nothing connected yet"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:170
+#: admin/src/components/ConnectedClients.jsx:215
 msgid "Connect Claude, Cursor, or another AI app — it takes about a minute."
 msgstr ""
 
 #. translators: %s: date and time.
-#: admin/src/components/ConnectedClients.jsx:206
+#: admin/src/components/ConnectedClients.jsx:251
 #, js-format
 msgid "Last active %s"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:209
+#: admin/src/components/ConnectedClients.jsx:254
 msgid "Hasn’t connected yet — it will on first use"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:215
+#: admin/src/components/ConnectedClients.jsx:259
+msgid "never connected — safe to disconnect"
+msgstr ""
+
+#: admin/src/components/ConnectedClients.jsx:266
 msgid "key"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:236
+#: admin/src/components/ConnectedClients.jsx:284
+msgid "Setup guide"
+msgstr ""
+
+#: admin/src/components/ConnectedClients.jsx:308
 msgid "These keys also appear under Users → Profile → Application Passwords — same keys, either place works for revoking."
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:242
+#: admin/src/components/ConnectedClients.jsx:314
 msgid "View there"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:252
+#: admin/src/components/ConnectedClients.jsx:324
 msgid "Connection details & health"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:256
+#: admin/src/components/ConnectedClients.jsx:328
 msgid "Your site’s address for AI apps"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:269
+#: admin/src/components/ConnectedClients.jsx:341
 msgid "Test the endpoint"
 msgstr ""
 
 #. translators: 1: tool count, 2: milliseconds.
-#: admin/src/components/ConnectedClients.jsx:276
+#: admin/src/components/ConnectedClients.jsx:348
 #, js-format
 msgid "%1$d tools · %2$dms"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:283
+#: admin/src/components/ConnectedClients.jsx:355
 msgid "Responding"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:295
+#: admin/src/components/ConnectedClients.jsx:367
 msgid "Endpoint powered by the WordPress MCP Adapter."
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:299
+#: admin/src/components/ConnectedClients.jsx:371
 msgid "Endpoint powered by Saddle’s built-in MCP transport."
 msgstr ""
 
@@ -2903,150 +2980,23 @@ msgstr ""
 msgid "Check again"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:46
-msgid "Claude"
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:47
-msgid "Desktop app"
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:48
-msgid "In Claude: Settings → Developer → Edit Config. Paste this inside, save, and restart the app."
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:52
-msgid "Restart Claude, then ask it about your site."
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:56
-msgid "ChatGPT"
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:57
-msgid "Web + desktop"
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:58
-msgid "In ChatGPT: Settings → Connectors → Create. Paste the address, and use the sign-in details wherever ChatGPT asks for authentication."
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:62
-msgid "Enable the connector in a ChatGPT chat and ask it about your site."
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:69
-msgid "Claude Code"
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:70
-#: admin/src/components/ConnectWizard.jsx:93
-msgid "Terminal"
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:71
-#: admin/src/components/ConnectWizard.jsx:94
-msgid "Paste this into your terminal and press Enter. That’s the whole setup."
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:75
-msgid "Run claude in any folder and ask it about your site."
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:82
-msgid "Cursor"
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:83
-#: admin/src/components/ConnectWizard.jsx:119
-msgid "Code editor"
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:84
-msgid "In Cursor: Settings → MCP → Add new server. Paste this (or save it as .cursor/mcp.json)."
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:88
-msgid "Open Cursor’s chat and ask it about your site."
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:92
-msgid "Gemini CLI"
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:98
-msgid "Run gemini in any folder and ask it about your site."
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:105
-msgid "VS Code"
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:106
-msgid "Copilot (agent mode)"
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:107
-msgid "Save this as .vscode/mcp.json in your project, then start the server from the MCP: List Servers command."
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:111
-msgid "Open Copilot Chat in agent mode and ask it about your site."
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:118
-msgid "Windsurf"
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:120
-msgid "In Windsurf: open the Cascade MCP settings and “Add custom server”, or save this into ~/.codeium/windsurf/mcp_config.json."
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:124
-msgid "Open Cascade and ask it about your site."
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:128
-msgid "Any MCP app"
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:129
-msgid "Everything else"
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:130
-msgid "Most AI apps accept this standard setup — look for “Add MCP server” in their settings and paste it there."
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:134
-msgid "Open your app and ask it about your site."
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:196
-msgid "Header"
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:239
+#: admin/src/components/ConnectWizard.jsx:39
 msgid "Choose app"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:240
+#: admin/src/components/ConnectWizard.jsx:40
 msgid "Paste setup"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:241
+#: admin/src/components/ConnectWizard.jsx:41
 msgid "Say hello"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:247
-msgid "What can you see on my WordPress site?"
-msgstr ""
-
-#: admin/src/components/ConnectWizard.jsx:357
+#: admin/src/components/ConnectWizard.jsx:216
 msgid "Setup progress"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:367
+#: admin/src/components/ConnectWizard.jsx:226
 #: admin/src/components/Guidance.jsx:172
 #: admin/src/components/Memory.jsx:88
 #: admin/src/components/Memory.jsx:108
@@ -3056,138 +3006,168 @@ msgstr ""
 msgid "Cancel"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:382
-#: admin/src/components/ConnectWizard.jsx:407
+#: admin/src/components/ConnectWizard.jsx:241
+#: admin/src/components/ConnectWizard.jsx:320
 msgid "Which app are you connecting?"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:385
+#: admin/src/components/ConnectWizard.jsx:244
 msgid "When you pick an app, WordPress creates a sign-in key just for it and Saddle prepares the whole setup. If you leave before using the key, it’s removed automatically — nothing is left behind."
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:394
+#: admin/src/components/ConnectWizard.jsx:253
 msgid "Application Passwords appear to be turned off — often by a security plugin. Enable them under Users → Profile before connecting."
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:398
+#: admin/src/components/ConnectWizard.jsx:257
 msgid "WordPress turns off app connections on sites that aren’t served over HTTPS (like http://localhost), so this won’t work until then."
 msgstr ""
 
+#. translators: %s: the existing connection's name.
+#: admin/src/components/ConnectWizard.jsx:270
+#, js-format
+msgid "“%s” is already connected"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:276
+msgid "That connection has been used. Replacing its key issues a fresh one and the old key stops working instantly — you just paste the new setup into the app. Add a separate connection only for a second computer."
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:280
+msgid "That connection has never been used — it probably didn’t finish setup. Replacing its key is the clean way to try again; nothing extra is left behind."
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:293
+msgid "Replace its key (recommended)"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:305
+msgid "Add another connection"
+msgstr ""
+
+#: admin/src/components/ConnectWizard.jsx:312
+msgid "Never mind"
+msgstr ""
+
 #. translators: %s: the app name.
-#: admin/src/components/ConnectWizard.jsx:434
+#: admin/src/components/ConnectWizard.jsx:347
+#: admin/src/components/SetupGuideDrawer.jsx:47
 #, js-format
 msgid "Set up %s"
 msgstr ""
 
 #. translators: %s: the connection label.
-#: admin/src/components/ConnectWizard.jsx:446
+#: admin/src/components/ConnectWizard.jsx:359
 #, js-format
 msgid "Made for “%s” just now"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:460
+#: admin/src/components/ConnectWizard.jsx:373
+#: admin/src/components/SetupGuideDrawer.jsx:101
 msgid "Copied ✓"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:461
+#: admin/src/components/ConnectWizard.jsx:374
+#: admin/src/components/SetupGuideDrawer.jsx:102
 msgid "Copy setup"
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/src/components/ConnectWizard.jsx:469
+#: admin/src/components/ConnectWizard.jsx:382
 #, js-format
 msgid "What %s will be able to do"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:475
+#: admin/src/components/ConnectWizard.jsx:388
 msgid "Its sign-in key works only for this app, only on this site, and only through Saddle — it can’t touch the rest of WordPress. Disconnect it anytime and access ends instantly. Go back without copying and the key is discarded."
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:481
+#: admin/src/components/ConnectWizard.jsx:394
 msgid "The key appears only this once, inside the setup above. Saddle keeps just its name and last four characters — never the key itself."
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:490
+#: admin/src/components/ConnectWizard.jsx:403
 msgid "This site runs on a local address, so the app must run on this same computer to reach it."
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:499
-#: admin/src/components/ConnectWizard.jsx:594
+#: admin/src/components/ConnectWizard.jsx:412
+#: admin/src/components/ConnectWizard.jsx:507
 #: admin/src/components/Onboarding.jsx:115
 msgid "Back"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:506
+#: admin/src/components/ConnectWizard.jsx:419
 msgid "I’ve pasted it"
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/src/components/ConnectWizard.jsx:518
+#: admin/src/components/ConnectWizard.jsx:431
 #, js-format
 msgid "Now say hello from %s"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:527
+#: admin/src/components/ConnectWizard.jsx:440
+#: admin/src/components/SetupGuideDrawer.jsx:115
 msgid "Try asking"
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/src/components/ConnectWizard.jsx:538
+#: admin/src/components/ConnectWizard.jsx:451
 #, js-format
 msgid "Listening for %s — this updates by itself the moment it connects."
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:551
+#: admin/src/components/ConnectWizard.jsx:464
 msgid "Taking longer than expected?"
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/src/components/ConnectWizard.jsx:560
+#: admin/src/components/ConnectWizard.jsx:473
 #, js-format
 msgid "Make sure you saved the setup and %s was restarted or reloaded after pasting."
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:568
+#: admin/src/components/ConnectWizard.jsx:481
 msgid "The app only connects when it’s actually used — ask it something about your site."
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:575
+#: admin/src/components/ConnectWizard.jsx:488
 msgid "This is a local site — the app must run on this same computer."
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:587
+#: admin/src/components/ConnectWizard.jsx:500
 msgid "Show the setup again"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:597
+#: admin/src/components/ConnectWizard.jsx:510
 msgid "Finish later — it’ll connect on first use"
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/src/components/ConnectWizard.jsx:621
+#: admin/src/components/ConnectWizard.jsx:534
 #, js-format
 msgid "%s is connected"
 msgstr ""
 
 #. translators: %s: the human-readable access level.
-#: admin/src/components/ConnectWizard.jsx:628
+#: admin/src/components/ConnectWizard.jsx:541
 #, js-format
 msgid "It just made its first request. Right now it can %s — change that anytime in Permissions."
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:633
+#: admin/src/components/ConnectWizard.jsx:546
 msgid "only read your content"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:634
+#: admin/src/components/ConnectWizard.jsx:547
 msgid "read and edit your content"
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:638
+#: admin/src/components/ConnectWizard.jsx:551
 msgid "Manage or disconnect it anytime from the Connect tab."
 msgstr ""
 
-#: admin/src/components/ConnectWizard.jsx:648
+#: admin/src/components/ConnectWizard.jsx:561
 msgid "Done"
 msgstr ""
 
@@ -3789,6 +3769,42 @@ msgstr ""
 msgid "Documentation"
 msgstr ""
 
+#: admin/src/components/SetupGuideDrawer.jsx:60
+msgid "This fresh key appears only this once — paste it into the app before closing. Saddle keeps just its last four characters."
+msgstr ""
+
+#: admin/src/components/SetupGuideDrawer.jsx:67
+msgid "Keys are shown only once"
+msgstr ""
+
+#: admin/src/components/SetupGuideDrawer.jsx:68
+msgid "This guide uses a placeholder where the key goes. To get a real, ready-to-paste setup, use “Rotate key” on the connection — the old key stops working and a fresh one appears here."
+msgstr ""
+
+#: admin/src/components/SetupGuideDrawer.jsx:76
+msgid "1. Where it goes"
+msgstr ""
+
+#: admin/src/components/SetupGuideDrawer.jsx:81
+msgid "2. The setup"
+msgstr ""
+
+#: admin/src/components/SetupGuideDrawer.jsx:87
+msgid "Ready to paste"
+msgstr ""
+
+#: admin/src/components/SetupGuideDrawer.jsx:88
+msgid "Template — replace the placeholder with your key"
+msgstr ""
+
+#: admin/src/components/SetupGuideDrawer.jsx:106
+msgid "Endpoint"
+msgstr ""
+
+#: admin/src/components/SetupGuideDrawer.jsx:112
+msgid "3. Say hello"
+msgstr ""
+
 #: admin/src/components/UnsplashKeyCard.jsx:54
 msgid "Unsplash key saved."
 msgstr ""
@@ -3842,4 +3858,131 @@ msgstr ""
 
 #: admin/src/components/UnsplashKeyCard.jsx:160
 msgid "Replace"
+msgstr ""
+
+#: admin/src/connect-apps.js:23
+msgid "What can you see on my WordPress site?"
+msgstr ""
+
+#: admin/src/connect-apps.js:31
+msgid "Claude"
+msgstr ""
+
+#: admin/src/connect-apps.js:32
+msgid "Desktop app"
+msgstr ""
+
+#: admin/src/connect-apps.js:33
+msgid "In Claude: Settings → Developer → Edit Config. Paste this inside, save, and restart the app."
+msgstr ""
+
+#: admin/src/connect-apps.js:37
+msgid "Restart Claude, then ask it about your site."
+msgstr ""
+
+#: admin/src/connect-apps.js:41
+msgid "ChatGPT"
+msgstr ""
+
+#: admin/src/connect-apps.js:42
+msgid "Web + desktop"
+msgstr ""
+
+#: admin/src/connect-apps.js:43
+msgid "In ChatGPT: Settings → Connectors → Create. Paste the address, and use the sign-in details wherever ChatGPT asks for authentication."
+msgstr ""
+
+#: admin/src/connect-apps.js:47
+msgid "Enable the connector in a ChatGPT chat and ask it about your site."
+msgstr ""
+
+#: admin/src/connect-apps.js:54
+msgid "Claude Code"
+msgstr ""
+
+#: admin/src/connect-apps.js:55
+#: admin/src/connect-apps.js:78
+msgid "Terminal"
+msgstr ""
+
+#: admin/src/connect-apps.js:56
+#: admin/src/connect-apps.js:79
+msgid "Paste this into your terminal and press Enter. That’s the whole setup."
+msgstr ""
+
+#: admin/src/connect-apps.js:60
+msgid "Run claude in any folder and ask it about your site."
+msgstr ""
+
+#: admin/src/connect-apps.js:67
+msgid "Cursor"
+msgstr ""
+
+#: admin/src/connect-apps.js:68
+#: admin/src/connect-apps.js:104
+msgid "Code editor"
+msgstr ""
+
+#: admin/src/connect-apps.js:69
+msgid "In Cursor: Settings → MCP → Add new server. Paste this (or save it as .cursor/mcp.json)."
+msgstr ""
+
+#: admin/src/connect-apps.js:73
+msgid "Open Cursor’s chat and ask it about your site."
+msgstr ""
+
+#: admin/src/connect-apps.js:77
+msgid "Gemini CLI"
+msgstr ""
+
+#: admin/src/connect-apps.js:83
+msgid "Run gemini in any folder and ask it about your site."
+msgstr ""
+
+#: admin/src/connect-apps.js:90
+msgid "VS Code"
+msgstr ""
+
+#: admin/src/connect-apps.js:91
+msgid "Copilot (agent mode)"
+msgstr ""
+
+#: admin/src/connect-apps.js:92
+msgid "Save this as .vscode/mcp.json in your project, then start the server from the MCP: List Servers command."
+msgstr ""
+
+#: admin/src/connect-apps.js:96
+msgid "Open Copilot Chat in agent mode and ask it about your site."
+msgstr ""
+
+#: admin/src/connect-apps.js:103
+msgid "Windsurf"
+msgstr ""
+
+#: admin/src/connect-apps.js:105
+msgid "In Windsurf: open the Cascade MCP settings and “Add custom server”, or save this into ~/.codeium/windsurf/mcp_config.json."
+msgstr ""
+
+#: admin/src/connect-apps.js:109
+msgid "Open Cascade and ask it about your site."
+msgstr ""
+
+#: admin/src/connect-apps.js:113
+msgid "Any MCP app"
+msgstr ""
+
+#: admin/src/connect-apps.js:114
+msgid "Everything else"
+msgstr ""
+
+#: admin/src/connect-apps.js:115
+msgid "Most AI apps accept this standard setup — look for “Add MCP server” in their settings and paste it there."
+msgstr ""
+
+#: admin/src/connect-apps.js:119
+msgid "Open your app and ask it about your site."
+msgstr ""
+
+#: admin/src/connect-apps.js:180
+msgid "Header"
 msgstr ""
