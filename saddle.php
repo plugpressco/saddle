@@ -111,6 +111,7 @@ final class Saddle {
 		add_filter( 'saddle_system_context', array( 'Saddle_Memory', 'append_context' ) );
 		add_action( 'rest_api_init', array( 'Saddle_REST_Admin', 'register_routes' ) );
 		add_action( 'rest_api_init', array( 'Saddle_Connection', 'register_routes' ) );
+		add_action( 'init', array( 'Saddle_Unsplash', 'register_taxonomy' ) );
 		Saddle_Unsplash::register_admin_hooks();
 		add_action( 'admin_menu', array( 'Saddle_Settings', 'register_menu' ) );
 		add_action( 'admin_enqueue_scripts', array( 'Saddle_Settings', 'enqueue_assets' ) );

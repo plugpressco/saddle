@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-13T15:37:17+00:00\n"
+"POT-Creation-Date: 2026-07-13T20:35:21+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -274,21 +274,21 @@ msgstr ""
 msgid "This site already has a design system (read it with get-design-system). Pass \"force\": true to seed a starter set anyway."
 msgstr ""
 
-#: includes/abilities/blocks.php:584
+#: includes/abilities/blocks.php:608
 msgid "Seed a starter design system: 6 brand colors (one accent), a 6-step type scale, and a 7-step 8px spacing scale. Existing tokens are not removed."
 msgstr ""
 
-#: includes/abilities/blocks.php:608
+#: includes/abilities/blocks.php:632
 msgid "No page builder handled the seed. On a block theme, add these colors and sizes in Appearance → Editor → Styles; automated block-theme seeding is not available yet."
 msgstr ""
 
-#: includes/abilities/blocks.php:625
+#: includes/abilities/blocks.php:649
 msgid "Insert with saddle/insert-block-pattern. Patterns arrive already styled for this theme — prefer them over hand-composing common sections."
 msgstr ""
 
-#: includes/abilities/blocks.php:639
-#: includes/abilities/blocks.php:1162
-#: includes/abilities/core-content.php:1125
+#: includes/abilities/blocks.php:663
+#: includes/abilities/blocks.php:1186
+#: includes/abilities/core-content.php:1129
 #: includes/abilities/lint.php:59
 #: includes/abilities/render.php:94
 #: includes/abilities/render.php:150
@@ -296,104 +296,104 @@ msgstr ""
 msgid "No post or page with that ID."
 msgstr ""
 
-#: includes/abilities/blocks.php:642
+#: includes/abilities/blocks.php:666
 #: includes/abilities/lint.php:62
 #: includes/abilities/render.php:97
 #: includes/abilities/verify.php:62
 msgid "You cannot read this post."
 msgstr ""
 
-#: includes/abilities/blocks.php:676
+#: includes/abilities/blocks.php:700
 msgid "Provide at least one block node."
 msgstr ""
 
 #. translators: 1: post ID, 2: block count.
-#: includes/abilities/blocks.php:694
+#: includes/abilities/blocks.php:718
 #, php-format
 msgid "Built block content for post #%1$d (%2$d blocks). Previous content kept as a revision."
 msgstr ""
 
-#: includes/abilities/blocks.php:705
+#: includes/abilities/blocks.php:729
 msgid "The previous content is recoverable from the post's revisions."
 msgstr ""
 
-#: includes/abilities/blocks.php:726
+#: includes/abilities/blocks.php:750
 msgid "Provide the block to add as \"node\"."
 msgstr ""
 
 #. translators: 1: block type, 2: post ID, 3: address.
-#: includes/abilities/blocks.php:759
+#: includes/abilities/blocks.php:783
 #, php-format
 msgid "Added %1$s to post #%2$d at %3$s."
 msgstr ""
 
-#: includes/abilities/blocks.php:771
-#: includes/abilities/blocks.php:948
-#: includes/abilities/blocks.php:1095
+#: includes/abilities/blocks.php:795
+#: includes/abilities/blocks.php:972
+#: includes/abilities/blocks.php:1119
 msgid "Addresses shift after edits — re-read the page before addressing other nodes."
 msgstr ""
 
-#: includes/abilities/blocks.php:804
+#: includes/abilities/blocks.php:828
 msgid "Provide \"content\" and/or \"attrs\" to change."
 msgstr ""
 
 #. translators: 1: block type, 2: address, 3: post ID.
-#: includes/abilities/blocks.php:859
+#: includes/abilities/blocks.php:883
 #, php-format
 msgid "Edited %1$s at %2$s on post #%3$d."
 msgstr ""
 
-#: includes/abilities/blocks.php:894
+#: includes/abilities/blocks.php:918
 msgid "Provide \"from_address\"."
 msgstr ""
 
-#: includes/abilities/blocks.php:897
+#: includes/abilities/blocks.php:921
 msgid "A block cannot be moved into its own subtree."
 msgstr ""
 
 #. translators: 1: block type, 2: old address, 3: new address, 4: post ID.
-#: includes/abilities/blocks.php:936
+#: includes/abilities/blocks.php:960
 #, php-format
 msgid "Moved %1$s from %2$s to %3$s on post #%4$d."
 msgstr ""
 
-#: includes/abilities/blocks.php:990
+#: includes/abilities/blocks.php:1014
 msgid "Recoverable from the post's revisions. Addresses shift — re-read the page."
 msgstr ""
 
 #. translators: 1: block type, 2: address, 3: post ID.
-#: includes/abilities/blocks.php:1004
+#: includes/abilities/blocks.php:1028
 #, php-format
 msgid "Removed %1$s at %2$s from post #%3$d."
 msgstr ""
 
 #. translators: 1: block type, 2: child count, 3: address, 4: post ID.
-#: includes/abilities/blocks.php:1020
+#: includes/abilities/blocks.php:1044
 #, php-format
 msgid "Remove %1$s and the %2$d blocks inside it at %3$s on post #%4$d. Recoverable from revisions."
 msgstr ""
 
 #. translators: 1: pattern name, 2: post ID, 3: address.
-#: includes/abilities/blocks.php:1084
+#: includes/abilities/blocks.php:1108
 #, php-format
 msgid "Inserted pattern \"%1$s\" into post #%2$d at %3$s."
 msgstr ""
 
 #. translators: 1: post ID, 2: builder name.
-#: includes/abilities/blocks.php:1142
+#: includes/abilities/blocks.php:1166
 #, php-format
 msgid "Post #%1$d is built with %2$s, so the native block tools do not apply to it. "
 msgstr ""
 
-#: includes/abilities/blocks.php:1146
+#: includes/abilities/blocks.php:1170
 msgid "Use the saddle/divi-* tools for this page instead."
 msgstr ""
 
-#: includes/abilities/blocks.php:1147
+#: includes/abilities/blocks.php:1171
 msgid "Its layout is edited with the builder's own editor — tell the site owner instead of forcing the edit."
 msgstr ""
 
-#: includes/abilities/blocks.php:1165
+#: includes/abilities/blocks.php:1189
 msgid "You cannot edit this post."
 msgstr ""
 
@@ -488,7 +488,7 @@ msgstr ""
 #: includes/abilities/core-content.php:126
 #: includes/abilities/core-content.php:240
 #: includes/abilities/core-content.php:326
-#: includes/abilities/core-content.php:542
+#: includes/abilities/core-content.php:546
 msgid "Optional keyword filter."
 msgstr ""
 
@@ -609,7 +609,7 @@ msgid "List media"
 msgstr ""
 
 #: includes/abilities/core-content.php:318
-msgid "Lists media library items as summaries (id, title, mime type, URL, date, attached post). Read-only. Supports filtering by mime type, parent, and source (\"unsplash\" lists everything imported from Unsplash, with the total count), plus pagination."
+msgid "Lists media library items as summaries (id, title, mime type, URL, date, attached post, and media tags when assigned). Read-only. Supports filtering by mime type, parent, source (\"unsplash\" lists everything imported from Unsplash, with the total count), and tag (a media-tag name — Unsplash imports are auto-tagged), plus pagination."
 msgstr ""
 
 #: includes/abilities/core-content.php:330
@@ -624,319 +624,323 @@ msgstr ""
 msgid "Only media imported from this source. \"unsplash\" answers what was downloaded from Unsplash and how many."
 msgstr ""
 
-#: includes/abilities/core-content.php:354
+#: includes/abilities/core-content.php:343
+msgid "Only media assigned this media tag (matched case-insensitively). Unsplash imports are auto-tagged with the photo's Unsplash tags plus any tags passed at import."
+msgstr ""
+
+#: includes/abilities/core-content.php:358
 msgid "Get media"
 msgstr ""
 
-#: includes/abilities/core-content.php:355
+#: includes/abilities/core-content.php:359
 msgid "Returns a single media item in full: URL, MIME type, alt text, caption, description, available image sizes, and the post it is attached to. Read-only."
 msgstr ""
 
-#: includes/abilities/core-content.php:357
-#: includes/abilities/core-content.php:412
+#: includes/abilities/core-content.php:361
+#: includes/abilities/core-content.php:416
 msgid "The attachment ID."
 msgstr ""
 
-#: includes/abilities/core-content.php:367
+#: includes/abilities/core-content.php:371
 msgid "Upload media from URL"
 msgstr ""
 
-#: includes/abilities/core-content.php:368
+#: includes/abilities/core-content.php:372
 msgid "Downloads a file from a source URL you provide and adds it to the media library, returning the new attachment id and URL. Additive (non-destructive). This is the only ability that fetches an external URL, and it fetches only the URL you pass. Optionally set title, alt text, caption, description, and the post to attach it to."
 msgstr ""
 
-#: includes/abilities/core-content.php:377
+#: includes/abilities/core-content.php:381
 msgid "Publicly reachable URL of the file to download."
 msgstr ""
 
-#: includes/abilities/core-content.php:381
+#: includes/abilities/core-content.php:385
 msgid "Override the stored filename (with extension)."
 msgstr ""
 
-#: includes/abilities/core-content.php:389
+#: includes/abilities/core-content.php:393
 msgid "Attach the media to this post/page ID."
 msgstr ""
 
-#: includes/abilities/core-content.php:402
+#: includes/abilities/core-content.php:406
 msgid "Update media metadata"
 msgstr ""
 
-#: includes/abilities/core-content.php:403
+#: includes/abilities/core-content.php:407
 msgid "Updates a media item's metadata (title, alt text, caption, description) by id. Does not replace the file. Non-destructive. Returns the updated summary."
 msgstr ""
 
-#: includes/abilities/core-content.php:429
+#: includes/abilities/core-content.php:433
 msgid "Delete media"
 msgstr ""
 
-#: includes/abilities/core-content.php:430
+#: includes/abilities/core-content.php:434
 msgid "Deletes a media item and its files. DESTRUCTIVE and NOT RECOVERABLE — attachments have no trash state in WordPress, so deletion is permanent. Two-step confirmation required (preview + confirm_token)."
 msgstr ""
 
-#: includes/abilities/core-content.php:432
+#: includes/abilities/core-content.php:436
 msgid "The attachment ID to delete."
 msgstr ""
 
-#: includes/abilities/core-content.php:448
+#: includes/abilities/core-content.php:452
 msgid "List categories"
 msgstr ""
 
-#: includes/abilities/core-content.php:449
+#: includes/abilities/core-content.php:453
 msgid "Lists post categories as summaries (id, name, slug, parent, post count, description). Read-only. Supports search and pagination."
 msgstr ""
 
-#: includes/abilities/core-content.php:461
+#: includes/abilities/core-content.php:465
 msgid "Create category"
 msgstr ""
 
-#: includes/abilities/core-content.php:462
+#: includes/abilities/core-content.php:466
 msgid "Creates a post category and returns it. Additive (non-destructive). Accepts name (required), slug, parent category id, and description."
 msgstr ""
 
-#: includes/abilities/core-content.php:474
+#: includes/abilities/core-content.php:478
 msgid "List tags"
 msgstr ""
 
-#: includes/abilities/core-content.php:475
+#: includes/abilities/core-content.php:479
 msgid "Lists post tags as summaries (id, name, slug, post count, description). Read-only. Supports search and pagination."
 msgstr ""
 
-#: includes/abilities/core-content.php:487
+#: includes/abilities/core-content.php:491
 msgid "Create tag"
 msgstr ""
 
-#: includes/abilities/core-content.php:488
+#: includes/abilities/core-content.php:492
 msgid "Creates a post tag and returns it. Additive (non-destructive). Accepts name (required), slug, and description."
 msgstr ""
 
-#: includes/abilities/core-content.php:547
+#: includes/abilities/core-content.php:551
 msgid "Exclude terms that have no posts."
 msgstr ""
 
-#: includes/abilities/core-content.php:565
+#: includes/abilities/core-content.php:569
 msgid "The term name (required)."
 msgstr ""
 
-#: includes/abilities/core-content.php:574
+#: includes/abilities/core-content.php:578
 msgid "Parent category term ID."
 msgstr ""
 
-#: includes/abilities/core-content.php:596
+#: includes/abilities/core-content.php:600
 msgid "Results per page (1–100)."
 msgstr ""
 
-#: includes/abilities/core-content.php:610
+#: includes/abilities/core-content.php:614
 msgid "Page number of results."
 msgstr ""
 
-#: includes/abilities/core-content.php:624
+#: includes/abilities/core-content.php:628
 msgid "Filter by post status."
 msgstr ""
 
-#: includes/abilities/core-content.php:664
+#: includes/abilities/core-content.php:668
 msgid "The single-use token returned by the preview call. Omit on the first call to receive a preview."
 msgstr ""
 
-#: includes/abilities/core-content.php:672
+#: includes/abilities/core-content.php:676
 msgid "If true, permanently delete instead of moving to trash."
 msgstr ""
 
-#: includes/abilities/core-content.php:694
+#: includes/abilities/core-content.php:698
 msgid "The title."
 msgstr ""
 
-#: includes/abilities/core-content.php:698
+#: includes/abilities/core-content.php:702
 msgid "The body content (HTML or blocks)."
 msgstr ""
 
-#: includes/abilities/core-content.php:704
+#: includes/abilities/core-content.php:708
 msgid "Publication status. Defaults to draft on create."
 msgstr ""
 
-#: includes/abilities/core-content.php:709
+#: includes/abilities/core-content.php:713
 msgid "Author user ID."
 msgstr ""
 
-#: includes/abilities/core-content.php:713
+#: includes/abilities/core-content.php:717
 msgid "Publish date in site time, \"YYYY-MM-DD HH:MM:SS\"."
 msgstr ""
 
-#: includes/abilities/core-content.php:725
+#: includes/abilities/core-content.php:729
 msgid "Attachment ID to set as the featured image."
 msgstr ""
 
-#: includes/abilities/core-content.php:730
+#: includes/abilities/core-content.php:734
 msgid "Custom fields (post meta) as key/value pairs. Values may be strings, numbers, booleans, or arrays; pass null as a value to delete that key. Keys starting with an underscore are protected — writable only when the owning plugin registered them as editable. Denied keys are skipped and reported back in \"meta_denied\"; the rest of the request still applies."
 msgstr ""
 
-#: includes/abilities/core-content.php:738
+#: includes/abilities/core-content.php:742
 msgid "Category term IDs to assign."
 msgstr ""
 
-#: includes/abilities/core-content.php:743
+#: includes/abilities/core-content.php:747
 msgid "Tag names to assign (created if missing)."
 msgstr ""
 
-#: includes/abilities/core-content.php:748
+#: includes/abilities/core-content.php:752
 msgid "Page template filename, e.g. \"template-full.php\"."
 msgstr ""
 
-#: includes/abilities/core-content.php:752
+#: includes/abilities/core-content.php:756
 msgid "Parent page ID."
 msgstr ""
 
-#: includes/abilities/core-content.php:756
+#: includes/abilities/core-content.php:760
 msgid "Ordering value among sibling pages."
 msgstr ""
 
-#: includes/abilities/core-content.php:769
+#: includes/abilities/core-content.php:773
 msgid "The ID to update."
 msgstr ""
 
 #. translators: %s: field name.
-#: includes/abilities/core-content.php:816
+#: includes/abilities/core-content.php:820
 #, php-format
 msgid "A numeric \"%s\" is required."
 msgstr ""
 
 #. translators: %s: field name.
-#: includes/abilities/core-content.php:828
+#: includes/abilities/core-content.php:832
 #, php-format
 msgid "The \"%s\" must be a positive integer."
 msgstr ""
 
-#: includes/abilities/core-content.php:846
+#: includes/abilities/core-content.php:850
 msgid "You do not have permission to do that with this item."
 msgstr ""
 
-#: includes/abilities/core-content.php:868
+#: includes/abilities/core-content.php:872
 msgid "You do not have permission to edit this item."
 msgstr ""
 
-#: includes/abilities/core-content.php:874
+#: includes/abilities/core-content.php:878
 msgid "You do not have permission to publish content."
 msgstr ""
 
-#: includes/abilities/core-content.php:881
+#: includes/abilities/core-content.php:885
 msgid "You do not have permission to assign content to another user."
 msgstr ""
 
-#: includes/abilities/core-content.php:1032
+#: includes/abilities/core-content.php:1036
 msgid "A non-empty \"query\" is required."
 msgstr ""
 
-#: includes/abilities/core-content.php:1266
-#: includes/abilities/core-content.php:1424
-#: includes/abilities/core-content.php:1477
+#: includes/abilities/core-content.php:1280
+#: includes/abilities/core-content.php:1438
+#: includes/abilities/core-content.php:1491
 msgid "No media item with that ID."
 msgstr ""
 
-#: includes/abilities/core-content.php:1299
+#: includes/abilities/core-content.php:1313
 msgid "The \"source_url\" is not a valid, fetchable URL, or it resolves to a disallowed internal address. If the host is external but cannot be resolved on this server, the site owner can allow it via the \"saddle_source_url_is_safe\" filter."
 msgstr ""
 
 #. translators: %s: maximum size, e.g. "64 MB".
-#: includes/abilities/core-content.php:1320
+#: includes/abilities/core-content.php:1334
 #, php-format
 msgid "The file exceeds the maximum allowed size (%s)."
 msgstr ""
 
-#: includes/abilities/core-content.php:1360
+#: includes/abilities/core-content.php:1374
 msgid "A \"source_url\" is required."
 msgstr ""
 
-#: includes/abilities/core-content.php:1366
-#: includes/abilities/unsplash.php:196
+#: includes/abilities/core-content.php:1380
+#: includes/abilities/unsplash.php:230
 msgid "You do not have permission to attach media to that item."
 msgstr ""
 
 #. translators: %d: attachment id.
-#: includes/abilities/core-content.php:1402
+#: includes/abilities/core-content.php:1416
 #, php-format
 msgid "Uploaded media #%d"
 msgstr ""
 
-#: includes/abilities/core-content.php:1427
+#: includes/abilities/core-content.php:1441
 msgid "You do not have permission to edit this media item."
 msgstr ""
 
 #. translators: %d: attachment id.
-#: includes/abilities/core-content.php:1455
+#: includes/abilities/core-content.php:1469
 #, php-format
 msgid "Updated media #%d"
 msgstr ""
 
-#: includes/abilities/core-content.php:1480
+#: includes/abilities/core-content.php:1494
 msgid "You do not have permission to delete this media item."
 msgstr ""
 
 #. translators: 1: attachment id, 2: title.
-#: includes/abilities/core-content.php:1489
+#: includes/abilities/core-content.php:1503
 #, php-format
 msgid "Permanently delete media #%1$d \"%2$s\" and its files. Media has no trash — this cannot be undone."
 msgstr ""
 
-#: includes/abilities/core-content.php:1505
+#: includes/abilities/core-content.php:1519
 msgid "WordPress could not delete the media item."
 msgstr ""
 
-#: includes/abilities/core-content.php:1619
+#: includes/abilities/core-content.php:1633
 msgid "A \"name\" is required."
 msgstr ""
 
 #. translators: 1: term type, 2: name.
-#: includes/abilities/core-content.php:1645
+#: includes/abilities/core-content.php:1659
 #, php-format
 msgid "Created %1$s \"%2$s\""
 msgstr ""
 
 #. translators: %s: post type.
-#: includes/abilities/core-content.php:1732
-#: includes/abilities/core-content.php:1891
-#: includes/abilities/core-content.php:1966
+#: includes/abilities/core-content.php:1746
+#: includes/abilities/core-content.php:1905
+#: includes/abilities/core-content.php:1980
 #, php-format
 msgid "No %s with that ID."
 msgstr ""
 
 #. translators: 1: post type, 2: id, 3: title.
-#: includes/abilities/core-content.php:1775
+#: includes/abilities/core-content.php:1789
 #, php-format
 msgid "Created %1$s #%2$d \"%3$s\""
 msgstr ""
 
 #. translators: 1: post ID, 2: builder name.
-#: includes/abilities/core-content.php:1863
+#: includes/abilities/core-content.php:1877
 #, php-format
 msgid "Post #%1$d is built with %2$s — overwriting its content field would destroy the layout, so Saddle refuses. You can still edit its title, status, excerpt, taxonomy, and meta. "
 msgstr ""
 
-#: includes/abilities/core-content.php:1867
+#: includes/abilities/core-content.php:1881
 msgid "To change the layout itself, use the saddle/divi-* tools (divi-get-page, divi-edit-module, divi-set-page)."
 msgstr ""
 
-#: includes/abilities/core-content.php:1868
+#: includes/abilities/core-content.php:1882
 msgid "Layout changes need the builder’s own editor — tell the site owner instead of forcing the edit."
 msgstr ""
 
 #. translators: 1: post type, 2: id, 3: title.
-#: includes/abilities/core-content.php:1933
+#: includes/abilities/core-content.php:1947
 #, php-format
 msgid "Updated %1$s #%2$d \"%3$s\""
 msgstr ""
 
 #. translators: 1: type, 2: id, 3: title.
-#: includes/abilities/core-content.php:1983
+#: includes/abilities/core-content.php:1997
 #, php-format
 msgid "Permanently delete %1$s #%2$d \"%3$s\". This cannot be undone."
 msgstr ""
 
 #. translators: 1: type, 2: id, 3: title.
-#: includes/abilities/core-content.php:1990
+#: includes/abilities/core-content.php:2004
 #, php-format
 msgid "Move %1$s #%2$d \"%3$s\" to the trash. It can be restored from Trash."
 msgstr ""
 
-#: includes/abilities/core-content.php:2016
+#: includes/abilities/core-content.php:2030
 msgid "WordPress could not delete the item."
 msgstr ""
 
@@ -1365,7 +1369,7 @@ msgid "Search Unsplash"
 msgstr ""
 
 #: includes/abilities/unsplash.php:28
-msgid "Searches the Unsplash free stock-photo library. Results are previews only. Each result includes in_library/media_id: when in_library is true the photo is ALREADY in this site's media library — reuse that media_id instead of importing again. Otherwise call unsplash-import with the photo id. Never sideload the preview URLs yourself; that skips Unsplash's required attribution and download tracking. The search query is sent to the Unsplash API using the site owner's own key. Rate-limited (free keys: 50 requests/hour), so search deliberately, not iteratively."
+msgid "Searches the Unsplash free stock-photo library. Results are previews only. Each result includes in_library/media_id: when in_library is true the photo is ALREADY in this site's media library — reuse that media_id instead of importing again. Otherwise call unsplash-import with the photo id (pass your search words as its \"tags\" so the import stays findable later). Never sideload the preview URLs yourself; that skips Unsplash's required attribution and download tracking. The search query is sent to the Unsplash API using the site owner's own key. Rate-limited (free keys: 50 requests/hour), so search deliberately, not iteratively."
 msgstr ""
 
 #: includes/abilities/unsplash.php:36
@@ -1393,7 +1397,7 @@ msgid "Import Unsplash photo"
 msgstr ""
 
 #: includes/abilities/unsplash.php:73
-msgid "Downloads one Unsplash photo into the media library by its photo id (from unsplash-search) and returns the new media item. Handles Unsplash's required download tracking, and defaults the alt text to Unsplash's description and the caption to the photographer attribution. Dedupe-safe: if the photo was already imported it returns the existing media item WITHOUT downloading again — pass force=true only if the user explicitly wants a duplicate copy. Additive and non-destructive."
+msgid "Downloads one Unsplash photo into the media library by its photo id (from unsplash-search) and returns the new media item. Handles Unsplash's required download tracking, defaults the alt text to Unsplash's description and the caption to the photographer attribution, and auto-tags the media item with Unsplash's own tags plus any \"tags\" you pass — so pass your search words to keep it findable via list-media's tag filter. Imports carry visible Unsplash provenance in the media library. Dedupe-safe: if the photo was already imported it returns the existing media item WITHOUT downloading again (your \"tags\" are still added) — pass force=true only if the user explicitly wants a duplicate copy. Additive and non-destructive."
 msgstr ""
 
 #: includes/abilities/unsplash.php:81
@@ -1416,34 +1420,38 @@ msgstr ""
 msgid "Optional post/page to attach the media to."
 msgstr ""
 
-#: includes/abilities/unsplash.php:102
+#: includes/abilities/unsplash.php:103
+msgid "Extra media tags to assign (created if missing). Pass the search words you used to find this photo so it stays findable later via list-media's \"tag\" filter. Unsplash's own tags for the photo are always added automatically."
+msgstr ""
+
+#: includes/abilities/unsplash.php:108
 msgid "Re-download even if this photo is already in the media library."
 msgstr ""
 
-#: includes/abilities/unsplash.php:129
+#: includes/abilities/unsplash.php:163
 msgid "A \"query\" is required."
 msgstr ""
 
-#: includes/abilities/unsplash.php:191
+#: includes/abilities/unsplash.php:225
 msgid "A valid \"photo_id\" from unsplash-search is required."
 msgstr ""
 
-#: includes/abilities/unsplash.php:206
+#: includes/abilities/unsplash.php:247
 msgid "This Unsplash photo is already in the media library — nothing was downloaded. Reuse this media item, or pass force=true only if the user explicitly wants a duplicate copy."
 msgstr ""
 
-#: includes/abilities/unsplash.php:230
+#: includes/abilities/unsplash.php:271
 msgid "Unsplash did not return a downloadable file URL for that photo."
 msgstr ""
 
 #. translators: %s: Unsplash photo id.
-#: includes/abilities/unsplash.php:247
+#: includes/abilities/unsplash.php:288
 #, php-format
 msgid "Unsplash photo %s"
 msgstr ""
 
 #. translators: 1: Unsplash photo id, 2: attachment id.
-#: includes/abilities/unsplash.php:279
+#: includes/abilities/unsplash.php:345
 #, php-format
 msgid "Imported Unsplash photo %1$s as media #%2$d"
 msgstr ""
@@ -1807,12 +1815,12 @@ msgstr ""
 msgid "Prefer these presets over hardcoded values so pages inherit the site's design: use the SLUG in block attrs ({\"backgroundColor\":\"<color slug>\"}, {\"textColor\":\"<color slug>\"}, {\"fontSize\":\"<size slug>\"}), and var(--wp--preset--color--<slug>) / var(--wp--preset--spacing--<slug>) inside a \"style\" object. Entries are listed theme-first — theme entries are this site's actual brand."
 msgstr ""
 
-#: includes/class-saddle-blocks-schema.php:437
+#: includes/class-saddle-blocks-schema.php:440
 msgid "This is the site's single source of design truth — use it before building so pages inherit the real brand instead of inventing one. On a block theme, reference the color/size SLUGS in block attrs; on a page builder, use the color/variable IDs the builder addon lists here. Entries are listed theme/brand-first."
 msgstr ""
 
 #. translators: %s: pattern name.
-#: includes/class-saddle-blocks-schema.php:537
+#: includes/class-saddle-blocks-schema.php:540
 #, php-format
 msgid "No block pattern named \"%s\" is registered here. saddle/list-block-patterns shows what is."
 msgstr ""
@@ -2326,31 +2334,31 @@ msgstr ""
 msgid "A third common question?"
 msgstr ""
 
-#: includes/class-saddle-recipes.php:175
+#: includes/class-saddle-recipes.php:234
 msgid "One or two sentences describing this benefit in plain language."
 msgstr ""
 
-#: includes/class-saddle-recipes.php:189
+#: includes/class-saddle-recipes.php:257
 msgid "What this plan includes"
 msgstr ""
 
-#: includes/class-saddle-recipes.php:190
+#: includes/class-saddle-recipes.php:261
 msgid "A second included item"
 msgstr ""
 
-#: includes/class-saddle-recipes.php:191
+#: includes/class-saddle-recipes.php:265
 msgid "A third included item"
 msgstr ""
 
-#: includes/class-saddle-recipes.php:194
+#: includes/class-saddle-recipes.php:269
 msgid "Choose plan"
 msgstr ""
 
-#: includes/class-saddle-recipes.php:203
+#: includes/class-saddle-recipes.php:283
 msgid "\"A specific, believable sentence about the result they got.\""
 msgstr ""
 
-#: includes/class-saddle-recipes.php:204
+#: includes/class-saddle-recipes.php:284
 msgid "— Name, Role"
 msgstr ""
 
@@ -2396,62 +2404,129 @@ msgstr ""
 msgid "The skill body exceeds %d characters. Split it into smaller skills."
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:95
+#: includes/class-saddle-unsplash.php:113
 msgid "That does not look like an Unsplash Access Key. Copy the \"Access Key\" (not the Secret Key) from your app at unsplash.com/developers."
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:123
+#: includes/class-saddle-unsplash.php:141
 msgid "Unsplash is not set up on this site. The site owner must add an Unsplash Access Key on the Saddle Permissions screen — keys are free at unsplash.com/developers. Do not retry until it is configured."
 msgstr ""
 
 #. translators: %s: transport error message.
-#: includes/class-saddle-unsplash.php:149
+#: includes/class-saddle-unsplash.php:167
 #, php-format
 msgid "Could not reach the Unsplash API: %s. This is usually transient — one retry may help."
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:162
+#: includes/class-saddle-unsplash.php:180
 msgid "Unsplash rejected the configured Access Key. The site owner should re-check it on the Saddle Permissions screen. Do not retry until it is fixed."
 msgstr ""
 
 #. translators: %s: remaining request quota reported by Unsplash, or '0'.
-#: includes/class-saddle-unsplash.php:173
+#: includes/class-saddle-unsplash.php:191
 #, php-format
 msgid "Unsplash rate limit reached (free/demo keys allow 50 requests per hour; %s remaining). Wait before trying again — do NOT retry in a loop."
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:183
+#: includes/class-saddle-unsplash.php:201
 msgid "Unsplash has no photo or result at that address. Check the photo id (use unsplash-search to find valid ids)."
 msgstr ""
 
 #. translators: 1: HTTP status code, 2: error detail from Unsplash (may be empty).
-#: includes/class-saddle-unsplash.php:194
+#: includes/class-saddle-unsplash.php:212
 #, php-format
 msgid "Unsplash returned an unexpected HTTP %1$d response. %2$s"
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:205
+#: includes/class-saddle-unsplash.php:223
 msgid "Unexpected (non-JSON) response from Unsplash."
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:324
+#: includes/class-saddle-unsplash.php:342
 msgid "an Unsplash photographer"
 msgstr ""
 
 #. translators: 1: photographer profile URL, 2: photographer name, 3: Unsplash home URL.
-#: includes/class-saddle-unsplash.php:329
+#: includes/class-saddle-unsplash.php:347
 #, php-format
 msgid "Photo by <a href=\"%1$s\">%2$s</a> on <a href=\"%3$s\">Unsplash</a>"
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:386
+#: includes/class-saddle-unsplash.php:404
+msgid "Media Tags"
+msgstr ""
+
+#: includes/class-saddle-unsplash.php:405
+msgid "Media Tag"
+msgstr ""
+
+#: includes/class-saddle-unsplash.php:406
+msgid "Search media tags"
+msgstr ""
+
+#: includes/class-saddle-unsplash.php:407
+msgid "All media tags"
+msgstr ""
+
+#: includes/class-saddle-unsplash.php:408
+msgid "Edit media tag"
+msgstr ""
+
+#: includes/class-saddle-unsplash.php:409
+msgid "Update media tag"
+msgstr ""
+
+#: includes/class-saddle-unsplash.php:410
+msgid "Add new media tag"
+msgstr ""
+
+#: includes/class-saddle-unsplash.php:411
+msgid "New media tag"
+msgstr ""
+
+#: includes/class-saddle-unsplash.php:412
+msgid "No media tags found."
+msgstr ""
+
+#: includes/class-saddle-unsplash.php:459
 msgid "All sources"
 msgstr ""
 
 #. translators: %d: number of Unsplash-imported attachments.
-#: includes/class-saddle-unsplash.php:391
+#: includes/class-saddle-unsplash.php:464
 #, php-format
 msgid "Unsplash imports (%d)"
+msgstr ""
+
+#. translators: %s: photographer name (already escaped/linked).
+#: includes/class-saddle-unsplash.php:557
+#, php-format
+msgid "Photo by %s"
+msgstr ""
+
+#: includes/class-saddle-unsplash.php:564
+msgid "View on Unsplash"
+msgstr ""
+
+#: includes/class-saddle-unsplash.php:568
+#: includes/class-saddle-unsplash.php:620
+#: admin/src/components/Integrations.jsx:40
+msgid "Unsplash"
+msgstr ""
+
+#: includes/class-saddle-unsplash.php:588
+#: includes/class-saddle-unsplash.php:593
+msgid "Source"
+msgstr ""
+
+#: includes/class-saddle-unsplash.php:612
+msgid "Uploaded directly"
+msgstr ""
+
+#. translators: %s: photographer name.
+#: includes/class-saddle-unsplash.php:619
+#, php-format
+msgid "Unsplash · %s"
 msgstr ""
 
 #. translators: 1: text color, 2: background color, 3: contrast ratio.
@@ -2595,7 +2670,7 @@ msgid "This persisted attribute does nothing — rewrite it on a path the block 
 msgstr ""
 
 #. translators: %s: minimum WordPress version.
-#: saddle.php:262
+#: saddle.php:263
 #, php-format
 msgid "Saddle requires WordPress %s or later (the core Abilities API). The MCP server is disabled until you upgrade."
 msgstr ""
@@ -3368,10 +3443,6 @@ msgstr ""
 
 #: admin/src/components/Integrations.jsx:34
 msgid "Documentation tools from the Knovia plugin, wrapped with Saddle’s safety model."
-msgstr ""
-
-#: admin/src/components/Integrations.jsx:40
-msgid "Unsplash"
 msgstr ""
 
 #: admin/src/components/Integrations.jsx:41

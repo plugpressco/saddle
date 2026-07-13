@@ -315,7 +315,7 @@ function saddle_register_abilities() {
 		'saddle/list-media',
 		array(
 			'label'               => __( 'List media', 'saddle' ),
-			'description'         => __( 'Lists media library items as summaries (id, title, mime type, URL, date, attached post). Read-only. Supports filtering by mime type, parent, and source ("unsplash" lists everything imported from Unsplash, with the total count), plus pagination.', 'saddle' ),
+			'description'         => __( 'Lists media library items as summaries (id, title, mime type, URL, date, attached post, and media tags when assigned). Read-only. Supports filtering by mime type, parent, source ("unsplash" lists everything imported from Unsplash, with the total count), and tag (a media-tag name — Unsplash imports are auto-tagged), plus pagination.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -337,6 +337,10 @@ function saddle_register_abilities() {
 						'type'        => 'string',
 						'enum'        => array( 'unsplash' ),
 						'description' => __( 'Only media imported from this source. "unsplash" answers what was downloaded from Unsplash and how many.', 'saddle' ),
+					),
+					'tag'       => array(
+						'type'        => 'string',
+						'description' => __( 'Only media assigned this media tag (matched case-insensitively). Unsplash imports are auto-tagged with the photo\'s Unsplash tags plus any tags passed at import.', 'saddle' ),
 					),
 					'per_page'  => saddle_per_page_schema(),
 					'page'      => saddle_page_schema(),
@@ -1241,6 +1245,16 @@ class Saddle_Abilities {
 				array(
 					'key'     => Saddle_Unsplash::META_ID,
 					'compare' => 'EXISTS',
+				),
+			);
+		}
+		if ( isset( $input['tag'] ) && is_string( $input['tag'] ) && '' !== trim( $input['tag'] ) ) {
+			// Slug matching makes "Misty Mountain" find the term "misty mountain".
+			$args['tax_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- Bounded, paginated lookup on a Saddle-owned taxonomy.
+				array(
+					'taxonomy' => Saddle_Unsplash::TAXONOMY,
+					'field'    => 'slug',
+					'terms'    => sanitize_title( $input['tag'] ),
 				),
 			);
 		}
@@ -2236,7 +2250,7 @@ class Saddle_Abilities {
 	 * @return array
 	 */
 	public static function media_summary( $post ) {
-		return array(
+		$summary = array(
 			'id'          => $post->ID,
 			'title'       => $post->post_title,
 			'mime_type'   => $post->post_mime_type,
@@ -2244,6 +2258,15 @@ class Saddle_Abilities {
 			'date_gmt'    => $post->post_date_gmt,
 			'attached_to' => (int) $post->post_parent,
 		);
+
+		// Media tags only when assigned — token-thrifty; the term cache is
+		// primed by the list query, so this costs no extra queries in lists.
+		$terms = get_the_terms( $post->ID, Saddle_Unsplash::TAXONOMY );
+		if ( is_array( $terms ) && ! empty( $terms ) ) {
+			$summary['tags'] = array_values( wp_list_pluck( $terms, 'name' ) );
+		}
+
+		return $summary;
 	}
 
 	/**

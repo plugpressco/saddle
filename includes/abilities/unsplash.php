@@ -25,7 +25,7 @@ function saddle_register_unsplash_abilities() {
 		'saddle/unsplash-search',
 		array(
 			'label'               => __( 'Search Unsplash', 'saddle' ),
-			'description'         => __( 'Searches the Unsplash free stock-photo library. Results are previews only. Each result includes in_library/media_id: when in_library is true the photo is ALREADY in this site\'s media library — reuse that media_id instead of importing again. Otherwise call unsplash-import with the photo id. Never sideload the preview URLs yourself; that skips Unsplash\'s required attribution and download tracking. The search query is sent to the Unsplash API using the site owner\'s own key. Rate-limited (free keys: 50 requests/hour), so search deliberately, not iteratively.', 'saddle' ),
+			'description'         => __( 'Searches the Unsplash free stock-photo library. Results are previews only. Each result includes in_library/media_id: when in_library is true the photo is ALREADY in this site\'s media library — reuse that media_id instead of importing again. Otherwise call unsplash-import with the photo id (pass your search words as its "tags" so the import stays findable later). Never sideload the preview URLs yourself; that skips Unsplash\'s required attribution and download tracking. The search query is sent to the Unsplash API using the site owner\'s own key. Rate-limited (free keys: 50 requests/hour), so search deliberately, not iteratively.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -70,7 +70,7 @@ function saddle_register_unsplash_abilities() {
 		'saddle/unsplash-import',
 		array(
 			'label'               => __( 'Import Unsplash photo', 'saddle' ),
-			'description'         => __( 'Downloads one Unsplash photo into the media library by its photo id (from unsplash-search) and returns the new media item. Handles Unsplash\'s required download tracking, and defaults the alt text to Unsplash\'s description and the caption to the photographer attribution. Dedupe-safe: if the photo was already imported it returns the existing media item WITHOUT downloading again — pass force=true only if the user explicitly wants a duplicate copy. Additive and non-destructive.', 'saddle' ),
+			'description'         => __( 'Downloads one Unsplash photo into the media library by its photo id (from unsplash-search) and returns the new media item. Handles Unsplash\'s required download tracking, defaults the alt text to Unsplash\'s description and the caption to the photographer attribution, and auto-tags the media item with Unsplash\'s own tags plus any "tags" you pass — so pass your search words to keep it findable via list-media\'s tag filter. Imports carry visible Unsplash provenance in the media library. Dedupe-safe: if the photo was already imported it returns the existing media item WITHOUT downloading again (your "tags" are still added) — pass force=true only if the user explicitly wants a duplicate copy. Additive and non-destructive.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -96,6 +96,12 @@ function saddle_register_unsplash_abilities() {
 						'type'        => 'integer',
 						'description' => __( 'Optional post/page to attach the media to.', 'saddle' ),
 					),
+					'tags'     => array(
+						'type'        => 'array',
+						'items'       => array( 'type' => 'string' ),
+						'maxItems'    => 10,
+						'description' => __( 'Extra media tags to assign (created if missing). Pass the search words you used to find this photo so it stays findable later via list-media\'s "tag" filter. Unsplash\'s own tags for the photo are always added automatically.', 'saddle' ),
+					),
 					'force'    => array(
 						'type'        => 'boolean',
 						'default'     => false,
@@ -114,6 +120,34 @@ function saddle_register_unsplash_abilities() {
  * Execute callbacks for the Unsplash abilities.
  */
 class Saddle_Unsplash_Abilities {
+
+	/**
+	 * Sanitize a raw tag list into unique, non-empty term names. Case-
+	 * insensitive dedupe (first spelling wins), capped defensively at 10.
+	 *
+	 * @param mixed $raw Anything claiming to be a list of tag strings.
+	 * @return string[]
+	 */
+	private static function clean_tags( $raw ) {
+		$out  = array();
+		$seen = array();
+		foreach ( (array) $raw as $tag ) {
+			if ( ! is_string( $tag ) ) {
+				continue;
+			}
+			$tag = sanitize_text_field( $tag );
+			$key = strtolower( $tag );
+			if ( '' === $tag || isset( $seen[ $key ] ) ) {
+				continue;
+			}
+			$seen[ $key ] = true;
+			$out[]        = $tag;
+			if ( count( $out ) >= 10 ) {
+				break;
+			}
+		}
+		return $out;
+	}
 
 	/**
 	 * saddle/unsplash-search.
@@ -196,12 +230,19 @@ class Saddle_Unsplash_Abilities {
 			return new WP_Error( 'saddle_forbidden', __( 'You do not have permission to attach media to that item.', 'saddle' ), array( 'status' => 403 ) );
 		}
 
+		$agent_tags = self::clean_tags( isset( $input['tags'] ) ? $input['tags'] : array() );
+
 		// Dedupe first — zero HTTP, zero downloads, unless the caller forces it.
 		$force    = ! empty( $input['force'] );
 		$existing = Saddle_Unsplash::find_existing( $photo_id );
 		if ( $existing > 0 && ! $force ) {
 			$media = Saddle_Abilities::get_media( array( 'id' => $existing ) );
 			if ( ! is_wp_error( $media ) ) {
+				// Keep the "pass your search words" contract honest even on a
+				// dedupe hit: one cheap DB write, still zero HTTP.
+				if ( ! empty( $agent_tags ) ) {
+					wp_set_object_terms( $existing, $agent_tags, Saddle_Unsplash::TAXONOMY, true );
+				}
 				$media['already_in_library'] = true;
 				$media['note']               = __( 'This Unsplash photo is already in the media library — nothing was downloaded. Reuse this media item, or pass force=true only if the user explicitly wants a duplicate copy.', 'saddle' );
 				return $media;
@@ -269,6 +310,31 @@ class Saddle_Unsplash_Abilities {
 		update_post_meta( $attachment_id, Saddle_Unsplash::META_ID, $photo_id );
 		if ( ! empty( $photo['user']['name'] ) ) {
 			update_post_meta( $attachment_id, Saddle_Unsplash::META_PHOTOGRAPHER, sanitize_text_field( $photo['user']['name'] ) );
+		}
+		if ( ! empty( $photo['links']['html'] ) ) {
+			update_post_meta( $attachment_id, Saddle_Unsplash::META_URL, esc_url_raw( (string) $photo['links']['html'] ) );
+		}
+		if ( ! empty( $photo['user']['links']['html'] ) ) {
+			update_post_meta( $attachment_id, Saddle_Unsplash::META_PHOTOGRAPHER_URL, esc_url_raw( (string) $photo['user']['links']['html'] ) );
+		}
+
+		// Auto-categorize: Unsplash's own tags for the photo (capped) plus the
+		// agent's search words — so the library stays browsable by topic.
+		$photo_tags = array();
+		if ( isset( $photo['tags'] ) && is_array( $photo['tags'] ) ) {
+			foreach ( $photo['tags'] as $tag ) {
+				if ( isset( $tag['title'] ) && is_string( $tag['title'] ) ) {
+					$photo_tags[] = $tag['title'];
+				}
+			}
+		}
+		// Agent tags first — they're deliberate and must survive the overall
+		// cap; Unsplash's own tags (max 8) fill the rest.
+		$terms = self::clean_tags(
+			array_merge( $agent_tags, array_slice( self::clean_tags( $photo_tags ), 0, 8 ) )
+		);
+		if ( ! empty( $terms ) ) {
+			wp_set_object_terms( $attachment_id, $terms, Saddle_Unsplash::TAXONOMY, true );
 		}
 
 		Saddle_Log::record_action(

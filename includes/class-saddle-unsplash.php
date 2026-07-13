@@ -37,6 +37,24 @@ class Saddle_Unsplash {
 	const META_PHOTOGRAPHER = '_saddle_unsplash_photographer';
 
 	/**
+	 * Attachment meta: the photo's page on unsplash.com — the "View on
+	 * Unsplash" link in the media library.
+	 */
+	const META_URL = '_saddle_unsplash_url';
+
+	/**
+	 * Attachment meta: the photographer's unsplash.com profile URL.
+	 */
+	const META_PHOTOGRAPHER_URL = '_saddle_unsplash_photographer_url';
+
+	/**
+	 * The media-tags taxonomy. Registered on attachments so imports arrive
+	 * pre-categorized (Unsplash's own tags + whatever the agent searched for)
+	 * and any media can be organized the same way.
+	 */
+	const TAXONOMY = 'saddle_media_tag';
+
+	/**
 	 * Unsplash REST API base.
 	 */
 	const API_BASE = 'https://api.unsplash.com';
@@ -358,16 +376,71 @@ class Saddle_Unsplash {
 
 	/*
 	=========================================================================
+	 * Media tags taxonomy
+	 * =========================================================================
+	 */
+
+	/**
+	 * Register the Media Tags taxonomy on attachments. Hooked to `init` from
+	 * Saddle::init() (always-on — organization shouldn't depend on the MCP
+	 * transport being available).
+	 *
+	 * Flag choices that look odd but are load-bearing:
+	 * - `public` true + `publicly_queryable` false: the media modal's compat
+	 *   section only renders taxonomies with public && show_ui, while core
+	 *   strips front-end ?taxonomy=&term= requests for non-queryable
+	 *   taxonomies — so the field shows in wp-admin with zero front-end
+	 *   archive surface (rewrite/query_var off too).
+	 * - `_update_generic_term_count`: the default counter only counts
+	 *   attachments whose PARENT is published, so tags on unattached imports
+	 *   would report 0.
+	 */
+	public static function register_taxonomy() {
+		register_taxonomy(
+			self::TAXONOMY,
+			'attachment',
+			array(
+				'labels'                => array(
+					'name'          => __( 'Media Tags', 'saddle' ),
+					'singular_name' => __( 'Media Tag', 'saddle' ),
+					'search_items'  => __( 'Search media tags', 'saddle' ),
+					'all_items'     => __( 'All media tags', 'saddle' ),
+					'edit_item'     => __( 'Edit media tag', 'saddle' ),
+					'update_item'   => __( 'Update media tag', 'saddle' ),
+					'add_new_item'  => __( 'Add new media tag', 'saddle' ),
+					'new_item_name' => __( 'New media tag', 'saddle' ),
+					'not_found'     => __( 'No media tags found.', 'saddle' ),
+				),
+				'hierarchical'          => false,
+				'public'                => true,
+				'publicly_queryable'    => false,
+				'query_var'             => false,
+				'rewrite'               => false,
+				'show_ui'               => true,
+				'show_in_nav_menus'     => false,
+				'show_admin_column'     => true,
+				'show_in_rest'          => false,
+				'update_count_callback' => '_update_generic_term_count',
+			)
+		);
+	}
+
+	/*
+	=========================================================================
 	 * Media-library visibility (wp-admin)
 	 * =========================================================================
 	 */
 
 	/**
-	 * Wire the Media list screen filter. Called from Saddle::init().
+	 * Wire the Media list screen filter, the Source column, and the
+	 * attachment-details provenance section. Called from Saddle::init().
 	 */
 	public static function register_admin_hooks() {
 		add_action( 'restrict_manage_posts', array( __CLASS__, 'render_media_filter' ) );
 		add_action( 'parse_query', array( __CLASS__, 'apply_media_filter' ) );
+		add_filter( 'attachment_fields_to_edit', array( __CLASS__, 'add_provenance_field' ), 10, 2 );
+		add_filter( 'manage_media_columns', array( __CLASS__, 'add_source_column' ) );
+		add_action( 'manage_media_custom_column', array( __CLASS__, 'render_source_column' ), 10, 2 );
 	}
 
 	/**
@@ -428,5 +501,128 @@ class Saddle_Unsplash {
 	private static function requested_media_source() {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only list-table filter, matches core's own media filters.
 		return isset( $_GET['saddle_media_source'] ) ? sanitize_key( wp_unslash( $_GET['saddle_media_source'] ) ) : '';
+	}
+
+	/**
+	 * The attachment's page on unsplash.com, with attribution UTM params.
+	 * Falls back to the id-based URL for imports that predate META_URL.
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 * @return string '' when the attachment is not an Unsplash import.
+	 */
+	public static function photo_page_url( $attachment_id ) {
+		$photo_id = (string) get_post_meta( $attachment_id, self::META_ID, true );
+		if ( '' === $photo_id ) {
+			return '';
+		}
+
+		$url = (string) get_post_meta( $attachment_id, self::META_URL, true );
+		if ( '' === $url ) {
+			$url = 'https://unsplash.com/photos/' . rawurlencode( $photo_id );
+		}
+
+		return add_query_arg( self::utm_args(), $url );
+	}
+
+	/**
+	 * The read-only "Unsplash" section in the attachment details — rendered on
+	 * both the edit-attachment screen and the media modal sidebar, so anyone
+	 * browsing the library can see where the image came from.
+	 *
+	 * Core echoes 'html' fields verbatim, so every value is escaped here.
+	 *
+	 * @param array   $form_fields Attachment form fields.
+	 * @param WP_Post $post        The attachment.
+	 * @return array
+	 */
+	public static function add_provenance_field( $form_fields, $post ) {
+		$photo_id = (string) get_post_meta( $post->ID, self::META_ID, true );
+		if ( '' === $photo_id ) {
+			return $form_fields;
+		}
+
+		$photographer     = (string) get_post_meta( $post->ID, self::META_PHOTOGRAPHER, true );
+		$photographer_url = (string) get_post_meta( $post->ID, self::META_PHOTOGRAPHER_URL, true );
+
+		$by = '';
+		if ( '' !== $photographer ) {
+			$by = '' !== $photographer_url
+				? sprintf(
+					'<a href="%s" target="_blank" rel="noopener noreferrer">%s</a>',
+					esc_url( add_query_arg( self::utm_args(), $photographer_url ) ),
+					esc_html( $photographer )
+				)
+				: esc_html( $photographer );
+			/* translators: %s: photographer name (already escaped/linked). */
+			$by = sprintf( __( 'Photo by %s', 'saddle' ), $by ) . '<br />';
+		}
+
+		$html = $by . sprintf(
+			'<code>%s</code> · <a href="%s" target="_blank" rel="noopener noreferrer">%s</a>',
+			esc_html( $photo_id ),
+			esc_url( self::photo_page_url( $post->ID ) ),
+			esc_html__( 'View on Unsplash', 'saddle' )
+		);
+
+		$form_fields['saddle_unsplash'] = array(
+			'label'         => __( 'Unsplash', 'saddle' ),
+			'input'         => 'html',
+			'html'          => $html,
+			'show_in_edit'  => true,
+			'show_in_modal' => true,
+		);
+
+		return $form_fields;
+	}
+
+	/**
+	 * Add the Source column to the Media list view, just before Date.
+	 *
+	 * @param array $columns Column key => label.
+	 * @return array
+	 */
+	public static function add_source_column( $columns ) {
+		$out = array();
+		foreach ( $columns as $key => $label ) {
+			if ( 'date' === $key ) {
+				$out['saddle_source'] = __( 'Source', 'saddle' );
+			}
+			$out[ $key ] = $label;
+		}
+		if ( ! isset( $out['saddle_source'] ) ) {
+			$out['saddle_source'] = __( 'Source', 'saddle' );
+		}
+		return $out;
+	}
+
+	/**
+	 * Render the Source column cell: "Unsplash · photographer" linked to the
+	 * photo's page, or core's em-dash for media from anywhere else.
+	 *
+	 * @param string $column_name Current column.
+	 * @param int    $post_id     Attachment ID.
+	 */
+	public static function render_source_column( $column_name, $post_id ) {
+		if ( 'saddle_source' !== $column_name ) {
+			return;
+		}
+
+		$url = self::photo_page_url( $post_id );
+		if ( '' === $url ) {
+			echo '<span aria-hidden="true">&#8212;</span><span class="screen-reader-text">' . esc_html__( 'Uploaded directly', 'saddle' ) . '</span>';
+			return;
+		}
+
+		$photographer = (string) get_post_meta( $post_id, self::META_PHOTOGRAPHER, true );
+		$text         = '' !== $photographer
+			/* translators: %s: photographer name. */
+			? sprintf( __( 'Unsplash · %s', 'saddle' ), $photographer )
+			: __( 'Unsplash', 'saddle' );
+
+		printf(
+			'<a href="%s" target="_blank" rel="noopener noreferrer">%s</a>',
+			esc_url( $url ),
+			esc_html( $text )
+		);
 	}
 }

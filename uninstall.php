@@ -69,3 +69,23 @@ do {
 		wp_delete_post( (int) $saddle_post_id, true );
 	}
 } while ( 200 === $saddle_batch );
+
+// Remove the Media Tags taxonomy's terms (and their relationships). The
+// taxonomy isn't registered during uninstall, so re-register it minimally
+// first or the term APIs refuse to touch it. The _saddle_unsplash_* postmeta
+// (photo id, photographer, links) is deliberately KEPT — attribution
+// provenance on the user's own media is user data, same stance as the
+// Application Passwords note above.
+register_taxonomy( 'saddle_media_tag', 'attachment' );
+$saddle_terms = get_terms(
+	array(
+		'taxonomy'   => 'saddle_media_tag',
+		'hide_empty' => false,
+		'fields'     => 'ids',
+	)
+);
+if ( is_array( $saddle_terms ) ) {
+	foreach ( $saddle_terms as $saddle_term_id ) {
+		wp_delete_term( (int) $saddle_term_id, 'saddle_media_tag' );
+	}
+}

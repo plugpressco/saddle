@@ -120,10 +120,25 @@ class Saddle_Unsplash_Test extends WP_UnitTestCase {
 			),
 			'links'           => array(
 				'download_location' => 'https://api.unsplash.com/photos/' . $id . '/download?ixid=fixture',
+				'html'              => 'https://unsplash.com/photos/' . $id . '-page',
 			),
 			'user'            => array(
 				'name'  => 'Jane Photographer',
 				'links' => array( 'html' => 'https://unsplash.com/@janephoto' ),
+			),
+			'tags'            => array(
+				array(
+					'type'  => 'search',
+					'title' => 'mountain',
+				),
+				array(
+					'type'  => 'landing_page',
+					'title' => 'nature',
+				),
+				array(
+					'type'  => 'search',
+					'title' => 'sunrise',
+				),
 			),
 		);
 	}
@@ -412,6 +427,205 @@ class Saddle_Unsplash_Test extends WP_UnitTestCase {
 
 		$this->assertArrayHasKey( 'PHOTO123', $map );
 		$this->assertSame( $other, $map['OTHER456'], 'A photo id must be found even when another id has many duplicates.' );
+	}
+
+	/* -------- media tags taxonomy + provenance -------- */
+
+	public function test_media_tag_taxonomy_registered_for_attachments_only() {
+		$this->assertTrue( taxonomy_exists( Saddle_Unsplash::TAXONOMY ) );
+
+		$tax = get_taxonomy( Saddle_Unsplash::TAXONOMY );
+		$this->assertSame( array( 'attachment' ), $tax->object_type );
+		$this->assertFalse( $tax->hierarchical );
+		$this->assertFalse( is_taxonomy_viewable( $tax ), 'No front-end archives may exist for media tags.' );
+		$this->assertTrue( $tax->show_admin_column );
+		$this->assertFalse( $tax->show_in_rest );
+		$this->assertSame( '_update_generic_term_count', $tax->update_count_callback, 'Unattached (inherit-status) media must still count.' );
+	}
+
+	public function test_term_count_counts_unattached_attachments() {
+		$att = self::factory()->attachment->create_object( 'count.jpg', 0, array( 'post_mime_type' => 'image/jpeg' ) );
+		wp_set_object_terms( $att, array( 'countable' ), Saddle_Unsplash::TAXONOMY );
+
+		$term = get_term_by( 'name', 'countable', Saddle_Unsplash::TAXONOMY );
+		$this->assertSame( 1, $term->count, 'The generic counter must count unattached inherit-status attachments.' );
+	}
+
+	public function test_import_auto_tags_and_stores_provenance() {
+		Saddle_Capabilities::set_tier( 'write' );
+		Saddle_Unsplash::set_key( self::KEY );
+		$this->mock_http( $this->import_fixtures() );
+
+		$result = $this->ability( 'saddle/unsplash-import' )->execute(
+			array(
+				'photo_id' => 'PHOTO123',
+				'tags'     => array( ' alpine hero ', '<script>x</script>hero', 'Mountain' ),
+			)
+		);
+		$this->assertNotWPError( $result );
+		$id = (int) $result['id'];
+
+		// Agent tags survive (sanitized: script tags AND their content are
+		// stripped), Unsplash's own tags added, and the case-insensitive
+		// duplicate folded — first spelling wins ("Mountain" over "mountain").
+		$names = wp_get_object_terms( $id, Saddle_Unsplash::TAXONOMY, array( 'fields' => 'names' ) );
+		sort( $names );
+		$this->assertSame( array( 'Mountain', 'alpine hero', 'hero', 'nature', 'sunrise' ), $names );
+
+		// Provenance URLs stored from the photo detail.
+		$this->assertSame( 'https://unsplash.com/photos/PHOTO123-page', get_post_meta( $id, Saddle_Unsplash::META_URL, true ) );
+		$this->assertSame( 'https://unsplash.com/@janephoto', get_post_meta( $id, Saddle_Unsplash::META_PHOTOGRAPHER_URL, true ) );
+	}
+
+	public function test_import_caps_unsplash_tags_at_eight() {
+		Saddle_Capabilities::set_tier( 'write' );
+		Saddle_Unsplash::set_key( self::KEY );
+
+		$photo         = self::photo_fixture();
+		$photo['tags'] = array();
+		foreach ( range( 1, 10 ) as $i ) {
+			$photo['tags'][] = array( 'title' => "topic-{$i}" );
+		}
+		$this->mock_http(
+			array(
+				'/photos/PHOTO123/download' => self::json_response( 200, array( 'url' => 'x' ) ),
+				'/photos/PHOTO123'          => self::json_response( 200, $photo ),
+				'images.unsplash.com'       => self::image_stream_fixture(),
+			)
+		);
+
+		$result = $this->ability( 'saddle/unsplash-import' )->execute( array( 'photo_id' => 'PHOTO123' ) );
+		$this->assertNotWPError( $result );
+
+		$names = wp_get_object_terms( (int) $result['id'], Saddle_Unsplash::TAXONOMY, array( 'fields' => 'names' ) );
+		$this->assertCount( 8, $names, 'Unsplash-derived tags must cap at eight.' );
+	}
+
+	public function test_import_without_tags_key_sets_no_terms() {
+		Saddle_Capabilities::set_tier( 'write' );
+		Saddle_Unsplash::set_key( self::KEY );
+
+		$photo = self::photo_fixture();
+		unset( $photo['tags'] );
+		$this->mock_http(
+			array(
+				'/photos/PHOTO123/download' => self::json_response( 200, array( 'url' => 'x' ) ),
+				'/photos/PHOTO123'          => self::json_response( 200, $photo ),
+				'images.unsplash.com'       => self::image_stream_fixture(),
+			)
+		);
+
+		$result = $this->ability( 'saddle/unsplash-import' )->execute( array( 'photo_id' => 'PHOTO123' ) );
+		$this->assertNotWPError( $result );
+		$this->assertSame( array(), wp_get_object_terms( (int) $result['id'], Saddle_Unsplash::TAXONOMY, array( 'fields' => 'names' ) ) );
+	}
+
+	public function test_dedupe_import_appends_agent_tags_with_zero_http() {
+		Saddle_Capabilities::set_tier( 'write' );
+		Saddle_Unsplash::set_key( self::KEY );
+		$this->mock_http( $this->import_fixtures() );
+
+		$first = $this->ability( 'saddle/unsplash-import' )->execute( array( 'photo_id' => 'PHOTO123' ) );
+		$this->assertNotWPError( $first );
+
+		$this->requests = array();
+		$again          = $this->ability( 'saddle/unsplash-import' )->execute(
+			array(
+				'photo_id' => 'PHOTO123',
+				'tags'     => array( 'homepage hero' ),
+			)
+		);
+
+		$this->assertNotWPError( $again );
+		$this->assertTrue( $again['already_in_library'] );
+		$this->assertCount( 0, $this->requests, 'A dedupe hit must stay HTTP-free even when tags are added.' );
+
+		$names = wp_get_object_terms( (int) $first['id'], Saddle_Unsplash::TAXONOMY, array( 'fields' => 'names' ) );
+		$this->assertContains( 'homepage hero', $names );
+		$this->assertContains( 'mountain', $names, 'Original import tags must survive the append.' );
+	}
+
+	public function test_attachment_details_show_escaped_unsplash_provenance() {
+		$att = self::factory()->attachment->create_object( 'prov.jpg', 0, array( 'post_mime_type' => 'image/jpeg' ) );
+		update_post_meta( $att, Saddle_Unsplash::META_ID, 'PHOTOZ' );
+		update_post_meta( $att, Saddle_Unsplash::META_PHOTOGRAPHER, 'Jane <script>alert(1)</script>' );
+		update_post_meta( $att, Saddle_Unsplash::META_PHOTOGRAPHER_URL, 'https://unsplash.com/@janephoto' );
+
+		$fields = apply_filters( 'attachment_fields_to_edit', array(), get_post( $att ) );
+
+		$this->assertArrayHasKey( 'saddle_unsplash', $fields );
+		$this->assertSame( 'html', $fields['saddle_unsplash']['input'] );
+		$this->assertTrue( $fields['saddle_unsplash']['show_in_modal'] );
+		$html = $fields['saddle_unsplash']['html'];
+		$this->assertStringContainsString( 'PHOTOZ', $html );
+		$this->assertStringContainsString( 'View on Unsplash', $html );
+		$this->assertStringNotContainsString( '<script>', $html, 'Photographer names must be escaped — core echoes this html raw.' );
+	}
+
+	public function test_attachment_details_untouched_for_non_unsplash_media() {
+		$att = self::factory()->attachment->create_object( 'plainer.jpg', 0, array( 'post_mime_type' => 'image/jpeg' ) );
+
+		$fields = apply_filters( 'attachment_fields_to_edit', array(), get_post( $att ) );
+
+		$this->assertArrayNotHasKey( 'saddle_unsplash', $fields );
+	}
+
+	public function test_source_column_renders_link_or_dash() {
+		$columns = apply_filters( 'manage_media_columns', array( 'date' => 'Date' ) );
+		$this->assertArrayHasKey( 'saddle_source', $columns );
+
+		$import = self::factory()->attachment->create_object( 'src.jpg', 0, array( 'post_mime_type' => 'image/jpeg' ) );
+		update_post_meta( $import, Saddle_Unsplash::META_ID, 'PHOTOX' );
+		update_post_meta( $import, Saddle_Unsplash::META_PHOTOGRAPHER, 'Jane Photographer' );
+		update_post_meta( $import, Saddle_Unsplash::META_URL, 'https://unsplash.com/photos/PHOTOX-page' );
+
+		ob_start();
+		Saddle_Unsplash::render_source_column( 'saddle_source', $import );
+		$cell = ob_get_clean();
+		$this->assertStringContainsString( 'Unsplash', $cell );
+		$this->assertStringContainsString( 'Jane Photographer', $cell );
+		$this->assertStringContainsString( 'PHOTOX-page', $cell );
+
+		$plain = self::factory()->attachment->create_object( 'plain2.jpg', 0, array( 'post_mime_type' => 'image/jpeg' ) );
+		ob_start();
+		Saddle_Unsplash::render_source_column( 'saddle_source', $plain );
+		$this->assertStringContainsString( '&#8212;', ob_get_clean() );
+	}
+
+	public function test_photo_page_url_falls_back_to_id_for_legacy_imports() {
+		$att = self::factory()->attachment->create_object( 'legacy.jpg', 0, array( 'post_mime_type' => 'image/jpeg' ) );
+		update_post_meta( $att, Saddle_Unsplash::META_ID, 'LEGACY1' );
+
+		$url = Saddle_Unsplash::photo_page_url( $att );
+
+		$this->assertStringContainsString( 'unsplash.com/photos/LEGACY1', $url );
+		$this->assertStringContainsString( 'utm_source=saddle', $url );
+		$this->assertSame( '', Saddle_Unsplash::photo_page_url( 0 ), 'Non-imports must return an empty string.' );
+	}
+
+	public function test_list_media_tag_filter_matches_case_insensitively() {
+		Saddle_Capabilities::set_tier( 'read' );
+		$tagged = self::factory()->attachment->create_object( 'tagged.jpg', 0, array( 'post_mime_type' => 'image/jpeg' ) );
+		$other  = self::factory()->attachment->create_object( 'other.jpg', 0, array( 'post_mime_type' => 'image/jpeg' ) );
+		wp_set_object_terms( $tagged, array( 'misty mountain' ), Saddle_Unsplash::TAXONOMY );
+
+		$result = $this->ability( 'saddle/list-media' )->execute( array( 'tag' => 'Misty Mountain' ) );
+
+		$this->assertNotWPError( $result );
+		$this->assertSame( 1, $result['total'] );
+		$this->assertSame( $tagged, $result['items'][0]['id'] );
+		$this->assertSame( array( 'misty mountain' ), $result['items'][0]['tags'] );
+		$this->assertNotSame( $other, $result['items'][0]['id'] );
+	}
+
+	public function test_media_summary_omits_tags_when_untagged() {
+		Saddle_Capabilities::set_tier( 'read' );
+		self::factory()->attachment->create_object( 'untagged.jpg', 0, array( 'post_mime_type' => 'image/jpeg' ) );
+
+		$result = $this->ability( 'saddle/list-media' )->execute( array() );
+
+		$this->assertNotWPError( $result );
+		$this->assertArrayNotHasKey( 'tags', $result['items'][0], 'Untagged media must not carry an empty tags key.' );
 	}
 
 	/* -------- list-media source filter -------- */
