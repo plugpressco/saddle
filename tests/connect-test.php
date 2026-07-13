@@ -247,4 +247,74 @@ class Saddle_Connect_Test extends WP_UnitTestCase {
 		$this->assertWPError( $result );
 		$this->assertSame( 'saddle_client_not_found', $result->get_error_code() );
 	}
+
+	/* -------- rotate -------- */
+
+	private function rotate( $uuid ) {
+		$req = new WP_REST_Request( 'POST', "/saddle/v1/clients/{$uuid}/rotate" );
+		$req->set_param( 'uuid', $uuid );
+		return Saddle_REST_Admin::rotate_client( $req );
+	}
+
+	public function test_rotate_replaces_the_key_under_the_same_name() {
+		$req = new WP_REST_Request( 'POST', '/saddle/v1/clients' );
+		$req->set_param( 'name', 'Claude Code' );
+		$old = Saddle_REST_Admin::create_client( $req )->get_data();
+
+		// Sanity: the old key works before rotation.
+		$this->assertInstanceOf( 'WP_User', wp_authenticate_application_password( null, $this->login, $old['password'] ) );
+
+		$res = $this->rotate( $old['uuid'] );
+		$this->assertNotWPError( $res );
+		$this->assertSame( 201, $res->get_status() );
+		$new = $res->get_data();
+
+		// Exact same identity — no "Claude Code 2" duplicate.
+		$this->assertSame( 'Saddle: Claude Code', $new['name'] );
+		$this->assertSame( 'Claude Code', $new['label'] );
+		$this->assertNotSame( $old['uuid'], $new['uuid'] );
+		$this->assertTrue( $new['rotated'] );
+
+		// Old key dead, new key alive.
+		$this->assertNotInstanceOf( 'WP_User', wp_authenticate_application_password( null, $this->login, $old['password'] ) );
+		$authed = wp_authenticate_application_password( null, $this->login, $new['password'] );
+		$this->assertInstanceOf( 'WP_User', $authed );
+		$this->assertSame( $this->admin, $authed->ID );
+
+		// Exactly one Saddle client with that name remains.
+		$names = wp_list_pluck( Saddle_REST_Admin::get_clients()->get_data()['clients'], 'name' );
+		$this->assertSame( 1, count( array_keys( $names, 'Saddle: Claude Code', true ) ) );
+	}
+
+	public function test_rotate_swaps_the_last_four_hint() {
+		$req = new WP_REST_Request( 'POST', '/saddle/v1/clients' );
+		$req->set_param( 'name', 'Cursor' );
+		$old = Saddle_REST_Admin::create_client( $req )->get_data();
+
+		$new = $this->rotate( $old['uuid'] )->get_data();
+
+		$hints = get_user_meta( $this->admin, 'saddle_client_hints', true );
+		$this->assertArrayNotHasKey( $old['uuid'], $hints, 'The revoked key\'s hint must be dropped.' );
+		$this->assertSame( substr( str_replace( ' ', '', $new['password'] ), -4 ), $hints[ $new['uuid'] ] );
+	}
+
+	public function test_rotate_refuses_non_saddle_credentials() {
+		list( , $item ) = $this->issue_password( 'Some other plugin' );
+
+		$result = $this->rotate( $item['uuid'] );
+
+		$this->assertWPError( $result );
+		$this->assertSame( 'saddle_client_not_found', $result->get_error_code() );
+
+		// Untouched and still working.
+		$still = WP_Application_Passwords::get_user_application_password( $this->admin, $item['uuid'] );
+		$this->assertNotEmpty( $still );
+	}
+
+	public function test_rotate_unknown_uuid_is_a_clean_404() {
+		$result = $this->rotate( 'deadbeef-0000-0000-0000-000000000000' );
+
+		$this->assertWPError( $result );
+		$this->assertSame( 'saddle_client_not_found', $result->get_error_code() );
+	}
 }

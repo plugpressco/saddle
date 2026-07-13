@@ -474,6 +474,54 @@ body.toplevel_page_saddle {
 	margin-top: 24px;
 }
 
+// Per-app setup guide drawer: three numbered sections with one rhythm.
+.saddle-setup-guide {
+	display: grid;
+	gap: 20px;
+
+	&__app {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		font-weight: 600;
+
+		img {
+			width: 24px;
+			height: 24px;
+		}
+	}
+
+	&__step {
+		display: grid;
+		gap: 10px;
+		justify-items: start;
+
+		h3 {
+			margin: 0;
+			font-size: 13px;
+			font-weight: 640;
+			color: var(--s-fg);
+		}
+
+		p {
+			margin: 0;
+			font-size: 13px;
+			line-height: 1.55;
+			color: var(--s-fg-muted);
+		}
+
+		.pp-codeblock,
+		.pp-snippet {
+			width: 100%;
+		}
+	}
+}
+
+// The already-connected choice card on the wizard's pick step.
+.saddle-wizard__duplicate {
+	margin-bottom: 20px;
+}
+
 // Quiet destructive row action (e.g. Disconnect) — link button, danger ink.
 .saddle-link-danger {
 	color: var(--pp-danger);

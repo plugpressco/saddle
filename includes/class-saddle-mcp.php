@@ -464,12 +464,28 @@ class Saddle_MCP {
 		$outcome = $ability->execute( $arguments );
 
 		if ( is_wp_error( $outcome ) ) {
-			$data       = array( 'wp_error_code' => $outcome->get_error_code() );
+			$code    = $outcome->get_error_code();
+			$message = $outcome->get_error_message();
+
+			// Core's generic permission denial says nothing an agent can act
+			// on. Reconstruct the actual gate (paused / tool off / access
+			// level) so the agent stops retrying and tells the user the fix.
+			if ( 'ability_invalid_permissions' === $code && class_exists( 'Saddle_Capabilities' ) ) {
+				$reason = Saddle_Capabilities::denial_reason( $name );
+				if ( $reason ) {
+					$code    = $reason['code'];
+					$message = $reason['message'];
+				} else {
+					$message .= ' ' . __( 'None of Saddle’s site-wide gates (pause, access level, per-tool toggles) blocked this — the connected WordPress account likely lacks a capability this tool requires, or the specific item is protected. Do not retry the same call.', 'saddle' );
+				}
+			}
+
+			$data       = array( 'wp_error_code' => $code );
 			$error_data = $outcome->get_error_data();
 			if ( ! empty( $error_data ) ) {
 				$data['details'] = $error_data;
 			}
-			return self::error_envelope( $id, -32000, $outcome->get_error_message(), $data );
+			return self::error_envelope( $id, -32000, $message, $data );
 		}
 
 		return self::result_envelope(

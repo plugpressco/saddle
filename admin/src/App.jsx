@@ -570,6 +570,7 @@ export default function App() {
 						{ wizardOpen ? (
 							<ConnectWizard
 								tier={ tier }
+								clients={ clients }
 								onExit={ closeWizard }
 								onClientsChanged={ refreshClients }
 							/>

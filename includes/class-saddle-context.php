@@ -178,6 +178,18 @@ class Saddle_Context {
 			$lines[] = '';
 		}
 
+		// The refusal playbook: what a denial MEANS and the wise response.
+		// Served on every session (initialize instructions + get-instructions,
+		// on both transports) so an agent that hits one stops retrying and
+		// gives the user the actual fix instead of a generic failure.
+		$lines[] = __( '# When a call is refused', 'saddle' );
+		$lines[] = '';
+		$lines[] = '- ' . __( 'A permission error on a tool call means one of the site owner\'s controls blocked it: the global pause switch, the site\'s access level, or that specific tool being turned off. These are the owner\'s deliberate choices — never retry in a loop; tell the user which control to check in the Saddle dashboard (Settings for pause, Permissions for level and per-tool toggles).', 'saddle' );
+		$lines[] = '- ' . __( 'A 401 saying the key was rejected means the sign-in key was revoked or rotated. Ask the user to reconnect this app from Saddle → Connections (or paste the fresh setup if they just rotated the key).', 'saddle' );
+		$lines[] = '- ' . __( 'A 401 saying no key arrived usually means the web server strips the Authorization header. Ask the user to open Saddle → Connections → "Connection details & health" and run the connection check — it can fix this automatically on most hosts.', 'saddle' );
+		$lines[] = '- ' . __( 'A destructive tool answering with a preview and a confirm_token is NOT an error — that is the approval gate. Show the user the preview; call again with the token only after they agree.', 'saddle' );
+		$lines[] = '';
+
 		// Recent-changes recall: what connected agents changed lately, from
 		// Saddle's own activity log. Saddle-generated fact, not agent prose —
 		// the one memory layer that is safe to auto-serve (values are escaped

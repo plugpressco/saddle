@@ -25,6 +25,7 @@ import {
 import { __, sprintf } from '@wordpress/i18n';
 import { saddleData, api } from '../api';
 import ConnectionHealth from './ConnectionHealth';
+import SetupGuideDrawer from './SetupGuideDrawer';
 import { IconConnect, AppLogo, appKeyFromLabel } from './icons';
 
 const MCP_URL = saddleData.mcpUrl || '';
@@ -36,6 +37,15 @@ const DATE_FMT = new Intl.DateTimeFormat( undefined, {
 
 const when = ( ts ) => ( ts ? DATE_FMT.format( new Date( ts * 1000 ) ) : null );
 
+// A connection this old that has never made a request almost certainly never
+// finished setup — the list says so, so stale keys don't linger unnoticed.
+const NEVER_USED_STALE_SECONDS = 48 * 3600;
+
+const isStaleNeverUsed = ( c ) =>
+	! c.last_used &&
+	c.created &&
+	Date.now() / 1000 - c.created > NEVER_USED_STALE_SECONDS;
+
 export default function Apps( {
 	clients,
 	loading,
@@ -46,6 +56,41 @@ export default function Apps( {
 	const confirm = useConfirm();
 	const [ showAdvanced, setShowAdvanced ] = useState( false );
 	const [ test, setTest ] = useState( null );
+	// The setup-guide drawer: { app, label, password? } — password only right
+	// after a rotation (shown once), otherwise placeholder mode.
+	const [ guide, setGuide ] = useState( null );
+
+	const askRotate = async ( c ) => {
+		const ok = await confirm( {
+			title: sprintf(
+				/* translators: %s: the app name. */
+				__( 'Rotate “%s”’s key?', 'saddle' ),
+				c.label || c.name
+			),
+			description: __(
+				'The current key stops working the moment you confirm, and a fresh one is issued under the same name. You’ll paste the new setup into the app right after — until then it can’t connect.',
+				'saddle'
+			),
+			danger: true,
+			confirmLabel: __( 'Rotate key', 'saddle' ),
+			cancelLabel: __( 'Keep the current key', 'saddle' ),
+		} );
+		if ( ! ok ) {
+			return;
+		}
+		api( `clients/${ c.uuid }/rotate`, { method: 'POST' } )
+			.then( ( res ) => {
+				setGuide( {
+					app: appKeyFromLabel( res.label || res.name ),
+					label: res.label || res.name,
+					password: res.password,
+				} );
+				if ( onClientsChanged ) {
+					onClientsChanged();
+				}
+			} )
+			.catch( ( e ) => toast.error( e.message ) );
+	};
 
 	const askRevoke = async ( c ) => {
 		const ok = await confirm( {
@@ -210,6 +255,12 @@ export default function Apps( {
 											'Hasn’t connected yet — it will on first use',
 											'saddle'
 									  ) ) +
+								( isStaleNeverUsed( c )
+									? ` · ${ __(
+											'never connected — safe to disconnect',
+											'saddle'
+									  ) }`
+									: '' ) +
 								( c.last_ip ? ` · ${ c.last_ip }` : '' ) +
 								( c.hint
 									? ` · ${ __( 'key', 'saddle' ) } ····${
@@ -218,13 +269,34 @@ export default function Apps( {
 									: '' )
 							}
 							actions={
-								<Button
-									variant="link"
-									className="saddle-link-danger"
-									onClick={ () => askRevoke( c ) }
-								>
-									{ __( 'Disconnect', 'saddle' ) }
-								</Button>
+								<>
+									<Button
+										variant="link"
+										onClick={ () =>
+											setGuide( {
+												app: appKeyFromLabel(
+													c.label || c.name
+												),
+												label: c.label || c.name,
+											} )
+										}
+									>
+										{ __( 'Setup guide', 'saddle' ) }
+									</Button>
+									<Button
+										variant="link"
+										onClick={ () => askRotate( c ) }
+									>
+										{ __( 'Rotate key', 'saddle' ) }
+									</Button>
+									<Button
+										variant="link"
+										className="saddle-link-danger"
+										onClick={ () => askRevoke( c ) }
+									>
+										{ __( 'Disconnect', 'saddle' ) }
+									</Button>
+								</>
 							}
 						/>
 					) ) }
@@ -303,6 +375,16 @@ export default function Apps( {
 					</p>
 				</div>
 			</Collapsible>
+
+			{ guide && (
+				<SetupGuideDrawer
+					open={ !! guide }
+					onOpenChange={ ( open ) => ! open && setGuide( null ) }
+					app={ guide.app }
+					label={ guide.label }
+					password={ guide.password }
+				/>
+			) }
 		</div>
 	);
 }

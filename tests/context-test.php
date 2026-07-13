@@ -22,6 +22,14 @@ class Saddle_Context_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'posts, pages, media, and their block structure', $ctx );
 	}
 
+	public function test_context_carries_the_refusal_playbook() {
+		$ctx = Saddle_Context::system_context();
+
+		$this->assertStringContainsString( 'When a call is refused', $ctx );
+		$this->assertStringContainsString( 'never retry in a loop', $ctx );
+		$this->assertStringContainsString( 'confirm_token', $ctx );
+	}
+
 	public function test_context_describes_the_approval_gate_at_write_tier() {
 		Saddle_Capabilities::set_tier( 'write' );
 		$ctx = Saddle_Context::system_context();

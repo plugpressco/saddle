@@ -188,6 +188,74 @@ class Saddle_Capabilities {
 	}
 
 	/**
+	 * Explain, in agent-actionable terms, why a tool call would be refused
+	 * right now — so an AI that hits a denial can tell the user exactly what
+	 * to do instead of retrying blind.
+	 *
+	 * Core's Abilities API swallows WP_Error from permission callbacks
+	 * (execute() substitutes a generic 'ability_invalid_permissions'), so the
+	 * legible message can't come from permission() itself. Saddle's fallback
+	 * transport calls this AFTER a generic denial to reconstruct the reason
+	 * from current state, in the same order permission() checks it.
+	 *
+	 * @param string $ability_name Full ability id, e.g. 'saddle/create-post'.
+	 * @return array|null { code, message } or null when nothing would block
+	 *                    (e.g. the denial came from an object-level check
+	 *                    inside the ability, not from Saddle's gates).
+	 */
+	public static function denial_reason( $ability_name ) {
+		$short = 0 === strpos( (string) $ability_name, 'saddle/' )
+			? substr( (string) $ability_name, strlen( 'saddle/' ) )
+			: (string) $ability_name;
+
+		if ( self::is_paused() ) {
+			return array(
+				'code'    => 'saddle_paused',
+				'message' => __( 'The site owner has paused all AI access — every tool is refused until they resume it from Saddle → Settings. Do not retry; tell the user Saddle is paused.', 'saddle' ),
+			);
+		}
+
+		if ( ! is_user_logged_in() ) {
+			return array(
+				'code'    => 'saddle_not_authenticated',
+				'message' => __( 'The request is not authenticated. Reconnect the app from Saddle → Connections to issue a fresh sign-in key.', 'saddle' ),
+			);
+		}
+
+		if ( '' !== $short && ! self::is_ability_enabled( $short ) ) {
+			return array(
+				'code'    => 'saddle_tool_disabled',
+				'message' => sprintf(
+					/* translators: %s: tool name. */
+					__( 'The site owner turned the "%s" tool off individually (Saddle → Permissions). Other tools still work — do not retry this one; tell the user it is disabled.', 'saddle' ),
+					$short
+				),
+			);
+		}
+
+		$ability = function_exists( 'wp_get_ability' ) && isset( wp_get_abilities()[ $ability_name ] )
+			? wp_get_ability( $ability_name )
+			: null;
+		if ( $ability ) {
+			$meta     = $ability->get_meta();
+			$required = isset( $meta['saddle']['tier'] ) ? (string) $meta['saddle']['tier'] : '';
+			if ( '' !== $required && ! self::tier_allows( $required ) ) {
+				return array(
+					'code'    => 'saddle_tier_denied',
+					'message' => sprintf(
+						/* translators: 1: required access level, 2: current access level. */
+						__( 'This tool needs the "%1$s" access level, but this site allows "%2$s". Only the site owner can raise it (Saddle → Permissions). Do not retry — ask the user to change the level if they want this done.', 'saddle' ),
+						$required,
+						self::get_tier()
+					),
+				);
+			}
+		}
+
+		return null;
+	}
+
+	/**
 	 * Record a refused tool call to the activity log so a site owner can see when
 	 * a connected agent tried something its access level, the pause switch, or a
 	 * per-tool toggle blocked.

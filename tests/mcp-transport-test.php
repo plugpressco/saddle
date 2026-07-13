@@ -142,4 +142,65 @@ class Saddle_MCP_Transport_Test extends WP_UnitTestCase {
 
 		wp_set_current_user( 0 );
 	}
+
+	/* -------- agent-legible denials (issue: connections hardening) -------- */
+
+	public function test_tier_denial_explains_the_access_level_to_the_agent() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+		Saddle_Capabilities::set_tier( 'read' );
+
+		$response = $this->call_tool(
+			'saddle/create-post',
+			array(
+				'title'  => 'x',
+				'status' => 'draft',
+			)
+		);
+
+		$this->assertArrayHasKey( 'error', $response );
+		$this->assertSame( 'saddle_tier_denied', $response['error']['data']['wp_error_code'] );
+		$this->assertStringContainsString( 'access level', $response['error']['message'] );
+		$this->assertStringContainsString( 'Do not retry', $response['error']['message'] );
+
+		wp_set_current_user( 0 );
+	}
+
+	public function test_paused_denial_tells_the_agent_saddle_is_paused() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+		Saddle_Capabilities::set_tier( 'write' );
+		Saddle_Capabilities::set_paused( true );
+
+		$response = $this->call_tool( 'saddle/get-site-info', array() );
+
+		Saddle_Capabilities::set_paused( false );
+
+		$this->assertArrayHasKey( 'error', $response );
+		$this->assertSame( 'saddle_paused', $response['error']['data']['wp_error_code'] );
+		$this->assertStringContainsString( 'paused', $response['error']['message'] );
+
+		wp_set_current_user( 0 );
+	}
+
+	public function test_disabled_tool_denial_names_the_toggle() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+		Saddle_Capabilities::set_tier( 'write' );
+		Saddle_Capabilities::set_disabled_abilities( array( 'create-post' ) );
+
+		$response = $this->call_tool(
+			'saddle/create-post',
+			array(
+				'title'  => 'x',
+				'status' => 'draft',
+			)
+		);
+
+		Saddle_Capabilities::set_disabled_abilities( array() );
+
+		$this->assertArrayHasKey( 'error', $response );
+		$this->assertSame( 'saddle_tool_disabled', $response['error']['data']['wp_error_code'] );
+		$this->assertStringContainsString( 'create-post', $response['error']['message'] );
+		$this->assertStringContainsString( 'turned', $response['error']['message'] );
+
+		wp_set_current_user( 0 );
+	}
 }

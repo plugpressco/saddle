@@ -281,6 +281,22 @@ class Saddle_REST_Admin {
 
 		register_rest_route(
 			self::REST_NAMESPACE,
+			'/clients/(?P<uuid>[a-f0-9-]+)/rotate',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( __CLASS__, 'rotate_client' ),
+				'permission_callback' => array( __CLASS__, 'can_manage' ),
+				'args'                => array(
+					'uuid' => array(
+						'type'     => 'string',
+						'required' => true,
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::REST_NAMESPACE,
 			'/audit-log',
 			array(
 				'methods'             => 'GET',
@@ -890,6 +906,78 @@ class Saddle_REST_Admin {
 				'uuid'    => $uuid,
 			),
 			200
+		);
+	}
+
+	/**
+	 * POST /clients/{uuid}/rotate — revoke a Saddle credential and issue a
+	 * fresh one under the exact same name, in one step.
+	 *
+	 * The old key stops working the moment this returns; the new raw password
+	 * appears once in the response (like create_client) and is never stored
+	 * whole. If issuing the replacement fails after the old key is gone, the
+	 * error says so plainly — two live keys are never left behind.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function rotate_client( WP_REST_Request $request ) {
+		$uuid = sanitize_text_field( (string) $request->get_param( 'uuid' ) );
+		$user = wp_get_current_user();
+
+		if ( ! class_exists( 'WP_Application_Passwords' ) ) {
+			return new WP_Error( 'saddle_app_passwords_unavailable', __( 'Application Passwords are not available on this site.', 'saddle' ), array( 'status' => 500 ) );
+		}
+
+		// Same guard as revoke_client: only Saddle-issued credentials.
+		$item = WP_Application_Passwords::get_user_application_password( $user->ID, $uuid );
+		if ( ! $item || empty( $item['name'] ) || 0 !== strpos( $item['name'], self::CLIENT_PREFIX ) ) {
+			return new WP_Error( 'saddle_client_not_found', __( 'No Saddle client with that ID.', 'saddle' ), array( 'status' => 404 ) );
+		}
+
+		$app_name = (string) $item['name'];
+
+		// Old key first — its name must be free so the replacement can keep it,
+		// and a rotation must never leave two live keys.
+		$deleted = WP_Application_Passwords::delete_application_password( $user->ID, $uuid );
+		if ( is_wp_error( $deleted ) ) {
+			return $deleted;
+		}
+
+		$created = WP_Application_Passwords::create_new_application_password(
+			$user->ID,
+			array( 'name' => $app_name )
+		);
+		if ( is_wp_error( $created ) ) {
+			return new WP_Error(
+				'saddle_rotate_failed',
+				__( 'The old key was removed, but issuing its replacement failed. Connect the app again from the Connections screen.', 'saddle' ),
+				array( 'status' => 500 )
+			);
+		}
+
+		list( $raw_password, $new_item ) = $created;
+
+		// Swap the last-4 hint: old uuid out, new one in.
+		$hint  = substr( str_replace( ' ', '', $raw_password ), -4 );
+		$hints = get_user_meta( $user->ID, 'saddle_client_hints', true );
+		$hints = is_array( $hints ) ? $hints : array();
+		unset( $hints[ $uuid ] );
+		$hints[ $new_item['uuid'] ] = $hint;
+		update_user_meta( $user->ID, 'saddle_client_hints', $hints );
+
+		return new WP_REST_Response(
+			array(
+				'uuid'       => $new_item['uuid'],
+				'name'       => $app_name,
+				'label'      => trim( substr( $app_name, strlen( self::CLIENT_PREFIX ) ) ),
+				'password'   => $raw_password,
+				'user_login' => $user->user_login,
+				'created'    => isset( $new_item['created'] ) ? (int) $new_item['created'] : 0,
+				'hint'       => $hint,
+				'rotated'    => true,
+			),
+			201
 		);
 	}
 
