@@ -141,32 +141,91 @@ class Saddle_Recipes {
 		return null;
 	}
 
-	/* ---- small node builders (keep the recipes above readable) ---- */
+	/*
+	 * ---- small node builders (keep the recipes above readable) ----
+	 */
 
+	/**
+	 * A core/heading node.
+	 *
+	 * @param string $text  Heading text.
+	 * @param int    $level Heading level (2-4).
+	 * @return array
+	 */
 	private static function heading( $text, $level ) {
-		return array( 'type' => 'core/heading', 'content' => $text, 'attrs' => array( 'level' => $level ) );
+		return array(
+			'type'    => 'core/heading',
+			'content' => $text,
+			'attrs'   => array( 'level' => $level ),
+		);
 	}
 
+	/**
+	 * A core/paragraph node.
+	 *
+	 * @param string $text Paragraph text.
+	 * @return array
+	 */
 	private static function paragraph( $text ) {
-		return array( 'type' => 'core/paragraph', 'content' => $text );
+		return array(
+			'type'    => 'core/paragraph',
+			'content' => $text,
+		);
 	}
 
+	/**
+	 * A core/buttons row with one placeholder-linked button per label.
+	 *
+	 * @param string[] $labels Button labels.
+	 * @return array
+	 */
 	private static function buttons( array $labels ) {
 		$buttons = array();
 		foreach ( $labels as $label ) {
-			$buttons[] = array( 'type' => 'core/button', 'content' => $label, 'attrs' => array( 'url' => '#' ) );
+			$buttons[] = array(
+				'type'    => 'core/button',
+				'content' => $label,
+				'attrs'   => array( 'url' => '#' ),
+			);
 		}
-		return array( 'type' => 'core/buttons', 'children' => $buttons );
+		return array(
+			'type'     => 'core/buttons',
+			'children' => $buttons,
+		);
 	}
 
+	/**
+	 * A core/group wrapper.
+	 *
+	 * @param array $children Child nodes.
+	 * @return array
+	 */
 	private static function group( array $children ) {
-		return array( 'type' => 'core/group', 'children' => $children );
+		return array(
+			'type'     => 'core/group',
+			'children' => $children,
+		);
 	}
 
+	/**
+	 * A core/columns row.
+	 *
+	 * @param array $columns Column nodes.
+	 * @return array
+	 */
 	private static function columns( array $columns ) {
-		return array( 'type' => 'core/columns', 'children' => $columns );
+		return array(
+			'type'     => 'core/columns',
+			'children' => $columns,
+		);
 	}
 
+	/**
+	 * A feature column: heading + placeholder blurb.
+	 *
+	 * @param string $title Feature title.
+	 * @return array
+	 */
 	private static function feature_col( $title ) {
 		return array(
 			'type'     => 'core/column',
@@ -177,6 +236,13 @@ class Saddle_Recipes {
 		);
 	}
 
+	/**
+	 * A pricing column: plan name, price, included-items list, CTA.
+	 *
+	 * @param string $plan  Plan name.
+	 * @param string $price Price line.
+	 * @return array
+	 */
 	private static function price_col( $plan, $price ) {
 		return array(
 			'type'     => 'core/column',
@@ -186,9 +252,18 @@ class Saddle_Recipes {
 				array(
 					'type'     => 'core/list',
 					'children' => array(
-						array( 'type' => 'core/list-item', 'content' => __( 'What this plan includes', 'saddle' ) ),
-						array( 'type' => 'core/list-item', 'content' => __( 'A second included item', 'saddle' ) ),
-						array( 'type' => 'core/list-item', 'content' => __( 'A third included item', 'saddle' ) ),
+						array(
+							'type'    => 'core/list-item',
+							'content' => __( 'What this plan includes', 'saddle' ),
+						),
+						array(
+							'type'    => 'core/list-item',
+							'content' => __( 'A second included item', 'saddle' ),
+						),
+						array(
+							'type'    => 'core/list-item',
+							'content' => __( 'A third included item', 'saddle' ),
+						),
 					),
 				),
 				self::buttons( array( __( 'Choose plan', 'saddle' ) ) ),
@@ -196,6 +271,11 @@ class Saddle_Recipes {
 		);
 	}
 
+	/**
+	 * A testimonial column: quote + attribution placeholders.
+	 *
+	 * @return array
+	 */
 	private static function quote_col() {
 		return array(
 			'type'     => 'core/column',

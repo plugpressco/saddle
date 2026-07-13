@@ -431,7 +431,10 @@ class Saddle_Blocks_Schema {
 			'font_sizes' => $has_tj ? $tokens['font_sizes'] : array(),
 			'fonts'      => $has_tj ? $tokens['font_families'] : array(),
 			'spacing'    => $has_tj ? $tokens['spacing_sizes'] : array(),
-			'layout'     => $has_tj ? $tokens['layout'] : array( 'content_width' => null, 'wide_width' => null ),
+			'layout'     => $has_tj ? $tokens['layout'] : array(
+				'content_width' => null,
+				'wide_width'    => null,
+			),
 			'variables'  => array(),
 			'presets'    => array(),
 			'usage'      => __( 'This is the site\'s single source of design truth — use it before building so pages inherit the real brand instead of inventing one. On a block theme, reference the color/size SLUGS in block attrs; on a page builder, use the color/variable IDs the builder addon lists here. Entries are listed theme/brand-first.', 'saddle' ),

@@ -3,7 +3,7 @@ Contributors: badhonrocks
 Tags: mcp, ai, application passwords, agents, automation
 Requires at least: 6.9
 Tested up to: 7.0
-Requires PHP: 8.0
+Requires PHP: 7.4
 Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -42,7 +42,7 @@ Every tool declares its required access level and whether it is destructive. A R
 
 = How agents connect =
 
-From **Saddle → Apps**, you name a connection and approve it. WordPress core issues an Application Password scoped to that connection, and Saddle confines that credential to its own endpoint — a Saddle key cannot be used against the rest of the REST API or XML-RPC. Revoke any connection at any time to instantly invalidate its credentials.
+From **Saddle → Connections**, you name a connection and approve it. WordPress core issues an Application Password scoped to that connection, and Saddle confines that credential to its own endpoint — a Saddle key cannot be used against the rest of the REST API or XML-RPC. Revoke any connection at any time to instantly invalidate its credentials.
 
 = Bundled library =
 
@@ -70,7 +70,7 @@ There are two outbound behaviors, both initiated by you and both to hosts you ch
 
 == Installation ==
 
-1. Upload the plugin to `wp-content/plugins/saddle` and activate it. Saddle requires **WordPress 6.9 or newer** (for the core Abilities API) and **PHP 8.0+**.
+1. Upload the plugin to `wp-content/plugins/saddle` and activate it. Saddle requires **WordPress 6.9 or newer** (for the core Abilities API) and **PHP 7.4+**.
 2. Open **Saddle** in the admin menu. The access level defaults to **Read**.
 3. Under **Apps**, name a connection and click **Connect** to issue its credential.
 4. Configure your MCP client with the connection URL, your username, and the issued Application Password.

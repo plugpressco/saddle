@@ -565,12 +565,36 @@ class Saddle_Blocks_Abilities {
 		// 8px spacing scale. Builder-agnostic; the builder maps it to its store.
 		$spec = array(
 			'colors'  => array(
-				array( 'slug' => 'brand-accent', 'name' => 'Accent', 'value' => $accent ),
-				array( 'slug' => 'brand-ink', 'name' => 'Ink', 'value' => '#1a1a1a' ),
-				array( 'slug' => 'brand-body', 'name' => 'Body', 'value' => '#4b5563' ),
-				array( 'slug' => 'brand-muted', 'name' => 'Muted', 'value' => '#9ca3af' ),
-				array( 'slug' => 'brand-line', 'name' => 'Line', 'value' => '#e5e7eb' ),
-				array( 'slug' => 'brand-surface', 'name' => 'Surface', 'value' => '#ffffff' ),
+				array(
+					'slug'  => 'brand-accent',
+					'name'  => 'Accent',
+					'value' => $accent,
+				),
+				array(
+					'slug'  => 'brand-ink',
+					'name'  => 'Ink',
+					'value' => '#1a1a1a',
+				),
+				array(
+					'slug'  => 'brand-body',
+					'name'  => 'Body',
+					'value' => '#4b5563',
+				),
+				array(
+					'slug'  => 'brand-muted',
+					'name'  => 'Muted',
+					'value' => '#9ca3af',
+				),
+				array(
+					'slug'  => 'brand-line',
+					'name'  => 'Line',
+					'value' => '#e5e7eb',
+				),
+				array(
+					'slug'  => 'brand-surface',
+					'name'  => 'Surface',
+					'value' => '#ffffff',
+				),
 			),
 			'type'    => array( 16, 20, 24, 32, 44, 60 ),
 			'spacing' => array( 8, 16, 24, 32, 48, 64, 96 ),

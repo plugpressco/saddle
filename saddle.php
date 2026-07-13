@@ -5,7 +5,7 @@
  * Description:       Self-hosted MCP server for WordPress. Tiered, default-safe, approval-gated access to posts, pages, and media for AI agents — with no third-party credential custody.
  * Version:           1.0.0
  * Requires at least: 6.9
- * Requires PHP:      8.0
+ * Requires PHP:      7.4
  * Author:            PlugPress
  * Author URI:        https://plugpress.co
  * License:           GPL-2.0-or-later

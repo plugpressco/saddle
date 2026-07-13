@@ -33,7 +33,7 @@
 	</rule>
 
 	<rule ref="PHPCompatibilityWP"/>
-	<config name="testVersion" value="8.0-"/>
+	<config name="testVersion" value="7.4-"/>
 	<config name="minimum_wp_version" value="7.0"/>
 
 	<!-- Errors block CI; advisory warnings are still printed but don't fail the
