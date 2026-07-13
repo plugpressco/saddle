@@ -88,7 +88,10 @@ module.exports = function ( grunt ) {
 							'!CLAUDE.md',
 							'!STATUS.md',
 							'!README.md',
+							'!AGENTS.md',
 							'!admin/DESIGN-ALIGNMENT.md',
+							// Lint config — dev-only.
+							'!phpcs.xml.dist',
 							// Dev caches.
 							'!.phpunit.result.cache',
 							// NOTE: admin/src/ IS shipped. WordPress.org requires the

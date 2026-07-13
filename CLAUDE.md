@@ -11,9 +11,10 @@ Self-hosted WordPress MCP server: tiered, approval-gated CRUD for posts, pages, 
 media, plus builder-agnostic block tooling. Check the scope lock in the
 [Finalized Plan](https://github.com/plugpressco/saddle/issues/12) before adding anything not already there.
 
-**Distribution:** no WP.org submission planned (decided 2026-07-03) — self-hosted
-only for now. Don't spend effort on WP.org-specific compliance beyond normal good
-practice. Revisit only when Fahim explicitly reopens it.
+**Distribution:** WordPress.org submission planned (Fahim reopened this
+2026-07-13, superseding the 2026-07-03 self-hosted-only call). The first public
+tag / GitHub release ships only AFTER WP.org approval — don't tag or publish a
+release before then. WP.org compliance is in scope.
 
 ## Feature workflow — GitHub Issues, one project
 
