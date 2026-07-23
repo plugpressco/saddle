@@ -75,6 +75,8 @@ class Saddle_Integration_Engine {
 	private $registered = array();
 
 	/**
+	 * Configure the engine for one catalog.
+	 *
 	 * @param array  $default_catalog Catalog served when the filter adds nothing.
 	 * @param string $catalog_filter  Filter name exposing the catalog.
 	 * @param string $enabled_filter  Filter name for the per-integration switch.

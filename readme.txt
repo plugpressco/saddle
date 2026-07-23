@@ -118,6 +118,15 @@ Never. Every operation goes through WordPress's own PHP functions. There is no s
 
 == Changelog ==
 
+= 1.1.0 =
+* New: user directory read tools (list-users, get-user) — read-only, capability-gated, with personal details visible only to accounts that can manage users.
+* New: first-party integration wrappers — abilities from PlugPress plugins (Waggle) surface as saddle/* tools behind Saddle's full safety model (access levels, pause, per-tool switches, two-step confirmation, activity log).
+* Security: confirmation tokens are now bound to the user who previewed the action, and wrapped destructive tools bind their full argument set into the token — a confirmation can never change what was previewed.
+* Security: issued credentials are recognized by an internal marker instead of their display name, so renaming a key can no longer widen its access.
+* Security: optional domain enforcement — write access can auto-suspend when the site's domain changes (cloned or migrated database) until you re-confirm it.
+* Improved: denial explanations now mirror the enforced checks exactly (including missing-capability denials); the activity log keeps separate caps for changes and denials so denials can never crowd out change history; failed confirmed destructive actions are logged too.
+* Internal: one shared integration engine, unified builder detection, and a stricter validation contract for page-tree profiles.
+
 = 1.0.0 =
 * Initial public release.
 * MCP server on your own site: content tools (posts, pages, media, taxonomies, search), Gutenberg block design tools with schema validation and theme design tokens, opt-in site management (settings, plugins, themes, cache), Skills, memory, and an activity log.
