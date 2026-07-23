@@ -50,7 +50,7 @@ class McpTransportFactory {
 					__FUNCTION__,
 					sprintf(
 					/* translators: %s: Transport class name */
-						esc_html__( 'Transport class "%s" does not exist. Make sure the class is properly autoloaded or included.', 'mcp-adapter' ),
+						esc_html__( 'Transport class "%s" does not exist. Make sure the class is properly autoloaded or included.', 'saddle' ),
 						esc_html( $mcp_transport )
 					),
 					'0.1.0'
@@ -69,7 +69,7 @@ class McpTransportFactory {
 					__FUNCTION__,
 					sprintf(
 					/* translators: %s: Transport class name */
-						esc_html__( 'Transport class "%s" must implement McpTransportInterface. Check your transport implementation.', 'mcp-adapter' ),
+						esc_html__( 'Transport class "%s" must implement McpTransportInterface. Check your transport implementation.', 'saddle' ),
 						esc_html( $mcp_transport )
 					),
 					'0.1.0'

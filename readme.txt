@@ -1,4 +1,4 @@
-=== Saddle – Control WordPress with AI (MCP Server) ===
+=== Saddle – Control Your Site with AI (MCP Server) ===
 Contributors: badhonrocks
 Tags: mcp, ai, application passwords, agents, automation
 Requires at least: 6.9

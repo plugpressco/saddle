@@ -315,7 +315,7 @@ class RegisterAbilityAsMcpPrompt {
 					'mcp_prompt_invalid_argument',
 					sprintf(
 					/* translators: 1: argument index, 2: ability name */
-						__( 'Argument at index %1$d must be an array for ability "%2$s".', 'mcp-adapter' ),
+						__( 'Argument at index %1$d must be an array for ability "%2$s".', 'saddle' ),
 						$index,
 						$this->ability->get_name()
 					)
@@ -328,7 +328,7 @@ class RegisterAbilityAsMcpPrompt {
 					'mcp_prompt_argument_missing_name',
 					sprintf(
 					/* translators: 1: argument index, 2: ability name */
-						__( 'Argument at index %1$d is missing required "name" field for ability "%2$s".', 'mcp-adapter' ),
+						__( 'Argument at index %1$d is missing required "name" field for ability "%2$s".', 'saddle' ),
 						$index,
 						$this->ability->get_name()
 					)
@@ -467,7 +467,7 @@ class RegisterAbilityAsMcpPrompt {
 				'mcp_prompt_name_filter_invalid',
 				sprintf(
 					/* translators: %s: invalid prompt name returned by filter */
-					__( 'Filter returned invalid MCP prompt name: %s', 'mcp-adapter' ),
+					__( 'Filter returned invalid MCP prompt name: %s', 'saddle' ),
 					is_string( $filtered_name ) ? $filtered_name : gettype( $filtered_name )
 				)
 			);
@@ -504,7 +504,7 @@ class RegisterAbilityAsMcpPrompt {
 				'mcp_prompt_dto_creation_failed',
 				sprintf(
 				/* translators: %s: error message */
-					__( 'Failed to create Prompt DTO for ability %1$s: %2$s', 'mcp-adapter' ),
+					__( 'Failed to create Prompt DTO for ability %1$s: %2$s', 'saddle' ),
 					$ability->get_name(),
 					$e->getMessage()
 				),

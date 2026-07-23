@@ -147,7 +147,7 @@ class ToolsHandler {
 
 			$permission = $mcp_tool->check_permission( $args );
 			if ( true !== $permission ) {
-				$error_message = __( 'Permission denied', 'mcp-adapter' );
+				$error_message = __( 'Permission denied', 'saddle' );
 				if ( is_wp_error( $permission ) ) {
 					$error_message = $permission->get_error_message();
 

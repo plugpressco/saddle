@@ -73,7 +73,7 @@ final class Plugin {
 				'admin_notices',
 				static function () {
 					wp_admin_notice(
-						__( 'Abilities API not available (wp_register_ability function not found)', 'mcp-adapter' ),
+						__( 'Abilities API not available (wp_register_ability function not found)', 'saddle' ),
 						array(
 							'type'    => 'error',
 							'dismiss' => false,
@@ -96,7 +96,7 @@ final class Plugin {
 			__FUNCTION__,
 			sprintf(
 			// translators: %s: Class name.
-				esc_html__( 'The %s class should not be cloned.', 'mcp-adapter' ),
+				esc_html__( 'The %s class should not be cloned.', 'saddle' ),
 				esc_html( self::class ),
 			),
 			'0.1.0'
@@ -111,7 +111,7 @@ final class Plugin {
 			__FUNCTION__,
 			sprintf(
 			// translators: %s: Class name.
-				esc_html__( 'De-serializing instances of %s is not allowed.', 'mcp-adapter' ),
+				esc_html__( 'De-serializing instances of %s is not allowed.', 'saddle' ),
 				esc_html( self::class ),
 			),
 			'0.1.0'

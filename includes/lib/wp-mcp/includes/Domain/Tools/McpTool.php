@@ -180,7 +180,7 @@ final class McpTool implements McpComponentInterface {
 				'mcp_tool_dto_creation_failed',
 				sprintf(
 				/* translators: %s: error message */
-					__( 'Failed to create Tool DTO: %s', 'mcp-adapter' ),
+					__( 'Failed to create Tool DTO: %s', 'saddle' ),
 					$e->getMessage()
 				),
 				array( 'exception' => $e )

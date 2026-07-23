@@ -72,7 +72,7 @@ class RegisterAbilityAsMcpTool {
 				'mcp_tool_dto_creation_failed',
 				sprintf(
 				/* translators: %s: error message */
-					__( 'Failed to create Tool DTO for ability %1$s: %2$s', 'mcp-adapter' ),
+					__( 'Failed to create Tool DTO for ability %1$s: %2$s', 'saddle' ),
 					$ability->get_name(),
 					$e->getMessage()
 				),
@@ -230,7 +230,7 @@ class RegisterAbilityAsMcpTool {
 				'mcp_tool_name_filter_invalid',
 				sprintf(
 				/* translators: %s: invalid tool name returned by filter */
-					__( 'Filter returned invalid MCP tool name: %s', 'mcp-adapter' ),
+					__( 'Filter returned invalid MCP tool name: %s', 'saddle' ),
 					is_string( $filtered_name ) ? $filtered_name : gettype( $filtered_name )
 				)
 			);
