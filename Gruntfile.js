@@ -89,6 +89,7 @@ module.exports = function ( grunt ) {
 							'!STATUS.md',
 							'!README.md',
 							'!AGENTS.md',
+							'!WPORG-SUBMISSION.md',
 							'!admin/DESIGN-ALIGNMENT.md',
 							// Lint config — dev-only.
 							'!phpcs.xml.dist',
