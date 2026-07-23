@@ -2,7 +2,7 @@
 
 **A safe, self-hosted MCP server for WordPress.** Turn your own site into a [Model Context Protocol](https://modelcontextprotocol.io) server so AI agents like Claude can work with your content — under access levels you set, with no third-party credential custody.
 
-- **Requires:** WordPress 6.9+ (core Abilities API) · PHP 8.0+
+- **Requires:** WordPress 6.9+ (core Abilities API) · PHP 7.4+
 - **License:** GPL-2.0-or-later
 - **Author:** [PlugPress](https://plugpress.co)
 
@@ -50,7 +50,7 @@ when_to_use: publishing or scheduling a post
 
 ## Installation
 
-1. Copy the plugin to `wp-content/plugins/saddle` and activate it (WordPress 6.9+, PHP 8.0+).
+1. Copy the plugin to `wp-content/plugins/saddle` and activate it (WordPress 6.9+, PHP 7.4+).
 2. Open **Saddle** in the admin menu — the access level defaults to **Read**.
 3. Under **Apps**, name a connection and click **Connect** to issue its credential.
 4. Point your MCP client at the connection URL with your username and the issued Application Password.
