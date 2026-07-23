@@ -54,37 +54,31 @@ class Saddle_Verify_Abilities {
 	 */
 	public static function verify_page( $input = null ) {
 		$input = is_array( $input ) ? $input : array();
-		$post  = get_post( isset( $input['post_id'] ) ? (int) $input['post_id'] : 0 );
-		if ( ! $post || ! in_array( $post->post_type, array( 'post', 'page' ), true ) ) {
-			return new WP_Error( 'saddle_not_found', __( 'No post or page with that ID.', 'saddle' ), array( 'status' => 404 ) );
-		}
-		if ( ! current_user_can( 'read_post', $post->ID ) ) {
-			return new WP_Error( 'saddle_forbidden', __( 'You cannot read this post.', 'saddle' ), array( 'status' => 403 ) );
+		$post  = Saddle_Abilities::require_readable_post( $input );
+		if ( is_wp_error( $post ) ) {
+			return $post;
 		}
 
 		$builder  = Saddle_Abilities::builder_signature( $post );
-		$accessor = null === $builder ? new Saddle_Lint_Gutenberg_Accessor() : null;
+		$resolved = Saddle_Accessors::lint(
+			$post,
+			'saddle_verify_unsupported',
+			/* translators: 1: post ID, 2: builder name. */
+			__( 'Post #%1$d is built with %2$s, and no verifier for that builder is installed. Divi 5 pages need Saddle Pro.', 'saddle' )
+		);
 
-		/** This filter is documented in includes/abilities/lint.php */
-		$accessor = apply_filters( 'saddle_lint_accessor', $accessor, $builder, $post );
-		if ( ! $accessor instanceof Saddle_Lint_Accessor ) {
-			$accessor = null;
-		}
+		// Verify can still run its structural + echo passes without a lint
+		// accessor (a builder may provide findings without lint), so an
+		// unresolved accessor only skips pass three here.
+		$report = Saddle_Verify::run( $post, $builder, is_wp_error( $resolved ) ? null : $resolved );
 
-		$report = Saddle_Verify::run( $post, $builder, $accessor );
-
-		// A builder page where NOTHING could run isn't a report, it's a gap.
-		if ( count( $report['skipped'] ) >= 3 ) {
-			return new WP_Error(
-				'saddle_verify_unsupported',
-				sprintf(
-					/* translators: 1: post ID, 2: builder name. */
-					__( 'Post #%1$d is built with %2$s, and no verifier for that builder is installed. Divi 5 pages need Saddle Pro.', 'saddle' ),
-					$post->ID,
-					(string) $builder
-				),
-				array( 'status' => 409 )
-			);
+		// A builder page where NOTHING could run isn't a report, it's a gap:
+		// no lint accessor resolved AND the builder's structural/echo passes
+		// were skipped too.
+		if ( is_wp_error( $resolved )
+			&& in_array( 'structural', $report['skipped'], true )
+			&& in_array( 'echo', $report['skipped'], true ) ) {
+			return $resolved;
 		}
 
 		return array_merge(
