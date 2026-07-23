@@ -102,6 +102,83 @@ class Saddle_Lint {
 		return $nodes;
 	}
 
+	/*
+	---------------------------------------------------------------------
+	 * Node-list shape helpers
+	 *
+	 * The flat list above is consumed by lint rules AND the render
+	 * outline; these helpers are the one implementation of its shape
+	 * conventions (they used to be duplicated in Saddle_Lint_Rule and
+	 * Saddle_Render).
+	 * -------------------------------------------------------------------
+	 */
+
+	/**
+	 * The direct children of an address, in order.
+	 *
+	 * @param array[]     $nodes          Flat node list.
+	 * @param string|null $parent_address Parent address (null = roots).
+	 * @return array[]
+	 */
+	public static function children_of( array $nodes, $parent_address ) {
+		$out = array();
+		foreach ( $nodes as $node ) {
+			if ( $node['parent'] === $parent_address ) {
+				$out[] = $node;
+			}
+		}
+		return $out;
+	}
+
+	/**
+	 * All descendants of an address, document order.
+	 *
+	 * @param array[] $nodes    Flat node list.
+	 * @param string  $ancestor Ancestor address.
+	 * @return array[]
+	 */
+	public static function descendants_of( array $nodes, $ancestor ) {
+		$out = array();
+		foreach ( $nodes as $node ) {
+			if ( self::is_descendant( $node, $ancestor ) ) {
+				$out[] = $node;
+			}
+		}
+		return $out;
+	}
+
+	/**
+	 * Whether $node lies strictly inside the subtree at $ancestor_address.
+	 *
+	 * @param array  $node             Node entry.
+	 * @param string $ancestor_address Candidate ancestor address.
+	 * @return bool
+	 */
+	public static function is_descendant( array $node, $ancestor_address ) {
+		return 0 === strpos( $node['address'] . '.', $ancestor_address . '.' )
+			&& $node['address'] !== $ancestor_address;
+	}
+
+	/**
+	 * The page's top-level sections: the root nodes, or — when the page is a
+	 * single root wrapper (Divi's divi/placeholder, a lone all-page group) —
+	 * that wrapper's children. This is what "sibling sections" means to the
+	 * lint rules and the render outline on every builder.
+	 *
+	 * @param array[] $nodes Flat node list.
+	 * @return array[]
+	 */
+	public static function sections( array $nodes ) {
+		$roots = self::children_of( $nodes, null );
+		if ( 1 === count( $roots ) ) {
+			$inner = self::children_of( $nodes, $roots[0]['address'] );
+			if ( $inner ) {
+				return $inner;
+			}
+		}
+		return $roots;
+	}
+
 	/**
 	 * Depth-first walk.
 	 *

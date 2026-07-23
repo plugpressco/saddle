@@ -331,7 +331,7 @@ class RequestRouter {
 				return McpErrorFactory::create_error_response(
 					$request_id,
 					isset( $error['code'] ) ? (int) $error['code'] : McpErrorFactory::INTERNAL_ERROR,
-					(string) ( $error['message'] ?? __( 'Failed to create session', 'mcp-adapter' ) ),
+					(string) ( $error['message'] ?? __( 'Failed to create session', 'saddle' ) ),
 					$error['data'] ?? null
 				);
 			}

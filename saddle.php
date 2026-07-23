@@ -3,7 +3,7 @@
  * Plugin Name:       Saddle
  * Plugin URI:        https://plugpress.co/saddle
  * Description:       Self-hosted MCP server for WordPress. Tiered, default-safe, approval-gated access to posts, pages, and media for AI agents — with no third-party credential custody.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Requires at least: 6.9
  * Requires PHP:      7.4
  * Author:            PlugPress
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SADDLE_VERSION', '1.0.0' );
+define( 'SADDLE_VERSION', '1.1.0' );
 define( 'SADDLE_FILE', __FILE__ );
 define( 'SADDLE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SADDLE_URL', plugin_dir_url( __FILE__ ) );
@@ -30,6 +30,7 @@ define( 'SADDLE_MIN_WP', '6.9' );
  * Note: Saddle_Ecosystem is intentionally NOT loaded — it is parked Phase 3
  * scope (see https://github.com/plugpressco/saddle/issues/12). Do not require it without reopening that decision.
  */
+require_once SADDLE_DIR . 'includes/class-saddle-builders.php';
 require_once SADDLE_DIR . 'includes/class-saddle-tree.php';
 require_once SADDLE_DIR . 'includes/class-saddle-blocks-tree.php';
 require_once SADDLE_DIR . 'includes/class-saddle-blocks-author.php';

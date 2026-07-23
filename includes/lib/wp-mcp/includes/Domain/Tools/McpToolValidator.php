@@ -51,7 +51,7 @@ class McpToolValidator {
 			$error_message  = $context ? "[$context] " : '';
 			$error_message .= sprintf(
 			/* translators: %s: comma-separated list of validation errors */
-				__( 'Tool validation failed: %s', 'mcp-adapter' ),
+				__( 'Tool validation failed: %s', 'saddle' ),
 				implode( ', ', $validation_errors )
 			);
 			return new WP_Error( 'mcp_tool_validation_failed', esc_html( $error_message ) );
@@ -84,7 +84,7 @@ class McpToolValidator {
 
 		// Validate name (required, 1-128 chars, alphanumeric + _.-).
 		if ( ! McpValidator::validate_name( $tool->getName() ) ) {
-			$errors[] = __( 'Tool name must be 1-128 characters and contain only [A-Za-z0-9_.-]', 'mcp-adapter' );
+			$errors[] = __( 'Tool name must be 1-128 characters and contain only [A-Za-z0-9_.-]', 'saddle' );
 		}
 
 		// Validate icons if present.
@@ -137,7 +137,7 @@ class McpToolValidator {
 				'mcp_tool_validation_failed',
 				sprintf(
 				/* translators: %s: list of validation errors */
-					__( 'Tool validation failed: %s', 'mcp-adapter' ),
+					__( 'Tool validation failed: %s', 'saddle' ),
 					implode( '; ', $errors )
 				)
 			);
@@ -159,12 +159,12 @@ class McpToolValidator {
 
 		// Check the required field: name.
 		if ( empty( $tool_data['name'] ) || ! is_string( $tool_data['name'] ) || ! McpValidator::validate_name( $tool_data['name'] ) ) {
-			$errors[] = __( 'Tool name is required and must only contain letters, numbers, hyphens (-), underscores (_), and dots (.), and be 128 characters or less', 'mcp-adapter' );
+			$errors[] = __( 'Tool name is required and must only contain letters, numbers, hyphens (-), underscores (_), and dots (.), and be 128 characters or less', 'saddle' );
 		}
 
 		// Description is optional per MCP 2025-11-25 spec, but validate if present.
 		if ( isset( $tool_data['description'] ) && ! is_string( $tool_data['description'] ) ) {
-			$errors[] = __( 'Tool description must be a string if provided', 'mcp-adapter' );
+			$errors[] = __( 'Tool description must be a string if provided', 'saddle' );
 		}
 
 		// Validate inputSchema (required field).
@@ -175,7 +175,7 @@ class McpToolValidator {
 
 		// Check optional fields if present.
 		if ( isset( $tool_data['title'] ) && ! is_string( $tool_data['title'] ) ) {
-			$errors[] = __( 'Tool title must be a string if provided', 'mcp-adapter' );
+			$errors[] = __( 'Tool title must be a string if provided', 'saddle' );
 		}
 
 		// Validate outputSchema (optional field).
@@ -205,7 +205,7 @@ class McpToolValidator {
 		// Validate annotations structure if present (tool-specific annotations only).
 		if ( isset( $tool_data['annotations'] ) ) {
 			if ( ! is_array( $tool_data['annotations'] ) ) {
-				$errors[] = __( 'Tool annotations must be an array if provided', 'mcp-adapter' );
+				$errors[] = __( 'Tool annotations must be an array if provided', 'saddle' );
 			} else {
 				// Validate tool-specific annotations (readOnlyHint, destructiveHint, etc.).
 				$tool_annotation_errors = self::get_tool_annotation_validation_errors( $tool_data['annotations'] );
@@ -217,7 +217,7 @@ class McpToolValidator {
 
 		// Validate _meta (optional field).
 		if ( isset( $tool_data['_meta'] ) && ! is_array( $tool_data['_meta'] ) ) {
-			$errors[] = __( 'Tool _meta must be an object/array if provided', 'mcp-adapter' );
+			$errors[] = __( 'Tool _meta must be an object/array if provided', 'saddle' );
 		}
 
 		return $errors;
@@ -242,7 +242,7 @@ class McpToolValidator {
 			return array(
 				sprintf(
 				/* translators: %s: field name (inputSchema or outputSchema) */
-					__( 'Tool %s must be a valid JSON schema object', 'mcp-adapter' ),
+					__( 'Tool %s must be a valid JSON schema object', 'saddle' ),
 					$field_name
 				),
 			);
@@ -254,13 +254,13 @@ class McpToolValidator {
 		if ( ! isset( $schema['type'] ) ) {
 			$errors[] = sprintf(
 			/* translators: %s: field name */
-				__( 'Tool %s must specify a root type of \'object\'', 'mcp-adapter' ),
+				__( 'Tool %s must specify a root type of \'object\'', 'saddle' ),
 				$field_name
 			);
 		} elseif ( ! is_string( $schema['type'] ) || 'object' !== $schema['type'] ) {
 			$errors[] = sprintf(
 			/* translators: %s: field name */
-				__( 'Tool %s root type must be \'object\'', 'mcp-adapter' ),
+				__( 'Tool %s root type must be \'object\'', 'saddle' ),
 				$field_name
 			);
 		}
@@ -269,7 +269,7 @@ class McpToolValidator {
 		if ( isset( $schema['properties'] ) && ! is_array( $schema['properties'] ) ) {
 			$errors[] = sprintf(
 			/* translators: %s: field name */
-				__( 'Tool %s properties must be an object/array', 'mcp-adapter' ),
+				__( 'Tool %s properties must be an object/array', 'saddle' ),
 				$field_name
 			);
 		}
@@ -278,7 +278,7 @@ class McpToolValidator {
 		if ( isset( $schema['required'] ) && ! is_array( $schema['required'] ) ) {
 			$errors[] = sprintf(
 			/* translators: %s: field name */
-				__( 'Tool %s required field must be an array', 'mcp-adapter' ),
+				__( 'Tool %s required field must be an array', 'saddle' ),
 				$field_name
 			);
 		}
@@ -294,7 +294,7 @@ class McpToolValidator {
 				if ( ! is_array( $property ) ) {
 					$errors[] = sprintf(
 					/* translators: %1$s: field name, %2$s: property name */
-						__( 'Tool %1$s property \'%2$s\' must be an object', 'mcp-adapter' ),
+						__( 'Tool %1$s property \'%2$s\' must be an object', 'saddle' ),
 						$field_name,
 						$property_name
 					);
@@ -309,7 +309,7 @@ class McpToolValidator {
 				// If the type is neither string nor array, it's invalid.
 				$errors[] = sprintf(
 				/* translators: %1$s: field name, %2$s: property name */
-					__( 'Tool %1$s property \'%2$s\' type must be a string or array of strings (union type)', 'mcp-adapter' ),
+					__( 'Tool %1$s property \'%2$s\' type must be a string or array of strings (union type)', 'saddle' ),
 					$field_name,
 					$property_name
 				);
@@ -322,7 +322,7 @@ class McpToolValidator {
 				if ( ! is_string( $required_field ) ) {
 					$errors[] = sprintf(
 					/* translators: %s: field name */
-						__( 'Tool %s required field names must be strings', 'mcp-adapter' ),
+						__( 'Tool %s required field names must be strings', 'saddle' ),
 						$field_name
 					);
 					continue;
@@ -335,7 +335,7 @@ class McpToolValidator {
 
 				$errors[] = sprintf(
 				/* translators: %1$s: field name, %2$s: required field */
-					__( 'Tool %1$s required field \'%2$s\' does not exist in properties', 'mcp-adapter' ),
+					__( 'Tool %1$s required field \'%2$s\' does not exist in properties', 'saddle' ),
 					$field_name,
 					$required_field
 				);
@@ -354,7 +354,7 @@ class McpToolValidator {
 	 */
 	private static function get_icons_validation_errors( $icons ): array {
 		if ( ! is_array( $icons ) ) {
-			return array( __( 'Tool icons must be an array if provided', 'mcp-adapter' ) );
+			return array( __( 'Tool icons must be an array if provided', 'saddle' ) );
 		}
 
 		$icons_result = McpValidator::validate_icons_array( $icons, false );
@@ -377,7 +377,7 @@ class McpToolValidator {
 				foreach ( $error_group['errors'] as $error ) {
 					$errors[] = sprintf(
 					/* translators: 1: icon index, 2: error message */
-						__( 'Icon at index %1$d: %2$s', 'mcp-adapter' ),
+						__( 'Icon at index %1$d: %2$s', 'saddle' ),
 						$error_group['index'],
 						$error
 					);
@@ -400,7 +400,7 @@ class McpToolValidator {
 	 */
 	public static function get_execution_validation_errors( $execution ): array {
 		if ( ! is_array( $execution ) ) {
-			return array( __( 'Tool execution must be an object/array if provided', 'mcp-adapter' ) );
+			return array( __( 'Tool execution must be an object/array if provided', 'saddle' ) );
 		}
 
 		$errors = array();
@@ -408,11 +408,11 @@ class McpToolValidator {
 		// Validate taskSupport if present.
 		if ( isset( $execution['taskSupport'] ) ) {
 			if ( ! is_string( $execution['taskSupport'] ) ) {
-				$errors[] = __( 'Tool execution taskSupport must be a string', 'mcp-adapter' );
+				$errors[] = __( 'Tool execution taskSupport must be a string', 'saddle' );
 			} elseif ( ! in_array( $execution['taskSupport'], self::$valid_task_support_values, true ) ) {
 				$errors[] = sprintf(
 				/* translators: %s: comma-separated list of valid values */
-					__( 'Tool execution taskSupport must be one of: %s', 'mcp-adapter' ),
+					__( 'Tool execution taskSupport must be one of: %s', 'saddle' ),
 					implode( ', ', self::$valid_task_support_values )
 				);
 			}
@@ -447,7 +447,7 @@ class McpToolValidator {
 					if ( ! is_bool( $value ) ) {
 						$errors[] = sprintf(
 						/* translators: %s: annotation field name */
-							__( 'Tool annotation field %s must be a boolean', 'mcp-adapter' ),
+							__( 'Tool annotation field %s must be a boolean', 'saddle' ),
 							$field
 						);
 					}
@@ -457,7 +457,7 @@ class McpToolValidator {
 					if ( ! is_string( $value ) ) {
 						$errors[] = sprintf(
 						/* translators: %s: annotation field name */
-							__( 'Tool annotation field %s must be a string', 'mcp-adapter' ),
+							__( 'Tool annotation field %s must be a string', 'saddle' ),
 							$field
 						);
 						break;
@@ -465,7 +465,7 @@ class McpToolValidator {
 					if ( empty( trim( $value ) ) ) {
 						$errors[] = sprintf(
 						/* translators: %s: annotation field name */
-							__( 'Tool annotation field %s must be a non-empty string', 'mcp-adapter' ),
+							__( 'Tool annotation field %s must be a non-empty string', 'saddle' ),
 							$field
 						);
 					}

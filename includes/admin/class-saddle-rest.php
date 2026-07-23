@@ -856,7 +856,7 @@ class Saddle_REST_Admin {
 				if ( empty( $item['uuid'] ) || ! Saddle_Connection::is_saddle_issued( $user_id, $item['uuid'] ) ) {
 					continue;
 				}
-				$name = isset( $item['name'] ) ? (string) $item['name'] : '';
+				$name      = isset( $item['name'] ) ? (string) $item['name'] : '';
 				$clients[] = array(
 					'uuid'      => $item['uuid'],
 					'name'      => $name,

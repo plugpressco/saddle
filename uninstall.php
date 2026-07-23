@@ -20,6 +20,7 @@ $saddle_options = array(
 	'saddle_disabled_abilities', // Saddle_Capabilities::DISABLED_OPTION.
 	'saddle_paused',            // Saddle_Capabilities::PAUSED_OPTION.
 	'saddle_tier_domain',       // Saddle_Capabilities::TIER_DOMAIN_OPTION.
+	'saddle_enforce_tier_domain', // Saddle_Capabilities::ENFORCE_DOMAIN_OPTION.
 	'saddle_memory_recent_changes',
 	'saddle_memory_recent_limit',
 	'saddle_memory_max_entries',      // Saddle_Memory::OPTION_MAX_ENTRIES.
@@ -32,14 +33,16 @@ foreach ( $saddle_options as $saddle_option ) {
 	delete_option( $saddle_option );
 }
 
-// Per-user data: admin theme preference and credential last-4 hints.
+// Per-user data: admin theme preference, credential last-4 hints, and the
+// issued-credential markers scoping keys on.
 delete_metadata( 'user', 0, 'saddle_admin_theme', '', true );
 delete_metadata( 'user', 0, 'saddle_client_hints', '', true );
+delete_metadata( 'user', 0, 'saddle_issued_credentials', '', true );
 
 // Clear scheduled GC.
-$timestamp = wp_next_scheduled( 'saddle_gc_tokens' );
-if ( $timestamp ) {
-	wp_unschedule_event( $timestamp, 'saddle_gc_tokens' );
+$saddle_gc_timestamp = wp_next_scheduled( 'saddle_gc_tokens' );
+if ( $saddle_gc_timestamp ) {
+	wp_unschedule_event( $saddle_gc_timestamp, 'saddle_gc_tokens' );
 }
 
 // Remove the managed .htaccess block the connection self-check may have added.

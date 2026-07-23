@@ -39,10 +39,11 @@ class Saddle_Blocks_Tree extends Saddle_Tree {
 	public static function builder_namespaces() {
 		/**
 		 * Filter the block namespaces rejected inside a native Gutenberg tree.
+		 * Defaults come from the shared builder taxonomy.
 		 *
 		 * @param string[] $namespaces Namespace prefixes (before the slash).
 		 */
-		return (array) apply_filters( 'saddle_blocks_builder_namespaces', array( 'divi' ) );
+		return (array) apply_filters( 'saddle_blocks_builder_namespaces', Saddle_Builders::namespaces() );
 	}
 
 	/**

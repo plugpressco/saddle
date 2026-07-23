@@ -318,20 +318,13 @@ class Saddle_Context {
 	}
 
 	/**
-	 * Page builders Saddle warns about, mapped to detection signals.
+	 * Page builders Saddle warns about, mapped to detection signals — read
+	 * from the shared builder taxonomy.
 	 *
 	 * @return array<string,string[]>
 	 */
 	private static function builder_signals() {
-		return array(
-			'Divi'           => array( 'ET_BUILDER_VERSION', 'ET_CORE_VERSION', 'et_setup_theme' ),
-			'Elementor'      => array( 'ELEMENTOR_VERSION', '\\Elementor\\Plugin' ),
-			'Beaver Builder' => array( 'FL_BUILDER_VERSION', 'FLBuilderModel' ),
-			'Bricks'         => array( 'BRICKS_VERSION' ),
-			'WPBakery'       => array( 'WPB_VC_VERSION', 'vc_map' ),
-			'Oxygen'         => array( 'CT_VERSION' ),
-			'Breakdance'     => array( '__BREAKDANCE_VERSION' ),
-		);
+		return Saddle_Builders::site_signals();
 	}
 
 	/**
