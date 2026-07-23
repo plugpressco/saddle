@@ -61,6 +61,15 @@ class Saddle_Capabilities {
 	const TIER_DOMAIN_OPTION = 'saddle_tier_domain';
 
 	/**
+	 * Option key for opt-in domain-drift enforcement. Off by default (warn
+	 * only). When on, write- and admin-tier abilities are refused while the
+	 * current domain differs from the one the tier was granted on — a cloned
+	 * or migrated database then lands read-only until the owner re-confirms
+	 * the access level (set_tier re-records the domain).
+	 */
+	const ENFORCE_DOMAIN_OPTION = 'saddle_enforce_tier_domain';
+
+	/**
 	 * Tier name => numeric rank. Higher rank = more power.
 	 *
 	 * @var array<string,int>
@@ -178,6 +187,11 @@ class Saddle_Capabilities {
 				return false;
 			}
 
+			if ( 'read' !== $level && self::is_domain_enforced() && ! self::domain_matches_recorded() ) {
+				self::log_denial( $short_name, 'domain' );
+				return false;
+			}
+
 			if ( ! self::tier_allows( $level ) ) {
 				self::log_denial( $short_name, 'tier' );
 				return false;
@@ -239,6 +253,12 @@ class Saddle_Capabilities {
 		if ( $ability ) {
 			$meta     = $ability->get_meta();
 			$required = isset( $meta['saddle']['tier'] ) ? (string) $meta['saddle']['tier'] : '';
+			if ( 'read' !== $required && '' !== $required && self::is_domain_enforced() && ! self::domain_matches_recorded() ) {
+				return array(
+					'code'    => 'saddle_domain_drift',
+					'message' => __( 'This site\'s domain changed since write access was granted, and the owner has domain enforcement on — write tools are refused until they re-confirm the access level (Saddle → Permissions). Do not retry; tell the user.', 'saddle' ),
+				);
+			}
 			if ( '' !== $required && ! self::tier_allows( $required ) ) {
 				return array(
 					'code'    => 'saddle_tier_denied',
@@ -267,7 +287,7 @@ class Saddle_Capabilities {
 	 * flood the log, and it never fires for anonymous requests.
 	 *
 	 * @param string|null $short_name Ability id without the 'saddle/' prefix.
-	 * @param string      $reason     'paused' | 'capability' | 'disabled' | 'tier'.
+	 * @param string      $reason     'paused' | 'capability' | 'disabled' | 'domain' | 'tier'.
 	 */
 	private static function log_denial( $short_name, $reason ) {
 		if ( ! class_exists( 'Saddle_Log' ) ) {
@@ -295,6 +315,10 @@ class Saddle_Capabilities {
 			case 'disabled':
 				/* translators: %s: tool name. */
 				$summary = sprintf( __( 'Blocked: the tool "%s" is turned off.', 'saddle' ), $tool );
+				break;
+			case 'domain':
+				/* translators: %s: tool name. */
+				$summary = sprintf( __( 'Blocked: the site domain changed since write access was granted — "%s" is refused until the access level is re-confirmed.', 'saddle' ), $tool );
 				break;
 			case 'tier':
 			default:
@@ -331,6 +355,25 @@ class Saddle_Capabilities {
 	 */
 	public static function set_paused( $paused ) {
 		return update_option( self::PAUSED_OPTION, (bool) $paused );
+	}
+
+	/**
+	 * Whether domain-drift enforcement is on (see ENFORCE_DOMAIN_OPTION).
+	 *
+	 * @return bool
+	 */
+	public static function is_domain_enforced() {
+		return (bool) get_option( self::ENFORCE_DOMAIN_OPTION, false );
+	}
+
+	/**
+	 * Turn domain-drift enforcement on or off.
+	 *
+	 * @param bool $enforce Whether write/admin abilities require the recorded domain.
+	 * @return bool
+	 */
+	public static function set_domain_enforcement( $enforce ) {
+		return update_option( self::ENFORCE_DOMAIN_OPTION, (bool) $enforce );
 	}
 
 	/**
