@@ -36,6 +36,15 @@ defined( 'ABSPATH' ) || exit;
 class Saddle_Integrations {
 
 	/**
+	 * Wrapper ids this engine has registered, so an idempotent re-run (a
+	 * second abilities-init pass, tests) skips its own wrappers silently and
+	 * the collision notice fires only for genuinely foreign abilities.
+	 *
+	 * @var array<string,bool>
+	 */
+	private static $registered = array();
+
+	/**
 	 * The free, first-party integration catalog: slug => definition.
 	 *
 	 * @return array<string,array{prefix:string,title:string}>
@@ -108,8 +117,22 @@ class Saddle_Integrations {
 		$wrapper      = 'saddle/' . $short;
 
 		// Collision — never overwrite an existing saddle ability. (Checked via
-		// the full list: wp_get_ability() fires a notice on a miss).
+		// the full list: wp_get_ability() fires a notice on a miss.) Surfaced
+		// as a dev notice, not silence: the shadowed tool simply not existing
+		// is otherwise undiagnosable for an integration author.
 		if ( isset( wp_get_abilities()[ $wrapper ] ) ) {
+			if ( ! isset( self::$registered[ $wrapper ] ) ) {
+				_doing_it_wrong(
+					__METHOD__,
+					sprintf(
+						/* translators: 1: wrapper ability id, 2: source ability id. */
+						esc_html__( 'Integration wrapper "%1$s" (for "%2$s") collides with an existing saddle ability; the source tool is not exposed.', 'saddle' ),
+						esc_html( $wrapper ),
+						esc_html( $name )
+					),
+					'1.1.0'
+				);
+			}
 			return;
 		}
 
@@ -153,6 +176,7 @@ class Saddle_Integrations {
 				'meta'                => saddle_ability_meta( $readonly, $destructive, $idempotent, $tier ),
 			)
 		);
+		self::$registered[ $wrapper ] = true;
 	}
 
 	/**

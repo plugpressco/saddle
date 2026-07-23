@@ -221,6 +221,60 @@ class Saddle_Integrations_Test extends WP_UnitTestCase {
 		Saddle_Capabilities::set_paused( false );
 	}
 
+	/**
+	 * A wrapper name already taken by a foreign saddle ability is skipped —
+	 * with a dev notice, so the shadowed tool is diagnosable — while the
+	 * engine's own wrappers stay silently idempotent across re-runs (the
+	 * set_up pass plus this one would otherwise warn on every waggle tool).
+	 */
+	public function test_foreign_collision_emits_dev_notice_and_keeps_existing_ability() {
+		$this->setExpectedIncorrectUsage( 'Saddle_Integrations::wrap' );
+
+		$add = static function ( $integrations ) {
+			$integrations['coll'] = array( 'prefix' => 'coll/', 'title' => 'Coll' );
+			return $integrations;
+		};
+		add_filter( 'saddle_integrations', $add );
+
+		$this->within_abilities_init(
+			static function () {
+				// A native saddle ability already occupies the wrapper id.
+				wp_register_ability(
+					'saddle/coll-get-stuff',
+					array(
+						'label'               => 'Native occupant',
+						'description'         => 'x',
+						'category'            => 'saddle',
+						'input_schema'        => array( 'type' => 'object', 'default' => (object) array(), 'properties' => (object) array() ),
+						'execute_callback'    => '__return_empty_array',
+						'permission_callback' => '__return_true',
+						'meta'                => array( 'annotations' => array( 'readonly' => true ) ),
+					)
+				);
+				wp_register_ability(
+					'coll/get-stuff',
+					array(
+						'label'               => 'Partner tool',
+						'description'         => 'x',
+						'category'            => 'saddle',
+						'input_schema'        => array( 'type' => 'object', 'default' => (object) array(), 'properties' => (object) array() ),
+						'execute_callback'    => '__return_empty_array',
+						'permission_callback' => '__return_true',
+						'meta'                => array( 'annotations' => array( 'readonly' => true ) ),
+					)
+				);
+				Saddle_Integrations::register_wrappers();
+			}
+		);
+		remove_filter( 'saddle_integrations', $add );
+
+		$this->assertSame(
+			'Native occupant',
+			wp_get_ability( 'saddle/coll-get-stuff' )->get_label(),
+			'The pre-existing ability must never be overwritten by a wrapper.'
+		);
+	}
+
 	public function test_disabled_integration_registers_nothing() {
 		// A fresh prefix, disabled via the filter before wrappers run.
 		$add = static function ( $integrations ) {
