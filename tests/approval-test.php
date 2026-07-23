@@ -245,6 +245,35 @@ class Saddle_Approval_Test extends WP_UnitTestCase {
 		$this->assertSame( 'saddle_gate_misconfigured', $result->get_error_code() );
 	}
 
+	/* -------- audit logging -------- */
+
+	/**
+	 * A confirmed destructive execution that returns WP_Error must still leave
+	 * an audit entry — the executor may have partially mutated before failing.
+	 */
+	public function test_failed_confirmed_execution_is_still_logged() {
+		$before = Saddle_Log::query( 100, 1 )['total'];
+
+		$token  = Saddle_Approval::gate( $this->gate_args( $calls ) )['confirm_token'];
+		$result = Saddle_Approval::gate(
+			$this->gate_args(
+				$calls,
+				array(
+					'input'   => array( 'confirm_token' => $token ),
+					'execute' => static function () {
+						return new WP_Error( 'saddle_test_partial', 'Exploded halfway.' );
+					},
+				)
+			)
+		);
+
+		$this->assertWPError( $result );
+		$log = Saddle_Log::query( 100, 1 );
+		$this->assertSame( $before + 1, $log['total'], 'A failed confirmed destructive call must be logged.' );
+		$this->assertStringContainsString( 'FAILED after confirmation', $log['entries'][0]['summary'] );
+		$this->assertStringContainsString( 'Exploded halfway.', $log['entries'][0]['summary'] );
+	}
+
 	/* -------- garbage collection -------- */
 
 	public function test_gc_removes_only_expired_tokens() {
