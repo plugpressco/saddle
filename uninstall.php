@@ -37,9 +37,9 @@ delete_metadata( 'user', 0, 'saddle_admin_theme', '', true );
 delete_metadata( 'user', 0, 'saddle_client_hints', '', true );
 
 // Clear scheduled GC.
-$timestamp = wp_next_scheduled( 'saddle_gc_tokens' );
-if ( $timestamp ) {
-	wp_unschedule_event( $timestamp, 'saddle_gc_tokens' );
+$saddle_gc_timestamp = wp_next_scheduled( 'saddle_gc_tokens' );
+if ( $saddle_gc_timestamp ) {
+	wp_unschedule_event( $saddle_gc_timestamp, 'saddle_gc_tokens' );
 }
 
 // Remove the managed .htaccess block the connection self-check may have added.

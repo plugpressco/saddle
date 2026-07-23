@@ -194,7 +194,7 @@ final class McpPrompt implements McpComponentInterface {
 				'mcp_prompt_dto_creation_failed',
 				sprintf(
 				/* translators: %s: error message */
-					__( 'Failed to create Prompt DTO: %s', 'mcp-adapter' ),
+					__( 'Failed to create Prompt DTO: %s', 'saddle' ),
 					$e->getMessage()
 				),
 				array( 'exception' => $e )

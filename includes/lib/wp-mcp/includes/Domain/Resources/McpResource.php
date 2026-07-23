@@ -187,7 +187,7 @@ final class McpResource implements McpComponentInterface {
 				'mcp_resource_dto_creation_failed',
 				sprintf(
 				/* translators: %s: error message */
-					__( 'Failed to create Resource DTO: %s', 'mcp-adapter' ),
+					__( 'Failed to create Resource DTO: %s', 'saddle' ),
 					$e->getMessage()
 				),
 				array( 'exception' => $e )
