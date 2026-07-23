@@ -34,6 +34,15 @@ class Saddle_Connection {
 	const HTACCESS_MARKER = 'Saddle Authorization Header';
 
 	/**
+	 * User-meta key recording the UUIDs of app passwords Saddle issued.
+	 *
+	 * The immutable identity credential scoping keys on: the display name
+	 * ("Saddle: …") is user-editable in wp-admin, and scoping that silently
+	 * stops applying after a rename would hand the key full wp/v2 access.
+	 */
+	const ISSUED_META = 'saddle_issued_credentials';
+
+	/**
 	 * Scope Saddle-issued credentials to Saddle's own REST surface.
 	 *
 	 * A core Application Password authenticates the ENTIRE REST API as its
@@ -75,7 +84,7 @@ class Saddle_Connection {
 		$uuid = function_exists( 'rest_get_authenticated_app_password' )
 			? rest_get_authenticated_app_password()
 			: null;
-		if ( ! $uuid || ! self::is_saddle_credential( get_current_user_id(), $uuid ) ) {
+		if ( ! $uuid || ! self::is_saddle_issued( get_current_user_id(), $uuid ) ) {
 			return $response;
 		}
 
@@ -134,8 +143,10 @@ class Saddle_Connection {
 		if ( ! apply_filters( 'saddle_scope_credentials', true ) ) {
 			return;
 		}
-		$prefix = class_exists( 'Saddle_REST_Admin' ) ? Saddle_REST_Admin::CLIENT_PREFIX : 'Saddle: ';
-		if ( isset( $item['name'] ) && 0 === strpos( (string) $item['name'], $prefix ) ) {
+		$is_saddle = isset( $item['uuid'] ) && $user instanceof WP_User
+			? self::is_saddle_issued( $user->ID, (string) $item['uuid'] )
+			: ( isset( $item['name'] ) && 0 === strpos( (string) $item['name'], class_exists( 'Saddle_REST_Admin' ) ? Saddle_REST_Admin::CLIENT_PREFIX : 'Saddle: ' ) );
+		if ( $is_saddle ) {
 			$error->add(
 				'saddle_credential_scope',
 				__( 'Saddle sign-in keys cannot be used over XML-RPC.', 'saddle' )
@@ -144,23 +155,73 @@ class Saddle_Connection {
 	}
 
 	/**
-	 * Whether the given application password UUID is one Saddle issued
-	 * (identified by the `Saddle: ` name prefix) for this user.
+	 * Record an app-password UUID as Saddle-issued for a user.
+	 *
+	 * @param int    $user_id User the credential belongs to.
+	 * @param string $uuid    Application password UUID.
+	 */
+	public static function mark_issued( $user_id, $uuid ) {
+		$uuids = get_user_meta( (int) $user_id, self::ISSUED_META, true );
+		$uuids = is_array( $uuids ) ? $uuids : array();
+		if ( ! in_array( (string) $uuid, $uuids, true ) ) {
+			$uuids[] = (string) $uuid;
+			update_user_meta( (int) $user_id, self::ISSUED_META, $uuids );
+		}
+	}
+
+	/**
+	 * Forget a revoked credential's UUID.
+	 *
+	 * @param int    $user_id User the credential belonged to.
+	 * @param string $uuid    Application password UUID.
+	 */
+	public static function unmark_issued( $user_id, $uuid ) {
+		$uuids = get_user_meta( (int) $user_id, self::ISSUED_META, true );
+		if ( ! is_array( $uuids ) || ! in_array( (string) $uuid, $uuids, true ) ) {
+			return;
+		}
+		$uuids = array_values( array_diff( $uuids, array( (string) $uuid ) ) );
+		if ( $uuids ) {
+			update_user_meta( (int) $user_id, self::ISSUED_META, $uuids );
+		} else {
+			delete_user_meta( (int) $user_id, self::ISSUED_META );
+		}
+	}
+
+	/**
+	 * Whether the given application password UUID is one Saddle issued for
+	 * this user.
+	 *
+	 * Keyed on the stored UUID marker, which survives a rename in wp-admin →
+	 * Application Passwords. Keys issued before the marker existed are only
+	 * recognizable by their `Saddle: ` name prefix — those migrate into the
+	 * marker on first sight, so a later rename can no longer un-scope them.
 	 *
 	 * @param int    $user_id User the request authenticated as.
 	 * @param string $uuid    Application password UUID.
 	 * @return bool
 	 */
-	private static function is_saddle_credential( $user_id, $uuid ) {
-		if ( ! $user_id || ! class_exists( 'WP_Application_Passwords' ) ) {
+	public static function is_saddle_issued( $user_id, $uuid ) {
+		if ( ! $user_id || '' === (string) $uuid || ! class_exists( 'WP_Application_Passwords' ) ) {
 			return false;
 		}
+
+		$uuids = get_user_meta( (int) $user_id, self::ISSUED_META, true );
+		if ( is_array( $uuids ) && in_array( (string) $uuid, $uuids, true ) ) {
+			return true;
+		}
+
 		$item = WP_Application_Passwords::get_user_application_password( (int) $user_id, (string) $uuid );
 		if ( ! $item || empty( $item['name'] ) ) {
 			return false;
 		}
 		$prefix = class_exists( 'Saddle_REST_Admin' ) ? Saddle_REST_Admin::CLIENT_PREFIX : 'Saddle: ';
-		return 0 === strpos( (string) $item['name'], $prefix );
+		if ( 0 === strpos( (string) $item['name'], $prefix ) ) {
+			self::mark_issued( (int) $user_id, (string) $uuid );
+			return true;
+		}
+
+		return false;
 	}
 
 	/**

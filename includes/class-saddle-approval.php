@@ -156,7 +156,8 @@ class Saddle_Approval {
 	}
 
 	/**
-	 * Create and persist a single-use token bound to an action and target.
+	 * Create and persist a single-use token bound to an action, a target, and
+	 * the previewing user.
 	 *
 	 * @param string $action Action identifier.
 	 * @param string $target Target identifier the token is bound to (e.g. post id).
@@ -197,6 +198,10 @@ class Saddle_Approval {
 		update_post_meta( $post_id, '_saddle_action', $action );
 		update_post_meta( $post_id, '_saddle_target', $target );
 		update_post_meta( $post_id, '_saddle_bind', $bind );
+		// The token belongs to whoever saw the preview: with several agents on
+		// one site (separate app passwords / users), agent A's preview must
+		// not be confirmable by agent B.
+		update_post_meta( $post_id, '_saddle_user', get_current_user_id() );
 		update_post_meta( $post_id, '_saddle_expires', time() + self::TOKEN_TTL );
 
 		return $token;
@@ -218,7 +223,7 @@ class Saddle_Approval {
 	/**
 	 * Validate and consume a token. Single-use: the token record is deleted on
 	 * lookup regardless of outcome, so even a mismatched/expired token cannot be
-	 * retried.
+	 * retried. The consumer must be the same user the preview was issued to.
 	 *
 	 * @param string $token  Candidate token.
 	 * @param string $action Action the token must be bound to.
@@ -257,10 +262,19 @@ class Saddle_Approval {
 		$stored_action = get_post_meta( $post_id, '_saddle_action', true );
 		$stored_target = (string) get_post_meta( $post_id, '_saddle_target', true );
 		$stored_bind   = (string) get_post_meta( $post_id, '_saddle_bind', true );
+		$stored_user   = (int) get_post_meta( $post_id, '_saddle_user', true );
 		$expires       = (int) get_post_meta( $post_id, '_saddle_expires', true );
 
 		// Single-use: burn the token now, before any further branching.
 		wp_delete_post( $post_id, true );
+
+		if ( $stored_user !== get_current_user_id() ) {
+			return new WP_Error(
+				'saddle_token_user_mismatch',
+				__( 'This confirmation token was issued to a different user. Preview the action yourself, then confirm with the token it returns.', 'saddle' ),
+				array( 'status' => 403 )
+			);
+		}
 
 		if ( $stored_action !== $action ) {
 			return new WP_Error(

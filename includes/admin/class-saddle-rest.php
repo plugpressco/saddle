@@ -343,6 +343,7 @@ class Saddle_REST_Admin {
 				'domain'         => array(
 					'current'  => Saddle_Capabilities::current_domain(),
 					'recorded' => Saddle_Capabilities::recorded_tier_domain(),
+					'enforced' => Saddle_Capabilities::is_domain_enforced(),
 				),
 				// The key itself never leaves the server — only whether one is
 				// set, plus a last-4 hint so the owner can recognize it.
@@ -390,6 +391,10 @@ class Saddle_REST_Admin {
 
 		if ( array_key_exists( 'paused', $params ) ) {
 			Saddle_Capabilities::set_paused( (bool) $request->get_param( 'paused' ) );
+		}
+
+		if ( array_key_exists( 'domain_enforced', $params ) ) {
+			Saddle_Capabilities::set_domain_enforcement( (bool) $request->get_param( 'domain_enforced' ) );
 		}
 
 		// Key absent from the body ⇒ untouched; '' or null ⇒ cleared;
@@ -814,6 +819,10 @@ class Saddle_REST_Admin {
 		$hints[ $item['uuid'] ] = $hint;
 		update_user_meta( $user->ID, 'saddle_client_hints', $hints );
 
+		// The immutable ownership marker credential scoping keys on — the
+		// display name alone is user-editable and can't be trusted for it.
+		Saddle_Connection::mark_issued( $user->ID, $item['uuid'] );
+
 		return new WP_REST_Response(
 			array(
 				'uuid'       => $item['uuid'],
@@ -843,13 +852,15 @@ class Saddle_REST_Admin {
 
 			$passwords = WP_Application_Passwords::get_user_application_passwords( $user_id );
 			foreach ( (array) $passwords as $item ) {
-				if ( empty( $item['name'] ) || 0 !== strpos( $item['name'], self::CLIENT_PREFIX ) ) {
+				// Marker first (rename-proof), name prefix for legacy keys.
+				if ( empty( $item['uuid'] ) || ! Saddle_Connection::is_saddle_issued( $user_id, $item['uuid'] ) ) {
 					continue;
 				}
+				$name = isset( $item['name'] ) ? (string) $item['name'] : '';
 				$clients[] = array(
 					'uuid'      => $item['uuid'],
-					'name'      => $item['name'],
-					'label'     => trim( substr( $item['name'], strlen( self::CLIENT_PREFIX ) ) ),
+					'name'      => $name,
+					'label'     => 0 === strpos( $name, self::CLIENT_PREFIX ) ? trim( substr( $name, strlen( self::CLIENT_PREFIX ) ) ) : $name,
 					'created'   => isset( $item['created'] ) ? (int) $item['created'] : 0,
 					'last_used' => isset( $item['last_used'] ) ? $item['last_used'] : null,
 					'last_ip'   => isset( $item['last_ip'] ) ? $item['last_ip'] : null,
@@ -877,10 +888,12 @@ class Saddle_REST_Admin {
 			return new WP_Error( 'saddle_app_passwords_unavailable', __( 'Application Passwords are not available on this site.', 'saddle' ), array( 'status' => 500 ) );
 		}
 
-		// Only allow revoking a Saddle-prefixed password, so this endpoint can't
-		// be used to delete unrelated credentials.
+		// Only allow revoking a Saddle-issued password, so this endpoint can't
+		// be used to delete unrelated credentials. Checked via the immutable
+		// marker (with legacy name-prefix fallback), so a renamed key can
+		// still be revoked here.
 		$item = WP_Application_Passwords::get_user_application_password( $user_id, $uuid );
-		if ( ! $item || empty( $item['name'] ) || 0 !== strpos( $item['name'], self::CLIENT_PREFIX ) ) {
+		if ( ! $item || ! Saddle_Connection::is_saddle_issued( $user_id, $uuid ) ) {
 			return new WP_Error( 'saddle_client_not_found', __( 'No Saddle client with that ID.', 'saddle' ), array( 'status' => 404 ) );
 		}
 
@@ -888,6 +901,7 @@ class Saddle_REST_Admin {
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
+		Saddle_Connection::unmark_issued( $user_id, $uuid );
 
 		// Drop the stored last-4 hint along with the credential.
 		$hints = get_user_meta( $user_id, 'saddle_client_hints', true );
@@ -931,7 +945,7 @@ class Saddle_REST_Admin {
 
 		// Same guard as revoke_client: only Saddle-issued credentials.
 		$item = WP_Application_Passwords::get_user_application_password( $user->ID, $uuid );
-		if ( ! $item || empty( $item['name'] ) || 0 !== strpos( $item['name'], self::CLIENT_PREFIX ) ) {
+		if ( ! $item || ! Saddle_Connection::is_saddle_issued( $user->ID, $uuid ) ) {
 			return new WP_Error( 'saddle_client_not_found', __( 'No Saddle client with that ID.', 'saddle' ), array( 'status' => 404 ) );
 		}
 
@@ -958,13 +972,15 @@ class Saddle_REST_Admin {
 
 		list( $raw_password, $new_item ) = $created;
 
-		// Swap the last-4 hint: old uuid out, new one in.
+		// Swap the last-4 hint and the issued marker: old uuid out, new one in.
 		$hint  = substr( str_replace( ' ', '', $raw_password ), -4 );
 		$hints = get_user_meta( $user->ID, 'saddle_client_hints', true );
 		$hints = is_array( $hints ) ? $hints : array();
 		unset( $hints[ $uuid ] );
 		$hints[ $new_item['uuid'] ] = $hint;
 		update_user_meta( $user->ID, 'saddle_client_hints', $hints );
+		Saddle_Connection::unmark_issued( $user->ID, $uuid );
+		Saddle_Connection::mark_issued( $user->ID, $new_item['uuid'] );
 
 		return new WP_REST_Response(
 			array(
