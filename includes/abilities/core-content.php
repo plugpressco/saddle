@@ -1801,6 +1801,25 @@ class Saddle_Abilities {
 	}
 
 	/**
+	 * Resolve and authorize the post/page a read ability targets: it exists,
+	 * is a post or page, and the current user can read it. The shared
+	 * preamble of lint-page / render-node / verify-page.
+	 *
+	 * @param array $input Ability input (reads `post_id`).
+	 * @return WP_Post|WP_Error
+	 */
+	public static function require_readable_post( array $input ) {
+		$post = get_post( isset( $input['post_id'] ) ? (int) $input['post_id'] : 0 );
+		if ( ! $post || ! in_array( $post->post_type, array( 'post', 'page' ), true ) ) {
+			return new WP_Error( 'saddle_not_found', __( 'No post or page with that ID.', 'saddle' ), array( 'status' => 404 ) );
+		}
+		if ( ! current_user_can( 'read_post', $post->ID ) ) {
+			return new WP_Error( 'saddle_forbidden', __( 'You cannot read this post.', 'saddle' ), array( 'status' => 403 ) );
+		}
+		return $post;
+	}
+
+	/**
 	 * Which page builder (if any) owns a post's content.
 	 *
 	 * Content and meta signals for the builders whose layouts live in (or are

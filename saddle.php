@@ -66,6 +66,8 @@ require_once SADDLE_DIR . 'includes/class-saddle-memory.php';
 require_once SADDLE_DIR . 'includes/class-saddle-log.php';
 require_once SADDLE_DIR . 'includes/class-saddle-unsplash.php';
 require_once SADDLE_DIR . 'includes/class-saddle-connection.php';
+require_once SADDLE_DIR . 'includes/class-saddle-accessors.php';
+require_once SADDLE_DIR . 'includes/class-saddle-integration-engine.php';
 require_once SADDLE_DIR . 'includes/class-saddle-integrations.php';
 require_once SADDLE_DIR . 'includes/class-saddle-mcp.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-rest.php';

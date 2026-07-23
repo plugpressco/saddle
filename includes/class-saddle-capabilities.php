@@ -81,6 +81,16 @@ class Saddle_Capabilities {
 	);
 
 	/**
+	 * The enforced gate parameters per ability short name, recorded when
+	 * permission() builds each closure. denial_reason() reads the SAME level
+	 * and capability the closure enforces — never a re-derivation from meta,
+	 * which could drift from what is actually checked.
+	 *
+	 * @var array<string,array{level:string,cap:string|null}>
+	 */
+	private static $gates = array();
+
+	/**
 	 * Ordered list of valid tier names.
 	 *
 	 * @return string[]
@@ -161,6 +171,12 @@ class Saddle_Capabilities {
 	 * @return callable
 	 */
 	public static function permission( $level, $cap = 'read', $short_name = null ) {
+		if ( $short_name ) {
+			self::$gates[ (string) $short_name ] = array(
+				'level' => (string) $level,
+				'cap'   => $cap,
+			);
+		}
 		return function () use ( $level, $cap, $short_name ) {
 			$logged_in = is_user_logged_in();
 
@@ -236,6 +252,22 @@ class Saddle_Capabilities {
 			);
 		}
 
+		// From here on, mirror permission()'s exact order — capability,
+		// disabled, domain, tier — reading the SAME level/cap it enforces
+		// (recorded at closure build time), never a re-derivation from meta.
+		$gate = isset( self::$gates[ $short ] ) ? self::$gates[ $short ] : null;
+
+		if ( $gate && $gate['cap'] && ! current_user_can( $gate['cap'] ) ) {
+			return array(
+				'code'    => 'saddle_capability_denied',
+				'message' => sprintf(
+					/* translators: %s: tool name. */
+					__( 'The connected WordPress account lacks the permission the "%s" tool needs. This is an account limitation, not a Saddle setting — reconnect as a user with more rights if this should be possible.', 'saddle' ),
+					$short
+				),
+			);
+		}
+
 		if ( '' !== $short && ! self::is_ability_enabled( $short ) ) {
 			return array(
 				'code'    => 'saddle_tool_disabled',
@@ -247,29 +279,36 @@ class Saddle_Capabilities {
 			);
 		}
 
-		$ability = function_exists( 'wp_get_ability' ) && isset( wp_get_abilities()[ $ability_name ] )
-			? wp_get_ability( $ability_name )
-			: null;
-		if ( $ability ) {
-			$meta     = $ability->get_meta();
-			$required = isset( $meta['saddle']['tier'] ) ? (string) $meta['saddle']['tier'] : '';
-			if ( 'read' !== $required && '' !== $required && self::is_domain_enforced() && ! self::domain_matches_recorded() ) {
-				return array(
-					'code'    => 'saddle_domain_drift',
-					'message' => __( 'This site\'s domain changed since write access was granted, and the owner has domain enforcement on — write tools are refused until they re-confirm the access level (Saddle → Permissions). Do not retry; tell the user.', 'saddle' ),
-				);
+		$required = $gate ? (string) $gate['level'] : '';
+		if ( '' === $required ) {
+			// Wrappers or abilities registered before this process recorded a
+			// gate (e.g. cross-process introspection): fall back to meta.
+			$ability = function_exists( 'wp_get_ability' ) && isset( wp_get_abilities()[ $ability_name ] )
+				? wp_get_ability( $ability_name )
+				: null;
+			if ( $ability ) {
+				$meta     = $ability->get_meta();
+				$required = isset( $meta['saddle']['tier'] ) ? (string) $meta['saddle']['tier'] : '';
 			}
-			if ( '' !== $required && ! self::tier_allows( $required ) ) {
-				return array(
-					'code'    => 'saddle_tier_denied',
-					'message' => sprintf(
-						/* translators: 1: required access level, 2: current access level. */
-						__( 'This tool needs the "%1$s" access level, but this site allows "%2$s". Only the site owner can raise it (Saddle → Permissions). Do not retry — ask the user to change the level if they want this done.', 'saddle' ),
-						$required,
-						self::get_tier()
-					),
-				);
-			}
+		}
+
+		if ( 'read' !== $required && '' !== $required && self::is_domain_enforced() && ! self::domain_matches_recorded() ) {
+			return array(
+				'code'    => 'saddle_domain_drift',
+				'message' => __( 'This site\'s domain changed since write access was granted, and the owner has domain enforcement on — write tools are refused until they re-confirm the access level (Saddle → Permissions). Do not retry; tell the user.', 'saddle' ),
+			);
+		}
+
+		if ( '' !== $required && ! self::tier_allows( $required ) ) {
+			return array(
+				'code'    => 'saddle_tier_denied',
+				'message' => sprintf(
+					/* translators: 1: required access level, 2: current access level. */
+					__( 'This tool needs the "%1$s" access level, but this site allows "%2$s". Only the site owner can raise it (Saddle → Permissions). Do not retry — ask the user to change the level if they want this done.', 'saddle' ),
+					$required,
+					self::get_tier()
+				),
+			);
 		}
 
 		return null;

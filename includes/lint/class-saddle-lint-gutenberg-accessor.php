@@ -339,29 +339,7 @@ class Saddle_Lint_Gutenberg_Accessor implements Saddle_Lint_Accessor, Saddle_Lin
 	 */
 	private function resolve_palette_slug( $slug ) {
 		if ( null === $this->palette ) {
-			$this->palette = array();
-			if ( class_exists( 'WP_Theme_JSON_Resolver' ) ) {
-				$settings = WP_Theme_JSON_Resolver::get_merged_data()->get_settings();
-				$palette  = isset( $settings['color']['palette'] ) ? (array) $settings['color']['palette'] : array();
-				// Origin-keyed or flat; theme entries are the site's brand and win.
-				if ( isset( $palette[0] ) ) {
-					$groups = array( $palette );
-				} else {
-					$groups = array();
-					foreach ( array( 'theme', 'custom', 'default' ) as $origin ) {
-						if ( isset( $palette[ $origin ] ) && is_array( $palette[ $origin ] ) ) {
-							$groups[] = $palette[ $origin ];
-						}
-					}
-				}
-				foreach ( $groups as $group ) {
-					foreach ( $group as $preset ) {
-						if ( is_array( $preset ) && isset( $preset['slug'], $preset['color'] ) && ! isset( $this->palette[ $preset['slug'] ] ) ) {
-							$this->palette[ (string) $preset['slug'] ] = (string) $preset['color'];
-						}
-					}
-				}
-			}
+			$this->palette = $this->preset_map( array( 'color', 'palette' ), 'color' );
 		}
 		return isset( $this->palette[ $slug ] ) ? $this->palette[ $slug ] : null;
 	}
@@ -375,30 +353,47 @@ class Saddle_Lint_Gutenberg_Accessor implements Saddle_Lint_Accessor, Saddle_Lin
 	 */
 	private function resolve_font_size_slug( $slug ) {
 		if ( null === $this->font_sizes ) {
-			$this->font_sizes = array();
-			if ( class_exists( 'WP_Theme_JSON_Resolver' ) ) {
-				$settings = WP_Theme_JSON_Resolver::get_merged_data()->get_settings();
-				$sizes    = isset( $settings['typography']['fontSizes'] ) ? (array) $settings['typography']['fontSizes'] : array();
-				// Origin-keyed or flat; theme entries are the site's scale and win.
-				if ( isset( $sizes[0] ) ) {
-					$groups = array( $sizes );
-				} else {
-					$groups = array();
-					foreach ( array( 'theme', 'custom', 'default' ) as $origin ) {
-						if ( isset( $sizes[ $origin ] ) && is_array( $sizes[ $origin ] ) ) {
-							$groups[] = $sizes[ $origin ];
-						}
-					}
-				}
-				foreach ( $groups as $group ) {
-					foreach ( $group as $preset ) {
-						if ( is_array( $preset ) && isset( $preset['slug'], $preset['size'] ) && ! isset( $this->font_sizes[ $preset['slug'] ] ) ) {
-							$this->font_sizes[ (string) $preset['slug'] ] = (string) $preset['size'];
-						}
-					}
+			$this->font_sizes = $this->preset_map( array( 'typography', 'fontSizes' ), 'size' );
+		}
+		return isset( $this->font_sizes[ $slug ] ) ? $this->font_sizes[ $slug ] : null;
+	}
+
+	/**
+	 * Build a slug => value map from one theme.json preset list. Handles both
+	 * origin-keyed and flat lists; theme entries win (the site's own presets).
+	 *
+	 * @param string[] $path      Settings path, e.g. ['color','palette'].
+	 * @param string   $value_key Preset value key ('color' | 'size').
+	 * @return array<string,string>
+	 */
+	private function preset_map( array $path, $value_key ) {
+		$map = array();
+		if ( ! class_exists( 'WP_Theme_JSON_Resolver' ) ) {
+			return $map;
+		}
+
+		$node = WP_Theme_JSON_Resolver::get_merged_data()->get_settings();
+		foreach ( $path as $key ) {
+			$node = isset( $node[ $key ] ) ? (array) $node[ $key ] : array();
+		}
+
+		if ( isset( $node[0] ) ) {
+			$groups = array( $node );
+		} else {
+			$groups = array();
+			foreach ( array( 'theme', 'custom', 'default' ) as $origin ) {
+				if ( isset( $node[ $origin ] ) && is_array( $node[ $origin ] ) ) {
+					$groups[] = $node[ $origin ];
 				}
 			}
 		}
-		return isset( $this->font_sizes[ $slug ] ) ? $this->font_sizes[ $slug ] : null;
+		foreach ( $groups as $group ) {
+			foreach ( $group as $preset ) {
+				if ( is_array( $preset ) && isset( $preset['slug'], $preset[ $value_key ] ) && ! isset( $map[ $preset['slug'] ] ) ) {
+					$map[ (string) $preset['slug'] ] = (string) $preset[ $value_key ];
+				}
+			}
+		}
+		return $map;
 	}
 }
