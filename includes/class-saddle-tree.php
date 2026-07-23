@@ -22,8 +22,27 @@ defined( 'ABSPATH' ) || exit;
  * "0" is the first root block, "0.1" its second child, "0.1.0.2" the third
  * block two levels below. Addresses are positional and only valid against
  * the tree revision they were read from.
+ *
+ * Abstract on purpose: the engine is only ever used through a validation
+ * profile, and the abstract validate() below is the enforced seam — the
+ * same contract-based philosophy as the lint/render accessor interfaces,
+ * instead of a convention a profile author has to reverse-engineer.
  */
-class Saddle_Tree {
+abstract class Saddle_Tree {
+
+	/**
+	 * Validate a whole tree against this profile's structural contract.
+	 *
+	 * The ONE method a profile must supply. Reject, never repair: an
+	 * invalid tree must never reach the database, and an agent that
+	 * produced bad structure needs the error, not a silent fix.
+	 *
+	 * @param array[] $tree Block tree.
+	 * @return true|WP_Error True when valid; otherwise one error whose data
+	 *                       lists every violation with its address.
+	 */
+	abstract public static function validate( array $tree );
+
 	/*
 	---------------------------------------------------------------------
 	 * Parse / serialize

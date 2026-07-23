@@ -64,13 +64,7 @@ abstract class Saddle_Lint_Rule {
 	 * @return array[]
 	 */
 	protected function children( array $nodes, $parent_address ) {
-		$out = array();
-		foreach ( $nodes as $node ) {
-			if ( $node['parent'] === $parent_address ) {
-				$out[] = $node;
-			}
-		}
-		return $out;
+		return Saddle_Lint::children_of( $nodes, $parent_address );
 	}
 
 	/**
@@ -81,8 +75,7 @@ abstract class Saddle_Lint_Rule {
 	 * @return bool
 	 */
 	protected function is_descendant( array $node, $ancestor_address ) {
-		return 0 === strpos( $node['address'] . '.', $ancestor_address . '.' )
-			&& $node['address'] !== $ancestor_address;
+		return Saddle_Lint::is_descendant( $node, $ancestor_address );
 	}
 
 	/**
@@ -95,13 +88,6 @@ abstract class Saddle_Lint_Rule {
 	 * @return array[]
 	 */
 	protected function sections( array $nodes ) {
-		$roots = $this->children( $nodes, null );
-		if ( 1 === count( $roots ) ) {
-			$inner = $this->children( $nodes, $roots[0]['address'] );
-			if ( $inner ) {
-				return $inner;
-			}
-		}
-		return $roots;
+		return Saddle_Lint::sections( $nodes );
 	}
 }

@@ -1829,34 +1829,17 @@ class Saddle_Abilities {
 	 * @return string|null Builder name, or null for ordinary content.
 	 */
 	public static function builder_signature( $post ) {
-		$content = (string) $post->post_content;
-		$builder = null;
-
-		if ( false !== strpos( $content, '<!-- wp:divi/' ) ) {
-			$builder = 'Divi 5';
-		} elseif ( 'on' === get_post_meta( $post->ID, '_et_pb_use_builder', true ) || false !== strpos( $content, '[et_pb_section' ) ) {
-			$builder = 'Divi (classic)';
-		} elseif ( 'builder' === get_post_meta( $post->ID, '_elementor_edit_mode', true ) ) {
-			$builder = 'Elementor';
-		} elseif ( get_post_meta( $post->ID, '_fl_builder_enabled', true ) ) {
-			$builder = 'Beaver Builder';
-		} elseif ( get_post_meta( $post->ID, '_bricks_page_content_2', true ) ) {
-			$builder = 'Bricks';
-		} elseif ( false !== strpos( $content, '[vc_row' ) ) {
-			$builder = 'WPBakery';
-		} elseif ( get_post_meta( $post->ID, 'ct_builder_shortcodes', true ) ) {
-			$builder = 'Oxygen';
-		} elseif ( get_post_meta( $post->ID, 'breakdance_data', true ) ) {
-			$builder = 'Breakdance';
-		}
-
 		/**
 		 * Filter the detected page builder for a post (null = plain content).
+		 *
+		 * The detection table itself lives in Saddle_Builders — one row per
+		 * builder, shared with the context warnings and the native-tree
+		 * namespace guard, so the labels can never drift between them.
 		 *
 		 * @param string|null $builder Builder name.
 		 * @param WP_Post     $post    The post.
 		 */
-		return apply_filters( 'saddle_builder_signature', $builder, $post );
+		return apply_filters( 'saddle_builder_signature', Saddle_Builders::detect( $post ), $post );
 	}
 
 	/**
