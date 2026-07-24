@@ -91,6 +91,8 @@ module.exports = function ( grunt ) {
 							'!AGENTS.md',
 							'!WPORG-SUBMISSION.md',
 							'!admin/DESIGN-ALIGNMENT.md',
+							// WP.org listing assets — go to SVN assets/, never in the zip.
+							'!.wordpress.org/**',
 							// Lint config — dev-only.
 							'!phpcs.xml.dist',
 							// Dev caches.

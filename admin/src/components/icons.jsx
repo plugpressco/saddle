@@ -31,7 +31,8 @@ const base = {
 	focusable: false,
 };
 
-// The Saddle brand mark (a stirrup arch), single-sourced from
+// The Saddle brand mark (a saddle draped over the horse's back, knocked out
+// of a filled disc — the PlugPress portfolio motif), single-sourced from
 // assets/brand/mark.svg — the PHP admin-menu icon reads the same file, so
 // editing that one SVG rebrands every surface at once.
 export function BrandMark( props ) {

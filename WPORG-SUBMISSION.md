@@ -12,6 +12,10 @@ Internal doc (never shipped in the zip — excluded in Gruntfile.js). Last audit
    submitting wp.org account before uploading).
 3. After approval: SVN `assets/` gets the 4 screenshots listed in readme.txt
    plus banner/icon. Screenshots do NOT go in the zip.
+   **Banner + icon are ready** in `.wordpress.org/` (icon.svg,
+   icon-128/256 PNGs, banner-772x250 + banner-1544x500 — generated 2026-07-25
+   from the disc brand mark; see `.wordpress.org/README.md` for the SVN copy
+   commands). Only the screenshots remain to be captured.
 4. First public GitHub tag/release only AFTER wp.org approval (CLAUDE.md
    distribution rule).
 
