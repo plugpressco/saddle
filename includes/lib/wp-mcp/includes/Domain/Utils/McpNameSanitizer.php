@@ -103,7 +103,7 @@ class McpNameSanitizer {
 				'mcp_name_invalid',
 				sprintf(
 				/* translators: %s: original ability name */
-					__( 'Unable to derive valid MCP name from: %s', 'mcp-adapter' ),
+					__( 'Unable to derive valid MCP name from: %s', 'saddle' ),
 					$original
 				)
 			);

@@ -38,7 +38,7 @@ class McpResourceValidator {
 			$error_message  = $context ? "[{$context}] " : '';
 			$error_message .= sprintf(
 			/* translators: %s: comma-separated list of validation errors */
-				__( 'Resource validation failed: %s', 'mcp-adapter' ),
+				__( 'Resource validation failed: %s', 'saddle' ),
 				implode( ', ', $validation_errors )
 			);
 			return new WP_Error( 'mcp_resource_validation_failed', esc_html( $error_message ) );
@@ -59,13 +59,13 @@ class McpResourceValidator {
 
 		// Validate URI.
 		if ( ! McpValidator::validate_resource_uri( $resource_dto->getUri() ) ) {
-			$errors[] = __( 'Resource URI must be a valid URI string', 'mcp-adapter' );
+			$errors[] = __( 'Resource URI must be a valid URI string', 'saddle' );
 		}
 
 		// Validate the MIME type if present.
 		$mime_type = $resource_dto->getMimeType();
 		if ( $mime_type && ! McpValidator::validate_mime_type( $mime_type ) ) {
-			$errors[] = __( 'Resource MIME type is invalid', 'mcp-adapter' );
+			$errors[] = __( 'Resource MIME type is invalid', 'saddle' );
 		}
 
 		// Validate icons if present.
@@ -89,7 +89,7 @@ class McpResourceValidator {
 				'mcp_resource_validation_failed',
 				sprintf(
 				/* translators: %s: list of validation errors */
-					__( 'Resource validation failed: %s', 'mcp-adapter' ),
+					__( 'Resource validation failed: %s', 'saddle' ),
 					implode( '; ', $errors )
 				)
 			);
@@ -131,9 +131,9 @@ class McpResourceValidator {
 
 		// Validate the required URI field.
 		if ( empty( $resource_data['uri'] ) || ! is_string( $resource_data['uri'] ) ) {
-			$errors[] = __( 'Resource URI is required and must be a non-empty string', 'mcp-adapter' );
+			$errors[] = __( 'Resource URI is required and must be a non-empty string', 'saddle' );
 		} elseif ( ! McpValidator::validate_resource_uri( $resource_data['uri'] ) ) {
-			$errors[] = __( 'Resource URI must be a valid URI format', 'mcp-adapter' );
+			$errors[] = __( 'Resource URI must be a valid URI format', 'saddle' );
 		}
 
 		// Validate content: at least one of text/blob must be present and correctly typed.
@@ -145,28 +145,28 @@ class McpResourceValidator {
 		$has_blob = $has_blob_key && is_string( $resource_data['blob'] );
 
 		if ( ! $has_text && ! $has_blob ) {
-			$errors[] = __( 'Resource contents must include at least one of: text (string) or blob (base64 string)', 'mcp-adapter' );
+			$errors[] = __( 'Resource contents must include at least one of: text (string) or blob (base64 string)', 'saddle' );
 		}
 
 		if ( $has_text_key && ! is_string( $resource_data['text'] ) ) {
-			$errors[] = __( 'Resource text content must be a string when provided', 'mcp-adapter' );
+			$errors[] = __( 'Resource text content must be a string when provided', 'saddle' );
 		}
 
 		if ( $has_blob_key && ! is_string( $resource_data['blob'] ) ) {
-			$errors[] = __( 'Resource blob content must be a string when provided', 'mcp-adapter' );
+			$errors[] = __( 'Resource blob content must be a string when provided', 'saddle' );
 		}
 
 		// Validate blob content if present and typed.
 		if ( $has_blob && ! McpValidator::validate_base64( $resource_data['blob'] ) ) {
-			$errors[] = __( 'Resource blob content must be valid base64-encoded data', 'mcp-adapter' );
+			$errors[] = __( 'Resource blob content must be valid base64-encoded data', 'saddle' );
 		}
 
 		// Validate mimeType if present (optional).
 		if ( isset( $resource_data['mimeType'] ) ) {
 			if ( ! is_string( $resource_data['mimeType'] ) ) {
-				$errors[] = __( 'Resource mimeType must be a string if provided', 'mcp-adapter' );
+				$errors[] = __( 'Resource mimeType must be a string if provided', 'saddle' );
 			} elseif ( ! McpValidator::validate_mime_type( $resource_data['mimeType'] ) ) {
-				$errors[] = __( 'Resource mimeType must be a valid MIME type format', 'mcp-adapter' );
+				$errors[] = __( 'Resource mimeType must be a valid MIME type format', 'saddle' );
 			}
 		}
 
@@ -188,7 +188,7 @@ class McpResourceValidator {
 				foreach ( $error_group['errors'] as $error ) {
 					$errors[] = sprintf(
 					/* translators: 1: icon index, 2: error message */
-						__( 'Icon at index %1$d: %2$s', 'mcp-adapter' ),
+						__( 'Icon at index %1$d: %2$s', 'saddle' ),
 						$error_group['index'],
 						$error
 					);
