@@ -41,7 +41,7 @@ export const APPS = [
 		label: __( 'ChatGPT', 'saddle' ),
 		kind: __( 'Web + desktop', 'saddle' ),
 		how: __(
-			'In ChatGPT: Settings → Connectors → Create. Paste the address, and use the sign-in details wherever ChatGPT asks for authentication.',
+			'In ChatGPT: Settings → Connectors → Create. Paste the address, choose OAuth for authentication, and leave the client ID and secret blank. ChatGPT will send you here to sign in and approve it.',
 			'saddle'
 		),
 		next: __(
@@ -99,16 +99,6 @@ export const APPS = [
 		),
 	},
 	{
-		key: 'windsurf',
-		label: __( 'Windsurf', 'saddle' ),
-		kind: __( 'Code editor', 'saddle' ),
-		how: __(
-			'In Windsurf: open the Cascade MCP settings and “Add custom server”, or save this into ~/.codeium/windsurf/mcp_config.json.',
-			'saddle'
-		),
-		next: __( 'Open Cascade and ask it about your site.', 'saddle' ),
-	},
-	{
 		key: 'other',
 		label: __( 'Any MCP app', 'saddle' ),
 		kind: __( 'Everything else', 'saddle' ),
@@ -156,28 +146,19 @@ function assemble( app, auth ) {
 				2
 			);
 
-		// Windsurf (Cascade) — mcp_config.json uses `serverUrl` for remote HTTP.
-		case 'windsurf':
-			return JSON.stringify(
-				{
-					mcpServers: {
-						[ SLUG ]: {
-							serverUrl: MCP_URL,
-							headers: { Authorization: `Basic ${ auth }` },
-						},
-					},
-				},
-				null,
-				2
-			);
-
-		// ChatGPT connects by URL from its Connectors screen — hand over the
-		// address and the sign-in details as plain fields to fill in.
+		// ChatGPT connects by URL from its Connectors screen, and its form has
+		// no field for a custom HTTP header — only "no authentication", an API
+		// key, or OAuth. So there is nowhere to put a Basic credential, and the
+		// key this wizard just minted is irrelevant here: ChatGPT signs in
+		// through Saddle's own consent screen instead.
 		case 'chatgpt':
 			return [
-				`${ __( 'Name', 'saddle' ) }:    ${ SLUG }`,
-				`${ __( 'Address', 'saddle' ) }: ${ MCP_URL }`,
-				`${ __( 'Header', 'saddle' ) }:  ${ header }`,
+				`${ __( 'Name', 'saddle' ) }:           ${ SLUG }`,
+				`${ __( 'Address', 'saddle' ) }:        ${ MCP_URL }`,
+				`${ __( 'Authentication', 'saddle' ) }: ${ __(
+					'OAuth (leave client ID and secret blank)',
+					'saddle'
+				) }`,
 			].join( '\n' );
 
 		// Native HTTP with headers.

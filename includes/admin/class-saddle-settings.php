@@ -244,17 +244,29 @@ class Saddle_Settings {
 					// their client, not five servers all named "saddle".
 					'serverSlug'   => Saddle_MCP::server_slug(),
 					'adapter'      => Saddle::mcp_adapter_available(),
+					// Whether ChatGPT can connect at all. ChatGPT's connector
+					// screen has no field for a custom HTTP header, so it needs
+					// the OAuth path — the wizard uses this to show the right
+					// instructions instead of one that cannot be followed.
+					'oauth'        => Saddle_OAuth::is_enabled(),
 					// Environment facts so the UI can warn before a connect fails.
 					'appPasswords' => function_exists( 'wp_is_application_passwords_available' ) ? (bool) wp_is_application_passwords_available() : true,
 					'ssl'          => is_ssl(),
 					// Where WordPress itself lists these credentials — linked
 					// from the Connect tab for transparency.
 					'profileUrl'   => esc_url_raw( admin_url( 'profile.php#application-passwords-section' ) ),
-					// Header chrome: plugin version + outbound links (filterable so
-					// the real docs/review URLs are configurable without a rebuild).
+					// Offered when the dashboard's own REST calls come back 401 —
+					// one cause is simply an expired session, and signing in again
+					// is the whole fix. Returns to this screen afterwards.
+					'loginUrl'     => esc_url_raw( wp_login_url( admin_url( 'admin.php?page=' . self::PAGE_SLUG ) ) ),
+					// Header chrome: plugin version + outbound links. Both point at
+					// the plugin's WordPress.org listing rather than a vendor site:
+					// that is where a free .org-hosted plugin's docs and reviews
+					// actually live, and it keeps the review CTA on .org. Filterable
+					// so first-party docs can be repointed without a rebuild.
 					'version'      => SADDLE_VERSION,
-					'docsUrl'      => esc_url_raw( apply_filters( 'saddle_docs_url', 'https://plugpress.co/docs/saddle' ) ),
-					'rateUrl'      => esc_url_raw( apply_filters( 'saddle_rate_url', 'https://plugpress.co/saddle/#reviews' ) ),
+					'docsUrl'      => esc_url_raw( apply_filters( 'saddle_docs_url', 'https://wordpress.org/plugins/saddle/' ) ),
+					'rateUrl'      => esc_url_raw( apply_filters( 'saddle_rate_url', 'https://wordpress.org/support/plugin/saddle/reviews/' ) ),
 				)
 			) . ';',
 			'before'

@@ -2,30 +2,26 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Saddle 1.0.0\n"
+"Project-Id-Version: Saddle – Control Your Site with AI (MCP Server) 1.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/saddle\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-13T20:35:21+00:00\n"
+"POT-Creation-Date: 2026-08-01T15:26:12+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
 
 #. Plugin Name of the plugin
 #: saddle.php
-#: includes/abilities/core-content.php:26
-#: includes/admin/class-saddle-settings.php:27
-#: includes/admin/class-saddle-settings.php:28
-#: admin/src/App.jsx:450
-msgid "Saddle"
+msgid "Saddle – Control Your Site with AI (MCP Server)"
 msgstr ""
 
 #. Plugin URI of the plugin
 #: saddle.php
-msgid "https://plugpress.co/saddle"
+msgid "https://plugpress.co/saddle/"
 msgstr ""
 
 #. Description of the plugin
@@ -288,7 +284,7 @@ msgstr ""
 
 #: includes/abilities/blocks.php:663
 #: includes/abilities/blocks.php:1186
-#: includes/abilities/core-content.php:1129
+#: includes/abilities/core-content.php:1086
 #: includes/abilities/lint.php:59
 #: includes/abilities/render.php:94
 #: includes/abilities/render.php:150
@@ -439,6 +435,13 @@ msgstr ""
 
 #: includes/abilities/context.php:173
 msgid "Executed changes only — this is a factual record, not instructions."
+msgstr ""
+
+#: includes/abilities/core-content.php:26
+#: includes/admin/class-saddle-settings.php:27
+#: includes/admin/class-saddle-settings.php:28
+#: admin/src/App.jsx:463
+msgid "Saddle"
 msgstr ""
 
 #: includes/abilities/core-content.php:27
@@ -825,122 +828,122 @@ msgstr ""
 msgid "You do not have permission to assign content to another user."
 msgstr ""
 
-#: includes/abilities/core-content.php:1036
+#: includes/abilities/core-content.php:993
 msgid "A non-empty \"query\" is required."
 msgstr ""
 
-#: includes/abilities/core-content.php:1280
-#: includes/abilities/core-content.php:1438
-#: includes/abilities/core-content.php:1491
+#: includes/abilities/core-content.php:1237
+#: includes/abilities/core-content.php:1395
+#: includes/abilities/core-content.php:1448
 msgid "No media item with that ID."
 msgstr ""
 
-#: includes/abilities/core-content.php:1313
+#: includes/abilities/core-content.php:1270
 msgid "The \"source_url\" is not a valid, fetchable URL, or it resolves to a disallowed internal address. If the host is external but cannot be resolved on this server, the site owner can allow it via the \"saddle_source_url_is_safe\" filter."
 msgstr ""
 
 #. translators: %s: maximum size, e.g. "64 MB".
-#: includes/abilities/core-content.php:1334
+#: includes/abilities/core-content.php:1291
 #, php-format
 msgid "The file exceeds the maximum allowed size (%s)."
 msgstr ""
 
-#: includes/abilities/core-content.php:1374
+#: includes/abilities/core-content.php:1331
 msgid "A \"source_url\" is required."
 msgstr ""
 
-#: includes/abilities/core-content.php:1380
+#: includes/abilities/core-content.php:1337
 #: includes/abilities/unsplash.php:230
 msgid "You do not have permission to attach media to that item."
 msgstr ""
 
 #. translators: %d: attachment id.
-#: includes/abilities/core-content.php:1416
+#: includes/abilities/core-content.php:1373
 #, php-format
 msgid "Uploaded media #%d"
 msgstr ""
 
-#: includes/abilities/core-content.php:1441
+#: includes/abilities/core-content.php:1398
 msgid "You do not have permission to edit this media item."
 msgstr ""
 
 #. translators: %d: attachment id.
-#: includes/abilities/core-content.php:1469
+#: includes/abilities/core-content.php:1426
 #, php-format
 msgid "Updated media #%d"
 msgstr ""
 
-#: includes/abilities/core-content.php:1494
+#: includes/abilities/core-content.php:1451
 msgid "You do not have permission to delete this media item."
 msgstr ""
 
 #. translators: 1: attachment id, 2: title.
-#: includes/abilities/core-content.php:1503
+#: includes/abilities/core-content.php:1460
 #, php-format
 msgid "Permanently delete media #%1$d \"%2$s\" and its files. Media has no trash — this cannot be undone."
 msgstr ""
 
-#: includes/abilities/core-content.php:1519
+#: includes/abilities/core-content.php:1476
 msgid "WordPress could not delete the media item."
 msgstr ""
 
-#: includes/abilities/core-content.php:1633
+#: includes/abilities/core-content.php:1590
 msgid "A \"name\" is required."
 msgstr ""
 
 #. translators: 1: term type, 2: name.
-#: includes/abilities/core-content.php:1659
+#: includes/abilities/core-content.php:1616
 #, php-format
 msgid "Created %1$s \"%2$s\""
 msgstr ""
 
 #. translators: %s: post type.
-#: includes/abilities/core-content.php:1746
-#: includes/abilities/core-content.php:1905
-#: includes/abilities/core-content.php:1980
+#: includes/abilities/core-content.php:1703
+#: includes/abilities/core-content.php:1862
+#: includes/abilities/core-content.php:1937
 #, php-format
 msgid "No %s with that ID."
 msgstr ""
 
 #. translators: 1: post type, 2: id, 3: title.
-#: includes/abilities/core-content.php:1789
+#: includes/abilities/core-content.php:1746
 #, php-format
 msgid "Created %1$s #%2$d \"%3$s\""
 msgstr ""
 
 #. translators: 1: post ID, 2: builder name.
-#: includes/abilities/core-content.php:1877
+#: includes/abilities/core-content.php:1834
 #, php-format
 msgid "Post #%1$d is built with %2$s — overwriting its content field would destroy the layout, so Saddle refuses. You can still edit its title, status, excerpt, taxonomy, and meta. "
 msgstr ""
 
-#: includes/abilities/core-content.php:1881
+#: includes/abilities/core-content.php:1838
 msgid "To change the layout itself, use the saddle/divi-* tools (divi-get-page, divi-edit-module, divi-set-page)."
 msgstr ""
 
-#: includes/abilities/core-content.php:1882
+#: includes/abilities/core-content.php:1839
 msgid "Layout changes need the builder’s own editor — tell the site owner instead of forcing the edit."
 msgstr ""
 
 #. translators: 1: post type, 2: id, 3: title.
-#: includes/abilities/core-content.php:1947
+#: includes/abilities/core-content.php:1904
 #, php-format
 msgid "Updated %1$s #%2$d \"%3$s\""
 msgstr ""
 
 #. translators: 1: type, 2: id, 3: title.
-#: includes/abilities/core-content.php:1997
+#: includes/abilities/core-content.php:1954
 #, php-format
 msgid "Permanently delete %1$s #%2$d \"%3$s\". This cannot be undone."
 msgstr ""
 
 #. translators: 1: type, 2: id, 3: title.
-#: includes/abilities/core-content.php:2004
+#: includes/abilities/core-content.php:1961
 #, php-format
 msgid "Move %1$s #%2$d \"%3$s\" to the trash. It can be restored from Trash."
 msgstr ""
 
-#: includes/abilities/core-content.php:2030
+#: includes/abilities/core-content.php:1987
 msgid "WordPress could not delete the item."
 msgstr ""
 
@@ -1518,50 +1521,62 @@ msgstr ""
 msgid "Everything checked out: the persisted state is structurally sound, every attribute takes effect, and no design violations were found."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:372
+#: includes/admin/class-saddle-rest.php:398
+msgid "Sign-in with OAuth needs your site to be served over HTTPS — an access token sent over plain HTTP can be read in transit."
+msgstr ""
+
+#: includes/admin/class-saddle-rest.php:399
+msgid "Sign-in with OAuth needs pretty permalinks. Go to Settings → Permalinks and choose any option other than Plain, then try again."
+msgstr ""
+
+#: includes/admin/class-saddle-rest.php:465
+msgid "That connection no longer exists — it may already have been disconnected."
+msgstr ""
+
+#: includes/admin/class-saddle-rest.php:536
 msgid "Unknown access tier."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:462
-#: includes/admin/class-saddle-rest.php:475
+#: includes/admin/class-saddle-rest.php:626
+#: includes/admin/class-saddle-rest.php:639
 msgid "No skill with that name."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:544
-#: includes/admin/class-saddle-rest.php:560
+#: includes/admin/class-saddle-rest.php:708
+#: includes/admin/class-saddle-rest.php:724
 msgid "No memory entry with that key."
 msgstr ""
 
 #. translators: %d: entries removed.
-#: includes/admin/class-saddle-rest.php:599
+#: includes/admin/class-saddle-rest.php:763
 #, php-format
 msgid "Owner cleared all agent-written memory (%d entries)."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:740
+#: includes/admin/class-saddle-rest.php:904
 msgid "MCP Client"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:775
-#: includes/admin/class-saddle-rest.php:877
-#: includes/admin/class-saddle-rest.php:929
+#: includes/admin/class-saddle-rest.php:939
+#: includes/admin/class-saddle-rest.php:1041
+#: includes/admin/class-saddle-rest.php:1093
 msgid "Application Passwords are not available on this site."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:779
+#: includes/admin/class-saddle-rest.php:943
 msgid "Application Passwords are turned off on this site — often because it isn’t served over HTTPS, or a security plugin disabled them."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:784
+#: includes/admin/class-saddle-rest.php:948
 msgid "AI app"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:884
-#: includes/admin/class-saddle-rest.php:935
+#: includes/admin/class-saddle-rest.php:1048
+#: includes/admin/class-saddle-rest.php:1099
 msgid "No Saddle client with that ID."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:954
+#: includes/admin/class-saddle-rest.php:1118
 msgid "The old key was removed, but issuing its replacement failed. Connect the app again from the Connections screen."
 msgstr ""
 
@@ -1851,46 +1866,52 @@ msgstr ""
 msgid "%1$s does not allow %2$s among its children."
 msgstr ""
 
-#: includes/class-saddle-capabilities.php:214
+#: includes/class-saddle-capabilities.php:264
 msgid "The site owner has paused all AI access — every tool is refused until they resume it from Saddle → Settings. Do not retry; tell the user Saddle is paused."
 msgstr ""
 
-#: includes/class-saddle-capabilities.php:221
+#: includes/class-saddle-capabilities.php:271
 msgid "The request is not authenticated. Reconnect the app from Saddle → Connections to issue a fresh sign-in key."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:230
+#: includes/class-saddle-capabilities.php:280
 #, php-format
 msgid "The site owner turned the \"%s\" tool off individually (Saddle → Permissions). Other tools still work — do not retry this one; tell the user it is disabled."
 msgstr ""
 
+#. translators: 1: required access level, 2: level granted to this connection.
+#: includes/class-saddle-capabilities.php:303
+#, php-format
+msgid "This site allows the \"%1$s\" access level, but the app you are connected through was only granted \"%2$s\" when it was authorized. Do not retry — ask the user to reconnect the app and approve the higher level."
+msgstr ""
+
 #. translators: 1: required access level, 2: current access level.
-#: includes/class-saddle-capabilities.php:247
+#: includes/class-saddle-capabilities.php:314
 #, php-format
 msgid "This tool needs the \"%1$s\" access level, but this site allows \"%2$s\". Only the site owner can raise it (Saddle → Permissions). Do not retry — ask the user to change the level if they want this done."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:289
+#: includes/class-saddle-capabilities.php:356
 #, php-format
 msgid "Blocked: Saddle is paused — \"%s\" was refused."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:293
+#: includes/class-saddle-capabilities.php:360
 #, php-format
 msgid "Blocked: your account lacks permission for \"%s\"."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:297
+#: includes/class-saddle-capabilities.php:364
 #, php-format
 msgid "Blocked: the tool \"%s\" is turned off."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:302
+#: includes/class-saddle-capabilities.php:369
 #, php-format
 msgid "Blocked: \"%s\" needs a higher access level than is enabled."
 msgstr ""
@@ -1903,16 +1924,16 @@ msgstr ""
 msgid "Saddle sign-in keys cannot be used over XML-RPC."
 msgstr ""
 
-#: includes/class-saddle-connection.php:292
-#: includes/class-saddle-mcp.php:194
+#: includes/class-saddle-connection.php:325
+#: includes/class-saddle-mcp.php:229
 msgid "Your sign-in key was rejected — it was most likely revoked or removed. Reconnect the app from Saddle to issue a fresh key."
 msgstr ""
 
-#: includes/class-saddle-connection.php:468
+#: includes/class-saddle-connection.php:596
 msgid "Saddle can’t edit this server’s configuration automatically. Add the rule shown below by hand or send it to your host."
 msgstr ""
 
-#: includes/class-saddle-connection.php:488
+#: includes/class-saddle-connection.php:616
 msgid "Saddle could not write to .htaccess. Check file permissions, or add the rule by hand."
 msgstr ""
 
@@ -1929,7 +1950,7 @@ msgid "# About this WordPress site"
 msgstr ""
 
 #: includes/class-saddle-context.php:80
-#: admin/src/connect-apps.js:178
+#: admin/src/connect-apps.js:156
 msgid "Name"
 msgstr ""
 
@@ -1938,7 +1959,7 @@ msgid "Tagline"
 msgstr ""
 
 #: includes/class-saddle-context.php:87
-#: admin/src/connect-apps.js:179
+#: admin/src/connect-apps.js:157
 msgid "Address"
 msgstr ""
 
@@ -2084,6 +2105,32 @@ msgstr ""
 msgid "Rhythm: align to a consistent content width, reuse the same handful of spacing/size steps across the page, and prefer one strong idea per section over dense walls of content."
 msgstr ""
 
+#: includes/class-saddle-http.php:124
+msgid "Only HTTPS URLs can be fetched."
+msgstr ""
+
+#: includes/class-saddle-http.php:128
+msgid "That address resolves to a private or unreachable network."
+msgstr ""
+
+#. translators: %d: HTTP status code.
+#: includes/class-saddle-http.php:152
+#, php-format
+msgid "That address answered with HTTP %d."
+msgstr ""
+
+#: includes/class-saddle-http.php:160
+msgid "That address did not return JSON."
+msgstr ""
+
+#: includes/class-saddle-http.php:165
+msgid "That document is too large to read."
+msgstr ""
+
+#: includes/class-saddle-http.php:170
+msgid "That document is not valid JSON."
+msgstr ""
+
 #: includes/class-saddle-integrations.php:136
 msgid "Token from the preview step; required to execute this destructive operation."
 msgstr ""
@@ -2124,39 +2171,43 @@ msgstr ""
 msgid "Tiered, default-safe, approval-gated MCP access to posts, pages, and media."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:204
+#: includes/class-saddle-mcp.php:218
+msgid "The access token was rejected — it has expired, been revoked, or was issued for a different site. Refresh it, or reconnect the app to authorize a new one."
+msgstr ""
+
+#: includes/class-saddle-mcp.php:239
 msgid "The request arrived without a sign-in key. If you did connect one, your host may be stripping the Authorization header — open Saddle and run the connection check to confirm and fix it."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:229
+#: includes/class-saddle-mcp.php:264
 msgid "Parse error: request body is not valid JSON-RPC."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:238
+#: includes/class-saddle-mcp.php:273
 msgid "Invalid request."
 msgstr ""
 
 #. translators: %s: JSON-RPC method name.
-#: includes/class-saddle-mcp.php:311
+#: includes/class-saddle-mcp.php:346
 #, php-format
 msgid "Method not found: %s"
 msgstr ""
 
-#: includes/class-saddle-mcp.php:370
+#: includes/class-saddle-mcp.php:405
 msgid "Saddle exposes tiered, approval-gated access to this site's posts, pages, and media. Call saddle/get-instructions for the current scope and safety rules before acting."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:439
+#: includes/class-saddle-mcp.php:474
 msgid "Invalid params: a Saddle tool name is required."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-mcp.php:449
+#: includes/class-saddle-mcp.php:484
 #, php-format
 msgid "Tool not found: %s"
 msgstr ""
 
-#: includes/class-saddle-mcp.php:479
+#: includes/class-saddle-mcp.php:514
 msgid "None of Saddle’s site-wide gates (pause, access level, per-tool toggles) blocked this — the connected WordPress account likely lacks a capability this tool requires, or the specific item is protected. Do not retry the same call."
 msgstr ""
 
@@ -2647,6 +2698,241 @@ msgstr ""
 msgid "Give sibling buttons the same alignment (or put them in one row container that owns the alignment)."
 msgstr ""
 
+#: includes/oauth/class-saddle-oauth-bearer.php:178
+msgid "This app signed in through Saddle and can only reach Saddle’s tools — the rest of the WordPress API is off limits to it by design."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-clients.php:120
+msgid "No client_id was supplied."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-clients.php:129
+msgid "That app is not registered with this site. It may need to register again."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-clients.php:147
+msgid "This site does not accept apps that identify themselves by URL."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-clients.php:158
+msgid "An app identifier URL cannot contain a fragment."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-clients.php:163
+msgid "An app identifier URL must include a path."
+msgstr ""
+
+#. translators: %s: reason the document could not be read.
+#: includes/oauth/class-saddle-oauth-clients.php:172
+#, php-format
+msgid "Could not read that app’s identity document: %s"
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-clients.php:183
+msgid "That app’s identity document does not match the address it was fetched from."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-clients.php:214
+msgid "That registration request is too large."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-clients.php:219
+msgid "Too many registrations from here recently. Try again in an hour."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-clients.php:229
+msgid "The registration request was not valid JSON."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-clients.php:292
+msgid "An app must supply at least one redirect address, over HTTPS or to localhost."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-consent.php:64
+#: includes/oauth/class-saddle-oauth-consent.php:65
+msgid "Authorize app"
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-consent.php:83
+msgid "This authorization request has expired"
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-consent.php:84
+msgid "Authorization requests are only good for a few minutes. Start the connection again from the app, and approve it when this screen appears."
+msgstr ""
+
+#. translators: 1: connecting app name, 2: site name.
+#: includes/oauth/class-saddle-oauth-consent.php:102
+#, php-format
+msgid "Connect %1$s to %2$s?"
+msgstr ""
+
+#. translators: %s: URL the app's identity document was fetched from.
+#: includes/oauth/class-saddle-oauth-consent.php:116
+#, php-format
+msgid "This app identified itself at %s, and Saddle confirmed that address vouches for it."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-consent.php:120
+msgid "This app registered itself with your site. Saddle could not verify who it is — only connect it if you started this yourself, just now."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-consent.php:124
+msgid "What it will be able to do"
+msgstr ""
+
+#. translators: %s: the site's current access level.
+#: includes/oauth/class-saddle-oauth-consent.php:138
+#, php-format
+msgid "This site is set to “%s”, so the app will only get that much no matter what it asked for."
+msgstr ""
+
+#. translators: %s: WordPress user display name.
+#: includes/oauth/class-saddle-oauth-consent.php:147
+#, php-format
+msgid "It will act as %s, and can never do more than that account is allowed to."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-consent.php:152
+msgid "Deletions and overwrites will still show you a preview and ask for confirmation every time. You can disconnect this app at any point from Saddle → Connections."
+msgstr ""
+
+#. translators: %s: redirect address.
+#: includes/oauth/class-saddle-oauth-consent.php:157
+#, php-format
+msgid "When you decide, you will be sent back to %s"
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-consent.php:167
+msgid "Allow"
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-consent.php:168
+msgid "Deny"
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-consent.php:186
+msgid "You do not have permission to connect apps to this site."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-consent.php:191
+msgid "This authorization request has expired or was already answered. Start the connection again from the app."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-consent.php:197
+msgid "Declined to connect an app"
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-consent.php:202
+msgid "The site owner declined the connection."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-consent.php:215
+#: includes/oauth/class-saddle-oauth-endpoints.php:301
+#: includes/oauth/class-saddle-oauth.php:337
+msgid "Could not generate a secure token on this server."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-consent.php:244
+msgid "Connected an app with OAuth"
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-endpoints.php:92
+msgid "Too many sign-in attempts have been made to this site in the last hour. Wait a little and try again."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-endpoints.php:116
+msgid "That app asked to be sent back to an address it has not registered with this site. Nothing has been authorized."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-endpoints.php:123
+msgid "Only the authorization code flow is supported."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-endpoints.php:132
+msgid "This server requires PKCE with the S256 challenge method."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-endpoints.php:137
+msgid "The requested resource is not served by this site."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-endpoints.php:195
+msgid "This server issues tokens for the authorization code and refresh token grants only."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-endpoints.php:209
+msgid "No authorization code was supplied."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-endpoints.php:216
+msgid "That authorization code is invalid, expired, or has already been used."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-endpoints.php:221
+msgid "That authorization code was issued to a different app."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-endpoints.php:226
+msgid "The redirect address does not match the one used to authorize."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-endpoints.php:231
+msgid "The PKCE code verifier does not match the challenge sent when authorizing."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-endpoints.php:236
+msgid "The requested resource does not match the one authorized."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-endpoints.php:251
+msgid "No refresh token was supplied."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-endpoints.php:256
+msgid "That refresh token is invalid, expired, or has already been used."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-endpoints.php:261
+msgid "That connection has been revoked. The app needs to be authorized again."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-endpoints.php:266
+msgid "That refresh token was issued to a different app."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-endpoints.php:276
+msgid "A refresh cannot ask for more access than was originally granted."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-endpoints.php:294
+msgid "That connection no longer exists."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-endpoints.php:532
+msgid "Nothing on your site has changed. You can close this window."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-endpoints.php:533
+msgid "Saddle did not authorize this app"
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-store.php:147
+msgid "Could not store the OAuth record."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth.php:316
+msgid "Create and edit posts, pages, and media"
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth.php:318
+msgid "Manage site settings, plugins, and themes"
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth.php:321
+msgid "Read posts, pages, media, and site information"
+msgstr ""
+
 #: includes/render/class-saddle-render-gutenberg-accessor.php:75
 msgid "No node at that address."
 msgstr ""
@@ -2670,7 +2956,7 @@ msgid "This persisted attribute does nothing — rewrite it on a path the block 
 msgstr ""
 
 #. translators: %s: minimum WordPress version.
-#: saddle.php:263
+#: saddle.php:280
 #, php-format
 msgid "Saddle requires WordPress %s or later (the core Abilities API). The MCP server is disabled until you upgrade."
 msgstr ""
@@ -2707,67 +2993,67 @@ msgstr ""
 msgid "Earlier"
 msgstr ""
 
-#: admin/src/App.jsx:57
-#: admin/src/components/Dashboard.jsx:106
+#: admin/src/App.jsx:58
+#: admin/src/components/Dashboard.jsx:115
 msgid "Dashboard"
 msgstr ""
 
-#: admin/src/App.jsx:62
+#: admin/src/App.jsx:63
 #: admin/src/components/Permissions.jsx:183
 msgid "Permissions"
 msgstr ""
 
-#: admin/src/App.jsx:67
+#: admin/src/App.jsx:68
 #: admin/src/components/Guidance.jsx:208
 msgid "Guidance"
 msgstr ""
 
-#: admin/src/App.jsx:70
+#: admin/src/App.jsx:71
 #: admin/src/components/Memory.jsx:124
 msgid "Memory"
 msgstr ""
 
-#: admin/src/App.jsx:73
+#: admin/src/App.jsx:74
 msgid "Connections"
 msgstr ""
 
-#: admin/src/App.jsx:78
+#: admin/src/App.jsx:79
 #: admin/src/components/Integrations.jsx:79
 msgid "Integrations"
 msgstr ""
 
-#: admin/src/App.jsx:83
+#: admin/src/App.jsx:84
 #: admin/src/components/Activity.jsx:82
 msgid "Activity"
 msgstr ""
 
-#: admin/src/App.jsx:88
-#: admin/src/components/Settings.jsx:42
+#: admin/src/App.jsx:89
+#: admin/src/components/Settings.jsx:64
 msgid "Settings"
 msgstr ""
 
-#: admin/src/App.jsx:100
+#: admin/src/App.jsx:101
 msgid "Your AI"
 msgstr ""
 
-#: admin/src/App.jsx:105
+#: admin/src/App.jsx:106
 msgid "Connect"
 msgstr ""
 
-#: admin/src/App.jsx:108
+#: admin/src/App.jsx:109
 msgid "Monitor"
 msgstr ""
 
-#: admin/src/App.jsx:178
+#: admin/src/App.jsx:179
 msgid "Change this on the Settings page"
 msgstr ""
 
-#: admin/src/App.jsx:187
+#: admin/src/App.jsx:188
 msgid "Paused"
 msgstr ""
 
 #. translators: %d: number of notices.
-#: admin/src/App.jsx:241
+#: admin/src/App.jsx:242
 #, js-format
 msgid "%d notice from other plugins"
 msgid_plural "%d notices from other plugins"
@@ -2775,35 +3061,35 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: error message.
-#: admin/src/App.jsx:314
+#: admin/src/App.jsx:319
 #, js-format
 msgid "Couldn’t refresh the connections list: %s"
 msgstr ""
 
-#: admin/src/App.jsx:440
+#: admin/src/App.jsx:453
 msgid "Skip to content"
 msgstr ""
 
-#: admin/src/App.jsx:446
+#: admin/src/App.jsx:459
 msgid "Saddle sections"
 msgstr ""
 
-#: admin/src/App.jsx:490
-#: admin/src/App.jsx:499
+#: admin/src/App.jsx:503
+#: admin/src/App.jsx:512
 msgid "Docs"
 msgstr ""
 
-#: admin/src/App.jsx:509
-#: admin/src/App.jsx:521
-#: admin/src/components/Settings.jsx:171
+#: admin/src/App.jsx:522
+#: admin/src/App.jsx:534
+#: admin/src/components/Settings.jsx:326
 msgid "Rate Saddle"
 msgstr ""
 
-#: admin/src/App.jsx:551
+#: admin/src/App.jsx:564
 msgid "This site’s address has changed since AI write access was turned on — often a sign of a staging clone or a migration carrying over live credentials. If that wasn’t intentional, review your connected apps and revoke anything unexpected."
 msgstr ""
 
-#: admin/src/App.jsx:561
+#: admin/src/App.jsx:574
 msgid "This is expected — clear this warning"
 msgstr ""
 
@@ -2817,7 +3103,7 @@ msgstr ""
 
 #: admin/src/components/Activity.jsx:27
 #: admin/src/components/Activity.jsx:165
-#: admin/src/components/Dashboard.jsx:262
+#: admin/src/components/Dashboard.jsx:271
 msgid "Blocked"
 msgstr ""
 
@@ -2861,129 +3147,247 @@ msgstr ""
 msgid "Show more"
 msgstr ""
 
+#: admin/src/components/AuthTrouble.jsx:26
+msgid "Your host is removing a WordPress header"
+msgstr ""
+
+#: admin/src/components/AuthTrouble.jsx:27
+msgid "Something on your hosting — usually a security or firewall layer — strips the X-WP-Nonce header from requests before WordPress sees them. Saddle sends its sign-in token a second way to work around this, so reloading may be all you need. If this keeps happening, ask your host to let that header through."
+msgstr ""
+
+#: admin/src/components/AuthTrouble.jsx:31
+msgid "Please allow the X-WP-Nonce request header through to WordPress for this site. Your security layer is currently stripping it, which signs admin users out of plugin settings screens."
+msgstr ""
+
+#: admin/src/components/AuthTrouble.jsx:38
+msgid "Your host is blocking this site’s admin screens"
+msgstr ""
+
+#: admin/src/components/AuthTrouble.jsx:42
+msgid "The sign-in token WordPress uses for admin requests isn’t reaching it — not as a header, and not in the address either. Saddle can’t work around that from here; your host needs to stop filtering these requests."
+msgstr ""
+
+#: admin/src/components/AuthTrouble.jsx:46
+msgid "Please stop filtering requests to /wp-json/ on this site. The X-WP-Nonce header and the _wpnonce parameter are both being removed, which signs administrators out of every plugin settings screen."
+msgstr ""
+
+#: admin/src/components/AuthTrouble.jsx:53
+msgid "Your login isn’t reaching WordPress"
+msgstr ""
+
+#: admin/src/components/AuthTrouble.jsx:54
+msgid "Your WordPress login cookie is being dropped from requests to the site’s API, usually by a caching or security layer. Nothing in Saddle can work around that — the requests arrive as if nobody is signed in."
+msgstr ""
+
+#: admin/src/components/AuthTrouble.jsx:58
+msgid "Please exclude /wp-json/ from caching and cookie stripping on this site. WordPress login cookies are not reaching the REST API, so signed-in administrators are treated as logged out."
+msgstr ""
+
+#: admin/src/components/AuthTrouble.jsx:65
+msgid "Your sign-in has expired"
+msgstr ""
+
+#: admin/src/components/AuthTrouble.jsx:66
+msgid "Your credentials reached WordPress, but it no longer recognises them. This normally means the session timed out — or that this site was copied from another one, which changes the keys WordPress signs sessions with. Signing in again fixes it."
+msgstr ""
+
+#: admin/src/components/AuthTrouble.jsx:74
+msgid "Something else refused the request"
+msgstr ""
+
+#: admin/src/components/AuthTrouble.jsx:75
+msgid "Your sign-in reached WordPress intact and it recognises you, so the refusal came from somewhere else — most often another security plugin filtering the site’s API. Try deactivating security plugins one at a time."
+msgstr ""
+
+#: admin/src/components/AuthTrouble.jsx:83
+msgid "Saddle can’t reach this site’s API"
+msgstr ""
+
+#: admin/src/components/AuthTrouble.jsx:84
+msgid "Even the check that needs no sign-in didn’t answer, so requests to /wp-json/ are being blocked or redirected before WordPress handles them. Your host or a security plugin is the place to look."
+msgstr ""
+
+#: admin/src/components/AuthTrouble.jsx:88
+msgid "Please allow requests to /wp-json/ on this site. They are currently being blocked before WordPress can handle them, which breaks the WordPress REST API and any plugin that relies on it."
+msgstr ""
+
+#: admin/src/components/AuthTrouble.jsx:132
+msgid "Send this to your host"
+msgstr ""
+
+#: admin/src/components/AuthTrouble.jsx:143
+msgid "Try again"
+msgstr ""
+
+#: admin/src/components/AuthTrouble.jsx:151
+msgid "Sign in again"
+msgstr ""
+
+#: admin/src/components/AuthTrouble.jsx:160
+#: admin/src/components/ConnectionHealth.jsx:118
+#: admin/src/components/ConnectionHealth.jsx:214
+msgid "Checking…"
+msgstr ""
+
+#: admin/src/components/AuthTrouble.jsx:161
+#: admin/src/components/ConnectionHealth.jsx:119
+#: admin/src/components/ConnectionHealth.jsx:215
+msgid "Check again"
+msgstr ""
+
 #. translators: %s: the app name.
-#: admin/src/components/ConnectedClients.jsx:67
-#, js-format
-msgid "Rotate “%s”’s key?"
-msgstr ""
-
-#: admin/src/components/ConnectedClients.jsx:70
-msgid "The current key stops working the moment you confirm, and a fresh one is issued under the same name. You’ll paste the new setup into the app right after — until then it can’t connect."
-msgstr ""
-
-#: admin/src/components/ConnectedClients.jsx:75
-#: admin/src/components/ConnectedClients.jsx:290
-msgid "Rotate key"
-msgstr ""
-
-#: admin/src/components/ConnectedClients.jsx:76
-msgid "Keep the current key"
-msgstr ""
-
-#. translators: %s: the app name.
-#: admin/src/components/ConnectedClients.jsx:99
+#: admin/src/components/ConnectedClients.jsx:80
+#: admin/src/components/ConnectedClients.jsx:145
 #, js-format
 msgid "Disconnect “%s”?"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:102
-msgid "Its sign-in key stops working the moment you confirm — the app loses access to this site immediately. This can’t be undone, but you can always connect the app again with a fresh key."
+#: admin/src/components/ConnectedClients.jsx:83
+msgid "It loses access the moment you confirm — no waiting for anything to expire. To use it again you’ll approve it once more."
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:107
-#: admin/src/components/ConnectedClients.jsx:297
+#: admin/src/components/ConnectedClients.jsx:88
+#: admin/src/components/ConnectedClients.jsx:153
+#: admin/src/components/ConnectedClients.jsx:343
+#: admin/src/components/ConnectedClients.jsx:411
 msgid "Disconnect"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:108
+#: admin/src/components/ConnectedClients.jsx:89
+#: admin/src/components/ConnectedClients.jsx:154
 msgid "Keep it connected"
 msgstr ""
 
+#. translators: %s: the app name.
+#: admin/src/components/ConnectedClients.jsx:113
+#, js-format
+msgid "Rotate “%s”’s key?"
+msgstr ""
+
+#: admin/src/components/ConnectedClients.jsx:116
+msgid "The current key stops working the moment you confirm, and a fresh one is issued under the same name. You’ll paste the new setup into the app right after — until then it can’t connect."
+msgstr ""
+
 #: admin/src/components/ConnectedClients.jsx:121
+#: admin/src/components/ConnectedClients.jsx:336
+msgid "Rotate key"
+msgstr ""
+
+#: admin/src/components/ConnectedClients.jsx:122
+msgid "Keep the current key"
+msgstr ""
+
+#: admin/src/components/ConnectedClients.jsx:148
+msgid "Its sign-in key stops working the moment you confirm — the app loses access to this site immediately. This can’t be undone, but you can always connect the app again with a fresh key."
+msgstr ""
+
+#: admin/src/components/ConnectedClients.jsx:167
 msgid "Disconnected. That app’s sign-in no longer works."
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:197
-#: admin/src/components/Dashboard.jsx:117
-#: admin/src/components/Dashboard.jsx:204
+#: admin/src/components/ConnectedClients.jsx:243
+#: admin/src/components/Dashboard.jsx:126
+#: admin/src/components/Dashboard.jsx:213
 msgid "Connected apps"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:198
+#: admin/src/components/ConnectedClients.jsx:244
 msgid "Every app here has its own sign-in you can take away at any moment. They all follow the same rules from Permissions."
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:204
-#: admin/src/components/ConnectedClients.jsx:221
-#: admin/src/components/Dashboard.jsx:192
+#: admin/src/components/ConnectedClients.jsx:250
+#: admin/src/components/ConnectedClients.jsx:267
+#: admin/src/components/Dashboard.jsx:201
 msgid "Connect an app"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:214
+#: admin/src/components/ConnectedClients.jsx:260
 msgid "Nothing connected yet"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:215
+#: admin/src/components/ConnectedClients.jsx:261
 msgid "Connect Claude, Cursor, or another AI app — it takes about a minute."
 msgstr ""
 
 #. translators: %s: date and time.
-#: admin/src/components/ConnectedClients.jsx:251
+#: admin/src/components/ConnectedClients.jsx:297
 #, js-format
 msgid "Last active %s"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:254
+#: admin/src/components/ConnectedClients.jsx:300
 msgid "Hasn’t connected yet — it will on first use"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:259
+#: admin/src/components/ConnectedClients.jsx:305
 msgid "never connected — safe to disconnect"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:266
+#: admin/src/components/ConnectedClients.jsx:312
 msgid "key"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:284
+#: admin/src/components/ConnectedClients.jsx:330
 msgid "Setup guide"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:308
+#: admin/src/components/ConnectedClients.jsx:355
+msgid "Apps that signed in themselves"
+msgstr ""
+
+#: admin/src/components/ConnectedClients.jsx:358
+msgid "These connected through the sign-in screen instead of a pasted key — ChatGPT works this way. Disconnecting one takes effect immediately."
+msgstr ""
+
+#. translators: 1: access level, 2: WordPress username.
+#: admin/src/components/ConnectedClients.jsx:386
+#, js-format
+msgid "%1$s access, acting as %2$s"
+msgstr ""
+
+#: admin/src/components/ConnectedClients.jsx:403
+msgid "Verified"
+msgstr ""
+
+#: admin/src/components/ConnectedClients.jsx:404
+msgid "Unverified"
+msgstr ""
+
+#: admin/src/components/ConnectedClients.jsx:423
 msgid "These keys also appear under Users → Profile → Application Passwords — same keys, either place works for revoking."
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:314
+#: admin/src/components/ConnectedClients.jsx:429
 msgid "View there"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:324
+#: admin/src/components/ConnectedClients.jsx:439
 msgid "Connection details & health"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:328
+#: admin/src/components/ConnectedClients.jsx:443
 msgid "Your site’s address for AI apps"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:341
+#: admin/src/components/ConnectedClients.jsx:456
 msgid "Test the endpoint"
 msgstr ""
 
 #. translators: 1: tool count, 2: milliseconds.
-#: admin/src/components/ConnectedClients.jsx:348
+#: admin/src/components/ConnectedClients.jsx:463
 #, js-format
 msgid "%1$d tools · %2$dms"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:355
+#: admin/src/components/ConnectedClients.jsx:470
 msgid "Responding"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:367
+#: admin/src/components/ConnectedClients.jsx:482
 msgid "Endpoint powered by the WordPress MCP Adapter."
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:371
+#: admin/src/components/ConnectedClients.jsx:486
 msgid "Endpoint powered by Saddle’s built-in MCP transport."
 msgstr ""
 
@@ -3007,52 +3411,52 @@ msgstr ""
 msgid "We couldn’t verify your server automatically. If AI apps report “unauthorized” even with the right password, ask your host to pass the Authorization header through to WordPress."
 msgstr ""
 
-#: admin/src/components/ConnectionHealth.jsx:104
+#: admin/src/components/ConnectionHealth.jsx:107
+msgid "Your host is removing one of WordPress’s headers"
+msgstr ""
+
+#: admin/src/components/ConnectionHealth.jsx:111
+msgid "Something on your hosting — usually a security or firewall layer — strips the X-WP-Nonce header from requests. Saddle works around it, so this dashboard is fine. But the same layer may interfere with other plugins’ settings screens, so it’s worth asking your host to let that header through."
+msgstr ""
+
+#: admin/src/components/ConnectionHealth.jsx:132
 msgid "Your server is blocking app sign-ins"
 msgstr ""
 
-#: admin/src/components/ConnectionHealth.jsx:105
+#: admin/src/components/ConnectionHealth.jsx:133
 msgid "When an AI app connects, it sends its password in a sign-in header. Your web server removes that header before WordPress can see it, so every connection will fail as “unauthorized” — even with the right password. (The test above can still pass, because your browser signs in a different way.)"
 msgstr ""
 
-#: admin/src/components/ConnectionHealth.jsx:119
+#: admin/src/components/ConnectionHealth.jsx:147
 msgid "Fixing…"
 msgstr ""
 
-#: admin/src/components/ConnectionHealth.jsx:120
+#: admin/src/components/ConnectionHealth.jsx:148
 msgid "Fix it for me"
 msgstr ""
 
-#: admin/src/components/ConnectionHealth.jsx:127
+#: admin/src/components/ConnectionHealth.jsx:155
 msgid "Hide the rule"
 msgstr ""
 
-#: admin/src/components/ConnectionHealth.jsx:128
+#: admin/src/components/ConnectionHealth.jsx:156
 msgid "See what this adds"
 msgstr ""
 
-#: admin/src/components/ConnectionHealth.jsx:135
+#: admin/src/components/ConnectionHealth.jsx:163
 msgid "Saddle added the rule, but the header still isn’t arriving — something earlier in the chain (a proxy or your host’s own config) is removing it. Send the rule below to your hosting support and ask them to allow the Authorization header."
 msgstr ""
 
-#: admin/src/components/ConnectionHealth.jsx:152
+#: admin/src/components/ConnectionHealth.jsx:180
 msgid "Saddle can’t edit this server’s configuration automatically. Add the matching rule below yourself, or send it to your hosting support."
 msgstr ""
 
-#: admin/src/components/ConnectionHealth.jsx:164
+#: admin/src/components/ConnectionHealth.jsx:192
 msgid "Apache / LiteSpeed — add to .htaccess"
 msgstr ""
 
-#: admin/src/components/ConnectionHealth.jsx:174
+#: admin/src/components/ConnectionHealth.jsx:202
 msgid "nginx — add to the PHP location block"
-msgstr ""
-
-#: admin/src/components/ConnectionHealth.jsx:186
-msgid "Checking…"
-msgstr ""
-
-#: admin/src/components/ConnectionHealth.jsx:187
-msgid "Check again"
 msgstr ""
 
 #: admin/src/components/ConnectWizard.jsx:39
@@ -3258,76 +3662,76 @@ msgstr ""
 msgid "Admin"
 msgstr ""
 
-#: admin/src/components/Dashboard.jsx:98
+#: admin/src/components/Dashboard.jsx:107
 msgid "Healthy"
 msgstr ""
 
-#: admin/src/components/Dashboard.jsx:100
+#: admin/src/components/Dashboard.jsx:109
 msgid "Needs a fix"
 msgstr ""
 
-#: admin/src/components/Dashboard.jsx:107
+#: admin/src/components/Dashboard.jsx:116
 msgid "What your AI can do right now, what’s connected, and what it has done."
 msgstr ""
 
-#: admin/src/components/Dashboard.jsx:123
+#: admin/src/components/Dashboard.jsx:132
 msgid "The most any connected app can do right now. Change it on the Permissions tab."
 msgstr ""
 
-#: admin/src/components/Dashboard.jsx:128
+#: admin/src/components/Dashboard.jsx:137
 msgid "Access level"
 msgstr ""
 
-#: admin/src/components/Dashboard.jsx:136
+#: admin/src/components/Dashboard.jsx:145
 msgid "Changes and blocked attempts recorded so far. Reading your site is never logged."
 msgstr ""
 
-#: admin/src/components/Dashboard.jsx:141
+#: admin/src/components/Dashboard.jsx:150
 msgid "Actions logged"
 msgstr ""
 
-#: admin/src/components/Dashboard.jsx:149
-msgid "Whether apps can reach your site. If your host strips the Authorization header, connections fail — fix it from the Connect tab."
+#: admin/src/components/Dashboard.jsx:158
+msgid "Whether apps can reach your site. If your host blocks the sign-in details apps send, connections fail — check and fix it from the Connect tab."
 msgstr ""
 
-#: admin/src/components/Dashboard.jsx:154
-#: admin/src/components/Settings.jsx:89
+#: admin/src/components/Dashboard.jsx:163
+#: admin/src/components/Settings.jsx:244
 msgid "Connection"
 msgstr ""
 
-#: admin/src/components/Dashboard.jsx:166
+#: admin/src/components/Dashboard.jsx:175
 msgid "Connections may not work"
 msgstr ""
 
-#: admin/src/components/Dashboard.jsx:167
+#: admin/src/components/Dashboard.jsx:176
 msgid "Your server looks like it blocks the sign-in header apps need, or Application Passwords are turned off. Open Connect to check and fix it."
 msgstr ""
 
-#: admin/src/components/Dashboard.jsx:176
+#: admin/src/components/Dashboard.jsx:185
 msgid "Check connection"
 msgstr ""
 
-#: admin/src/components/Dashboard.jsx:185
+#: admin/src/components/Dashboard.jsx:194
 msgid "Connect your first app"
 msgstr ""
 
-#: admin/src/components/Dashboard.jsx:186
+#: admin/src/components/Dashboard.jsx:195
 msgid "Add an AI app like Claude, Cursor, or VS Code so it can work with your site."
 msgstr ""
 
-#: admin/src/components/Dashboard.jsx:220
+#: admin/src/components/Dashboard.jsx:229
 msgid "Manage connections"
 msgstr ""
 
-#: admin/src/components/Dashboard.jsx:229
+#: admin/src/components/Dashboard.jsx:238
 msgid "Recent activity"
 msgstr ""
 
-#: admin/src/components/Dashboard.jsx:236
+#: admin/src/components/Dashboard.jsx:245
 msgid "View all"
 msgstr ""
 
-#: admin/src/components/Dashboard.jsx:280
+#: admin/src/components/Dashboard.jsx:289
 msgid "Nothing yet. Changes your AI makes will show up here."
 msgstr ""
 
@@ -3780,63 +4184,133 @@ msgstr ""
 msgid "Save"
 msgstr ""
 
-#: admin/src/components/Settings.jsx:43
+#: admin/src/components/Settings.jsx:55
+msgid "Could not save that setting."
+msgstr ""
+
+#: admin/src/components/Settings.jsx:65
 msgid "Site-wide switches and connection facts. Access levels live on Permissions; integration keys on Integrations."
 msgstr ""
 
-#: admin/src/components/Settings.jsx:51
+#: admin/src/components/Settings.jsx:73
 msgid "AI access"
 msgstr ""
 
-#: admin/src/components/Settings.jsx:52
+#: admin/src/components/Settings.jsx:74
 msgid "The master switch. Pausing blocks every tool call from every connected app until you resume — nothing is disconnected or forgotten."
 msgstr ""
 
-#: admin/src/components/Settings.jsx:67
+#: admin/src/components/Settings.jsx:89
 msgid "Saddle is answering connected apps"
 msgstr ""
 
-#: admin/src/components/Settings.jsx:74
+#: admin/src/components/Settings.jsx:96
 msgid "Paused — every request is refused until you resume."
 msgstr ""
 
-#: admin/src/components/Settings.jsx:78
+#: admin/src/components/Settings.jsx:100
 msgid "Active — connected apps can use their allowed tools."
 msgstr ""
 
-#: admin/src/components/Settings.jsx:90
+#: admin/src/components/Settings.jsx:111
+msgid "Sign-in for ChatGPT"
+msgstr ""
+
+#: admin/src/components/Settings.jsx:112
+msgid "Most AI apps let you paste a sign-in key. ChatGPT does not — its connector screen has no field for one. Turn this on and ChatGPT can send you here to approve it instead, the same way “Sign in with Google” works. Off by default; everything else keeps working either way."
+msgstr ""
+
+#: admin/src/components/Settings.jsx:121
+msgid "This needs your site to be served over HTTPS first — a sign-in token sent over plain HTTP can be read in transit."
+msgstr ""
+
+#: admin/src/components/Settings.jsx:125
+msgid "This needs pretty permalinks. Go to Settings → Permalinks, choose anything other than Plain, and come back."
+msgstr ""
+
+#: admin/src/components/Settings.jsx:143
+msgid "Allow apps to sign in with your WordPress account"
+msgstr ""
+
+#: admin/src/components/Settings.jsx:150
+msgid "On — ChatGPT and other apps can ask to connect. You approve each one."
+msgstr ""
+
+#: admin/src/components/Settings.jsx:154
+msgid "Off — no app can start a sign-in, and nothing is published for them to find."
+msgstr ""
+
+#: admin/src/components/Settings.jsx:168
+msgid "Discoverable"
+msgstr ""
+
+#: admin/src/components/Settings.jsx:171
+msgid "Apps can find this site’s sign-in details on their own."
+msgstr ""
+
+#: admin/src/components/Settings.jsx:175
+msgid "Apps may not be able to find the sign-in details automatically. This usually means WordPress lives in a subfolder, or your host blocks addresses starting with a dot. Most apps will still connect; ChatGPT may not."
+msgstr ""
+
+#: admin/src/components/Settings.jsx:189
+msgid "Yes"
+msgstr ""
+
+#: admin/src/components/Settings.jsx:190
+msgid "Maybe not"
+msgstr ""
+
+#: admin/src/components/Settings.jsx:195
+#: admin/src/components/Settings.jsx:210
+msgid "Let apps register themselves"
+msgstr ""
+
+#: admin/src/components/Settings.jsx:199
+msgid "Needed by ChatGPT. An app that registers still cannot do anything until you approve it on screen."
+msgstr ""
+
+#: admin/src/components/Settings.jsx:218
+#: admin/src/components/Settings.jsx:230
+msgid "Check app identity"
+msgstr ""
+
+#: admin/src/components/Settings.jsx:219
+msgid "When an app identifies itself by web address, Saddle fetches that address to confirm it vouches for the app. Turning this off means every app shows as unverified."
+msgstr ""
+
+#: admin/src/components/Settings.jsx:245
 msgid "Read-only facts about how apps reach this site. Connect and test apps on the Connections screen."
 msgstr ""
 
-#: admin/src/components/Settings.jsx:98
+#: admin/src/components/Settings.jsx:253
 msgid "MCP endpoint"
 msgstr ""
 
-#: admin/src/components/Settings.jsx:104
+#: admin/src/components/Settings.jsx:259
 msgid "Transport"
 msgstr ""
 
-#: admin/src/components/Settings.jsx:108
+#: admin/src/components/Settings.jsx:263
 msgid "Official MCP adapter"
 msgstr ""
 
-#: admin/src/components/Settings.jsx:109
+#: admin/src/components/Settings.jsx:264
 msgid "Built-in fallback"
 msgstr ""
 
-#: admin/src/components/Settings.jsx:115
+#: admin/src/components/Settings.jsx:270
 msgid "Site address"
 msgstr ""
 
-#: admin/src/components/Settings.jsx:118
+#: admin/src/components/Settings.jsx:273
 msgid "The address has changed since write access was granted — review connected apps if this wasn’t a planned move."
 msgstr ""
 
-#: admin/src/components/Settings.jsx:141
+#: admin/src/components/Settings.jsx:296
 msgid "About"
 msgstr ""
 
-#: admin/src/components/Settings.jsx:159
+#: admin/src/components/Settings.jsx:314
 msgid "Documentation"
 msgstr ""
 
@@ -3960,7 +4434,7 @@ msgid "Web + desktop"
 msgstr ""
 
 #: admin/src/connect-apps.js:43
-msgid "In ChatGPT: Settings → Connectors → Create. Paste the address, and use the sign-in details wherever ChatGPT asks for authentication."
+msgid "In ChatGPT: Settings → Connectors → Create. Paste the address, choose OAuth for authentication, and leave the client ID and secret blank. ChatGPT will send you here to sign in and approve it."
 msgstr ""
 
 #: admin/src/connect-apps.js:47
@@ -3990,7 +4464,6 @@ msgid "Cursor"
 msgstr ""
 
 #: admin/src/connect-apps.js:68
-#: admin/src/connect-apps.js:104
 msgid "Code editor"
 msgstr ""
 
@@ -4027,33 +4500,25 @@ msgid "Open Copilot Chat in agent mode and ask it about your site."
 msgstr ""
 
 #: admin/src/connect-apps.js:103
-msgid "Windsurf"
-msgstr ""
-
-#: admin/src/connect-apps.js:105
-msgid "In Windsurf: open the Cascade MCP settings and “Add custom server”, or save this into ~/.codeium/windsurf/mcp_config.json."
-msgstr ""
-
-#: admin/src/connect-apps.js:109
-msgid "Open Cascade and ask it about your site."
-msgstr ""
-
-#: admin/src/connect-apps.js:113
 msgid "Any MCP app"
 msgstr ""
 
-#: admin/src/connect-apps.js:114
+#: admin/src/connect-apps.js:104
 msgid "Everything else"
 msgstr ""
 
-#: admin/src/connect-apps.js:115
+#: admin/src/connect-apps.js:105
 msgid "Most AI apps accept this standard setup — look for “Add MCP server” in their settings and paste it there."
 msgstr ""
 
-#: admin/src/connect-apps.js:119
+#: admin/src/connect-apps.js:109
 msgid "Open your app and ask it about your site."
 msgstr ""
 
-#: admin/src/connect-apps.js:180
-msgid "Header"
+#: admin/src/connect-apps.js:158
+msgid "Authentication"
+msgstr ""
+
+#: admin/src/connect-apps.js:158
+msgid "OAuth (leave client ID and secret blank)"
 msgstr ""

@@ -50,6 +50,7 @@ import Integrations from './components/Integrations';
 import Activity from './components/Activity';
 import Settings from './components/Settings';
 import ConnectWizard from './components/ConnectWizard';
+import AuthTrouble from './components/AuthTrouble';
 
 const TABS = [
 	{
@@ -262,6 +263,10 @@ export default function App() {
 	const [ domainWarning, setDomainWarning ] = useState( false );
 	const [ loading, setLoading ] = useState( true );
 	const [ error, setError ] = useState( null );
+	// A 401 means WordPress resolved nobody at all — the session never arrived,
+	// rather than arriving without permission. Nothing on this screen can load,
+	// so it gets its own view instead of an error strip over an empty shell.
+	const [ authError, setAuthError ] = useState( false );
 	const [ tab, setTabState ] = useState( tabFromHash );
 	const [ wizardOpen, setWizardOpen ] = useState( false );
 
@@ -360,7 +365,13 @@ export default function App() {
 				setDomainWarning( !! res.domain_warning );
 			} ),
 		] )
-			.catch( ( e ) => setError( e.message ) )
+			.catch( ( e ) => {
+				if ( e && e.data && e.data.status === 401 ) {
+					setAuthError( true );
+				} else {
+					setError( e.message );
+				}
+			} )
 			.finally( () => setLoading( false ) );
 	}, [ loadCaps, loadClients ] );
 
@@ -423,6 +434,8 @@ export default function App() {
 				<Spinner />
 			</div>
 		);
+	} else if ( authError ) {
+		view = <AuthTrouble onRetry={ () => window.location.reload() } />;
 	} else if ( ! onboarded ) {
 		view = (
 			<div className="pp-app saddle-app saddle-app--setup">

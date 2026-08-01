@@ -225,32 +225,62 @@ class Saddle_Connection {
 	}
 
 	/**
-	 * Whether Basic credentials actually reached PHP on the current request.
+	 * Which credential scheme the current request carried, if any.
 	 *
-	 * True when core surfaced them (`PHP_AUTH_USER`) or {@see self::recover_auth_header()}
-	 * recovered them, or when a raw `Basic` Authorization header is still readable.
-	 * A 401 with credentials present means they were rejected (revoked/wrong); a 401
-	 * with none present means they never arrived (stripped header).
+	 * Distinguishing the two matters for the 401 message: a rejected `Basic`
+	 * credential means a revoked Application Password (reconnect the app), while a
+	 * rejected `Bearer` means an expired or revoked OAuth token (the client should
+	 * refresh or re-authorize). Advising "your host is stripping the Authorization
+	 * header" — the no-credential case — would be actively wrong for either.
+	 *
+	 * @return string 'basic' | 'bearer' | '' when no credential reached PHP.
+	 */
+	public static function credential_scheme() {
+		if ( ! empty( $_SERVER['PHP_AUTH_USER'] ) ) {
+			return 'basic';
+		}
+
+		$header = self::authorization_header();
+		if ( '' === $header ) {
+			return '';
+		}
+		if ( 0 === stripos( $header, 'basic ' ) ) {
+			return 'basic';
+		}
+		if ( 0 === stripos( $header, 'bearer ' ) ) {
+			return 'bearer';
+		}
+
+		return '';
+	}
+
+	/**
+	 * Whether the request carried a credential PHP could see, of either scheme.
+	 *
+	 * True when core surfaced Basic credentials (`PHP_AUTH_USER`), when
+	 * {@see self::recover_auth_header()} recovered them, or when a raw `Basic` or
+	 * `Bearer` Authorization header is still readable. A 401 with credentials
+	 * present means they were rejected; a 401 with none present means they never
+	 * arrived (stripped header).
 	 *
 	 * @return bool
 	 */
 	public static function request_carried_credentials() {
-		if ( ! empty( $_SERVER['PHP_AUTH_USER'] ) ) {
-			return true;
-		}
-		$header = self::authorization_header();
-		return '' !== $header && 0 === stripos( $header, 'basic ' );
+		return '' !== self::credential_scheme();
 	}
 
 	/**
 	 * Whether the current request is aimed at Saddle's MCP endpoint.
 	 *
 	 * Read from the request URI because this runs at `rest_authentication_errors`,
-	 * before the REST route is resolved.
+	 * before the REST route is resolved. {@see Saddle_OAuth_Bearer::resolve()}
+	 * needs it even earlier, on `determine_current_user`, which is why it is
+	 * shared rather than duplicated — a security-relevant string match belongs
+	 * in exactly one place.
 	 *
 	 * @return bool
 	 */
-	private static function targets_mcp_endpoint() {
+	public static function targets_mcp_endpoint() {
 		$uri = isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( (string) $_SERVER['REQUEST_URI'] ) ) : '';
 		if ( '' === $uri ) {
 			return false;
@@ -277,7 +307,10 @@ class Saddle_Connection {
 		if ( ! is_wp_error( $errors ) ) {
 			return $errors;
 		}
-		if ( ! self::targets_mcp_endpoint() || ! self::request_carried_credentials() ) {
+		// Only Basic reaches this hook as a core error — core's authenticator owns
+		// Application Passwords and knows nothing about Bearer, so an OAuth token
+		// never produces the 401 being relabelled here.
+		if ( ! self::targets_mcp_endpoint() || 'basic' !== self::credential_scheme() ) {
 			return $errors;
 		}
 
@@ -336,13 +369,67 @@ class Saddle_Connection {
 	}
 
 	/**
-	 * GET /auth-probe — echoes whether the request carried an Authorization
-	 * header that PHP could see. No credentials are read, validated, or returned.
+	 * GET /auth-probe — echoes, as booleans, which credentials the caller's own
+	 * request managed to get as far as PHP. No credential is read, validated, or
+	 * returned; the caller learns only what it already knew it sent.
+	 *
+	 * Two consumers:
+	 *
+	 * - {@see self::probe_headers()}'s loopback, which asks the server about
+	 *   itself. `received` is its original contract and has not changed.
+	 * - The dashboard, when an admin REST call comes back 401 — to tell a stripped
+	 *   `X-WP-Nonce` header apart from a stripped login cookie. Those look
+	 *   identical from the browser and need opposite fixes, and this is the only
+	 *   Saddle route still reachable while that failure is happening (every other
+	 *   one is `manage_options`-gated, so they all 401 together).
+	 *
+	 * Deliberately does not report whether a nonce *verified*. That would turn a
+	 * public route into a nonce oracle.
 	 *
 	 * @return WP_REST_Response
 	 */
 	public static function rest_auth_probe() {
-		return new WP_REST_Response( array( 'received' => ( '' !== self::authorization_header() ) ), 200 );
+		nocache_headers();
+
+		return new WP_REST_Response(
+			array(
+				'received'      => ( '' !== self::authorization_header() ),
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- reports only whether a nonce arrived; the value is never read, verified, or returned.
+				'nonce_header'  => isset( $_SERVER['HTTP_X_WP_NONCE'] ),
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- as above.
+				'nonce_query'   => isset( $_REQUEST['_wpnonce'] ),
+				'cookie'        => self::has_login_cookie(),
+				// The ground truth behind a 401: did WordPress end up with a user?
+				'identified'    => is_user_logged_in(),
+				// Tells "X-WP-Nonce specifically" apart from "every custom header",
+				// which is a different — and larger — thing to ask the host about.
+				'custom_header' => isset( $_SERVER['HTTP_X_SADDLE_PROBE'] ),
+			),
+			200
+		);
+	}
+
+	/**
+	 * Whether any WordPress login cookie reached PHP on this request.
+	 *
+	 * Cookie *names* only. No value is read, compared, or returned — this runs on
+	 * a public route, and the caller learns nothing about its own request that it
+	 * did not already know.
+	 *
+	 * @return bool
+	 */
+	public static function has_login_cookie() {
+		if ( defined( 'LOGGED_IN_COOKIE' ) && isset( $_COOKIE[ LOGGED_IN_COOKIE ] ) ) {
+			return true;
+		}
+
+		foreach ( array_keys( (array) $_COOKIE ) as $name ) {
+			if ( 0 === strpos( (string) $name, 'wordpress_logged_in' ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -373,7 +460,9 @@ class Saddle_Connection {
 	 * @return array
 	 */
 	public static function self_check() {
-		$auth_header = self::probe_auth_header();
+		$probe        = self::probe_headers();
+		$auth_header  = $probe['auth'];
+		$nonce_header = $probe['nonce'];
 
 		$report = array(
 			'app_passwords_available' => function_exists( 'wp_is_application_passwords_available' ) ? (bool) wp_is_application_passwords_available() : false,
@@ -381,14 +470,23 @@ class Saddle_Connection {
 			'server'                  => self::server_software(),
 			'endpoint'                => rest_url( ltrim( Saddle_MCP::REST_NAMESPACE . Saddle_MCP::ROUTE, '/' ) ),
 			'auth_header'             => $auth_header, // One of: ok, stripped, unknown.
+			'nonce_header'            => $nonce_header, // One of: ok, stripped, unknown.
+			// Bound to the Authorization case on purpose. The .htaccess rule
+			// forwards that one header, and there is no equivalent for a nonce —
+			// an edge-level strip happens upstream of Apache entirely.
 			'htaccess_fixable'        => ( 'stripped' === $auth_header ) && self::htaccess_fixable(),
 			'fix_snippet'             => self::fix_snippet(),
 		);
 
+		// Most severe first. A stripped Authorization header breaks every external
+		// app outright; a stripped nonce only costs the dashboard a workaround it
+		// already applies, so it must not mask the bigger problem.
 		if ( ! $report['app_passwords_available'] ) {
 			$report['status'] = 'app_passwords_off';
 		} elseif ( 'stripped' === $auth_header ) {
 			$report['status'] = 'auth_header_stripped';
+		} elseif ( 'stripped' === $nonce_header ) {
+			$report['status'] = 'nonce_header_stripped';
 		} elseif ( 'ok' === $auth_header ) {
 			$report['status'] = 'ok';
 		} else {
@@ -399,38 +497,68 @@ class Saddle_Connection {
 	}
 
 	/**
-	 * Loopback probe: does an Authorization header survive the trip to our own
-	 * REST endpoint on this server?
+	 * Loopback probe: which credential-bearing headers survive the trip to our
+	 * own REST endpoint on this server?
 	 *
-	 * @return string 'ok' | 'stripped' | 'unknown'
+	 * One request answers both questions, because the loopback leaves and
+	 * re-enters through the same edge a browser does and so meets the same
+	 * stripping rules. Neither header carries a real credential — the probe
+	 * reports only whether they arrived.
+	 *
+	 * @return array{auth:string,nonce:string} Each 'ok' | 'stripped' | 'unknown'.
 	 */
-	private static function probe_auth_header() {
+	private static function probe_headers() {
+		$unknown = array(
+			'auth'  => 'unknown',
+			'nonce' => 'unknown',
+		);
+
 		$url  = rest_url( Saddle_REST_Admin::REST_NAMESPACE . '/auth-probe' );
 		$resp = wp_remote_get(
 			$url,
 			array(
 				'timeout'     => 5,
-				// Loopback to our own rest_url with a throwaway credential —
+				// Loopback to our own rest_url with throwaway credentials —
 				// local dev/staging often serves a self-signed cert, and the
-				// probe reads only a boolean, never trusting the response body.
+				// probe reads only booleans, never trusting the response body.
 				'sslverify'   => false,
 				'redirection' => 0,
 				'cookies'     => array(),
-				// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- building a standard RFC 7617 Basic header for the loopback probe.
-				'headers'     => array( 'Authorization' => 'Basic ' . base64_encode( 'saddle-probe:x' ) ),
+				'headers'     => array(
+					// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- building a standard RFC 7617 Basic header for the loopback probe.
+					'Authorization' => 'Basic ' . base64_encode( 'saddle-probe:x' ),
+					// Not a real nonce and never verified against anything.
+					'X-WP-Nonce'    => 'saddle-probe',
+				),
 			)
 		);
 
 		if ( is_wp_error( $resp ) ) {
-			return 'unknown';
+			return $unknown;
 		}
 
 		$body = json_decode( (string) wp_remote_retrieve_body( $resp ), true );
-		if ( ! is_array( $body ) || ! array_key_exists( 'received', $body ) ) {
-			return 'unknown';
+		if ( ! is_array( $body ) ) {
+			return $unknown;
 		}
 
-		return ! empty( $body['received'] ) ? 'ok' : 'stripped';
+		return array(
+			'auth'  => array_key_exists( 'received', $body ) ? ( ! empty( $body['received'] ) ? 'ok' : 'stripped' ) : 'unknown',
+			'nonce' => array_key_exists( 'nonce_header', $body ) ? ( ! empty( $body['nonce_header'] ) ? 'ok' : 'stripped' ) : 'unknown',
+		);
+	}
+
+	/**
+	 * Whether an Authorization header survives the loopback.
+	 *
+	 * Kept as its own name because {@see self::apply_htaccess_fix()} and the
+	 * Authorization-forwarding path only ever care about this one answer.
+	 *
+	 * @return string 'ok' | 'stripped' | 'unknown'
+	 */
+	private static function probe_auth_header() {
+		$probe = self::probe_headers();
+		return $probe['auth'];
 	}
 
 	/**

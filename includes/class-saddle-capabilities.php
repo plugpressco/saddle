@@ -81,13 +81,63 @@ class Saddle_Capabilities {
 	}
 
 	/**
-	 * Current site tier, validated against the known set.
+	 * Numeric rank of a tier name. Higher means more power.
+	 *
+	 * @param string $tier Tier name.
+	 * @return int -1 for an unknown name.
+	 */
+	public static function rank( $tier ) {
+		return isset( self::$levels[ $tier ] ) ? self::$levels[ $tier ] : -1;
+	}
+
+	/**
+	 * The tier the owner configured, ignoring anything about the current caller.
+	 *
+	 * This is the site's setting. Use it when reporting or writing configuration
+	 * — the Permissions screen, the settings endpoint, the clone-domain warning —
+	 * and never for deciding whether a call is allowed.
+	 *
+	 * @return string
+	 */
+	public static function get_site_tier() {
+		$tier = get_option( self::OPTION, self::DEFAULT_TIER );
+		return isset( self::$levels[ $tier ] ) ? $tier : self::DEFAULT_TIER;
+	}
+
+	/**
+	 * The tier actually in force for this request.
+	 *
+	 * The site's configured tier, lowered by any ceiling the current credential
+	 * carries. An OAuth access token carries the scope its owner approved on the
+	 * consent screen, so a `saddle:read` token on a `write` site gets read — the
+	 * token can narrow what the site allows, never widen it.
+	 *
+	 * The clamp lives here rather than inside {@see self::tier_allows()} on
+	 * purpose. `get_tier()` is also what Saddle reports to the agent through
+	 * `get-site-info` and the system context, and an agent that is told it has
+	 * admin access and then refused tool by tool has been lied to. It should be
+	 * told read, and behave accordingly.
 	 *
 	 * @return string
 	 */
 	public static function get_tier() {
-		$tier = get_option( self::OPTION, self::DEFAULT_TIER );
-		return isset( self::$levels[ $tier ] ) ? $tier : self::DEFAULT_TIER;
+		$tier = self::get_site_tier();
+
+		/**
+		 * Filter a per-request ceiling on the effective access tier.
+		 *
+		 * Saddle_OAuth_Bearer sets this for the duration of a token-authenticated
+		 * request. Return null for no ceiling.
+		 *
+		 * @param string|null $ceiling Tier name, or null.
+		 */
+		$ceiling = apply_filters( 'saddle_tier_ceiling', null );
+
+		if ( null === $ceiling || ! isset( self::$levels[ $ceiling ] ) ) {
+			return $tier;
+		}
+
+		return self::$levels[ $ceiling ] < self::$levels[ $tier ] ? $ceiling : $tier;
 	}
 
 	/**
@@ -240,6 +290,23 @@ class Saddle_Capabilities {
 			$meta     = $ability->get_meta();
 			$required = isset( $meta['saddle']['tier'] ) ? (string) $meta['saddle']['tier'] : '';
 			if ( '' !== $required && ! self::tier_allows( $required ) ) {
+				// The site allows this, but the credential in hand doesn't — the
+				// app was granted a narrower scope when it was authorized. That
+				// is a different problem with a different fix, and an agent told
+				// "raise the site's access level" would be sending the user to
+				// the wrong screen entirely.
+				if ( self::rank( $required ) <= self::rank( self::get_site_tier() ) ) {
+					return array(
+						'code'    => 'saddle_insufficient_scope',
+						'message' => sprintf(
+							/* translators: 1: required access level, 2: level granted to this connection. */
+							__( 'This site allows the "%1$s" access level, but the app you are connected through was only granted "%2$s" when it was authorized. Do not retry — ask the user to reconnect the app and approve the higher level.', 'saddle' ),
+							$required,
+							self::get_tier()
+						),
+					);
+				}
+
 				return array(
 					'code'    => 'saddle_tier_denied',
 					'message' => sprintf(
@@ -368,7 +435,7 @@ class Saddle_Capabilities {
 	 * @return bool
 	 */
 	public static function domain_matches_recorded() {
-		if ( ! in_array( self::get_tier(), array( 'write', 'admin' ), true ) ) {
+		if ( ! in_array( self::get_site_tier(), array( 'write', 'admin' ), true ) ) {
 			return true;
 		}
 		$recorded = self::recorded_tier_domain();

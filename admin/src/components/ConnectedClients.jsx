@@ -6,7 +6,7 @@
  * which opens the guided wizard. The endpoint test and server health checks
  * live behind a disclosure — they're for troubleshooting, not for every visit.
  */
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import {
 	Button,
@@ -59,6 +59,52 @@ export default function Apps( {
 	// The setup-guide drawer: { app, label, password? } — password only right
 	// after a rotation (shown once), otherwise placeholder mode.
 	const [ guide, setGuide ] = useState( null );
+	// Apps that connected through the sign-in screen rather than a pasted key.
+	// Listed separately because they behave differently: nothing was ever
+	// copied, and there is no key to rotate — only to take away.
+	const [ oauthConnections, setOauthConnections ] = useState( [] );
+
+	const refreshOauth = () =>
+		api( 'oauth-connections' )
+			.then( ( res ) => setOauthConnections( res || [] ) )
+			.catch( () => setOauthConnections( [] ) );
+
+	useEffect( () => {
+		refreshOauth();
+	}, [] );
+
+	const revokeOauth = async ( c ) => {
+		const ok = await confirm( {
+			title: sprintf(
+				/* translators: %s: the app name. */
+				__( 'Disconnect “%s”?', 'saddle' ),
+				c.name
+			),
+			description: __(
+				'It loses access the moment you confirm — no waiting for anything to expire. To use it again you’ll approve it once more.',
+				'saddle'
+			),
+			danger: true,
+			confirmLabel: __( 'Disconnect', 'saddle' ),
+			cancelLabel: __( 'Keep it connected', 'saddle' ),
+		} );
+		if ( ! ok ) {
+			return;
+		}
+
+		// Optimistic, then reconcile — the same pattern the key list uses, so a
+		// failed refetch surfaces as a toast rather than a silently stale row.
+		setOauthConnections( ( list ) =>
+			list.filter( ( x ) => x.id !== c.id )
+		);
+
+		api( `oauth-connections/${ c.id }`, { method: 'DELETE' } )
+			.then( refreshOauth )
+			.catch( ( e ) => {
+				toast.error( e.message );
+				refreshOauth();
+			} );
+	};
 
 	const askRotate = async ( c ) => {
 		const ok = await confirm( {
@@ -301,6 +347,75 @@ export default function Apps( {
 						/>
 					) ) }
 				</RowList>
+			) }
+
+			{ oauthConnections.length > 0 && (
+				<>
+					<h3 className="saddle-apps__subhead">
+						{ __( 'Apps that signed in themselves', 'saddle' ) }
+					</h3>
+					<p className="saddle-apps__footnote">
+						{ __(
+							'These connected through the sign-in screen instead of a pasted key — ChatGPT works this way. Disconnecting one takes effect immediately.',
+							'saddle'
+						) }
+					</p>
+					<RowList>
+						{ oauthConnections.map( ( c ) => (
+							<Row
+								key={ c.id }
+								icon={
+									<AppLogo
+										app={ appKeyFromLabel( c.name ) }
+									/>
+								}
+								title={
+									<>
+										<StatusDot
+											tone={
+												c.last_used
+													? 'success'
+													: 'neutral'
+											}
+										/>{ ' ' }
+										{ c.name }
+									</>
+								}
+								description={ sprintf(
+									/* translators: 1: access level, 2: WordPress username. */
+									__(
+										'%1$s access, acting as %2$s',
+										'saddle'
+									),
+									c.level,
+									c.user_login
+								) }
+								actions={
+									<>
+										<Badge
+											tone={
+												c.verified
+													? undefined
+													: 'warning'
+											}
+										>
+											{ c.verified
+												? __( 'Verified', 'saddle' )
+												: __( 'Unverified', 'saddle' ) }
+										</Badge>
+										<Button
+											variant="ghost"
+											size="sm"
+											onClick={ () => revokeOauth( c ) }
+										>
+											{ __( 'Disconnect', 'saddle' ) }
+										</Button>
+									</>
+								}
+							/>
+						) ) }
+					</RowList>
+				</>
 			) }
 
 			{ clients.length > 0 && (

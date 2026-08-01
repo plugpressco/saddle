@@ -14,7 +14,6 @@ import CopilotLogo from '@lobehub/icons-static-svg/icons/copilot-color.svg';
 import CodexLogo from '@lobehub/icons-static-svg/icons/codex.svg';
 import AntigravityLogo from '@lobehub/icons-static-svg/icons/antigravity-color.svg';
 import GeminiLogo from '@lobehub/icons-static-svg/icons/geminicli-color.svg';
-import WindsurfLogo from '@lobehub/icons-static-svg/icons/windsurf.svg';
 import McpLogo from '@lobehub/icons-static-svg/icons/mcp.svg';
 import { ReactComponent as Mark } from '../../../assets/brand/mark.svg';
 
@@ -112,7 +111,6 @@ const APP_LOGOS = {
 	cursor: CursorLogo,
 	'gemini-cli': GeminiLogo,
 	vscode: CopilotLogo,
-	windsurf: WindsurfLogo,
 	other: McpLogo,
 	// Legacy keys — connections made before the card lineup changed.
 	'claude-desktop': ClaudeLogo,

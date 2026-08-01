@@ -89,7 +89,13 @@ class Saddle_MCP {
 			'\\WP\\MCP\\Infrastructure\\Observability\\NullMcpObservabilityHandler',
 			self::adapter_tool_names(),
 			array(),
-			array()
+			array(),
+			// Transport permission callback. WITHOUT this the adapter falls back to
+			// a bare `current_user_can('read')` (HttpTransport::check_permission),
+			// which means Saddle's own gate — and the legible 401s it produces, and
+			// the OAuth `WWW-Authenticate` challenge that hangs off them — would
+			// only ever run on the fallback transport, i.e. never in practice.
+			array( __CLASS__, 'authenticated' )
 		);
 
 		// Serve the full context in the initialize handshake, so a client that
@@ -166,29 +172,58 @@ class Saddle_MCP {
 
 	/**
 	 * Transport-level gate: an authenticated WordPress user must be resolved.
+	 * Wired on BOTH transports — as the fallback route's `permission_callback`
+	 * and as the adapter's `$transport_permission_callback` (see
+	 * {@see self::register_adapter_server()}).
 	 *
-	 * A failed request can be here for two very different reasons that both look
+	 * A failed request can be here for three very different reasons that all look
 	 * like a bare 401 to the caller — and each needs a different fix:
 	 *
-	 *   - Credentials reached PHP but core rejected them: the Application
+	 *   - A `Bearer` token was sent but didn't resolve: the OAuth access token
+	 *     expired, was revoked, or is bound to another site. Fix = refresh, or
+	 *     re-authorize the app.
+	 *   - `Basic` credentials reached PHP but core rejected them: the Application
 	 *     Password was revoked/deleted (or is wrong). Fix = reconnect the app.
 	 *   - No credentials reached PHP at all: the host likely stripped the
 	 *     `Authorization` header in transit. Fix = the connection self-check /
 	 *     .htaccess forwarding rule.
 	 *
-	 * In practice core's own authenticator short-circuits a *rejected* credential
-	 * before the route runs (see {@see Saddle_Connection::explain_auth_error()},
-	 * which relabels that 401); this gate is reached mainly for the
-	 * no-credentials case, but it still distinguishes both defensively.
+	 * In practice core's own authenticator short-circuits a *rejected* Basic
+	 * credential before the route runs (see {@see Saddle_Connection::explain_auth_error()},
+	 * which relabels that 401); this gate distinguishes all three defensively.
 	 *
+	 * Note the adapter discards a WP_Error return and denies with core's generic
+	 * message (HttpTransport::check_permission). {@see Saddle_OAuth_Bearer::challenge()}
+	 * restores the legible body — and attaches the OAuth challenge — for both
+	 * transports on the way out.
+	 *
+	 * @param WP_REST_Request|null $request Unused; the adapter passes the request.
 	 * @return bool|WP_Error
 	 */
-	public static function authenticated() {
+	public static function authenticated( $request = null ) {
+		// Accepted and discarded: the adapter hands its transport permission
+		// callback the request, while the fallback route's permission_callback
+		// passes nothing. Taking it optionally is what lets one gate serve both.
+		unset( $request );
+
 		if ( is_user_logged_in() ) {
 			return true;
 		}
 
-		if ( class_exists( 'Saddle_Connection' ) && Saddle_Connection::request_carried_credentials() ) {
+		$scheme = class_exists( 'Saddle_Connection' ) ? Saddle_Connection::credential_scheme() : '';
+
+		if ( 'bearer' === $scheme ) {
+			return new WP_Error(
+				'saddle_token_rejected',
+				__( 'The access token was rejected — it has expired, been revoked, or was issued for a different site. Refresh it, or reconnect the app to authorize a new one.', 'saddle' ),
+				array(
+					'status' => 401,
+					'reason' => 'token_rejected',
+				)
+			);
+		}
+
+		if ( 'basic' === $scheme ) {
 			return new WP_Error(
 				'saddle_credential_rejected',
 				__( 'Your sign-in key was rejected — it was most likely revoked or removed. Reconnect the app from Saddle to issue a fresh key.', 'saddle' ),

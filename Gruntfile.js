@@ -91,6 +91,8 @@ module.exports = function ( grunt ) {
 							'!AGENTS.md',
 							'!WPORG-SUBMISSION.md',
 							'!admin/DESIGN-ALIGNMENT.md',
+							// User docs live on the website, not in the zip.
+							'!docs/**',
 							// WP.org listing assets — go to SVN assets/, never in the zip.
 							'!.wordpress.org/**',
 							// Lint config — dev-only.

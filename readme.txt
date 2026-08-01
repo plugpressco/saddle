@@ -1,4 +1,4 @@
-=== Saddle – Control WordPress with AI (MCP Server) ===
+=== Saddle – Control Your Site with AI (MCP Server) ===
 Contributors: badhonrocks
 Tags: mcp, ai, application passwords, agents, automation
 Requires at least: 6.9
@@ -48,6 +48,14 @@ Go to **Saddle → Connections**, name a connection, and approve it. WordPress c
 
 **Note:** a Saddle-issued credential only works on Saddle's own endpoint. It cannot be used against the rest of the REST API or XML-RPC.
 
+= Sign-in for apps that can't paste a key (optional, off by default) =
+
+A few apps — ChatGPT's custom connectors among them — give you nowhere to paste a sign-in key. For those, Saddle can run a standard **OAuth 2.1 sign-in** on your own site: the app sends you to an approval screen in your WordPress admin, you see who is asking and what they want, and you decide.
+
+This is **off until you turn it on**, on the Settings screen. It runs entirely inside your WordPress — there is no PlugPress server involved at any point, exactly as with Application Passwords. Only administrators can approve a connection, and an approval can never grant more than your chosen access level: if the site is set to read-only, an approved app gets read-only. You can see and revoke approved apps from the Connections screen at any time.
+
+Turning it on publishes the small set of addresses the OAuth standard requires so apps can find and complete the sign-in. With it off — the default — none of them exist.
+
 = Bundled library =
 
 Saddle bundles the WordPress **MCP Adapter** library (`WP\MCP`, GPLv2-or-later, license included in `includes/lib/wp-mcp/`) so it speaks MCP with no extra plugin to install. If the standalone MCP Adapter plugin is already active, Saddle defers to that copy automatically.
@@ -64,15 +72,20 @@ Saddle Pro is a separate, optional add-on that adds page-builder-native editing 
 
 Saddle sends **no** analytics, telemetry, or usage data anywhere. Its MCP endpoint is *inbound* — agents call your site; your site does not call out to us or anyone else on its own.
 
-Only three things ever make an outbound request, and each one is started by you:
+Only four things ever make an outbound request, and each one is started by you:
 
 1. **Upload from URL.** If you ask an agent to add a file to the media library by URL, WordPress's own HTTP API downloads that one URL to your server — the same mechanism core's "insert from URL" uses. Only the host in the URL you supplied is contacted.
-2. **Endpoint self-check.** The connection checker sends one request to *your own site's* REST URL to confirm the endpoint is reachable. Nothing leaves your server.
+2. **Endpoint self-checks.** The connection checker sends requests to *your own site* — its REST URL, and, when OAuth sign-in is on, its `/.well-known/` discovery address — to confirm those endpoints are reachable. Nothing leaves your server.
 3. **Unsplash (optional, off until you add a key).** If you enter your own Unsplash API key on the Integrations screen, the `unsplash-search` and `unsplash-import` tools call the Unsplash API (`api.unsplash.com`, `images.unsplash.com`) directly from your site, sending only your search keywords or a photo id. With no key saved, no request is ever made. Unsplash terms: https://unsplash.com/api-terms — privacy policy: https://unsplash.com/privacy
+
+  **Attribution:** a photo imported this way is saved with a caption crediting the photographer, containing links to their Unsplash profile and to unsplash.com. The Unsplash API Terms require this credit, so it is written for you. Because it is the image's caption, it is visible wherever your theme displays captions — including on the public side of your site. It is an ordinary caption: edit or clear it in the Media library whenever you like, or pass your own caption when importing. No other external link is ever added to your site, and nothing links back to the plugin author.
+
+4. **Checking an app's identity (optional, off unless you turn on OAuth sign-in).** ChatGPT can't be given a sign-in key by hand, so Saddle can let apps sign in through an approval screen instead. Some apps identify themselves with a web address that serves a small description of the app. If one does, Saddle fetches that address — and only that address, chosen by the app, never by us — to confirm it vouches for the app, so the approval screen can tell you whether the app was verified or merely self-described. Nothing about your site is sent; it is a plain read. The request is HTTPS-only, follows no redirects, times out in five seconds, is capped at 64 KB, and the answer is cached. With OAuth sign-in off — the default — this never happens.
 
 == Privacy ==
 
 * Saddle stores only its own settings (access level, tool toggles, your instructions, Skills, memory entries), its activity log, and short-lived confirmation tokens that expire after 15 minutes.
+* If you turn on OAuth sign-in, Saddle also stores the apps you approved and their sign-in tokens. Tokens are never kept in readable form — only a one-way fingerprint, so a database backup contains nothing anyone could sign in with. Disconnecting an app deletes its tokens immediately, and turning OAuth sign-in back off deletes all of them.
 * No personal data is sent off-site.
 * Uninstalling deletes all of the above. Application Passwords are left for you to revoke yourself (Users → Profile), since WordPress core owns them.
 
@@ -124,3 +137,5 @@ Never. Every operation goes through WordPress's own PHP functions. There is no s
 * Safety model: three access levels defaulting to read-only, per-tool switches, two-step confirmation on every destructive action, a master pause switch, and credentials confined to Saddle's endpoint.
 * Optional Unsplash integration (bring your own API key): search and import stock photos with automatic photographer attribution.
 * Design quality tools: page verification with a scored report, design lint, section recipes, and a design-system reader/seeder.
+* Works on hosts whose security layer strips custom request headers: the dashboard sends its sign-in token in the address as well as the header, and reports plainly when a host is blocking something it cannot work around.
+* Optional OAuth 2.1 sign-in (off by default) for apps that can't be given a sign-in key by hand, such as ChatGPT connectors — self-hosted, administrator-approved, and never able to grant more than the access level you chose.

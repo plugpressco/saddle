@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1544" height="500" viewBox="0 0 1544 500">
+  <!--
+    Saddle — WordPress.org listing banner (source art).
+
+    Render both sizes with rsvg-convert (see .wordpress.org/README.md):
+      rsvg-convert -w 1544 -h 500 src/banner.svg -o banner-1544x500.png
+      rsvg-convert -w  772 -h 250 src/banner.svg -o banner-772x250.png
+
+    The glyph path is the same draped-saddle disc mark as icon.svg /
+    assets/brand/mark.svg — disc and knockout in ONE evenodd path, so the
+    knockout is always background-transparent and never a filled shape.
+
+    Tagline deliberately says "your site", not "WordPress": plugin names and
+    listing graphics may not carry the WordPress trademark (WP.org review,
+    round 1 — see WPORG-SUBMISSION.md §8).
+  -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1e1e27"/>
+      <stop offset="0.45" stop-color="#101015"/>
+      <stop offset="1" stop-color="#050506"/>
+    </linearGradient>
+
+    <radialGradient id="glow" cx="0.13" cy="0.18" r="0.55">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.055"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Ridgelines fade in from nothing rather than starting on a hard edge. -->
+    <linearGradient id="ridge" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="0.28" stop-color="#ffffff" stop-opacity="0.85"/>
+      <stop offset="0.72" stop-color="#ffffff" stop-opacity="1"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.25"/>
+    </linearGradient>
+
+    <!-- Draped-saddle disc mark, 280x280 box. Single evenodd path. -->
+    <path id="mark" fill-rule="evenodd" clip-rule="evenodd" d="M140 0C217.32 0 280 62.6801 280 140C280 217.32 217.32 280 140 280C62.6801 280 1.9021e-06 217.32 0 140C0 62.6801 62.6801 1.47276e-06 140 0ZM185.037 71.0938C167.923 71.0938 159.816 92.6963 140 92.6963C120.184 92.6963 112.077 71.0938 94.9629 71.0938C77.8491 71.0939 63.4375 85.0455 63.4375 104.848V199.358C63.4375 201.746 64.387 204.035 66.0762 205.723C67.7654 207.411 70.0564 208.359 72.4453 208.359H94.9629C97.3518 208.359 99.6428 207.411 101.332 205.723C103.021 204.035 103.971 201.746 103.971 199.358V158.854C103.971 149.305 107.767 140.147 114.523 133.395C121.28 126.643 130.445 122.85 140 122.85C149.555 122.85 158.72 126.643 165.477 133.395C172.233 140.147 176.029 149.305 176.029 158.854V199.358C176.029 201.746 176.979 204.035 178.668 205.723C180.357 207.411 182.648 208.359 185.037 208.359H207.555C209.944 208.359 212.235 207.411 213.924 205.723C215.613 204.035 216.562 201.746 216.562 199.358V104.848C216.562 85.0455 202.151 71.0939 185.037 71.0938Z"/>
+  </defs>
+
+  <rect width="1544" height="500" fill="url(#bg)"/>
+  <rect width="1544" height="500" fill="url(#glow)"/>
+
+  <!-- Ghost mark bleeding off the right edge. -->
+  <use href="#mark" transform="translate(1055 35) scale(2.036)" fill="#ffffff" opacity="0.032"/>
+
+  <!-- Ridgelines: the drape, abstracted. -->
+  <g fill="none" stroke="url(#ridge)" stroke-width="1.5" stroke-linecap="round">
+    <path d="M120 424 C 430 452, 700 384, 1000 392 S 1330 388, 1544 360" opacity="0.13"/>
+    <path d="M150 447 C 470 474, 742 407, 1040 414 S 1360 410, 1544 383" opacity="0.10"/>
+    <path d="M186 466 C 512 490, 786 427, 1082 433 S 1396 429, 1544 404" opacity="0.065"/>
+  </g>
+
+  <!-- Lockup. -->
+  <use href="#mark" transform="translate(148 157) scale(0.62857)" fill="#f4f4f6"/>
+
+  <text x="373" y="268"
+        font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+        font-size="92" font-weight="700" letter-spacing="-1.5" fill="#ffffff">Saddle</text>
+
+  <text x="376" y="331"
+        font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+        font-size="34" font-weight="400" letter-spacing="0.2" fill="#9a9aa4">Control your site with AI — safely.</text>
+</svg>

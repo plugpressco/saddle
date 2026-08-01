@@ -47,15 +47,35 @@ finding each fails at least one. Check every PR against all three before merge:
 
 ## Auth model
 
-Core Application Passwords, not a custom OAuth server. `Saddle_MCP`'s REST route
+Two paths, both ending in a resolved WordPress user, both funnelling into the same
+per-tool gate (`Saddle_Capabilities`). Adding a third needs a written reason.
+
+**1. Core Application Passwords — the default, unchanged.** `Saddle_MCP`'s REST route
 requires only `is_user_logged_in()`; core resolves Basic-Auth application passwords
-into the current user, and each ability's `permission_callback` (via
-`Saddle_Capabilities`) enforces per-tool tier from there. The connect wizard issues
-the credential directly via
+into the current user. The connect wizard issues the credential directly via
 `WP_Application_Passwords::create_new_application_password()`
 (`POST /saddle/v1/clients`, `manage_options`-gated) rather than round-tripping
-through `wp-admin/authorize-application.php`. Don't add a custom auth layer without a
-specific, written reason core's flow can't satisfy.
+through `wp-admin/authorize-application.php`. This is the path for every client that
+lets a person paste an HTTP header: Claude Code, Claude, Cursor, VS Code, Gemini CLI.
+
+**2. A self-hosted OAuth 2.1 authorization server — opt-in, default OFF** (added
+2026-07-28, `includes/oauth/`). The written reason core's flow can't satisfy:
+**ChatGPT's custom-connector screen has no field for a custom HTTP header.** It
+offers "no authentication", an API key, or OAuth — and none of those carries
+`Authorization: Basic`. Core's flow produces exactly that credential, so it cannot
+connect ChatGPT at all, and the MCP specification's answer is OAuth 2.1.
+
+The server lives entirely inside the owner's WordPress — no relay, no PlugPress
+host, non-negotiable #1 intact. It is off until the owner turns it on
+(non-negotiable #2), and a granted scope only ever *lowers* the site tier, never
+raises it: the clamp is `Saddle_Capabilities::get_tier()`, which is
+`min(site tier, granted scope)`. Use `get_site_tier()` when reporting or writing
+configuration, `get_tier()` when deciding whether a call is allowed.
+
+Constraints that must not be relaxed: PKCE **S256 only** (never `plain`), redirect
+URIs matched by **exact string comparison** (never prefix), refresh tokens rotate
+with reuse detection, authorization-code replay revokes the whole grant, and
+registration grants nothing until an administrator completes the consent screen.
 
 ## Architecture map (current, not aspirational — the [Finalized Plan](https://github.com/plugpressco/saddle/issues/12) flags stub vs. real)
 
@@ -73,6 +93,11 @@ includes/
   class-saddle-integrations.php — free first-party integration engine (wraps waggle/* as saddle/waggle-*,
                                  full safety model applied on top; saddle_integrations filter)
   class-saddle-mcp.php        — MCP transport on the official WP\MCP Adapter, JSON-RPC fallback
+  class-saddle-http.php       — shared SSRF guard + capped JSON fetch (media sideload, OAuth client metadata)
+  oauth/                      — OAuth 2.1 authorization server, OFF by default: discovery (RFC 9728/8414),
+                                 client registration (DCR + Client ID Metadata Documents), authorize/token/
+                                 revoke, the wp-admin consent screen, and the bearer resolver that clamps
+                                 the effective tier to the granted scope
   abilities/                  — core-content (23), blocks (15), site (9, admin-tier settings), context (3),
                                  memory (3), unsplash (2), render (2), users (2), lint (1), verify (1) — 61 free
                                  abilities as of 1.0.0 (the Permissions UI is the authoritative live list)
@@ -125,9 +150,11 @@ tests/                        — PHPUnit integration suite (SQLite-backed, real
   ever built, it's a separate, clearly-labeled addon — never silently available in
   core (see Phase 3 in the [Finalized Plan](https://github.com/plugpressco/saddle/issues/12)).
 - Don't change the default tier away from `read`, even temporarily for testing.
-- Don't build a custom OAuth server "for nicer UX" without confirming core's
-  Authorize Application flow is actually insufficient first — it almost certainly
-  isn't.
+- Don't remove the Application Password path now that OAuth exists. Every
+  header-capable client uses it, it needs no consent round trip, and it is the only
+  path that works while the OAuth toggle is off — which is the default.
+- Don't turn OAuth on by default, and don't let a scope grant more than the site
+  tier. Both are load-bearing for non-negotiable #2.
 - Don't re-enable `Saddle_Ecosystem` without an explicit decision to reopen Phase 3
   scope — it's dead code on purpose.
 ## Session workflow

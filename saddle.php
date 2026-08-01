@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin Name:       Saddle
- * Plugin URI:        https://plugpress.co/saddle
+ * Plugin Name:       Saddle – Control Your Site with AI (MCP Server)
+ * Plugin URI:        https://plugpress.co/saddle/
  * Description:       Self-hosted MCP server for WordPress. Tiered, default-safe, approval-gated access to posts, pages, and media for AI agents — with no third-party credential custody.
  * Version:           1.0.0
  * Requires at least: 6.9
@@ -66,8 +66,16 @@ require_once SADDLE_DIR . 'includes/class-saddle-memory.php';
 require_once SADDLE_DIR . 'includes/class-saddle-log.php';
 require_once SADDLE_DIR . 'includes/class-saddle-unsplash.php';
 require_once SADDLE_DIR . 'includes/class-saddle-connection.php';
+require_once SADDLE_DIR . 'includes/class-saddle-http.php';
 require_once SADDLE_DIR . 'includes/class-saddle-integrations.php';
 require_once SADDLE_DIR . 'includes/class-saddle-mcp.php';
+require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth.php';
+require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-store.php';
+require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-discovery.php';
+require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-clients.php';
+require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-endpoints.php';
+require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-consent.php';
+require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-bearer.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-settings.php';
 
@@ -101,6 +109,7 @@ final class Saddle {
 		Saddle_Preview::register();
 		add_action( 'init', array( 'Saddle_Approval', 'register_cpt' ) );
 		add_action( 'init', array( 'Saddle_Log', 'register_cpt' ) );
+		add_action( 'init', array( 'Saddle_OAuth_Store', 'register_cpt' ) );
 		add_action( 'init', array( 'Saddle_Skills', 'register_cpt' ) );
 		add_action( 'init', array( 'Saddle_Memory', 'register_cpt' ) );
 
@@ -118,6 +127,14 @@ final class Saddle {
 		add_action( Saddle_Approval::GC_HOOK, array( 'Saddle_Approval', 'gc' ) );
 		add_action( Saddle_Approval::GC_HOOK, array( 'Saddle_Log', 'gc' ) );
 		add_action( Saddle_Approval::GC_HOOK, array( 'Saddle_Memory', 'gc' ) );
+		add_action( Saddle_Approval::GC_HOOK, array( 'Saddle_OAuth_Store', 'gc' ) );
+
+		// OAuth 2.1 authorization server. Off by default; Saddle_OAuth::register()
+		// wires only the bearer resolver and the 401 challenge until the owner
+		// turns it on, so a site that never connects ChatGPT never exposes an
+		// OAuth surface. See includes/oauth/class-saddle-oauth.php for why this
+		// exists alongside Application Passwords rather than replacing them.
+		Saddle_OAuth::register();
 
 		// The MCP surface and abilities require core's Abilities API (WP 6.9+).
 		if ( self::abilities_api_available() ) {

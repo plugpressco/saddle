@@ -94,6 +94,34 @@ export default function ConnectionHealth() {
 		);
 	}
 
+	// Nothing is broken here — the dashboard already works around this by sending
+	// its sign-in token in the address as well as the header. So this is a calm
+	// note for the host, not a warning, and there is deliberately no "Fix it for
+	// me": the .htaccess rule forwards the Authorization header only, and a
+	// security layer that strips at the edge sits upstream of Apache anyway.
+	if ( report.status === 'nonce_header_stripped' ) {
+		return (
+			<CalloutCard
+				className="saddle-health"
+				tone="default"
+				title={ __(
+					'Your host is removing one of WordPress’s headers',
+					'saddle'
+				) }
+				description={ __(
+					'Something on your hosting — usually a security or firewall layer — strips the X-WP-Nonce header from requests. Saddle works around it, so this dashboard is fine. But the same layer may interfere with other plugins’ settings screens, so it’s worth asking your host to let that header through.',
+					'saddle'
+				) }
+			>
+				<Button variant="link" onClick={ check } disabled={ checking }>
+					{ checking
+						? __( 'Checking…', 'saddle' )
+						: __( 'Check again', 'saddle' ) }
+				</Button>
+			</CalloutCard>
+		);
+	}
+
 	// status === 'auth_header_stripped'
 	const snippets = report.fix_snippet || {};
 

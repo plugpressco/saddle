@@ -85,6 +85,10 @@ body.toplevel_page_saddle {
 	}
 }
 
+// The skip link needs no override here: @plugpress/ui v0.11.3 hides it by
+// clipping rather than by a percentage transform, which is what made it show
+// up over wp-admin's admin bar. Fixed at source — see saddle#74.
+
 .saddle-app {
 	--s-radius: 8px;
 	--s-radius-lg: 14px;

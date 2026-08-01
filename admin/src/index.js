@@ -4,6 +4,10 @@
 import apiFetch from '@wordpress/api-fetch';
 import { createRoot } from '@wordpress/element';
 import App from './App';
+import {
+	createNonceQueryMiddleware,
+	ensureNonceMiddleware,
+} from './nonce-fallback';
 
 // PlugPress design system: shared tokens + components, then Saddle's monochrome
 // accent, then Saddle's own styles (which now alias the --pp-* tokens).
@@ -18,9 +22,15 @@ const data = window.saddleData || {};
 
 // Authenticate REST calls with the logged-in admin's cookie + nonce, and route
 // relative paths through the site's REST root.
-if ( data.nonce ) {
-	apiFetch.use( apiFetch.createNonceMiddleware( data.nonce ) );
-}
+//
+// Registration order is the reverse of execution order (`apiFetch.use` unshifts),
+// so this reads bottom-up: the root-URL middleware resolves `path` into an
+// absolute `url`, then the nonce goes on as both a header and a query parameter.
+// Sending it twice is what keeps the dashboard signed in on hosts whose security
+// layer strips `X-WP-Nonce` — see nonce-fallback.js for why there must be exactly
+// one nonce object behind both copies.
+apiFetch.use( createNonceQueryMiddleware( { root: data.root } ) );
+ensureNonceMiddleware( data.nonce );
 if ( data.root ) {
 	apiFetch.use( apiFetch.createRootURLMiddleware( data.root ) );
 }
