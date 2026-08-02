@@ -12,9 +12,11 @@ media, plus builder-agnostic block tooling. Check the scope lock in the
 [Finalized Plan](https://github.com/plugpressco/saddle/issues/12) before adding anything not already there.
 
 **Distribution:** WordPress.org submission planned (Fahim reopened this
-2026-07-13, superseding the 2026-07-03 self-hosted-only call). The first public
-tag / GitHub release ships only AFTER WP.org approval — don't tag or publish a
-release before then. WP.org compliance is in scope.
+2026-07-13, superseding the 2026-07-03 self-hosted-only call). WP.org
+compliance is in scope. _2026-08-02: v1.1.0 was tagged + GitHub-released on
+Fahim's "production ready" instruction, superseding the earlier
+hold-until-approval rule; the preserved `dist/saddle-1.0.0.zip` remains the
+WP.org submission artifact until Fahim reconciles at submission time._
 
 ## Feature workflow — GitHub Issues, one project
 
@@ -85,11 +87,21 @@ includes/
   class-saddle-tree.php       — builder-agnostic block-tree engine (parse/address/mutate/serialize)
   class-saddle-blocks-*.php   — Gutenberg validation profile, authoring layer, schema/tokens, applied-vs-ignored echo
   lint/                       — design lint engine: Saddle_Lint runner + Saddle_Lint_Accessor
-                                 interface (only builder-specific surface) + 8 rules; Saddle Pro plugs Divi in
+                                 interface (only builder-specific surface) + 12 rules incl. the
+                                 builder-agnostic single-column-flow (doc-look) advisory; Saddle Pro
+                                 plugs Divi in and adds its own rules via saddle_lint_rules
+  verify/                     — scored verify engine; grades are HONEST: a structural finding caps
+                                 the letter at C, an echo (ignored-styling) finding at B, and every
+                                 verify-page report carries a `coverage` caveat (server-side only —
+                                 real pixels need get-preview-url)
   class-saddle-capabilities.php — tier system (read/write/admin), single source of truth for permission_callback
   class-saddle-approval.php   — dry-run + confirm-token gate, single-use, 15-min TTL, target-bound
   class-saddle-log.php        — activity log (saddle_log CPT), executed mutations only
-  class-saddle-context.php    — auto system context + owner instructions (get-instructions)
+  class-saddle-context.php    — auto system context + owner instructions (get-instructions);
+                                 design_numbers() is the SINGLE source of the shared design bar
+                                 (Pro's skill embeds it verbatim — edit numbers here only), and
+                                 the saddle_native_builders filter lets a builder addon replace
+                                 the hands-off builder warning with in-scope guidance
   class-saddle-integrations.php — free first-party integration engine (wraps waggle/* as saddle/waggle-*,
                                  full safety model applied on top; saddle_integrations filter)
   class-saddle-mcp.php        — MCP transport on the official WP\MCP Adapter, JSON-RPC fallback
@@ -101,7 +113,11 @@ includes/
   abilities/                  — core-content (23), blocks (15), site (9, admin-tier settings), context (3),
                                  memory (3), unsplash (2), render (2), users (2), lint (1), verify (1) — 61 free
                                  abilities as of 1.0.0 (the Permissions UI is the authoritative live list)
-  class-saddle-skills.php     — skills store (saddle_skill CPT), owner-installed .md playbooks
+  class-saddle-skills.php     — skills store (saddle_skill CPT), owner-installed .md playbooks.
+                                 Bodies are Markdown-as-DATA: sanitize_body() keeps them
+                                 byte-identical (UTF-8/control-char strip only) — never run a
+                                 skill body through wp_kses/esc_html; angle-bracket placeholders
+                                 like <id> are instruction text agents must receive verbatim
   class-saddle-memory.php     — agent memory store (saddle_memory CPT); trust split — agent entries are
                                  recall-only until owner-pinned, autoinject defaults OFF
   admin/                       — REST API + settings page for the React UI
