@@ -157,11 +157,33 @@ class Saddle_Context {
 			}
 
 			if ( ! empty( $builders ) ) {
-				$lines[] = sprintf(
-					/* translators: %s: comma-separated page builder names. */
-					'- ' . __( 'A page builder is active (%s). Pages and posts built with it store their layout as special markup inside the content. Overwriting the "content" field of a builder page with plain text or HTML will BREAK its layout. Prefer leaving builder-built pages alone unless the user explicitly asks you to change one, and even then change only the specific text they mention.', 'saddle' ),
-					implode( ', ', $builders )
-				);
+				/**
+				 * Filter the builders whose pages have DEDICATED saddle tools
+				 * installed (e.g. Saddle Pro registers 'Divi'). Native builders
+				 * get an in-scope note instead of the hands-off warning — an
+				 * addon that ships a full editing surface must not have the
+				 * base plugin telling agents to leave those pages alone.
+				 *
+				 * @param string[] $native Builder labels (as detected, e.g. 'Divi').
+				 */
+				$native  = array_map( 'strval', (array) apply_filters( 'saddle_native_builders', array() ) );
+				$in_tool = array_values( array_intersect( $builders, $native ) );
+				$foreign = array_values( array_diff( $builders, $native ) );
+
+				if ( ! empty( $in_tool ) ) {
+					$lines[] = sprintf(
+						/* translators: %s: comma-separated page builder names. */
+						'- ' . __( 'This site\'s %s pages are edited through dedicated saddle tools — building and restyling them is fully in scope. Use those tools for every change; never write a builder page\'s raw "content" field, which would destroy its layout.', 'saddle' ),
+						implode( ', ', $in_tool )
+					);
+				}
+				if ( ! empty( $foreign ) ) {
+					$lines[] = sprintf(
+						/* translators: %s: comma-separated page builder names. */
+						'- ' . __( 'A page builder is active (%s). Pages and posts built with it store their layout as special markup inside the content. Overwriting the "content" field of a builder page with plain text or HTML will BREAK its layout. Prefer leaving builder-built pages alone unless the user explicitly asks you to change one, and even then change only the specific text they mention.', 'saddle' ),
+						implode( ', ', $foreign )
+					);
+				}
 			}
 			$lines[] = '';
 		}
@@ -261,7 +283,7 @@ class Saddle_Context {
 			__( '# What "designed" means, in numbers', 'saddle' ),
 			'',
 			'- ' . __( 'Type scale: hero/display 44–64px, section headings 28–40px, body 16–18px with line-height 1.5–1.7. Establish a clear step between levels — don\'t set everything near the same size.', 'saddle' ),
-			'- ' . __( 'Line length: keep body text to ~50–75 characters per line (roughly a 600–720px max width for a text column), never full-bleed paragraphs.', 'saddle' ),
+			'- ' . __( 'Line length: keep body text to ~50–75 characters per line (roughly a 600–720px max width for a text column), never full-bleed paragraphs. And CENTER a width-capped text column (or balance it against media) — a max width without centering pins content to the left edge and leaves a dead right half.', 'saddle' ),
 			'- ' . __( 'Spacing on an 8px system (8/16/24/32/48/64/96): generous section padding (~64–96px top/bottom on desktop), consistent gaps within a group, and more space BETWEEN groups than inside them.', 'saddle' ),
 			'- ' . __( 'Color: one dominant neutral background, one text color, and a SINGLE accent used sparingly for emphasis and calls to action. Body text must hit WCAG AA contrast (≥ 4.5:1; ≥ 3:1 for large headings).', 'saddle' ),
 			'- ' . __( 'Rhythm: align to a consistent content width, reuse the same handful of spacing/size steps across the page, and prefer one strong idea per section over dense walls of content.', 'saddle' ),

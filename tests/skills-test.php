@@ -62,13 +62,39 @@ class Saddle_Skills_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'Always draft first', $updated['body'] );
 	}
 
-	public function test_install_rejects_missing_frontmatter_and_strips_html() {
+	public function test_install_rejects_missing_frontmatter() {
 		$this->assertWPError( Saddle_Skills::install( "just some text\nwith no frontmatter" ) );
 		$this->assertWPError( Saddle_Skills::install( "---\nname: x\n---\nbody without description" ) );
+	}
 
-		$skill = Saddle_Skills::install( "---\nname: html-test\ndescription: d\n---\nBefore <script>alert(1)</script> after" );
+	public function test_skill_body_preserves_placeholders_and_markup_verbatim() {
+		// The regression that motivated sanitize_body(): wp_kses parsed
+		// instructional placeholders (<id>, <module>, <addr>) as HTML tags
+		// and DELETED them, so agents received "post_id=" instead of
+		// "post_id=<id>". A body is Markdown data served over JSON — it must
+		// round-trip byte-identical (modulo trim).
+		$body = "Call divi-set-page post=<id> nodes=[...]\n"
+			. "Then divi-get-style-schema type=<module> and fix by <addr>.\n"
+			. "Envelope: <attr>.innerContent.desktop.value -> \"on\"\n"
+			. "Loop until score > 90 && warnings < 2.\n"
+			. "Inline markup like <script>example()</script> is prose here, not HTML.";
+
+		$skill = Saddle_Skills::install( "---\nname: placeholder-test\ndescription: d\n---\n" . $body );
 		$this->assertNotWPError( $skill );
-		$this->assertStringNotContainsString( '<script>', $skill['body'], 'HTML must not survive into a skill body.' );
+		$this->assertSame( $body, $skill['body'], 'A skill body must survive byte-identical — placeholders are prose, not tags.' );
+
+		$found = Saddle_Skills::find( 'placeholder-test' );
+		$this->assertSame( $body, $found['body'], 'find() must serve the body unmodified.' );
+	}
+
+	public function test_skill_body_still_sheds_invalid_utf8_and_control_chars() {
+		$skill = Saddle_Skills::install(
+			"---\nname: utf8-test\ndescription: d\n---\nclean\ttext\nline two" . "\x00\x07" . chr( 0xC3 )
+		);
+		$this->assertNotWPError( $skill );
+		$this->assertStringNotContainsString( "\x00", $skill['body'], 'NUL bytes must not survive.' );
+		$this->assertStringNotContainsString( "\x07", $skill['body'], 'Control characters must not survive.' );
+		$this->assertStringContainsString( "clean\ttext\nline two", $skill['body'], 'Tabs and newlines are Markdown structure and must survive.' );
 	}
 
 	/* -------- context injection (the keystone) -------- */
@@ -186,13 +212,17 @@ class Saddle_Skills_Test extends WP_UnitTestCase {
 
 		$this->with_builtin(
 			array(
-				'name'        => 'html-builtin',
+				'name'        => 'placeholder-builtin',
 				'description' => 'd',
-				'body'        => 'Before <script>alert(1)</script> after',
+				'body'        => "Read the tree, then divi-edit-module post=<id> address=<addr>.\nA > B still means A beats B.",
 			),
 			function () {
-				$skill = Saddle_Skills::find( 'html-builtin' );
-				$this->assertStringNotContainsString( '<script>', $skill['body'], 'Builtin bodies must be HTML-stripped too.' );
+				$skill = Saddle_Skills::find( 'placeholder-builtin' );
+				$this->assertSame(
+					"Read the tree, then divi-edit-module post=<id> address=<addr>.\nA > B still means A beats B.",
+					$skill['body'],
+					'Builtin bodies must keep angle-bracket placeholders verbatim (the wp_kses mutilation regression).'
+				);
 			}
 		);
 	}

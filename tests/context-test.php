@@ -78,6 +78,27 @@ class Saddle_Context_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'BREAK its layout', $ctx );
 	}
 
+	public function test_native_builder_gets_in_scope_note_instead_of_hands_off_warning() {
+		if ( ! defined( 'ELEMENTOR_VERSION' ) ) {
+			define( 'ELEMENTOR_VERSION', '3.0.0-test' );
+		}
+
+		add_filter(
+			'saddle_native_builders',
+			static function ( $native ) {
+				$native[] = 'Elementor';
+				return $native;
+			}
+		);
+
+		$ctx = Saddle_Context::system_context();
+		remove_all_filters( 'saddle_native_builders' );
+
+		$this->assertStringContainsString( 'dedicated saddle tools', $ctx, 'A native builder must be declared in scope.' );
+		$this->assertStringNotContainsString( 'Prefer leaving builder-built pages alone', $ctx, 'The hands-off warning must not undercut an installed builder addon.' );
+		$this->assertStringContainsString( 'never write a builder page', $ctx, 'The raw-content prohibition must survive.' );
+	}
+
 	public function test_system_context_filter_lets_addons_append_guidance() {
 		add_filter(
 			'saddle_system_context',

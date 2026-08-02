@@ -49,6 +49,7 @@ require_once SADDLE_DIR . 'includes/lint/rules/class-rule-double-background.php'
 require_once SADDLE_DIR . 'includes/lint/rules/class-rule-mixed-accents.php';
 require_once SADDLE_DIR . 'includes/lint/rules/class-rule-unaligned-buttons.php';
 require_once SADDLE_DIR . 'includes/lint/rules/class-rule-section-padding.php';
+require_once SADDLE_DIR . 'includes/lint/rules/class-rule-single-column-flow.php';
 require_once SADDLE_DIR . 'includes/lint/rules/class-rule-featured-plan.php';
 require_once SADDLE_DIR . 'includes/lint/rules/class-rule-text-contrast.php';
 require_once SADDLE_DIR . 'includes/lint/rules/class-rule-missing-alt.php';
