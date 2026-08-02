@@ -94,9 +94,10 @@ class Saddle_Verify_Abilities {
 			),
 			$report,
 			array(
-				'note' => $report['findings']
+				'note'     => $report['findings']
 					? __( 'Fix in order: structural, then "ignored" (echo — that styling never took effect), then errors, then warnings. Addresses match get-blocks/divi-get-page; re-read after structural edits, then re-run verify-page until the score is acceptable.', 'saddle' )
 					: __( 'Everything checked out: the persisted state is structurally sound, every attribute takes effect, and no design violations were found.', 'saddle' ),
+				'coverage' => __( 'This score covers only what the server can verify — persisted structure, attributes, and design rules. It is NOT a visual sign-off: a page can pass every server-side check and still look wrong. Open get-preview-url and judge the real pixels before calling the page done.', 'saddle' ),
 			)
 		);
 	}

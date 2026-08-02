@@ -104,6 +104,7 @@ class Saddle_Verify {
 
 		$findings = self::merge( $findings );
 		$score    = self::score( $findings );
+		$grade    = self::grade( $score, $findings );
 
 		$overflow = 0;
 		if ( count( $findings ) > self::FINDINGS_CAP ) {
@@ -113,7 +114,7 @@ class Saddle_Verify {
 
 		return array(
 			'score'    => $score,
-			'grade'    => self::grade( $score ),
+			'grade'    => $grade,
 			'counts'   => self::counts( $findings, $overflow ),
 			'findings' => $findings,
 			'overflow' => $overflow,
@@ -269,25 +270,55 @@ class Saddle_Verify {
 	}
 
 	/**
-	 * Letter grade for a score.
+	 * Letter grade for a score, demoted by categorical failures.
 	 *
-	 * @param int $score The score.
+	 * The arithmetic alone let a page with one echo finding score 90/A —
+	 * but "your styling never took effect" is categorically not an A, no
+	 * matter how small the penalty. Any structural finding caps the grade
+	 * at C; any echo finding caps it at B. The numeric score is untouched
+	 * (it stays deterministic arithmetic); only the letter is honest about
+	 * category.
+	 *
+	 * @param int     $score    The score.
+	 * @param array[] $findings Deduped findings (pre-cap).
 	 * @return string
 	 */
-	private static function grade( $score ) {
+	private static function grade( $score, array $findings = array() ) {
 		if ( $score >= 90 ) {
-			return 'A';
+			$letter = 'A';
+		} elseif ( $score >= 75 ) {
+			$letter = 'B';
+		} elseif ( $score >= 60 ) {
+			$letter = 'C';
+		} elseif ( $score >= 40 ) {
+			$letter = 'D';
+		} else {
+			$letter = 'F';
 		}
-		if ( $score >= 75 ) {
-			return 'B';
+
+		foreach ( $findings as $finding ) {
+			if ( 'structural' === $finding['source'] ) {
+				return self::worst( $letter, 'C' );
+			}
 		}
-		if ( $score >= 60 ) {
-			return 'C';
+		foreach ( $findings as $finding ) {
+			if ( 'echo' === $finding['source'] ) {
+				return self::worst( $letter, 'B' );
+			}
 		}
-		if ( $score >= 40 ) {
-			return 'D';
-		}
-		return 'F';
+		return $letter;
+	}
+
+	/**
+	 * The worse of two letter grades.
+	 *
+	 * @param string $a One grade.
+	 * @param string $b Another grade.
+	 * @return string
+	 */
+	private static function worst( $a, $b ) {
+		$order = array( 'A', 'B', 'C', 'D', 'F' );
+		return $order[ max( (int) array_search( $a, $order, true ), (int) array_search( $b, $order, true ) ) ];
 	}
 
 	/**
