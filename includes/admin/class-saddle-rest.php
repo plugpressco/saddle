@@ -31,42 +31,47 @@ class Saddle_REST_Admin {
 	 * Register routes.
 	 */
 	public static function register_routes() {
-		register_rest_route(
-			self::REST_NAMESPACE,
-			'/settings',
+		// Some host WAFs intercept any REST path ending in the literal
+		// `settings` segment before WordPress runs (20i's StackProtect answers
+		// */settings itself with a non-JSON 401 — proven on a customer site;
+		// its sibling routes oauth-settings/memory-settings pass, so the rule
+		// is the exact segment). The dashboard therefore talks to
+		// /preferences; /settings stays registered as an alias so an old
+		// cached admin bundle keeps working through the ?rest_route= fallback.
+		$settings_route = array(
 			array(
-				array(
-					'methods'             => 'GET',
-					'callback'            => array( __CLASS__, 'get_settings' ),
-					'permission_callback' => array( __CLASS__, 'can_manage' ),
-				),
-				array(
-					'methods'             => 'POST',
-					'callback'            => array( __CLASS__, 'update_settings' ),
-					'permission_callback' => array( __CLASS__, 'can_manage' ),
-					'args'                => array(
-						'tier'      => array(
-							'type'     => 'string',
-							'required' => false,
-							'enum'     => Saddle_Capabilities::tiers(),
-						),
-						'onboarded' => array(
-							'type'     => 'boolean',
-							'required' => false,
-						),
-						'paused'    => array(
-							'type'     => 'boolean',
-							'required' => false,
-						),
-						'theme'     => array(
-							'type'     => 'string',
-							'required' => false,
-							'enum'     => array( 'system', 'light', 'dark' ),
-						),
+				'methods'             => 'GET',
+				'callback'            => array( __CLASS__, 'get_settings' ),
+				'permission_callback' => array( __CLASS__, 'can_manage' ),
+			),
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( __CLASS__, 'update_settings' ),
+				'permission_callback' => array( __CLASS__, 'can_manage' ),
+				'args'                => array(
+					'tier'      => array(
+						'type'     => 'string',
+						'required' => false,
+						'enum'     => Saddle_Capabilities::tiers(),
+					),
+					'onboarded' => array(
+						'type'     => 'boolean',
+						'required' => false,
+					),
+					'paused'    => array(
+						'type'     => 'boolean',
+						'required' => false,
+					),
+					'theme'     => array(
+						'type'     => 'string',
+						'required' => false,
+						'enum'     => array( 'system', 'light', 'dark' ),
 					),
 				),
-			)
+			),
 		);
+		register_rest_route( self::REST_NAMESPACE, '/preferences', $settings_route );
+		register_rest_route( self::REST_NAMESPACE, '/settings', $settings_route );
 
 		register_rest_route(
 			self::REST_NAMESPACE,

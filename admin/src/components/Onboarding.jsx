@@ -22,7 +22,7 @@ export default function Onboarding( { tier, onTierSaved, onFinish } ) {
 	const saveLevel = ( { connect } ) => {
 		setSaving( true );
 		setError( null );
-		api( 'settings', { method: 'POST', data: { tier: choice } } )
+		api( 'preferences', { method: 'POST', data: { tier: choice } } )
 			.then( ( res ) => {
 				onTierSaved( res.tier );
 				onFinish( { connect } );

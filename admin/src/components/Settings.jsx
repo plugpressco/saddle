@@ -31,7 +31,7 @@ export default function Settings( { paused, pausing, onTogglePause } ) {
 	const [ oauthError, setOauthError ] = useState( '' );
 
 	useEffect( () => {
-		api( 'settings' )
+		api( 'preferences' )
 			.then( ( res ) => setDomain( res.domain || null ) )
 			.catch( () => setDomain( null ) );
 

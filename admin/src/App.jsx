@@ -359,7 +359,7 @@ export default function App() {
 		Promise.all( [
 			loadCaps(),
 			loadClients(),
-			api( 'settings' ).then( ( res ) => {
+			api( 'preferences' ).then( ( res ) => {
 				setOnboarded( !! res.onboarded );
 				setPaused( !! res.paused );
 				setDomainWarning( !! res.domain_warning );
@@ -396,7 +396,7 @@ export default function App() {
 
 	const finishOnboarding = ( { connect } = {} ) => {
 		setOnboarded( true );
-		api( 'settings', { method: 'POST', data: { onboarded: true } } ).catch(
+		api( 'preferences', { method: 'POST', data: { onboarded: true } } ).catch(
 			() => {}
 		);
 		if ( connect ) {
@@ -409,7 +409,7 @@ export default function App() {
 	const togglePause = () => {
 		const next = ! paused;
 		setPausing( true );
-		api( 'settings', { method: 'POST', data: { paused: next } } )
+		api( 'preferences', { method: 'POST', data: { paused: next } } )
 			.then( ( res ) => setPaused( !! res.paused ) )
 			.catch( ( e ) => setError( e.message ) )
 			.finally( () => setPausing( false ) );
@@ -418,7 +418,7 @@ export default function App() {
 	// Re-saving the current tier re-confirms it on this domain, clearing the
 	// warning — the same effect as visiting Permissions and pressing Save.
 	const clearDomainWarning = () => {
-		api( 'settings', { method: 'POST', data: { tier } } )
+		api( 'preferences', { method: 'POST', data: { tier } } )
 			.then( ( res ) => setDomainWarning( !! res.domain_warning ) )
 			.catch( ( e ) => setError( e.message ) );
 	};

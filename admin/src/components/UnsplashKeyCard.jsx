@@ -28,7 +28,7 @@ export default function UnsplashKeyCard() {
 	const [ saving, setSaving ] = useState( false );
 
 	useEffect( () => {
-		api( 'settings' )
+		api( 'preferences' )
 			.then( ( res ) =>
 				setUnsplash(
 					res.unsplash || { configured: false, key_hint: '' }
@@ -39,7 +39,7 @@ export default function UnsplashKeyCard() {
 
 	const save = ( key ) => {
 		setSaving( true );
-		api( 'settings', {
+		api( 'preferences', {
 			method: 'POST',
 			data: { unsplash_access_key: key },
 		} )
