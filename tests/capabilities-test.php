@@ -49,6 +49,36 @@ class Saddle_Capabilities_Test extends WP_UnitTestCase {
 		$this->assertSame( 'write', Saddle_Capabilities::get_tier(), 'A rejected tier must not change state.' );
 	}
 
+	/**
+	 * Re-saving the current tier must succeed. Activation seeds 'read' and the
+	 * wizard's default choice IS 'read', so treating update_option's unchanged-
+	 * value false as a failure rejected the onboarding happy path with
+	 * "Unknown access tier." (customer report, 2026-08-03).
+	 */
+	public function test_set_tier_accepts_unchanged_tier() {
+		update_option( Saddle_Capabilities::OPTION, 'read' );
+		$this->assertTrue( Saddle_Capabilities::set_tier( 'read' ), 'Saving the already-stored tier is a success, not an error.' );
+		$this->assertTrue( Saddle_Capabilities::set_tier( 'read' ), 'And it stays a success on every repeat.' );
+		$this->assertSame( 'read', Saddle_Capabilities::get_tier() );
+	}
+
+	/** The same REST path the wizard takes: POST the preselected default tier. */
+	public function test_settings_endpoint_accepts_unchanged_tier() {
+		update_option( Saddle_Capabilities::OPTION, 'read' );
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+
+		// update_settings() reads changed fields via get_json_params(), which only
+		// parses an actual JSON request body — set_param() alone doesn't populate it.
+		$request = new WP_REST_Request( 'POST', '/saddle/v1/settings' );
+		$request->set_header( 'content-type', 'application/json' );
+		$request->set_body( wp_json_encode( array( 'tier' => 'read' ) ) );
+
+		$response = Saddle_REST_Admin::update_settings( $request );
+
+		$this->assertNotWPError( $response, 'Re-confirming the current tier must not 400 with "Unknown access tier."' );
+		$this->assertSame( 200, $response->get_status() );
+	}
+
 	/** An out-of-set value living in the DB must be coerced back to the safe default. */
 	public function test_get_tier_coerces_invalid_stored_value() {
 		update_option( Saddle_Capabilities::OPTION, 'garbage' );

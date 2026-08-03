@@ -87,15 +87,25 @@ const withNonce = ( target, nonce ) => {
  *
  * A nonce is a CSRF token, so it must never ride along to somebody else's host.
  * A relative `path` is ours by definition; an absolute `url` has to sit under
- * the REST root this page was rendered with.
+ * the REST root this page was rendered with — or be the `?rest_route=` form of
+ * it under the site root, which api.js falls back to when a host WAF blocks
+ * the pretty REST path.
  *
  * @param {Object} options Request options.
  * @param {string} root    This site's REST root.
+ * @param {string} homeUrl This site's root, base of the ?rest_route= form.
  * @return {boolean} True when the nonce may be attached.
  */
-const isOwnRest = ( options, root ) => {
+const isOwnRest = ( options, root, homeUrl ) => {
 	if ( typeof options.url === 'string' ) {
-		return !! root && 0 === options.url.indexOf( root );
+		if ( !! root && 0 === options.url.indexOf( root ) ) {
+			return true;
+		}
+		return (
+			!! homeUrl &&
+			0 === options.url.indexOf( homeUrl ) &&
+			-1 !== options.url.indexOf( 'rest_route=' )
+		);
 	}
 	return typeof options.path === 'string';
 };
@@ -111,15 +121,16 @@ const isOwnRest = ( options, root ) => {
  * `path` is also the more correct target on sites using plain permalinks,
  * where the root-URL middleware rewrites `?` to `&` while composing the URL.
  *
- * @param {Object} config      Configuration.
- * @param {string} config.root This site's REST root, from `saddleData.root`.
+ * @param {Object} config         Configuration.
+ * @param {string} config.root    This site's REST root, from `saddleData.root`.
+ * @param {string} config.homeUrl Site root, from `saddleData.homeUrl`.
  * @return {Function} An apiFetch middleware.
  */
 export const createNonceQueryMiddleware =
-	( { root } ) =>
+	( { root, homeUrl } ) =>
 	( options, next ) => {
 		const nonce = currentNonce();
-		if ( '' === nonce || ! isOwnRest( options, root ) ) {
+		if ( '' === nonce || ! isOwnRest( options, root, homeUrl ) ) {
 			return next( options );
 		}
 

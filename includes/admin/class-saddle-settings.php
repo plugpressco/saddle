@@ -235,6 +235,10 @@ class Saddle_Settings {
 			'window.saddleData = ' . wp_json_encode(
 				array(
 					'root'         => esc_url_raw( rest_url() ),
+					// Base for the ?rest_route= fallback when a host WAF blocks a
+					// pretty REST path before WordPress runs (20i StackProtect
+					// blocks */settings) — see admin/src/api.js.
+					'homeUrl'      => esc_url_raw( trailingslashit( home_url() ) ),
 					'nonce'        => wp_create_nonce( 'wp_rest' ),
 					'ns'           => Saddle_REST_Admin::REST_NAMESPACE,
 					'mcpUrl'       => esc_url_raw( rest_url( Saddle_MCP::REST_NAMESPACE . Saddle_MCP::ROUTE ) ),

@@ -366,7 +366,16 @@ export default function App() {
 			} ),
 		] )
 			.catch( ( e ) => {
-				if ( e && e.data && e.data.status === 401 ) {
+				// A 401 is WordPress rejecting our auth. `invalid_json` is
+				// something answering before WordPress did — a host WAF or
+				// security layer — after the ?rest_route= fallback failed too
+				// (see api.js). Both deserve the auth-trouble screen and its
+				// probe, not a raw error strip.
+				if (
+					e &&
+					( ( e.data && e.data.status === 401 ) ||
+						'invalid_json' === e.code )
+				) {
 					setAuthError( true );
 				} else {
 					setError( e.message );

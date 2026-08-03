@@ -143,14 +143,21 @@ class Saddle_Capabilities {
 	/**
 	 * Set the site tier. Rejects unknown tier names.
 	 *
+	 * Re-saving the current tier is a success, not a failure — update_option()
+	 * returns false on an unchanged value, and activation seeds the option to
+	 * 'read', so the wizard's default choice would otherwise be rejected as
+	 * invalid.
+	 *
 	 * @param string $tier Tier name.
-	 * @return bool True on a valid, persisted change.
+	 * @return bool True when the tier name is valid and persisted.
 	 */
 	public static function set_tier( $tier ) {
 		if ( ! isset( self::$levels[ $tier ] ) ) {
 			return false;
 		}
-		$saved = update_option( self::OPTION, $tier );
+		if ( get_option( self::OPTION ) !== $tier ) {
+			update_option( self::OPTION, $tier );
+		}
 
 		// Record which domain this power level was granted on. Re-confirming a
 		// tier choice on a new domain (e.g. after a deliberate migration) is
@@ -159,7 +166,7 @@ class Saddle_Capabilities {
 			self::record_tier_domain();
 		}
 
-		return $saved;
+		return true;
 	}
 
 	/**

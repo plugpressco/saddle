@@ -29,7 +29,9 @@ const data = window.saddleData || {};
 // Sending it twice is what keeps the dashboard signed in on hosts whose security
 // layer strips `X-WP-Nonce` — see nonce-fallback.js for why there must be exactly
 // one nonce object behind both copies.
-apiFetch.use( createNonceQueryMiddleware( { root: data.root } ) );
+apiFetch.use(
+	createNonceQueryMiddleware( { root: data.root, homeUrl: data.homeUrl } )
+);
 ensureNonceMiddleware( data.nonce );
 if ( data.root ) {
 	apiFetch.use( apiFetch.createRootURLMiddleware( data.root ) );

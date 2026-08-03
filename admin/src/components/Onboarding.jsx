@@ -27,7 +27,18 @@ export default function Onboarding( { tier, onTierSaved, onFinish } ) {
 				onTierSaved( res.tier );
 				onFinish( { connect } );
 			} )
-			.catch( ( e ) => setError( e.message ) )
+			.catch( ( e ) =>
+				setError(
+					// apiFetch's raw invalid_json message ("not a valid JSON
+					// response") reads like a site fault; name the likely actor.
+					'invalid_json' === e.code
+						? __(
+								'A security layer at your host answered instead of WordPress. Reload and try again — if it keeps happening, ask your host to allow the WordPress REST API for signed-in administrators.',
+								'saddle'
+						  )
+						: e.message
+				)
+			)
 			.finally( () => setSaving( false ) );
 	};
 
