@@ -13,10 +13,11 @@ media, plus builder-agnostic block tooling. Check the scope lock in the
 
 **Distribution:** WordPress.org submission planned (Fahim reopened this
 2026-07-13, superseding the 2026-07-03 self-hosted-only call). WP.org
-compliance is in scope. _2026-08-02: v1.1.0 was tagged + GitHub-released on
-Fahim's "production ready" instruction, superseding the earlier
-hold-until-approval rule; the preserved `dist/saddle-1.0.0.zip` remains the
-WP.org submission artifact until Fahim reconciles at submission time._
+compliance is in scope. _2026-08-03: Fahim reversed the short-lived 2026-08-02
+v1.1.0 release — the version stays **1.0.0** until WP.org approves the pending
+submission. The v1.1.0 tag + GitHub release were deleted, its changelog entries
+folded into 1.0.0, and everything shipped since simply rides in 1.0.0. Do not
+bump the version again until Fahim confirms WP.org approval._
 
 ## Feature workflow — GitHub Issues, one project
 

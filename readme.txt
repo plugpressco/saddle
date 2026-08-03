@@ -4,7 +4,7 @@ Tags: mcp, ai, application passwords, agents, automation
 Requires at least: 6.9
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -130,13 +130,6 @@ Never. Every operation goes through WordPress's own PHP functions. There is no s
 4. Guidance — the exact context every agent receives, your own instructions, and your installed Skills.
 
 == Changelog ==
-
-= 1.1.0 =
-* Fixed: installed Skills reached agents with angle-bracket placeholders stripped by sanitization — playbook bodies now round-trip byte-identical. (Skills installed on earlier versions should be re-installed once.)
-* Improved: page verification grades honestly — a structural break caps the grade at C and silently-ignored styling caps it at B, and every report now says plainly that the score covers server-checkable state only, with a pointer to the live preview for real pixels.
-* New: "single-column-flow" design lint — a long run of single-column rows reading like a document is flagged with a concrete recomposition hint.
-* New: builder addons can declare their builder's pages fully editable (saddle_native_builders), replacing the hands-off builder warning with in-scope guidance.
-* New: saddle/flush-cache now fires a saddle_flush_cache action so addons can invalidate their own derived caches in the same sweep.
 
 = 1.0.0 =
 * Initial public release.
