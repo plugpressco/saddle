@@ -256,22 +256,9 @@ body.toplevel_page_saddle {
 	}
 }
 
-// The version stamp under the rail footer links. AppNav 0.9.0 has no meta
-// slot, so it lives in the footer node; hidden on the <782px icon rail.
-.saddle-rail-version {
-	display: block;
-	padding: 6px 10px 2px;
-	font-size: 11px;
-	color: var(--s-fg-subtle);
-}
-
 @media (max-width: 782px) {
 	.saddle-topbar {
 		padding: 0 var(--pp-space-4);
-	}
-
-	.saddle-rail-version {
-		display: none;
 	}
 }
 

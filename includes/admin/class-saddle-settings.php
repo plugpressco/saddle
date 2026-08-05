@@ -271,9 +271,24 @@ class Saddle_Settings {
 					'version'      => SADDLE_VERSION,
 					'docsUrl'      => esc_url_raw( apply_filters( 'saddle_docs_url', 'https://wordpress.org/plugins/saddle/' ) ),
 					'rateUrl'      => esc_url_raw( apply_filters( 'saddle_rate_url', 'https://wordpress.org/support/plugin/saddle/reviews/' ) ),
+					// The admin app's extension-contract version — addon bundles
+					// gate on it before registering (admin/src/extensions.js).
+					'shellVersion' => SADDLE_SHELL_VERSION,
 				)
 			) . ';',
 			'before'
 		);
+
+		/**
+		 * Fires after Saddle's admin bundle is enqueued on its page.
+		 *
+		 * Extenders hook this to enqueue their own bundle with a dependency on
+		 * the passed handle — that ordering guarantees their wp.hooks filters
+		 * register (at script evaluation) before the app mounts on
+		 * DOMContentLoaded. See admin/src/extensions.js for the seam contract.
+		 *
+		 * @param string $handle Saddle's admin script handle.
+		 */
+		do_action( 'saddle_admin_enqueue', 'saddle-admin' );
 	}
 }

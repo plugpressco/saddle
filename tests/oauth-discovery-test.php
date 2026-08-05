@@ -151,6 +151,22 @@ class Saddle_OAuth_Discovery_Test extends WP_UnitTestCase {
 		$this->assertSame( Saddle_OAuth::resource_id(), $pr->get_data()['resource'] );
 	}
 
+	public function test_the_mcp_appended_well_known_aliases_serve_both_documents() {
+		// The path-APPENDED forms under the MCP route: an MCP client deriving
+		// discovery from the endpoint URL probes these, and on a subdirectory
+		// install they are the only forms that resolve at all.
+		$pr   = rest_get_server()->dispatch( new WP_REST_Request( 'GET', '/saddle/v1/mcp/.well-known/oauth-protected-resource' ) );
+		$as   = rest_get_server()->dispatch( new WP_REST_Request( 'GET', '/saddle/v1/mcp/.well-known/oauth-authorization-server' ) );
+		$oidc = rest_get_server()->dispatch( new WP_REST_Request( 'GET', '/saddle/v1/mcp/.well-known/openid-configuration' ) );
+
+		$this->assertSame( 200, $pr->get_status() );
+		$this->assertSame( Saddle_OAuth::resource_id(), $pr->get_data()['resource'] );
+		$this->assertSame( 200, $as->get_status() );
+		$this->assertSame( Saddle_OAuth::issuer(), $as->get_data()['issuer'] );
+		$this->assertSame( 200, $oidc->get_status() );
+		$this->assertSame( Saddle_OAuth::issuer(), $oidc->get_data()['issuer'] );
+	}
+
 	public function test_discovery_documents_are_readable_cross_origin() {
 		$response = rest_get_server()->dispatch( new WP_REST_Request( 'GET', '/saddle/v1/oauth/protected-resource' ) );
 
@@ -170,56 +186,45 @@ class Saddle_OAuth_Discovery_Test extends WP_UnitTestCase {
 	 * Root interception
 	 * --------------------------------------------------------------- */
 
-	/**
-	 * The interceptor's path matcher, without the exit() that follows a hit.
-	 *
-	 * @param string $path Request path to test.
-	 * @return bool Whether Saddle would claim it.
-	 */
-	private function would_claim( $path ) {
-		$reflect = new ReflectionMethod( 'Saddle_OAuth_Discovery', 'request_path' );
-		$reflect->setAccessible( true );
-
-		$_SERVER['REQUEST_URI'] = $path;
-		$normalized             = $reflect->invoke( null );
-
-		$issuer_path = (string) wp_parse_url( Saddle_OAuth::issuer(), PHP_URL_PATH );
-		$mcp_path    = (string) wp_parse_url( Saddle_OAuth::resource_id(), PHP_URL_PATH );
-
-		$claimed = array(
-			Saddle_OAuth_Discovery::PRM_PATH,
-			Saddle_OAuth_Discovery::PRM_PATH . $mcp_path,
-			Saddle_OAuth_Discovery::ASM_PATH,
-			Saddle_OAuth_Discovery::OIDC_PATH,
-			Saddle_OAuth_Discovery::ASM_PATH . $issuer_path,
-			Saddle_OAuth_Discovery::OIDC_PATH . $issuer_path,
-		);
-
-		return in_array( $normalized, $claimed, true );
-	}
-
 	public function test_the_documented_well_known_paths_are_claimed() {
+		// document_for() IS the interceptor's match table (maybe_serve() calls
+		// it) — driving it directly tests the real code, not a re-implementation.
 		$mcp = (string) wp_parse_url( Saddle_OAuth::resource_id(), PHP_URL_PATH );
 
-		$this->assertTrue( $this->would_claim( '/.well-known/oauth-protected-resource' ) );
-		$this->assertTrue( $this->would_claim( '/.well-known/oauth-protected-resource' . $mcp ) );
-		$this->assertTrue( $this->would_claim( '/.well-known/oauth-authorization-server' ) );
-		$this->assertTrue( $this->would_claim( '/.well-known/openid-configuration' ) );
+		$this->assertSame( 'protected-resource', Saddle_OAuth_Discovery::document_for( '/.well-known/oauth-protected-resource' ) );
+		$this->assertSame( 'protected-resource', Saddle_OAuth_Discovery::document_for( '/.well-known/oauth-protected-resource' . $mcp ) );
+		$this->assertSame( 'authorization-server', Saddle_OAuth_Discovery::document_for( '/.well-known/oauth-authorization-server' ) );
+		$this->assertSame( 'authorization-server', Saddle_OAuth_Discovery::document_for( '/.well-known/openid-configuration' ) );
+	}
+
+	public function test_the_resource_path_insertion_forms_are_claimed() {
+		// An MCP client that never fetched PRM derives the AS base from the MCP
+		// endpoint URL and inserts the RESOURCE path — ChatGPT's connector does
+		// exactly this on a cold start. These two forms 404ing was why ChatGPT
+		// reported "does not implement OAuth" against a fully-enabled server.
+		$mcp    = (string) wp_parse_url( Saddle_OAuth::resource_id(), PHP_URL_PATH );
+		$issuer = (string) wp_parse_url( Saddle_OAuth::issuer(), PHP_URL_PATH );
+
+		$this->assertSame( 'authorization-server', Saddle_OAuth_Discovery::document_for( '/.well-known/oauth-authorization-server' . $mcp ) );
+		$this->assertSame( 'authorization-server', Saddle_OAuth_Discovery::document_for( '/.well-known/openid-configuration' . $mcp ) );
+		$this->assertSame( 'authorization-server', Saddle_OAuth_Discovery::document_for( '/.well-known/oauth-authorization-server' . $issuer ) );
+		$this->assertSame( 'authorization-server', Saddle_OAuth_Discovery::document_for( '/.well-known/openid-configuration' . $issuer ) );
 	}
 
 	public function test_other_well_known_paths_are_left_alone() {
 		// `.well-known` is shared ground. Claiming more than we serve would break
 		// certificate renewal, of all things.
-		$this->assertFalse( $this->would_claim( '/.well-known/acme-challenge/abc123' ) );
-		$this->assertFalse( $this->would_claim( '/.well-known/security.txt' ) );
-		$this->assertFalse( $this->would_claim( '/.well-known/oauth-protected-resource/some/other/thing' ) );
-		$this->assertFalse( $this->would_claim( '/wp-json/wp/v2/posts' ) );
+		$this->assertSame( '', Saddle_OAuth_Discovery::document_for( '/.well-known/acme-challenge/abc123' ) );
+		$this->assertSame( '', Saddle_OAuth_Discovery::document_for( '/.well-known/security.txt' ) );
+		$this->assertSame( '', Saddle_OAuth_Discovery::document_for( '/.well-known/oauth-protected-resource/some/other/thing' ) );
+		$this->assertSame( '', Saddle_OAuth_Discovery::document_for( '/.well-known/oauth-authorization-server/wp-json/wp/v2' ) );
+		$this->assertSame( '', Saddle_OAuth_Discovery::document_for( '/wp-json/wp/v2/posts' ) );
 	}
 
 	public function test_encoded_and_doubled_paths_normalize_to_the_same_decision() {
-		$this->assertTrue( $this->would_claim( '//.well-known//oauth-authorization-server' ) );
-		$this->assertTrue( $this->would_claim( '/.well-known/oauth-authorization-server/' ) );
-		$this->assertTrue( $this->would_claim( '/.well-known/oauth-authorization-server?x=1' ) );
+		$this->assertSame( 'authorization-server', Saddle_OAuth_Discovery::document_for( '//.well-known//oauth-authorization-server' ) );
+		$this->assertSame( 'authorization-server', Saddle_OAuth_Discovery::document_for( '/.well-known/oauth-authorization-server/' ) );
+		$this->assertSame( 'authorization-server', Saddle_OAuth_Discovery::document_for( '/.well-known/oauth-authorization-server?x=1' ) );
 	}
 
 	public function test_the_interceptor_stays_out_of_the_way_while_oauth_is_off() {

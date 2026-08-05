@@ -10,7 +10,13 @@
  * PageHeader; the rail carries no page title. Connecting an app is a focused,
  * full-panel wizard — one step at a time — not a page of forms.
  */
-import { useState, useEffect, useCallback, useRef } from '@wordpress/element';
+import {
+	useState,
+	useEffect,
+	useCallback,
+	useMemo,
+	useRef,
+} from '@wordpress/element';
 import {
 	TooltipProvider,
 	Tooltip,
@@ -34,11 +40,9 @@ import {
 	PlugIcon,
 	ActivityIcon,
 	SettingsIcon,
-	ExternalLinkIcon,
-	StarIcon,
 } from '@plugpress/ui';
 import { __, sprintf, _n } from '@wordpress/i18n';
-import { api, levelFor, saddleData } from './api';
+import { api, levelFor } from './api';
 import { BrandMark } from './components/icons';
 import Onboarding from './components/Onboarding';
 import Dashboard from './components/Dashboard';
@@ -51,6 +55,7 @@ import Activity from './components/Activity';
 import Settings from './components/Settings';
 import ConnectWizard from './components/ConnectWizard';
 import AuthTrouble from './components/AuthTrouble';
+import { collectTabs, ui as extensionUi, SHELL_VERSION } from './extensions';
 
 const TABS = [
 	{
@@ -117,16 +122,13 @@ const PAGE_WIDTH = 960;
 
 // Resolve a tab name to the { value, label, icon } shape AppNav renders.
 // String labels matter: they become the native tooltips when the rail
-// collapses to icons below wp-admin's 782px breakpoint.
-const navItem = ( name ) => {
-	const t = TABS.find( ( tab ) => tab.name === name );
+// collapses to icons below wp-admin's 782px breakpoint. The nav lists are
+// built per mount (not at module scope) so extension tabs — registered by
+// addon bundles that evaluate after this one — are included.
+const navItem = ( name, all ) => {
+	const t = all.find( ( tab ) => tab.name === name );
 	return { value: t.name, label: t.title, icon: t.icon };
 };
-const navItems = NAV_GROUPS.map( ( g ) => ( {
-	heading: g.label || undefined,
-	items: g.items.map( navItem ),
-} ) );
-const navFooter = NAV_FOOTER.map( navItem );
 
 // Legacy-hash aliases — old bookmarks must keep resolving after renames.
 const ALIASES = { home: 'dashboard' };
@@ -134,10 +136,12 @@ const ALIASES = { home: 'dashboard' };
 // The URL hash is the single source of truth for the active section, so a
 // reload keeps you on the same page and the browser back button works
 // between sections.
-const tabFromHash = () => {
+const tabFromHash = ( extraNames = [] ) => {
 	const raw = window.location.hash.replace( '#', '' );
 	const h = ALIASES[ raw ] || raw;
-	return TABS.some( ( t ) => t.name === h ) ? h : 'dashboard';
+	return TABS.some( ( t ) => t.name === h ) || extraNames.includes( h )
+		? h
+		: 'dashboard';
 };
 
 // Safety tone → design-system dot tone. Read-only is the calm state; any
@@ -267,13 +271,45 @@ export default function App() {
 	// rather than arriving without permission. Nothing on this screen can load,
 	// so it gets its own view instead of an error strip over an empty shell.
 	const [ authError, setAuthError ] = useState( false );
-	const [ tab, setTabState ] = useState( tabFromHash );
+	// Extension tabs (admin/src/extensions.js) — collected at mount, after
+	// every addon bundle registered its filters at script evaluation.
+	const extTabs = useMemo( collectTabs, [] );
+	const extNames = useMemo( () => extTabs.map( ( t ) => t.id ), [ extTabs ] );
+	const { navItems, navFooter } = useMemo( () => {
+		const allTabs = [
+			...TABS,
+			...extTabs.map( ( t ) => ( {
+				name: t.id,
+				title: t.label,
+				icon: <t.Icon />,
+			} ) ),
+		];
+		return {
+			navItems: NAV_GROUPS.map( ( g ) => ( {
+				heading: g.label || undefined,
+				items: [
+					...g.items,
+					...extTabs
+						.filter( ( t ) => t.group === g.key )
+						.map( ( t ) => t.id ),
+				].map( ( name ) => navItem( name, allTabs ) ),
+			} ) ),
+			// Extension footer entries sit above Settings, which stays last.
+			navFooter: [
+				...extTabs
+					.filter( ( t ) => t.group === 'footer' )
+					.map( ( t ) => t.id ),
+				...NAV_FOOTER,
+			].map( ( name ) => navItem( name, allTabs ) ),
+		};
+	}, [ extTabs ] );
+	const [ tab, setTabState ] = useState( () => tabFromHash( extNames ) );
 	const [ wizardOpen, setWizardOpen ] = useState( false );
 
 	// Navigating writes the hash; state follows the hashchange event, so
 	// back/forward and direct #links all land in the same code path.
 	const setTab = ( name ) => {
-		if ( name === tabFromHash() ) {
+		if ( name === tabFromHash( extNames ) ) {
 			setTabState( name );
 		} else {
 			window.location.hash = name;
@@ -282,7 +318,7 @@ export default function App() {
 
 	useEffect( () => {
 		const onHash = () => {
-			const next = tabFromHash();
+			const next = tabFromHash( extNames );
 			setTabState( next );
 			// Leaving #connect (e.g. browser back) also dismisses the wizard.
 			if ( next !== 'connect' ) {
@@ -291,7 +327,7 @@ export default function App() {
 		};
 		window.addEventListener( 'hashchange', onHash );
 		return () => window.removeEventListener( 'hashchange', onHash );
-	}, [] );
+	}, [ extNames ] );
 
 	const loadCaps = useCallback(
 		() =>
@@ -396,9 +432,10 @@ export default function App() {
 
 	const finishOnboarding = ( { connect } = {} ) => {
 		setOnboarded( true );
-		api( 'preferences', { method: 'POST', data: { onboarded: true } } ).catch(
-			() => {}
-		);
+		api( 'preferences', {
+			method: 'POST',
+			data: { onboarded: true },
+		} ).catch( () => {} );
 		if ( connect ) {
 			openWizard();
 		} else {
@@ -475,6 +512,9 @@ export default function App() {
 							items={ navItems }
 							value={ tab }
 							onChange={ setTab }
+							// Navigation only. Docs, Rate Saddle and the version
+							// stamp all live in Settings → About; repeating them
+							// here made a five-item footer out of a two-item one.
 							footer={
 								<>
 									{ navFooter.map( ( item ) => (
@@ -503,55 +543,6 @@ export default function App() {
 											</span>
 										</button>
 									) ) }
-									{ saddleData.docsUrl && (
-										<a
-											className="pp-nav__item"
-											href={ saddleData.docsUrl }
-											target="_blank"
-											rel="noreferrer"
-											title={ __( 'Docs', 'saddle' ) }
-										>
-											<span
-												className="pp-nav__icon"
-												aria-hidden="true"
-											>
-												<ExternalLinkIcon />
-											</span>
-											<span className="pp-nav__label">
-												{ __( 'Docs', 'saddle' ) }
-											</span>
-										</a>
-									) }
-									{ saddleData.rateUrl && (
-										<a
-											className="pp-nav__item"
-											href={ saddleData.rateUrl }
-											target="_blank"
-											rel="noreferrer"
-											title={ __(
-												'Rate Saddle',
-												'saddle'
-											) }
-										>
-											<span
-												className="pp-nav__icon"
-												aria-hidden="true"
-											>
-												<StarIcon />
-											</span>
-											<span className="pp-nav__label">
-												{ __(
-													'Rate Saddle',
-													'saddle'
-												) }
-											</span>
-										</a>
-									) }
-									{ saddleData.version && (
-										<span className="saddle-rail-version">
-											{ `Saddle v${ saddleData.version }` }
-										</span>
-									) }
 								</>
 							}
 						/>
@@ -635,6 +626,16 @@ export default function App() {
 										pausing={ pausing }
 										onTogglePause={ togglePause }
 									/>
+								) }
+								{ extTabs.map(
+									( t ) =>
+										tab === t.id && (
+											<t.Component
+												key={ t.id }
+												ui={ extensionUi }
+												shellVersion={ SHELL_VERSION }
+											/>
+										)
 								) }
 							</div>
 						) }

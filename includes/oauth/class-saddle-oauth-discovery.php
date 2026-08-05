@@ -99,6 +99,32 @@ class Saddle_OAuth_Discovery {
 			'/' . $prefix . '/protected-resource',
 			array_merge( $public_get, array( 'callback' => array( __CLASS__, 'serve_protected_resource' ) ) )
 		);
+
+		// Path-APPENDED forms under the MCP route itself. RFC 9728 defines
+		// path-insertion at the host root, but an MCP client that derives its
+		// discovery base from the MCP endpoint URL also probes
+		// `<mcp-url>/.well-known/…` appended forms — and on a subdirectory
+		// install (or with root interception blocked) these REST forms are the
+		// only ones that resolve at all.
+		$mcp = ltrim( Saddle_MCP::ROUTE, '/' );
+
+		register_rest_route(
+			$ns,
+			'/' . $mcp . '/\.well-known/oauth-protected-resource',
+			array_merge( $public_get, array( 'callback' => array( __CLASS__, 'serve_protected_resource' ) ) )
+		);
+
+		register_rest_route(
+			$ns,
+			'/' . $mcp . '/\.well-known/oauth-authorization-server',
+			array_merge( $public_get, array( 'callback' => array( __CLASS__, 'serve_authorization_server' ) ) )
+		);
+
+		register_rest_route(
+			$ns,
+			'/' . $mcp . '/\.well-known/openid-configuration',
+			array_merge( $public_get, array( 'callback' => array( __CLASS__, 'serve_authorization_server' ) ) )
+		);
 	}
 
 	/**
@@ -156,9 +182,29 @@ class Saddle_OAuth_Discovery {
 			return;
 		}
 
-		$path = self::request_path();
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Read-only routing decision for a public, secret-free document; the value is normalized and compared against a fixed allow list in document_for(), never stored or echoed.
+		$uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( (string) $_SERVER['REQUEST_URI'] ) : '';
+
+		$document = self::document_for( $uri );
+		if ( 'protected-resource' === $document ) {
+			self::send( self::protected_resource_metadata() );
+		}
+		if ( 'authorization-server' === $document ) {
+			self::send( self::authorization_server_metadata() );
+		}
+	}
+
+	/**
+	 * Which document a request URI is asking for — the interceptor's whole
+	 * match table, as a pure function so the suite drives the real code.
+	 *
+	 * @param string $uri Raw request URI (query string and encoding tolerated).
+	 * @return string 'protected-resource' | 'authorization-server' | '' (not ours).
+	 */
+	public static function document_for( $uri ) {
+		$path = self::normalize_path( $uri );
 		if ( 0 !== strpos( $path, '/.well-known/' ) ) {
-			return;
+			return '';
 		}
 
 		$issuer_path = self::path_of( Saddle_OAuth::issuer() );
@@ -168,7 +214,7 @@ class Saddle_OAuth_Discovery {
 		// resource's own path. Anything else is a request about a resource this
 		// site does not serve, and gets a 404 rather than a misleading document.
 		if ( self::PRM_PATH === $path || self::PRM_PATH . $mcp_path === $path ) {
-			self::send( self::protected_resource_metadata() );
+			return 'protected-resource';
 		}
 
 		$as_forms = array(
@@ -176,25 +222,31 @@ class Saddle_OAuth_Discovery {
 			self::OIDC_PATH,
 			self::ASM_PATH . $issuer_path,
 			self::OIDC_PATH . $issuer_path,
+			// The RESOURCE-path insertion forms. An MCP client that never
+			// fetched PRM derives the authorization-server base from the MCP
+			// endpoint URL itself and inserts THAT path (observed: ChatGPT's
+			// connector cold-starting from the pasted MCP address). The served
+			// document keeps the real issuer — a strictly-validating RFC 8414
+			// client discards it, but it would have received a 404 here
+			// otherwise, and spec-correct clients reach the issuer via PRM.
+			self::ASM_PATH . $mcp_path,
+			self::OIDC_PATH . $mcp_path,
 		);
 
-		if ( in_array( $path, $as_forms, true ) ) {
-			self::send( self::authorization_server_metadata() );
-		}
+		return in_array( $path, $as_forms, true ) ? 'authorization-server' : '';
 	}
 
 	/**
-	 * The current request's path, normalized for exact comparison.
+	 * Normalize a request URI's path for exact comparison.
 	 *
 	 * Decoded, query stripped, repeated slashes collapsed, trailing slash
 	 * removed — so an encoded or doubled variant cannot slip past the exact
 	 * matches above and reach a different branch than it appears to.
 	 *
+	 * @param string $uri Raw request URI.
 	 * @return string Leading-slash path.
 	 */
-	private static function request_path() {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Read-only routing decision for a public, secret-free document; the value is normalized and compared against a fixed allow list below, never stored or echoed.
-		$uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( (string) $_SERVER['REQUEST_URI'] ) : '';
+	private static function normalize_path( $uri ) {
 		if ( '' === $uri ) {
 			return '';
 		}

@@ -123,6 +123,15 @@ includes/
                                  recall-only until owner-pinned, autoinject defaults OFF
   admin/                       — REST API + settings page for the React UI
   lib/wp-mcp/                 — vendored WP\MCP Adapter
+admin/src/extensions.js       — the ADDON EXTENSION SEAM (shell v1): wp.hooks filters
+                                 saddle.admin.settingsCards (a Card in Settings) and
+                                 saddle.admin.tabs (a whole page + nav entry, routed at #<id>),
+                                 both passing a `ui` object of already-bundled @plugpress/ui
+                                 primitives so addon bundles ship none of their own. That object
+                                 and the filter shapes are a PUBLIC CONTRACT — additive only;
+                                 anything else bumps SHELL_VERSION here AND SADDLE_SHELL_VERSION
+                                 in saddle.php. Addons enqueue on the `saddle_admin_enqueue`
+                                 action with a dependency on the `saddle-admin` handle.
 admin/src/                    — React UI: Onboarding, Home, Permissions, Guidance (+Memory), ConnectWizard,
                                  ConnectedClients — see DESIGN-ALIGNMENT.md before writing CSS
 tests/                        — PHPUnit integration suite (SQLite-backed, real WP) — tests/README.md

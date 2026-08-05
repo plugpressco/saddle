@@ -6,7 +6,7 @@
  * Deliberately lean: the access level lives on Permissions (it IS that page's
  * job), memory behavior lives on Memory, integration keys on Integrations.
  */
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useMemo } from '@wordpress/element';
 import {
 	Card,
 	CardHeader,
@@ -21,14 +21,18 @@ import {
 	ExternalLinkIcon,
 	StarIcon,
 } from '@plugpress/ui';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { api, saddleData } from '../api';
+import { collectSettingsCards, ui, SHELL_VERSION } from '../extensions';
 
 export default function Settings( { paused, pausing, onTogglePause } ) {
 	const [ domain, setDomain ] = useState( null );
 	const [ oauth, setOauth ] = useState( null );
 	const [ savingOauth, setSavingOauth ] = useState( false );
 	const [ oauthError, setOauthError ] = useState( '' );
+	// Addon-contributed cards (admin/src/extensions.js). Collected at mount:
+	// addon bundles registered at script evaluation, before the app mounted.
+	const extraCards = useMemo( collectSettingsCards, [] );
 
 	useEffect( () => {
 		api( 'preferences' )
@@ -291,12 +295,26 @@ export default function Settings( { paused, pausing, onTogglePause } ) {
 				</CardContent>
 			</Card>
 
+			{ extraCards.map( ( { id, Component } ) => (
+				<Component
+					key={ id }
+					ui={ ui }
+					shellVersion={ SHELL_VERSION }
+				/>
+			) ) }
+
+			{ /* The only home for the version stamp and the outbound links —
+			     the nav rail's footer is navigation, nothing else. */ }
 			<Card>
 				<CardHeader
 					title={ __( 'About', 'saddle' ) }
 					description={
 						saddleData.version
-							? `Saddle v${ saddleData.version }`
+							? sprintf(
+									/* translators: %s: plugin version number. */
+									__( 'Saddle v%s', 'saddle' ),
+									saddleData.version
+							  )
 							: undefined
 					}
 				/>

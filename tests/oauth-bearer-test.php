@@ -274,6 +274,33 @@ class Saddle_OAuth_Bearer_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( Saddle_OAuth_Discovery::protected_resource_url(), $header );
 	}
 
+	public function test_the_adapter_denial_is_challenged_through_the_real_filter_chain() {
+		$_SERVER['REQUEST_URI'] = '/wp-json/saddle/v1/mcp';
+
+		// The vendored MCP adapter discards authenticated()'s WP_Error and
+		// returns false from its permission_callback, so an anonymous caller
+		// gets core's synthesized rest_forbidden 401 — this pins that the
+		// challenge hook (wired unconditionally on rest_post_dispatch)
+		// decorates exactly that shape, ChatGPT's very first probe.
+		$error    = new WP_Error(
+			'rest_forbidden',
+			'Sorry, you are not allowed to do that.',
+			array( 'status' => 401 )
+		);
+		$response = rest_convert_error_to_response( $error );
+
+		$filtered = apply_filters(
+			'rest_post_dispatch',
+			$response,
+			rest_get_server(),
+			new WP_REST_Request( 'POST', '/saddle/v1/mcp' )
+		);
+
+		$header = $filtered->get_headers()['WWW-Authenticate'] ?? '';
+		$this->assertStringStartsWith( 'Bearer ', $header );
+		$this->assertStringContainsString( 'resource_metadata="', $header );
+	}
+
 	public function test_the_challenge_never_offers_basic() {
 		$_SERVER['REQUEST_URI'] = '/wp-json/saddle/v1/mcp';
 

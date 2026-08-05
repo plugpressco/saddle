@@ -8,6 +8,12 @@
  * URL) and dropped straight into the app's config, so there is no password to
  * save, carry, or lose. If the user backs out before copying anything, the
  * just-created credential is quietly revoked — no orphan keys.
+ *
+ * OAuth apps (ChatGPT) are the exception on both counts: no Application
+ * Password is minted (ChatGPT's connector form has no field for one — it
+ * signs in through Saddle's consent screen), the wizard surfaces the
+ * off-by-default sign-in switch with a one-click enable, and "listening"
+ * watches the OAuth connections list instead of a key's last_used.
  */
 import { useState, useEffect, useRef, useCallback } from '@wordpress/element';
 import {
@@ -26,7 +32,13 @@ import { __, sprintf } from '@wordpress/i18n';
 import { api, saddleData, levelFor } from '../api';
 import ConnectionHealth from './ConnectionHealth';
 import { AppLogo, appKeyFromLabel } from './icons';
-import { APPS, buildConfig, MCP_URL, HELLO_PROMPT } from '../connect-apps';
+import {
+	APPS,
+	buildConfig,
+	buildGuideConfig,
+	MCP_URL,
+	HELLO_PROMPT,
+} from '../connect-apps';
 
 const IS_LOCAL = /(?:localhost|127\.0\.0\.1|\.test|\.local)(?::|\/|$)/i.test(
 	MCP_URL
@@ -63,6 +75,13 @@ export default function ConnectWizard( {
 	const level = levelFor( tier );
 
 	const activeApp = APPS.find( ( a ) => a.key === app );
+	const isOauthApp = 'oauth' === activeApp?.auth;
+
+	// Live OAuth server state for oauth apps — fetched fresh (saddleData.oauth
+	// is a page-load snapshot and the whole point here is flipping it on).
+	const [ oauthState, setOauthState ] = useState( null );
+	const [ enablingOauth, setEnablingOauth ] = useState( false );
+	const [ oauthError, setOauthError ] = useState( null );
 
 	/* ----- create the credential the moment an app is picked ----- */
 
@@ -103,6 +122,18 @@ export default function ConnectWizard( {
 	};
 
 	const pick = ( key ) => {
+		// OAuth apps never use a pasted key — ChatGPT signs in through
+		// Saddle's consent screen — so minting an Application Password here
+		// would only leave an unused credential on the account.
+		const chosen = APPS.find( ( a ) => a.key === key );
+		if ( 'oauth' === chosen?.auth ) {
+			setApp( key );
+			setCred( null );
+			setDuplicateOf( null );
+			setStep( 1 );
+			return;
+		}
+
 		// Same app already connected? Offer replace-vs-add instead of quietly
 		// creating a look-alike ("Claude Code 2") nobody remembers issuing.
 		if ( 'other' !== key ) {
@@ -169,14 +200,93 @@ export default function ConnectWizard( {
 		setStep( 0 );
 	};
 
+	/* ----- OAuth apps: live server state + a consent-list baseline ----- */
+
+	// Snapshot of the OAuth connections BEFORE this attempt, so the poll below
+	// can tell a fresh consent (new grant id) or fresh activity (a last_used
+	// newer than anything in the snapshot) from what was already there. Server
+	// timestamps only — never compared against the browser clock.
+	const oauthBaselineRef = useRef( null );
+
+	const snapshotConnections = ( rows ) => ( {
+		ids: new Set( ( rows || [] ).map( ( r ) => r.id ) ),
+		maxLastUsed: Math.max(
+			0,
+			...( rows || [] ).map( ( r ) =>
+				Math.max( r.last_used || 0, r.created || 0 )
+			)
+		),
+	} );
+
+	useEffect( () => {
+		if ( ! isOauthApp ) {
+			oauthBaselineRef.current = null;
+			return undefined;
+		}
+		let alive = true;
+		api( 'oauth-settings' )
+			.then( ( res ) => alive && setOauthState( res ) )
+			.catch( () => {} );
+		api( 'oauth-connections' )
+			.then( ( rows ) => {
+				if ( alive && ! oauthBaselineRef.current ) {
+					oauthBaselineRef.current = snapshotConnections( rows );
+				}
+			} )
+			.catch( () => {} );
+		return () => {
+			alive = false;
+		};
+	}, [ isOauthApp ] );
+
+	// Explicit, labeled enable — never silent (OAuth is off by default on
+	// purpose). Only ever sends enabled: true; the disable path lives in
+	// Settings, where its purge-all-grants consequence is explained.
+	const enableOauth = () => {
+		setEnablingOauth( true );
+		setOauthError( null );
+		api( 'oauth-settings', { method: 'POST', data: { enabled: true } } )
+			.then( ( res ) => setOauthState( res ) )
+			.catch( ( e ) => setOauthError( e.message ) )
+			.finally( () => setEnablingOauth( false ) );
+	};
+
 	/* ----- live listening: flip to done on the app's first request ----- */
 
 	const pollRef = useRef( null );
 	useEffect( () => {
-		if ( ! cred || step === 0 || step === 3 ) {
+		if ( step === 0 || step === 3 || ( ! cred && ! isOauthApp ) ) {
 			return undefined;
 		}
 		pollRef.current = window.setInterval( () => {
+			if ( isOauthApp ) {
+				// The minted-key signal can never fire for an OAuth app — the
+				// connected event is a grant that wasn't in the baseline (the
+				// consent screen was completed) or bearer activity newer than
+				// anything the baseline saw (a reconnect).
+				api( 'oauth-connections' )
+					.then( ( rows ) => {
+						const base = oauthBaselineRef.current;
+						if ( ! base ) {
+							oauthBaselineRef.current =
+								snapshotConnections( rows );
+							return;
+						}
+						const connected = ( rows || [] ).some(
+							( r ) =>
+								! base.ids.has( r.id ) ||
+								( r.last_used || 0 ) > base.maxLastUsed
+						);
+						if ( connected ) {
+							setStep( 3 );
+							if ( onClientsChanged ) {
+								onClientsChanged();
+							}
+						}
+					} )
+					.catch( () => {} );
+				return;
+			}
 			api( 'clients' )
 				.then( ( res ) => {
 					const me = ( res.clients || [] ).find(
@@ -192,7 +302,7 @@ export default function ConnectWizard( {
 				.catch( () => {} );
 		}, 3000 );
 		return () => window.clearInterval( pollRef.current );
-	}, [ cred, step, onClientsChanged ] );
+	}, [ cred, step, onClientsChanged, isOauthApp ] );
 
 	// Offer troubleshooting once the wait step has been up a while.
 	useEffect( () => {
@@ -207,7 +317,12 @@ export default function ConnectWizard( {
 		return () => window.clearTimeout( t );
 	}, [ step ] );
 
-	const config = cred ? buildConfig( app, cred.password ) : '';
+	let config = '';
+	if ( isOauthApp ) {
+		config = buildGuideConfig( app );
+	} else if ( cred ) {
+		config = buildConfig( app, cred.password );
+	}
 
 	return (
 		<div className="saddle-wizard">
@@ -339,7 +454,7 @@ export default function ConnectWizard( {
 			) }
 
 			{ /* ---------- Step 2: paste one thing ---------- */ }
-			{ step === 1 && activeApp && cred && (
+			{ step === 1 && activeApp && ( cred || isOauthApp ) && (
 				<div className="saddle-wizard__step" key="setup">
 					<h2 className="saddle-wizard__title">
 						{ sprintf(
@@ -350,15 +465,90 @@ export default function ConnectWizard( {
 					</h2>
 					<p className="saddle-wizard__lead">{ activeApp.how }</p>
 
+					{ /* The sign-in switch is off by default — surface it here
+					     with a labeled, one-click enable instead of letting the
+					     instructions point at a server that isn't there. */ }
+					{ isOauthApp &&
+						oauthState &&
+						! oauthState.enabled &&
+						( oauthState.ready ? (
+							<CalloutCard
+								className="saddle-wizard__oauth-gate"
+								tone="warning"
+								title={ __(
+									'One switch first: sign-in for ChatGPT',
+									'saddle'
+								) }
+								description={ __(
+									'ChatGPT signs in through your WordPress instead of using a pasted key, and that sign-in is currently off (it’s off by default). Turn it on and ChatGPT can ask to connect — you’ll still approve it on screen before it gets any access.',
+									'saddle'
+								) }
+							>
+								{ oauthError && (
+									<Notice
+										tone="danger"
+										onDismiss={ () =>
+											setOauthError( null )
+										}
+									>
+										{ oauthError }
+									</Notice>
+								) }
+								<Button
+									variant="primary"
+									onClick={ enableOauth }
+									loading={ enablingOauth }
+									disabled={ enablingOauth }
+								>
+									{ __( 'Turn on sign-in', 'saddle' ) }
+								</Button>
+							</CalloutCard>
+						) : (
+							<CalloutCard
+								className="saddle-wizard__oauth-gate"
+								tone="warning"
+								title={ __(
+									'Your site can’t offer sign-in yet',
+									'saddle'
+								) }
+								description={
+									oauthState.permalinks
+										? __(
+												'This needs your site to be served over HTTPS first — a sign-in token sent over plain HTTP can be read in transit.',
+												'saddle'
+										  )
+										: __(
+												'This needs pretty permalinks. Go to Settings → Permalinks, choose anything other than Plain, and come back.',
+												'saddle'
+										  )
+								}
+							/>
+						) ) }
+					{ isOauthApp && oauthState?.enabled && (
+						<p className="saddle-wizard__hint">
+							{ __(
+								'Sign-in for ChatGPT is on — it can ask to connect, and you approve it on screen.',
+								'saddle'
+							) }
+						</p>
+					) }
+
 					<div className="saddle-wizard__config">
 						<CodeBlock
 							dark
 							copy={ false }
-							label={ sprintf(
-								/* translators: %s: the connection label. */
-								__( 'Made for “%s” just now', 'saddle' ),
-								cred.label
-							) }
+							label={
+								isOauthApp
+									? __( 'Your connection details', 'saddle' )
+									: sprintf(
+											/* translators: %s: the connection label. */
+											__(
+												'Made for “%s” just now',
+												'saddle'
+											),
+											cred.label
+									  )
+							}
 							code={ config }
 						/>
 						<Button
@@ -384,18 +574,29 @@ export default function ConnectWizard( {
 						) }
 						description={ level.one }
 					>
-						<p className="saddle-wizard__cando-note">
-							{ __(
-								'Its sign-in key works only for this app, only on this site, and only through Saddle — it can’t touch the rest of WordPress. Disconnect it anytime and access ends instantly. Go back without copying and the key is discarded.',
-								'saddle'
-							) }
-						</p>
-						<p className="saddle-wizard__cando-note">
-							{ __(
-								'The key appears only this once, inside the setup above. Saddle keeps just its name and last four characters — never the key itself.',
-								'saddle'
-							) }
-						</p>
+						{ isOauthApp ? (
+							<p className="saddle-wizard__cando-note">
+								{ __(
+									'ChatGPT signs in with your approval — you’ll see a consent screen here before it gets any access, and disconnecting it ends that access instantly.',
+									'saddle'
+								) }
+							</p>
+						) : (
+							<>
+								<p className="saddle-wizard__cando-note">
+									{ __(
+										'Its sign-in key works only for this app, only on this site, and only through Saddle — it can’t touch the rest of WordPress. Disconnect it anytime and access ends instantly. Go back without copying and the key is discarded.',
+										'saddle'
+									) }
+								</p>
+								<p className="saddle-wizard__cando-note">
+									{ __(
+										'The key appears only this once, inside the setup above. Saddle keeps just its name and last four characters — never the key itself.',
+										'saddle'
+									) }
+								</p>
+							</>
+						) }
 					</CalloutCard>
 
 					{ IS_LOCAL && (
@@ -414,7 +615,10 @@ export default function ConnectWizard( {
 						<Button
 							variant="primary"
 							onClick={ () => setStep( 2 ) }
-							disabled={ ! everCopied }
+							disabled={
+								! everCopied ||
+								( isOauthApp && ! oauthState?.enabled )
+							}
 						>
 							{ __( 'I’ve pasted it', 'saddle' ) }
 						</Button>
@@ -483,6 +687,14 @@ export default function ConnectWizard( {
 										'saddle'
 									) }
 								</li>
+								{ isOauthApp && (
+									<li>
+										{ __(
+											'If ChatGPT says it can’t fetch the sign-in details, a page cache may be serving old pages — clear your site’s cache and recreate the connector.',
+											'saddle'
+										) }
+									</li>
+								) }
 								{ IS_LOCAL && (
 									<li>
 										{ __(
@@ -536,16 +748,39 @@ export default function ConnectWizard( {
 						) }
 					</h2>
 					<p className="saddle-wizard__lead">
-						{ sprintf(
-							/* translators: %s: the human-readable access level. */
-							__(
-								'It just made its first request. Right now it can %s — change that anytime in Permissions.',
-								'saddle'
-							),
-							level.key === 'read'
-								? __( 'only read your content', 'saddle' )
-								: __( 'read and edit your content', 'saddle' )
-						) }
+						{ isOauthApp
+							? sprintf(
+									/* translators: %s: the human-readable access level. */
+									__(
+										'You approved it, and it’s connected. Right now it can %s — change that anytime in Permissions.',
+										'saddle'
+									),
+									level.key === 'read'
+										? __(
+												'only read your content',
+												'saddle'
+										  )
+										: __(
+												'read and edit your content',
+												'saddle'
+										  )
+							  )
+							: sprintf(
+									/* translators: %s: the human-readable access level. */
+									__(
+										'It just made its first request. Right now it can %s — change that anytime in Permissions.',
+										'saddle'
+									),
+									level.key === 'read'
+										? __(
+												'only read your content',
+												'saddle'
+										  )
+										: __(
+												'read and edit your content',
+												'saddle'
+										  )
+							  ) }
 					</p>
 					<p className="saddle-wizard__lead saddle-wizard__lead--muted">
 						{ __(

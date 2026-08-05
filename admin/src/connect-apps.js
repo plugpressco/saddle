@@ -40,8 +40,12 @@ export const APPS = [
 		key: 'chatgpt',
 		label: __( 'ChatGPT', 'saddle' ),
 		kind: __( 'Web + desktop', 'saddle' ),
+		// OAuth apps sign in through Saddle's consent screen — the wizard
+		// mints no Application Password for them and watches the OAuth
+		// connections list (not the key's last_used) for the live flip.
+		auth: 'oauth',
 		how: __(
-			'In ChatGPT: Settings → Connectors → Create. Paste the address, choose OAuth for authentication, and leave the client ID and secret blank. ChatGPT will send you here to sign in and approve it.',
+			'In ChatGPT on the web: turn on Developer mode (Settings → Apps & Connectors → Advanced settings), then create a connector. Paste the address, choose OAuth, and leave the client ID and secret blank. ChatGPT sends you here to approve it — the connector then works in the desktop app too.',
 			'saddle'
 		),
 		next: __(
@@ -208,6 +212,11 @@ function assemble( app, auth ) {
  * @return {string} Ready-to-paste setup.
  */
 export function buildConfig( app, password ) {
+	// OAuth apps carry no key at all — their setup is identical to the guide
+	// form, and calling this without a password must never throw.
+	if ( ! password ) {
+		return buildGuideConfig( app );
+	}
 	return assemble(
 		app,
 		btoa( `${ USER }:${ password.replace( WHITESPACE, '' ) }` )

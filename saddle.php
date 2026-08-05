@@ -23,6 +23,11 @@ define( 'SADDLE_FILE', __FILE__ );
 define( 'SADDLE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SADDLE_URL', plugin_dir_url( __FILE__ ) );
 define( 'SADDLE_MIN_WP', '6.9' );
+// The admin app's extension-contract version (admin/src/extensions.js).
+// Deliberately decoupled from SADDLE_VERSION: addons feature-detect this
+// constant (never a plugin-version floor), and it bumps ONLY on breaking
+// changes to the wp.hooks seams or the ui context object.
+define( 'SADDLE_SHELL_VERSION', 1 );
 
 /**
  * Load plugin classes.
