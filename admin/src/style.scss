@@ -150,14 +150,49 @@ body.toplevel_page_saddle {
 
 /* ---------- Foreign notices (quarantined wp-admin notices) ---------- */
 
-// Trigger/caret chrome comes from the design system's Collapsible.
+// Parked in the top bar, not the content column: WordPress forces other
+// plugins' notices onto every screen, and a strip above the page pushed the
+// actual work down on arrival. The count stays visible so a real update or
+// security warning is never silently swallowed.
 .saddle-foreign {
-	margin-bottom: 16px;
+	max-width: min(520px, calc(100vw - 32px));
+	max-height: 60vh;
+	overflow-y: auto;
+
+	&__button {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		height: 28px;
+		padding: 0 10px;
+		border: 1px solid var(--pp-border);
+		border-radius: var(--pp-radius-full, 999px);
+		background: var(--pp-surface);
+		color: var(--pp-fg-muted);
+		font-size: 12px;
+		line-height: 1;
+		cursor: pointer;
+
+		svg {
+			width: 14px;
+			height: 14px;
+		}
+
+		&:hover {
+			color: var(--pp-fg);
+			border-color: var(--pp-border-strong, var(--pp-border));
+		}
+	}
+
+	&__head {
+		margin-bottom: 8px;
+		color: var(--pp-fg-subtle);
+		font-size: 12px;
+	}
 
 	// Foreign notices were written for a light admin — keep them on a light
-	// island in both themes rather than restyling markup we don't own.
+	// island rather than restyling markup we don't own.
 	&__list {
-		margin-top: 10px;
 		color-scheme: light;
 
 		.notice,
@@ -168,7 +203,18 @@ body.toplevel_page_saddle {
 			background: #fff;
 			color: #1e1e1e;
 		}
+
+		> *:last-child {
+			margin-bottom: 0;
+		}
 	}
+}
+
+// Right cluster of the top bar: notices sit beside the safety pill.
+.saddle-topbar__right {
+	display: flex;
+	align-items: center;
+	gap: 10px;
 }
 
 /* ---------- Shell: DS AppShell sidebar variant ---------- */
@@ -842,17 +888,85 @@ body.toplevel_page_saddle {
 // Header, empty state, app rows, the disconnect confirm, and the endpoint
 // snippet all come from the design system now.
 
+// A title and its "?" sit on one baseline wherever Titled is used.
+.saddle-apps__titled {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+// Both connection kinds share one card, so the card body owns the rhythm
+// between them rather than each list carrying its own margins.
+.saddle-apps__cardbody {
+	display: grid;
+	gap: var(--pp-space-4);
+
+	// The card IS the container now. Left alone, the DS RowList draws its own
+	// 1px/12px box inside the card's identical one — the same border twice,
+	// 25px apart, which reads as a mistake rather than as structure.
+	.pp-rowlist {
+		border: 0;
+		border-radius: 0;
+		background: transparent;
+	}
+}
+
+// The labelled rule introducing the sign-in group. This replaces the old
+// .saddle-apps__subhead, which was referenced in JSX but styled NOWHERE — so
+// wp-admin's reset left it at margin:0 and it collided with the list above.
+.saddle-apps__divider {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-top: var(--pp-space-2);
+	color: var(--pp-fg-muted);
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.01em;
+
+	&::after {
+		content: '';
+		flex: 1;
+		height: 1px;
+		background: var(--pp-border);
+	}
+}
+
+// Quiet closing line inside the card: a real link plus its "?".
+.saddle-apps__cardfoot {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin: 0;
+	font-size: 12px;
+
+	a {
+		color: var(--pp-fg-muted);
+	}
+}
+
 /* Advanced: endpoint details + health, behind the disclosure. */
 .saddle-apps__advanced {
 	margin-top: 10px;
-	padding: 18px 20px;
+	padding: var(--pp-space-5) var(--pp-space-5);
 	background: var(--s-surface-2);
 	border: 1px solid var(--s-border);
 	border-radius: var(--s-radius-lg);
+	display: grid;
+	gap: var(--pp-space-4);
+}
 
-	.pp-snippet {
-		margin-bottom: 14px;
-	}
+// Stacked label above the control — the DS Snippet's inline label bar squeezed
+// the title and a long URL into one short row.
+.saddle-apps__field {
+	display: grid;
+	gap: 6px;
+}
+
+.saddle-apps__fieldlabel {
+	color: var(--pp-fg-muted);
+	font-size: 12px;
+	font-weight: 600;
 }
 
 .saddle-apps__test {
@@ -862,20 +976,14 @@ body.toplevel_page_saddle {
 }
 
 .saddle-apps__transport {
-	margin: 14px 0 0;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin: 0;
 	font-size: 12px;
 	color: var(--s-fg-subtle);
 }
 
-.saddle-apps__footnote {
-	margin: 12px 2px 0;
-	font-size: 12px;
-	color: var(--s-fg-subtle);
-
-	a {
-		color: var(--s-fg-muted);
-	}
-}
 
 .saddle-wizard__lead--muted {
 	color: var(--s-fg-subtle);

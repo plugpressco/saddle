@@ -26,7 +26,7 @@ import {
 	Spinner,
 	Notice,
 	Button,
-	Collapsible,
+	Popover,
 	SkipLink,
 	AppShell,
 	AppNav,
@@ -43,7 +43,7 @@ import {
 } from '@plugpress/ui';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { api, levelFor } from './api';
-import { BrandMark } from './components/icons';
+import { BrandMark, IconBell } from './components/icons';
 import Onboarding from './components/Onboarding';
 import Dashboard from './components/Dashboard';
 import Permissions from './components/Permissions';
@@ -156,7 +156,7 @@ const DOT_TONES = {
 // (nav group · page title), the always-visible safety-status pill on the
 // right. The pill is a real button — it jumps to Settings, where the
 // controls it reflects live.
-function TopBar( { tab, tier, paused, onNavigate } ) {
+function TopBar( { tab, tier, paused, onNavigate, notices } ) {
 	const t = TABS.find( ( x ) => x.name === tab );
 	const group = NAV_GROUPS.find( ( g ) => g.items.includes( tab ) );
 	const level = levelFor( tier );
@@ -179,20 +179,26 @@ function TopBar( { tab, tier, paused, onNavigate } ) {
 				) }
 				<span className="saddle-topbar__title">{ t?.title }</span>
 			</div>
-			<Tooltip
-				content={ __( 'Change this on the Settings page', 'saddle' ) }
-			>
-				<button
-					type="button"
-					className={ `saddle-status-pill saddle-status-pill--${ tone }` }
-					onClick={ () => onNavigate( 'settings' ) }
+			<div className="saddle-topbar__right">
+				{ notices && <ForeignNotices /> }
+				<Tooltip
+					content={ __(
+						'Change this on the Settings page',
+						'saddle'
+					) }
 				>
-					<StatusDot tone={ DOT_TONES[ tone ] } />
-					<span>
-						{ paused ? __( 'Paused', 'saddle' ) : level.title }
-					</span>
-				</button>
-			</Tooltip>
+					<button
+						type="button"
+						className={ `saddle-status-pill saddle-status-pill--${ tone }` }
+						onClick={ () => onNavigate( 'settings' ) }
+					>
+						<StatusDot tone={ DOT_TONES[ tone ] } />
+						<span>
+							{ paused ? __( 'Paused', 'saddle' ) : level.title }
+						</span>
+					</button>
+				</Tooltip>
+			</div>
 		</header>
 	);
 }
@@ -206,54 +212,76 @@ function TopBar( { tab, tier, paused, onNavigate } ) {
 function ForeignNotices() {
 	const [ count, setCount ] = useState( 0 );
 	const [ open, setOpen ] = useState( false );
+
+	// A holder this component owns and keeps for its whole life. The popover
+	// unmounts its content on close, so notices parented straight to the panel
+	// would be destroyed on the first close — and these are the plugins' OWN
+	// nodes, moved rather than copied, so losing them loses their dismiss
+	// handlers with them. Parking them here keeps them alive while detached.
 	const holderRef = useRef( null );
-	const movedRef = useRef( false );
+	if ( ! holderRef.current ) {
+		holderRef.current = document.createElement( 'div' );
+		holderRef.current.className = 'saddle-foreign__list';
+	}
 
 	useEffect( () => {
-		const source = document.getElementById( 'saddle-foreign-notices' );
-		if ( source ) {
-			setCount( source.children.length );
-		}
-	}, [] );
-
-	useEffect( () => {
-		if ( ! open || movedRef.current || ! holderRef.current ) {
-			return;
-		}
 		const source = document.getElementById( 'saddle-foreign-notices' );
 		if ( ! source ) {
 			return;
 		}
+		setCount( source.children.length );
 		while ( source.firstChild ) {
 			holderRef.current.appendChild( source.firstChild );
 		}
-		movedRef.current = true;
-	}, [ open ] );
+	}, [] );
+
+	// A callback ref, not a ref object read from an effect: the popover mounts
+	// its panel lazily when opened, so an effect keyed on `open` can run on a
+	// tick where the panel does not exist yet — which is exactly why the list
+	// came up empty the first time.
+	const mountList = useCallback( ( node ) => {
+		if ( node && holderRef.current.parentNode !== node ) {
+			node.appendChild( holderRef.current );
+		}
+	}, [] );
 
 	if ( ! count ) {
 		return null;
 	}
 
-	// Collapsible keeps its panel mounted (hidden attr) when closed, so the
-	// moved notice nodes — with their own dismiss handlers — survive toggling.
+	const label = sprintf(
+		/* translators: %d: number of notices. */
+		_n(
+			'%d notice from other plugins',
+			'%d notices from other plugins',
+			count,
+			'saddle'
+		),
+		count
+	);
+
+	// The panel stays mounted once opened so the moved notice nodes — carrying
+	// their own dismiss handlers — survive closing and reopening the popover.
 	return (
-		<Collapsible
+		<Popover
 			className="saddle-foreign"
 			open={ open }
 			onOpenChange={ setOpen }
-			trigger={ sprintf(
-				/* translators: %d: number of notices. */
-				_n(
-					'%d notice from other plugins',
-					'%d notices from other plugins',
-					count,
-					'saddle'
-				),
-				count
-			) }
+			align="end"
+			trigger={
+				<button
+					type="button"
+					className="saddle-foreign__button"
+					aria-label={ label }
+				>
+					<IconBell />
+					<span>{ count }</span>
+				</button>
+			}
 		>
-			<div ref={ holderRef } className="saddle-foreign__list" />
-		</Collapsible>
+			<div className="saddle-foreign__head">{ label }</div>
+			<div ref={ mountList } />
+		</Popover>
 	);
 }
 
@@ -553,10 +581,9 @@ export default function App() {
 						tier={ tier }
 						paused={ paused }
 						onNavigate={ setTab }
+						notices={ ! wizardOpen }
 					/>
 					<AppContent width={ PAGE_WIDTH }>
-						{ ! wizardOpen && <ForeignNotices /> }
-
 						{ error && <Notice tone="danger">{ error }</Notice> }
 
 						{ domainWarning && ! wizardOpen && (
