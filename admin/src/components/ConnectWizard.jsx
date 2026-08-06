@@ -695,6 +695,15 @@ export default function ConnectWizard( {
 										) }
 									</li>
 								) }
+								{ isOauthApp &&
+									'slow' === oauthState?.discovery && (
+										<li>
+											{ __(
+												'This site is answering too slowly for ChatGPT to finish connecting — it waits only a few seconds, then reports that the site doesn’t support signing in. Turn on page caching or move to a faster host, then recreate the connector.',
+												'saddle'
+											) }
+										</li>
+									) }
 								{ IS_LOCAL && (
 									<li>
 										{ __(
@@ -719,10 +728,19 @@ export default function ConnectWizard( {
 							{ __( 'Back', 'saddle' ) }
 						</Button>
 						<Button variant="link" onClick={ () => exit( false ) }>
-							{ __(
-								'Finish later — it’ll connect on first use',
-								'saddle'
-							) }
+							{ isOauthApp
+								? sprintf(
+										/* translators: %s: the app name. */
+										__(
+											'Close — it’ll appear here after you approve it in %s',
+											'saddle'
+										),
+										activeApp.label
+								  )
+								: __(
+										'Finish later — it’ll connect on first use',
+										'saddle'
+								  ) }
 						</Button>
 					</div>
 				</div>

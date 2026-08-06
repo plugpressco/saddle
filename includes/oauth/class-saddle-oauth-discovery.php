@@ -55,6 +55,20 @@ class Saddle_OAuth_Discovery {
 	const OIDC_PATH = '/.well-known/openid-configuration';
 
 	/**
+	 * Seconds the loopback discovery probe waits before giving up.
+	 */
+	const PROBE_TIMEOUT = 5;
+
+	/**
+	 * Seconds a discovery fetch may take before it counts as too slow.
+	 *
+	 * Connecting clients budget only a few seconds for metadata fetches and
+	 * report a site that misses it as not implementing OAuth at all, so a
+	 * document that is correct but late fails exactly like one that is missing.
+	 */
+	const PROBE_BUDGET = 3.0;
+
+	/**
 	 * Register the REST-route copies of both documents.
 	 *
 	 * All public and cacheable — a discovery document tells an anonymous caller
@@ -384,13 +398,21 @@ class Saddle_OAuth_Discovery {
 	 * fatal — the REST routes and the 401 challenge still work — but a client
 	 * that only probes the root will fail, so the owner should be told.
 	 *
-	 * @return string 'ok' | 'unreachable' | 'unknown'
+	 * @return string 'ok' | 'slow' | 'unreachable' | 'unknown'
 	 */
 	public static function probe_root() {
+		/**
+		 * Filter how long a discovery fetch may take before it counts as slow.
+		 *
+		 * @param float $budget Seconds.
+		 */
+		$budget = (float) apply_filters( 'saddle_oauth_discovery_probe_budget', self::PROBE_BUDGET );
+
+		$started  = microtime( true );
 		$response = wp_remote_get(
 			home_url( self::ASM_PATH ),
 			array(
-				'timeout'     => 5,
+				'timeout'     => self::PROBE_TIMEOUT,
 				// Loopback to our own host; dev and staging often serve a
 				// self-signed certificate, and the probe reads only our own
 				// issuer string back, never trusting anything else in the body.
@@ -400,8 +422,15 @@ class Saddle_OAuth_Discovery {
 			)
 		);
 
+		$elapsed = microtime( true ) - $started;
+
 		if ( is_wp_error( $response ) ) {
-			return 'unknown';
+			// Burning the whole timeout on a loopback fetch of a static JSON
+			// document is not an unknown result — it is a site too slow to
+			// finish discovery, and a connecting client gives up long before we
+			// do. Measured rather than sniffed out of the error message, which
+			// is host- and transport-specific.
+			return $elapsed >= ( self::PROBE_TIMEOUT * 0.9 ) ? 'slow' : 'unknown';
 		}
 
 		$body = json_decode( (string) wp_remote_retrieve_body( $response ), true );
@@ -409,6 +438,13 @@ class Saddle_OAuth_Discovery {
 			return 'unreachable';
 		}
 
-		return Saddle_OAuth::issuer() === $body['issuer'] ? 'ok' : 'unreachable';
+		if ( Saddle_OAuth::issuer() !== $body['issuer'] ) {
+			return 'unreachable';
+		}
+
+		// Served the right document, but slowly enough that a client with a
+		// tighter budget than ours would have abandoned the fetch and reported
+		// the site as not supporting OAuth at all.
+		return $elapsed > $budget ? 'slow' : 'ok';
 	}
 }

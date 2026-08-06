@@ -241,6 +241,60 @@ class Saddle_OAuth_Discovery_Test extends WP_UnitTestCase {
 	 * Readiness
 	 * --------------------------------------------------------------- */
 
+	/**
+	 * Answer the loopback probe without leaving the test process.
+	 *
+	 * @param array $body  Decoded body to serve back.
+	 * @param float $delay Seconds to burn before answering.
+	 */
+	private function stub_probe( $body, $delay = 0.0 ) {
+		add_filter(
+			'pre_http_request',
+			function () use ( $body, $delay ) {
+				if ( $delay > 0 ) {
+					usleep( (int) ( $delay * 1000000 ) );
+				}
+
+				return array(
+					'response' => array( 'code' => 200 ),
+					'body'     => wp_json_encode( $body ),
+				);
+			}
+		);
+	}
+
+	public function test_probe_reports_ok_when_the_root_document_is_correct_and_prompt() {
+		$this->stub_probe( array( 'issuer' => Saddle_OAuth::issuer() ) );
+
+		$this->assertSame( 'ok', Saddle_OAuth_Discovery::probe_root() );
+	}
+
+	public function test_probe_reports_slow_when_the_document_is_right_but_late() {
+		// Budget shrunk rather than the response slowed: the branch under test is
+		// "took longer than a client will wait", not "took 3 real seconds".
+		add_filter( 'saddle_oauth_discovery_probe_budget', fn() => 0.05 );
+		$this->stub_probe( array( 'issuer' => Saddle_OAuth::issuer() ), 0.1 );
+
+		// The distinction that matters: a client reports this site as not
+		// supporting OAuth at all, so it must not be reported to the owner as
+		// a subfolder or blocked-path problem.
+		$this->assertSame( 'slow', Saddle_OAuth_Discovery::probe_root() );
+	}
+
+	public function test_probe_reports_unreachable_when_something_else_answers() {
+		$this->stub_probe( array( 'issuer' => 'https://example.org/somewhere-else' ) );
+
+		$this->assertSame( 'unreachable', Saddle_OAuth_Discovery::probe_root() );
+	}
+
+	public function test_a_fast_failure_stays_unknown_rather_than_slow() {
+		add_filter( 'pre_http_request', fn() => new WP_Error( 'http_request_failed', 'Connection refused' ) );
+
+		// Refused immediately is a different problem from timed out, and only
+		// the latter tells the owner their site is too slow to connect.
+		$this->assertSame( 'unknown', Saddle_OAuth_Discovery::probe_root() );
+	}
+
 	public function test_plain_permalinks_block_oauth() {
 		delete_option( 'permalink_structure' );
 

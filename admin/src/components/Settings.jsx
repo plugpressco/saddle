@@ -25,6 +25,50 @@ import { __, sprintf } from '@wordpress/i18n';
 import { api, saddleData } from '../api';
 import { collectSettingsCards, ui, SHELL_VERSION } from '../extensions';
 
+/**
+ * What the discovery probe found, in the owner's language.
+ *
+ * 'slow' is called out separately because it fails identically to a missing
+ * document from the app's side, but for the opposite reason — the document is
+ * there and correct, the site just answers too late — so the subfolder and
+ * blocked-path advice below would send the owner chasing the wrong thing.
+ *
+ * @param {string} state Probe result: 'ok' | 'slow' | 'unreachable' | 'unknown'.
+ * @return {string} Description for the Discoverable row.
+ */
+const DISCOVERY_NOTE = ( state ) => {
+	if ( 'ok' === state ) {
+		return __(
+			'Apps can find this site’s sign-in details on their own.',
+			'saddle'
+		);
+	}
+
+	if ( 'slow' === state ) {
+		return __(
+			'This site answers too slowly for some apps to finish connecting. The sign-in details are correct and in the right place, but ChatGPT gives up after a few seconds and then reports that this site doesn’t support signing in. A page cache or a faster host usually fixes it.',
+			'saddle'
+		);
+	}
+
+	return __(
+		'Apps may not be able to find the sign-in details automatically. This usually means WordPress lives in a subfolder, or your host blocks addresses starting with a dot. Most apps will still connect; ChatGPT may not.',
+		'saddle'
+	);
+};
+
+const DISCOVERY_BADGE = ( state ) => {
+	if ( 'ok' === state ) {
+		return __( 'Yes', 'saddle' );
+	}
+
+	if ( 'slow' === state ) {
+		return __( 'Too slow', 'saddle' );
+	}
+
+	return __( 'Maybe not', 'saddle' );
+};
+
 export default function Settings( { paused, pausing, onTogglePause } ) {
 	const [ domain, setDomain ] = useState( null );
 	const [ oauth, setOauth ] = useState( null );
@@ -170,17 +214,9 @@ export default function Settings( { paused, pausing, onTogglePause } ) {
 						<RowList>
 							<Row
 								title={ __( 'Discoverable', 'saddle' ) }
-								description={
-									'ok' === oauth.discovery
-										? __(
-												'Apps can find this site’s sign-in details on their own.',
-												'saddle'
-										  )
-										: __(
-												'Apps may not be able to find the sign-in details automatically. This usually means WordPress lives in a subfolder, or your host blocks addresses starting with a dot. Most apps will still connect; ChatGPT may not.',
-												'saddle'
-										  )
-								}
+								description={ DISCOVERY_NOTE(
+									oauth.discovery
+								) }
 								actions={
 									<Badge
 										tone={
@@ -189,9 +225,7 @@ export default function Settings( { paused, pausing, onTogglePause } ) {
 												: 'warning'
 										}
 									>
-										{ 'ok' === oauth.discovery
-											? __( 'Yes', 'saddle' )
-											: __( 'Maybe not', 'saddle' ) }
+										{ DISCOVERY_BADGE( oauth.discovery ) }
 									</Badge>
 								}
 							/>
