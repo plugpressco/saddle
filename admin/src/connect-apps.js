@@ -39,7 +39,10 @@ export const APPS = [
 	{
 		key: 'chatgpt',
 		label: __( 'ChatGPT', 'saddle' ),
-		kind: __( 'Web + desktop', 'saddle' ),
+		// Chat and Work specifically: since the July 2026 merge the same desktop
+		// app also contains Codex, which connects a completely different way and
+		// has its own card below.
+		kind: __( 'Chat and Work', 'saddle' ),
 		// OAuth apps sign in through Saddle's consent screen — the wizard
 		// mints no Application Password for them and watches the OAuth
 		// connections list (not the key's last_used) for the live flip.
@@ -50,6 +53,23 @@ export const APPS = [
 		),
 		next: __(
 			'Enable the connector in a ChatGPT chat and ask it about your site.',
+			'saddle'
+		),
+	},
+	{
+		// The other half of the same desktop app. Codex reads a config file on
+		// the user's own machine rather than being fetched by OpenAI's servers,
+		// so it accepts a plain header — no OAuth, no discovery, and it can
+		// reach a local site the connector path can't see at all.
+		key: 'codex',
+		label: __( 'Codex', 'saddle' ),
+		kind: __( 'In the ChatGPT app', 'saddle' ),
+		how: __(
+			'Codex reads a settings file. Open ~/.codex/config.toml, paste this at the end, save, then restart the app. The codex terminal command reads the same file.',
+			'saddle'
+		),
+		next: __(
+			'Open Codex in the ChatGPT app and ask it about your site.',
 			'saddle'
 		),
 	},
@@ -163,6 +183,24 @@ function assemble( app, auth ) {
 					'OAuth (leave client ID and secret blank)',
 					'saddle'
 				) }`,
+			].join( '\n' );
+
+		// Codex — TOML, the only target that uses it. `http_headers` takes
+		// arbitrary static values, so the same Basic credential every other
+		// header app gets works here; the connector path next door cannot carry
+		// one at all. The table name is a TOML bare key, and SLUG's hyphens are
+		// legal in one, so it needs no quoting.
+		//
+		// startup_timeout_sec is raised off its short default deliberately:
+		// shared WordPress hosting has been measured answering in 5-16s, and a
+		// handshake that times out surfaces as a broken credential rather than
+		// a slow site, which is the wrong thing to go debugging.
+		case 'codex':
+			return [
+				`[mcp_servers.${ SLUG }]`,
+				`url = "${ MCP_URL }"`,
+				`http_headers = { Authorization = "Basic ${ auth }" }`,
+				'startup_timeout_sec = 30',
 			].join( '\n' );
 
 		// Native HTTP with headers.
