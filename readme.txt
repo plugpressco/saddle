@@ -14,7 +14,7 @@ Connect Claude, Cursor, and other AI agents to WordPress. Structured tools, safe
 
 Saddle turns your WordPress site into a **Model Context Protocol (MCP) server**. AI apps you already use — Claude, Cursor, VS Code, and others — connect to your site and help with real work: reading and writing posts and pages, managing media, and designing pages with your theme's own styles.
 
-Everything runs on your own site. There is no account to create, no cloud service in the middle, and no data sent to us — ever. Agents sign in with WordPress core's **Application Passwords**, and you decide how much they are allowed to do.
+Everything runs on your own site. There is no account to create and no cloud service in the middle: your content, your credentials and every tool call stay in your WordPress. Agents sign in with WordPress core's **Application Passwords**, and you decide how much they are allowed to do.
 
 = How it stays safe =
 
@@ -70,9 +70,11 @@ Saddle Pro is a separate, optional add-on that adds page-builder-native editing 
 
 == External services ==
 
-Saddle sends **no** analytics, telemetry, or usage data anywhere. Its MCP endpoint is *inbound* — agents call your site; your site does not call out to us or anyone else on its own.
+Saddle sends **no** analytics, telemetry, or usage data anywhere, and no content or credentials ever leave your site. Its MCP endpoint is *inbound* — agents call your site, not the other way round.
 
-Only four things ever make an outbound request, and each one is started by you:
+**The version on WordPress.org makes no outbound request at all.** If you installed Saddle from plugpress.co instead, that copy checks for its own updates: it sends the plugin name and the version number you have, to one fixed address, at most once every six hours, and only when WordPress runs an update check. No site address, no content, no account, nothing about you. It is the same thing WordPress does for every plugin you install from WordPress.org, pointed at us instead.
+
+Apart from that, four things make an outbound request, and each one is started by you:
 
 1. **Upload from URL.** If you ask an agent to add a file to the media library by URL, WordPress's own HTTP API downloads that one URL to your server — the same mechanism core's "insert from URL" uses. Only the host in the URL you supplied is contacted.
 2. **Endpoint self-checks.** The connection checker sends requests to *your own site* — its REST URL, and, when OAuth sign-in is on, its `/.well-known/` discovery address — to confirm those endpoints are reachable. Nothing leaves your server.
@@ -100,7 +102,7 @@ Only four things ever make an outbound request, and each one is started by you:
 
 = Does my content or my password go through your servers? =
 
-No. Saddle has no servers. Everything runs inside your WordPress install, sign-in is WordPress core's Application Passwords, and no telemetry is sent.
+No. Your content and your password never leave your WordPress install, and no telemetry is sent anywhere. Sign-in is WordPress core's own Application Passwords. The WordPress.org copy makes no outbound request at all; the copy from plugpress.co checks for its own updates, sending only the plugin name and version number.
 
 = Can an agent delete something without asking? =
 
@@ -133,6 +135,10 @@ Never. Every operation goes through WordPress's own PHP functions. There is no s
 
 = 1.0.0 =
 * Initial public release.
+* See the whole site, not just one page: list and read block templates and template parts, read the global styles the owner set, and list their saved patterns.
+* Set up a design system on a block theme: bootstrap-design-system now writes the palette, type scale and spacing into your global styles, so it appears in Appearance > Editor > Styles and stays yours to edit. Existing values are never overwritten.
+* Orient in one call: context-bundle returns the design system, the blocks worth using, the theme's patterns, the site's templates and the section recipes together, instead of five separate calls per session.
+* A bundled build-page playbook on block themes: the order to work in, the rules the plugin enforces, and what separates a designed page from a generated one.
 * MCP server on your own site: content tools (posts, pages, media, taxonomies, search), Gutenberg block design tools with schema validation and theme design tokens, opt-in site management (settings, plugins, themes, cache), Skills, memory, and an activity log.
 * Safety model: three access levels defaulting to read-only, per-tool switches, two-step confirmation on every destructive action, a master pause switch, and credentials confined to Saddle's endpoint.
 * Optional Unsplash integration (bring your own API key): search and import stock photos with automatic photographer attribution.
