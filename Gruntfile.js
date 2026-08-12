@@ -77,6 +77,10 @@ module.exports = function ( grunt ) {
 							'!.git/**',
 							'!.github/**',
 							'!.claude/**',
+							// Same reason as .claude/: agent instructions are dev
+							// config, not plugin code. Excluded explicitly rather
+							// than relying on how the globber treats dot-dirs.
+							'!.agents/**',
 							'!Gruntfile.js',
 							'!package.json',
 							'!package-lock.json',
