@@ -23,8 +23,29 @@ class Saddle_Blocks_Test extends WP_UnitTestCase {
 	}
 
 	public function tear_down() {
+		if ( $this->previous_theme && get_stylesheet() !== $this->previous_theme ) {
+			switch_theme( $this->previous_theme );
+		}
 		Saddle_Capabilities::set_tier( 'read' );
 		parent::tear_down();
+	}
+
+	private $previous_theme;
+
+	/**
+	 * Activate the minimal block-theme fixture. The host WordPress this suite
+	 * runs against ships no block theme, so without this the global-styles
+	 * tests skip and the suite is green while proving nothing.
+	 */
+	private function use_block_theme() {
+		$this->previous_theme = get_stylesheet();
+		register_theme_directory( __DIR__ . '/fixtures/themes' );
+		delete_site_transient( 'theme_roots' );
+		wp_clean_themes_cache();
+
+		if ( wp_get_theme( 'saddle-block-fixture' )->exists() ) {
+			switch_theme( 'saddle-block-fixture' );
+		}
 	}
 
 	private function run_ability( $name, array $input = array() ) {
@@ -54,11 +75,21 @@ class Saddle_Blocks_Test extends WP_UnitTestCase {
 						'type'     => 'core/group',
 						'attrs'    => array( 'backgroundColor' => 'accent' ),
 						'children' => array(
-							array( 'type' => 'core/heading', 'content' => 'Hello', 'attrs' => array( 'level' => 2 ) ),
-							array( 'type' => 'core/paragraph', 'content' => 'World' ),
+							array(
+								'type'    => 'core/heading',
+								'content' => 'Hello',
+								'attrs'   => array( 'level' => 2 ),
+							),
+							array(
+								'type'    => 'core/paragraph',
+								'content' => 'World',
+							),
 						),
 					),
-					array( 'type' => 'core/list', 'content' => array( 'One', 'Two' ) ),
+					array(
+						'type'    => 'core/list',
+						'content' => array( 'One', 'Two' ),
+					),
 				),
 			)
 		);
@@ -87,7 +118,12 @@ class Saddle_Blocks_Test extends WP_UnitTestCase {
 			'set-blocks',
 			array(
 				'post_id' => $id,
-				'nodes'   => array( array( 'type' => 'acme/imaginary', 'content' => 'x' ) ),
+				'nodes'   => array(
+					array(
+						'type'    => 'acme/imaginary',
+						'content' => 'x',
+					),
+				),
 			)
 		);
 
@@ -107,12 +143,19 @@ class Saddle_Blocks_Test extends WP_UnitTestCase {
 					array(
 						'type'     => 'core/buttons',
 						'children' => array(
-							array( 'type' => 'core/button', 'content' => 'Go', 'attrs' => array( 'url' => 'https://example.com/x' ) ),
+							array(
+								'type'    => 'core/button',
+								'content' => 'Go',
+								'attrs'   => array( 'url' => 'https://example.com/x' ),
+							),
 						),
 					),
 					array(
 						'type'    => 'core/image',
-						'content' => array( 'src' => 'https://example.com/a.jpg', 'alt' => 'A' ),
+						'content' => array(
+							'src' => 'https://example.com/a.jpg',
+							'alt' => 'A',
+						),
 					),
 				),
 			)
@@ -147,7 +190,10 @@ class Saddle_Blocks_Test extends WP_UnitTestCase {
 			'add-block',
 			array(
 				'post_id' => $id,
-				'node'    => array( 'type' => 'core/list-item', 'content' => 'orphan' ),
+				'node'    => array(
+					'type'    => 'core/list-item',
+					'content' => 'orphan',
+				),
 			)
 		);
 
@@ -166,7 +212,12 @@ class Saddle_Blocks_Test extends WP_UnitTestCase {
 				'nodes'   => array(
 					array(
 						'type'     => 'core/group',
-						'children' => array( array( 'type' => 'core/paragraph', 'content' => 'First' ) ),
+						'children' => array(
+							array(
+								'type'    => 'core/paragraph',
+								'content' => 'First',
+							),
+						),
 					),
 				),
 			)
@@ -177,7 +228,10 @@ class Saddle_Blocks_Test extends WP_UnitTestCase {
 			array(
 				'post_id'        => $id,
 				'parent_address' => '0',
-				'node'           => array( 'type' => 'core/paragraph', 'content' => 'Second' ),
+				'node'           => array(
+					'type'    => 'core/paragraph',
+					'content' => 'Second',
+				),
 			)
 		);
 		$this->assertNotWPError( $result );
@@ -197,7 +251,12 @@ class Saddle_Blocks_Test extends WP_UnitTestCase {
 			'set-blocks',
 			array(
 				'post_id' => $id,
-				'nodes'   => array( array( 'type' => 'core/paragraph', 'content' => 'Before' ) ),
+				'nodes'   => array(
+					array(
+						'type'    => 'core/paragraph',
+						'content' => 'Before',
+					),
+				),
 			)
 		);
 
@@ -234,10 +293,18 @@ class Saddle_Blocks_Test extends WP_UnitTestCase {
 			array(
 				'post_id' => $id,
 				'nodes'   => array(
-					array( 'type' => 'core/paragraph', 'content' => 'A' ),
+					array(
+						'type'    => 'core/paragraph',
+						'content' => 'A',
+					),
 					array(
 						'type'     => 'core/group',
-						'children' => array( array( 'type' => 'core/paragraph', 'content' => 'B' ) ),
+						'children' => array(
+							array(
+								'type'    => 'core/paragraph',
+								'content' => 'B',
+							),
+						),
 					),
 				),
 			)
@@ -245,13 +312,22 @@ class Saddle_Blocks_Test extends WP_UnitTestCase {
 
 		$own_subtree = $this->run_ability(
 			'move-block',
-			array( 'post_id' => $id, 'from_address' => '1', 'to_parent_address' => '1.0' )
+			array(
+				'post_id'           => $id,
+				'from_address'      => '1',
+				'to_parent_address' => '1.0',
+			)
 		);
 		$this->assertWPError( $own_subtree );
 
 		$result = $this->run_ability(
 			'move-block',
-			array( 'post_id' => $id, 'from_address' => '0', 'to_parent_address' => '1', 'position' => 0 )
+			array(
+				'post_id'           => $id,
+				'from_address'      => '0',
+				'to_parent_address' => '1',
+				'position'          => 0,
+			)
 		);
 		$this->assertNotWPError( $result );
 		$this->assertSame( '0.0', $result['moved'], 'The destination address must account for the removal shift.' );
@@ -269,23 +345,43 @@ class Saddle_Blocks_Test extends WP_UnitTestCase {
 			array(
 				'post_id' => $id,
 				'nodes'   => array(
-					array( 'type' => 'core/paragraph', 'content' => 'Leaf' ),
+					array(
+						'type'    => 'core/paragraph',
+						'content' => 'Leaf',
+					),
 					array(
 						'type'     => 'core/group',
-						'children' => array( array( 'type' => 'core/paragraph', 'content' => 'Inside' ) ),
+						'children' => array(
+							array(
+								'type'    => 'core/paragraph',
+								'content' => 'Inside',
+							),
+						),
 					),
 				),
 			)
 		);
 
 		// Leaf: gone in one call.
-		$result = $this->run_ability( 'remove-block', array( 'post_id' => $id, 'address' => '0' ) );
+		$result = $this->run_ability(
+			'remove-block',
+			array(
+				'post_id' => $id,
+				'address' => '0',
+			)
+		);
 		$this->assertNotWPError( $result );
 		$this->assertSame( '0', $result['removed'] );
 
 		// Subtree: first call previews, nothing changes.
 		$before  = get_post( $id )->post_content;
-		$preview = $this->run_ability( 'remove-block', array( 'post_id' => $id, 'address' => '0' ) );
+		$preview = $this->run_ability(
+			'remove-block',
+			array(
+				'post_id' => $id,
+				'address' => '0',
+			)
+		);
 		$this->assertNotWPError( $preview );
 		$this->assertNotEmpty( $preview['confirm_token'] );
 		$this->assertSame( $before, get_post( $id )->post_content );
@@ -293,7 +389,11 @@ class Saddle_Blocks_Test extends WP_UnitTestCase {
 		// Second call with the token executes.
 		$done = $this->run_ability(
 			'remove-block',
-			array( 'post_id' => $id, 'address' => '0', 'confirm_token' => $preview['confirm_token'] )
+			array(
+				'post_id'       => $id,
+				'address'       => '0',
+				'confirm_token' => $preview['confirm_token'],
+			)
 		);
 		$this->assertNotWPError( $done );
 		$this->assertSame( '', trim( get_post( $id )->post_content ) );
@@ -308,7 +408,12 @@ class Saddle_Blocks_Test extends WP_UnitTestCase {
 			'set-blocks',
 			array(
 				'post_id' => $id,
-				'nodes'   => array( array( 'type' => 'core/paragraph', 'content' => 'x' ) ),
+				'nodes'   => array(
+					array(
+						'type'    => 'core/paragraph',
+						'content' => 'x',
+					),
+				),
 			)
 		);
 
@@ -320,7 +425,14 @@ class Saddle_Blocks_Test extends WP_UnitTestCase {
 		Saddle_Capabilities::set_tier( 'read' );
 		$id = $this->page( "<!-- wp:paragraph -->\n<p>Hi</p>\n<!-- /wp:paragraph -->" );
 
-		$this->assertFalse( wp_get_ability( 'saddle/set-blocks' )->check_permissions( array( 'post_id' => $id, 'nodes' => array() ) ) );
+		$this->assertFalse(
+			wp_get_ability( 'saddle/set-blocks' )->check_permissions(
+				array(
+					'post_id' => $id,
+					'nodes'   => array(),
+				)
+			)
+		);
 
 		$read = $this->run_ability( 'get-blocks', array( 'post_id' => $id ) );
 		$this->assertNotWPError( $read );
@@ -336,7 +448,12 @@ class Saddle_Blocks_Test extends WP_UnitTestCase {
 		$saved    = $registry->unregister( 'core/heading' );
 
 		try {
-			$block = Saddle_Blocks_Author::expand_node( array( 'type' => 'core/heading', 'content' => 'Still works' ) );
+			$block = Saddle_Blocks_Author::expand_node(
+				array(
+					'type'    => 'core/heading',
+					'content' => 'Still works',
+				)
+			);
 			$this->assertNotWPError( $block );
 			$this->assertStringContainsString( '<h2 class="wp-block-heading">Still works</h2>', $block['innerHTML'] );
 
@@ -347,7 +464,12 @@ class Saddle_Blocks_Test extends WP_UnitTestCase {
 			$names = wp_list_pluck( Saddle_Blocks_Schema::catalog( 'heading' ), 'name' );
 			$this->assertContains( 'core/heading', $names, 'The catalog must surface curated types missing from the registry.' );
 
-			$unknown = Saddle_Blocks_Author::expand_node( array( 'type' => 'acme/imaginary', 'content' => 'x' ) );
+			$unknown = Saddle_Blocks_Author::expand_node(
+				array(
+					'type'    => 'acme/imaginary',
+					'content' => 'x',
+				)
+			);
 			$this->assertWPError( $unknown, 'Non-curated unregistered types must still be refused.' );
 		} finally {
 			register_block_type( $saved );
@@ -395,7 +517,12 @@ class Saddle_Blocks_Test extends WP_UnitTestCase {
 			'saddle_design_system',
 			static function ( $shape ) {
 				$shape['builder'] = 'divi';
-				$shape['colors']  = array( array( 'id' => 'gcid-x', 'value' => '#123456' ) );
+				$shape['colors']  = array(
+					array(
+						'id'    => 'gcid-x',
+						'value' => '#123456',
+					),
+				);
 				return $shape;
 			}
 		);
@@ -422,7 +549,13 @@ class Saddle_Blocks_Test extends WP_UnitTestCase {
 			$this->assertNotEmpty( $recipe['nodes'], "{$name} has nodes" );
 
 			$id  = $this->page( '<!-- wp:paragraph --><p>seed</p><!-- /wp:paragraph -->' );
-			$set = $this->run_ability( 'set-blocks', array( 'post_id' => $id, 'nodes' => $recipe['nodes'] ) );
+			$set = $this->run_ability(
+				'set-blocks',
+				array(
+					'post_id' => $id,
+					'nodes'   => $recipe['nodes'],
+				)
+			);
 			$this->assertNotWPError( $set, "set-blocks {$name}" );
 			$this->assertArrayNotHasKey( 'warnings', $set, "{$name} inserts without applied-vs-ignored warnings" );
 		}
@@ -438,7 +571,10 @@ class Saddle_Blocks_Test extends WP_UnitTestCase {
 		add_filter(
 			'saddle_section_recipe',
 			static function () {
-				return array( 'builder' => 'divi', 'nodes' => array( array( 'type' => 'divi/section' ) ) );
+				return array(
+					'builder' => 'divi',
+					'nodes'   => array( array( 'type' => 'divi/section' ) ),
+				);
 			}
 		);
 		$r = $this->run_ability( 'get-section-recipe', array( 'name' => 'hero' ) );
@@ -450,20 +586,94 @@ class Saddle_Blocks_Test extends WP_UnitTestCase {
 
 	public function test_bootstrap_design_system_gates_before_writing() {
 		Saddle_Capabilities::set_tier( 'admin' );
+		$this->use_block_theme();
+
+		if ( ! wp_is_block_theme() ) {
+			$this->markTestSkipped( 'The block-theme fixture did not activate.' );
+		}
 
 		// Preview: a fresh call returns a confirm_token and does not apply.
 		$preview = $this->run_ability( 'bootstrap-design-system', array( 'force' => true ) );
 		$this->assertNotWPError( $preview );
 		$this->assertArrayHasKey( 'confirm_token', $preview );
-		$this->assertNotEmpty( $preview['preview']['colors'] );
+		$this->assertNotEmpty( $preview['preview']['spec']['colors'] );
+		$this->assertSame( 'global-styles', $preview['preview']['store'] );
 
-		// Without a builder to handle the seed, applying reports applied=false
-		// rather than half-writing a theme.json.
+		// The preview must not have written anything yet.
+		$before = wp_get_global_settings();
+		$this->assertEmpty(
+			wp_list_filter( (array) ( $before['color']['palette']['custom'] ?? array() ), array( 'slug' => 'brand-accent' ) ),
+			'The preview call must not write a palette.'
+		);
+
+		// Applying now really lands in the site's global styles, where the Site
+		// Editor reads from. This used to report applied=false and tell the
+		// owner to go do it by hand — after they had spent the confirm token.
 		$applied = $this->run_ability(
 			'bootstrap-design-system',
-			array( 'force' => true, 'confirm_token' => $preview['confirm_token'] )
+			array(
+				'force'         => true,
+				'confirm_token' => $preview['confirm_token'],
+			)
 		);
 		$this->assertNotWPError( $applied );
-		$this->assertFalse( $applied['applied'] );
+		$this->assertTrue( $applied['applied'] );
+		$this->assertSame( 'global-styles', $applied['store'] );
+		$this->assertSame( 6, $applied['added']['colors'] );
+
+		$palette = WP_Theme_JSON_Resolver::get_user_data()->get_raw_data()['settings']['color']['palette']['custom'] ?? array();
+		$this->assertNotEmpty( wp_list_filter( $palette, array( 'slug' => 'brand-accent' ) ), 'The accent must be readable back out of user global styles.' );
+	}
+
+	public function test_bootstrap_design_system_merges_and_never_overwrites() {
+		Saddle_Capabilities::set_tier( 'admin' );
+		$this->use_block_theme();
+
+		if ( ! wp_is_block_theme() ) {
+			$this->markTestSkipped( 'The block-theme fixture did not activate.' );
+		}
+
+		// Seed once, then seed again with a different accent. The gate's own
+		// summary promises "Existing tokens are not removed", so the second run
+		// must leave the first accent alone rather than overwriting it.
+		$first = $this->run_ability(
+			'bootstrap-design-system',
+			array(
+				'force'  => true,
+				'accent' => '#ff0000',
+			)
+		);
+		$this->run_ability(
+			'bootstrap-design-system',
+			array(
+				'force'         => true,
+				'accent'        => '#ff0000',
+				'confirm_token' => $first['confirm_token'],
+			)
+		);
+
+		$second  = $this->run_ability(
+			'bootstrap-design-system',
+			array(
+				'force'  => true,
+				'accent' => '#00ff00',
+			)
+		);
+		$applied = $this->run_ability(
+			'bootstrap-design-system',
+			array(
+				'force'         => true,
+				'accent'        => '#00ff00',
+				'confirm_token' => $second['confirm_token'],
+			)
+		);
+
+		$this->assertNotWPError( $applied );
+		$this->assertSame( 0, $applied['added']['colors'], 'A second seed must add nothing — every slug is already taken.' );
+
+		$palette = WP_Theme_JSON_Resolver::get_user_data()->get_raw_data()['settings']['color']['palette']['custom'] ?? array();
+		$accent  = wp_list_filter( $palette, array( 'slug' => 'brand-accent' ) );
+		$accent  = reset( $accent );
+		$this->assertSame( '#ff0000', $accent['color'], 'The original accent must survive a second seed.' );
 	}
 }

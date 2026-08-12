@@ -793,6 +793,11 @@ class Saddle_REST_Admin {
 			'Integrations'    => array( 'waggle-', 'knovia-', 'unsplash-' ),
 			'Memory & skills' => array( 'remember', 'recall', 'forget', 'skill', 'instructions' ),
 			'Blocks & layout' => array( 'block', 'render-node', 'verify-page', 'lint-page', 'preview', 'recipe' ),
+			// AFTER 'Blocks & layout' on purpose: that rule matches 'block', so
+			// list-block-patterns and insert-block-pattern already live there.
+			// Putting 'pattern' ahead of it would silently move both to a screen
+			// section the owner has never seen them in.
+			'Site editor'     => array( 'template', 'global-styles', 'pattern' ),
 			'Users'           => array( 'user' ),
 			'Site & settings' => array( 'option', 'plugin', 'theme', 'cache', 'site-info' ),
 			'Content'         => array( 'post', 'page', 'media', 'categor', 'tag', 'revision', 'search' ),

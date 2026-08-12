@@ -98,7 +98,7 @@ function saddle_register_block_abilities() {
 		'saddle/bootstrap-design-system',
 		array(
 			'label'               => __( 'Bootstrap a design system', 'saddle' ),
-			'description'         => __( 'Seeds a coherent starter design system on a site that has none — a neutral palette with one accent, a type scale, and an 8px spacing scale — so an agent has real tokens to build against instead of inventing values. Admin-tier and confirmation-gated: it returns a preview of exactly what it will write, and only applies on a second call with the confirm_token. Refuses (unless "force" is true) when the site already has a substantial design system. On Divi it writes Divi Global Data; on a block theme, set tokens in the Site Editor (not yet automated).', 'saddle' ),
+			'description'         => __( 'Seeds a coherent starter design system on a site that has none: a neutral palette with one accent, a type scale, and an 8px spacing scale, so an agent has real tokens to build against instead of inventing values. Admin-tier and confirmation-gated. It returns a preview of exactly what it will write, and only applies on a second call with the confirm_token. Refuses (unless "force" is true) when the site already has a substantial design system. On Divi it writes Divi Global Data; on a block theme it writes the site\'s global styles, so everything appears in Appearance → Editor → Styles and stays the owner\'s to edit. Existing tokens are never overwritten.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -600,13 +600,36 @@ class Saddle_Blocks_Abilities {
 			'spacing' => array( 8, 16, 24, 32, 48, 64, 96 ),
 		);
 
+		// Work out WHERE this will land before taking the owner through a
+		// confirmation. Previously the gate ran unconditionally and the block-
+		// theme case then reported applied:false — the owner spent a single-use
+		// token to be told to go do it by hand. Refuse up front instead.
+		$has_builder = (bool) has_filter( 'saddle_bootstrap_design_system' );
+		$store       = $has_builder ? 'builder' : ( wp_is_block_theme() ? 'global-styles' : null );
+
+		if ( null === $store ) {
+			return new WP_Error(
+				'saddle_no_design_store',
+				__( 'This site has nowhere to put a design system: it is not a block theme, and no page builder Saddle understands is active. On a classic theme the palette lives in the theme\'s own options or CSS, which Saddle does not edit.', 'saddle' ),
+				array( 'status' => 409 )
+			);
+		}
+
 		return Saddle_Approval::gate(
 			array(
 				'action'  => 'bootstrap-design-system',
 				'target'  => 'site',
-				'bind'    => substr( hash( 'sha256', wp_json_encode( $spec ) ), 0, 16 ),
-				'summary' => __( 'Seed a starter design system: 6 brand colors (one accent), a 6-step type scale, and a 7-step 8px spacing scale. Existing tokens are not removed.', 'saddle' ),
-				'preview' => $spec,
+				// The bind covers WHERE as well as WHAT. The same spec can now
+				// land in two different stores, and a confirmation approved for
+				// one must not execute against the other.
+				'bind'    => substr( hash( 'sha256', $store . '|' . wp_json_encode( $spec ) ), 0, 16 ),
+				'summary' => 'global-styles' === $store
+					? __( 'Seed a starter design system into this site\'s global styles: 6 brand colors (one accent), a 6-step type scale, and a 7-step 8px spacing scale. Existing tokens are not removed, and it will appear in Appearance → Editor → Styles.', 'saddle' )
+					: __( 'Seed a starter design system: 6 brand colors (one accent), a 6-step type scale, and a 7-step 8px spacing scale. Existing tokens are not removed.', 'saddle' ),
+				'preview' => array(
+					'store' => $store,
+					'spec'  => $spec,
+				),
 				'input'   => $input,
 				'execute' => static function () use ( $spec ) {
 					/**
@@ -622,17 +645,138 @@ class Saddle_Blocks_Abilities {
 						return $result;
 					}
 
-					// No builder handled it. On a block theme the palette belongs
-					// in user global styles / the Site Editor; automating that
-					// write is deferred, so guide the owner rather than write a
-					// half-applied theme.json.
-					return array(
-						'applied' => false,
-						'spec'    => $spec,
-						'note'    => __( 'No page builder handled the seed. On a block theme, add these colors and sizes in Appearance → Editor → Styles; automated block-theme seeding is not available yet.', 'saddle' ),
-					);
+					// No builder claimed it, so this is a block theme: write the
+					// spec into the owner's global styles, which is exactly where
+					// the Site Editor reads from.
+					return Saddle_Blocks_Abilities::seed_global_styles( $spec );
 				},
 			)
+		);
+	}
+
+	/**
+	 * Merge a starter design spec into the site's user global styles.
+	 *
+	 * MERGES, never replaces: the gate's own summary promises "Existing tokens
+	 * are not removed", so overwriting the owner's palette would make the
+	 * preview a lie. Anything already present under the same slug wins.
+	 *
+	 * @param array $spec The starter design spec.
+	 * @return array|WP_Error
+	 */
+	public static function seed_global_styles( array $spec ) {
+		if ( ! class_exists( 'WP_Theme_JSON_Resolver' ) ) {
+			return new WP_Error( 'saddle_no_theme_json', __( 'This WordPress does not expose theme.json data.', 'saddle' ), array( 'status' => 409 ) );
+		}
+
+		// A site that has never been customised has NO wp_global_styles post at
+		// all — which is exactly the fresh-site case this ability exists for.
+		// The second argument creates it; without that we would merge into a
+		// post id of 0 and silently write nothing.
+		$post_id = 0;
+		if ( method_exists( 'WP_Theme_JSON_Resolver', 'get_user_data_from_wp_global_styles' ) ) {
+			$record  = WP_Theme_JSON_Resolver::get_user_data_from_wp_global_styles( wp_get_theme(), true );
+			$post_id = isset( $record['ID'] ) ? (int) $record['ID'] : 0;
+		}
+		if ( ! $post_id ) {
+			return new WP_Error( 'saddle_no_global_styles', __( 'Could not open this site\'s global styles record.', 'saddle' ), array( 'status' => 500 ) );
+		}
+
+		$raw             = get_post_field( 'post_content', $post_id );
+		$data            = json_decode( (string) $raw, true );
+		$data            = is_array( $data ) ? $data : array();
+		$data['version'] = isset( $data['version'] ) ? $data['version'] : 2;
+		$settings        = isset( $data['settings'] ) && is_array( $data['settings'] ) ? $data['settings'] : array();
+
+		$added = array(
+			'colors'  => 0,
+			'sizes'   => 0,
+			'spacing' => 0,
+		);
+
+		// Colors.
+		$palette = isset( $settings['color']['palette']['custom'] ) && is_array( $settings['color']['palette']['custom'] )
+			? $settings['color']['palette']['custom']
+			: array();
+		$taken   = wp_list_pluck( $palette, 'slug' );
+		foreach ( $spec['colors'] as $color ) {
+			if ( in_array( $color['slug'], $taken, true ) ) {
+				continue;
+			}
+			$palette[] = array(
+				'slug'  => $color['slug'],
+				'name'  => $color['name'],
+				'color' => $color['value'],
+			);
+			++$added['colors'];
+		}
+		$settings['color']['palette']['custom'] = array_values( $palette );
+
+		// Font sizes.
+		$sizes = isset( $settings['typography']['fontSizes']['custom'] ) && is_array( $settings['typography']['fontSizes']['custom'] )
+			? $settings['typography']['fontSizes']['custom']
+			: array();
+		$taken = wp_list_pluck( $sizes, 'slug' );
+		foreach ( $spec['type'] as $i => $px ) {
+			$slug = 'brand-' . ( $i + 1 );
+			if ( in_array( $slug, $taken, true ) ) {
+				continue;
+			}
+			$sizes[] = array(
+				'slug' => $slug,
+				/* translators: %d: the font size in pixels. */
+				'name' => sprintf( __( 'Brand %dpx', 'saddle' ), $px ),
+				'size' => $px . 'px',
+			);
+			++$added['sizes'];
+		}
+		$settings['typography']['fontSizes']['custom'] = array_values( $sizes );
+
+		// Spacing.
+		$steps = isset( $settings['spacing']['spacingSizes']['custom'] ) && is_array( $settings['spacing']['spacingSizes']['custom'] )
+			? $settings['spacing']['spacingSizes']['custom']
+			: array();
+		$taken = wp_list_pluck( $steps, 'slug' );
+		foreach ( $spec['spacing'] as $i => $px ) {
+			$slug = 'brand-' . ( $i + 1 );
+			if ( in_array( $slug, $taken, true ) ) {
+				continue;
+			}
+			$steps[] = array(
+				'slug' => $slug,
+				/* translators: %d: the spacing step in pixels. */
+				'name' => sprintf( __( 'Brand %dpx', 'saddle' ), $px ),
+				'size' => $px . 'px',
+			);
+			++$added['spacing'];
+		}
+		$settings['spacing']['spacingSizes']['custom'] = array_values( $steps );
+
+		$data['settings'] = $settings;
+
+		$saved = wp_update_post(
+			array(
+				'ID'           => $post_id,
+				'post_content' => wp_json_encode( $data ),
+			),
+			true
+		);
+		if ( is_wp_error( $saved ) ) {
+			return $saved;
+		}
+
+		// The resolver caches user data per request; a stale read straight after
+		// writing would make get-design-system disagree with what just landed.
+		if ( method_exists( 'WP_Theme_JSON_Resolver', 'clean_cached_data' ) ) {
+			WP_Theme_JSON_Resolver::clean_cached_data();
+		}
+
+		return array(
+			'applied' => true,
+			'store'   => 'global-styles',
+			'added'   => $added,
+			'spec'    => $spec,
+			'note'    => __( 'Written to this site\'s global styles. The owner can see and edit every value in Appearance → Editor → Styles, and pages built with these slugs will follow any change they make there.', 'saddle' ),
 		);
 	}
 

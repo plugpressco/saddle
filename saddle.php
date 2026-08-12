@@ -168,6 +168,7 @@ final class Saddle {
 		if ( self::abilities_api_available() ) {
 			require_once SADDLE_DIR . 'includes/abilities/core-content.php';
 			require_once SADDLE_DIR . 'includes/abilities/blocks.php';
+			require_once SADDLE_DIR . 'includes/abilities/site-editor.php';
 			require_once SADDLE_DIR . 'includes/abilities/site.php';
 			require_once SADDLE_DIR . 'includes/abilities/users.php';
 			require_once SADDLE_DIR . 'includes/abilities/context.php';
@@ -179,6 +180,7 @@ final class Saddle {
 			add_action( 'wp_abilities_api_categories_init', 'saddle_register_ability_category' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_block_abilities' );
+			add_action( 'wp_abilities_api_init', 'saddle_register_site_editor_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_site_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_user_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_context_abilities' );
