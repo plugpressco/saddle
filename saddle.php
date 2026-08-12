@@ -3,7 +3,7 @@
  * Plugin Name:       Saddle – Control Your Site with AI (MCP Server)
  * Plugin URI:        https://plugpress.co/saddle/
  * Description:       Self-hosted MCP server for WordPress. Tiered, default-safe, approval-gated access to posts, pages, and media for AI agents — with no third-party credential custody.
- * Version:           1.0.0
+ * Version:           1.0.0-rc1
  * Requires at least: 6.9
  * Requires PHP:      7.4
  * Author:            PlugPress
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SADDLE_VERSION', '1.0.0' );
+define( 'SADDLE_VERSION', '1.0.0-rc1' );
 define( 'SADDLE_FILE', __FILE__ );
 define( 'SADDLE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SADDLE_URL', plugin_dir_url( __FILE__ ) );
@@ -85,6 +85,20 @@ require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-bearer.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-settings.php';
 
+/*
+ * Self-hosted updates — PRESENT ONLY IN THE SELF-HOSTED BUILD.
+ *
+ * The WordPress.org build ships without `class-saddle-updater.php` (the zip
+ * task drops it), because a plugin in the directory must not fetch its own
+ * updates from a third-party host. The file's absence is the switch: there is
+ * no constant to set and no option to forget, and an install that later
+ * updates to a .org zip simply loses the file and falls back to WordPress's
+ * native updates.
+ */
+if ( file_exists( SADDLE_DIR . 'includes/class-saddle-updater.php' ) ) {
+	require_once SADDLE_DIR . 'includes/class-saddle-updater.php';
+}
+
 /**
  * Bootstrap container. Wires WordPress hooks to the plugin's components.
  */
@@ -108,6 +122,14 @@ final class Saddle {
 		// differently from a stripped Authorization header (host config). Late
 		// priority so core has already produced its auth result to relabel.
 		add_filter( 'rest_authentication_errors', array( 'Saddle_Connection', 'explain_auth_error' ), 20 );
+
+		// Self-hosted updates, when this is the self-hosted build. Scoped to
+		// admin + cron: the update transient is only ever built there, and
+		// cron is NOT optional — `wp_update_plugins` runs as a scheduled event,
+		// so an is_admin()-only guard would silently kill background updates.
+		if ( class_exists( 'Saddle_Updater' ) && ( is_admin() || wp_doing_cron() ) ) {
+			Saddle_Updater::init();
+		}
 
 		// Always-on infrastructure (independent of the Abilities API).
 		// The preview serving path stays up even when minting isn't — an
