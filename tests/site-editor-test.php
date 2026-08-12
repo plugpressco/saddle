@@ -64,7 +64,7 @@ class Saddle_Site_Editor_Test extends WP_UnitTestCase {
 	/* -------- registration -------- */
 
 	public function test_all_four_abilities_register_as_reads() {
-		foreach ( array( 'list-templates', 'get-template', 'get-global-styles', 'list-patterns' ) as $short ) {
+		foreach ( array( 'list-templates', 'get-template', 'get-global-styles', 'list-saved-patterns' ) as $short ) {
 			$ability = wp_get_ability( 'saddle/' . $short );
 			$this->assertNotNull( $ability, "saddle/{$short} must be registered." );
 
@@ -178,7 +178,7 @@ class Saddle_Site_Editor_Test extends WP_UnitTestCase {
 		);
 		update_post_meta( $unsynced, 'wp_pattern_sync_status', 'unsynced' );
 
-		$list = $this->run_ability( 'list-patterns' );
+		$list = $this->run_ability( 'list-saved-patterns' );
 		$this->assertNotWPError( $list );
 
 		$by_id = array();
@@ -203,11 +203,11 @@ class Saddle_Site_Editor_Test extends WP_UnitTestCase {
 			)
 		);
 
-		$hit = $this->run_ability( 'list-patterns', array( 'search' => 'Zzzz Unique Saddle' ) );
+		$hit = $this->run_ability( 'list-saved-patterns', array( 'search' => 'Zzzz Unique Saddle' ) );
 		$this->assertNotWPError( $hit );
 		$this->assertNotEmpty( $hit['patterns'] );
 
-		$miss = $this->run_ability( 'list-patterns', array( 'search' => 'nothingmatchesthisstring' ) );
+		$miss = $this->run_ability( 'list-saved-patterns', array( 'search' => 'nothingmatchesthisstring' ) );
 		$this->assertNotWPError( $miss );
 		$this->assertSame( array(), $miss['patterns'] );
 	}
@@ -217,7 +217,7 @@ class Saddle_Site_Editor_Test extends WP_UnitTestCase {
 	public function test_reads_are_allowed_at_the_read_tier() {
 		Saddle_Capabilities::set_tier( 'read' );
 
-		foreach ( array( 'list-templates', 'get-global-styles', 'list-patterns' ) as $short ) {
+		foreach ( array( 'list-templates', 'get-global-styles', 'list-saved-patterns' ) as $short ) {
 			$this->assertTrue(
 				wp_get_ability( 'saddle/' . $short )->check_permissions( array() ),
 				"saddle/{$short} is a read and must be allowed at the read tier."

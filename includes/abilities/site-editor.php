@@ -100,7 +100,7 @@ function saddle_register_site_editor_abilities() {
 	);
 
 	wp_register_ability(
-		'saddle/list-patterns',
+		'saddle/list-saved-patterns',
 		array(
 			'label'               => __( 'List saved patterns', 'saddle' ),
 			'description'         => __( 'Lists the patterns the owner has saved on this site, with the id to read them and whether each is synced (edit once, changes everywhere) or unsynced (a starting point that is copied on insert). Read-only. These are the site\'s own building blocks — reuse one instead of composing a section from scratch. For the theme\'s bundled patterns, use list-block-patterns instead.', 'saddle' ),
@@ -116,7 +116,7 @@ function saddle_register_site_editor_abilities() {
 				),
 			),
 			'execute_callback'    => array( 'Saddle_Site_Editor_Abilities', 'list_patterns' ),
-			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'list-patterns' ),
+			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'list-saved-patterns' ),
 			'meta'                => saddle_ability_meta( true, false, true, 'read' ),
 		)
 	);

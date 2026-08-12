@@ -19,7 +19,7 @@ plugin: the Divi 5 layer, sold commercially. Free never contains license, upsell
 builder-specific code.
 
 - Requires WordPress **6.9**, PHP **7.4**. Text domain `saddle`.
-- 63 abilities registered in free (see the map below). The Permissions screen in
+- 66 abilities registered in free (see the map below). The Permissions screen in
   wp-admin is the authoritative live list — trust it over any count written down.
 
 ---
@@ -154,8 +154,8 @@ includes/                      — 60 PHP files (excluding the vendored adapter)
   oauth/                       — 7 classes: discovery (RFC 9728/8414), registration (DCR + Client ID
                                  Metadata Documents), authorize/token/revoke, consent screen, bearer
                                  resolver that clamps the effective tier to the granted scope
-  abilities/                   — 63 total: core-content 24 · blocks 16 · site 9 (admin-tier settings)
-                                 context 3 · memory 3 · render 2 · unsplash 2 · users 2
+  abilities/                   — 66 total: core-content 23 · blocks 15 · site 9 · site-editor 4
+                                 context 4 · memory 3 · render 2 · unsplash 2 · users 2
                                  lint 1 · verify 1
   admin/                       — REST API + settings page for the React UI
   lib/wp-mcp/                  — vendored WP\MCP Adapter (do not edit)

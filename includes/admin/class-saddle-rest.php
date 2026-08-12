@@ -791,7 +791,7 @@ class Saddle_REST_Admin {
 			'Design system'   => array( 'design-system', 'design-tokens', 'bootstrap-design' ),
 			'Divi'            => array( 'divi-' ),
 			'Integrations'    => array( 'waggle-', 'knovia-', 'unsplash-' ),
-			'Memory & skills' => array( 'remember', 'recall', 'forget', 'skill', 'instructions' ),
+			'Memory & skills' => array( 'remember', 'recall', 'forget', 'skill', 'instructions', 'context' ),
 			'Blocks & layout' => array( 'block', 'render-node', 'verify-page', 'lint-page', 'preview', 'recipe' ),
 			// AFTER 'Blocks & layout' on purpose: that rule matches 'block', so
 			// list-block-patterns and insert-block-pattern already live there.

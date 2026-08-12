@@ -143,7 +143,7 @@ class Saddle_Blocks_Echo {
 			if ( null !== $slugs && ! in_array( $attrs[ $attr ], $slugs, true ) ) {
 				$warnings[] = sprintf(
 					/* translators: 1: attribute key, 2: slug, 3: block type + address. */
-					__( '%1$s "%2$s" on %3$s matches no preset on this site — it will render as if unset. Use a slug from saddle/get-design-tokens.', 'saddle' ),
+					__( '%1$s "%2$s" on %3$s matches no preset on this site — it will render as if unset. Use a slug from saddle/get-design-system.', 'saddle' ),
 					$attr,
 					$attrs[ $attr ],
 					$location

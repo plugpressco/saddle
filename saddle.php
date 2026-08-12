@@ -67,6 +67,8 @@ require_once SADDLE_DIR . 'includes/verify/class-saddle-verify.php';
 require_once SADDLE_DIR . 'includes/class-saddle-capabilities.php';
 require_once SADDLE_DIR . 'includes/class-saddle-approval.php';
 require_once SADDLE_DIR . 'includes/class-saddle-context.php';
+require_once SADDLE_DIR . 'includes/class-saddle-context-bundle.php';
+require_once SADDLE_DIR . 'includes/class-saddle-playbook.php';
 require_once SADDLE_DIR . 'includes/class-saddle-skills.php';
 require_once SADDLE_DIR . 'includes/class-saddle-memory.php';
 require_once SADDLE_DIR . 'includes/class-saddle-log.php';
@@ -145,6 +147,19 @@ final class Saddle {
 		// receives (the initialize handshake + get-instructions), via the
 		// shared filter.
 		add_filter( 'saddle_system_context', array( 'Saddle_Skills', 'append_index' ) );
+
+		// The build-a-page playbook, bundled with free on a block theme. It is
+		// a skill rather than context prose so the how-to stays behind one
+		// call instead of riding every session's token budget.
+		add_filter( 'saddle_builtin_skills', array( 'Saddle_Playbook', 'register' ) );
+
+		// The context bundle caches the site's working memory. Anything that
+		// changes which blocks, patterns or templates exist must drop it; the
+		// content signature catches the rest on the next read.
+		add_action( 'activated_plugin', array( 'Saddle_Context_Bundle', 'flush' ) );
+		add_action( 'deactivated_plugin', array( 'Saddle_Context_Bundle', 'flush' ) );
+		add_action( 'switch_theme', array( 'Saddle_Context_Bundle', 'flush' ) );
+		add_action( 'saddle_flush_cache', array( 'Saddle_Context_Bundle', 'flush' ) );
 		add_filter( 'saddle_system_context', array( 'Saddle_Memory', 'append_context' ) );
 		add_action( 'rest_api_init', array( 'Saddle_REST_Admin', 'register_routes' ) );
 		add_action( 'rest_api_init', array( 'Saddle_Connection', 'register_routes' ) );

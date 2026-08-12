@@ -81,7 +81,7 @@ function saddle_register_block_abilities() {
 		'saddle/get-design-tokens',
 		array(
 			'label'               => __( 'Get design tokens', 'saddle' ),
-			'description'         => __( 'Returns this site\'s design system from theme.json: the color palette, gradients, font sizes, font families, spacing scale, and layout widths, each as {slug, name, value} presets (theme-origin entries are the site\'s actual brand). Read-only. Use these preset slugs in block attrs (backgroundColor/textColor/fontSize) instead of hardcoded values, so everything you build inherits the site\'s look and follows future redesigns.', 'saddle' ),
+			'description'         => __( 'Returns the theme.json half of this site\'s design system: color palette, gradients, font sizes, font families, spacing scale, and layout widths as {slug, name, value} presets. Read-only. PREFER saddle/get-design-system, which returns the same values plus what a page builder contributes, in one shape that works on any site. Use this only when you specifically want the theme.json layer on its own.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -234,7 +234,7 @@ function saddle_register_block_abilities() {
 		'saddle/set-blocks',
 		array(
 			'label'               => __( 'Build page blocks', 'saddle' ),
-			'description'         => __( 'Replaces a post or page\'s entire content with a new block tree — the bulk-build tool for "design this page". Each node is {"type","content","attrs","children"}: "content" carries the text/media payload and Saddle composes editor-valid markup (see saddle/get-block-schema per type); "attrs" are block attributes — use preset slugs from saddle/get-design-tokens for colors and sizes. The tree is validated against each block\'s placement rules and rejected with per-node errors if invalid — nothing partial is saved. If the response carries "warnings", those attributes will silently not render (unknown attribute, preset slug, or style group) — fix and re-edit. The previous content is kept as a WordPress revision. Refuses page-builder-built posts.', 'saddle' ),
+			'description'         => __( 'Replaces a post or page\'s entire content with a new block tree — the bulk-build tool for "design this page". Each node is {"type","content","attrs","children"}: "content" carries the text/media payload and Saddle composes editor-valid markup (see saddle/get-block-schema per type); "attrs" are block attributes — use preset slugs from saddle/get-design-system for colors and sizes. The tree is validated against each block\'s placement rules and rejected with per-node errors if invalid — nothing partial is saved. If the response carries "warnings", those attributes will silently not render (unknown attribute, preset slug, or style group) — fix and re-edit. The previous content is kept as a WordPress revision. Refuses page-builder-built posts.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -430,7 +430,7 @@ class Saddle_Blocks_Abilities {
 
 		return array(
 			'block_types' => $types,
-			'note'        => __( 'Compose real blocks ("content" ones are easiest — saddle/get-block-schema shows each type\'s exact syntax). Prefer saddle/insert-block-pattern for common sections, and preset slugs from saddle/get-design-tokens for colors and sizes.', 'saddle' ),
+			'note'        => __( 'Compose real blocks ("content" ones are easiest — saddle/get-block-schema shows each type\'s exact syntax). Prefer saddle/insert-block-pattern for common sections, and preset slugs from saddle/get-design-system for colors and sizes.', 'saddle' ),
 		);
 	}
 
