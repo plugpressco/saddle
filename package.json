@@ -1,6 +1,6 @@
 {
 	"name": "saddle",
-	"version": "1.0.0-rc1",
+	"version": "1.0.0-rc2",
 	"description": "Self-hosted MCP server for WordPress — admin UI build.",
 	"author": "PlugPress",
 	"license": "GPL-2.0-or-later",
