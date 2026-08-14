@@ -84,12 +84,31 @@ Four outbound `wp_remote_get` target classes, all disclosed in readme.txt
 
 No telemetry, no phoning home, no update checker, no external CDN assets.
 
-### 3. Bundled library
+### 3. Bundled libraries — none
 
-`includes/lib/wp-mcp` — the official WordPress **MCP Adapter** (`WP\MCP`),
-GPLv2, license included. If the standalone MCP Adapter plugin is active,
-Saddle defers to that copy (`saddle_load_bundled_mcp_adapter` filter to opt
-out of the bundled one).
+**The zip contains no third-party library.** Every function, class, constant,
+option, hook, CPT and asset handle it declares is prefixed `saddle` / `Saddle_`
+/ `SADDLE_`.
+
+This changed in response to the first review. Saddle previously bundled the
+official WordPress **MCP Adapter** (`WP\MCP`) under `includes/lib/wp-mcp/` — 347
+of 464 files, roughly half the zip, and the source of every `wp_mcp` and
+`mcp_adapter` name in the prefix report. It is no longer shipped
+(`Gruntfile.js`), together with the two files that existed only to serve it:
+`includes/class-saddle-bundled-adapter.php` (which declared that library's own
+`WP_MCP_*` constants) and `includes/class-saddle-mcp-compat.php`.
+
+Nothing was lost. `Saddle_MCP` has always carried its own JSON-RPC transport on
+the same `/wp-json/saddle/v1/mcp` route, exposing the same abilities behind the
+same access tiers and approval gate; it is now the only transport in this build.
+If a site separately installs the MCP Adapter plugin, Saddle detects the class
+and uses it — that path is optional and guarded with `class_exists()`.
+
+Two `mcp_adapter_*` strings remain in the source, at `saddle.php` and
+`includes/class-saddle-mcp.php`. Both are `add_action`/`add_filter` calls
+against **that plugin's own hooks** — the documented way to integrate with it.
+They are names it owns, they cannot carry a Saddle prefix, and they only fire
+when that plugin is present.
 
 ### 4. Third-party brand names/logos
 
@@ -228,13 +247,13 @@ Two things a scanner plausibly matched on:
    closes the buffer. Saddle's own notices register at priority 0 so they print
    above it rather than exempting themselves from view. This prevents other
    plugins hijacking Saddle's screen; it is not Saddle hijacking anything.
-2. **Two notices in the vendored `WP\MCP` library** (`includes/lib/wp-mcp/
-   includes/Autoloader.php:67`, `Plugin.php:73`) are non-dismissible and not
-   capability-checked. Both are unreachable in the shipped zip: the composer
-   autoloader **is** bundled (262 `wp-mcp/vendor/` entries incl.
-   `vendor/autoload.php`), and `Saddle::setup_mcp_transport()` only loads the
-   library when `wp_register_ability` already exists (`saddle.php:132-153`).
-   Deliberately **not** patched — don't fork third-party code for a dead branch.
+2. ~~Two notices in the vendored `WP\MCP` library.~~ **No longer applicable** —
+   the library is not shipped (see §3). The same removal takes with it the
+   `error_log()` in its `Autoloader.php`, the `fwrite(STDOUT)` calls in its
+   stdio CLI bridge, and the second REST endpoint it registered at
+   `/wp-json/mcp/mcp-adapter-default-server`. **The shipped zip contains no
+   `error_log()` call, no `fwrite()`, and no `var_dump()`** — verified by
+   grepping the built artifact, not the dev tree.
 
 ### 12. Public OAuth endpoints (new in this submission)
 

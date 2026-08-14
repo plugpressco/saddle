@@ -242,6 +242,38 @@ Three things to check, in order:
 Saddle tells connected apps *why* they were refused, so a well-behaved app should
 relay the reason rather than just failing.
 
+### The app connected but shows no tools at all
+
+Different problem, and worth separating from the one above: the app signed in
+successfully, then reports it has no actions it can use.
+
+Open **Saddle → Connections → Client traffic**, press **Record the next hour**,
+then ask the app to refresh its actions. Each attempt appears as a row, and the
+result column is what tells the two causes apart:
+
+- **"refused"** with a status code — the request never reached Saddle's tools.
+  Usually a hosting security layer sitting in front of WordPress.
+- **"0 tools sent"** — Saddle answered but had nothing to offer, which points at
+  the site rather than the connection.
+- **No row at all** — the request never reached WordPress. Almost always a
+  firewall, CDN or security plugin. This is the case nothing else can show you.
+
+**Copy report** gives a plain-text summary you can paste into a support email —
+it has no keys or content in it, only what was asked for and what came back.
+
+---
+
+## Do I need the MCP Adapter plugin?
+
+No. Saddle speaks MCP on its own, and there is nothing else to install.
+
+You may see the *MCP Adapter* plugin mentioned elsewhere — it's a separate
+WordPress plugin doing a similar job. If it happens to be active on your site,
+Saddle notices and uses it instead. That's the only difference, and it changes
+nothing you can see: same address, same tools, same access levels, same
+approvals. The Transport line under *Connection details & health* says which one
+is in play.
+
 ---
 
 ## Privacy

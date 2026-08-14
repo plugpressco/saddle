@@ -577,11 +577,11 @@ export default function Apps( {
 						<HelpTip>
 							{ saddleData.adapter
 								? __(
-										'This endpoint is powered by the WordPress MCP Adapter.',
+										'Saddle is using the MCP Adapter plugin, which is active on this site. Your tools, access levels and approvals are unchanged — this only affects how requests are carried.',
 										'saddle'
 								  )
 								: __(
-										'This endpoint is powered by Saddle’s built-in MCP transport.',
+										'Saddle speaks MCP itself, so there is nothing else to install. If you ever add the separate MCP Adapter plugin, Saddle will use it automatically; your tools, access levels and approvals stay the same either way.',
 										'saddle'
 								  ) }
 						</HelpTip>
