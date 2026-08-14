@@ -58,6 +58,35 @@ class Saddle_MCP_Transport_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * The handshake runs before any ability's permission_callback — its only
+	 * check is that someone is logged in. So it must not become the way around
+	 * the switch the owner flipped to stop everything.
+	 */
+	public function test_initialize_on_a_paused_site_withholds_the_site_context() {
+		Saddle_Capabilities::set_paused( true );
+
+		$result = $this->initialize( '2025-11-25' );
+
+		Saddle_Capabilities::set_paused( false );
+
+		$this->assertStringContainsString( 'paused', $result['instructions'] );
+		$this->assertStringNotContainsString( 'About this WordPress site', $result['instructions'] );
+	}
+
+	/**
+	 * And it must never hand out more than the equivalent ability would at the
+	 * same tier — it used to serve the whole context plus the owner's private
+	 * instructions, with fewer checks than get-instructions.
+	 */
+	public function test_initialize_does_not_leak_inventory_at_read_tier() {
+		Saddle_Capabilities::set_tier( 'read' );
+
+		$result = $this->initialize( '2025-11-25' );
+
+		$this->assertStringNotContainsString( 'Plugins active on this site', $result['instructions'] );
+	}
+
+	/**
 	 * Drive a tools/list through the built-in transport.
 	 *
 	 * @return array List of tool definitions.

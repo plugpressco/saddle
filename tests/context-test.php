@@ -10,8 +10,93 @@ class Saddle_Context_Test extends WP_UnitTestCase {
 
 	public function tear_down() {
 		delete_option( Saddle_Capabilities::OPTION );
+		delete_option( 'active_plugins' );
+		wp_cache_delete( 'plugins', 'plugins' );
 		remove_all_filters( 'saddle_system_context' );
 		parent::tear_down();
+	}
+
+	/* ---- installed inventory is admin-tier information (WP.org review) ---- */
+
+	/**
+	 * saddle/list-plugins is admin-gated, and site.php says why: "the inventory
+	 * itself is sensitive". A read-tier session was being handed a prose copy of
+	 * the same list for free.
+	 */
+	public function test_read_tier_context_does_not_name_installed_plugins() {
+		Saddle_Capabilities::set_tier( 'read' );
+
+		$ctx = Saddle_Context::system_context();
+
+		$this->assertStringNotContainsString( 'Plugins active on this site', $ctx );
+	}
+
+	public function test_admin_tier_context_still_names_installed_plugins() {
+		Saddle_Capabilities::set_tier( 'admin' );
+		$this->with_an_active_plugin();
+
+		$ctx = Saddle_Context::system_context();
+
+		$this->assertStringContainsString( 'Plugins active on this site', $ctx );
+		$this->assertStringContainsString( 'Pretend Plugin (4.2)', $ctx );
+	}
+
+	/**
+	 * The read-tier omission has to be about the tier, not about the test site
+	 * happening to have nothing installed — so prove it with a plugin present.
+	 */
+	public function test_read_tier_hides_a_plugin_that_admin_tier_would_name() {
+		Saddle_Capabilities::set_tier( 'read' );
+		$this->with_an_active_plugin();
+
+		$this->assertStringNotContainsString( 'Pretend Plugin', Saddle_Context::system_context() );
+	}
+
+	/**
+	 * Put one active plugin in front of the real code path.
+	 *
+	 * get_plugins() has no filter — it reads the filesystem — but it does serve
+	 * from the `plugins` cache group, keyed by folder. Priming that is what lets
+	 * the assertion drive active_plugin_names() for real instead of restating
+	 * its logic.
+	 */
+	private function with_an_active_plugin() {
+		wp_cache_set(
+			'plugins',
+			array(
+				'' => array(
+					'pretend/pretend.php' => array(
+						'Name'    => 'Pretend Plugin',
+						'Version' => '4.2',
+					),
+				),
+			),
+			'plugins'
+		);
+
+		update_option( 'active_plugins', array( 'pretend/pretend.php' ) );
+	}
+
+	/**
+	 * The theme's name is inventory (saddle/list-themes is admin-gated), but
+	 * whether it is block-based changes how an agent must author a page — so
+	 * that fact survives at every tier while the name does not.
+	 */
+	public function test_read_tier_describes_the_theme_without_naming_it() {
+		Saddle_Capabilities::set_tier( 'read' );
+		$theme = wp_get_theme()->get( 'Name' );
+
+		$ctx = Saddle_Context::system_context();
+
+		$this->assertStringContainsString( 'Active theme', $ctx );
+		$this->assertStringNotContainsString( $theme, $ctx );
+		$this->assertMatchesRegularExpression( '/Active theme: a (block|classic) theme/', $ctx );
+	}
+
+	public function test_admin_tier_names_the_theme() {
+		Saddle_Capabilities::set_tier( 'admin' );
+
+		$this->assertStringContainsString( wp_get_theme()->get( 'Name' ), Saddle_Context::system_context() );
 	}
 
 	public function test_context_states_read_only_scope_at_read_tier() {

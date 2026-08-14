@@ -457,6 +457,18 @@ class Saddle_MCP {
 	 */
 	private static function server_instructions() {
 		if ( class_exists( 'Saddle_Context' ) ) {
+			// The handshake is not a way around the gates. It runs before any
+			// ability's permission_callback — its only check is that someone is
+			// logged in — so without this it served MORE than get-instructions
+			// would (the whole context plus the owner's own instructions) with
+			// FEWER checks: a paused site still answered, and every tier got the
+			// same payload. Pause is the owner saying stop; honour it here too.
+			if ( class_exists( 'Saddle_Capabilities' ) && Saddle_Capabilities::is_paused() ) {
+				return __( 'Saddle is paused on this site, so no tools will run. The site owner can resume it in Saddle → Settings. Do not retry until they do.', 'saddle' );
+			}
+
+			// system_context() is already tier-aware, so what a session is told
+			// tracks what it is allowed to do.
 			$text = Saddle_Context::system_context();
 			$user = Saddle_Context::user();
 			if ( '' !== $user ) {
