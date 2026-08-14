@@ -77,7 +77,9 @@ class Saddle_MCP {
 			return;
 		}
 
-		$adapter->create_server(
+		$names = self::adapter_tool_names();
+
+		$created = $adapter->create_server(
 			self::ADAPTER_SERVER_ID,
 			self::REST_NAMESPACE,
 			ltrim( self::ROUTE, '/' ),
@@ -87,7 +89,7 @@ class Saddle_MCP {
 			array( '\\WP\\MCP\\Transport\\HttpTransport' ),
 			'\\WP\\MCP\\Infrastructure\\ErrorHandling\\ErrorLogMcpErrorHandler',
 			'\\WP\\MCP\\Infrastructure\\Observability\\NullMcpObservabilityHandler',
-			self::adapter_tool_names(),
+			$names,
 			array(),
 			array(),
 			// Transport permission callback. WITHOUT this the adapter falls back to
@@ -98,10 +100,53 @@ class Saddle_MCP {
 			array( __CLASS__, 'authenticated' )
 		);
 
+		// Record what the server actually came up with. The adapter skips any
+		// ability it fails to convert, one at a time, into error_log — so a
+		// short or empty tool list is otherwise invisible until a customer
+		// reports that their connected app has nothing to offer.
+		self::record_server_health( $adapter, $created, $names );
+
 		// Serve the full context in the initialize handshake, so a client that
 		// surfaces `instructions` spares the agent a whole get-instructions
 		// round trip — on shared hosts each round trip is a full WP boot.
 		add_filter( 'mcp_adapter_initialize_response', array( __CLASS__, 'filter_adapter_initialize' ), 10, 2 );
+	}
+
+	/**
+	 * Compare what we asked the server to expose against what it holds.
+	 *
+	 * @param object $adapter The McpAdapter instance.
+	 * @param mixed  $created What create_server() returned — a WP_Error when it refused.
+	 * @param array  $names   Ability names handed to the server.
+	 */
+	private static function record_server_health( $adapter, $created, array $names ) {
+		if ( ! class_exists( 'Saddle_MCP_Diagnostics' ) ) {
+			return;
+		}
+
+		if ( is_wp_error( $created ) ) {
+			Saddle_MCP_Diagnostics::record_health(
+				array(
+					'expected'   => count( $names ),
+					'registered' => 0,
+					'missing'    => array(),
+					'degraded'   => true,
+					'error'      => $created->get_error_code(),
+				)
+			);
+
+			return;
+		}
+
+		$registered = array();
+		if ( method_exists( $adapter, 'get_server' ) ) {
+			$server = $adapter->get_server( self::ADAPTER_SERVER_ID );
+			if ( is_object( $server ) && method_exists( $server, 'get_tools' ) ) {
+				$registered = array_keys( $server->get_tools() );
+			}
+		}
+
+		Saddle_MCP_Diagnostics::record_health( Saddle_MCP_Diagnostics::assess( $names, $registered ) );
 	}
 
 	/**
