@@ -75,6 +75,8 @@ require_once SADDLE_DIR . 'includes/class-saddle-connection.php';
 require_once SADDLE_DIR . 'includes/class-saddle-http.php';
 require_once SADDLE_DIR . 'includes/class-saddle-integrations.php';
 require_once SADDLE_DIR . 'includes/class-saddle-mcp.php';
+require_once SADDLE_DIR . 'includes/class-saddle-mcp-compat.php';
+require_once SADDLE_DIR . 'includes/class-saddle-mcp-diagnostics.php';
 require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth.php';
 require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-store.php';
 require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-discovery.php';
@@ -126,6 +128,7 @@ final class Saddle {
 		add_filter( 'saddle_system_context', array( 'Saddle_Memory', 'append_context' ) );
 		add_action( 'rest_api_init', array( 'Saddle_REST_Admin', 'register_routes' ) );
 		add_action( 'rest_api_init', array( 'Saddle_Connection', 'register_routes' ) );
+		add_action( 'rest_api_init', array( 'Saddle_MCP_Diagnostics', 'register_routes' ) );
 		add_action( 'init', array( 'Saddle_Unsplash', 'register_taxonomy' ) );
 		Saddle_Unsplash::register_admin_hooks();
 		add_action( 'admin_menu', array( 'Saddle_Settings', 'register_menu' ) );
@@ -201,6 +204,8 @@ final class Saddle {
 
 		if ( self::mcp_adapter_available() ) {
 			add_action( 'mcp_adapter_init', array( 'Saddle_MCP', 'register_adapter_server' ) );
+			Saddle_MCP_Compat::register();
+			Saddle_MCP_Diagnostics::register();
 		} else {
 			add_action( 'rest_api_init', array( 'Saddle_MCP', 'register_routes' ) );
 		}

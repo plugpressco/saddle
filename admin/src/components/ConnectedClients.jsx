@@ -28,6 +28,7 @@ import {
 import { __, sprintf } from '@wordpress/i18n';
 import { saddleData, api } from '../api';
 import ConnectionHealth from './ConnectionHealth';
+import McpDiagnostics from './McpDiagnostics';
 import SetupGuideDrawer from './SetupGuideDrawer';
 import { IconConnect, AppLogo, appKeyFromLabel } from './icons';
 
@@ -585,6 +586,7 @@ export default function Apps( {
 								  ) }
 						</HelpTip>
 					</p>
+					<McpDiagnostics />
 				</div>
 			</Collapsible>
 
