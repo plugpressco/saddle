@@ -129,20 +129,164 @@ class Saddle_MCP_Adapter_Transport_Test extends WP_UnitTestCase {
 
 	/**
 	 * THE BUG (issue #80). ChatGPT issues a bare tools/list, with no
-	 * Mcp-Session-Id header. The vendored adapter refuses it before it ever
-	 * reaches the tools handler, so the connector shows as connected while
-	 * reporting that the site "exposes no callable WordPress actions".
-	 *
-	 * Pinned here as it actually behaves today, per the house rule, so the fix
-	 * has something to flip.
+	 * Mcp-Session-Id header. The vendored adapter refused it before it ever
+	 * reached the tools handler — HTTP 400, "Missing Mcp-Session-Id header" —
+	 * so the connector showed as connected while reporting that the site
+	 * "exposes no callable WordPress actions".
 	 */
-	public function test_tools_list_without_a_session_header_is_refused_today() {
+	public function test_tools_list_without_a_session_header_now_lists_tools() {
 		$response = $this->rpc( 'tools/list' );
-		$data     = $response->get_data();
 
-		$this->assertSame( 400, $response->get_status() );
-		$this->assertArrayHasKey( 'error', $data );
-		$this->assertStringContainsString( 'Mcp-Session-Id', $data['error']['message'] );
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertNotEmpty( $this->tools_from( $response ), 'A stateless client must still get the tool list.' );
+	}
+
+	/**
+	 * The other half of the same gate: an Mcp-Protocol-Version the adapter does
+	 * not know hard-rejects every non-initialize call. 2025-03-26 is a real,
+	 * widely-deployed revision that the vendored list omits.
+	 */
+	public function test_an_unsupported_protocol_version_header_no_longer_rejects() {
+		$response = $this->rpc( 'tools/list', array(), array( 'Mcp-Protocol-Version' => '2025-03-26' ) );
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertNotEmpty( $this->tools_from( $response ) );
+	}
+
+	/**
+	 * A version the adapter does support must reach it untouched — the shim
+	 * drops what would be refused, it does not blanket-strip the header.
+	 */
+	public function test_a_supported_protocol_version_header_survives() {
+		$response = $this->rpc( 'tools/list', array(), array( 'Mcp-Protocol-Version' => '2025-06-18' ) );
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertNotEmpty( $this->tools_from( $response ) );
+	}
+
+	/**
+	 * A session id that expired or was evicted (the adapter keeps 32 per user
+	 * and drops them after a day idle) is healed rather than 404ing. This is
+	 * the failure that looks intermittent: connected yesterday, dead this
+	 * morning.
+	 */
+	public function test_a_stale_session_header_is_healed() {
+		$response = $this->rpc(
+			'tools/list',
+			array(),
+			array( 'Mcp-Session-Id' => '00000000-0000-4000-8000-000000000000' )
+		);
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertNotEmpty( $this->tools_from( $response ) );
+	}
+
+	/**
+	 * A live client session must be passed through with nothing written. The
+	 * shim exists for clients that cannot hold a session; it must be invisible
+	 * to the ones that can.
+	 */
+	public function test_a_valid_client_session_is_left_untouched() {
+		$session_id = $this->initialize_and_get_session_id();
+		$before      = \WP\MCP\Transport\Infrastructure\SessionManager::get_all_user_sessions( $this->admin );
+
+		$response = $this->rpc( 'tools/list', array(), array( 'Mcp-Session-Id' => $session_id ) );
+		$after    = \WP\MCP\Transport\Infrastructure\SessionManager::get_all_user_sessions( $this->admin );
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame(
+			array_keys( $before ),
+			array_keys( $after ),
+			'Serving a client-held session must not mint another one.'
+		);
+	}
+
+	/**
+	 * Reuse before create. A session per request would churn the adapter's
+	 * 32-entry FIFO continuously and write user meta on every call.
+	 */
+	public function test_many_stateless_requests_create_exactly_one_session() {
+		for ( $i = 0; $i < 5; $i++ ) {
+			$this->rpc( 'tools/list' );
+		}
+
+		$sessions = \WP\MCP\Transport\Infrastructure\SessionManager::get_all_user_sessions( $this->admin );
+
+		$this->assertCount( 1, $sessions, 'Five stateless calls must share one session.' );
+	}
+
+	/**
+	 * The shim must never be a way in. An unauthenticated caller is refused by
+	 * the transport gate exactly as before, and — since writing user meta for
+	 * anonymous callers would be a free denial-of-service — mints nothing.
+	 */
+	public function test_an_unauthenticated_request_is_refused_and_mints_nothing() {
+		wp_set_current_user( 0 );
+
+		$response = $this->rpc( 'tools/list' );
+
+		$this->assertContains( $response->get_status(), array( 401, 403 ) );
+		$this->assertSame(
+			array(),
+			\WP\MCP\Transport\Infrastructure\SessionManager::get_all_user_sessions( $this->admin )
+		);
+	}
+
+	/**
+	 * The shim moves two headers. It must not have moved the safety model with
+	 * them: a write tool called statelessly at the default read tier is still
+	 * refused, and still creates nothing.
+	 */
+	public function test_a_stateless_tools_call_is_still_tier_gated() {
+		Saddle_Capabilities::set_tier( 'read' );
+
+		$before = (int) wp_count_posts( 'post' )->publish;
+
+		$response = $this->rpc(
+			'tools/call',
+			array(
+				'name'      => 'saddle-create-post',
+				'arguments' => array(
+					'title'   => 'Should never be created',
+					'content' => 'Blocked by the read tier.',
+					'status'  => 'publish',
+				),
+			)
+		);
+
+		$data = json_decode( wp_json_encode( $response->get_data() ), true );
+
+		$this->assertTrue(
+			isset( $data['error'] ) || ! empty( $data['result']['isError'] ),
+			'A write tool at the read tier must be refused over the stateless path too.'
+		);
+		$this->assertSame( $before, (int) wp_count_posts( 'post' )->publish );
+	}
+
+	/**
+	 * And the same call succeeds once the tier allows it — which is what proves
+	 * the refusal above is the tier gate and not the shim swallowing the call.
+	 */
+	public function test_a_stateless_tools_call_succeeds_when_the_tier_permits() {
+		Saddle_Capabilities::set_tier( 'write' );
+
+		$response = $this->rpc(
+			'tools/call',
+			array(
+				'name'      => 'saddle-create-post',
+				'arguments' => array(
+					'title'   => 'Allowed at write tier',
+					'content' => 'Created over the stateless path.',
+					'status'  => 'draft',
+				),
+			)
+		);
+
+		$data = json_decode( wp_json_encode( $response->get_data() ), true );
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertArrayNotHasKey( 'error', $data );
+		$this->assertEmpty( isset( $data['result']['isError'] ) ? $data['result']['isError'] : false );
 	}
 
 	/**

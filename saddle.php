@@ -75,6 +75,7 @@ require_once SADDLE_DIR . 'includes/class-saddle-connection.php';
 require_once SADDLE_DIR . 'includes/class-saddle-http.php';
 require_once SADDLE_DIR . 'includes/class-saddle-integrations.php';
 require_once SADDLE_DIR . 'includes/class-saddle-mcp.php';
+require_once SADDLE_DIR . 'includes/class-saddle-mcp-compat.php';
 require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth.php';
 require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-store.php';
 require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-discovery.php';
@@ -201,6 +202,7 @@ final class Saddle {
 
 		if ( self::mcp_adapter_available() ) {
 			add_action( 'mcp_adapter_init', array( 'Saddle_MCP', 'register_adapter_server' ) );
+			Saddle_MCP_Compat::register();
 		} else {
 			add_action( 'rest_api_init', array( 'Saddle_MCP', 'register_routes' ) );
 		}
