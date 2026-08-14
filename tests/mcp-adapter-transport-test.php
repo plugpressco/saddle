@@ -29,6 +29,15 @@ class Saddle_MCP_Adapter_Transport_Test extends WP_UnitTestCase {
 		// Other suites leave Basic credentials on $_SERVER; a leftover changes
 		// which credential scheme Saddle thinks it is looking at.
 		unset( $_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'], $_SERVER['HTTP_AUTHORIZATION'] );
+
+		// Per test, not once per class. WP_UnitTestCase snapshots the filter
+		// table when the first test case in the process runs and restores it
+		// after every test, so the filter register_adapter_server() added
+		// during that first REST dispatch is gone by the time this class runs
+		// in full-suite order — the same trap oauth-bearer-test.php documents.
+		// add_filter is idempotent for an identical callback and priority, so
+		// re-adding it is safe when the snapshot did keep it.
+		add_filter( 'mcp_adapter_initialize_response', array( 'Saddle_MCP', 'filter_adapter_initialize' ), 10, 2 );
 	}
 
 	public function tear_down() {
@@ -301,6 +310,33 @@ class Saddle_MCP_Adapter_Transport_Test extends WP_UnitTestCase {
 
 		$this->assertSame( 200, $response->get_status() );
 		$this->assertNotEmpty( $this->tools_from( $response ), 'The adapter must list Saddle abilities as tools.' );
+	}
+
+	/**
+	 * The adapter hard-codes prompts and resources into every handshake, but
+	 * Saddle registers neither — and the router has no resources/templates/list
+	 * to answer with, so a client that believes the advert gets a 404 on a
+	 * capability we claimed. Advertise only what we can serve.
+	 */
+	public function test_initialize_does_not_advertise_capabilities_it_cannot_serve() {
+		$response = $this->rpc(
+			'initialize',
+			array(
+				'protocolVersion' => '2025-06-18',
+				'capabilities'    => array(),
+				'clientInfo'      => array(
+					'name'    => 'Test',
+					'version' => '1',
+				),
+			)
+		);
+
+		$data         = json_decode( wp_json_encode( $response->get_data() ), true );
+		$capabilities = $data['result']['capabilities'];
+
+		$this->assertArrayHasKey( 'tools', $capabilities );
+		$this->assertArrayNotHasKey( 'resources', $capabilities );
+		$this->assertArrayNotHasKey( 'prompts', $capabilities );
 	}
 
 	/**

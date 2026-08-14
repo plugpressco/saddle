@@ -126,6 +126,20 @@ class Saddle_MCP {
 		$data                 = $result->toArray();
 		$data['instructions'] = self::server_instructions();
 
+		// Don't advertise what we can't serve. The adapter hard-codes prompts
+		// and resources into every handshake, but Saddle registers neither — so
+		// a client dutifully follows up with resources/templates/list, which the
+		// adapter's router doesn't implement, and gets a 404 back on a
+		// capability we told it we had. That reads as a broken connector.
+		if ( isset( $data['capabilities'] ) && is_array( $data['capabilities'] ) ) {
+			if ( method_exists( $server, 'get_resources' ) && ! $server->get_resources() ) {
+				unset( $data['capabilities']['resources'] );
+			}
+			if ( method_exists( $server, 'get_prompts' ) && ! $server->get_prompts() ) {
+				unset( $data['capabilities']['prompts'] );
+			}
+		}
+
 		$class = get_class( $result );
 		return $class::fromArray( $data );
 	}
