@@ -1420,3 +1420,58 @@ body.toplevel_page_saddle {
 	flex-wrap: wrap;
 	gap: 8px;
 }
+
+/* Client traffic — the MCP request record. Deliberately plain: this is a
+   diagnostic readout, not a dashboard, and it should read like evidence. */
+.saddle-mcp-diag {
+	&__health {
+		margin: 0 0 8px;
+		font-size: 13px;
+	}
+
+	&__degraded {
+		margin: 0 0 12px;
+		font-size: 13px;
+		color: var(--s-danger);
+	}
+
+	&__actions {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin-bottom: 12px;
+	}
+
+	&__hint,
+	&__empty {
+		margin: 0 0 12px;
+		font-size: 13px;
+		color: var(--s-fg-subtle);
+	}
+
+	&__table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 13px;
+
+		th,
+		td {
+			text-align: left;
+			padding: 6px 8px;
+			border-bottom: 1px solid var(--s-border);
+			vertical-align: middle;
+		}
+
+		th {
+			font-weight: 600;
+			color: var(--s-fg-subtle);
+			white-space: nowrap;
+		}
+
+		td:first-child {
+			white-space: nowrap;
+			color: var(--s-fg-subtle);
+		}
+	}
+}
