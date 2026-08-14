@@ -93,6 +93,37 @@ module.exports = function ( grunt ) {
 							'!admin/DESIGN-ALIGNMENT.md',
 							// User docs live on the website, not in the zip.
 							'!docs/**',
+							// The vendored WordPress MCP Adapter is NOT shipped.
+							//
+							// It is ~347 of 464 files and half the zip, and every
+							// symbol in it is namespaced WP\MCP / hooked
+							// mcp_adapter_* — `wp_` is reserved for core, which is
+							// what WordPress.org rejected the submission over. It
+							// also carries the only error_log/fwrite calls in the
+							// tree and stands up a second, undeclared endpoint at
+							// /wp-json/mcp/mcp-adapter-default-server.
+							//
+							// Nothing is lost by its absence: Saddle_MCP's own
+							// JSON-RPC transport serves the same /saddle/v1/mcp URL
+							// with the same abilities and the same tier + approval
+							// gate, and Saddle::load_bundled_mcp_adapter() already
+							// early-returns when the directory isn't readable —
+							// before it defines WP_MCP_DIR/WP_MCP_VERSION, so those
+							// two reserved constants disappear with it. A site that
+							// installs the official MCP Adapter plugin gets the
+							// adapter path back automatically.
+							//
+							// Keep this exclusion in the WordPress.org build. When
+							// the self-hosted channel lands, re-include it there the
+							// same way that branch re-includes the updater.
+							'!includes/lib/**',
+							// The two files that exist only to serve it: the
+							// loader (which declares the library's own reserved
+							// WP_MCP_* constants) and the shim for its session
+							// strictness. Both are guarded with file_exists()/
+							// class_exists() and degrade to no-ops.
+							'!includes/class-saddle-bundled-adapter.php',
+							'!includes/class-saddle-mcp-compat.php',
 							// WP.org listing assets — go to SVN assets/, never in the zip.
 							'!.wordpress.org/**',
 							// Lint config — dev-only.

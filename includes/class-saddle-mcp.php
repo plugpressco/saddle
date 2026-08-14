@@ -109,6 +109,9 @@ class Saddle_MCP {
 		// Serve the full context in the initialize handshake, so a client that
 		// surfaces `instructions` spares the agent a whole get-instructions
 		// round trip — on shared hosts each round trip is a full WP boot.
+		// Third-party hook: this filter belongs to the MCP Adapter plugin, so its
+		// name is theirs and cannot carry a Saddle prefix. It only ever fires
+		// when that plugin is the active transport.
 		add_filter( 'mcp_adapter_initialize_response', array( __CLASS__, 'filter_adapter_initialize' ), 10, 2 );
 	}
 
@@ -473,14 +476,104 @@ class Saddle_MCP {
 		$tools = array();
 
 		foreach ( self::saddle_abilities() as $name => $ability ) {
-			$tools[] = array(
-				'name'        => $name,
+			$tool = array(
+				'name'        => self::mcp_tool_name( $name ),
 				'description' => $ability->get_description(),
 				'inputSchema' => self::normalize_input_schema( $ability->get_input_schema() ),
 			);
+
+			$label = $ability->get_label();
+			if ( '' !== $label ) {
+				$tool['title'] = $label;
+			}
+
+			$annotations = self::tool_annotations( $ability, $label );
+			if ( ! empty( $annotations ) ) {
+				$tool['annotations'] = $annotations;
+			}
+
+			$tools[] = $tool;
 		}
 
 		return $tools;
+	}
+
+	/**
+	 * The MCP tool name for an ability.
+	 *
+	 * Ability names are namespaced with a slash (`saddle/list-posts`), which MCP
+	 * does not allow in a tool name and which OpenAI's clients reject outright
+	 * (`^[a-zA-Z0-9_-]{1,64}$`) — a single bad name loses the whole tool list.
+	 * Producing the same hyphenated form the official adapter produces keeps a
+	 * tool's identity stable whichever transport served it.
+	 *
+	 * @param string $ability_name Full ability name.
+	 * @return string
+	 */
+	private static function mcp_tool_name( $ability_name ) {
+		return str_replace( '/', '-', (string) $ability_name );
+	}
+
+	/**
+	 * Resolve a client-supplied tool name back to an ability name.
+	 *
+	 * Accepts both the hyphenated MCP form and the raw ability name, so a client
+	 * that cached either one keeps working.
+	 *
+	 * @param string $tool_name Name as sent by the client.
+	 * @return string Ability name, or '' when it isn't one of ours.
+	 */
+	private static function ability_name_for_tool( $tool_name ) {
+		$tool_name = (string) $tool_name;
+
+		if ( 0 === strpos( $tool_name, self::ABILITY_PREFIX ) ) {
+			return $tool_name;
+		}
+
+		$prefix = self::mcp_tool_name( self::ABILITY_PREFIX );
+		if ( 0 !== strpos( $tool_name, $prefix ) ) {
+			return '';
+		}
+
+		// Only the namespace separator was rewritten, so restore that one
+		// character — ability names may legitimately contain hyphens of their own.
+		return self::ABILITY_PREFIX . substr( $tool_name, strlen( $prefix ) );
+	}
+
+	/**
+	 * MCP behaviour hints for a tool.
+	 *
+	 * Every Saddle ability already declares whether it reads, destroys or is
+	 * idempotent (see saddle_ability_meta()); this hands that to the client in
+	 * MCP's own vocabulary so an agent can weigh a call before making it rather
+	 * than discovering the answer from a refusal.
+	 *
+	 * @param WP_Ability $ability The ability.
+	 * @param string     $label   Human-readable label, if any.
+	 * @return array
+	 */
+	private static function tool_annotations( $ability, $label ) {
+		$declared = $ability->get_meta_item( 'annotations' );
+		if ( ! is_array( $declared ) ) {
+			return array();
+		}
+
+		$annotations = array();
+
+		if ( '' !== $label ) {
+			$annotations['title'] = $label;
+		}
+		if ( isset( $declared['readonly'] ) ) {
+			$annotations['readOnlyHint'] = (bool) $declared['readonly'];
+		}
+		if ( isset( $declared['destructive'] ) ) {
+			$annotations['destructiveHint'] = (bool) $declared['destructive'];
+		}
+		if ( isset( $declared['idempotent'] ) ) {
+			$annotations['idempotentHint'] = (bool) $declared['idempotent'];
+		}
+
+		return $annotations;
 	}
 
 	/**
@@ -527,9 +620,10 @@ class Saddle_MCP {
 	 * @return array Response envelope.
 	 */
 	private static function call_tool( $id, array $params ) {
-		$name = isset( $params['name'] ) && is_string( $params['name'] ) ? $params['name'] : '';
+		$requested = isset( $params['name'] ) && is_string( $params['name'] ) ? $params['name'] : '';
+		$name      = self::ability_name_for_tool( $requested );
 
-		if ( '' === $name || 0 !== strpos( $name, self::ABILITY_PREFIX ) ) {
+		if ( '' === $name ) {
 			return self::error_envelope( $id, -32602, __( 'Invalid params: a Saddle tool name is required.', 'saddle' ) );
 		}
 
@@ -579,7 +673,28 @@ class Saddle_MCP {
 			if ( ! empty( $error_data ) ) {
 				$data['details'] = $error_data;
 			}
-			return self::error_envelope( $id, -32000, $message, $data );
+
+			// A refusal is a tool RESULT, not a protocol fault: the tool exists
+			// and was called correctly, it just said no. MCP reserves JSON-RPC
+			// errors for protocol-level problems and asks for execution failures
+			// as `isError` results — and the distinction is load-bearing here,
+			// because several clients treat a JSON-RPC error as a broken
+			// transport and never show the model the message. Saddle's denial
+			// text is written for the agent to act on ("the site is at the read
+			// access level… do not retry"), so it has to reach the agent.
+			return self::result_envelope(
+				$id,
+				array(
+					'content' => array(
+						array(
+							'type' => 'text',
+							'text' => $message,
+						),
+					),
+					'isError' => true,
+					'_meta'   => array( 'saddle' => $data ),
+				)
+			);
 		}
 
 		return self::result_envelope(

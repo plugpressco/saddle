@@ -56,9 +56,11 @@ This is **off until you turn it on**, on the Settings screen. It runs entirely i
 
 Turning it on publishes the small set of addresses the OAuth standard requires so apps can find and complete the sign-in. With it off — the default — none of them exist.
 
-= Bundled library =
+= No bundled libraries =
 
-Saddle bundles the WordPress **MCP Adapter** library (`WP\MCP`, GPLv2-or-later, license included in `includes/lib/wp-mcp/`) so it speaks MCP with no extra plugin to install. If the standalone MCP Adapter plugin is already active, Saddle defers to that copy automatically.
+Saddle speaks MCP itself. It ships no third-party library, and every function, class, option and hook it defines is prefixed `saddle` / `Saddle_` / `SADDLE_`.
+
+If the separate **MCP Adapter** plugin happens to be active on the same site, Saddle detects it and uses it instead. That is optional and nothing depends on it — the endpoint, the tools and the safety model are identical either way.
 
 = Source code =
 
@@ -121,6 +123,12 @@ No. Saddle is free and entirely self-hosted. There is nothing to sign up for.
 = Does it run shell commands or arbitrary code? =
 
 Never. Every operation goes through WordPress's own PHP functions. There is no shell access, no `eval()`, and no way to add either through a tool call.
+
+= Do I need the MCP Adapter plugin as well? =
+
+No. Saddle speaks MCP on its own, and installing anything else changes nothing about what your AI app can do — same address, same tools, same access levels and approvals.
+
+If you happen to have the separate MCP Adapter plugin active, Saddle notices and uses it. That is the only difference, and it is optional.
 
 == Screenshots ==
 
