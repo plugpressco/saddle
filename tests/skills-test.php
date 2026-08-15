@@ -34,6 +34,28 @@ class Saddle_Skills_Test extends WP_UnitTestCase {
 		parent::tear_down();
 	}
 
+	/**
+	 * Only the skills the OWNER installed.
+	 *
+	 * Saddle_Skills::all() also returns the playbooks plugins bundle, and free
+	 * now bundles two on any site without a foreign builder — which the test
+	 * site is. Assertions about installing, upserting and shadowing are about
+	 * the CPT, so they filter the bundled ones out rather than counting a
+	 * number that changes whenever a playbook is added.
+	 *
+	 * @return array[]
+	 */
+	private function owner_skills() {
+		return array_values(
+			array_filter(
+				Saddle_Skills::all(),
+				static function ( $skill ) {
+					return empty( $skill['builtin'] );
+				}
+			)
+		);
+	}
+
 	private function ability( $name ) {
 		$a = wp_get_ability( $name );
 		$this->assertNotNull( $a, "Ability {$name} must be registered." );
@@ -58,7 +80,7 @@ class Saddle_Skills_Test extends WP_UnitTestCase {
 		$updated = Saddle_Skills::install( str_replace( 'Draft first', 'Always draft first', self::MD ) );
 
 		$this->assertNotWPError( $updated );
-		$this->assertCount( 1, Saddle_Skills::all(), 'Reinstalling the same name must update, not duplicate.' );
+		$this->assertCount( 1, $this->owner_skills(), 'Reinstalling the same name must update, not duplicate.' );
 		$this->assertStringContainsString( 'Always draft first', $updated['body'] );
 	}
 
@@ -120,6 +142,12 @@ class Saddle_Skills_Test extends WP_UnitTestCase {
 	}
 
 	public function test_no_skills_no_index_section() {
+		// Free bundles build-page and fix-page on any site without a foreign
+		// builder, so "no skills at all" now means a site whose plugins bundle
+		// none either — drop the built-in providers to model that. The hook
+		// table is restored after every test.
+		remove_all_filters( 'saddle_builtin_skills' );
+
 		$this->assertStringNotContainsString( 'Skills for this site', Saddle_Context::system_context() );
 	}
 
@@ -140,9 +168,10 @@ class Saddle_Skills_Test extends WP_UnitTestCase {
 		Saddle_Skills::set_enabled( 'second', false );
 
 		$result = $this->ability( 'saddle/list-skills' )->execute( array() );
+		$names  = wp_list_pluck( $result['skills'], 'name' );
 
-		$this->assertSame( 1, $result['count'] );
-		$this->assertSame( 'publish-a-post', $result['skills'][0]['name'] );
+		$this->assertContains( 'publish-a-post', $names );
+		$this->assertNotContains( 'second', $names, 'A disabled skill must not reach the index.' );
 	}
 
 	public function test_no_agent_facing_skill_write_ability_exists() {
@@ -197,7 +226,16 @@ class Saddle_Skills_Test extends WP_UnitTestCase {
 
 				$skill = Saddle_Skills::find( 'divi-build-page' );
 				$this->assertSame( 'My version.', $skill['description'], 'An owner-installed skill must shadow the bundled one.' );
-				$this->assertCount( 1, Saddle_Skills::all(), 'Shadowing must not duplicate the index entry.' );
+				$this->assertCount(
+					1,
+					array_filter(
+						Saddle_Skills::all(),
+						static function ( $s ) {
+							return 'divi-build-page' === $s['name'];
+						}
+					),
+					'Shadowing must not duplicate the index entry.'
+				);
 			}
 		);
 	}
@@ -264,6 +302,105 @@ class Saddle_Skills_Test extends WP_UnitTestCase {
 
 		$this->assertStringNotContainsString( '<b>', $context, 'Tags must be stripped from injected summaries.' );
 		$this->assertStringNotContainsString( str_repeat( 'x', 200 ), $context, 'Summaries must be truncated.' );
+	}
+
+	/* -------- the bundled playbooks -------- */
+
+	/**
+	 * Declare every builder this site detects to be a native one, so
+	 * foreign_builders() is empty no matter which builder constants earlier
+	 * tests in the process happened to define. Constants cannot be undefined,
+	 * so this filter is the only deterministic way to test the "clean site"
+	 * branch in a full-suite run.
+	 *
+	 * @param callable $fn Assertions.
+	 */
+	private function with_no_foreign_builder( callable $fn ) {
+		$filter = static function () {
+			return array( 'Divi', 'Elementor', 'Beaver Builder', 'Bricks', 'WPBakery', 'Oxygen', 'Breakdance' );
+		};
+		add_filter( 'saddle_native_builders', $filter );
+		try {
+			$fn();
+		} finally {
+			remove_filter( 'saddle_native_builders', $filter );
+		}
+	}
+
+	private function builtin_names() {
+		return wp_list_pluck( apply_filters( 'saddle_builtin_skills', array() ), 'name' );
+	}
+
+	/**
+	 * The test site runs a CLASSIC theme, which is exactly the case the old
+	 * wp_is_block_theme() gate excluded — so a classic site with no builder,
+	 * the one with no site editor to fall back on, got no playbook at all.
+	 */
+	public function test_the_playbooks_ship_on_a_classic_theme_with_no_builder() {
+		$this->with_no_foreign_builder(
+			function () {
+				$names = $this->builtin_names();
+
+				$this->assertContains( 'build-page', $names );
+				$this->assertContains( 'fix-page', $names );
+			}
+		);
+	}
+
+	public function test_a_foreign_builder_withholds_the_gutenberg_playbooks() {
+		// Elementor's load marker. Already defined by context-test.php in a
+		// full-suite run; defining it here makes this test standalone too.
+		if ( ! defined( 'ELEMENTOR_VERSION' ) ) {
+			define( 'ELEMENTOR_VERSION', '3.0.0-test' );
+		}
+
+		$names = $this->builtin_names();
+
+		$this->assertNotContains( 'build-page', $names, 'Its pages are markup inside the content; the native block tools refuse them.' );
+		$this->assertNotContains( 'fix-page', $names );
+	}
+
+	/**
+	 * Divi with Saddle Pro is not foreign — Pro declares it native and bundles
+	 * its own playbook, which shadows by name.
+	 */
+	public function test_a_native_builder_does_not_withhold_them() {
+		if ( ! defined( 'ELEMENTOR_VERSION' ) ) {
+			define( 'ELEMENTOR_VERSION', '3.0.0-test' );
+		}
+
+		$this->with_no_foreign_builder(
+			function () {
+				$this->assertContains( 'build-page', $this->builtin_names() );
+			}
+		);
+	}
+
+	/**
+	 * On a classic theme there are no template parts to read, so step 2 must
+	 * not send the agent after get-template — it would be refused.
+	 */
+	public function test_the_playbook_adapts_step_two_to_a_classic_theme() {
+		$this->with_no_foreign_builder(
+			function () {
+				$body = Saddle_Skills::find( 'build-page' )['body'];
+
+				$this->assertStringContainsString( 'classic theme', $body );
+				$this->assertStringNotContainsString( 'saddle/get-template on the header', $body );
+			}
+		);
+	}
+
+	public function test_the_repair_playbook_teaches_the_order_and_the_moving_addresses() {
+		$this->with_no_foreign_builder(
+			function () {
+				$body = Saddle_Skills::find( 'fix-page' )['body'];
+
+				// The two mistakes it exists to prevent.
+				$this->assertStringContainsString( 'STRUCTURAL findings first', $body );
+				$this->assertStringContainsString( 'shifts every address after it', $body );
+			}
+		);
 	}
 
 	public function test_recall_changes_ability_returns_executed_only() {
