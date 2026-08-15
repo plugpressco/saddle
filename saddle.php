@@ -3,7 +3,7 @@
  * Plugin Name:       Saddle – Control Your Site with AI (MCP Server)
  * Plugin URI:        https://plugpress.co/saddle/
  * Description:       Self-hosted MCP server for WordPress. Tiered, default-safe, approval-gated access to posts, pages, and media for AI agents — with no third-party credential custody.
- * Version:           1.0.0
+ * Version:           1.0.0-rc2
  * Requires at least: 6.9
  * Requires PHP:      7.4
  * Author:            PlugPress
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SADDLE_VERSION', '1.0.0' );
+define( 'SADDLE_VERSION', '1.0.0-rc2' );
 define( 'SADDLE_FILE', __FILE__ );
 define( 'SADDLE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SADDLE_URL', plugin_dir_url( __FILE__ ) );
@@ -67,6 +67,8 @@ require_once SADDLE_DIR . 'includes/verify/class-saddle-verify.php';
 require_once SADDLE_DIR . 'includes/class-saddle-capabilities.php';
 require_once SADDLE_DIR . 'includes/class-saddle-approval.php';
 require_once SADDLE_DIR . 'includes/class-saddle-context.php';
+require_once SADDLE_DIR . 'includes/class-saddle-context-bundle.php';
+require_once SADDLE_DIR . 'includes/class-saddle-playbook.php';
 require_once SADDLE_DIR . 'includes/class-saddle-skills.php';
 require_once SADDLE_DIR . 'includes/class-saddle-memory.php';
 require_once SADDLE_DIR . 'includes/class-saddle-log.php';
@@ -96,6 +98,20 @@ require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-bearer.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-settings.php';
 
+/*
+ * Self-hosted updates — PRESENT ONLY IN THE SELF-HOSTED BUILD.
+ *
+ * The WordPress.org build ships without `class-saddle-updater.php` (the zip
+ * task drops it), because a plugin in the directory must not fetch its own
+ * updates from a third-party host. The file's absence is the switch: there is
+ * no constant to set and no option to forget, and an install that later
+ * updates to a .org zip simply loses the file and falls back to WordPress's
+ * native updates.
+ */
+if ( file_exists( SADDLE_DIR . 'includes/class-saddle-updater.php' ) ) {
+	require_once SADDLE_DIR . 'includes/class-saddle-updater.php';
+}
+
 /**
  * Bootstrap container. Wires WordPress hooks to the plugin's components.
  */
@@ -120,6 +136,14 @@ final class Saddle {
 		// priority so core has already produced its auth result to relabel.
 		add_filter( 'rest_authentication_errors', array( 'Saddle_Connection', 'explain_auth_error' ), 20 );
 
+		// Self-hosted updates, when this is the self-hosted build. Scoped to
+		// admin + cron: the update transient is only ever built there, and
+		// cron is NOT optional — `wp_update_plugins` runs as a scheduled event,
+		// so an is_admin()-only guard would silently kill background updates.
+		if ( class_exists( 'Saddle_Updater' ) && ( is_admin() || wp_doing_cron() ) ) {
+			Saddle_Updater::init();
+		}
+
 		// Always-on infrastructure (independent of the Abilities API).
 		// The preview serving path stays up even when minting isn't — an
 		// outstanding token must keep working for its full (short) life.
@@ -134,6 +158,19 @@ final class Saddle {
 		// receives (the initialize handshake + get-instructions), via the
 		// shared filter.
 		add_filter( 'saddle_system_context', array( 'Saddle_Skills', 'append_index' ) );
+
+		// The build-a-page playbook, bundled with free on a block theme. It is
+		// a skill rather than context prose so the how-to stays behind one
+		// call instead of riding every session's token budget.
+		add_filter( 'saddle_builtin_skills', array( 'Saddle_Playbook', 'register' ) );
+
+		// The context bundle caches the site's working memory. Anything that
+		// changes which blocks, patterns or templates exist must drop it; the
+		// content signature catches the rest on the next read.
+		add_action( 'activated_plugin', array( 'Saddle_Context_Bundle', 'flush' ) );
+		add_action( 'deactivated_plugin', array( 'Saddle_Context_Bundle', 'flush' ) );
+		add_action( 'switch_theme', array( 'Saddle_Context_Bundle', 'flush' ) );
+		add_action( 'saddle_flush_cache', array( 'Saddle_Context_Bundle', 'flush' ) );
 		add_filter( 'saddle_system_context', array( 'Saddle_Memory', 'append_context' ) );
 		add_action( 'rest_api_init', array( 'Saddle_REST_Admin', 'register_routes' ) );
 		add_action( 'rest_api_init', array( 'Saddle_Connection', 'register_routes' ) );
@@ -158,6 +195,7 @@ final class Saddle {
 		if ( self::abilities_api_available() ) {
 			require_once SADDLE_DIR . 'includes/abilities/core-content.php';
 			require_once SADDLE_DIR . 'includes/abilities/blocks.php';
+			require_once SADDLE_DIR . 'includes/abilities/site-editor.php';
 			require_once SADDLE_DIR . 'includes/abilities/site.php';
 			require_once SADDLE_DIR . 'includes/abilities/users.php';
 			require_once SADDLE_DIR . 'includes/abilities/context.php';
@@ -169,6 +207,7 @@ final class Saddle {
 			add_action( 'wp_abilities_api_categories_init', 'saddle_register_ability_category' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_block_abilities' );
+			add_action( 'wp_abilities_api_init', 'saddle_register_site_editor_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_site_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_user_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_context_abilities' );

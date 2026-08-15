@@ -341,20 +341,34 @@ export default function Guidance() {
 									description={ skill.description }
 									actions={
 										<>
-											<Switch
-												checked={ skill.enabled }
-												onChange={ () =>
-													toggleSkill( skill )
-												}
-												aria-label={ sprintf(
-													/* translators: %s: skill name. */
-													__(
-														'Enable the skill “%s”',
+											{ /* A bundled skill is provided by a
+											     plugin, not stored, so the server
+											     cannot toggle or delete it — both
+											     calls 404. Show what it is instead
+											     of a control that fails. */ }
+											{ skill.builtin ? (
+												<Badge>
+													{ __(
+														'Bundled',
 														'saddle'
-													),
-													skill.name
-												) }
-											/>
+													) }
+												</Badge>
+											) : (
+												<Switch
+													checked={ skill.enabled }
+													onChange={ () =>
+														toggleSkill( skill )
+													}
+													aria-label={ sprintf(
+														/* translators: %s: skill name. */
+														__(
+															'Enable the skill “%s”',
+															'saddle'
+														),
+														skill.name
+													) }
+												/>
+											) }
 											<Button
 												variant="link"
 												onClick={ () =>
@@ -363,15 +377,17 @@ export default function Guidance() {
 											>
 												{ __( 'View', 'saddle' ) }
 											</Button>
-											<Button
-												variant="link"
-												className="saddle-link-danger"
-												onClick={ () =>
-													removeSkill( skill )
-												}
-											>
-												{ __( 'Delete', 'saddle' ) }
-											</Button>
+											{ ! skill.builtin && (
+												<Button
+													variant="link"
+													className="saddle-link-danger"
+													onClick={ () =>
+														removeSkill( skill )
+													}
+												>
+													{ __( 'Delete', 'saddle' ) }
+												</Button>
+											) }
 										</>
 									}
 								/>

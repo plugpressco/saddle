@@ -27,7 +27,12 @@ module.exports = function ( grunt ) {
 
 	function currentVersion() {
 		const php = grunt.file.read( MAIN_FILE );
-		const match = php.match( /Version:\s*([0-9]+\.[0-9]+\.[0-9]+)/ );
+		// Must capture any prerelease suffix too. A numeric-only pattern reads
+		// `1.0.0-rc1` as `1.0.0`, which silently names the archive after a
+		// version that isn't in it — two different builds, one filename.
+		const match = php.match(
+			/Version:\s*([0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.]+)?)/
+		);
 		if ( ! match ) {
 			grunt.fail.fatal( 'Could not read the version from ' + MAIN_FILE );
 		}
@@ -72,6 +77,10 @@ module.exports = function ( grunt ) {
 							'!.git/**',
 							'!.github/**',
 							'!.claude/**',
+							// Same reason as .claude/: agent instructions are dev
+							// config, not plugin code. Excluded explicitly rather
+							// than relying on how the globber treats dot-dirs.
+							'!.agents/**',
 							'!Gruntfile.js',
 							'!package.json',
 							'!package-lock.json',
@@ -83,14 +92,13 @@ module.exports = function ( grunt ) {
 							'!.distignore',
 							'!.gitignore',
 							'!.editorconfig',
-							// Internal docs (never shipped to users).
-							'!BUILD-GUIDE.md',
-							'!CLAUDE.md',
-							'!STATUS.md',
-							'!README.md',
-							'!AGENTS.md',
-							'!WPORG-SUBMISSION.md',
-							'!admin/DESIGN-ALIGNMENT.md',
+							// No Markdown ships, anywhere in the tree — internal
+							// docs, agent instructions, and vendored READMEs alike.
+							'!**/*.md',
+							// Exception: bundled third-party licenses must ship for
+							// GPL attribution. Scoped to the vendored adapter so
+							// node_modules/ and vendor/ stay excluded.
+							'includes/lib/**/LICENSE.md',
 							// User docs live on the website, not in the zip.
 							'!docs/**',
 							// The vendored WordPress MCP Adapter is NOT shipped.
@@ -130,6 +138,11 @@ module.exports = function ( grunt ) {
 							'!phpcs.xml.dist',
 							// Dev caches.
 							'!.phpunit.result.cache',
+							// Self-hosted updater — see the `channel` task below.
+							// Excluded by DEFAULT so the .org-safe artifact is what
+							// you get if you forget to think about it; the
+							// self-hosted build adds it back explicitly.
+							'!includes/class-saddle-updater.php',
 							// NOTE: admin/src/ IS shipped. WordPress.org requires the
 							// human-readable React source alongside the compiled
 							// admin/build bundle.
@@ -167,28 +180,49 @@ module.exports = function ( grunt ) {
 
 	grunt.registerTask(
 		'version',
-		'Bump the plugin version (patch|minor|major, or --to=x.y.z).',
+		'Bump the plugin version (patch|minor|major, or --to=x.y.z[-rcN]).',
 		function ( type ) {
 			const from = currentVersion();
 			const to = grunt.option( 'to' ) || bump( from, type || 'patch' );
 
-			if ( ! /^[0-9]+\.[0-9]+\.[0-9]+$/.test( to ) ) {
+			// Prerelease suffixes are allowed and load-bearing: PHP's
+			// version_compare() sorts `1.0.0-rc2` BELOW `1.0.0`, so a release
+			// candidate retires itself the moment the real version ships and
+			// every test install upgrades cleanly — including onto the
+			// WordPress.org build. Without this, every interim build has to
+			// reuse the same number and nobody can tell two builds apart.
+			//
+			// Note the update worker's own versionGt() strips the suffix and
+			// compares numerics only; that path is beta-channel selection,
+			// which this product does not use. The client-side comparison in
+			// Saddle_Updater is what decides, and it uses version_compare().
+			if ( ! /^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$/.test( to ) ) {
 				grunt.fail.fatal( 'Invalid target version: ' + to );
 			}
 
+			// Match the existing value including any suffix, so bumping away
+			// from `1.0.0-rc1` replaces the whole string rather than leaving
+			// `1.0.1-rc1` behind.
+			const VER = '[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.]+)?';
+
 			// Main file: the plugin header Version and the SADDLE_VERSION constant.
 			let php = grunt.file.read( MAIN_FILE );
-			php = php.replace( /(Version:\s*)[0-9.]+/, '$1' + to );
+			php = php.replace( new RegExp( '(Version:\\s*)' + VER ), '$1' + to );
 			php = php.replace(
-				/(define\(\s*'SADDLE_VERSION',\s*')[0-9.]+('\s*\))/,
+				new RegExp( "(define\\(\\s*'SADDLE_VERSION',\\s*')" + VER + "('\\s*\\))" ),
 				'$1' + to + '$2'
 			);
 			grunt.file.write( MAIN_FILE, php );
 
-			// readme.txt: Stable tag.
-			if ( grunt.file.exists( 'readme.txt' ) ) {
+			// readme.txt: Stable tag. A release candidate must NEVER become the
+			// stable tag — that is the field WordPress.org serves to everyone —
+			// so prerelease builds leave it pointing at the last real version.
+			if ( grunt.file.exists( 'readme.txt' ) && ! to.includes( '-' ) ) {
 				let readme = grunt.file.read( 'readme.txt' );
-				readme = readme.replace( /(Stable tag:\s*)[0-9.]+/, '$1' + to );
+				readme = readme.replace(
+					new RegExp( '(Stable tag:\\s*)' + VER ),
+					'$1' + to
+				);
 				grunt.file.write( 'readme.txt', readme );
 			}
 
@@ -205,10 +239,50 @@ module.exports = function ( grunt ) {
 	);
 
 	grunt.registerTask(
-		'zip',
-		'Name the archive after the current version.',
+		'channel',
+		'Select the build channel: wporg (default) or selfhosted.',
 		function () {
-			const archive = 'dist/' + SLUG + '-' + currentVersion() + '.zip';
+			const channel = grunt.option( 'channel' ) || 'wporg';
+
+			if ( 'wporg' !== channel && 'selfhosted' !== channel ) {
+				grunt.fail.fatal(
+					'Unknown channel: ' + channel + ' (use wporg or selfhosted)'
+				);
+			}
+
+			if ( 'selfhosted' === channel ) {
+				// Put the updater back by appending an un-negated pattern after
+				// the exclusion — grunt-contrib-copy applies src patterns in
+				// order, so the later include wins.
+				const files = grunt.config.get( 'copy.dist.files' );
+				files[ 0 ].src.push( 'includes/class-saddle-updater.php' );
+				grunt.config.set( 'copy.dist.files', files );
+			}
+
+			grunt.config.set( 'saddleChannel', channel );
+			grunt.log.ok(
+				'Channel: ' +
+					channel +
+					( 'wporg' === channel
+						? ' (no self-hosted updater — .org safe)'
+						: ' (self-hosted updater included — NEVER submit this zip to .org)' )
+			);
+		}
+	);
+
+	grunt.registerTask(
+		'zip',
+		'Name the archive after the current version and channel.',
+		function () {
+			// The self-hosted zip carries the channel in its filename so the two
+			// artifacts can never be confused on disk — submitting the wrong one
+			// to WordPress.org is an instant rejection.
+			const suffix =
+				'selfhosted' === grunt.config.get( 'saddleChannel' )
+					? '-selfhosted'
+					: '';
+			const archive =
+				'dist/' + SLUG + '-' + currentVersion() + suffix + '.zip';
 			grunt.config.set( 'compress.dist.options.archive', archive );
 			grunt.log.ok( 'Archive: ' + archive );
 		}
@@ -216,6 +290,7 @@ module.exports = function ( grunt ) {
 
 	grunt.registerTask( 'build', [
 		'clean:dist',
+		'channel',
 		'copy:dist',
 		'zip',
 		'compress:dist',
