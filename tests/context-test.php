@@ -184,6 +184,88 @@ class Saddle_Context_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'never write a builder page', $ctx, 'The raw-content prohibition must survive.' );
 	}
 
+	/* -------- the steering has to point at the tool that replaced five -------- */
+
+	/**
+	 * context-bundle exists precisely to collapse get-design-system +
+	 * list-block-types + list-block-patterns + list-section-recipes +
+	 * list-templates into one call. The steering was still describing the old
+	 * sequence and never named the bundle, so every session paid the five
+	 * calls the bundle was built to save.
+	 */
+	public function test_context_sends_the_agent_to_the_bundle_first() {
+		$ctx = Saddle_Context::system_context();
+
+		$this->assertStringContainsString( 'saddle/context-bundle', $ctx );
+		$this->assertStringContainsString( 'ORIENT FIRST', $ctx );
+	}
+
+	public function test_context_names_the_verify_then_look_loop() {
+		$ctx = Saddle_Context::system_context();
+
+		$this->assertStringContainsString( 'saddle/verify-page', $ctx );
+		$this->assertStringContainsString( 'saddle/get-preview-url', $ctx );
+	}
+
+	/**
+	 * Saddle_Context_Bundle::summary_lines() has been computed, budgeted and
+	 * documented as riding the system context since the bundle shipped — and
+	 * called by nothing at all. This is the assertion that keeps it wired.
+	 */
+	public function test_context_carries_the_sites_design_memory() {
+		$ctx = Saddle_Context::system_context();
+
+		$this->assertStringContainsString( 'design memory', strtolower( $ctx ) );
+	}
+
+	/* -------- recent changes: a record, not a stutter -------- */
+
+	public function test_a_run_of_edits_to_one_post_folds_into_a_single_line() {
+		// What a real site looked like: six saves of the same post in a row,
+		// spending six of the fifteen lines to say one thing.
+		for ( $i = 0; $i < 6; $i++ ) {
+			Saddle_Log::record(
+				array(
+					'action'  => 'update_post',
+					'target'  => '1125',
+					'summary' => 'Updated post #1125 "Draft ' . $i . '"',
+				)
+			);
+		}
+
+		$ctx = Saddle_Context::system_context();
+
+		$this->assertSame( 1, substr_count( $ctx, 'Updated post #1125' ), 'Six identical changes must read as one line.' );
+		$this->assertStringContainsString( '×6 in a row', $ctx );
+		$this->assertStringContainsString( 'Draft 5', $ctx, 'The surviving line must be the most recent state, not the oldest.' );
+	}
+
+	public function test_changes_to_different_posts_are_not_folded_together() {
+		Saddle_Log::record( array( 'action' => 'update_post', 'target' => '1', 'summary' => 'Updated post #1' ) );
+		Saddle_Log::record( array( 'action' => 'update_post', 'target' => '2', 'summary' => 'Updated post #2' ) );
+
+		$ctx = Saddle_Context::system_context();
+
+		$this->assertStringContainsString( 'Updated post #1', $ctx );
+		$this->assertStringContainsString( 'Updated post #2', $ctx );
+	}
+
+	/**
+	 * Only CONSECUTIVE runs fold, so the shape of the session survives:
+	 * editing A, then B, then A again is three steps, not two.
+	 */
+	public function test_an_interrupted_run_is_not_folded() {
+		Saddle_Log::record( array( 'action' => 'update_post', 'target' => '1', 'summary' => 'Updated post #1 first' ) );
+		Saddle_Log::record( array( 'action' => 'update_post', 'target' => '2', 'summary' => 'Updated post #2' ) );
+		Saddle_Log::record( array( 'action' => 'update_post', 'target' => '1', 'summary' => 'Updated post #1 again' ) );
+
+		$ctx = Saddle_Context::system_context();
+
+		$this->assertStringContainsString( 'Updated post #1 first', $ctx );
+		$this->assertStringContainsString( 'Updated post #1 again', $ctx );
+		$this->assertStringNotContainsString( 'in a row', $ctx );
+	}
+
 	public function test_system_context_filter_lets_addons_append_guidance() {
 		add_filter(
 			'saddle_system_context',

@@ -265,8 +265,11 @@ class Saddle_Context_Bundle {
 			return array();
 		}
 
-		$line = '- ' . __( 'Site design memory: ', 'saddle' ) . implode( '; ', $facts ) . '. '
-			. __( 'Use these slugs instead of ad-hoc values. Call saddle/context-bundle once for the whole design system, block set, patterns and templates in a single call.', 'saddle' );
+		// No "Site design memory:" prefix and no "call context-bundle" tail: the
+		// context gives this its own heading and has already told the agent to
+		// orient with the bundle, so both would be said twice on every session.
+		$line = '- ' . ucfirst( implode( '; ', $facts ) ) . '. '
+			. __( 'Use these slugs instead of ad-hoc values.', 'saddle' );
 
 		if ( strlen( $line ) > self::SUMMARY_BUDGET ) {
 			$line = substr( $line, 0, self::SUMMARY_BUDGET - 1 ) . '…';
