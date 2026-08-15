@@ -1,0 +1,16 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/theme.json",
+	"version": 3,
+	"settings": {
+		"color": {
+			"palette": [
+				{ "slug": "fixture-ink", "name": "Fixture Ink", "color": "#101010" }
+			]
+		},
+		"typography": {
+			"fontSizes": [
+				{ "slug": "fixture-body", "name": "Fixture Body", "size": "16px" }
+			]
+		}
+	}
+}

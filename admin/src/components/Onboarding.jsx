@@ -76,7 +76,16 @@ export default function Onboarding( { tier, onTierSaved, onFinish } ) {
 					<ul className="saddle-promises">
 						<li>{ __( 'You choose what it can do', 'saddle' ) }</li>
 						<li>
-							{ __( 'Nothing leaves your website', 'saddle' ) }
+							{ /* Was "Nothing leaves your website" — true of the
+							     WordPress.org build, but the plugpress.co build
+							     checks for its own updates, so the absolute
+							     claim stopped being true on 2026-08-12. This
+							     says the thing that actually matters and stays
+							     true in both. */ }
+							{ __(
+								'Your content stays on your site',
+								'saddle'
+							) }
 						</li>
 						<li>
 							{ __( 'Deleting always asks first', 'saddle' ) }

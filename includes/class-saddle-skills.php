@@ -212,6 +212,11 @@ class Saddle_Skills {
 				'enabled'     => true,
 				'source'      => sanitize_text_field( isset( $skill['source'] ) ? (string) $skill['source'] : 'builtin' ),
 				'updated'     => '',
+				// Bundled by a plugin, not stored: set_enabled() and delete()
+				// both look the skill up in the CPT first and return false, so
+				// offering those controls produces a 404. The admin UI reads
+				// this flag and renders a label instead of a switch.
+				'builtin'     => true,
 				'body'        => mb_substr( $body, 0, self::MAX_BODY ),
 			);
 		}
@@ -451,6 +456,9 @@ class Saddle_Skills {
 			'enabled'     => '0' !== (string) get_post_meta( $post->ID, '_saddle_skill_enabled', true ),
 			'source'      => (string) get_post_meta( $post->ID, '_saddle_skill_source', true ),
 			'updated'     => $post->post_modified_gmt,
+			// Owner-installed: it lives in the CPT, so it can be toggled and
+			// deleted. The admin UI keys its controls off this.
+			'builtin'     => false,
 		);
 		if ( $with_body ) {
 			$skill['body'] = $post->post_content;
