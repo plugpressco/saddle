@@ -182,18 +182,8 @@ class Saddle_Context {
 			}
 
 			if ( ! empty( $builders ) ) {
-				/**
-				 * Filter the builders whose pages have DEDICATED saddle tools
-				 * installed (e.g. Saddle Pro registers 'Divi'). Native builders
-				 * get an in-scope note instead of the hands-off warning — an
-				 * addon that ships a full editing surface must not have the
-				 * base plugin telling agents to leave those pages alone.
-				 *
-				 * @param string[] $native Builder labels (as detected, e.g. 'Divi').
-				 */
-				$native  = array_map( 'strval', (array) apply_filters( 'saddle_native_builders', array() ) );
-				$in_tool = array_values( array_intersect( $builders, $native ) );
-				$foreign = array_values( array_diff( $builders, $native ) );
+				$in_tool = self::native_builders();
+				$foreign = self::foreign_builders();
 
 				if ( ! empty( $in_tool ) ) {
 					$lines[] = sprintf(
@@ -267,6 +257,47 @@ class Saddle_Context {
 		 * @param string $tier    The current access tier.
 		 */
 		return (string) apply_filters( 'saddle_system_context', $context, $tier );
+	}
+
+	/**
+	 * Active page builders that have DEDICATED saddle tools — Saddle Pro
+	 * registers 'Divi'. Their pages are in scope and are edited through those
+	 * tools.
+	 *
+	 * @return string[] Builder labels.
+	 */
+	public static function native_builders() {
+		return array_values( array_intersect( self::detect_signals( self::builder_signals() ), self::declared_native() ) );
+	}
+
+	/**
+	 * Active page builders NOTHING here can edit. Their pages store layout as
+	 * markup inside the content, so the native block tools must stay away —
+	 * which is also what decides whether the bundled Gutenberg playbook makes
+	 * sense on this site.
+	 *
+	 * @return string[] Builder labels.
+	 */
+	public static function foreign_builders() {
+		return array_values( array_diff( self::detect_signals( self::builder_signals() ), self::declared_native() ) );
+	}
+
+	/**
+	 * The builder labels an addon has claimed.
+	 *
+	 * @return string[]
+	 */
+	private static function declared_native() {
+		/**
+		 * Filter the builders whose pages have DEDICATED saddle tools
+		 * installed (e.g. Saddle Pro registers 'Divi'). Native builders get an
+		 * in-scope note instead of the hands-off warning — an addon that ships
+		 * a full editing surface must not have the base plugin telling agents
+		 * to leave those pages alone.
+		 *
+		 * @param string[] $native Builder labels (as detected, e.g. 'Divi').
+		 */
+		return array_map( 'strval', (array) apply_filters( 'saddle_native_builders', array() ) );
 	}
 
 	/**

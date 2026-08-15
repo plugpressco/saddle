@@ -148,6 +148,8 @@ If you happen to have the separate MCP Adapter plugin active, Saddle notices and
 * A refused call caused by the WordPress account being short a permission now says so, instead of pointing at Saddle settings that would not have changed anything.
 * An assistant now starts a session already knowing your palette, what wraps your pages, and how many ready-made patterns your theme has — and is pointed at the single call that fetches the rest, instead of the four or five it used to make.
 * Repeated edits to the same page no longer fill the "recent changes" an assistant sees with the same line over and over; a run of them reads as one entry with a count.
+* The bundled build-a-page playbook now ships on classic themes too, not only block themes — a classic site editing its pages in the block editor was the one case that got no guidance at all. It adapts its "go look at the site first" step to what your theme actually has.
+* A second bundled playbook, fix-page: how to work a page-verification report down to nothing, which findings to fix first, and why block positions move under you after a structural change.
 * See the whole site, not just one page: list and read block templates and template parts, read the global styles the owner set, and list their saved patterns.
 * Set up a design system on a block theme: bootstrap-design-system now writes the palette, type scale and spacing into your global styles, so it appears in Appearance > Editor > Styles and stays yours to edit. Existing values are never overwritten.
 * Orient in one call: context-bundle returns the design system, the blocks worth using, the theme's patterns, the site's templates and the section recipes together, instead of five separate calls per session.
