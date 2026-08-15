@@ -375,8 +375,7 @@ class Saddle_MCP_Diagnostics {
 			'Saddle MCP diagnostics',
 			'Site: ' . home_url( '/' ),
 			'Saddle: ' . ( defined( 'SADDLE_VERSION' ) ? SADDLE_VERSION : '?' ) . ' | WP: ' . get_bloginfo( 'version' ) . ' | PHP: ' . PHP_VERSION,
-			'Adapter: ' . ( defined( 'WP_MCP_VERSION' ) ? WP_MCP_VERSION : 'not loaded' )
-				. ( defined( 'WP_MCP_DIR' ) && defined( 'SADDLE_DIR' ) && 0 !== strpos( WP_MCP_DIR, SADDLE_DIR ) ? ' (from another plugin)' : '' ),
+			'Transport: ' . self::transport_description(),
 			'Endpoint: ' . rest_url( ltrim( Saddle_MCP::REST_NAMESPACE . Saddle_MCP::ROUTE, '/' ) ),
 		);
 
@@ -418,6 +417,37 @@ class Saddle_MCP_Diagnostics {
 	}
 
 	/* --------------------------------------------------------------- helpers */
+
+	/**
+	 * Which transport is serving the endpoint, and where it came from.
+	 *
+	 * Read off the adapter class itself rather than the library's own global
+	 * constants: the class is the thing that actually decides the code path, it
+	 * carries its own version, and a reflected path tells us whether the copy in
+	 * play is ours or another plugin's — which the constants cannot, once a
+	 * build ships without the bundle.
+	 *
+	 * @return string
+	 */
+	private static function transport_description() {
+		if ( ! class_exists( '\\WP\\MCP\\Core\\McpAdapter' ) ) {
+			return 'Saddle built-in JSON-RPC';
+		}
+
+		$version = defined( '\\WP\\MCP\\Core\\McpAdapter::VERSION' ) ? \WP\MCP\Core\McpAdapter::VERSION : '?';
+		$source  = 'another plugin';
+
+		try {
+			$file = ( new ReflectionClass( '\\WP\\MCP\\Core\\McpAdapter' ) )->getFileName();
+			if ( is_string( $file ) && defined( 'SADDLE_DIR' ) && 0 === strpos( $file, SADDLE_DIR ) ) {
+				$source = 'bundled';
+			}
+		} catch ( ReflectionException $e ) {
+			$source = 'unknown';
+		}
+
+		return sprintf( 'MCP Adapter %s (%s)', $version, $source );
+	}
 
 	/**
 	 * Whether the request is aimed at the MCP endpoint.

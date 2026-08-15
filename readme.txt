@@ -56,9 +56,11 @@ This is **off until you turn it on**, on the Settings screen. It runs entirely i
 
 Turning it on publishes the small set of addresses the OAuth standard requires so apps can find and complete the sign-in. With it off — the default — none of them exist.
 
-= Bundled library =
+= No bundled libraries =
 
-Saddle bundles the WordPress **MCP Adapter** library (`WP\MCP`, GPLv2-or-later, license included in `includes/lib/wp-mcp/`) so it speaks MCP with no extra plugin to install. If the standalone MCP Adapter plugin is already active, Saddle defers to that copy automatically.
+Saddle speaks MCP itself. It ships no third-party library, and every function, class, option and hook it defines is prefixed `saddle` / `Saddle_` / `SADDLE_`.
+
+If the separate **MCP Adapter** plugin happens to be active on the same site, Saddle detects it and uses it instead. That is optional and nothing depends on it — the endpoint, the tools and the safety model are identical either way.
 
 = Source code =
 
@@ -122,6 +124,12 @@ No. Saddle is free and entirely self-hosted. There is nothing to sign up for.
 
 Never. Every operation goes through WordPress's own PHP functions. There is no shell access, no `eval()`, and no way to add either through a tool call.
 
+= Do I need the MCP Adapter plugin as well? =
+
+No. Saddle speaks MCP on its own, and installing anything else changes nothing about what your AI app can do — same address, same tools, same access levels and approvals.
+
+If you happen to have the separate MCP Adapter plugin active, Saddle notices and uses it. That is the only difference, and it is optional.
+
 == Screenshots ==
 
 1. Access levels — choose how much your AI can do, and see exactly which tools each level allows.
@@ -139,4 +147,9 @@ Never. Every operation goes through WordPress's own PHP functions. There is no s
 * Design quality tools: page verification with a scored report, design lint, section recipes, and a design-system reader/seeder.
 * Works on hosts whose security layer strips custom request headers: the dashboard sends its sign-in token in the address as well as the header, and reports plainly when a host is blocking something it cannot work around.
 * Optional OAuth 2.1 sign-in (off by default) for apps that can't be given a sign-in key by hand, such as ChatGPT connectors — self-hosted, administrator-approved, and never able to grant more than the access level you chose.
+* Fixed: some connected apps — ChatGPT connectors in particular — signed in successfully but then reported that the site had no actions they could use. Saddle now serves apps that don't hold on to a session between requests, and no longer turns away an app for naming a protocol revision it hadn't seen. Apps that do hold a session are unaffected, and no access level or approval step changes.
+* Tools now tell connected apps what they do before they run: each carries a readable name and flags for whether it only reads, whether it can destroy anything, and whether repeating it is safe.
+* A refused tool call now returns its reason to the app as a readable answer rather than a protocol error, so the assistant can tell you which control to change instead of reporting a generic failure.
+* The list of plugins active on your site, and your theme's name, are now shared with an AI assistant only at the Admin access level — matching the access level already required to list them as a tool. The connection handshake also respects the pause switch.
+* Client traffic: a new panel under Connections → Connection details & health records what a connected app asked for and what it got back, so "it says it can't see any tools" can be answered without guesswork. Off by default, stops on its own after an hour, and records no keys or content.
 * Fixed: some connected apps — ChatGPT connectors in particular — signed in successfully but then reported that the site had no actions they could use. Saddle now serves apps that don't hold on to a session between requests, and no longer turns away an app for naming a protocol revision it hadn't seen. Apps that do hold a session are unaffected, and no access level or approval step changes.

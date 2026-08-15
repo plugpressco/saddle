@@ -94,12 +94,23 @@ class Saddle_Context {
 			$lines[] = sprintf( '- %s: %s', __( 'Timezone', 'saddle' ), $tz );
 		}
 
+		// Whether the theme is block-based changes how an agent must author a
+		// page, so that fact is needed at every tier. Which theme it is by name
+		// is inventory, and saddle/list-themes is admin-gated — so name it only
+		// where that ability would answer.
 		$theme = wp_get_theme();
 		if ( $theme && $theme->exists() ) {
-			$block   = function_exists( 'wp_is_block_theme' ) && wp_is_block_theme()
+			$block = function_exists( 'wp_is_block_theme' ) && wp_is_block_theme()
 				? __( ' (block theme)', 'saddle' )
 				: '';
-			$lines[] = sprintf( '- %s: %s%s', __( 'Active theme', 'saddle' ), $theme->get( 'Name' ), $block );
+
+			$lines[] = 'admin' === $tier
+				? sprintf( '- %s: %s%s', __( 'Active theme', 'saddle' ), $theme->get( 'Name' ), $block )
+				: sprintf(
+					'- %s: %s',
+					__( 'Active theme', 'saddle' ),
+					'' !== $block ? __( 'a block theme', 'saddle' ) : __( 'a classic theme', 'saddle' )
+				);
 		}
 		$lines[] = '';
 
@@ -188,7 +199,16 @@ class Saddle_Context {
 			$lines[] = '';
 		}
 
-		$plugins = self::active_plugin_names();
+		// Installed inventory is admin-tier information, and this is the same
+		// list saddle/list-plugins is gated behind — see the note at the top of
+		// includes/abilities/site.php: "Reads that expose configuration (option
+		// values, installed inventory) sit at `admin` too, not `read` — the
+		// inventory itself is sensitive." A read-tier session was getting a
+		// prose copy of it for free, which is the asymmetry a WordPress.org
+		// reviewer caught. Builder and multilingual detection above stays at
+		// every tier: that is behavioural guidance the agent needs to avoid
+		// mangling a page, not an inventory of what is installed.
+		$plugins = 'admin' === $tier ? self::active_plugin_names() : array();
 		if ( ! empty( $plugins ) ) {
 			$lines[] = __( '# Plugins active on this site', 'saddle' );
 			$lines[] = '';

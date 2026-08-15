@@ -75,8 +75,17 @@ require_once SADDLE_DIR . 'includes/class-saddle-connection.php';
 require_once SADDLE_DIR . 'includes/class-saddle-http.php';
 require_once SADDLE_DIR . 'includes/class-saddle-integrations.php';
 require_once SADDLE_DIR . 'includes/class-saddle-mcp.php';
-require_once SADDLE_DIR . 'includes/class-saddle-mcp-compat.php';
 require_once SADDLE_DIR . 'includes/class-saddle-mcp-diagnostics.php';
+
+// Adapter-only, and absent from the WordPress.org build along with the library
+// itself — file_exists() is what makes that build .org-safe, exactly as it is
+// for class-saddle-updater.php. Both degrade to no-ops.
+foreach ( array( 'class-saddle-bundled-adapter.php', 'class-saddle-mcp-compat.php' ) as $saddle_adapter_file ) {
+	if ( file_exists( SADDLE_DIR . 'includes/' . $saddle_adapter_file ) ) {
+		require_once SADDLE_DIR . 'includes/' . $saddle_adapter_file;
+	}
+}
+unset( $saddle_adapter_file );
 require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth.php';
 require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-store.php';
 require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-discovery.php';
@@ -200,12 +209,28 @@ final class Saddle {
 	 * tier + approval gate live in the abilities regardless of transport.
 	 */
 	public static function setup_mcp_transport() {
-		self::load_bundled_mcp_adapter();
+		// Absent from the WordPress.org build, together with the library it
+		// loads. Guarded at the point of use, per the house rule — a guard that
+		// is always true hides the mistake it was meant to catch.
+		if ( class_exists( 'Saddle_Bundled_Adapter' ) ) {
+			Saddle_Bundled_Adapter::load();
+		}
 
-		if ( self::mcp_adapter_available() ) {
+		// The traffic recorder is transport-agnostic and belongs on both paths:
+		// the build most likely to need it is the one without the adapter.
+		Saddle_MCP_Diagnostics::register();
+
+		if ( self::adapter_available() ) {
+			// Third-party hook, owned by the MCP Adapter plugin — its name is
+			// theirs, and this is the documented way to register a server with
+			// it. Reached only when that plugin is present.
 			add_action( 'mcp_adapter_init', array( 'Saddle_MCP', 'register_adapter_server' ) );
-			Saddle_MCP_Compat::register();
-			Saddle_MCP_Diagnostics::register();
+
+			// Shims the adapter's session and protocol-header strictness; it has
+			// no purpose without the adapter, so it ships with it.
+			if ( class_exists( 'Saddle_MCP_Compat' ) ) {
+				Saddle_MCP_Compat::register();
+			}
 		} else {
 			add_action( 'rest_api_init', array( 'Saddle_MCP', 'register_routes' ) );
 		}
@@ -216,58 +241,10 @@ final class Saddle {
 	 *
 	 * @return bool
 	 */
-	public static function mcp_adapter_available() {
+	public static function adapter_available() {
 		return class_exists( '\\WP\\MCP\\Core\\McpAdapter' );
 	}
 
-	/**
-	 * Boot the bundled WordPress MCP Adapter library.
-	 *
-	 * Guarded so that if any other plugin (e.g. the standalone mcp-adapter
-	 * plugin) already loaded `WP\MCP`, that copy wins and we don't redeclare its
-	 * classes. Composer's autoloader in the bundle uses paths relative to its own
-	 * location, so the vendored copy works from inside Saddle unchanged.
-	 */
-	private static function load_bundled_mcp_adapter() {
-		if ( class_exists( '\\WP\\MCP\\Core\\McpAdapter' ) ) {
-			return; // Provided elsewhere — defer to it.
-		}
-
-		/**
-		 * Filter whether Saddle loads its bundled MCP Adapter library.
-		 *
-		 * Return false to keep the bundle dormant — e.g. if you prefer to run the
-		 * standalone WordPress "MCP Adapter" plugin instead. (Two copies of the
-		 * un-guarded library cannot load in one request, so use one or the other.)
-		 *
-		 * @param bool $load Whether to load the bundled library. Default true.
-		 */
-		if ( ! apply_filters( 'saddle_load_bundled_mcp_adapter', true ) ) {
-			return;
-		}
-
-		$lib        = SADDLE_DIR . 'includes/lib/wp-mcp/';
-		$autoloader = $lib . 'includes/Autoloader.php';
-		if ( ! is_readable( $autoloader ) ) {
-			return; // Bundle missing — the built-in transport will take over.
-		}
-
-		if ( ! defined( 'WP_MCP_DIR' ) ) {
-			define( 'WP_MCP_DIR', $lib );
-		}
-		if ( ! defined( 'WP_MCP_VERSION' ) ) {
-			define( 'WP_MCP_VERSION', '0.5.0' );
-		}
-
-		require_once $autoloader;
-
-		if ( class_exists( '\\WP\\MCP\\Autoloader' )
-			&& \WP\MCP\Autoloader::autoload()
-			&& class_exists( '\\WP\\MCP\\Plugin' )
-		) {
-			\WP\MCP\Plugin::instance();
-		}
-	}
 
 	/**
 	 * Whether core's Abilities API is present.

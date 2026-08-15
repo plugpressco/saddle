@@ -247,7 +247,7 @@ class Saddle_Settings {
 					// connecting several Saddle sites gets distinct entries in
 					// their client, not five servers all named "saddle".
 					'serverSlug'   => Saddle_MCP::server_slug(),
-					'adapter'      => Saddle::mcp_adapter_available(),
+					'adapter'      => Saddle::adapter_available(),
 					// Whether ChatGPT can connect at all. ChatGPT's connector
 					// screen has no field for a custom HTTP header, so it needs
 					// the OAuth path — the wizard uses this to show the right
