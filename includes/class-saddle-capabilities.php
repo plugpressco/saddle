@@ -72,6 +72,27 @@ class Saddle_Capabilities {
 	);
 
 	/**
+	 * Ability short name => the WordPress capability its permission callback
+	 * requires. Populated by {@see self::permission()} as abilities register.
+	 *
+	 * @var array<string,string>
+	 */
+	private static $caps = array();
+
+	/**
+	 * The WordPress capability an ability requires, or '' when it is unknown
+	 * (nothing registered under that short name yet) or the ability asks only
+	 * for an authenticated user.
+	 *
+	 * @param string $short_name Ability id without the 'saddle/' prefix.
+	 * @return string
+	 */
+	public static function required_cap( $short_name ) {
+		$key = sanitize_key( (string) $short_name );
+		return isset( self::$caps[ $key ] ) ? self::$caps[ $key ] : '';
+	}
+
+	/**
 	 * Ordered list of valid tier names.
 	 *
 	 * @return string[]
@@ -209,6 +230,15 @@ class Saddle_Capabilities {
 	 * @return callable
 	 */
 	public static function permission( $level, $cap = 'read', $short_name = null ) {
+		// Remember which capability this tool asks for. Every ability in every
+		// plugin — free, Pro, and the integration wrappers — builds its callback
+		// here, so this one line is the whole registry, and it costs nothing at
+		// call time. denial_reason() needs it to tell an agent that the account
+		// is short a capability rather than blaming one of the owner's switches.
+		if ( $short_name ) {
+			self::$caps[ sanitize_key( $short_name ) ] = (string) $cap;
+		}
+
 		return function () use ( $level, $cap, $short_name ) {
 			$logged_in = is_user_logged_in();
 
@@ -296,6 +326,24 @@ class Saddle_Capabilities {
 		if ( $ability ) {
 			$meta     = $ability->get_meta();
 			$required = isset( $meta['saddle']['tier'] ) ? (string) $meta['saddle']['tier'] : '';
+
+			// The WordPress account behind the credential is short of a
+			// capability this tool needs. Nothing in the Saddle dashboard fixes
+			// that — the answer is a different account — so it must not be
+			// reported as one of the owner's switches. permission() checks the
+			// capability before the tier, so this branch comes first too.
+			$cap = self::required_cap( $short );
+			if ( '' !== $cap && ! current_user_can( $cap ) ) {
+				return array(
+					'code'    => 'saddle_capability_denied',
+					'message' => sprintf(
+						/* translators: 1: WordPress capability name, 2: tool name. */
+						__( 'The WordPress account this app is connected as cannot "%1$s", which "%2$s" requires. This is the account\'s role, not a Saddle setting — no access level or toggle will change it. Do not retry; tell the user to reconnect Saddle as an account with that permission.', 'saddle' ),
+						$cap,
+						$short
+					),
+				);
+			}
 			if ( '' !== $required && ! self::tier_allows( $required ) ) {
 				// The site allows this, but the credential in hand doesn't — the
 				// app was granted a narrower scope when it was authorized. That
