@@ -143,6 +143,9 @@ If you happen to have the separate MCP Adapter plugin active, Saddle notices and
 
 = 1.0.0 =
 * Initial public release.
+* Connected apps are now offered only the tools your access level and switches actually allow. A read-only site no longer advertises tools that would be refused on every call — the assistant is told how many are being held back and that only you can unlock them, so it can point you at the setting instead of reporting that your site cannot do it. Raising the access level widens the list again; reconnect the app if it caches what it was told at sign-in.
+* Fixed: a destructive tool from a connected PlugPress plugin could be confirmed with different details than the preview showed. The confirmation now covers everything the preview showed, not just which item it was about.
+* A refused call caused by the WordPress account being short a permission now says so, instead of pointing at Saddle settings that would not have changed anything.
 * See the whole site, not just one page: list and read block templates and template parts, read the global styles the owner set, and list their saved patterns.
 * Set up a design system on a block theme: bootstrap-design-system now writes the palette, type scale and spacing into your global styles, so it appears in Appearance > Editor > Styles and stays yours to edit. Existing values are never overwritten.
 * Orient in one call: context-bundle returns the design system, the blocks worth using, the theme's patterns, the site's templates and the section recipes together, instead of five separate calls per session.

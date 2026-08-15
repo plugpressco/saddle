@@ -275,6 +275,103 @@ class Saddle_Capabilities {
 	}
 
 	/**
+	 * Whether one ability could be called right now, judged the same way — and
+	 * in the same order — as the permission callback would judge it.
+	 *
+	 * PAUSE IS DELIBERATELY NOT CONSIDERED. Pause is a switch meant to be
+	 * flipped back, and it denies everything anyway; emptying the advertised
+	 * tool list on pause would force every connected client to reconnect on
+	 * resume. The instructions say the site is paused instead.
+	 *
+	 * @param string $ability_name Full ability id, e.g. 'saddle/create-post'.
+	 * @return bool
+	 */
+	public static function is_callable_now( $ability_name ) {
+		$short = 0 === strpos( (string) $ability_name, 'saddle/' )
+			? substr( (string) $ability_name, strlen( 'saddle/' ) )
+			: (string) $ability_name;
+
+		if ( ! is_user_logged_in() ) {
+			return false;
+		}
+
+		// Resolve the ability FIRST. wp_get_abilities() is what lazily fires
+		// wp_abilities_api_init, and required_cap()'s registry is filled by
+		// permission() as each ability registers — read it any earlier and the
+		// first call of the request sees an empty registry and skips the check.
+		$ability = function_exists( 'wp_get_ability' ) && isset( wp_get_abilities()[ $ability_name ] )
+			? wp_get_ability( $ability_name )
+			: null;
+		if ( ! $ability ) {
+			return false;
+		}
+
+		$cap = self::required_cap( $short );
+		if ( '' !== $cap && ! current_user_can( $cap ) ) {
+			return false;
+		}
+
+		if ( ! self::is_ability_enabled( $short ) ) {
+			return false;
+		}
+
+		$meta     = $ability->get_meta();
+		$required = isset( $meta['saddle']['tier'] ) ? (string) $meta['saddle']['tier'] : '';
+
+		// An ability that declares no tier is not something to guess about:
+		// show it and let its own callback decide. Every Saddle, Pro and
+		// wrapped ability declares one through saddle_ability_meta().
+		return '' === $required ? true : self::tier_allows( $required );
+	}
+
+	/**
+	 * How many `saddle/` abilities exist but are not callable at the moment,
+	 * split by what is withholding them — for telling an agent (and the owner)
+	 * what raising the access level would unlock.
+	 *
+	 * @return array{tier:int,disabled:int,capability:int,visible:int,total:int}
+	 */
+	public static function hidden_tool_counts() {
+		$counts = array(
+			'tier'       => 0,
+			'disabled'   => 0,
+			'capability' => 0,
+			'visible'    => 0,
+			'total'      => 0,
+		);
+
+		$abilities = function_exists( 'wp_get_abilities' ) ? wp_get_abilities() : array();
+
+		foreach ( $abilities as $key => $ability ) {
+			$name = is_string( $key ) ? $key : $ability->get_name();
+			if ( 0 !== strpos( $name, 'saddle/' ) ) {
+				continue;
+			}
+			++$counts['total'];
+
+			if ( self::is_callable_now( $name ) ) {
+				++$counts['visible'];
+				continue;
+			}
+
+			// Attribute the miss to the first gate that would catch it, in the
+			// order permission() checks them, so the numbers add up to total.
+			$short = substr( $name, strlen( 'saddle/' ) );
+			$cap   = self::required_cap( $short );
+
+			if ( '' !== $cap && ! current_user_can( $cap ) ) {
+				++$counts['capability'];
+			} elseif ( ! self::is_ability_enabled( $short ) ) {
+				++$counts['disabled'];
+			} else {
+				++$counts['tier'];
+			}
+		}
+
+		return $counts;
+	}
+
+	/**
 	 * Explain, in agent-actionable terms, why a tool call would be refused
 	 * right now — so an AI that hits a denial can tell the user exactly what
 	 * to do instead of retrying blind.

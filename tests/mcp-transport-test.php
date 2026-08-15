@@ -9,6 +9,25 @@
 
 class Saddle_MCP_Transport_Test extends WP_UnitTestCase {
 
+	/**
+	 * tools/list is only reachable through the transport gate, which requires
+	 * an authenticated user — and the list is now filtered to what that
+	 * credential can call. So the baseline for these tests is a real
+	 * connection: an administrator on an admin-tier site, which is what the
+	 * "every tool is listed" assertions below have always assumed.
+	 */
+	public function set_up() {
+		parent::set_up();
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+		Saddle_Capabilities::set_tier( 'admin' );
+	}
+
+	public function tear_down() {
+		Saddle_Capabilities::set_tier( 'read' );
+		delete_option( Saddle_Capabilities::DISABLED_OPTION );
+		parent::tear_down();
+	}
+
 	private function initialize( $protocol_version = null ) {
 		$params = array(
 			'capabilities' => array(),
@@ -144,6 +163,79 @@ class Saddle_MCP_Transport_Test extends WP_UnitTestCase {
 
 		$this->assertArrayHasKey( 'saddle-delete-post', $byname );
 		$this->assertTrue( $byname['saddle-delete-post']['annotations']['destructiveHint'] );
+	}
+
+	/* -------- the list is what this credential can call, nothing more -------- */
+
+	/**
+	 * The default install sits at `read`, and a third of the free toolset needs
+	 * more than that. Advertising those tools spends a schema each on a
+	 * guaranteed refusal.
+	 */
+	public function test_read_tier_is_not_offered_the_tools_it_cannot_call() {
+		Saddle_Capabilities::set_tier( 'read' );
+
+		$names = wp_list_pluck( $this->list_tools(), 'name' );
+
+		$this->assertNotEmpty( $names, 'A read-tier connection still gets the whole read surface.' );
+		$this->assertContains( 'saddle-get-site-info', $names );
+		$this->assertContains( 'saddle-list-posts', $names );
+
+		$this->assertNotContains( 'saddle-create-post', $names, 'A write tool must not be advertised at the read tier.' );
+		$this->assertNotContains( 'saddle-delete-post', $names );
+		$this->assertNotContains( 'saddle-list-plugins', $names, 'Nor an admin tool.' );
+	}
+
+	public function test_raising_the_tier_offers_the_write_tools() {
+		Saddle_Capabilities::set_tier( 'write' );
+
+		$names = wp_list_pluck( $this->list_tools(), 'name' );
+
+		$this->assertContains( 'saddle-create-post', $names );
+		$this->assertNotContains( 'saddle-list-plugins', $names, 'write is not admin.' );
+	}
+
+	public function test_a_tool_the_owner_switched_off_is_not_advertised() {
+		Saddle_Capabilities::set_disabled_abilities( array( 'delete-post' ) );
+
+		$names = wp_list_pluck( $this->list_tools(), 'name' );
+
+		$this->assertNotContains( 'saddle-delete-post', $names );
+		$this->assertContains( 'saddle-delete-page', $names, 'Only the tool that was switched off disappears.' );
+	}
+
+	/**
+	 * Pause denies everything anyway, so emptying the list would buy nothing
+	 * and would force every connected client to reconnect on resume. The
+	 * instructions carry the warning instead.
+	 */
+	public function test_pause_leaves_the_tool_list_intact() {
+		Saddle_Capabilities::set_paused( true );
+
+		$names = wp_list_pluck( $this->list_tools(), 'name' );
+
+		Saddle_Capabilities::set_paused( false );
+
+		$this->assertContains( 'saddle-get-site-info', $names );
+	}
+
+	/**
+	 * Filtering costs the agent the ability to say "that exists, you just
+	 * haven't enabled it" — so the instructions have to say it instead.
+	 */
+	public function test_the_instructions_say_how_many_tools_are_withheld() {
+		Saddle_Capabilities::set_tier( 'read' );
+
+		$instructions = $this->initialize( '2025-11-25' )['instructions'];
+
+		$this->assertStringContainsString( 'not offered to you', $instructions );
+		$this->assertStringContainsString( 'Saddle → Permissions', $instructions );
+	}
+
+	public function test_nothing_is_claimed_to_be_withheld_when_nothing_is() {
+		// Administrator at the admin tier with no toggles: the list is complete,
+		// so the context must not invent a shortfall.
+		$this->assertStringNotContainsString( 'not offered to you', $this->initialize( '2025-11-25' )['instructions'] );
 	}
 
 	/**
