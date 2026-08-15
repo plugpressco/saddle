@@ -259,6 +259,46 @@ class Saddle_Capabilities_Test extends WP_UnitTestCase {
 		$this->assertFalse( Saddle_Capabilities::domain_matches_recorded() );
 	}
 
+	/* -------- denial_reason: an agent must be told the right fix -------- */
+
+	public function test_a_capability_denial_blames_the_account_not_a_saddle_switch() {
+		// A subscriber at the admin tier: nothing the owner controls is in the
+		// way, so before #89 this fell through to the generic "none of Saddle's
+		// gates blocked this" paragraph — which lists three fixes, none of them
+		// the real one.
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'subscriber' ) ) );
+		Saddle_Capabilities::set_tier( 'admin' );
+
+		$reason = Saddle_Capabilities::denial_reason( 'saddle/create-post' );
+
+		$this->assertIsArray( $reason, 'A capability denial must be explained, not left to the generic fallback.' );
+		$this->assertSame( 'saddle_capability_denied', $reason['code'] );
+		$this->assertStringContainsString( 'edit_posts', $reason['message'] );
+	}
+
+	public function test_the_owners_switches_still_outrank_a_capability_denial() {
+		// Same under-privileged account, but the tool is also switched off.
+		// permission() checks the toggle first, so the reason must match what
+		// actually refused the call.
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'subscriber' ) ) );
+		Saddle_Capabilities::set_tier( 'admin' );
+		Saddle_Capabilities::set_disabled_abilities( array( 'create-post' ) );
+
+		$reason = Saddle_Capabilities::denial_reason( 'saddle/create-post' );
+
+		$this->assertSame( 'saddle_tool_disabled', $reason['code'] );
+	}
+
+	public function test_an_account_that_holds_the_capability_gets_no_capability_reason() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+		Saddle_Capabilities::set_tier( 'admin' );
+
+		$this->assertNull(
+			Saddle_Capabilities::denial_reason( 'saddle/create-post' ),
+			'Nothing of Saddle’s blocked this call, so nothing should be claimed.'
+		);
+	}
+
 	public function test_re_saving_the_tier_clears_a_stale_domain_warning() {
 		Saddle_Capabilities::set_tier( 'write' );
 		update_option( Saddle_Capabilities::TIER_DOMAIN_OPTION, 'old-domain.example.test' );

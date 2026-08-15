@@ -156,6 +156,44 @@ class Saddle_Integrations {
 	}
 
 	/**
+	 * Input keys that name the item a partner tool acts on, best first.
+	 *
+	 * Only used to make the log line and the token's target readable — the
+	 * `bind` hash is what actually holds a confirm to its preview, so a key
+	 * missing from this list costs legibility, never safety.
+	 *
+	 * @return string[]
+	 */
+	private static function target_keys() {
+		/**
+		 * Filter the input keys treated as a partner tool's target item.
+		 *
+		 * @param string[] $keys Candidate keys, best first.
+		 */
+		return (array) apply_filters(
+			'saddle_integration_target_keys',
+			array( 'id', 'post_id', 'page_id', 'doc_id', 'attachment_id', 'media_id', 'campaign_id', 'term_id', 'user_id', 'redirect_id' )
+		);
+	}
+
+	/**
+	 * Sort an argument array by key, recursively, so two calls carrying the
+	 * same arguments hash the same however the client ordered its JSON.
+	 *
+	 * @param array $args Arguments.
+	 * @return array Key-sorted copy.
+	 */
+	private static function canonical( array $args ) {
+		ksort( $args );
+		foreach ( $args as $key => $value ) {
+			if ( is_array( $value ) ) {
+				$args[ $key ] = self::canonical( $value );
+			}
+		}
+		return $args;
+	}
+
+	/**
 	 * Build the wrapper's execute callback: delegate to the source ability
 	 * (whose own permission_callback core re-checks inside execute()), gate
 	 * destructive calls, and log every mutation.
@@ -190,23 +228,31 @@ class Saddle_Integrations {
 				return $source->execute( array_diff_key( $input, array( 'confirm_token' => true ) ) );
 			};
 
+			// Never the handshake field: the preview call carries no
+			// confirm_token and the confirm call does, so folding it in would
+			// make the two calls differ and nothing could ever be confirmed.
+			$bindable = array_diff_key( $input, array( 'confirm_token' => true ) );
+
 			// A stable-ish target so a preview token can't be replayed
 			// against a different item.
 			$target = '';
-			foreach ( array( 'id', 'post_id', 'attachment_id' ) as $key ) {
-				if ( isset( $input[ $key ] ) && is_scalar( $input[ $key ] ) ) {
-					$target = (string) $input[ $key ];
+			foreach ( self::target_keys() as $key ) {
+				if ( isset( $bindable[ $key ] ) && is_scalar( $bindable[ $key ] ) ) {
+					$target = (string) $bindable[ $key ];
 					break;
 				}
 			}
-			if ( '' === $target && $input ) {
-				// Hash the arguments, but never the handshake field: the preview
-				// call carries no confirm_token and the confirm call does, so
-				// hashing it in would make the target differ between the two and
-				// no destructive keyless tool could ever be confirmed.
-				$bindable = array_diff_key( $input, array( 'confirm_token' => true ) );
-				$target   = $bindable ? substr( md5( wp_json_encode( $bindable ) ), 0, 12 ) : '';
+			if ( '' === $target && $bindable ) {
+				$target = substr( md5( wp_json_encode( $bindable ) ), 0, 12 );
 			}
+
+			// The target names the item; `bind` covers EVERYTHING ELSE the call
+			// carries. Without it only the id was held to the preview, so a
+			// confirm on the same item could arrive with a different payload
+			// and the gate would run it — the user approved one change and got
+			// another (issue #89). Kept out of $target so the log line stays a
+			// readable "#12" rather than a hash.
+			$bind = $bindable ? hash( 'sha256', (string) wp_json_encode( self::canonical( $bindable ) ) ) : '';
 
 			if ( $destructive ) {
 				// The gate logs the confirmed execution itself.
@@ -214,6 +260,7 @@ class Saddle_Integrations {
 					array(
 						'action'  => $short,
 						'target'  => $target,
+						'bind'    => $bind,
 						'summary' => sprintf(
 							/* translators: 1: tool label, 2: target, 3: plugin name. */
 							__( 'Run "%1$s" on %2$s via the %3$s integration. This is flagged destructive by %3$s.', 'saddle' ),
