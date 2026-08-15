@@ -119,6 +119,11 @@ class Saddle_Context {
 		$lines[] = '- ' . $allowed;
 		$lines[] = '- ' . __( 'Saddle exposes core content only: posts, pages, media, and their block structure.', 'saddle' );
 		$lines[] = '- ' . __( 'Stay within the tools Saddle provides. Do not attempt actions outside this scope.', 'saddle' );
+
+		foreach ( self::withheld_tools_lines() as $line ) {
+			$lines[] = $line;
+		}
+
 		$lines[] = '';
 
 		$lines[] = __( '# Designing pages with blocks', 'saddle' );
@@ -253,6 +258,80 @@ class Saddle_Context {
 		 * @param string $tier    The current access tier.
 		 */
 		return (string) apply_filters( 'saddle_system_context', $context, $tier );
+	}
+
+	/**
+	 * What the tool list is NOT showing, and who can change that.
+	 *
+	 * The tools/list an agent receives is filtered to what its credential can
+	 * actually call, which is the right trade — a schema per guaranteed refusal
+	 * is a bad deal — but it costs the agent the ability to say "that tool
+	 * exists, you just haven't enabled it". These lines buy that back for a
+	 * couple of sentences, and they are the difference between an agent that
+	 * tells the user which switch to flip and one that reports the site simply
+	 * cannot do the thing.
+	 *
+	 * @return string[] Context lines (empty when nothing is withheld).
+	 */
+	private static function withheld_tools_lines() {
+		if ( ! method_exists( 'Saddle_Capabilities', 'hidden_tool_counts' ) ) {
+			return array();
+		}
+
+		$counts = Saddle_Capabilities::hidden_tool_counts();
+		$lines  = array();
+
+		if ( ! empty( $counts['tier'] ) ) {
+			$lines[] = '- ' . sprintf(
+				/* translators: 1: number of tools, 2: current access level. */
+				_n(
+					'%1$d further tool exists on this site but is not offered to you, because it needs a higher access level than the "%2$s" one this connection has. Only the site owner can raise it, in Saddle → Permissions. If a request needs it, say which level it would take rather than reporting that the site cannot do it.',
+					'%1$d further tools exist on this site but are not offered to you, because they need a higher access level than the "%2$s" one this connection has. Only the site owner can raise it, in Saddle → Permissions. If a request needs one, say which level it would take rather than reporting that the site cannot do it.',
+					(int) $counts['tier'],
+					'saddle'
+				),
+				(int) $counts['tier'],
+				Saddle_Capabilities::get_tier()
+			);
+		}
+
+		if ( ! empty( $counts['disabled'] ) ) {
+			$lines[] = '- ' . sprintf(
+				/* translators: %d: number of tools. */
+				_n(
+					'The owner has also switched %d tool off individually. That is a deliberate choice — mention it if a request needs it, but do not press.',
+					'The owner has also switched %d tools off individually. Those are deliberate choices — mention them if a request needs one, but do not press.',
+					(int) $counts['disabled'],
+					'saddle'
+				),
+				(int) $counts['disabled']
+			);
+		}
+
+		if ( ! empty( $counts['capability'] ) ) {
+			$lines[] = '- ' . sprintf(
+				/* translators: %d: number of tools. */
+				_n(
+					'%d tool is withheld because the WordPress account this app is connected as lacks the permission it needs. No Saddle setting changes that; it takes reconnecting as an account with the right role.',
+					'%d tools are withheld because the WordPress account this app is connected as lacks the permissions they need. No Saddle setting changes that; it takes reconnecting as an account with the right role.',
+					(int) $counts['capability'],
+					'saddle'
+				),
+				(int) $counts['capability']
+			);
+		}
+
+		if ( Saddle_Capabilities::is_paused() ) {
+			// Pause deliberately leaves the tool list intact (so resuming needs
+			// no reconnect), which makes this line the only warning an agent
+			// gets before every single call fails.
+			array_unshift(
+				$lines,
+				'- ' . __( 'SADDLE IS PAUSED. The site owner has switched off all AI access, so every tool below will be refused until they resume it in Saddle → Settings. Tell the user that before attempting anything.', 'saddle' )
+			);
+		}
+
+		return $lines;
 	}
 
 	/**

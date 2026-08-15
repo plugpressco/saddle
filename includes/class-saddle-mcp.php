@@ -113,6 +113,56 @@ class Saddle_MCP {
 		// name is theirs and cannot carry a Saddle prefix. It only ever fires
 		// when that plugin is the active transport.
 		add_filter( 'mcp_adapter_initialize_response', array( __CLASS__, 'filter_adapter_initialize' ), 10, 2 );
+
+		// Advertise only what this credential could actually call. Third-party
+		// hook, same as the one above: it is the adapter's, fires inside
+		// ToolsHandler::list_tools() at DISPATCH time — after authentication,
+		// and after Saddle_OAuth_Bearer has set its scope ceiling on
+		// determine_current_user — which is why the tier read here is the real
+		// one. Registration above stays complete on purpose; see
+		// adapter_tool_names().
+		add_filter( 'mcp_adapter_tools_list', array( __CLASS__, 'filter_adapter_tools_list' ), 10, 2 );
+	}
+
+	/**
+	 * Drop tools the current credential cannot call from the adapter's
+	 * tools/list response.
+	 *
+	 * A default install sits at the `read` tier, where a third of the free
+	 * toolset — and rather more of it once Pro and the integrations are on — is
+	 * refused on every call. Listing those tools costs a schema each in the
+	 * agent's context and buys a guaranteed refusal. What replaces them is one
+	 * sentence in the instructions saying how many are withheld and who can
+	 * unlock them, which is the part a user can act on.
+	 *
+	 * @param array  $tools  Tool DTOs the server holds.
+	 * @param object $server The adapter's McpServer instance.
+	 * @return array
+	 */
+	public static function filter_adapter_tools_list( $tools, $server = null ) {
+		if ( ! is_array( $tools ) || ! class_exists( 'Saddle_Capabilities' ) ) {
+			return $tools;
+		}
+
+		// Other servers may run on the same adapter; only ever filter ours.
+		if ( is_object( $server ) && method_exists( $server, 'get_server_id' ) && self::ADAPTER_SERVER_ID !== $server->get_server_id() ) {
+			return $tools;
+		}
+
+		$kept = array();
+		foreach ( $tools as $tool ) {
+			$name = is_object( $tool ) && method_exists( $tool, 'getName' ) ? (string) $tool->getName() : '';
+
+			// Anything we can't identify is left alone rather than dropped: a
+			// filter that silently eats an unrecognized tool is worse than one
+			// that shows a tool too many.
+			$ability = '' === $name ? '' : self::ability_name_for_tool( $name );
+			if ( '' === $ability || Saddle_Capabilities::is_callable_now( $ability ) ) {
+				$kept[] = $tool;
+			}
+		}
+
+		return $kept;
 	}
 
 	/**
@@ -488,6 +538,14 @@ class Saddle_MCP {
 		$tools = array();
 
 		foreach ( self::saddle_abilities() as $name => $ability ) {
+			// Same rule as the adapter path (filter_adapter_tools_list): only
+			// advertise what this credential could call. On a WordPress.org
+			// install this transport is the only one there is, so this is the
+			// line that does the work for most sites.
+			if ( class_exists( 'Saddle_Capabilities' ) && ! Saddle_Capabilities::is_callable_now( $name ) ) {
+				continue;
+			}
+
 			$tool = array(
 				'name'        => self::mcp_tool_name( $name ),
 				'description' => $ability->get_description(),

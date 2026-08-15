@@ -259,6 +259,82 @@ class Saddle_Capabilities_Test extends WP_UnitTestCase {
 		$this->assertFalse( Saddle_Capabilities::domain_matches_recorded() );
 	}
 
+	/* -------- what this credential could actually call -------- */
+
+	public function test_is_callable_now_follows_the_tier() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+
+		Saddle_Capabilities::set_tier( 'read' );
+		$this->assertTrue( Saddle_Capabilities::is_callable_now( 'saddle/get-site-info' ) );
+		$this->assertFalse( Saddle_Capabilities::is_callable_now( 'saddle/create-post' ) );
+		$this->assertFalse( Saddle_Capabilities::is_callable_now( 'saddle/list-plugins' ) );
+
+		Saddle_Capabilities::set_tier( 'write' );
+		$this->assertTrue( Saddle_Capabilities::is_callable_now( 'saddle/create-post' ) );
+		$this->assertFalse( Saddle_Capabilities::is_callable_now( 'saddle/list-plugins' ) );
+
+		Saddle_Capabilities::set_tier( 'admin' );
+		$this->assertTrue( Saddle_Capabilities::is_callable_now( 'saddle/list-plugins' ) );
+	}
+
+	public function test_is_callable_now_respects_a_per_tool_switch() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+		Saddle_Capabilities::set_tier( 'admin' );
+		Saddle_Capabilities::set_disabled_abilities( array( 'delete-post' ) );
+
+		$this->assertFalse( Saddle_Capabilities::is_callable_now( 'saddle/delete-post' ) );
+		$this->assertTrue( Saddle_Capabilities::is_callable_now( 'saddle/delete-page' ) );
+	}
+
+	public function test_is_callable_now_respects_the_capability_the_account_lacks() {
+		// The ordering this pins: required_cap()'s registry is filled as
+		// abilities register, and abilities register lazily on the first
+		// wp_get_abilities() call — so a check that reads the registry before
+		// resolving the ability silently passes every capability test.
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'subscriber' ) ) );
+		Saddle_Capabilities::set_tier( 'admin' );
+
+		$this->assertFalse(
+			Saddle_Capabilities::is_callable_now( 'saddle/create-post' ),
+			'A subscriber cannot edit_posts, whatever the tier says.'
+		);
+	}
+
+	public function test_pause_does_not_change_what_is_advertised() {
+		// Pause denies at call time; it deliberately does not empty the tool
+		// list, so resuming needs no reconnect.
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+		Saddle_Capabilities::set_tier( 'admin' );
+		Saddle_Capabilities::set_paused( true );
+
+		$this->assertTrue( Saddle_Capabilities::is_callable_now( 'saddle/get-site-info' ) );
+
+		Saddle_Capabilities::set_paused( false );
+	}
+
+	public function test_an_anonymous_caller_can_call_nothing() {
+		wp_set_current_user( 0 );
+		Saddle_Capabilities::set_tier( 'admin' );
+
+		$this->assertFalse( Saddle_Capabilities::is_callable_now( 'saddle/get-site-info' ) );
+	}
+
+	public function test_hidden_tool_counts_add_up_and_attribute_correctly() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+		Saddle_Capabilities::set_tier( 'read' );
+		Saddle_Capabilities::set_disabled_abilities( array( 'get-site-info' ) );
+
+		$counts = Saddle_Capabilities::hidden_tool_counts();
+
+		$this->assertSame(
+			$counts['total'],
+			$counts['visible'] + $counts['tier'] + $counts['disabled'] + $counts['capability'],
+			'Every tool must be accounted for exactly once.'
+		);
+		$this->assertGreaterThan( 0, $counts['tier'], 'The read tier withholds the write and admin tools.' );
+		$this->assertSame( 1, $counts['disabled'] );
+	}
+
 	/* -------- denial_reason: an agent must be told the right fix -------- */
 
 	public function test_a_capability_denial_blames_the_account_not_a_saddle_switch() {

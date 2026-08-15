@@ -960,6 +960,11 @@ class Saddle_Abilities {
 				'media' => array_sum( (array) wp_count_attachments() ),
 			),
 			'access_tier'  => Saddle_Capabilities::get_tier(),
+			// The tool list is filtered to what this credential can call, so
+			// say what isn't in it. Without this an agent cannot tell "the site
+			// can't do that" from "this connection isn't allowed to", and those
+			// have very different answers for the person asking.
+			'tools'        => Saddle_Capabilities::hidden_tool_counts(),
 			'connected_as' => array(
 				'id'    => $user->ID,
 				'login' => $user->user_login,

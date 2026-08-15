@@ -38,6 +38,7 @@ class Saddle_MCP_Adapter_Transport_Test extends WP_UnitTestCase {
 		// add_filter is idempotent for an identical callback and priority, so
 		// re-adding it is safe when the snapshot did keep it.
 		add_filter( 'mcp_adapter_initialize_response', array( 'Saddle_MCP', 'filter_adapter_initialize' ), 10, 2 );
+		add_filter( 'mcp_adapter_tools_list', array( 'Saddle_MCP', 'filter_adapter_tools_list' ), 10, 2 );
 	}
 
 	public function tear_down() {
@@ -358,5 +359,27 @@ class Saddle_MCP_Adapter_Transport_Test extends WP_UnitTestCase {
 				sprintf( 'Tool name %s is not accepted by strict clients.', $tool['name'] )
 			);
 		}
+	}
+
+	/**
+	 * The tier filter has to hold on THIS transport too, and this is the one
+	 * that proves the timing: the adapter builds its tool list at
+	 * mcp_adapter_init, long before authentication, so the filter can only work
+	 * because it runs at dispatch — inside ToolsHandler::list_tools().
+	 */
+	public function test_the_adapter_list_is_filtered_to_the_current_tier() {
+		Saddle_Capabilities::set_tier( 'read' );
+		$session_id = $this->initialize_and_get_session_id();
+
+		$names = wp_list_pluck( $this->tools_from( $this->rpc( 'tools/list', array(), array( 'Mcp-Session-Id' => $session_id ) ) ), 'name' );
+
+		$this->assertContains( 'saddle-get-site-info', $names );
+		$this->assertNotContains( 'saddle-create-post', $names, 'A write tool must not be advertised at the read tier.' );
+
+		Saddle_Capabilities::set_tier( 'admin' );
+
+		$raised = wp_list_pluck( $this->tools_from( $this->rpc( 'tools/list', array(), array( 'Mcp-Session-Id' => $session_id ) ) ), 'name' );
+
+		$this->assertContains( 'saddle-create-post', $raised, 'Raising the tier must widen the same session’s list.' );
 	}
 }
