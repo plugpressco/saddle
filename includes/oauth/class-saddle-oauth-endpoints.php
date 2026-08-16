@@ -142,6 +142,24 @@ class Saddle_OAuth_Endpoints {
 			return self::bounce( $redirect_uri, 'server_error', $request_id->get_error_message(), $state );
 		}
 
+		$asked = trim( (string) $request->get_param( 'scope' ) );
+
+		// A client that named its scopes is taken at its word — widening a
+		// deliberate `saddle:read` request would be both a spec violation and a
+		// safety regression, and some clients compare the scope they get back
+		// against the one they asked for.
+		//
+		// A client that asked for nothing has expressed no preference, and until
+		// now inherited read forever with no screen anywhere able to raise it.
+		// ChatGPT is exactly that client: it registers dynamically and starts the
+		// flow with no `scope` parameter, which is why its connections could only
+		// ever be read-only. It now arrives at consent proposing the site's own
+		// level — a proposal, still one explicit click away from being granted,
+		// and still clamped to the site tier when it is.
+		$scope = '' === $asked
+			? Saddle_OAuth::normalize_scope( '', Saddle_OAuth::site_scope() )
+			: Saddle_OAuth::normalize_scope( $asked );
+
 		$saved = Saddle_OAuth_Store::save_request(
 			$request_id,
 			array(
@@ -151,7 +169,7 @@ class Saddle_OAuth_Endpoints {
 				'logo_uri'       => isset( $client['logo_uri'] ) ? (string) $client['logo_uri'] : '',
 				'redirect_uri'   => $redirect_uri,
 				'state'          => $state,
-				'scope'          => Saddle_OAuth::normalize_scope( (string) $request->get_param( 'scope' ) ),
+				'scope'          => $scope,
 				'code_challenge' => $challenge,
 				'resource'       => '' === $resource ? Saddle_OAuth::resource_id() : untrailingslashit( $resource ),
 			)

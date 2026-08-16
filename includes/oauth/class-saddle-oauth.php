@@ -261,12 +261,23 @@ class Saddle_OAuth {
 	 * Unknown scope tokens are dropped rather than rejected: a general-purpose MCP
 	 * client may ask for extras it learned elsewhere, and failing the whole
 	 * authorization over one unrecognized word is worse UX than granting the
-	 * intersection. An empty result falls back to read.
+	 * intersection.
 	 *
-	 * @param string $requested Space-delimited scope string.
+	 * When the intersection is empty the caller decides what that means, through
+	 * `$fallback`. Two different situations reach this line and they do not
+	 * deserve the same answer: a client that asked for nothing at all has
+	 * expressed no preference, while one that asked only for scopes we do not
+	 * recognize has. The authorize endpoint passes {@see self::site_scope()} for
+	 * the first case — ChatGPT registers dynamically and starts the flow with no
+	 * `scope` parameter, so read-only-forever was the only outcome it could ever
+	 * reach. Everything else keeps the least-privilege default.
+	 *
+	 * @param string      $requested Space-delimited scope string.
+	 * @param string|null $fallback  Scope to grant when nothing recognized was asked for.
+	 *                               Defaults to {@see self::DEFAULT_SCOPE}.
 	 * @return string Space-delimited, deduplicated, ordered scope string.
 	 */
-	public static function normalize_scope( $requested ) {
+	public static function normalize_scope( $requested, $fallback = null ) {
 		$asked = preg_split( '/\s+/', trim( (string) $requested ), -1, PREG_SPLIT_NO_EMPTY );
 		$asked = is_array( $asked ) ? $asked : array();
 
@@ -278,10 +289,59 @@ class Saddle_OAuth {
 		}
 
 		if ( empty( $granted ) ) {
+			// A fallback is a suggestion, not an escape hatch: run it back through
+			// the same intersection (with no fallback of its own, so this can
+			// recurse exactly once) so nothing can introduce a scope Saddle does
+			// not grant.
+			if ( null !== $fallback ) {
+				return self::normalize_scope( (string) $fallback );
+			}
+
 			return self::DEFAULT_SCOPE;
 		}
 
 		return implode( ' ', $granted );
+	}
+
+	/**
+	 * The scope string that carries a given Saddle tier.
+	 *
+	 * Cumulative, because the tiers are: `write` includes reading, `admin`
+	 * includes both. A client reading the string back gets the whole set rather
+	 * than having to know Saddle's ordering.
+	 *
+	 * @param string $tier One of 'read'|'write'|'admin'.
+	 * @return string Space-delimited scope string.
+	 */
+	public static function tier_to_scope( $tier ) {
+		switch ( (string) $tier ) {
+			case 'admin':
+				return implode( ' ', self::SCOPES );
+			case 'write':
+				return 'saddle:read saddle:write';
+			case 'read':
+			default:
+				return self::DEFAULT_SCOPE;
+		}
+	}
+
+	/**
+	 * The scope matching what the owner has actually enabled on this site.
+	 *
+	 * Deliberately the *site* tier and not {@see Saddle_Capabilities::get_tier()}:
+	 * this answers "what could a new connection be granted here", which is a
+	 * question about configuration, not about whoever is holding a credential
+	 * right now. It is a ceiling on what may be granted, never a grant in itself
+	 * — the consent screen still has to be clicked.
+	 *
+	 * @return string Space-delimited scope string.
+	 */
+	public static function site_scope() {
+		if ( ! class_exists( 'Saddle_Capabilities' ) ) {
+			return self::DEFAULT_SCOPE;
+		}
+
+		return self::tier_to_scope( Saddle_Capabilities::get_site_tier() );
 	}
 
 	/**

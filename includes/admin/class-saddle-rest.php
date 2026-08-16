@@ -346,9 +346,23 @@ class Saddle_REST_Admin {
 			self::REST_NAMESPACE,
 			'/oauth-connections/(?P<id>[a-f0-9]{32})',
 			array(
-				'methods'             => 'DELETE',
-				'callback'            => array( __CLASS__, 'revoke_oauth_connection' ),
-				'permission_callback' => array( __CLASS__, 'can_manage' ),
+				array(
+					'methods'             => 'DELETE',
+					'callback'            => array( __CLASS__, 'revoke_oauth_connection' ),
+					'permission_callback' => array( __CLASS__, 'can_manage' ),
+				),
+				array(
+					'methods'             => 'POST',
+					'callback'            => array( __CLASS__, 'update_oauth_connection' ),
+					'permission_callback' => array( __CLASS__, 'can_manage' ),
+					'args'                => array(
+						'level' => array(
+							'type'     => 'string',
+							'required' => true,
+							'enum'     => Saddle_Capabilities::tiers(),
+						),
+					),
+				),
 			)
 		);
 	}
@@ -476,6 +490,80 @@ class Saddle_REST_Admin {
 	}
 
 	/**
+	 * POST /oauth-connections/{id} — change what a connected app may do.
+	 *
+	 * The repair path for a connection that was granted less than the owner
+	 * wanted. Before this existed the only remedy was disconnect-and-reconnect,
+	 * which did not help either: an app that requests no scope — ChatGPT — came
+	 * back at the same level every time.
+	 *
+	 * Clamped to the site tier server-side. The route's `enum` only proves the
+	 * value is a tier name; it says nothing about whether this site allows it.
+	 *
+	 * @param WP_REST_Request $request Incoming request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function update_oauth_connection( WP_REST_Request $request ) {
+		$id    = (string) $request->get_param( 'id' );
+		$level = sanitize_key( (string) $request->get_param( 'level' ) );
+
+		$grant = Saddle_OAuth_Store::get_grant( $id );
+		if ( ! $grant ) {
+			return new WP_Error(
+				'saddle_oauth_unknown_connection',
+				__( 'That connection no longer exists — it may already have been disconnected.', 'saddle' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		$site_tier = Saddle_Capabilities::get_site_tier();
+		if ( Saddle_Capabilities::rank( $level ) > Saddle_Capabilities::rank( $site_tier ) ) {
+			return new WP_Error(
+				'saddle_oauth_above_site_tier',
+				sprintf(
+					/* translators: %s: the site's current access level. */
+					__( 'This site is set to “%s”, so a connected app cannot be given more than that. Raise the site\'s access level first.', 'saddle' ),
+					$site_tier
+				),
+				array( 'status' => 400 )
+			);
+		}
+
+		$scope = Saddle_OAuth::tier_to_scope( $level );
+		if ( ! Saddle_OAuth_Store::set_grant_scope( $id, $scope ) ) {
+			return new WP_Error(
+				'saddle_oauth_unknown_connection',
+				__( 'That connection no longer exists — it may already have been disconnected.', 'saddle' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		if ( class_exists( 'Saddle_Log' ) ) {
+			Saddle_Log::record(
+				array(
+					'action'  => 'oauth-level-changed',
+					'target'  => (string) $grant['client_id'],
+					'summary' => sprintf(
+						/* translators: 1: connected app name, 2: the access level it now has. */
+						__( 'Changed %1$s to the “%2$s” access level', 'saddle' ),
+						'' !== (string) $grant['client_name'] ? (string) $grant['client_name'] : (string) $grant['client_id'],
+						$level
+					),
+				)
+			);
+		}
+
+		return new WP_REST_Response(
+			array(
+				'id'    => $id,
+				'scope' => $scope,
+				'level' => $level,
+			),
+			200
+		);
+	}
+
+	/**
 	 * Capability gate for every admin route.
 	 *
 	 * @return bool
@@ -532,10 +620,20 @@ class Saddle_REST_Admin {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public static function update_settings( WP_REST_Request $request ) {
-		$params = $request->get_json_params();
-		if ( ! is_array( $params ) ) {
-			$params = array();
-		}
+		// Every place a value could arrive, not a JSON body alone. Which keys are
+		// *present* is load-bearing below — absent means "leave this alone", while
+		// '' or null mean "clear it" — so this cannot collapse into get_param(),
+		// which cannot tell those apart. Reading JSON only meant a form-encoded
+		// `tier` passed the route's enum, passed can_manage, returned 200, and
+		// saved nothing: indistinguishable, from the dashboard, from the setting
+		// simply not sticking. This codebase already works around one host that
+		// rewrites request bodies (see the /preferences alias above).
+		$json   = $request->get_json_params();
+		$params = array_merge(
+			(array) $request->get_query_params(),
+			(array) $request->get_body_params(),
+			is_array( $json ) ? $json : array()
+		);
 
 		if ( array_key_exists( 'tier', $params ) ) {
 			if ( ! Saddle_Capabilities::set_tier( $request->get_param( 'tier' ) ) ) {

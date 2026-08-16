@@ -441,17 +441,54 @@ class Saddle_OAuth_Store {
 	 */
 	public static function revoke_grant( $grant_id ) {
 		$existed = self::forget( 'grant', $grant_id );
-		self::delete_by_grant( $grant_id );
+
+		foreach ( self::bound_to_grant( $grant_id ) as $post_id ) {
+			wp_delete_post( $post_id, true );
+		}
 
 		return $existed;
 	}
 
 	/**
-	 * Delete every code and token bound to a grant.
+	 * Change the scope on a grant, and on every live token issued against it.
+	 *
+	 * Both halves matter. The grant is what the Connections screen reports and
+	 * what a refresh copies onto the next access token; the tokens are what
+	 * {@see Saddle_OAuth_Bearer::tier_ceiling()} reads on each request. Rewriting
+	 * only the grant would leave a raised level invisible until the current
+	 * access token expired — up to {@see self::ACCESS_TTL} of an owner watching a
+	 * setting appear to do nothing, which is the exact failure this whole feature
+	 * exists to end.
+	 *
+	 * Callers are responsible for clamping the scope to the site tier first; this
+	 * writes what it is given.
 	 *
 	 * @param string $grant_id Grant identifier.
+	 * @param string $scope    Space-delimited scope string.
+	 * @return bool Whether the grant existed and was updated.
 	 */
-	private static function delete_by_grant( $grant_id ) {
+	public static function set_grant_scope( $grant_id, $scope ) {
+		$post_id = self::find( 'grant', $grant_id );
+		if ( ! $post_id ) {
+			return false;
+		}
+
+		update_post_meta( $post_id, '_saddle_scope', (string) $scope );
+
+		foreach ( self::bound_to_grant( $grant_id ) as $bound_id ) {
+			update_post_meta( $bound_id, '_saddle_scope', (string) $scope );
+		}
+
+		return true;
+	}
+
+	/**
+	 * Every code and token record bound to a grant.
+	 *
+	 * @param string $grant_id Grant identifier.
+	 * @return int[] Post ids.
+	 */
+	private static function bound_to_grant( $grant_id ) {
 		$query = new WP_Query(
 			array(
 				'post_type'              => self::CPT,
@@ -471,9 +508,7 @@ class Saddle_OAuth_Store {
 			)
 		);
 
-		foreach ( $query->posts as $post_id ) {
-			wp_delete_post( (int) $post_id, true );
-		}
+		return array_map( 'intval', $query->posts );
 	}
 
 	/*
