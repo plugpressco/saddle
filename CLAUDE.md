@@ -247,15 +247,18 @@ in the managed block below; these are the Saddle-specific additions.
   instruction text the agent must receive verbatim.
 - Regenerate `languages/saddle.pot` whenever strings change. It has gone stale
   before and shipped missing an entire feature's worth of msgids.
-- React UI: **`@plugpress/ui`** (git tag pinned in `package.json`) is the kit.
-  No `@wordpress/components`, no Tailwind, no second kit. Product-specific pieces
-  (BrandMark, LevelIcon, the Permissions lanes, the activity timeline) stay
-  in-plugin, styled on `--pp-*` tokens. Light-only. The brand mark is
-  single-sourced from `assets/brand/mark.svg`. Read `admin/DESIGN-ALIGNMENT.md`
-  before writing admin CSS.
-  - npm trap: changing the git ref in `package.json` and running `npm install`
-    does **not** re-resolve it. `rm -rf node_modules/@plugpress/ui` and install
-    the tag explicitly.
+- React UI: **`@plugpress/ui`** is the kit, installed **from the npm registry**
+  (`^0.12.0`), not from a GitHub tag. No `@wordpress/components`, no Tailwind,
+  no second kit. Product-specific pieces (BrandMark, LevelIcon, the Permissions
+  lanes, the activity timeline) stay in-plugin, styled on `--pp-*` tokens.
+  Light-only. The brand mark is single-sourced from `assets/brand/mark.svg`.
+  Read `admin/DESIGN-ALIGNMENT.md` before writing admin CSS.
+  - The old npm trap is gone with the git pin — `npm install` re-resolves a
+    registry range normally, and the lockfile now carries an integrity hash
+    instead of a commit. **Don't repin to `github:plugpressco/plugpress-ui#vX`.**
+    `plugpress-ui`'s own `fleet:bump`/`fleet:release` still rewrite consumers to
+    git tags, so running those from that repo will undo this; that tooling needs
+    fixing there before it is used against Saddle again.
 
 ---
 
