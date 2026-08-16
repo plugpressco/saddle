@@ -81,6 +81,9 @@ module.exports = function ( grunt ) {
 							// config, not plugin code. Excluded explicitly rather
 							// than relying on how the globber treats dot-dirs.
 							'!.agents/**',
+							// Developer CLI tooling — re-vendoring helpers and
+							// the like. Never plugin code.
+							'!scripts/**',
 							'!Gruntfile.js',
 							'!package.json',
 							'!package-lock.json',

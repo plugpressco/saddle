@@ -352,6 +352,15 @@ change. `Tested up to:` moves only when Fahim has verified against a newer WP.
 - Don't wire up `Saddle_Ecosystem`.
 - Don't put licensing, upsell or builder-specific code in free.
 - Don't edit `includes/lib/wp-mcp/` — it is vendored. Fix upstream and re-vendor.
+  **One deviation exists and is recorded, not hand-applied:** every i18n text
+  domain in there is rewritten to `saddle`, so the self-hosted build (the only
+  one that ships the library) shows translators one domain instead of two.
+  That rewrite lives in `scripts/revendor-wp-mcp.php`. Re-vendoring is: drop in
+  upstream, run the script, run the suite. `--check` reports pending work and
+  exits non-zero — run it before a release, because a fresh upstream copy
+  silently reverts the rewrite and nothing else would notice. The script
+  touches only the text-domain *argument*; `'mcp-adapter'` also appears as an
+  ability category and the adapter's server id, and those are identifiers.
 
 ---
 
