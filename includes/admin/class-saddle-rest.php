@@ -31,42 +31,47 @@ class Saddle_REST_Admin {
 	 * Register routes.
 	 */
 	public static function register_routes() {
-		register_rest_route(
-			self::REST_NAMESPACE,
-			'/settings',
+		// Some host WAFs intercept any REST path ending in the literal
+		// `settings` segment before WordPress runs (20i's StackProtect answers
+		// */settings itself with a non-JSON 401 — proven on a customer site;
+		// its sibling routes oauth-settings/memory-settings pass, so the rule
+		// is the exact segment). The dashboard therefore talks to
+		// /preferences; /settings stays registered as an alias so an old
+		// cached admin bundle keeps working through the ?rest_route= fallback.
+		$settings_route = array(
 			array(
-				array(
-					'methods'             => 'GET',
-					'callback'            => array( __CLASS__, 'get_settings' ),
-					'permission_callback' => array( __CLASS__, 'can_manage' ),
-				),
-				array(
-					'methods'             => 'POST',
-					'callback'            => array( __CLASS__, 'update_settings' ),
-					'permission_callback' => array( __CLASS__, 'can_manage' ),
-					'args'                => array(
-						'tier'      => array(
-							'type'     => 'string',
-							'required' => false,
-							'enum'     => Saddle_Capabilities::tiers(),
-						),
-						'onboarded' => array(
-							'type'     => 'boolean',
-							'required' => false,
-						),
-						'paused'    => array(
-							'type'     => 'boolean',
-							'required' => false,
-						),
-						'theme'     => array(
-							'type'     => 'string',
-							'required' => false,
-							'enum'     => array( 'system', 'light', 'dark' ),
-						),
+				'methods'             => 'GET',
+				'callback'            => array( __CLASS__, 'get_settings' ),
+				'permission_callback' => array( __CLASS__, 'can_manage' ),
+			),
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( __CLASS__, 'update_settings' ),
+				'permission_callback' => array( __CLASS__, 'can_manage' ),
+				'args'                => array(
+					'tier'      => array(
+						'type'     => 'string',
+						'required' => false,
+						'enum'     => Saddle_Capabilities::tiers(),
+					),
+					'onboarded' => array(
+						'type'     => 'boolean',
+						'required' => false,
+					),
+					'paused'    => array(
+						'type'     => 'boolean',
+						'required' => false,
+					),
+					'theme'     => array(
+						'type'     => 'string',
+						'required' => false,
+						'enum'     => array( 'system', 'light', 'dark' ),
 					),
 				),
-			)
+			),
 		);
+		register_rest_route( self::REST_NAMESPACE, '/preferences', $settings_route );
+		register_rest_route( self::REST_NAMESPACE, '/settings', $settings_route );
 
 		register_rest_route(
 			self::REST_NAMESPACE,
@@ -304,6 +309,170 @@ class Saddle_REST_Admin {
 				'permission_callback' => array( __CLASS__, 'can_manage' ),
 			)
 		);
+
+		register_rest_route(
+			self::REST_NAMESPACE,
+			'/oauth-settings',
+			array(
+				array(
+					'methods'             => 'GET',
+					'callback'            => array( __CLASS__, 'get_oauth_settings' ),
+					'permission_callback' => array( __CLASS__, 'can_manage' ),
+				),
+				array(
+					'methods'             => 'POST',
+					'callback'            => array( __CLASS__, 'update_oauth_settings' ),
+					'permission_callback' => array( __CLASS__, 'can_manage' ),
+					'args'                => array(
+						'enabled' => array( 'type' => 'boolean' ),
+						'dcr'     => array( 'type' => 'boolean' ),
+						'cimd'    => array( 'type' => 'boolean' ),
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::REST_NAMESPACE,
+			'/oauth-connections',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( __CLASS__, 'get_oauth_connections' ),
+				'permission_callback' => array( __CLASS__, 'can_manage' ),
+			)
+		);
+
+		register_rest_route(
+			self::REST_NAMESPACE,
+			'/oauth-connections/(?P<id>[a-f0-9]{32})',
+			array(
+				'methods'             => 'DELETE',
+				'callback'            => array( __CLASS__, 'revoke_oauth_connection' ),
+				'permission_callback' => array( __CLASS__, 'can_manage' ),
+			)
+		);
+	}
+
+	/**
+	 * GET /oauth-settings — the switches plus whether this install can host an
+	 * authorization server at all.
+	 *
+	 * The readiness facts are here rather than buried in a docs page because the
+	 * two failure modes (plain permalinks, no HTTPS) are invisible from the
+	 * client side: ChatGPT just says it couldn't connect.
+	 *
+	 * @return WP_REST_Response
+	 */
+	public static function get_oauth_settings() {
+		$readiness = Saddle_OAuth::readiness();
+
+		return new WP_REST_Response(
+			array(
+				'enabled'    => Saddle_OAuth::is_enabled(),
+				'dcr'        => (bool) get_option( Saddle_OAuth_Clients::DCR_OPTION, true ),
+				'cimd'       => (bool) get_option( Saddle_OAuth_Clients::CIMD_OPTION, true ),
+				'ready'      => $readiness['ready'],
+				'permalinks' => $readiness['permalinks'],
+				'ssl'        => $readiness['ssl'],
+				'issuer'     => Saddle_OAuth::issuer(),
+				'resource'   => Saddle_OAuth::resource_id(),
+				// Whether the host-root discovery documents are actually
+				// reachable. Only probed while OAuth is on — it is a loopback
+				// HTTP request, and there is nothing to probe otherwise.
+				'discovery'  => Saddle_OAuth::is_enabled() ? Saddle_OAuth_Discovery::probe_root() : 'unknown',
+			),
+			200
+		);
+	}
+
+	/**
+	 * POST /oauth-settings.
+	 *
+	 * @param WP_REST_Request $request Incoming request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function update_oauth_settings( WP_REST_Request $request ) {
+		if ( null !== $request->get_param( 'enabled' ) ) {
+			$enabled = (bool) $request->get_param( 'enabled' );
+
+			$readiness = Saddle_OAuth::readiness();
+			if ( $enabled && ! $readiness['ready'] ) {
+				return new WP_Error(
+					'saddle_oauth_not_ready',
+					$readiness['permalinks']
+						? __( 'Sign-in with OAuth needs your site to be served over HTTPS — an access token sent over plain HTTP can be read in transit.', 'saddle' )
+						: __( 'Sign-in with OAuth needs pretty permalinks. Go to Settings → Permalinks and choose any option other than Plain, then try again.', 'saddle' ),
+					array( 'status' => 409 )
+				);
+			}
+
+			// Turning it off disconnects the apps rather than leaving live tokens
+			// waiting for it to come back on. "Off" should mean off.
+			if ( ! $enabled && Saddle_OAuth::is_enabled() ) {
+				Saddle_OAuth_Store::purge();
+			}
+
+			Saddle_OAuth::set_enabled( $enabled );
+		}
+
+		if ( null !== $request->get_param( 'dcr' ) ) {
+			update_option( Saddle_OAuth_Clients::DCR_OPTION, $request->get_param( 'dcr' ) ? 1 : 0 );
+		}
+
+		if ( null !== $request->get_param( 'cimd' ) ) {
+			update_option( Saddle_OAuth_Clients::CIMD_OPTION, $request->get_param( 'cimd' ) ? 1 : 0 );
+		}
+
+		return self::get_oauth_settings();
+	}
+
+	/**
+	 * GET /oauth-connections — apps that completed a consent screen.
+	 *
+	 * @return WP_REST_Response
+	 */
+	public static function get_oauth_connections() {
+		$connections = array();
+
+		foreach ( Saddle_OAuth_Store::list_grants() as $grant ) {
+			$user = get_userdata( (int) $grant['user_id'] );
+
+			$connections[] = array(
+				'id'         => (string) $grant['grant_id'],
+				'name'       => '' !== (string) $grant['client_name'] ? (string) $grant['client_name'] : (string) $grant['client_id'],
+				'client_id'  => (string) $grant['client_id'],
+				// Whether the app's identity was checked, or merely asserted.
+				// The Connections screen says which, in as many words.
+				'verified'   => 0 === stripos( (string) $grant['client_id'], 'https://' ),
+				'scope'      => (string) $grant['scope'],
+				'level'      => Saddle_OAuth::scope_to_tier( (string) $grant['scope'] ),
+				'user_login' => $user ? $user->user_login : '',
+				'created'    => (int) $grant['grant_created'],
+				'last_used'  => (int) $grant['last_used'],
+			);
+		}
+
+		return new WP_REST_Response( $connections, 200 );
+	}
+
+	/**
+	 * DELETE /oauth-connections/{id}.
+	 *
+	 * @param WP_REST_Request $request Incoming request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function revoke_oauth_connection( WP_REST_Request $request ) {
+		$id = (string) $request->get_param( 'id' );
+
+		if ( ! Saddle_OAuth_Store::revoke_grant( $id ) ) {
+			return new WP_Error(
+				'saddle_oauth_unknown_connection',
+				__( 'That connection no longer exists — it may already have been disconnected.', 'saddle' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		return new WP_REST_Response( array( 'revoked' => true ), 200 );
 	}
 
 	/**
@@ -333,7 +502,7 @@ class Saddle_REST_Admin {
 	public static function get_settings() {
 		return new WP_REST_Response(
 			array(
-				'tier'           => Saddle_Capabilities::get_tier(),
+				'tier'           => Saddle_Capabilities::get_site_tier(),
 				'tiers'          => Saddle_Capabilities::tiers(),
 				'default'        => Saddle_Capabilities::DEFAULT_TIER,
 				'onboarded'      => (bool) get_option( 'saddle_onboarded', false ),
@@ -627,8 +796,13 @@ class Saddle_REST_Admin {
 			'Design system'   => array( 'design-system', 'design-tokens', 'bootstrap-design' ),
 			'Divi'            => array( 'divi-' ),
 			'Integrations'    => array( 'waggle-', 'knovia-', 'unsplash-' ),
-			'Memory & skills' => array( 'remember', 'recall', 'forget', 'skill', 'instructions' ),
+			'Memory & skills' => array( 'remember', 'recall', 'forget', 'skill', 'instructions', 'context' ),
 			'Blocks & layout' => array( 'block', 'render-node', 'verify-page', 'lint-page', 'preview', 'recipe' ),
+			// AFTER 'Blocks & layout' on purpose: that rule matches 'block', so
+			// list-block-patterns and insert-block-pattern already live there.
+			// Putting 'pattern' ahead of it would silently move both to a screen
+			// section the owner has never seen them in.
+			'Site editor'     => array( 'template', 'global-styles', 'pattern' ),
 			'Users'           => array( 'user' ),
 			'Site & settings' => array( 'option', 'plugin', 'theme', 'cache', 'site-info' ),
 			'Content'         => array( 'post', 'page', 'media', 'categor', 'tag', 'revision', 'search' ),
@@ -707,7 +881,7 @@ class Saddle_REST_Admin {
 		return new WP_REST_Response(
 			array(
 				'capabilities' => $catalog,
-				'current_tier' => Saddle_Capabilities::get_tier(),
+				'current_tier' => Saddle_Capabilities::get_site_tier(),
 				'tiers'        => Saddle_Capabilities::tiers(),
 				'disabled'     => Saddle_Capabilities::disabled_abilities(),
 			),

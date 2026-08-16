@@ -14,7 +14,6 @@ import CopilotLogo from '@lobehub/icons-static-svg/icons/copilot-color.svg';
 import CodexLogo from '@lobehub/icons-static-svg/icons/codex.svg';
 import AntigravityLogo from '@lobehub/icons-static-svg/icons/antigravity-color.svg';
 import GeminiLogo from '@lobehub/icons-static-svg/icons/geminicli-color.svg';
-import WindsurfLogo from '@lobehub/icons-static-svg/icons/windsurf.svg';
 import McpLogo from '@lobehub/icons-static-svg/icons/mcp.svg';
 import { ReactComponent as Mark } from '../../../assets/brand/mark.svg';
 
@@ -31,7 +30,8 @@ const base = {
 	focusable: false,
 };
 
-// The Saddle brand mark (a stirrup arch), single-sourced from
+// The Saddle brand mark (a saddle draped over the horse's back, knocked out
+// of a filled disc — the PlugPress portfolio motif), single-sourced from
 // assets/brand/mark.svg — the PHP admin-menu icon reads the same file, so
 // editing that one SVG rebrands every surface at once.
 export function BrandMark( props ) {
@@ -78,6 +78,16 @@ export function IconAdmin( props ) {
 	);
 }
 
+// Bell — other plugins' notices, parked in the top bar.
+export function IconBell( props ) {
+	return (
+		<svg { ...base } { ...props }>
+			<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+			<path d="M13.7 21a2 2 0 0 1-3.4 0" />
+		</svg>
+	);
+}
+
 // Plug — connecting an app.
 export function IconConnect( props ) {
 	return (
@@ -111,7 +121,6 @@ const APP_LOGOS = {
 	cursor: CursorLogo,
 	'gemini-cli': GeminiLogo,
 	vscode: CopilotLogo,
-	windsurf: WindsurfLogo,
 	other: McpLogo,
 	// Legacy keys — connections made before the card lineup changed.
 	'claude-desktop': ClaudeLogo,

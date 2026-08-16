@@ -81,6 +81,27 @@ class Saddle_Capabilities {
 	);
 
 	/**
+	 * Ability short name => the WordPress capability its permission callback
+	 * requires. Populated by {@see self::permission()} as abilities register.
+	 *
+	 * @var array<string,string>
+	 */
+	private static $caps = array();
+
+	/**
+	 * The WordPress capability an ability requires, or '' when it is unknown
+	 * (nothing registered under that short name yet) or the ability asks only
+	 * for an authenticated user.
+	 *
+	 * @param string $short_name Ability id without the 'saddle/' prefix.
+	 * @return string
+	 */
+	public static function required_cap( $short_name ) {
+		$key = sanitize_key( (string) $short_name );
+		return isset( self::$caps[ $key ] ) ? self::$caps[ $key ] : '';
+	}
+
+	/**
 	 * Ordered list of valid tier names.
 	 *
 	 * @return string[]
@@ -90,26 +111,83 @@ class Saddle_Capabilities {
 	}
 
 	/**
-	 * Current site tier, validated against the known set.
+	 * Numeric rank of a tier name. Higher means more power.
+	 *
+	 * @param string $tier Tier name.
+	 * @return int -1 for an unknown name.
+	 */
+	public static function rank( $tier ) {
+		return isset( self::$levels[ $tier ] ) ? self::$levels[ $tier ] : -1;
+	}
+
+	/**
+	 * The tier the owner configured, ignoring anything about the current caller.
+	 *
+	 * This is the site's setting. Use it when reporting or writing configuration
+	 * — the Permissions screen, the settings endpoint, the clone-domain warning —
+	 * and never for deciding whether a call is allowed.
 	 *
 	 * @return string
 	 */
-	public static function get_tier() {
+	public static function get_site_tier() {
 		$tier = get_option( self::OPTION, self::DEFAULT_TIER );
 		return isset( self::$levels[ $tier ] ) ? $tier : self::DEFAULT_TIER;
 	}
 
 	/**
+	 * The tier actually in force for this request.
+	 *
+	 * The site's configured tier, lowered by any ceiling the current credential
+	 * carries. An OAuth access token carries the scope its owner approved on the
+	 * consent screen, so a `saddle:read` token on a `write` site gets read — the
+	 * token can narrow what the site allows, never widen it.
+	 *
+	 * The clamp lives here rather than inside {@see self::tier_allows()} on
+	 * purpose. `get_tier()` is also what Saddle reports to the agent through
+	 * `get-site-info` and the system context, and an agent that is told it has
+	 * admin access and then refused tool by tool has been lied to. It should be
+	 * told read, and behave accordingly.
+	 *
+	 * @return string
+	 */
+	public static function get_tier() {
+		$tier = self::get_site_tier();
+
+		/**
+		 * Filter a per-request ceiling on the effective access tier.
+		 *
+		 * Saddle_OAuth_Bearer sets this for the duration of a token-authenticated
+		 * request. Return null for no ceiling.
+		 *
+		 * @param string|null $ceiling Tier name, or null.
+		 */
+		$ceiling = apply_filters( 'saddle_tier_ceiling', null );
+
+		if ( null === $ceiling || ! isset( self::$levels[ $ceiling ] ) ) {
+			return $tier;
+		}
+
+		return self::$levels[ $ceiling ] < self::$levels[ $tier ] ? $ceiling : $tier;
+	}
+
+	/**
 	 * Set the site tier. Rejects unknown tier names.
 	 *
+	 * Re-saving the current tier is a success, not a failure — update_option()
+	 * returns false on an unchanged value, and activation seeds the option to
+	 * 'read', so the wizard's default choice would otherwise be rejected as
+	 * invalid.
+	 *
 	 * @param string $tier Tier name.
-	 * @return bool True on a valid, persisted change.
+	 * @return bool True when the tier name is valid and persisted.
 	 */
 	public static function set_tier( $tier ) {
 		if ( ! isset( self::$levels[ $tier ] ) ) {
 			return false;
 		}
-		$saved = update_option( self::OPTION, $tier );
+		if ( get_option( self::OPTION ) !== $tier ) {
+			update_option( self::OPTION, $tier );
+		}
 
 		// Record which domain this power level was granted on. Re-confirming a
 		// tier choice on a new domain (e.g. after a deliberate migration) is
@@ -118,7 +196,7 @@ class Saddle_Capabilities {
 			self::record_tier_domain();
 		}
 
-		return $saved;
+		return true;
 	}
 
 	/**
@@ -161,6 +239,15 @@ class Saddle_Capabilities {
 	 * @return callable
 	 */
 	public static function permission( $level, $cap = 'read', $short_name = null ) {
+		// Remember which capability this tool asks for. Every ability in every
+		// plugin — free, Pro, and the integration wrappers — builds its callback
+		// here, so this one line is the whole registry, and it costs nothing at
+		// call time. denial_reason() needs it to tell an agent that the account
+		// is short a capability rather than blaming one of the owner's switches.
+		if ( $short_name ) {
+			self::$caps[ sanitize_key( $short_name ) ] = (string) $cap;
+		}
+
 		return function () use ( $level, $cap, $short_name ) {
 			$logged_in = is_user_logged_in();
 
@@ -199,6 +286,103 @@ class Saddle_Capabilities {
 
 			return true;
 		};
+	}
+
+	/**
+	 * Whether one ability could be called right now, judged the same way — and
+	 * in the same order — as the permission callback would judge it.
+	 *
+	 * PAUSE IS DELIBERATELY NOT CONSIDERED. Pause is a switch meant to be
+	 * flipped back, and it denies everything anyway; emptying the advertised
+	 * tool list on pause would force every connected client to reconnect on
+	 * resume. The instructions say the site is paused instead.
+	 *
+	 * @param string $ability_name Full ability id, e.g. 'saddle/create-post'.
+	 * @return bool
+	 */
+	public static function is_callable_now( $ability_name ) {
+		$short = 0 === strpos( (string) $ability_name, 'saddle/' )
+			? substr( (string) $ability_name, strlen( 'saddle/' ) )
+			: (string) $ability_name;
+
+		if ( ! is_user_logged_in() ) {
+			return false;
+		}
+
+		// Resolve the ability FIRST. wp_get_abilities() is what lazily fires
+		// wp_abilities_api_init, and required_cap()'s registry is filled by
+		// permission() as each ability registers — read it any earlier and the
+		// first call of the request sees an empty registry and skips the check.
+		$ability = function_exists( 'wp_get_ability' ) && isset( wp_get_abilities()[ $ability_name ] )
+			? wp_get_ability( $ability_name )
+			: null;
+		if ( ! $ability ) {
+			return false;
+		}
+
+		$cap = self::required_cap( $short );
+		if ( '' !== $cap && ! current_user_can( $cap ) ) {
+			return false;
+		}
+
+		if ( ! self::is_ability_enabled( $short ) ) {
+			return false;
+		}
+
+		$meta     = $ability->get_meta();
+		$required = isset( $meta['saddle']['tier'] ) ? (string) $meta['saddle']['tier'] : '';
+
+		// An ability that declares no tier is not something to guess about:
+		// show it and let its own callback decide. Every Saddle, Pro and
+		// wrapped ability declares one through saddle_ability_meta().
+		return '' === $required ? true : self::tier_allows( $required );
+	}
+
+	/**
+	 * How many `saddle/` abilities exist but are not callable at the moment,
+	 * split by what is withholding them — for telling an agent (and the owner)
+	 * what raising the access level would unlock.
+	 *
+	 * @return array{tier:int,disabled:int,capability:int,visible:int,total:int}
+	 */
+	public static function hidden_tool_counts() {
+		$counts = array(
+			'tier'       => 0,
+			'disabled'   => 0,
+			'capability' => 0,
+			'visible'    => 0,
+			'total'      => 0,
+		);
+
+		$abilities = function_exists( 'wp_get_abilities' ) ? wp_get_abilities() : array();
+
+		foreach ( $abilities as $key => $ability ) {
+			$name = is_string( $key ) ? $key : $ability->get_name();
+			if ( 0 !== strpos( $name, 'saddle/' ) ) {
+				continue;
+			}
+			++$counts['total'];
+
+			if ( self::is_callable_now( $name ) ) {
+				++$counts['visible'];
+				continue;
+			}
+
+			// Attribute the miss to the first gate that would catch it, in the
+			// order permission() checks them, so the numbers add up to total.
+			$short = substr( $name, strlen( 'saddle/' ) );
+			$cap   = self::required_cap( $short );
+
+			if ( '' !== $cap && ! current_user_can( $cap ) ) {
+				++$counts['capability'];
+			} elseif ( ! self::is_ability_enabled( $short ) ) {
+				++$counts['disabled'];
+			} else {
+				++$counts['tier'];
+			}
+		}
+
+		return $counts;
 	}
 
 	/**
@@ -253,6 +437,27 @@ class Saddle_Capabilities {
 		if ( $ability ) {
 			$meta     = $ability->get_meta();
 			$required = isset( $meta['saddle']['tier'] ) ? (string) $meta['saddle']['tier'] : '';
+
+			// The WordPress account behind the credential is short of a
+			// capability this tool needs. Nothing in the Saddle dashboard fixes
+			// that — the answer is a different account — so it must not be
+			// reported as one of the owner's switches. permission() checks the
+			// capability before the tier, so this branch comes first too.
+			$cap = self::required_cap( $short );
+			if ( '' !== $cap && ! current_user_can( $cap ) ) {
+				return array(
+					'code'    => 'saddle_capability_denied',
+					'message' => sprintf(
+						/* translators: 1: WordPress capability name, 2: tool name. */
+						__( 'The WordPress account this app is connected as cannot "%1$s", which "%2$s" requires. This is the account\'s role, not a Saddle setting — no access level or toggle will change it. Do not retry; tell the user to reconnect Saddle as an account with that permission.', 'saddle' ),
+						$cap,
+						$short
+					),
+				);
+			}
+
+			// Domain enforcement sits between the capability and the tier here,
+			// mirroring the order permission() checks them in.
 			if ( 'read' !== $required && '' !== $required && self::is_domain_enforced() && ! self::domain_matches_recorded() ) {
 				return array(
 					'code'    => 'saddle_domain_drift',
@@ -260,6 +465,23 @@ class Saddle_Capabilities {
 				);
 			}
 			if ( '' !== $required && ! self::tier_allows( $required ) ) {
+				// The site allows this, but the credential in hand doesn't — the
+				// app was granted a narrower scope when it was authorized. That
+				// is a different problem with a different fix, and an agent told
+				// "raise the site's access level" would be sending the user to
+				// the wrong screen entirely.
+				if ( self::rank( $required ) <= self::rank( self::get_site_tier() ) ) {
+					return array(
+						'code'    => 'saddle_insufficient_scope',
+						'message' => sprintf(
+							/* translators: 1: required access level, 2: level granted to this connection. */
+							__( 'This site allows the "%1$s" access level, but the app you are connected through was only granted "%2$s" when it was authorized. Do not retry — ask the user to reconnect the app and approve the higher level.', 'saddle' ),
+							$required,
+							self::get_tier()
+						),
+					);
+				}
+
 				return array(
 					'code'    => 'saddle_tier_denied',
 					'message' => sprintf(
@@ -411,7 +633,7 @@ class Saddle_Capabilities {
 	 * @return bool
 	 */
 	public static function domain_matches_recorded() {
-		if ( ! in_array( self::get_tier(), array( 'write', 'admin' ), true ) ) {
+		if ( ! in_array( self::get_site_tier(), array( 'write', 'admin' ), true ) ) {
 			return true;
 		}
 		$recorded = self::recorded_tier_domain();

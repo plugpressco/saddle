@@ -10,7 +10,13 @@
  * PageHeader; the rail carries no page title. Connecting an app is a focused,
  * full-panel wizard — one step at a time — not a page of forms.
  */
-import { useState, useEffect, useCallback, useRef } from '@wordpress/element';
+import {
+	useState,
+	useEffect,
+	useCallback,
+	useMemo,
+	useRef,
+} from '@wordpress/element';
 import {
 	TooltipProvider,
 	Tooltip,
@@ -20,7 +26,7 @@ import {
 	Spinner,
 	Notice,
 	Button,
-	Collapsible,
+	Popover,
 	SkipLink,
 	AppShell,
 	AppNav,
@@ -34,12 +40,10 @@ import {
 	PlugIcon,
 	ActivityIcon,
 	SettingsIcon,
-	ExternalLinkIcon,
-	StarIcon,
 } from '@plugpress/ui';
 import { __, sprintf, _n } from '@wordpress/i18n';
-import { api, levelFor, saddleData } from './api';
-import { BrandMark } from './components/icons';
+import { api, levelFor } from './api';
+import { BrandMark, IconBell } from './components/icons';
 import Onboarding from './components/Onboarding';
 import Dashboard from './components/Dashboard';
 import Permissions from './components/Permissions';
@@ -50,6 +54,8 @@ import Integrations from './components/Integrations';
 import Activity from './components/Activity';
 import Settings from './components/Settings';
 import ConnectWizard from './components/ConnectWizard';
+import AuthTrouble from './components/AuthTrouble';
+import { collectTabs, ui as extensionUi, SHELL_VERSION } from './extensions';
 
 const TABS = [
 	{
@@ -116,16 +122,13 @@ const PAGE_WIDTH = 960;
 
 // Resolve a tab name to the { value, label, icon } shape AppNav renders.
 // String labels matter: they become the native tooltips when the rail
-// collapses to icons below wp-admin's 782px breakpoint.
-const navItem = ( name ) => {
-	const t = TABS.find( ( tab ) => tab.name === name );
+// collapses to icons below wp-admin's 782px breakpoint. The nav lists are
+// built per mount (not at module scope) so extension tabs — registered by
+// addon bundles that evaluate after this one — are included.
+const navItem = ( name, all ) => {
+	const t = all.find( ( tab ) => tab.name === name );
 	return { value: t.name, label: t.title, icon: t.icon };
 };
-const navItems = NAV_GROUPS.map( ( g ) => ( {
-	heading: g.label || undefined,
-	items: g.items.map( navItem ),
-} ) );
-const navFooter = NAV_FOOTER.map( navItem );
 
 // Legacy-hash aliases — old bookmarks must keep resolving after renames.
 const ALIASES = { home: 'dashboard' };
@@ -133,10 +136,12 @@ const ALIASES = { home: 'dashboard' };
 // The URL hash is the single source of truth for the active section, so a
 // reload keeps you on the same page and the browser back button works
 // between sections.
-const tabFromHash = () => {
+const tabFromHash = ( extraNames = [] ) => {
 	const raw = window.location.hash.replace( '#', '' );
 	const h = ALIASES[ raw ] || raw;
-	return TABS.some( ( t ) => t.name === h ) ? h : 'dashboard';
+	return TABS.some( ( t ) => t.name === h ) || extraNames.includes( h )
+		? h
+		: 'dashboard';
 };
 
 // Safety tone → design-system dot tone. Read-only is the calm state; any
@@ -151,7 +156,7 @@ const DOT_TONES = {
 // (nav group · page title), the always-visible safety-status pill on the
 // right. The pill is a real button — it jumps to Settings, where the
 // controls it reflects live.
-function TopBar( { tab, tier, paused, onNavigate } ) {
+function TopBar( { tab, tier, paused, onNavigate, notices } ) {
 	const t = TABS.find( ( x ) => x.name === tab );
 	const group = NAV_GROUPS.find( ( g ) => g.items.includes( tab ) );
 	const level = levelFor( tier );
@@ -174,20 +179,26 @@ function TopBar( { tab, tier, paused, onNavigate } ) {
 				) }
 				<span className="saddle-topbar__title">{ t?.title }</span>
 			</div>
-			<Tooltip
-				content={ __( 'Change this on the Settings page', 'saddle' ) }
-			>
-				<button
-					type="button"
-					className={ `saddle-status-pill saddle-status-pill--${ tone }` }
-					onClick={ () => onNavigate( 'settings' ) }
+			<div className="saddle-topbar__right">
+				{ notices && <ForeignNotices /> }
+				<Tooltip
+					content={ __(
+						'Change this on the Settings page',
+						'saddle'
+					) }
 				>
-					<StatusDot tone={ DOT_TONES[ tone ] } />
-					<span>
-						{ paused ? __( 'Paused', 'saddle' ) : level.title }
-					</span>
-				</button>
-			</Tooltip>
+					<button
+						type="button"
+						className={ `saddle-status-pill saddle-status-pill--${ tone }` }
+						onClick={ () => onNavigate( 'settings' ) }
+					>
+						<StatusDot tone={ DOT_TONES[ tone ] } />
+						<span>
+							{ paused ? __( 'Paused', 'saddle' ) : level.title }
+						</span>
+					</button>
+				</Tooltip>
+			</div>
 		</header>
 	);
 }
@@ -201,54 +212,76 @@ function TopBar( { tab, tier, paused, onNavigate } ) {
 function ForeignNotices() {
 	const [ count, setCount ] = useState( 0 );
 	const [ open, setOpen ] = useState( false );
+
+	// A holder this component owns and keeps for its whole life. The popover
+	// unmounts its content on close, so notices parented straight to the panel
+	// would be destroyed on the first close — and these are the plugins' OWN
+	// nodes, moved rather than copied, so losing them loses their dismiss
+	// handlers with them. Parking them here keeps them alive while detached.
 	const holderRef = useRef( null );
-	const movedRef = useRef( false );
+	if ( ! holderRef.current ) {
+		holderRef.current = document.createElement( 'div' );
+		holderRef.current.className = 'saddle-foreign__list';
+	}
 
 	useEffect( () => {
-		const source = document.getElementById( 'saddle-foreign-notices' );
-		if ( source ) {
-			setCount( source.children.length );
-		}
-	}, [] );
-
-	useEffect( () => {
-		if ( ! open || movedRef.current || ! holderRef.current ) {
-			return;
-		}
 		const source = document.getElementById( 'saddle-foreign-notices' );
 		if ( ! source ) {
 			return;
 		}
+		setCount( source.children.length );
 		while ( source.firstChild ) {
 			holderRef.current.appendChild( source.firstChild );
 		}
-		movedRef.current = true;
-	}, [ open ] );
+	}, [] );
+
+	// A callback ref, not a ref object read from an effect: the popover mounts
+	// its panel lazily when opened, so an effect keyed on `open` can run on a
+	// tick where the panel does not exist yet — which is exactly why the list
+	// came up empty the first time.
+	const mountList = useCallback( ( node ) => {
+		if ( node && holderRef.current.parentNode !== node ) {
+			node.appendChild( holderRef.current );
+		}
+	}, [] );
 
 	if ( ! count ) {
 		return null;
 	}
 
-	// Collapsible keeps its panel mounted (hidden attr) when closed, so the
-	// moved notice nodes — with their own dismiss handlers — survive toggling.
+	const label = sprintf(
+		/* translators: %d: number of notices. */
+		_n(
+			'%d notice from other plugins',
+			'%d notices from other plugins',
+			count,
+			'saddle'
+		),
+		count
+	);
+
+	// The panel stays mounted once opened so the moved notice nodes — carrying
+	// their own dismiss handlers — survive closing and reopening the popover.
 	return (
-		<Collapsible
+		<Popover
 			className="saddle-foreign"
 			open={ open }
 			onOpenChange={ setOpen }
-			trigger={ sprintf(
-				/* translators: %d: number of notices. */
-				_n(
-					'%d notice from other plugins',
-					'%d notices from other plugins',
-					count,
-					'saddle'
-				),
-				count
-			) }
+			align="end"
+			trigger={
+				<button
+					type="button"
+					className="saddle-foreign__button"
+					aria-label={ label }
+				>
+					<IconBell />
+					<span>{ count }</span>
+				</button>
+			}
 		>
-			<div ref={ holderRef } className="saddle-foreign__list" />
-		</Collapsible>
+			<div className="saddle-foreign__head">{ label }</div>
+			<div ref={ mountList } />
+		</Popover>
 	);
 }
 
@@ -262,13 +295,49 @@ export default function App() {
 	const [ domainWarning, setDomainWarning ] = useState( false );
 	const [ loading, setLoading ] = useState( true );
 	const [ error, setError ] = useState( null );
-	const [ tab, setTabState ] = useState( tabFromHash );
+	// A 401 means WordPress resolved nobody at all — the session never arrived,
+	// rather than arriving without permission. Nothing on this screen can load,
+	// so it gets its own view instead of an error strip over an empty shell.
+	const [ authError, setAuthError ] = useState( false );
+	// Extension tabs (admin/src/extensions.js) — collected at mount, after
+	// every addon bundle registered its filters at script evaluation.
+	const extTabs = useMemo( collectTabs, [] );
+	const extNames = useMemo( () => extTabs.map( ( t ) => t.id ), [ extTabs ] );
+	const { navItems, navFooter } = useMemo( () => {
+		const allTabs = [
+			...TABS,
+			...extTabs.map( ( t ) => ( {
+				name: t.id,
+				title: t.label,
+				icon: <t.Icon />,
+			} ) ),
+		];
+		return {
+			navItems: NAV_GROUPS.map( ( g ) => ( {
+				heading: g.label || undefined,
+				items: [
+					...g.items,
+					...extTabs
+						.filter( ( t ) => t.group === g.key )
+						.map( ( t ) => t.id ),
+				].map( ( name ) => navItem( name, allTabs ) ),
+			} ) ),
+			// Extension footer entries sit above Settings, which stays last.
+			navFooter: [
+				...extTabs
+					.filter( ( t ) => t.group === 'footer' )
+					.map( ( t ) => t.id ),
+				...NAV_FOOTER,
+			].map( ( name ) => navItem( name, allTabs ) ),
+		};
+	}, [ extTabs ] );
+	const [ tab, setTabState ] = useState( () => tabFromHash( extNames ) );
 	const [ wizardOpen, setWizardOpen ] = useState( false );
 
 	// Navigating writes the hash; state follows the hashchange event, so
 	// back/forward and direct #links all land in the same code path.
 	const setTab = ( name ) => {
-		if ( name === tabFromHash() ) {
+		if ( name === tabFromHash( extNames ) ) {
 			setTabState( name );
 		} else {
 			window.location.hash = name;
@@ -277,7 +346,7 @@ export default function App() {
 
 	useEffect( () => {
 		const onHash = () => {
-			const next = tabFromHash();
+			const next = tabFromHash( extNames );
 			setTabState( next );
 			// Leaving #connect (e.g. browser back) also dismisses the wizard.
 			if ( next !== 'connect' ) {
@@ -286,7 +355,7 @@ export default function App() {
 		};
 		window.addEventListener( 'hashchange', onHash );
 		return () => window.removeEventListener( 'hashchange', onHash );
-	}, [] );
+	}, [ extNames ] );
 
 	const loadCaps = useCallback(
 		() =>
@@ -354,13 +423,28 @@ export default function App() {
 		Promise.all( [
 			loadCaps(),
 			loadClients(),
-			api( 'settings' ).then( ( res ) => {
+			api( 'preferences' ).then( ( res ) => {
 				setOnboarded( !! res.onboarded );
 				setPaused( !! res.paused );
 				setDomainWarning( !! res.domain_warning );
 			} ),
 		] )
-			.catch( ( e ) => setError( e.message ) )
+			.catch( ( e ) => {
+				// A 401 is WordPress rejecting our auth. `invalid_json` is
+				// something answering before WordPress did — a host WAF or
+				// security layer — after the ?rest_route= fallback failed too
+				// (see api.js). Both deserve the auth-trouble screen and its
+				// probe, not a raw error strip.
+				if (
+					e &&
+					( ( e.data && e.data.status === 401 ) ||
+						'invalid_json' === e.code )
+				) {
+					setAuthError( true );
+				} else {
+					setError( e.message );
+				}
+			} )
 			.finally( () => setLoading( false ) );
 	}, [ loadCaps, loadClients ] );
 
@@ -376,9 +460,10 @@ export default function App() {
 
 	const finishOnboarding = ( { connect } = {} ) => {
 		setOnboarded( true );
-		api( 'settings', { method: 'POST', data: { onboarded: true } } ).catch(
-			() => {}
-		);
+		api( 'preferences', {
+			method: 'POST',
+			data: { onboarded: true },
+		} ).catch( () => {} );
 		if ( connect ) {
 			openWizard();
 		} else {
@@ -389,7 +474,7 @@ export default function App() {
 	const togglePause = () => {
 		const next = ! paused;
 		setPausing( true );
-		api( 'settings', { method: 'POST', data: { paused: next } } )
+		api( 'preferences', { method: 'POST', data: { paused: next } } )
 			.then( ( res ) => setPaused( !! res.paused ) )
 			.catch( ( e ) => setError( e.message ) )
 			.finally( () => setPausing( false ) );
@@ -398,7 +483,7 @@ export default function App() {
 	// Re-saving the current tier re-confirms it on this domain, clearing the
 	// warning — the same effect as visiting Permissions and pressing Save.
 	const clearDomainWarning = () => {
-		api( 'settings', { method: 'POST', data: { tier } } )
+		api( 'preferences', { method: 'POST', data: { tier } } )
 			.then( ( res ) => setDomainWarning( !! res.domain_warning ) )
 			.catch( ( e ) => setError( e.message ) );
 	};
@@ -423,6 +508,8 @@ export default function App() {
 				<Spinner />
 			</div>
 		);
+	} else if ( authError ) {
+		view = <AuthTrouble onRetry={ () => window.location.reload() } />;
 	} else if ( ! onboarded ) {
 		view = (
 			<div className="pp-app saddle-app saddle-app--setup">
@@ -453,6 +540,9 @@ export default function App() {
 							items={ navItems }
 							value={ tab }
 							onChange={ setTab }
+							// Navigation only. Docs, Rate Saddle and the version
+							// stamp all live in Settings → About; repeating them
+							// here made a five-item footer out of a two-item one.
 							footer={
 								<>
 									{ navFooter.map( ( item ) => (
@@ -481,55 +571,6 @@ export default function App() {
 											</span>
 										</button>
 									) ) }
-									{ saddleData.docsUrl && (
-										<a
-											className="pp-nav__item"
-											href={ saddleData.docsUrl }
-											target="_blank"
-											rel="noreferrer"
-											title={ __( 'Docs', 'saddle' ) }
-										>
-											<span
-												className="pp-nav__icon"
-												aria-hidden="true"
-											>
-												<ExternalLinkIcon />
-											</span>
-											<span className="pp-nav__label">
-												{ __( 'Docs', 'saddle' ) }
-											</span>
-										</a>
-									) }
-									{ saddleData.rateUrl && (
-										<a
-											className="pp-nav__item"
-											href={ saddleData.rateUrl }
-											target="_blank"
-											rel="noreferrer"
-											title={ __(
-												'Rate Saddle',
-												'saddle'
-											) }
-										>
-											<span
-												className="pp-nav__icon"
-												aria-hidden="true"
-											>
-												<StarIcon />
-											</span>
-											<span className="pp-nav__label">
-												{ __(
-													'Rate Saddle',
-													'saddle'
-												) }
-											</span>
-										</a>
-									) }
-									{ saddleData.version && (
-										<span className="saddle-rail-version">
-											{ `Saddle v${ saddleData.version }` }
-										</span>
-									) }
 								</>
 							}
 						/>
@@ -540,10 +581,9 @@ export default function App() {
 						tier={ tier }
 						paused={ paused }
 						onNavigate={ setTab }
+						notices={ ! wizardOpen }
 					/>
 					<AppContent width={ PAGE_WIDTH }>
-						{ ! wizardOpen && <ForeignNotices /> }
-
 						{ error && <Notice tone="danger">{ error }</Notice> }
 
 						{ domainWarning && ! wizardOpen && (
@@ -613,6 +653,16 @@ export default function App() {
 										pausing={ pausing }
 										onTogglePause={ togglePause }
 									/>
+								) }
+								{ extTabs.map(
+									( t ) =>
+										tab === t.id && (
+											<t.Component
+												key={ t.id }
+												ui={ extensionUi }
+												shellVersion={ SHELL_VERSION }
+											/>
+										)
 								) }
 							</div>
 						) }

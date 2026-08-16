@@ -53,7 +53,7 @@ class McpErrorFactory {
 	 * @return \WP\McpSchema\Common\JsonRpc\DTO\JSONRPCErrorResponse
 	 */
 	public static function parse_error( $id, string $details = '' ): JSONRPCErrorResponse {
-		$message = __( 'Parse error', 'mcp-adapter' );
+		$message = __( 'Parse error', 'saddle' );
 		if ( $details ) {
 			$message .= ': ' . $details;
 		}
@@ -114,7 +114,7 @@ class McpErrorFactory {
 			self::METHOD_NOT_FOUND,
 			sprintf(
 			/* translators: %s: method name */
-				__( 'Method not found: %s', 'mcp-adapter' ),
+				__( 'Method not found: %s', 'saddle' ),
 				$method
 			)
 		);
@@ -129,7 +129,7 @@ class McpErrorFactory {
 	 * @return \WP\McpSchema\Common\JsonRpc\DTO\JSONRPCErrorResponse
 	 */
 	public static function invalid_params( $id, string $details = '' ): JSONRPCErrorResponse {
-		$message = __( 'Invalid params', 'mcp-adapter' );
+		$message = __( 'Invalid params', 'saddle' );
 		if ( $details ) {
 			$message .= ': ' . $details;
 		}
@@ -146,7 +146,7 @@ class McpErrorFactory {
 	 * @return \WP\McpSchema\Common\JsonRpc\DTO\JSONRPCErrorResponse
 	 */
 	public static function internal_error( $id, string $details = '' ): JSONRPCErrorResponse {
-		$message = __( 'Internal error', 'mcp-adapter' );
+		$message = __( 'Internal error', 'saddle' );
 		if ( $details ) {
 			$message .= ': ' . $details;
 		}
@@ -165,7 +165,7 @@ class McpErrorFactory {
 		return self::create_error_response(
 			$id,
 			self::SERVER_ERROR,
-			__( 'MCP functionality is currently disabled', 'mcp-adapter' )
+			__( 'MCP functionality is currently disabled', 'saddle' )
 		);
 	}
 
@@ -183,7 +183,7 @@ class McpErrorFactory {
 			self::INVALID_PARAMS,
 			sprintf(
 			/* translators: %s: validation details */
-				__( 'Validation error: %s', 'mcp-adapter' ),
+				__( 'Validation error: %s', 'saddle' ),
 				$details
 			)
 		);
@@ -203,7 +203,7 @@ class McpErrorFactory {
 			self::INVALID_PARAMS,
 			sprintf(
 			/* translators: %s: parameter name */
-				__( 'Missing required parameter: %s', 'mcp-adapter' ),
+				__( 'Missing required parameter: %s', 'saddle' ),
 				$parameter
 			)
 		);
@@ -223,7 +223,7 @@ class McpErrorFactory {
 			self::RESOURCE_NOT_FOUND,
 			sprintf(
 			/* translators: %s: resource identifier */
-				__( 'Resource not found: %s', 'mcp-adapter' ),
+				__( 'Resource not found: %s', 'saddle' ),
 				$resource_uri
 			)
 		);
@@ -243,7 +243,7 @@ class McpErrorFactory {
 			self::TOOL_NOT_FOUND,
 			sprintf(
 			/* translators: %s: tool name */
-				__( 'Tool not found: %s', 'mcp-adapter' ),
+				__( 'Tool not found: %s', 'saddle' ),
 				$tool
 			)
 		);
@@ -263,7 +263,7 @@ class McpErrorFactory {
 			self::TOOL_NOT_FOUND,
 			sprintf(
 			/* translators: %s: ability name */
-				__( 'Ability not found: %s', 'mcp-adapter' ),
+				__( 'Ability not found: %s', 'saddle' ),
 				$ability
 			)
 		);
@@ -283,7 +283,7 @@ class McpErrorFactory {
 			self::PROMPT_NOT_FOUND,
 			sprintf(
 			/* translators: %s: prompt name */
-				__( 'Prompt not found: %s', 'mcp-adapter' ),
+				__( 'Prompt not found: %s', 'saddle' ),
 				$prompt
 			)
 		);
@@ -301,7 +301,7 @@ class McpErrorFactory {
 	 * @return \WP\McpSchema\Common\JsonRpc\DTO\JSONRPCErrorResponse
 	 */
 	public static function session_not_found( $id, string $details = '' ): JSONRPCErrorResponse {
-		$message = __( 'Session not found', 'mcp-adapter' );
+		$message = __( 'Session not found', 'saddle' );
 		if ( $details ) {
 			$message .= ': ' . $details;
 		}
@@ -318,7 +318,7 @@ class McpErrorFactory {
 	 * @return \WP\McpSchema\Common\JsonRpc\DTO\JSONRPCErrorResponse
 	 */
 	public static function permission_denied( $id, string $details = '' ): JSONRPCErrorResponse {
-		$message = __( 'Permission denied', 'mcp-adapter' );
+		$message = __( 'Permission denied', 'saddle' );
 		if ( $details ) {
 			$message .= ': ' . $details;
 		}
@@ -335,7 +335,7 @@ class McpErrorFactory {
 	 * @return \WP\McpSchema\Common\JsonRpc\DTO\JSONRPCErrorResponse
 	 */
 	public static function unauthorized( $id, string $details = '' ): JSONRPCErrorResponse {
-		$message = __( 'Unauthorized', 'mcp-adapter' );
+		$message = __( 'Unauthorized', 'saddle' );
 		if ( $details ) {
 			$message .= ': ' . $details;
 		}
@@ -430,7 +430,7 @@ class McpErrorFactory {
 	 */
 	public static function validate_jsonrpc_message( $message ) {
 		if ( ! is_array( $message ) ) {
-			return self::invalid_request( null, __( 'Message must be a JSON object', 'mcp-adapter' ) );
+			return self::invalid_request( null, __( 'Message must be a JSON object', 'saddle' ) );
 		}
 
 		// Must have jsonrpc field with value "2.0".
@@ -439,7 +439,7 @@ class McpErrorFactory {
 				null,
 				sprintf(
 				/* translators: %s: JSON-RPC version */
-					__( 'jsonrpc version must be "%s"', 'mcp-adapter' ),
+					__( 'jsonrpc version must be "%s"', 'saddle' ),
 					McpConstants::JSONRPC_VERSION
 				)
 			);
@@ -450,12 +450,12 @@ class McpErrorFactory {
 		$is_response                = isset( $message['result'] ) || isset( $message['error'] );
 
 		if ( ! $is_request_or_notification && ! $is_response ) {
-			return self::invalid_request( null, __( 'Message must have either method or result/error field', 'mcp-adapter' ) );
+			return self::invalid_request( null, __( 'Message must have either method or result/error field', 'saddle' ) );
 		}
 
 		// Responses must have an id field.
 		if ( $is_response && ! isset( $message['id'] ) ) {
-			return self::invalid_request( null, __( 'Response messages must have an id field', 'mcp-adapter' ) );
+			return self::invalid_request( null, __( 'Response messages must have an id field', 'saddle' ) );
 		}
 
 		return true;
@@ -470,7 +470,7 @@ class McpErrorFactory {
 	 * @return \WP\McpSchema\Common\JsonRpc\DTO\JSONRPCErrorResponse
 	 */
 	public static function invalid_request( $id, string $details = '' ): JSONRPCErrorResponse {
-		$message = __( 'Invalid Request', 'mcp-adapter' );
+		$message = __( 'Invalid Request', 'saddle' );
 		if ( $details ) {
 			$message .= ': ' . $details;
 		}

@@ -22,12 +22,23 @@ export default function Onboarding( { tier, onTierSaved, onFinish } ) {
 	const saveLevel = ( { connect } ) => {
 		setSaving( true );
 		setError( null );
-		api( 'settings', { method: 'POST', data: { tier: choice } } )
+		api( 'preferences', { method: 'POST', data: { tier: choice } } )
 			.then( ( res ) => {
 				onTierSaved( res.tier );
 				onFinish( { connect } );
 			} )
-			.catch( ( e ) => setError( e.message ) )
+			.catch( ( e ) =>
+				setError(
+					// apiFetch's raw invalid_json message ("not a valid JSON
+					// response") reads like a site fault; name the likely actor.
+					'invalid_json' === e.code
+						? __(
+								'A security layer at your host answered instead of WordPress. Reload and try again — if it keeps happening, ask your host to allow the WordPress REST API for signed-in administrators.',
+								'saddle'
+						  )
+						: e.message
+				)
+			)
 			.finally( () => setSaving( false ) );
 	};
 
@@ -65,7 +76,16 @@ export default function Onboarding( { tier, onTierSaved, onFinish } ) {
 					<ul className="saddle-promises">
 						<li>{ __( 'You choose what it can do', 'saddle' ) }</li>
 						<li>
-							{ __( 'Nothing leaves your website', 'saddle' ) }
+							{ /* Was "Nothing leaves your website" — true of the
+							     WordPress.org build, but the plugpress.co build
+							     checks for its own updates, so the absolute
+							     claim stopped being true on 2026-08-12. This
+							     says the thing that actually matters and stays
+							     true in both. */ }
+							{ __(
+								'Your content stays on your site',
+								'saddle'
+							) }
 						</li>
 						<li>
 							{ __( 'Deleting always asks first', 'saddle' ) }

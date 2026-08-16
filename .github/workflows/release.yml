@@ -40,6 +40,12 @@ jobs:
           node-version: '20'
           cache: npm
 
+      - name: Grant access to private packages
+        # @plugpress/ui resolves to the private plugpressco/plugpress-ui repo;
+        # the default GITHUB_TOKEN cannot read it. SADDLE_REPO_TOKEN is the
+        # same org PAT Pro's CI uses to check out private repos.
+        run: git config --global url."https://x-access-token:${{ secrets.SADDLE_REPO_TOKEN }}@github.com/".insteadOf "https://github.com/"
+
       - name: Install build tooling
         run: npm ci
 

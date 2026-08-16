@@ -84,6 +84,29 @@ class Saddle_Integrations_Test extends WP_UnitTestCase {
 			)
 		);
 		wp_register_ability(
+			'waggle/rewrite-meta',
+			array(
+				'label'               => 'Rewrite SEO meta',
+				'description'         => 'Overwrites a post\'s SEO meta.',
+				'category'            => 'saddle',
+				'input_schema'        => array(
+					'type'       => 'object',
+					'properties' => array(
+						'post_id'     => array( 'type' => 'integer' ),
+						'description' => array( 'type' => 'string' ),
+					),
+				),
+				'execute_callback'    => static function ( $input ) {
+					return array(
+						'post_id'     => (int) $input['post_id'],
+						'description' => (string) $input['description'],
+					);
+				},
+				'permission_callback' => '__return_true',
+				'meta'                => array( 'annotations' => array( 'readonly' => false, 'destructive' => true ) ),
+			)
+		);
+		wp_register_ability(
 			'waggle/reset-settings',
 			array(
 				'label'               => 'Reset settings',
@@ -113,9 +136,11 @@ class Saddle_Integrations_Test extends WP_UnitTestCase {
 					'waggle/get-aeo-score',
 					'waggle/update-seo-meta',
 					'waggle/reset-settings',
+					'waggle/rewrite-meta',
 					'saddle/waggle-get-aeo-score',
 					'saddle/waggle-update-seo-meta',
 					'saddle/waggle-reset-settings',
+					'saddle/waggle-rewrite-meta',
 					'zzz/get-stuff',
 					'saddle/zzz-get-stuff',
 				);
@@ -209,6 +234,52 @@ class Saddle_Integrations_Test extends WP_UnitTestCase {
 		$preview2 = $ability->execute( array( 'scope' => 'all' ) );
 		$stolen   = $ability->execute( array( 'scope' => 'other', 'confirm_token' => $preview2['confirm_token'] ) );
 		$this->assertWPError( $stolen );
+	}
+
+	public function test_destructive_wrapper_confirm_cannot_change_the_arguments_it_previewed() {
+		// The regression this pins: `$target` is only the id, so on a tool that
+		// takes an id PLUS a payload every other argument was unbound — the
+		// preview showed one thing and the confirm ran another. See issue #89.
+		$ability = wp_get_ability( 'saddle/waggle-rewrite-meta' );
+
+		$preview = $ability->execute(
+			array(
+				'post_id'     => 12,
+				'description' => 'the description the user approved',
+			)
+		);
+		$this->assertNotWPError( $preview );
+		$this->assertArrayHasKey( 'confirm_token', $preview );
+
+		$swapped = $ability->execute(
+			array(
+				'post_id'       => 12,
+				'description'   => 'something else entirely',
+				'confirm_token' => $preview['confirm_token'],
+			)
+		);
+
+		$this->assertWPError(
+			$swapped,
+			'A confirm that changes an argument the preview showed must be refused, not executed.'
+		);
+		$this->assertSame( 'saddle_token_bind_mismatch', $swapped->get_error_code() );
+	}
+
+	public function test_destructive_wrapper_confirms_with_the_same_arguments() {
+		// The other half of the bind: unchanged arguments must still confirm,
+		// or the gate would be unusable on every id-bearing partner tool.
+		$ability = wp_get_ability( 'saddle/waggle-rewrite-meta' );
+
+		$args    = array(
+			'post_id'     => 12,
+			'description' => 'the description the user approved',
+		);
+		$preview = $ability->execute( $args );
+		$done    = $ability->execute( array_merge( $args, array( 'confirm_token' => $preview['confirm_token'] ) ) );
+
+		$this->assertNotWPError( $done );
+		$this->assertSame( 'the description the user approved', $done['description'] );
 	}
 
 	public function test_pause_stops_integration_tools_too() {
@@ -322,7 +393,7 @@ class Saddle_Integrations_Test extends WP_UnitTestCase {
 		// Nothing active → context passes through untouched.
 		$this->within_abilities_init(
 			static function () {
-				foreach ( array( 'saddle/waggle-get-aeo-score', 'saddle/waggle-update-seo-meta', 'saddle/waggle-reset-settings' ) as $name ) {
+				foreach ( array( 'saddle/waggle-get-aeo-score', 'saddle/waggle-update-seo-meta', 'saddle/waggle-reset-settings', 'saddle/waggle-rewrite-meta' ) as $name ) {
 					wp_unregister_ability( $name );
 				}
 			}

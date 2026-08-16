@@ -767,6 +767,13 @@ class Saddle_Site_Abilities {
 	public static function flush_cache( $input = null ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Fixed ability-callback signature.
 		$flushed = wp_cache_flush();
 
+		/**
+		 * Fires when the owner flushes caches through saddle/flush-cache, so
+		 * add-ons can invalidate their own derived caches (schema indexes,
+		 * context bundles) in the same sweep.
+		 */
+		do_action( 'saddle_flush_cache' );
+
 		Saddle_Log::record_action( 'flush-cache', 'object-cache', __( 'Flushed the object cache.', 'saddle' ) );
 
 		return array(

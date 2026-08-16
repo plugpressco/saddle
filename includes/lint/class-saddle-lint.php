@@ -81,6 +81,7 @@ class Saddle_Lint {
 			new Saddle_Lint_Rule_Mixed_Accents(),
 			new Saddle_Lint_Rule_Unaligned_Buttons(),
 			new Saddle_Lint_Rule_Section_Padding(),
+			new Saddle_Lint_Rule_Single_Column_Flow(),
 			new Saddle_Lint_Rule_Featured_Plan(),
 			// Accessibility (closed-loop scope); these need the companion
 			// style accessor and stay silent on accessors without it.

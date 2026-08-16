@@ -39,7 +39,7 @@ class McpPromptValidator {
 			$error_message  = $context ? "[{$context}] " : '';
 			$error_message .= sprintf(
 			/* translators: %s: comma-separated list of validation errors */
-				__( 'Prompt validation failed: %s', 'mcp-adapter' ),
+				__( 'Prompt validation failed: %s', 'saddle' ),
 				implode( ', ', $validation_errors )
 			);
 			return new WP_Error( 'mcp_prompt_validation_failed', esc_html( $error_message ) );
@@ -60,7 +60,7 @@ class McpPromptValidator {
 
 		// Validate name.
 		if ( ! McpValidator::validate_name( $prompt->getName() ) ) {
-			$errors[] = __( 'Prompt name must be 1-128 characters and contain only [A-Za-z0-9_.-]', 'mcp-adapter' );
+			$errors[] = __( 'Prompt name must be 1-128 characters and contain only [A-Za-z0-9_.-]', 'saddle' );
 		}
 
 		// Validate icons if present.
@@ -81,7 +81,7 @@ class McpPromptValidator {
 				'mcp_prompt_validation_failed',
 				sprintf(
 				/* translators: %s: list of validation errors */
-					__( 'Prompt validation failed: %s', 'mcp-adapter' ),
+					__( 'Prompt validation failed: %s', 'saddle' ),
 					implode( '; ', $errors )
 				)
 			);
@@ -115,16 +115,16 @@ class McpPromptValidator {
 
 		// Check required fields
 		if ( empty( $prompt_data['name'] ) || ! is_string( $prompt_data['name'] ) || ! McpValidator::validate_name( $prompt_data['name'] ) ) {
-			$errors[] = __( 'Prompt name is required and must be 1-128 characters and contain only [A-Za-z0-9_.-]', 'mcp-adapter' );
+			$errors[] = __( 'Prompt name is required and must be 1-128 characters and contain only [A-Za-z0-9_.-]', 'saddle' );
 		}
 
 		// Check optional fields if present
 		if ( isset( $prompt_data['title'] ) && ! is_string( $prompt_data['title'] ) ) {
-			$errors[] = __( 'Prompt title must be a string if provided', 'mcp-adapter' );
+			$errors[] = __( 'Prompt title must be a string if provided', 'saddle' );
 		}
 
 		if ( isset( $prompt_data['description'] ) && ! is_string( $prompt_data['description'] ) ) {
-			$errors[] = __( 'Prompt description must be a string if provided', 'mcp-adapter' );
+			$errors[] = __( 'Prompt description must be a string if provided', 'saddle' );
 		}
 
 		// Validate arguments (optional field)
@@ -150,7 +150,7 @@ class McpPromptValidator {
 
 		// Arguments must be an array
 		if ( ! is_array( $arguments ) ) {
-			return array( __( 'Prompt arguments must be an array if provided', 'mcp-adapter' ) );
+			return array( __( 'Prompt arguments must be an array if provided', 'saddle' ) );
 		}
 
 		// Validate each argument
@@ -158,7 +158,7 @@ class McpPromptValidator {
 			if ( ! is_array( $argument ) ) {
 				$errors[] = sprintf(
 				/* translators: %d: argument index */
-					__( 'Prompt argument at index %d must be an object', 'mcp-adapter' ),
+					__( 'Prompt argument at index %d must be an object', 'saddle' ),
 					$index
 				);
 				continue;
@@ -168,7 +168,7 @@ class McpPromptValidator {
 			if ( empty( $argument['name'] ) || ! is_string( $argument['name'] ) ) {
 				$errors[] = sprintf(
 				/* translators: %d: argument index */
-					__( 'Prompt argument at index %d must have a non-empty name string', 'mcp-adapter' ),
+					__( 'Prompt argument at index %d must have a non-empty name string', 'saddle' ),
 					$index
 				);
 				continue;
@@ -178,7 +178,7 @@ class McpPromptValidator {
 			if ( ! McpValidator::validate_name( $argument['name'] ) ) {
 				$errors[] = sprintf(
 				/* translators: %s: argument name */
-					__( 'Prompt argument \'%s\' name must only contain letters, numbers, hyphens (-), underscores (_), and dots (.), and be 128 characters or less', 'mcp-adapter' ),
+					__( 'Prompt argument \'%s\' name must only contain letters, numbers, hyphens (-), underscores (_), and dots (.), and be 128 characters or less', 'saddle' ),
 					$argument['name']
 				);
 			}
@@ -187,7 +187,7 @@ class McpPromptValidator {
 			if ( isset( $argument['description'] ) && ! is_string( $argument['description'] ) ) {
 				$errors[] = sprintf(
 				/* translators: %s: argument name */
-					__( 'Prompt argument \'%s\' description must be a string if provided', 'mcp-adapter' ),
+					__( 'Prompt argument \'%s\' description must be a string if provided', 'saddle' ),
 					$argument['name']
 				);
 			}
@@ -199,7 +199,7 @@ class McpPromptValidator {
 
 			$errors[] = sprintf(
 			/* translators: %s: argument name */
-				__( 'Prompt argument \'%s\' required field must be a boolean if provided', 'mcp-adapter' ),
+				__( 'Prompt argument \'%s\' required field must be a boolean if provided', 'saddle' ),
 				$argument['name']
 			);
 		}
@@ -221,7 +221,7 @@ class McpPromptValidator {
 			if ( ! is_array( $message ) ) {
 				$errors[] = sprintf(
 				/* translators: %d: message index */
-					__( 'Message at index %d must be an object', 'mcp-adapter' ),
+					__( 'Message at index %d must be an object', 'saddle' ),
 					$index
 				);
 				continue;
@@ -231,7 +231,7 @@ class McpPromptValidator {
 			if ( empty( $message['role'] ) || ! is_string( $message['role'] ) ) {
 				$errors[] = sprintf(
 				/* translators: %d: message index */
-					__( 'Message at index %d must have a role field', 'mcp-adapter' ),
+					__( 'Message at index %d must have a role field', 'saddle' ),
 					$index
 				);
 				continue;
@@ -241,7 +241,7 @@ class McpPromptValidator {
 			if ( ! in_array( $message['role'], array( 'user', 'assistant' ), true ) ) {
 				$errors[] = sprintf(
 				/* translators: %d: message index */
-					__( 'Message at index %d role must be either \'user\' or \'assistant\'', 'mcp-adapter' ),
+					__( 'Message at index %d role must be either \'user\' or \'assistant\'', 'saddle' ),
 					$index
 				);
 			}
@@ -250,7 +250,7 @@ class McpPromptValidator {
 			if ( empty( $message['content'] ) || ! is_array( $message['content'] ) ) {
 				$errors[] = sprintf(
 				/* translators: %d: message index */
-					__( 'Message at index %d must have a content object', 'mcp-adapter' ),
+					__( 'Message at index %d must have a content object', 'saddle' ),
 					$index
 				);
 				continue;
@@ -283,7 +283,7 @@ class McpPromptValidator {
 				foreach ( $error_group['errors'] as $error ) {
 					$errors[] = sprintf(
 					/* translators: 1: icon index, 2: error message */
-						__( 'Icon at index %1$d: %2$s', 'mcp-adapter' ),
+						__( 'Icon at index %1$d: %2$s', 'saddle' ),
 						$error_group['index'],
 						$error
 					);
@@ -310,7 +310,7 @@ class McpPromptValidator {
 			return array(
 				sprintf(
 				/* translators: %d: message index */
-					__( 'Message %d content must have a type field', 'mcp-adapter' ),
+					__( 'Message %d content must have a type field', 'saddle' ),
 					$message_index
 				),
 			);
@@ -323,7 +323,7 @@ class McpPromptValidator {
 				if ( ! isset( $content['text'] ) || ! is_string( $content['text'] ) ) {
 					$errors[] = sprintf(
 					/* translators: %d: message index */
-						__( 'Message %d text content must have a text field', 'mcp-adapter' ),
+						__( 'Message %d text content must have a text field', 'saddle' ),
 						$message_index
 					);
 				}
@@ -333,13 +333,13 @@ class McpPromptValidator {
 				if ( empty( $content['data'] ) || ! is_string( $content['data'] ) ) {
 					$errors[] = sprintf(
 					/* translators: %d: message index */
-						__( 'Message %d image content must have a data field with base64-encoded image', 'mcp-adapter' ),
+						__( 'Message %d image content must have a data field with base64-encoded image', 'saddle' ),
 						$message_index
 					);
 				} elseif ( ! McpValidator::validate_base64( $content['data'] ) ) {
 					$errors[] = sprintf(
 					/* translators: %d: message index */
-						__( 'Message %d image content data must be valid base64', 'mcp-adapter' ),
+						__( 'Message %d image content data must be valid base64', 'saddle' ),
 						$message_index
 					);
 				}
@@ -347,13 +347,13 @@ class McpPromptValidator {
 				if ( empty( $content['mimeType'] ) || ! is_string( $content['mimeType'] ) ) {
 					$errors[] = sprintf(
 					/* translators: %d: message index */
-						__( 'Message %d image content must have a mimeType field', 'mcp-adapter' ),
+						__( 'Message %d image content must have a mimeType field', 'saddle' ),
 						$message_index
 					);
 				} elseif ( ! McpValidator::validate_image_mime_type( $content['mimeType'] ) ) {
 					$errors[] = sprintf(
 					/* translators: %d: message index */
-						__( 'Message %d image content must have a valid image MIME type', 'mcp-adapter' ),
+						__( 'Message %d image content must have a valid image MIME type', 'saddle' ),
 						$message_index
 					);
 				}
@@ -363,13 +363,13 @@ class McpPromptValidator {
 				if ( empty( $content['data'] ) || ! is_string( $content['data'] ) ) {
 					$errors[] = sprintf(
 					/* translators: %d: message index */
-						__( 'Message %d audio content must have a data field with base64-encoded audio', 'mcp-adapter' ),
+						__( 'Message %d audio content must have a data field with base64-encoded audio', 'saddle' ),
 						$message_index
 					);
 				} elseif ( ! McpValidator::validate_base64( $content['data'] ) ) {
 					$errors[] = sprintf(
 					/* translators: %d: message index */
-						__( 'Message %d audio content data must be valid base64', 'mcp-adapter' ),
+						__( 'Message %d audio content data must be valid base64', 'saddle' ),
 						$message_index
 					);
 				}
@@ -377,13 +377,13 @@ class McpPromptValidator {
 				if ( empty( $content['mimeType'] ) || ! is_string( $content['mimeType'] ) ) {
 					$errors[] = sprintf(
 					/* translators: %d: message index */
-						__( 'Message %d audio content must have a mimeType field', 'mcp-adapter' ),
+						__( 'Message %d audio content must have a mimeType field', 'saddle' ),
 						$message_index
 					);
 				} elseif ( ! McpValidator::validate_audio_mime_type( $content['mimeType'] ) ) {
 					$errors[] = sprintf(
 					/* translators: %d: message index */
-						__( 'Message %d audio content must have a valid audio MIME type', 'mcp-adapter' ),
+						__( 'Message %d audio content must have a valid audio MIME type', 'saddle' ),
 						$message_index
 					);
 				}
@@ -394,7 +394,7 @@ class McpPromptValidator {
 				if ( empty( $content['name'] ) || ! is_string( $content['name'] ) ) {
 					$errors[] = sprintf(
 					/* translators: %d: message index */
-						__( 'Message %d resource_link content must have a name field', 'mcp-adapter' ),
+						__( 'Message %d resource_link content must have a name field', 'saddle' ),
 						$message_index
 					);
 				}
@@ -402,13 +402,13 @@ class McpPromptValidator {
 				if ( empty( $content['uri'] ) || ! is_string( $content['uri'] ) ) {
 					$errors[] = sprintf(
 					/* translators: %d: message index */
-						__( 'Message %d resource_link content must have a uri field', 'mcp-adapter' ),
+						__( 'Message %d resource_link content must have a uri field', 'saddle' ),
 						$message_index
 					);
 				} elseif ( ! McpValidator::validate_resource_uri( $content['uri'] ) ) {
 					$errors[] = sprintf(
 					/* translators: %d: message index */
-						__( 'Message %d resource_link content uri must be a valid URI format', 'mcp-adapter' ),
+						__( 'Message %d resource_link content uri must be a valid URI format', 'saddle' ),
 						$message_index
 					);
 				}
@@ -417,13 +417,13 @@ class McpPromptValidator {
 					if ( ! is_string( $content['mimeType'] ) ) {
 						$errors[] = sprintf(
 						/* translators: %d: message index */
-							__( 'Message %d resource_link content mimeType must be a string if provided', 'mcp-adapter' ),
+							__( 'Message %d resource_link content mimeType must be a string if provided', 'saddle' ),
 							$message_index
 						);
 					} elseif ( ! McpValidator::validate_mime_type( $content['mimeType'] ) ) {
 						$errors[] = sprintf(
 						/* translators: %d: message index */
-							__( 'Message %d resource_link content mimeType must be a valid MIME type format', 'mcp-adapter' ),
+							__( 'Message %d resource_link content mimeType must be a valid MIME type format', 'saddle' ),
 							$message_index
 						);
 					}
@@ -432,7 +432,7 @@ class McpPromptValidator {
 				if ( isset( $content['size'] ) && ! is_int( $content['size'] ) ) {
 					$errors[] = sprintf(
 					/* translators: %d: message index */
-						__( 'Message %d resource_link content size must be an integer if provided', 'mcp-adapter' ),
+						__( 'Message %d resource_link content size must be an integer if provided', 'saddle' ),
 						$message_index
 					);
 				}
@@ -440,7 +440,7 @@ class McpPromptValidator {
 				if ( isset( $content['title'] ) && ! is_string( $content['title'] ) ) {
 					$errors[] = sprintf(
 					/* translators: %d: message index */
-						__( 'Message %d resource_link content title must be a string if provided', 'mcp-adapter' ),
+						__( 'Message %d resource_link content title must be a string if provided', 'saddle' ),
 						$message_index
 					);
 				}
@@ -448,7 +448,7 @@ class McpPromptValidator {
 				if ( isset( $content['description'] ) && ! is_string( $content['description'] ) ) {
 					$errors[] = sprintf(
 					/* translators: %d: message index */
-						__( 'Message %d resource_link content description must be a string if provided', 'mcp-adapter' ),
+						__( 'Message %d resource_link content description must be a string if provided', 'saddle' ),
 						$message_index
 					);
 				}
@@ -457,7 +457,7 @@ class McpPromptValidator {
 					if ( ! is_array( $content['icons'] ) ) {
 						$errors[] = sprintf(
 						/* translators: %d: message index */
-							__( 'Message %d resource_link content icons must be an array if provided', 'mcp-adapter' ),
+							__( 'Message %d resource_link content icons must be an array if provided', 'saddle' ),
 							$message_index
 						);
 					} else {
@@ -472,7 +472,7 @@ class McpPromptValidator {
 				if ( empty( $content['resource'] ) || ! is_array( $content['resource'] ) ) {
 					$errors[] = sprintf(
 					/* translators: %d: message index */
-						__( 'Message %d resource content must have a resource object', 'mcp-adapter' ),
+						__( 'Message %d resource content must have a resource object', 'saddle' ),
 						$message_index
 					);
 				} else {
@@ -481,7 +481,7 @@ class McpPromptValidator {
 					foreach ( $resource_errors as $resource_error ) {
 						$errors[] = sprintf(
 						/* translators: %1$d: message index, %2$s: resource error */
-							__( 'Message %1$d embedded resource: %2$s', 'mcp-adapter' ),
+							__( 'Message %1$d embedded resource: %2$s', 'saddle' ),
 							$message_index,
 							$resource_error
 						);
@@ -492,7 +492,7 @@ class McpPromptValidator {
 			default:
 				$errors[] = sprintf(
 				/* translators: %1$d: message index, %2$s: content type */
-					__( 'Message %1$d content type \'%2$s\' is not supported. Must be \'text\', \'image\', \'audio\', \'resource\', or \'resource_link\'', 'mcp-adapter' ),
+					__( 'Message %1$d content type \'%2$s\' is not supported. Must be \'text\', \'image\', \'audio\', \'resource\', or \'resource_link\'', 'saddle' ),
 					$message_index,
 					$type
 				);
@@ -504,7 +504,7 @@ class McpPromptValidator {
 			if ( ! is_array( $content['annotations'] ) ) {
 				$errors[] = sprintf(
 				/* translators: %d: message index */
-					__( 'Message %d content annotations must be an array if provided', 'mcp-adapter' ),
+					__( 'Message %d content annotations must be an array if provided', 'saddle' ),
 					$message_index
 				);
 			} else {

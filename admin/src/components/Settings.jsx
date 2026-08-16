@@ -6,7 +6,7 @@
  * Deliberately lean: the access level lives on Permissions (it IS that page's
  * job), memory behavior lives on Memory, integration keys on Integrations.
  */
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useMemo } from '@wordpress/element';
 import {
 	Card,
 	CardHeader,
@@ -21,20 +21,90 @@ import {
 	ExternalLinkIcon,
 	StarIcon,
 } from '@plugpress/ui';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { api, saddleData } from '../api';
+import { collectSettingsCards, ui, SHELL_VERSION } from '../extensions';
+
+/**
+ * What the discovery probe found, in the owner's language.
+ *
+ * 'slow' is called out separately because it fails identically to a missing
+ * document from the app's side, but for the opposite reason — the document is
+ * there and correct, the site just answers too late — so the subfolder and
+ * blocked-path advice below would send the owner chasing the wrong thing.
+ *
+ * @param {string} state Probe result: 'ok' | 'slow' | 'unreachable' | 'unknown'.
+ * @return {string} Description for the Discoverable row.
+ */
+const DISCOVERY_NOTE = ( state ) => {
+	if ( 'ok' === state ) {
+		return __(
+			'Apps can find this site’s sign-in details on their own.',
+			'saddle'
+		);
+	}
+
+	if ( 'slow' === state ) {
+		return __(
+			'This site answers too slowly for some apps to finish connecting. The sign-in details are correct and in the right place, but ChatGPT gives up after a few seconds and then reports that this site doesn’t support signing in. A page cache or a faster host usually fixes it.',
+			'saddle'
+		);
+	}
+
+	return __(
+		'Apps may not be able to find the sign-in details automatically. This usually means WordPress lives in a subfolder, or your host blocks addresses starting with a dot. Most apps will still connect; ChatGPT may not.',
+		'saddle'
+	);
+};
+
+const DISCOVERY_BADGE = ( state ) => {
+	if ( 'ok' === state ) {
+		return __( 'Yes', 'saddle' );
+	}
+
+	if ( 'slow' === state ) {
+		return __( 'Too slow', 'saddle' );
+	}
+
+	return __( 'Maybe not', 'saddle' );
+};
 
 export default function Settings( { paused, pausing, onTogglePause } ) {
 	const [ domain, setDomain ] = useState( null );
+	const [ oauth, setOauth ] = useState( null );
+	const [ savingOauth, setSavingOauth ] = useState( false );
+	const [ oauthError, setOauthError ] = useState( '' );
+	// Addon-contributed cards (admin/src/extensions.js). Collected at mount:
+	// addon bundles registered at script evaluation, before the app mounted.
+	const extraCards = useMemo( collectSettingsCards, [] );
 
 	useEffect( () => {
-		api( 'settings' )
+		api( 'preferences' )
 			.then( ( res ) => setDomain( res.domain || null ) )
 			.catch( () => setDomain( null ) );
+
+		api( 'oauth-settings' )
+			.then( setOauth )
+			.catch( () => setOauth( null ) );
 	}, [] );
 
 	const domainMoved =
 		domain && domain.recorded && domain.current !== domain.recorded;
+
+	const saveOauth = ( changes ) => {
+		setSavingOauth( true );
+		setOauthError( '' );
+
+		api( 'oauth-settings', { method: 'POST', data: changes } )
+			.then( setOauth )
+			.catch( ( err ) =>
+				setOauthError(
+					err?.message ||
+						__( 'Could not save that setting.', 'saddle' )
+				)
+			)
+			.finally( () => setSavingOauth( false ) );
+	};
 
 	return (
 		<div className="saddle-settings">
@@ -81,6 +151,129 @@ export default function Settings( { paused, pausing, onTogglePause } ) {
 								  ) }
 						</span>
 					</label>
+				</CardContent>
+			</Card>
+
+			<Card>
+				<CardHeader
+					title={ __( 'Sign-in for ChatGPT', 'saddle' ) }
+					description={ __(
+						'Most AI apps let you paste a sign-in key. ChatGPT does not — its connector screen has no field for one. Turn this on and ChatGPT can send you here to approve it instead, the same way “Sign in with Google” works. Off by default; everything else keeps working either way.',
+						'saddle'
+					) }
+				/>
+				<CardContent>
+					{ oauth && ! oauth.ready && (
+						<p className="saddle-settings__note">
+							{ oauth.permalinks
+								? __(
+										'This needs your site to be served over HTTPS first — a sign-in token sent over plain HTTP can be read in transit.',
+										'saddle'
+								  )
+								: __(
+										'This needs pretty permalinks. Go to Settings → Permalinks, choose anything other than Plain, and come back.',
+										'saddle'
+								  ) }
+						</p>
+					) }
+
+					<label
+						className="saddle-toggle-row"
+						htmlFor="saddle-oauth-switch"
+					>
+						<Switch
+							id="saddle-oauth-switch"
+							checked={ !! oauth?.enabled }
+							disabled={ ! oauth || ! oauth.ready || savingOauth }
+							onChange={ () =>
+								saveOauth( { enabled: ! oauth.enabled } )
+							}
+							aria-label={ __(
+								'Allow apps to sign in with your WordPress account',
+								'saddle'
+							) }
+						/>
+						<span>
+							{ oauth?.enabled
+								? __(
+										'On — ChatGPT and other apps can ask to connect. You approve each one.',
+										'saddle'
+								  )
+								: __(
+										'Off — no app can start a sign-in, and nothing is published for them to find.',
+										'saddle'
+								  ) }
+						</span>
+					</label>
+
+					{ oauthError && (
+						<p className="saddle-settings__note">{ oauthError }</p>
+					) }
+
+					{ oauth?.enabled && (
+						<RowList>
+							<Row
+								title={ __( 'Discoverable', 'saddle' ) }
+								description={ DISCOVERY_NOTE(
+									oauth.discovery
+								) }
+								actions={
+									<Badge
+										tone={
+											'ok' === oauth.discovery
+												? undefined
+												: 'warning'
+										}
+									>
+										{ DISCOVERY_BADGE( oauth.discovery ) }
+									</Badge>
+								}
+							/>
+							<Row
+								title={ __(
+									'Let apps register themselves',
+									'saddle'
+								) }
+								description={ __(
+									'Needed by ChatGPT. An app that registers still cannot do anything until you approve it on screen.',
+									'saddle'
+								) }
+								actions={
+									<Switch
+										checked={ !! oauth.dcr }
+										disabled={ savingOauth }
+										onChange={ () =>
+											saveOauth( { dcr: ! oauth.dcr } )
+										}
+										aria-label={ __(
+											'Let apps register themselves',
+											'saddle'
+										) }
+									/>
+								}
+							/>
+							<Row
+								title={ __( 'Check app identity', 'saddle' ) }
+								description={ __(
+									'When an app identifies itself by web address, Saddle fetches that address to confirm it vouches for the app. Turning this off means every app shows as unverified.',
+									'saddle'
+								) }
+								actions={
+									<Switch
+										checked={ !! oauth.cimd }
+										disabled={ savingOauth }
+										onChange={ () =>
+											saveOauth( { cimd: ! oauth.cimd } )
+										}
+										aria-label={ __(
+											'Check app identity',
+											'saddle'
+										) }
+									/>
+								}
+							/>
+						</RowList>
+					) }
 				</CardContent>
 			</Card>
 
@@ -136,12 +329,26 @@ export default function Settings( { paused, pausing, onTogglePause } ) {
 				</CardContent>
 			</Card>
 
+			{ extraCards.map( ( { id, Component } ) => (
+				<Component
+					key={ id }
+					ui={ ui }
+					shellVersion={ SHELL_VERSION }
+				/>
+			) ) }
+
+			{ /* The only home for the version stamp and the outbound links —
+			     the nav rail's footer is navigation, nothing else. */ }
 			<Card>
 				<CardHeader
 					title={ __( 'About', 'saddle' ) }
 					description={
 						saddleData.version
-							? `Saddle v${ saddleData.version }`
+							? sprintf(
+									/* translators: %s: plugin version number. */
+									__( 'Saddle v%s', 'saddle' ),
+									saddleData.version
+							  )
 							: undefined
 					}
 				/>
