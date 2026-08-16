@@ -275,10 +275,68 @@ class Saddle_MCP {
 			self::REST_NAMESPACE,
 			self::ROUTE,
 			array(
-				'methods'             => 'POST',
-				'callback'            => array( __CLASS__, 'handle' ),
-				'permission_callback' => array( __CLASS__, 'authenticated' ),
+				array(
+					'methods'             => 'POST',
+					'callback'            => array( __CLASS__, 'handle' ),
+					'permission_callback' => array( __CLASS__, 'authenticated' ),
+				),
+				// GET and DELETE exist only to be refused correctly.
+				//
+				// "The server MUST provide a single HTTP endpoint path … that
+				// supports both POST and GET methods", and for GET: "The server
+				// MUST either return Content-Type: text/event-stream … or else
+				// return HTTP 405 Method Not Allowed."
+				//
+				// Leaving them unregistered looks like it produces that 405 —
+				// WP_REST_Server::dispatch() returns one, which is what a unit
+				// test sees. Over real HTTP it does not: the request never
+				// matches a route and the client gets 404 rest_no_route. A
+				// client probing for a stream reads 404 as a broken endpoint,
+				// so the only way to answer the spec is to own both methods.
+				array(
+					'methods'             => array( 'GET', 'DELETE' ),
+					'callback'            => array( __CLASS__, 'refuse_method' ),
+					'permission_callback' => array( __CLASS__, 'authenticated' ),
+				),
 			)
+		);
+
+		add_filter( 'rest_pre_serve_request', array( __CLASS__, 'serve_empty_acknowledgement' ), 10, 3 );
+	}
+
+	/**
+	 * Answer GET and DELETE with the 405 the spec asks for.
+	 *
+	 * GET: Saddle has no SSE stream to offer, and 405 is the spec's own
+	 * sanctioned way of saying so.
+	 *
+	 * DELETE: "Clients … SHOULD send an HTTP DELETE … to explicitly terminate
+	 * the session. The server MAY respond to this request with HTTP 405 Method
+	 * Not Allowed." This transport is stateless and issues no session id, so
+	 * there is nothing to terminate.
+	 *
+	 * The permission callback still runs first, so an unauthenticated probe
+	 * gets Saddle's legible 401 rather than confirmation that the endpoint is
+	 * here.
+	 *
+	 * @param WP_REST_Request $request The request.
+	 * @return WP_REST_Response
+	 */
+	public static function refuse_method( WP_REST_Request $request ) {
+		// No Allow header set here on purpose. Core's rest_send_allow_header()
+		// runs on rest_post_dispatch and rewrites it from the route's declared
+		// methods, so anything set here is overwritten before the client sees
+		// it — and a test asserting our value would pass while the wire said
+		// something else. That is the same false negative that hid the 404.
+		return new WP_REST_Response(
+			self::error_envelope(
+				null,
+				-32600,
+				'GET' === $request->get_method()
+					? __( 'This MCP endpoint does not offer an event stream. Send JSON-RPC over POST instead.', 'saddle' )
+					: __( 'This MCP endpoint is stateless and issues no session to terminate.', 'saddle' )
+			),
+			405
 		);
 	}
 
@@ -370,10 +428,18 @@ class Saddle_MCP {
 		$ob_level = ob_get_level();
 		ob_start();
 		try {
+			$version = self::protocol_version_error( $request );
+			if ( $version instanceof WP_REST_Response ) {
+				return $version;
+			}
+
 			$body = $request->get_json_params();
 
 			if ( ! is_array( $body ) || array() === $body ) {
-				return new WP_REST_Response( self::error_envelope( null, -32700, __( 'Parse error: request body is not valid JSON-RPC.', 'saddle' ) ), 200 );
+				// 400, not 200: the spec asks for an HTTP error status here,
+				// and a parse failure recorded as a success is a trace row that
+				// reads like everything worked.
+				return self::respond( self::error_envelope( null, -32700, __( 'Parse error: request body is not valid JSON-RPC.', 'saddle' ) ), 400, $request );
 			}
 
 			// A JSON array (sequential integer keys) is a batch of requests.
@@ -387,12 +453,16 @@ class Saddle_MCP {
 						$responses[] = $result;
 					}
 				}
-				// All-notification batches yield no responses; reply with 204-equivalent empty body.
-				return new WP_REST_Response( empty( $responses ) ? null : $responses, 200 );
+				return empty( $responses )
+					? self::acknowledge( $request )
+					: self::respond( $responses, 200, $request );
 			}
 
 			$response = self::dispatch( $body );
-			return new WP_REST_Response( $response, 200 );
+
+			return null === $response
+				? self::acknowledge( $request )
+				: self::respond( $response, 200, $request );
 		} finally {
 			// Handlers may open/close buffers of their own — unwind exactly
 			// back to where this method started, never past it.
@@ -400,6 +470,141 @@ class Saddle_MCP {
 				ob_end_clean();
 			}
 		}
+	}
+
+	/**
+	 * Acknowledge a notification: 202 Accepted, with no body at all.
+	 *
+	 * THE FIX FOR #97, and worth stating plainly because it looks like a
+	 * cosmetic status change. The spec: "If the input is a JSON-RPC response or
+	 * notification … the server MUST return HTTP status code 202 Accepted with
+	 * no body." Saddle answered 200 with the JSON literal `null`.
+	 *
+	 * Every client's handshake is initialize → notifications/initialized →
+	 * tools/list, and the middle step is a notification. A lenient client
+	 * shrugs at the wrong answer and carries on — which is exactly what
+	 * mcp-remote does, and why Claude Desktop worked against a site where
+	 * ChatGPT reported no callable actions. A strict client treats the
+	 * handshake as unfinished and never sends tools/list.
+	 *
+	 * WordPress serializes a null body as the four characters `null`, so "no
+	 * body" takes a deliberate short-circuit: rest_pre_serve_request lets us
+	 * tell WP_REST_Server the response is already served, having printed
+	 * nothing. It removes itself on the way through, so it cannot empty the
+	 * next response in the same process — which the test suite would notice
+	 * long before a site did.
+	 *
+	 * @param WP_REST_Request $request The request being acknowledged.
+	 * @return WP_REST_Response
+	 */
+	private static function acknowledge( WP_REST_Request $request ) {
+		return self::respond( null, 202, $request );
+	}
+
+	/**
+	 * Print nothing for the 202 above, and tell WP_REST_Server it is done.
+	 *
+	 * Registered once, at route registration, rather than added per-request:
+	 * a filter added mid-request only unhooks itself if it actually fires, and
+	 * a response that never reaches the serving stage — short-circuited by
+	 * another plugin, or replaced downstream — would leave it armed to swallow
+	 * the body of whatever came next. Standing and stateless is the version
+	 * that cannot do that.
+	 *
+	 * Narrow on purpose: our own MCP route, and a 202, which nothing else here
+	 * returns.
+	 *
+	 * @param bool             $served   Whether the response has been served.
+	 * @param WP_HTTP_Response $result   The response about to be printed.
+	 * @param WP_REST_Request  $request  The request.
+	 * @return bool
+	 */
+	public static function serve_empty_acknowledgement( $served, $result, $request = null ) {
+		if ( $served || ! $result instanceof WP_HTTP_Response || 202 !== $result->get_status() ) {
+			return $served;
+		}
+
+		if ( ! $request instanceof WP_REST_Request || ! self::owns_route( $request ) ) {
+			return $served;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Whether a request is aimed at Saddle's MCP endpoint.
+	 *
+	 * @param WP_REST_Request $request The request.
+	 * @return bool
+	 */
+	private static function owns_route( WP_REST_Request $request ) {
+		return 0 === strpos( (string) $request->get_route(), '/' . self::REST_NAMESPACE . self::ROUTE );
+	}
+
+	/**
+	 * Build a response, echoing the negotiated protocol version back.
+	 *
+	 * @param mixed                $data    Response payload (null for a 202).
+	 * @param int                  $status  HTTP status.
+	 * @param WP_REST_Request|null $request Originating request.
+	 * @return WP_REST_Response
+	 */
+	private static function respond( $data, $status, $request = null ) {
+		$response = new WP_REST_Response( $data, $status );
+
+		// The spec has the client sending MCP-Protocol-Version on every request
+		// after initialize; echoing it back is what lets a client confirm the
+		// server is speaking the revision it negotiated.
+		$sent = $request instanceof WP_REST_Request ? (string) $request->get_header( 'Mcp-Protocol-Version' ) : '';
+		$response->header( 'MCP-Protocol-Version', '' !== $sent ? $sent : self::PROTOCOL_VERSION );
+
+		return $response;
+	}
+
+	/**
+	 * Refuse a request whose MCP-Protocol-Version header names a revision this
+	 * server does not speak.
+	 *
+	 * "If the server receives a request with an invalid or unsupported
+	 * MCP-Protocol-Version, it MUST respond with 400 Bad Request." Absent the
+	 * header the spec says assume 2025-03-26 and carry on, which matters here:
+	 * every Application Password client in the field omits it, so a missing
+	 * header must never be an error.
+	 *
+	 * 2025-03-26 is accepted even though it is not in SUPPORTED_PROTOCOL_VERSIONS.
+	 * That list drives *negotiation* — what initialize will agree to — and
+	 * widening it there would change what Saddle offers. Here the question is
+	 * only whether a version is recognizable enough not to refuse, and the
+	 * spec names that revision as the one to assume by default; refusing the
+	 * value it tells servers to infer would be perverse.
+	 *
+	 * @param WP_REST_Request $request The request.
+	 * @return WP_REST_Response|null A 400 response, or null when the header is fine.
+	 */
+	private static function protocol_version_error( WP_REST_Request $request ) {
+		$sent = (string) $request->get_header( 'Mcp-Protocol-Version' );
+		if ( '' === $sent ) {
+			return null;
+		}
+
+		$known = array_merge( self::SUPPORTED_PROTOCOL_VERSIONS, array( '2025-03-26' ) );
+		if ( in_array( $sent, $known, true ) ) {
+			return null;
+		}
+
+		return new WP_REST_Response(
+			self::error_envelope(
+				null,
+				-32600,
+				sprintf(
+					/* translators: 1: protocol version the client asked for, 2: comma-separated list of supported versions. */
+					__( 'Unsupported MCP protocol version "%1$s". This server speaks %2$s.', 'saddle' ),
+					$sent,
+					implode( ', ', self::SUPPORTED_PROTOCOL_VERSIONS )
+				)
+			),
+			400
+		);
 	}
 
 	/**
@@ -443,6 +648,22 @@ class Saddle_MCP {
 
 			case 'tools/call':
 				return self::call_tool( $id, $params );
+
+			// Saddle advertises only the `tools` capability, so a conformant
+			// client has no reason to ask for these — but ChatGPT probes all
+			// three during connector setup, and Method-not-found is a poor
+			// answer to hand a client mid-handshake. An empty list costs
+			// nothing and is the truth. The vendored adapter already answers
+			// two of the three this way, so this also stops Saddle's two
+			// transports behaving differently on the same call.
+			case 'resources/list':
+				return self::result_envelope( $id, array( 'resources' => array() ) );
+
+			case 'resources/templates/list':
+				return self::result_envelope( $id, array( 'resourceTemplates' => array() ) );
+
+			case 'prompts/list':
+				return self::result_envelope( $id, array( 'prompts' => array() ) );
 
 			default:
 				// Notifications (e.g. notifications/initialized) carry no id and

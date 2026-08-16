@@ -238,6 +238,63 @@ class Saddle_OAuth_Bearer_Test extends WP_UnitTestCase {
 		$this->assertTrue( Saddle_Capabilities::tier_allows( 'write' ) );
 	}
 
+	/* ------------------------------------------------------------------
+	 * What a token is OFFERED — the tier filter, over the OAuth path
+	 * --------------------------------------------------------------- */
+
+	/**
+	 * tools/list is filtered to what the credential can call, and the tier it
+	 * reads comes from a different route on this path: tier_ceiling() →
+	 * scope_to_tier() → the saddle_tier_ceiling filter. The clamp tests above
+	 * prove the tier is right; these prove the TOOL LIST that now depends on
+	 * it is right, which is the part a connected app actually sees.
+	 *
+	 * Worth its own cover because an empty list here is indistinguishable, from
+	 * the user's side, from the bug this whole branch is about: an app that
+	 * signs in fine and then reports no callable actions.
+	 *
+	 * @param string $scope Granted scope.
+	 * @return string[] Tool names offered to that token.
+	 */
+	private function tools_offered_to( $scope ) {
+		$this->issue_token( $scope );
+		Saddle_OAuth_Bearer::resolve( false );
+		wp_set_current_user( $this->admin );
+
+		$req = new WP_REST_Request( 'POST', '/saddle/v1/mcp' );
+		$req->set_header( 'content-type', 'application/json' );
+		$req->set_body( wp_json_encode( array( 'jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/list' ) ) );
+
+		return wp_list_pluck( Saddle_MCP::handle( $req )->get_data()['result']['tools'], 'name' );
+	}
+
+	public function test_a_read_token_is_offered_the_read_tools_and_no_others() {
+		Saddle_Capabilities::set_tier( 'admin' );
+
+		$names = $this->tools_offered_to( 'saddle:read' );
+
+		$this->assertNotEmpty( $names, 'A read token must still be offered the whole read surface.' );
+		$this->assertContains( 'saddle-list-posts', $names );
+		$this->assertNotContains( 'saddle-create-post', $names, 'The scope narrows the list, even on an admin-tier site.' );
+	}
+
+	public function test_a_write_token_is_offered_the_write_tools() {
+		Saddle_Capabilities::set_tier( 'admin' );
+
+		$names = $this->tools_offered_to( 'saddle:write' );
+
+		$this->assertContains( 'saddle-create-post', $names );
+		$this->assertNotContains( 'saddle-list-plugins', $names, 'write is still not admin.' );
+	}
+
+	public function test_an_admin_token_on_an_admin_site_is_offered_everything() {
+		Saddle_Capabilities::set_tier( 'admin' );
+
+		$names = $this->tools_offered_to( 'saddle:admin' );
+
+		$this->assertContains( 'saddle-list-plugins', $names );
+	}
+
 	public function test_the_denial_reason_sends_the_user_to_reconnect_not_to_permissions() {
 		Saddle_Capabilities::set_tier( 'admin' );
 		$this->issue_token( 'saddle:read' );

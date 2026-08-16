@@ -10,6 +10,21 @@
 class Saddle_MCP_Transport_Test extends WP_UnitTestCase {
 
 	/**
+	 * Boot the REST server once, before any test's incorrect-usage capture
+	 * starts. Most tests here call Saddle_MCP::handle() directly, but the
+	 * method-negotiation ones have to go through the real server — and booting
+	 * it fires the MCP adapter's default-server registration, which emits a
+	 * `_doing_it_wrong` for an ability it never registered (issue #86).
+	 * Doing it here means that lands outside any test rather than being
+	 * blamed on whichever one dispatches first. Same reason
+	 * nonce-fallback-test.php and oauth-bearer-test.php do it.
+	 */
+	public static function set_up_before_class() {
+		parent::set_up_before_class();
+		rest_get_server();
+	}
+
+	/**
 	 * tools/list is only reachable through the transport gate, which requires
 	 * an authenticated user — and the list is now filtered to what that
 	 * credential can call. So the baseline for these tests is a real
@@ -103,6 +118,261 @@ class Saddle_MCP_Transport_Test extends WP_UnitTestCase {
 		$result = $this->initialize( '2025-11-25' );
 
 		$this->assertStringNotContainsString( 'Plugins active on this site', $result['instructions'] );
+	}
+
+	/* -------- Streamable HTTP conformance (issue #97) -------- */
+
+	/**
+	 * POST a raw JSON-RPC body and return the whole response object, so a test
+	 * can assert on the STATUS as well as the payload. list_tools() below reads
+	 * only the body, which is how a transport could go years answering the
+	 * wrong status codes without a red test.
+	 *
+	 * @param array|string $body    JSON-RPC body (array is encoded).
+	 * @param array        $headers Extra request headers.
+	 * @return WP_REST_Response
+	 */
+	private function post( $body, array $headers = array() ) {
+		$req = new WP_REST_Request( 'POST', '/saddle/v1/mcp' );
+		$req->set_header( 'content-type', 'application/json' );
+		foreach ( $headers as $name => $value ) {
+			$req->set_header( $name, $value );
+		}
+		$req->set_body( is_string( $body ) ? $body : wp_json_encode( $body ) );
+
+		return Saddle_MCP::handle( $req );
+	}
+
+	/**
+	 * THE BUG (issue #97). Every client's handshake is initialize →
+	 * notifications/initialized → tools/list. The middle step is a
+	 * notification, and the spec is unambiguous: "If the input is a JSON-RPC
+	 * response or notification … the server MUST return HTTP status code 202
+	 * Accepted with no body."
+	 *
+	 * Saddle answered 200 with the JSON literal `null`. mcp-remote shrugs and
+	 * carries on — which is why Claude Desktop worked against the very same
+	 * site. A strict client treats the handshake as unfinished and never sends
+	 * tools/list, which reaches the user as "connected, but it exposes no
+	 * callable actions".
+	 */
+	public function test_a_notification_is_accepted_with_202_and_no_body() {
+		$response = $this->post(
+			array(
+				'jsonrpc' => '2.0',
+				'method'  => 'notifications/initialized',
+			)
+		);
+
+		$this->assertSame( 202, $response->get_status(), 'A notification must be acknowledged with 202 Accepted.' );
+		$this->assertNull( $response->get_data(), 'A 202 acknowledgement must carry no body.' );
+	}
+
+	public function test_an_all_notification_batch_is_also_202() {
+		$response = $this->post(
+			array(
+				array( 'jsonrpc' => '2.0', 'method' => 'notifications/initialized' ),
+				array( 'jsonrpc' => '2.0', 'method' => 'notifications/cancelled' ),
+			)
+		);
+
+		$this->assertSame( 202, $response->get_status() );
+		$this->assertNull( $response->get_data() );
+	}
+
+	/**
+	 * The other half of the 202 change: a real request must still come back
+	 * 200 with its envelope. Suppressing the body is scoped to the
+	 * acknowledgement, and a filter that leaked would empty every response.
+	 */
+	public function test_a_real_request_still_returns_200_with_its_envelope() {
+		$response = $this->post( array( 'jsonrpc' => '2.0', 'id' => 1, 'method' => 'ping' ) );
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( '2.0', $response->get_data()['jsonrpc'] );
+	}
+
+	/**
+	 * The status is only half of it: "with no body" is delivered by a
+	 * rest_pre_serve_request short-circuit, which lives in the serving stage
+	 * that handle() never reaches. These drive that filter directly, because
+	 * a 202 whose body still says `null` would look identical in every other
+	 * assertion here.
+	 */
+	public function test_the_acknowledgement_body_is_suppressed_at_the_serving_stage() {
+		$request = new WP_REST_Request( 'POST', '/saddle/v1/mcp' );
+
+		$this->assertTrue(
+			Saddle_MCP::serve_empty_acknowledgement( false, new WP_REST_Response( null, 202 ), $request ),
+			'Reporting the response as already served is what stops WordPress printing "null".'
+		);
+	}
+
+	public function test_the_suppressor_leaves_every_other_response_alone() {
+		$ours = new WP_REST_Request( 'POST', '/saddle/v1/mcp' );
+
+		$this->assertFalse(
+			Saddle_MCP::serve_empty_acknowledgement( false, new WP_REST_Response( array( 'jsonrpc' => '2.0' ), 200 ), $ours ),
+			'A real JSON-RPC response must still be printed.'
+		);
+
+		$this->assertFalse(
+			Saddle_MCP::serve_empty_acknowledgement( false, new WP_REST_Response( array( 'x' => 1 ), 202 ), new WP_REST_Request( 'POST', '/wp/v2/posts' ) ),
+			'A 202 from someone else’s route is none of our business.'
+		);
+
+		$this->assertTrue(
+			Saddle_MCP::serve_empty_acknowledgement( true, new WP_REST_Response( null, 202 ), $ours ),
+			'Already served by someone else stays served.'
+		);
+	}
+
+	/**
+	 * The full handshake, in order. Nothing exercised this sequence end to end
+	 * before, which is exactly how a break in the middle of it shipped.
+	 */
+	public function test_the_whole_handshake_runs_and_ends_with_tools() {
+		$init = $this->post(
+			array(
+				'jsonrpc' => '2.0',
+				'id'      => 1,
+				'method'  => 'initialize',
+				'params'  => array( 'protocolVersion' => '2025-06-18' ),
+			)
+		);
+		$this->assertSame( 200, $init->get_status() );
+		$this->assertSame( '2025-06-18', $init->get_data()['result']['protocolVersion'] );
+
+		$ack = $this->post( array( 'jsonrpc' => '2.0', 'method' => 'notifications/initialized' ) );
+		$this->assertSame( 202, $ack->get_status(), 'The step between "connected" and "has tools".' );
+
+		$list = $this->post( array( 'jsonrpc' => '2.0', 'id' => 2, 'method' => 'tools/list' ) );
+		$this->assertSame( 200, $list->get_status() );
+		$this->assertNotEmpty( $list->get_data()['result']['tools'] );
+	}
+
+	/**
+	 * "The server MUST either return Content-Type: text/event-stream in
+	 * response to this HTTP GET, or else return HTTP 405 Method Not Allowed."
+	 * Saddle has no stream to offer, so 405 it is.
+	 *
+	 * A warning for anyone changing this: leaving GET unregistered LOOKS like
+	 * it satisfies the spec, because WP_REST_Server::dispatch() answers a
+	 * method mismatch with 405 — so a test written against dispatch() passes
+	 * while real clients get 404 rest_no_route. That is exactly the false
+	 * negative this test used to give, and only a curl against a real install
+	 * caught it. Assert on the Allow header too: it is the part that proves
+	 * our own handler produced this rather than core's routing.
+	 */
+	public function test_get_and_delete_are_refused_with_405() {
+		foreach ( array( 'GET', 'DELETE' ) as $method ) {
+			$response = Saddle_MCP::refuse_method( new WP_REST_Request( $method, '/saddle/v1/mcp' ) );
+
+			$this->assertSame( 405, $response->get_status(), "{$method} must be refused with 405, not 404." );
+			$this->assertSame( -32600, $response->get_data()['error']['code'] );
+		}
+	}
+
+	/**
+	 * The handler is only half of it — it has to be ROUTED to, and this suite
+	 * cannot prove that: the dev tree contains the vendored adapter, so
+	 * Saddle::setup_mcp_transport() hands /saddle/v1/mcp to the adapter and
+	 * Saddle_MCP::register_routes() never runs here. Dispatching through
+	 * rest_get_server() in this file reaches the ADAPTER's route, not ours.
+	 *
+	 * That is precisely how the 404 got missed: dispatch() answers a method
+	 * mismatch with 405 regardless, so the old test passed while real clients
+	 * on a .org build got 404. The routing half is verified with curl against
+	 * a Playground install running the built wporg zip — see the PR.
+	 */
+	public function test_this_suite_exercises_the_builtin_handler_not_the_adapter_route() {
+		$this->assertTrue(
+			Saddle::adapter_available(),
+			'If this ever fails, the note above is stale and these tests changed meaning.'
+		);
+	}
+
+	/**
+	 * Registering GET must not turn the endpoint into an unauthenticated probe
+	 * that confirms Saddle is installed here.
+	 */
+	public function test_an_unauthenticated_get_is_still_401() {
+		$current = get_current_user_id();
+		wp_set_current_user( 0 );
+
+		$response = rest_get_server()->dispatch( new WP_REST_Request( 'GET', '/saddle/v1/mcp' ) );
+
+		wp_set_current_user( $current );
+
+		$this->assertSame( 401, $response->get_status(), 'Authentication comes before method negotiation.' );
+	}
+
+	/**
+	 * Saddle advertises only the tools capability, so a conformant client
+	 * should never ask — but Mark's ChatGPT demonstrably probes all three, and
+	 * Method-not-found is a poor answer to give a client mid-handshake. The
+	 * vendored adapter already answers two of these with empty lists, so this
+	 * also closes a difference between Saddle's two transports.
+	 */
+	public function test_resource_and_prompt_probes_get_empty_lists_not_method_not_found() {
+		foreach ( array(
+			'resources/list'           => 'resources',
+			'resources/templates/list' => 'resourceTemplates',
+			'prompts/list'             => 'prompts',
+		) as $method => $key ) {
+			$data = $this->post( array( 'jsonrpc' => '2.0', 'id' => 3, 'method' => $method ) )->get_data();
+
+			$this->assertArrayNotHasKey( 'error', $data, "{$method} must not answer Method not found." );
+			$this->assertSame( array(), $data['result'][ $key ], "{$method} must answer with an empty list." );
+		}
+	}
+
+	/**
+	 * An unknown method that ISN'T one of those probes must still be refused —
+	 * answering everything would be worse than answering nothing.
+	 */
+	public function test_a_genuinely_unknown_method_is_still_refused() {
+		$data = $this->post( array( 'jsonrpc' => '2.0', 'id' => 4, 'method' => 'completion/complete' ) )->get_data();
+
+		$this->assertSame( -32601, $data['error']['code'] );
+	}
+
+	/**
+	 * "If the server receives a request with an invalid or unsupported
+	 * MCP-Protocol-Version, it MUST respond with 400 Bad Request."
+	 */
+	public function test_an_unsupported_protocol_version_header_is_400() {
+		$response = $this->post(
+			array( 'jsonrpc' => '2.0', 'id' => 5, 'method' => 'ping' ),
+			array( 'MCP-Protocol-Version' => '1999-01-01' )
+		);
+
+		$this->assertSame( 400, $response->get_status() );
+	}
+
+	public function test_a_supported_protocol_version_header_passes_and_is_echoed() {
+		$response = $this->post(
+			array( 'jsonrpc' => '2.0', 'id' => 6, 'method' => 'ping' ),
+			array( 'MCP-Protocol-Version' => '2025-06-18' )
+		);
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( '2025-06-18', $response->get_headers()['MCP-Protocol-Version'] );
+	}
+
+	/**
+	 * Absent the header the spec says assume 2025-03-26 — i.e. carry on, never
+	 * refuse. Every Application Password client in the field omits it.
+	 */
+	public function test_a_missing_protocol_version_header_is_fine() {
+		$this->assertSame( 200, $this->post( array( 'jsonrpc' => '2.0', 'id' => 7, 'method' => 'ping' ) )->get_status() );
+	}
+
+	public function test_an_unparseable_body_is_400() {
+		$response = $this->post( 'this is not json' );
+
+		$this->assertSame( 400, $response->get_status() );
+		$this->assertSame( -32700, $response->get_data()['error']['code'] );
 	}
 
 	/**
