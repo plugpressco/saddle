@@ -5,11 +5,12 @@
  * 18 tools lives behind a disclosure for anyone who wants to verify exactly
  * what's included — invisible for everyone else. Nothing saves until you apply.
  */
-import { useState, useMemo } from '@wordpress/element';
+import { useState, useMemo, useEffect } from '@wordpress/element';
 import {
 	CardRadioGroup,
 	Collapsible,
 	ApplyBar,
+	Notice,
 	toast,
 	PageHeader,
 	Tooltip,
@@ -59,6 +60,25 @@ export default function Permissions( {
 	const [ localDisabled, setLocalDisabled ] = useState( () =>
 		savedDisabledSet( caps )
 	);
+
+	// Apps that signed in themselves carry a level of their own, granted once at
+	// the consent screen, and it can sit below the site's. From this screen that
+	// gap is invisible — which is exactly how "I set this to Managing the site
+	// and my app still can't save anything" happens. Name the app here instead of
+	// leaving it to be discovered as a string of refusals.
+	const [ underLevelled, setUnderLevelled ] = useState( [] );
+
+	useEffect( () => {
+		api( 'oauth-connections' )
+			.then( ( res ) =>
+				setUnderLevelled(
+					( res || [] ).filter(
+						( c ) => ! tierUnlocks( c.level, savedTier )
+					)
+				)
+			)
+			.catch( () => setUnderLevelled( [] ) );
+	}, [ savedTier ] );
 
 	// Free text filter across a tool's name/id/description. Empty matches all.
 	const q = query.trim().toLowerCase();
@@ -210,6 +230,31 @@ export default function Permissions( {
 					description: lvl.short,
 				} ) ) }
 			/>
+
+			{ underLevelled.length > 0 && (
+				<Notice tone="warning">
+					{ sprintf(
+						/* translators: 1: comma-separated app names, 2: the level each app is stuck at, 3: the site's level. */
+						_n(
+							'%1$s is connected at “%2$s”, so it is not offered the tools this “%3$s” level unlocks. Change it on the Connect tab — apps that sign in themselves keep the level they were approved with.',
+							'%1$s are connected at “%2$s” or lower, so they are not offered the tools this “%3$s” level unlocks. Change them on the Connect tab — apps that sign in themselves keep the level they were approved with.',
+							underLevelled.length,
+							'saddle'
+						),
+						underLevelled.map( ( c ) => c.name ).join( ', ' ),
+						(
+							LEVELS.find(
+								( l ) => l.key === underLevelled[ 0 ].level
+							) || {}
+						).title || underLevelled[ 0 ].level,
+						(
+							LEVELS.find(
+								( l ) => l.key === levelKey( savedTier )
+							) || {}
+						).title || savedTier
+					) }
+				</Notice>
+			) }
 
 			<Collapsible
 				className="saddle-perm__all"
@@ -416,11 +461,15 @@ export default function Permissions( {
 								: null,
 							// Most AI apps read the tool list once, when they
 							// connect. Saving a change they can't see until
-							// they reconnect is the kind of thing that reads
-							// as "it didn't work".
+							// they look again is the kind of thing that reads
+							// as "it didn't work". "Reconnect" was the old
+							// wording and was wrong for apps that sign in
+							// themselves — reconnecting one re-runs consent and
+							// re-grants whatever level it had, which is not
+							// what this change did.
 							dirty || abilitiesDirty
 								? __(
-										'Already-connected apps keep the old tool list until they reconnect.',
+										'Already-connected apps keep the old tool list until you refresh or reopen them.',
 										'saddle'
 								  )
 								: null,

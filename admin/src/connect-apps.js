@@ -51,8 +51,13 @@ export const APPS = [
 			'In ChatGPT on the web: turn on Developer mode (Settings → Apps & Connectors → Advanced settings), then create a connector. Paste the address, choose OAuth, and leave the client ID and secret blank. ChatGPT sends you here to approve it — the connector then works in the desktop app too.',
 			'saddle'
 		),
+		// Worth saying on the screen rather than in a support email: OpenAI has
+		// gated write-capable custom connectors to Business, Enterprise and Edu
+		// workspaces at various points, and on a personal plan ChatGPT can end up
+		// offered every tool and still decline to use the ones that change
+		// anything. That looks identical to a Saddle permission problem.
 		next: __(
-			'Enable the connector in a ChatGPT chat and ask it about your site.',
+			'Enable the connector in a ChatGPT chat and ask it about your site. If it can read but refuses to change anything, check your ChatGPT plan — write-capable custom connectors have been limited to Business, Enterprise and Edu workspaces.',
 			'saddle'
 		),
 	},
