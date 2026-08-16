@@ -10,21 +10,6 @@
 class Saddle_MCP_Transport_Test extends WP_UnitTestCase {
 
 	/**
-	 * Boot the REST server once, before any test's incorrect-usage capture
-	 * starts. Most tests here call Saddle_MCP::handle() directly, but the
-	 * method-negotiation ones have to go through the real server — and booting
-	 * it fires the MCP adapter's default-server registration, which emits a
-	 * `_doing_it_wrong` for an ability it never registered (issue #86).
-	 * Doing it here means that lands outside any test rather than being
-	 * blamed on whichever one dispatches first. Same reason
-	 * nonce-fallback-test.php and oauth-bearer-test.php do it.
-	 */
-	public static function set_up_before_class() {
-		parent::set_up_before_class();
-		rest_get_server();
-	}
-
-	/**
 	 * tools/list is only reachable through the transport gate, which requires
 	 * an authenticated user — and the list is now filtered to what that
 	 * credential can call. So the baseline for these tests is a real

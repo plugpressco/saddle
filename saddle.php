@@ -251,6 +251,28 @@ final class Saddle {
 	 * tier + approval gate live in the abilities regardless of transport.
 	 */
 	public static function setup_mcp_transport() {
+		// Saddle declares exactly one MCP endpoint: /saddle/v1/mcp. The adapter
+		// would otherwise stand up a second of its own at
+		// /wp-json/mcp/mcp-adapter-default-server, serving discover-abilities,
+		// get-ability-info and execute-ability — and Saddle's abilities are all
+		// `mcp.public`, so execute-ability can reach them.
+		//
+		// Not a tier bypass: every Saddle ability gates itself, so the access
+		// levels and the approval gate hold whichever transport calls. But that
+		// server is registered with no transport permission callback, so it
+		// falls back to a bare current_user_can('read') and gets none of what
+		// Saddle's own endpoint has — the legible 401s, the OAuth challenge, or
+		// the traffic trace. It is a public surface we never declared,
+		// documented, or intended to ship (issue #86).
+		//
+		// Registered here, on plugins_loaded, because the adapter creates that
+		// server inside its own init — before it fires `mcp_adapter_init` — so
+		// anything later is too late. Third-party hook: the name is the
+		// adapter's, and this applies to a standalone copy of that plugin as
+		// much as to the bundled one, which is why it sits outside the
+		// class_exists() below.
+		add_filter( 'mcp_adapter_create_default_server', '__return_false' );
+
 		// Absent from the WordPress.org build, together with the library it
 		// loads. Guarded at the point of use, per the house rule — a guard that
 		// is always true hides the mistake it was meant to catch.
