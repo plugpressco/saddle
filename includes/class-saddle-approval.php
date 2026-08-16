@@ -112,13 +112,25 @@ class Saddle_Approval {
 			}
 			$result = call_user_func( $execute );
 
-			// Log the executed destructive action (not the preview).
-			if ( ! is_wp_error( $result ) && class_exists( 'Saddle_Log' ) ) {
+			// Log the executed destructive action (not the preview). A WP_Error
+			// result is logged too — the executor may have partially mutated
+			// before failing, and a confirmed destructive call with no audit
+			// trail is worse than a noisy one.
+			if ( class_exists( 'Saddle_Log' ) ) {
+				$summary = isset( $args['summary'] ) ? (string) $args['summary'] : '';
+				if ( is_wp_error( $result ) ) {
+					$summary = sprintf(
+						/* translators: 1: original summary, 2: error message. */
+						__( '%1$s — FAILED after confirmation: %2$s', 'saddle' ),
+						$summary,
+						$result->get_error_message()
+					);
+				}
 				Saddle_Log::record(
 					array(
 						'action'  => $action,
 						'target'  => $target,
-						'summary' => isset( $args['summary'] ) ? (string) $args['summary'] : '',
+						'summary' => $summary,
 					)
 				);
 			}
