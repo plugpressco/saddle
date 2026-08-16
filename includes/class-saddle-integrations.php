@@ -89,10 +89,26 @@ class Saddle_Integrations {
 	 * @return string
 	 */
 	public static function append_context( $context ) {
+		return $context;
+	}
+
+	/**
+	 * Tell agents which sibling plugins' tools are available.
+	 *
+	 * Contributed as a section rather than appended as a string: this used to
+	 * emit a bare "First-party integrations:" line with no heading, in a
+	 * document where everything else is a `#` heading. Runs on
+	 * `saddle_context_sections`.
+	 *
+	 * @param array[] $sections Sections so far.
+	 * @return array[]
+	 */
+	public static function context_section( $sections ) {
 		$lines = array();
 		foreach ( self::engine()->active_counts() as $slug => $active ) {
 			$lines[] = sprintf(
-				'- %1$s is installed: use the saddle/%2$s-* tools (%3$d available) for its features instead of improvising with generic tools.',
+				/* translators: 1: plugin name, 2: tool-name prefix, 3: number of tools. */
+				__( '- %1$s is installed: use the saddle/%2$s-* tools (%3$d available) for its features instead of improvising with generic tools.', 'saddle' ),
 				$active['title'],
 				$slug,
 				$active['count']
@@ -100,9 +116,16 @@ class Saddle_Integrations {
 		}
 
 		if ( ! $lines ) {
-			return $context;
+			return $sections;
 		}
 
-		return rtrim( (string) $context ) . "\n\nFirst-party integrations:\n" . implode( "\n", $lines ) . "\n";
+		$sections[] = array(
+			'id'       => 'first-party-integrations',
+			'title'    => __( 'Other PlugPress tools on this site', 'saddle' ),
+			'lines'    => $lines,
+			'priority' => 40,
+		);
+
+		return $sections;
 	}
 }

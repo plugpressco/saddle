@@ -266,6 +266,97 @@ class Saddle_Context_Test extends WP_UnitTestCase {
 		$this->assertStringNotContainsString( 'in a row', $ctx );
 	}
 
+	/* -------- the ordered section seam -------- */
+
+	/**
+	 * A contributor supplies a title and lines; the seam decides how they are
+	 * rendered. That is the whole point — before this, four codebases each
+	 * chose their own heading level and one chose none at all.
+	 */
+	public function test_a_section_is_rendered_with_the_documents_own_heading_level() {
+		add_filter(
+			'saddle_context_sections',
+			static function ( $sections ) {
+				$sections[] = array(
+					'id'    => 'x',
+					// Deliberately over-marked: the seam must normalize it.
+					'title' => '### Shouty Addon',
+					'lines' => array( '- something useful' ),
+				);
+				return $sections;
+			}
+		);
+
+		$ctx = Saddle_Context::system_context();
+		remove_all_filters( 'saddle_context_sections' );
+
+		$this->assertStringContainsString( "# Shouty Addon\n", $ctx );
+		$this->assertStringNotContainsString( '### Shouty Addon', $ctx );
+		$this->assertStringContainsString( '- something useful', $ctx );
+	}
+
+	public function test_sections_render_in_priority_order() {
+		add_filter(
+			'saddle_context_sections',
+			static function ( $sections ) {
+				$sections[] = array( 'id' => 'late', 'title' => 'Zebra', 'lines' => array( '- z' ), 'priority' => 90 );
+				$sections[] = array( 'id' => 'early', 'title' => 'Aardvark', 'lines' => array( '- a' ), 'priority' => 10 );
+				return $sections;
+			}
+		);
+
+		$ctx = Saddle_Context::system_context();
+		remove_all_filters( 'saddle_context_sections' );
+
+		$this->assertLessThan(
+			strpos( $ctx, '# Zebra' ),
+			strpos( $ctx, '# Aardvark' ),
+			'Priority decides the order, not registration order.'
+		);
+	}
+
+	public function test_a_section_with_no_lines_contributes_no_empty_heading() {
+		add_filter(
+			'saddle_context_sections',
+			static function ( $sections ) {
+				$sections[] = array( 'id' => 'empty', 'title' => 'Nothing To Say', 'lines' => array() );
+				return $sections;
+			}
+		);
+
+		$ctx = Saddle_Context::system_context();
+		remove_all_filters( 'saddle_context_sections' );
+
+		$this->assertStringNotContainsString( 'Nothing To Say', $ctx );
+	}
+
+	/**
+	 * Saddle Pro 1.4.1 is in the field appending through the old filter. It
+	 * must keep working, and it must still run last so an addon can adjust
+	 * anything the sections produced.
+	 */
+	public function test_the_legacy_string_filter_still_runs_and_runs_last() {
+		add_filter(
+			'saddle_context_sections',
+			static function ( $sections ) {
+				$sections[] = array( 'id' => 's', 'title' => 'Section', 'lines' => array( '- from the seam' ) );
+				return $sections;
+			}
+		);
+		add_filter(
+			'saddle_system_context',
+			static function ( $ctx ) {
+				return $ctx . "\n[appended last]";
+			}
+		);
+
+		$ctx = Saddle_Context::system_context();
+		remove_all_filters( 'saddle_context_sections' );
+
+		$this->assertStringContainsString( '- from the seam', $ctx );
+		$this->assertStringEndsWith( '[appended last]', $ctx );
+	}
+
 	public function test_system_context_filter_lets_addons_append_guidance() {
 		add_filter(
 			'saddle_system_context',

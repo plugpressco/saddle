@@ -434,6 +434,57 @@ class Saddle_Memory {
 		return '' === $block ? $context : $context . "\n" . $block;
 	}
 
+	/**
+	 * Contribute the memory block as an ordered section.
+	 *
+	 * Preferred over append_context(): the section seam owns the heading and
+	 * the position. The body is core_block() with its own heading and leading
+	 * blanks stripped, so the budget and the pinned-entry rules that block
+	 * already enforces still apply exactly as before — this changes where it
+	 * lands in the document, not what it contains.
+	 *
+	 * @param array[] $sections Sections so far.
+	 * @return array[]
+	 */
+	public static function context_section( $sections ) {
+		$block = self::core_block();
+		if ( '' === $block ) {
+			return $sections;
+		}
+
+		$lines = explode( "\n", $block );
+		$body  = array();
+		foreach ( $lines as $line ) {
+			// Drop the heading core_block() renders for the legacy path, and
+			// the padding around it; the seam supplies both.
+			if ( 0 === strpos( $line, '# ' ) ) {
+				continue;
+			}
+			$body[] = $line;
+		}
+
+		// Trim the blank lines that framed the heading.
+		while ( $body && '' === trim( (string) reset( $body ) ) ) {
+			array_shift( $body );
+		}
+		while ( $body && '' === trim( (string) end( $body ) ) ) {
+			array_pop( $body );
+		}
+
+		if ( ! $body ) {
+			return $sections;
+		}
+
+		$sections[] = array(
+			'id'       => 'memory',
+			'title'    => __( 'Site memory', 'saddle' ),
+			'lines'    => $body,
+			'priority' => 30,
+		);
+
+		return $sections;
+	}
+
 	/*
 	---------------------------------------------------------------------
 	 * Retention

@@ -143,6 +143,7 @@ If you happen to have the separate MCP Adapter plugin active, Saddle notices and
 
 = 1.0.0 =
 * Initial public release.
+* The guidance an assistant reads when it connects is now one document with one set of headings, however many PlugPress plugins are adding to it. Previously each plugin appended in its own style — one added a heading two levels down, another a bare sentence with no heading at all — and it read like four notes stapled together.
 * Removed a second web address the plugin was serving without saying so. Saddle publishes one address for AI apps; a bundled library was quietly adding another with weaker checks around it. Nothing documented ever pointed at it, and your access levels and confirmations applied there too — but it should not have existed, and now it doesn't.
 * Permissions now tells you how many tools your connected apps are actually offered at the level you pick, how many are being held back, and that already-connected apps keep the old list until they reconnect.
 * New: user directory read tools (list-users, get-user) — read-only, capability-gated, with personal details visible only to accounts that can manage users.

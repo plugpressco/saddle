@@ -529,12 +529,17 @@ class Saddle_Integrations_Test extends WP_UnitTestCase {
 	/* -------- agents learn the tools exist -------- */
 
 	public function test_system_context_advertises_active_integrations() {
-		$context = Saddle_Integrations::append_context( 'Base context.' );
+		$sections = Saddle_Integrations::context_section( array() );
 
-		$this->assertStringContainsString( 'Waggle is installed', $context );
-		$this->assertStringContainsString( 'saddle/waggle-', $context );
+		$this->assertCount( 1, $sections );
+		$this->assertSame( 'first-party-integrations', $sections[0]['id'] );
+		$this->assertNotEmpty( $sections[0]['title'], 'The seam renders the heading, so a section must carry one.' );
 
-		// Nothing active → context passes through untouched.
+		$body = implode( "\n", $sections[0]['lines'] );
+		$this->assertStringContainsString( 'Waggle is installed', $body );
+		$this->assertStringContainsString( 'saddle/waggle-', $body );
+
+		// Nothing active → contribute nothing rather than an empty heading.
 		$this->within_abilities_init(
 			static function () {
 				foreach ( array( 'saddle/waggle-get-aeo-score', 'saddle/waggle-update-seo-meta', 'saddle/waggle-reset-settings', 'saddle/waggle-rewrite-meta' ) as $name ) {
@@ -542,6 +547,18 @@ class Saddle_Integrations_Test extends WP_UnitTestCase {
 				}
 			}
 		);
-		$this->assertSame( 'Base context.', Saddle_Integrations::append_context( 'Base context.' ) );
+		$this->assertSame( array(), Saddle_Integrations::context_section( array() ) );
+	}
+
+	/**
+	 * The whole point of the seam: whatever a contributor supplies, the
+	 * rendered document has one heading level. This used to emit a bare
+	 * "First-party integrations:" line into a document of `#` headings.
+	 */
+	public function test_the_integration_block_is_a_real_heading_in_the_context() {
+		$context = Saddle_Context::system_context();
+
+		$this->assertStringContainsString( '# Other PlugPress tools on this site', $context );
+		$this->assertStringNotContainsString( 'First-party integrations:', $context );
 	}
 }
