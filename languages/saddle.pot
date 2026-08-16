@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-16T03:29:36+00:00\n"
+"POT-Creation-Date: 2026-08-16T04:58:03+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -310,17 +310,13 @@ msgstr ""
 #: includes/abilities/blocks.php:807
 #: includes/abilities/blocks.php:1330
 #: includes/abilities/core-content.php:1091
-#: includes/abilities/lint.php:59
-#: includes/abilities/render.php:94
-#: includes/abilities/render.php:150
-#: includes/abilities/verify.php:59
+#: includes/abilities/core-content.php:1776
+#: includes/abilities/render.php:147
 msgid "No post or page with that ID."
 msgstr ""
 
 #: includes/abilities/blocks.php:810
-#: includes/abilities/lint.php:62
-#: includes/abilities/render.php:97
-#: includes/abilities/verify.php:62
+#: includes/abilities/core-content.php:1779
 msgid "You cannot read this post."
 msgstr ""
 
@@ -932,8 +928,8 @@ msgstr ""
 
 #. translators: %s: post type.
 #: includes/abilities/core-content.php:1708
-#: includes/abilities/core-content.php:1867
-#: includes/abilities/core-content.php:1942
+#: includes/abilities/core-content.php:1886
+#: includes/abilities/core-content.php:1961
 #, php-format
 msgid "No %s with that ID."
 msgstr ""
@@ -945,38 +941,38 @@ msgid "Created %1$s #%2$d \"%3$s\""
 msgstr ""
 
 #. translators: 1: post ID, 2: builder name.
-#: includes/abilities/core-content.php:1839
+#: includes/abilities/core-content.php:1858
 #, php-format
 msgid "Post #%1$d is built with %2$s — overwriting its content field would destroy the layout, so Saddle refuses. You can still edit its title, status, excerpt, taxonomy, and meta. "
 msgstr ""
 
-#: includes/abilities/core-content.php:1843
+#: includes/abilities/core-content.php:1862
 msgid "To change the layout itself, use the saddle/divi-* tools (divi-get-page, divi-edit-module, divi-set-page)."
 msgstr ""
 
-#: includes/abilities/core-content.php:1844
+#: includes/abilities/core-content.php:1863
 msgid "Layout changes need the builder’s own editor — tell the site owner instead of forcing the edit."
 msgstr ""
 
 #. translators: 1: post type, 2: id, 3: title.
-#: includes/abilities/core-content.php:1909
+#: includes/abilities/core-content.php:1928
 #, php-format
 msgid "Updated %1$s #%2$d \"%3$s\""
 msgstr ""
 
 #. translators: 1: type, 2: id, 3: title.
-#: includes/abilities/core-content.php:1959
+#: includes/abilities/core-content.php:1978
 #, php-format
 msgid "Permanently delete %1$s #%2$d \"%3$s\". This cannot be undone."
 msgstr ""
 
 #. translators: 1: type, 2: id, 3: title.
-#: includes/abilities/core-content.php:1966
+#: includes/abilities/core-content.php:1985
 #, php-format
 msgid "Move %1$s #%2$d \"%3$s\" to the trash. It can be restored from Trash."
 msgstr ""
 
-#: includes/abilities/core-content.php:1992
+#: includes/abilities/core-content.php:2011
 msgid "WordPress could not delete the item."
 msgstr ""
 
@@ -992,17 +988,11 @@ msgstr ""
 msgid "The post or page to lint."
 msgstr ""
 
-#. translators: 1: post ID, 2: builder name.
-#: includes/abilities/lint.php:86
-#, php-format
-msgid "Post #%1$d is built with %2$s, and no lint accessor for that builder is installed. Divi 5 pages need Saddle Pro."
-msgstr ""
-
-#: includes/abilities/lint.php:110
+#: includes/abilities/lint.php:84
 msgid "Fix \"error\" violations first (they are objective defects), weigh \"warn\" ones against the design intent, then re-run. Addresses match the page's current get-blocks/divi-get-page read."
 msgstr ""
 
-#: includes/abilities/lint.php:111
+#: includes/abilities/lint.php:85
 msgid "No design violations found."
 msgstr ""
 
@@ -1148,26 +1138,20 @@ msgstr ""
 msgid "The post or page to preview."
 msgstr ""
 
-#: includes/abilities/render.php:116
+#: includes/abilities/render.php:113
 msgid "Top-level sections only. Drill into one with the same call plus its \"address\". Styles shown are the persisted effective values, not a browser render."
 msgstr ""
 
-#: includes/abilities/render.php:130
+#: includes/abilities/render.php:127
 msgid "Effective persisted styles with presets/tokens resolved — what the saved state means, not a browser screenshot."
 msgstr ""
 
-#: includes/abilities/render.php:155
+#: includes/abilities/render.php:152
 msgid "You cannot preview this post."
 msgstr ""
 
-#: includes/abilities/render.php:164
+#: includes/abilities/render.php:161
 msgid "Open and screenshot this in YOUR browser — it renders the current saved layout (drafts included) on the site's own front end, is noindex, opens only this post, and expires. Do not share it."
-msgstr ""
-
-#. translators: 1: post ID, 2: builder name.
-#: includes/abilities/render.php:197
-#, php-format
-msgid "Post #%1$d is built with %2$s, and no render accessor for that builder is installed. Divi 5 pages need Saddle Pro."
 msgstr ""
 
 #: includes/abilities/site-editor.php:32
@@ -1633,20 +1617,20 @@ msgid "The post or page to verify."
 msgstr ""
 
 #. translators: 1: post ID, 2: builder name.
-#: includes/abilities/verify.php:82
+#: includes/abilities/verify.php:67
 #, php-format
 msgid "Post #%1$d is built with %2$s, and no verifier for that builder is installed. Divi 5 pages need Saddle Pro."
 msgstr ""
 
-#: includes/abilities/verify.php:98
+#: includes/abilities/verify.php:92
 msgid "Fix in order: structural, then \"ignored\" (echo — that styling never took effect), then errors, then warnings. Addresses match get-blocks/divi-get-page; re-read after structural edits, then re-run verify-page until the score is acceptable."
 msgstr ""
 
-#: includes/abilities/verify.php:99
+#: includes/abilities/verify.php:93
 msgid "Everything checked out: the persisted state is structurally sound, every attribute takes effect, and no design violations were found."
 msgstr ""
 
-#: includes/abilities/verify.php:100
+#: includes/abilities/verify.php:94
 msgid "This score covers only what the server can verify — persisted structure, attributes, and design rules. It is NOT a visual sign-off: a page can pass every server-side check and still look wrong. Open get-preview-url and judge the real pixels before calling the page done."
 msgstr ""
 
@@ -1662,50 +1646,50 @@ msgstr ""
 msgid "That connection no longer exists — it may already have been disconnected."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:541
+#: includes/admin/class-saddle-rest.php:542
 msgid "Unknown access tier."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:631
-#: includes/admin/class-saddle-rest.php:644
+#: includes/admin/class-saddle-rest.php:636
+#: includes/admin/class-saddle-rest.php:649
 msgid "No skill with that name."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:713
-#: includes/admin/class-saddle-rest.php:729
+#: includes/admin/class-saddle-rest.php:718
+#: includes/admin/class-saddle-rest.php:734
 msgid "No memory entry with that key."
 msgstr ""
 
 #. translators: %d: entries removed.
-#: includes/admin/class-saddle-rest.php:768
+#: includes/admin/class-saddle-rest.php:773
 #, php-format
 msgid "Owner cleared all agent-written memory (%d entries)."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:914
+#: includes/admin/class-saddle-rest.php:919
 msgid "MCP Client"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:949
-#: includes/admin/class-saddle-rest.php:1051
-#: includes/admin/class-saddle-rest.php:1103
+#: includes/admin/class-saddle-rest.php:954
+#: includes/admin/class-saddle-rest.php:1062
+#: includes/admin/class-saddle-rest.php:1117
 msgid "Application Passwords are not available on this site."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:953
+#: includes/admin/class-saddle-rest.php:958
 msgid "Application Passwords are turned off on this site — often because it isn’t served over HTTPS, or a security plugin disabled them."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:958
+#: includes/admin/class-saddle-rest.php:963
 msgid "AI app"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1058
-#: includes/admin/class-saddle-rest.php:1109
+#: includes/admin/class-saddle-rest.php:1071
+#: includes/admin/class-saddle-rest.php:1123
 msgid "No Saddle client with that ID."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1128
+#: includes/admin/class-saddle-rest.php:1142
 msgid "The old key was removed, but issuing its replacement failed. Connect the app again from the Connections screen."
 msgstr ""
 
@@ -1713,39 +1697,61 @@ msgstr ""
 msgid "Saddle: the admin UI has not been built yet. Run \"npm install && npm run build\" in the plugin folder."
 msgstr ""
 
+#. translators: 1: post ID, 2: builder name.
+#: includes/class-saddle-accessors.php:56
+#, php-format
+msgid "Post #%1$d is built with %2$s, and no lint accessor for that builder is installed. Divi 5 pages need Saddle Pro."
+msgstr ""
+
+#. translators: 1: post ID, 2: builder name.
+#: includes/class-saddle-accessors.php:92
+#, php-format
+msgid "Post #%1$d is built with %2$s, and no render accessor for that builder is installed. Divi 5 pages need Saddle Pro."
+msgstr ""
+
 #: includes/class-saddle-approval.php:100
 msgid "Internal error: approval gate was called without an action or executor."
 msgstr ""
 
-#: includes/class-saddle-approval.php:142
+#. translators: 1: original summary, 2: error message.
+#: includes/class-saddle-approval.php:124
+#, php-format
+msgid "%1$s — FAILED after confirmation: %2$s"
+msgstr ""
+
+#: includes/class-saddle-approval.php:154
 msgid "This is a preview — nothing has changed. To proceed, call this tool again with the same arguments plus \"confirm_token\" set to the value above. The token is single-use and expires in 15 minutes."
 msgstr ""
 
-#: includes/class-saddle-approval.php:159
+#: includes/class-saddle-approval.php:172
 msgid "Could not generate a secure confirmation token."
 msgstr ""
 
-#: includes/class-saddle-approval.php:182
+#: includes/class-saddle-approval.php:195
 msgid "Could not persist the confirmation token."
 msgstr ""
 
-#: includes/class-saddle-approval.php:239
+#: includes/class-saddle-approval.php:256
 msgid "Invalid or already-used confirmation token. Request a new preview to get a fresh token."
 msgstr ""
 
-#: includes/class-saddle-approval.php:256
+#: includes/class-saddle-approval.php:274
+msgid "This confirmation token was issued to a different user. Preview the action yourself, then confirm with the token it returns."
+msgstr ""
+
+#: includes/class-saddle-approval.php:282
 msgid "This confirmation token was issued for a different action and cannot be used here."
 msgstr ""
 
-#: includes/class-saddle-approval.php:264
+#: includes/class-saddle-approval.php:290
 msgid "This confirmation token was issued for a different item. Preview the exact item you intend to change, then confirm with the token it returns."
 msgstr ""
 
-#: includes/class-saddle-approval.php:275
+#: includes/class-saddle-approval.php:301
 msgid "This confirmation token was issued for a less destructive version of this action (for example, moving to trash rather than permanently deleting). Preview the exact action you intend, then confirm with the token it returns."
 msgstr ""
 
-#: includes/class-saddle-approval.php:283
+#: includes/class-saddle-approval.php:309
 msgid "This confirmation token has expired. Request a new preview to get a fresh token."
 msgstr ""
 
@@ -1995,80 +2001,90 @@ msgstr ""
 msgid "%1$s does not allow %2$s among its children."
 msgstr ""
 
-#: includes/class-saddle-capabilities.php:398
+#: includes/class-saddle-capabilities.php:421
 msgid "The site owner has paused all AI access — every tool is refused until they resume it from Saddle → Settings. Do not retry; tell the user Saddle is paused."
 msgstr ""
 
-#: includes/class-saddle-capabilities.php:405
+#: includes/class-saddle-capabilities.php:428
 msgid "The request is not authenticated. Reconnect the app from Saddle → Connections to issue a fresh sign-in key."
 msgstr ""
 
-#. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:414
-#, php-format
-msgid "The site owner turned the \"%s\" tool off individually (Saddle → Permissions). Other tools still work — do not retry this one; tell the user it is disabled."
-msgstr ""
-
 #. translators: 1: WordPress capability name, 2: tool name.
-#: includes/class-saddle-capabilities.php:438
+#: includes/class-saddle-capabilities.php:442
 #, php-format
 msgid "The WordPress account this app is connected as cannot \"%1$s\", which \"%2$s\" requires. This is the account's role, not a Saddle setting — no access level or toggle will change it. Do not retry; tell the user to reconnect Saddle as an account with that permission."
 msgstr ""
 
+#. translators: %s: tool name.
+#: includes/class-saddle-capabilities.php:454
+#, php-format
+msgid "The site owner turned the \"%s\" tool off individually (Saddle → Permissions). Other tools still work — do not retry this one; tell the user it is disabled."
+msgstr ""
+
+#: includes/class-saddle-capabilities.php:476
+msgid "This site's domain changed since write access was granted, and the owner has domain enforcement on — write tools are refused until they re-confirm the access level (Saddle → Permissions). Do not retry; tell the user."
+msgstr ""
+
 #. translators: 1: required access level, 2: level granted to this connection.
-#: includes/class-saddle-capabilities.php:455
+#: includes/class-saddle-capabilities.php:491
 #, php-format
 msgid "This site allows the \"%1$s\" access level, but the app you are connected through was only granted \"%2$s\" when it was authorized. Do not retry — ask the user to reconnect the app and approve the higher level."
 msgstr ""
 
 #. translators: 1: required access level, 2: current access level.
-#: includes/class-saddle-capabilities.php:466
+#: includes/class-saddle-capabilities.php:502
 #, php-format
 msgid "This tool needs the \"%1$s\" access level, but this site allows \"%2$s\". Only the site owner can raise it (Saddle → Permissions). Do not retry — ask the user to change the level if they want this done."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:508
+#: includes/class-saddle-capabilities.php:543
 #, php-format
 msgid "Blocked: Saddle is paused — \"%s\" was refused."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:512
+#: includes/class-saddle-capabilities.php:547
 #, php-format
 msgid "Blocked: your account lacks permission for \"%s\"."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:516
+#: includes/class-saddle-capabilities.php:551
 #, php-format
 msgid "Blocked: the tool \"%s\" is turned off."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:521
+#: includes/class-saddle-capabilities.php:555
+#, php-format
+msgid "Blocked: the site domain changed since write access was granted — \"%s\" is refused until the access level is re-confirmed."
+msgstr ""
+
+#. translators: %s: tool name.
+#: includes/class-saddle-capabilities.php:560
 #, php-format
 msgid "Blocked: \"%s\" needs a higher access level than is enabled."
 msgstr ""
 
-#: includes/class-saddle-connection.php:107
+#: includes/class-saddle-connection.php:116
 msgid "This sign-in key was issued by Saddle and works only with Saddle’s endpoint — the rest of the WordPress REST API is off limits to it by design. Use the Saddle tools instead."
 msgstr ""
 
-#: includes/class-saddle-connection.php:141
+#: includes/class-saddle-connection.php:152
 msgid "Saddle sign-in keys cannot be used over XML-RPC."
 msgstr ""
 
-#: includes/class-saddle-connection.php:325
+#: includes/class-saddle-connection.php:386
 #: includes/class-saddle-mcp.php:399
 msgid "Your sign-in key was rejected — it was most likely revoked or removed. Reconnect the app from Saddle to issue a fresh key."
 msgstr ""
 
-#: includes/class-saddle-connection.php:596
+#: includes/class-saddle-connection.php:657
 msgid "Saddle can’t edit this server’s configuration automatically. Add the rule shown below by hand or send it to your host."
 msgstr ""
 
-#: includes/class-saddle-connection.php:616
+#: includes/class-saddle-connection.php:677
 msgid "Saddle could not write to .htaccess. Check file permissions, or add the rule by hand."
 msgstr ""
 
@@ -2385,38 +2401,44 @@ msgstr ""
 msgid "That document is not valid JSON."
 msgstr ""
 
-#: includes/class-saddle-integrations.php:136
+#. translators: 1: wrapper ability id, 2: source ability id.
+#: includes/class-saddle-integration-engine.php:163
+#, php-format
+msgid "Integration wrapper \"%1$s\" (for \"%2$s\") collides with an existing saddle ability; the source tool is not exposed."
+msgstr ""
+
+#: includes/class-saddle-integration-engine.php:204
 msgid "Token from the preview step; required to execute this destructive operation."
 msgstr ""
 
 #. translators: %s: partner plugin name.
-#: includes/class-saddle-integrations.php:146
+#: includes/class-saddle-integration-engine.php:214
 #, php-format
 msgid "(Provided by the %s plugin through Saddle.)"
 msgstr ""
 
-#: includes/class-saddle-integrations.php:148
+#: includes/class-saddle-integration-engine.php:216
 msgid "Destructive: the first call returns a preview and confirm_token; repeat the call with the token to execute."
 msgstr ""
 
 #. translators: 1: ability name, 2: plugin name.
-#: includes/class-saddle-integrations.php:218
+#: includes/class-saddle-integration-engine.php:287
 #, php-format
 msgid "The %1$s tool is unavailable — is the %2$s plugin still active?"
 msgstr ""
 
 #. translators: 1: tool label, 2: target, 3: plugin name.
-#: includes/class-saddle-integrations.php:266
+#: includes/class-saddle-integration-engine.php:335
 #, php-format
 msgid "Run \"%1$s\" on %2$s via the %3$s integration. This is flagged destructive by %3$s."
 msgstr ""
 
-#: includes/class-saddle-integrations.php:268
+#: includes/class-saddle-integration-engine.php:337
 msgid "the given input"
 msgstr ""
 
 #. translators: 1: tool label, 2: plugin name.
-#: includes/class-saddle-integrations.php:290
+#: includes/class-saddle-integration-engine.php:359
 #, php-format
 msgid "%1$s (via the %2$s integration)."
 msgstr ""
@@ -3430,7 +3452,7 @@ msgid "This persisted attribute does nothing — rewrite it on a path the block 
 msgstr ""
 
 #. translators: %s: minimum WordPress version.
-#: saddle.php:307
+#: saddle.php:309
 #, php-format
 msgid "Saddle requires WordPress %s or later (the core Abilities API). The MCP server is disabled until you upgrade."
 msgstr ""

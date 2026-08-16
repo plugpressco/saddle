@@ -54,41 +54,15 @@ class Saddle_Lint_Abilities {
 	 */
 	public static function lint_page( $input = null ) {
 		$input = is_array( $input ) ? $input : array();
-		$post  = get_post( isset( $input['post_id'] ) ? (int) $input['post_id'] : 0 );
-		if ( ! $post || ! in_array( $post->post_type, array( 'post', 'page' ), true ) ) {
-			return new WP_Error( 'saddle_not_found', __( 'No post or page with that ID.', 'saddle' ), array( 'status' => 404 ) );
-		}
-		if ( ! current_user_can( 'read_post', $post->ID ) ) {
-			return new WP_Error( 'saddle_forbidden', __( 'You cannot read this post.', 'saddle' ), array( 'status' => 403 ) );
+		$post  = Saddle_Abilities::require_readable_post( $input );
+		if ( is_wp_error( $post ) ) {
+			return $post;
 		}
 
 		$builder  = Saddle_Abilities::builder_signature( $post );
-		$accessor = null === $builder ? new Saddle_Lint_Gutenberg_Accessor() : null;
-
-		/**
-		 * Filter the lint accessor for a page.
-		 *
-		 * Builder integrations (Saddle Pro's Divi driver, Elementor/Bricks
-		 * later) return their Saddle_Lint_Accessor implementation when they
-		 * own $builder. Null means the page cannot be linted here.
-		 *
-		 * @param Saddle_Lint_Accessor|null $accessor Accessor (Gutenberg's for native pages).
-		 * @param string|null               $builder  Detected builder, null = native.
-		 * @param WP_Post                   $post     The post.
-		 */
-		$accessor = apply_filters( 'saddle_lint_accessor', $accessor, $builder, $post );
-
-		if ( ! $accessor instanceof Saddle_Lint_Accessor ) {
-			return new WP_Error(
-				'saddle_lint_unsupported',
-				sprintf(
-					/* translators: 1: post ID, 2: builder name. */
-					__( 'Post #%1$d is built with %2$s, and no lint accessor for that builder is installed. Divi 5 pages need Saddle Pro.', 'saddle' ),
-					$post->ID,
-					(string) $builder
-				),
-				array( 'status' => 409 )
-			);
+		$accessor = Saddle_Accessors::lint( $post );
+		if ( is_wp_error( $accessor ) ) {
+			return $accessor;
 		}
 
 		$violations = Saddle_Lint::run( Saddle_Tree::parse( $post->post_content ), $accessor );

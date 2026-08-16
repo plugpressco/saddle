@@ -352,17 +352,35 @@ class Saddle_Capabilities_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'edit_posts', $reason['message'] );
 	}
 
-	public function test_the_owners_switches_still_outrank_a_capability_denial() {
-		// Same under-privileged account, but the tool is also switched off.
-		// permission() checks the toggle first, so the reason must match what
-		// actually refused the call.
+	/**
+	 * When two gates would both refuse, the reason must name the one that
+	 * actually fires first — permission() checks the capability BEFORE the
+	 * per-tool switch, so a capability denial outranks a disabled tool.
+	 *
+	 * This test used to assert the opposite, back when denial_reason() derived
+	 * its own order instead of mirroring permission()'s. It was wrong, and it
+	 * only surfaced when #68 made denial_reason() read the same recorded gate
+	 * the closure enforces. Kept pointed at the ordering rather than deleted,
+	 * because "which refusal is reported" is the whole value of this function.
+	 */
+	public function test_the_first_gate_to_fire_is_the_one_reported() {
 		wp_set_current_user( self::factory()->user->create( array( 'role' => 'subscriber' ) ) );
 		Saddle_Capabilities::set_tier( 'admin' );
 		Saddle_Capabilities::set_disabled_abilities( array( 'create-post' ) );
 
-		$reason = Saddle_Capabilities::denial_reason( 'saddle/create-post' );
+		$this->assertSame(
+			'saddle_capability_denied',
+			Saddle_Capabilities::denial_reason( 'saddle/create-post' )['code'],
+			'permission() checks the capability before the toggle, so that is the refusal the agent gets.'
+		);
 
-		$this->assertSame( 'saddle_tool_disabled', $reason['code'] );
+		// And with a capable account, the toggle is what refuses.
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+
+		$this->assertSame(
+			'saddle_tool_disabled',
+			Saddle_Capabilities::denial_reason( 'saddle/create-post' )['code']
+		);
 	}
 
 	public function test_an_account_that_holds_the_capability_gets_no_capability_reason() {
