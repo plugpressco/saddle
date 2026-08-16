@@ -143,6 +143,13 @@ If you happen to have the separate MCP Adapter plugin active, Saddle notices and
 
 = 1.0.0 =
 * Initial public release.
+* New: user directory read tools (list-users, get-user) — read-only, capability-gated, with personal details visible only to accounts that can manage users.
+* New: first-party integration wrappers — abilities from PlugPress plugins (Waggle) surface as saddle/* tools behind Saddle's full safety model (access levels, pause, per-tool switches, two-step confirmation, activity log).
+* Security: confirmation tokens are now bound to the user who previewed the action, and wrapped destructive tools bind their full argument set into the token — a confirmation can never change what was previewed.
+* Security: issued credentials are recognized by an internal marker instead of their display name, so renaming a key can no longer widen its access.
+* Security: optional domain enforcement — write access can auto-suspend when the site's domain changes (cloned or migrated database) until you re-confirm it.
+* Improved: denial explanations now mirror the enforced checks exactly (including missing-capability denials); the activity log keeps separate caps for changes and denials so denials can never crowd out change history; failed confirmed destructive actions are logged too.
+* Internal: one shared integration engine, unified builder detection, and a stricter validation contract for page-tree profiles.
 * Fixed: some connected apps signed in, reported the connection as healthy, and then said the site had no actions they could use — while the same site worked perfectly from another app. Saddle was answering one step of the connection handshake in a way the stricter apps refuse, so they stopped before ever asking what tools exist. Saddle now answers that step, and the two others it was getting wrong, exactly as the Model Context Protocol requires.
 * Connected apps are now offered only the tools your access level and switches actually allow. A read-only site no longer advertises tools that would be refused on every call — the assistant is told how many are being held back and that only you can unlock them, so it can point you at the setting instead of reporting that your site cannot do it. Raising the access level widens the list again; reconnect the app if it caches what it was told at sign-in.
 * Fixed: a destructive tool from a connected PlugPress plugin could be confirmed with different details than the preview showed. The confirmation now covers everything the preview showed, not just which item it was about.

@@ -136,6 +136,9 @@ module.exports = function ( grunt ) {
 							'!.wordpress.org/**',
 							// Lint config — dev-only.
 							'!phpcs.xml.dist',
+							// Parked Phase-3 scope — intentionally never loaded
+							// (see the note in saddle.php); don't ship dead code.
+							'!includes/class-saddle-ecosystem.php',
 							// Dev caches.
 							'!.phpunit.result.cache',
 							// Self-hosted updater — see the `channel` task below.

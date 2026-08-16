@@ -506,6 +506,25 @@ class Saddle_Capabilities {
 			);
 		}
 
+		if ( 'read' !== $required && '' !== $required && self::is_domain_enforced() && ! self::domain_matches_recorded() ) {
+			return array(
+				'code'    => 'saddle_domain_drift',
+				'message' => __( 'This site\'s domain changed since write access was granted, and the owner has domain enforcement on — write tools are refused until they re-confirm the access level (Saddle → Permissions). Do not retry; tell the user.', 'saddle' ),
+			);
+		}
+
+		if ( '' !== $required && ! self::tier_allows( $required ) ) {
+			return array(
+				'code'    => 'saddle_tier_denied',
+				'message' => sprintf(
+					/* translators: 1: required access level, 2: current access level. */
+					__( 'This tool needs the "%1$s" access level, but this site allows "%2$s". Only the site owner can raise it (Saddle → Permissions). Do not retry — ask the user to change the level if they want this done.', 'saddle' ),
+					$required,
+					self::get_tier()
+				),
+			);
+		}
+
 		return null;
 	}
 

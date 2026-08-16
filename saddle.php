@@ -35,6 +35,7 @@ define( 'SADDLE_SHELL_VERSION', 1 );
  * Note: Saddle_Ecosystem is intentionally NOT loaded — it is parked Phase 3
  * scope (see https://github.com/plugpressco/saddle/issues/12). Do not require it without reopening that decision.
  */
+require_once SADDLE_DIR . 'includes/class-saddle-builders.php';
 require_once SADDLE_DIR . 'includes/class-saddle-tree.php';
 require_once SADDLE_DIR . 'includes/class-saddle-blocks-tree.php';
 require_once SADDLE_DIR . 'includes/class-saddle-blocks-author.php';

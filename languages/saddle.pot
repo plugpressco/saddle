@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-16T04:58:03+00:00\n"
+"POT-Creation-Date: 2026-08-16T05:06:23+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -928,8 +928,8 @@ msgstr ""
 
 #. translators: %s: post type.
 #: includes/abilities/core-content.php:1708
-#: includes/abilities/core-content.php:1886
-#: includes/abilities/core-content.php:1961
+#: includes/abilities/core-content.php:1869
+#: includes/abilities/core-content.php:1944
 #, php-format
 msgid "No %s with that ID."
 msgstr ""
@@ -941,38 +941,38 @@ msgid "Created %1$s #%2$d \"%3$s\""
 msgstr ""
 
 #. translators: 1: post ID, 2: builder name.
-#: includes/abilities/core-content.php:1858
+#: includes/abilities/core-content.php:1841
 #, php-format
 msgid "Post #%1$d is built with %2$s — overwriting its content field would destroy the layout, so Saddle refuses. You can still edit its title, status, excerpt, taxonomy, and meta. "
 msgstr ""
 
-#: includes/abilities/core-content.php:1862
+#: includes/abilities/core-content.php:1845
 msgid "To change the layout itself, use the saddle/divi-* tools (divi-get-page, divi-edit-module, divi-set-page)."
 msgstr ""
 
-#: includes/abilities/core-content.php:1863
+#: includes/abilities/core-content.php:1846
 msgid "Layout changes need the builder’s own editor — tell the site owner instead of forcing the edit."
 msgstr ""
 
 #. translators: 1: post type, 2: id, 3: title.
-#: includes/abilities/core-content.php:1928
+#: includes/abilities/core-content.php:1911
 #, php-format
 msgid "Updated %1$s #%2$d \"%3$s\""
 msgstr ""
 
 #. translators: 1: type, 2: id, 3: title.
-#: includes/abilities/core-content.php:1978
+#: includes/abilities/core-content.php:1961
 #, php-format
 msgid "Permanently delete %1$s #%2$d \"%3$s\". This cannot be undone."
 msgstr ""
 
 #. translators: 1: type, 2: id, 3: title.
-#: includes/abilities/core-content.php:1985
+#: includes/abilities/core-content.php:1968
 #, php-format
 msgid "Move %1$s #%2$d \"%3$s\" to the trash. It can be restored from Trash."
 msgstr ""
 
-#: includes/abilities/core-content.php:2011
+#: includes/abilities/core-content.php:1994
 msgid "WordPress could not delete the item."
 msgstr ""
 
@@ -1975,28 +1975,28 @@ msgstr ""
 msgid "No block pattern named \"%s\" is registered here. saddle/list-block-patterns shows what is."
 msgstr ""
 
-#: includes/class-saddle-blocks-tree.php:64
+#: includes/class-saddle-blocks-tree.php:65
 msgid "The block tree is structurally invalid."
 msgstr ""
 
-#: includes/class-saddle-blocks-tree.php:91
+#: includes/class-saddle-blocks-tree.php:92
 msgid "This is a page-builder module, not an editor block. Builder layouts are edited with their builder's own tools, never mixed into native content."
 msgstr ""
 
 #. translators: 1: block type, 2: allowed parent list.
-#: includes/class-saddle-blocks-tree.php:106
+#: includes/class-saddle-blocks-tree.php:107
 #, php-format
 msgid "%1$s may only be placed directly inside %2$s."
 msgstr ""
 
 #. translators: 1: block type, 2: required ancestor list.
-#: includes/class-saddle-blocks-tree.php:119
+#: includes/class-saddle-blocks-tree.php:120
 #, php-format
 msgid "%1$s may only be used somewhere inside %2$s."
 msgstr ""
 
 #. translators: 1: parent block type, 2: block type.
-#: includes/class-saddle-blocks-tree.php:136
+#: includes/class-saddle-blocks-tree.php:137
 #, php-format
 msgid "%1$s does not allow %2$s among its children."
 msgstr ""
@@ -2022,6 +2022,7 @@ msgid "The site owner turned the \"%s\" tool off individually (Saddle → Permis
 msgstr ""
 
 #: includes/class-saddle-capabilities.php:476
+#: includes/class-saddle-capabilities.php:512
 msgid "This site's domain changed since write access was granted, and the owner has domain enforcement on — write tools are refused until they re-confirm the access level (Saddle → Permissions). Do not retry; tell the user."
 msgstr ""
 
@@ -2033,36 +2034,37 @@ msgstr ""
 
 #. translators: 1: required access level, 2: current access level.
 #: includes/class-saddle-capabilities.php:502
+#: includes/class-saddle-capabilities.php:521
 #, php-format
 msgid "This tool needs the \"%1$s\" access level, but this site allows \"%2$s\". Only the site owner can raise it (Saddle → Permissions). Do not retry — ask the user to change the level if they want this done."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:543
+#: includes/class-saddle-capabilities.php:562
 #, php-format
 msgid "Blocked: Saddle is paused — \"%s\" was refused."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:547
+#: includes/class-saddle-capabilities.php:566
 #, php-format
 msgid "Blocked: your account lacks permission for \"%s\"."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:551
+#: includes/class-saddle-capabilities.php:570
 #, php-format
 msgid "Blocked: the tool \"%s\" is turned off."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:555
+#: includes/class-saddle-capabilities.php:574
 #, php-format
 msgid "Blocked: the site domain changed since write access was granted — \"%s\" is refused until the access level is re-confirmed."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:560
+#: includes/class-saddle-capabilities.php:579
 #, php-format
 msgid "Blocked: \"%s\" needs a higher access level than is enabled."
 msgstr ""
@@ -3452,7 +3454,7 @@ msgid "This persisted attribute does nothing — rewrite it on a path the block 
 msgstr ""
 
 #. translators: %s: minimum WordPress version.
-#: saddle.php:309
+#: saddle.php:310
 #, php-format
 msgid "Saddle requires WordPress %s or later (the core Abilities API). The MCP server is disabled until you upgrade."
 msgstr ""

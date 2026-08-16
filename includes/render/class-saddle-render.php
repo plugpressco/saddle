@@ -86,13 +86,13 @@ class Saddle_Render {
 	public static function outline( array $tree, Saddle_Render_Accessor $accessor ) {
 		$nodes = Saddle_Lint::nodes( $tree );
 
-		$sections = self::sections( $nodes );
+		$sections = Saddle_Lint::sections( $nodes );
 		$outline  = array();
 		foreach ( $sections as $section ) {
 			$entry = array(
 				'address'  => $section['address'],
 				'type'     => $section['type'],
-				'children' => count( self::children_of( $nodes, $section['address'] ) ),
+				'children' => count( Saddle_Lint::children_of( $nodes, $section['address'] ) ),
 			);
 
 			$text = self::text_summary( $nodes, $section );
@@ -136,42 +136,6 @@ class Saddle_Render {
 	}
 
 	/**
-	 * The page's top-level sections: root nodes, or — when the page is a
-	 * single root wrapper (Divi's placeholder, a lone all-page group) — that
-	 * wrapper's children. Same convention as the lint rules.
-	 *
-	 * @param array[] $nodes Flat node list (Saddle_Lint::nodes()).
-	 * @return array[]
-	 */
-	private static function sections( array $nodes ) {
-		$roots = self::children_of( $nodes, null );
-		if ( 1 === count( $roots ) ) {
-			$inner = self::children_of( $nodes, $roots[0]['address'] );
-			if ( $inner ) {
-				return $inner;
-			}
-		}
-		return $roots;
-	}
-
-	/**
-	 * Direct children of an address, in order.
-	 *
-	 * @param array[]     $nodes          Flat node list.
-	 * @param string|null $parent_address Parent address (null = roots).
-	 * @return array[]
-	 */
-	private static function children_of( array $nodes, $parent_address ) {
-		$out = array();
-		foreach ( $nodes as $node ) {
-			if ( $node['parent'] === $parent_address ) {
-				$out[] = $node;
-			}
-		}
-		return $out;
-	}
-
-	/**
 	 * A one-line text summary of a section: the first non-empty text found
 	 * in its subtree, capped.
 	 *
@@ -180,7 +144,7 @@ class Saddle_Render {
 	 * @return string
 	 */
 	private static function text_summary( array $nodes, array $section ) {
-		$candidates = array_merge( array( $section ), self::descendants_of( $nodes, $section['address'] ) );
+		$candidates = array_merge( array( $section ), Saddle_Lint::descendants_of( $nodes, $section['address'] ) );
 		foreach ( $candidates as $node ) {
 			$text = trim( wp_strip_all_tags( (string) $node['block']['innerHTML'] ) );
 			if ( '' !== $text ) {
@@ -188,22 +152,5 @@ class Saddle_Render {
 			}
 		}
 		return '';
-	}
-
-	/**
-	 * All descendants of an address, document order.
-	 *
-	 * @param array[] $nodes    Flat node list.
-	 * @param string  $ancestor Ancestor address.
-	 * @return array[]
-	 */
-	private static function descendants_of( array $nodes, $ancestor ) {
-		$out = array();
-		foreach ( $nodes as $node ) {
-			if ( 0 === strpos( $node['address'] . '.', $ancestor . '.' ) && $node['address'] !== $ancestor ) {
-				$out[] = $node;
-			}
-		}
-		return $out;
 	}
 }
