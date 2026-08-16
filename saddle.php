@@ -160,7 +160,7 @@ final class Saddle {
 		// Skills index + core memory ride the same context every session
 		// receives (the initialize handshake + get-instructions), via the
 		// shared filter.
-		add_filter( 'saddle_system_context', array( 'Saddle_Skills', 'append_index' ) );
+		add_filter( 'saddle_context_sections', array( 'Saddle_Skills', 'context_section' ) );
 
 		// The build-a-page playbook, bundled with free on a block theme. It is
 		// a skill rather than context prose so the how-to stays behind one
@@ -174,7 +174,7 @@ final class Saddle {
 		add_action( 'deactivated_plugin', array( 'Saddle_Context_Bundle', 'flush' ) );
 		add_action( 'switch_theme', array( 'Saddle_Context_Bundle', 'flush' ) );
 		add_action( 'saddle_flush_cache', array( 'Saddle_Context_Bundle', 'flush' ) );
-		add_filter( 'saddle_system_context', array( 'Saddle_Memory', 'append_context' ) );
+		add_filter( 'saddle_context_sections', array( 'Saddle_Memory', 'context_section' ) );
 		add_action( 'rest_api_init', array( 'Saddle_REST_Admin', 'register_routes' ) );
 		add_action( 'rest_api_init', array( 'Saddle_Connection', 'register_routes' ) );
 		add_action( 'rest_api_init', array( 'Saddle_MCP_Diagnostics', 'register_routes' ) );
@@ -222,7 +222,7 @@ final class Saddle {
 			// First-party integration wrappers run late (30) so the partner
 			// plugins' own abilities exist to discover.
 			add_action( 'wp_abilities_api_init', array( 'Saddle_Integrations', 'register_wrappers' ), 30 );
-			add_filter( 'saddle_system_context', array( 'Saddle_Integrations', 'append_context' ) );
+			add_filter( 'saddle_context_sections', array( 'Saddle_Integrations', 'context_section' ) );
 
 			// Wire the MCP transport after all plugins have loaded. This MUST be
 			// deferred (see setup_mcp_transport) so the bundled adapter can't

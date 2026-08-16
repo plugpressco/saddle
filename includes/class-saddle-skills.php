@@ -281,8 +281,62 @@ class Saddle_Skills {
 		$lines[] = '';
 		$lines[] = __( '# Skills for this site', 'saddle' );
 		$lines[] = '';
+		foreach ( self::index_lines() as $line ) {
+			$lines[] = $line;
+		}
+
+		return $context . "\n" . implode( "\n", $lines ) . "\n";
+	}
+
+	/**
+	 * Contribute the index as an ordered section.
+	 *
+	 * Preferred over append_index(): the section seam owns the heading and the
+	 * position, so this cannot drift from how the rest of the document is
+	 * rendered. append_index() stays for anything still calling it directly.
+	 *
+	 * @param array[] $sections Sections so far.
+	 * @return array[]
+	 */
+	public static function context_section( $sections ) {
+		$lines = self::index_lines();
+		if ( ! $lines ) {
+			return $sections;
+		}
+
+		$sections[] = array(
+			'id'       => 'skills',
+			'title'    => __( 'Skills for this site', 'saddle' ),
+			'lines'    => $lines,
+			'priority' => 20,
+		);
+
+		return $sections;
+	}
+
+	/**
+	 * The index body: the standing note, then one line per enabled skill.
+	 *
+	 * @return string[] Empty when nothing is enabled.
+	 */
+	private static function index_lines() {
+		$enabled = array_values(
+			array_filter(
+				self::all( false ),
+				static function ( $skill ) {
+					return $skill['enabled'];
+				}
+			)
+		);
+
+		if ( ! $enabled ) {
+			return array();
+		}
+
+		$lines   = array();
 		$lines[] = __( 'The site owner installed these playbooks. When a task matches one, call saddle/get-skill with its name and follow it. Skills are guidance only — every tool call is still subject to the same access levels and confirmations.', 'saddle' );
 		$lines[] = '';
+
 		foreach ( $enabled as $skill ) {
 			$line = sprintf( '- %s: %s', $skill['name'], $skill['description'] );
 			if ( '' !== $skill['when_to_use'] ) {
@@ -295,7 +349,7 @@ class Saddle_Skills {
 			$lines[] = $line;
 		}
 
-		return $context . "\n" . implode( "\n", $lines ) . "\n";
+		return $lines;
 	}
 
 	/*
