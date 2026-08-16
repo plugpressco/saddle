@@ -780,6 +780,43 @@ class Saddle_REST_Admin {
 	}
 
 	/**
+	 * Tool-name prefixes the Permissions screen files under "Integrations".
+	 *
+	 * Derived from the live catalog rather than listed by hand. The hand-kept
+	 * list silently dropped Mailyard's wrapped tools into "Other" the moment it
+	 * started self-enrolling through `saddle_integrations` (issue #59), and any
+	 * future plugin doing the same would land there too — a grouping bug nobody
+	 * would think to look for in a REST controller.
+	 *
+	 * The literals stay as a floor so nothing regroups on sites where a
+	 * contributor enrols later than this runs (Saddle Pro's `knovia-`), and
+	 * `unsplash-` is here despite not being a wrapper at all: it is an external
+	 * service from the owner's point of view, which is what this grouping is
+	 * about.
+	 *
+	 * @return string[]
+	 */
+	private static function integration_prefixes() {
+		$prefixes = array( 'waggle-', 'knovia-', 'unsplash-' );
+
+		if ( class_exists( 'Saddle_Integrations' ) ) {
+			foreach ( array_keys( Saddle_Integrations::integrations() ) as $slug ) {
+				$prefixes[] = $slug . '-';
+			}
+		}
+
+		/**
+		 * Filter the prefixes grouped under "Integrations" in the Permissions UI.
+		 *
+		 * For a contributor that registers its wrappers through its own engine
+		 * rather than free's catalog.
+		 *
+		 * @param string[] $prefixes Tool-name prefixes.
+		 */
+		return array_values( array_unique( (array) apply_filters( 'saddle_integration_ui_prefixes', $prefixes ) ) );
+	}
+
+	/**
 	 * Group an ability under a human-readable category so the Permissions UI can
 	 * present ~55 free (plus any add-on) abilities as scannable groups instead of
 	 * one flat wall of chips. First matching rule wins; add-ons refine their own
@@ -795,7 +832,7 @@ class Saddle_REST_Admin {
 			// label => substrings (first hit wins).
 			'Design system'   => array( 'design-system', 'design-tokens', 'bootstrap-design' ),
 			'Divi'            => array( 'divi-' ),
-			'Integrations'    => array( 'waggle-', 'knovia-', 'unsplash-' ),
+			'Integrations'    => self::integration_prefixes(),
 			'Memory & skills' => array( 'remember', 'recall', 'forget', 'skill', 'instructions', 'context' ),
 			'Blocks & layout' => array( 'block', 'render-node', 'verify-page', 'lint-page', 'preview', 'recipe' ),
 			// AFTER 'Blocks & layout' on purpose: that rule matches 'block', so
