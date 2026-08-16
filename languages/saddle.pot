@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-16T06:03:49+00:00\n"
+"POT-Creation-Date: 2026-08-16T07:34:16+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -1666,30 +1666,30 @@ msgstr ""
 msgid "Owner cleared all agent-written memory (%d entries)."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:919
+#: includes/admin/class-saddle-rest.php:956
 msgid "MCP Client"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:954
-#: includes/admin/class-saddle-rest.php:1062
-#: includes/admin/class-saddle-rest.php:1117
+#: includes/admin/class-saddle-rest.php:991
+#: includes/admin/class-saddle-rest.php:1099
+#: includes/admin/class-saddle-rest.php:1154
 msgid "Application Passwords are not available on this site."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:958
+#: includes/admin/class-saddle-rest.php:995
 msgid "Application Passwords are turned off on this site — often because it isn’t served over HTTPS, or a security plugin disabled them."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:963
+#: includes/admin/class-saddle-rest.php:1000
 msgid "AI app"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1071
-#: includes/admin/class-saddle-rest.php:1123
+#: includes/admin/class-saddle-rest.php:1108
+#: includes/admin/class-saddle-rest.php:1160
 msgid "No Saddle client with that ID."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1142
+#: includes/admin/class-saddle-rest.php:1179
 msgid "The old key was removed, but issuing its replacement failed. Connect the app again from the Connections screen."
 msgstr ""
 

@@ -561,4 +561,48 @@ class Saddle_Integrations_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( '# Other PlugPress tools on this site', $context );
 		$this->assertStringNotContainsString( 'First-party integrations:', $context );
 	}
+
+	/**
+	 * The Permissions screen groups tools by name prefix, and that list was
+	 * hand-kept — so a plugin that self-enrols through `saddle_integrations`
+	 * had its tools filed under "Other" and nobody would think to look in a
+	 * REST controller for the reason (issue #59). Derived now, so enrolling is
+	 * the only step.
+	 */
+	public function test_a_self_enrolled_integration_is_grouped_under_integrations() {
+		$add = static function ( $integrations ) {
+			$integrations['mailyard'] = array( 'prefix' => 'mailyard/', 'title' => 'Mailyard' );
+			return $integrations;
+		};
+		add_filter( 'saddle_integrations', $add );
+
+		$catalog = wp_list_pluck(
+			rest_get_server()->dispatch( new WP_REST_Request( 'GET', '/saddle/v1/capabilities' ) )->get_data()['capabilities'],
+			'category',
+			'short'
+		);
+
+		remove_filter( 'saddle_integrations', $add );
+
+		// Waggle is the catalog default and must not have regressed.
+		$this->assertSame( 'Integrations', $catalog['waggle-get-aeo-score'] );
+	}
+
+	public function test_the_prefix_list_picks_up_the_live_catalog() {
+		$add = static function ( $integrations ) {
+			$integrations['mailyard'] = array( 'prefix' => 'mailyard/', 'title' => 'Mailyard' );
+			return $integrations;
+		};
+		add_filter( 'saddle_integrations', $add );
+
+		$prefixes = ( new ReflectionMethod( 'Saddle_REST_Admin', 'integration_prefixes' ) );
+		$prefixes->setAccessible( true );
+		$list = $prefixes->invoke( null );
+
+		remove_filter( 'saddle_integrations', $add );
+
+		$this->assertContains( 'mailyard-', $list, 'A self-enrolled integration must reach the UI grouping.' );
+		$this->assertContains( 'waggle-', $list );
+		$this->assertContains( 'knovia-', $list, 'The literal floor keeps Pro’s grouping from regressing.' );
+	}
 }
