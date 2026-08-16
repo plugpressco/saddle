@@ -55,5 +55,22 @@ vendor/bin/phpunit
 | `log-test.php` | Mutations are recorded and queryable; empty records no-op; GC bounds the log. |
 | `abilities-test.php` | Through the real `wp_get_ability()->execute()` path: a write ability is denied at the `read` tier; delete previews don't mutate; confirm trashes (recoverable) vs. `force` deletes permanently; confirmed deletes are logged, previews and reads are not. |
 | `connect-test.php` | The connect URL targets core's Authorize screen with the `Saddle:`-prefixed name and a round-trip success/reject URL; the clients list shows only Saddle-prefixed credentials; **revoke actually invalidates** — a credential authenticates, then after revoke no longer does; revoke refuses non-Saddle credentials and 404s unknown UUIDs. |
+| `nonce-fallback-test.php` | The core behaviour the dashboard's sign-in rests on, since there is no JS harness: `_wpnonce` in the query string authenticates a cookie session on its own; **no nonce at all silently signs the request out** (`wp_set_current_user( 0 )`, no error) so the capability gate answers 401, not 403; the query parameter *outranks* the header in both directions — which is why the client must read the live nonce rather than a cached copy. |
+| `connection-test.php` | The Authorization-header recovery shim and the one-click `.htaccess` fix; the public auth probe reports **only** the documented booleans and never echoes a nonce, cookie, user id or login; `self_check()` tells a stripped `X-WP-Nonce` from a stripped `Authorization` header, prefers the louder problem when both are stripped, treats a missing key as *unknown* rather than *stripped*, and never offers the `.htaccess` button for the nonce case. |
 
 **Not covered here (genuinely un-unit-testable):** the visual browser hop through WordPress core's own *Authorize Application* screen (click Connect → approve → redirect back). That's core's code, not Saddle's; verify it once by hand in a browser. Everything Saddle owns on either side of that hop is tested above.
+
+**Also manual — the JS side of the nonce fallback.** To reproduce a header-stripping host (20i StackProtect and similar) on a dev site, drop this in `wp-content/mu-plugins/` and toggle it with flag files:
+
+```php
+<?php
+// mu-plugins/saddle-simulate-waf.php — dev only, delete when done.
+if ( file_exists( __DIR__ . '/.waf-strip-nonce-header' ) ) {
+	unset( $_SERVER['HTTP_X_WP_NONCE'] );          // touch the flag file to arm
+}
+if ( file_exists( __DIR__ . '/.waf-strip-nonce-query' ) ) {
+	unset( $_REQUEST['_wpnonce'], $_GET['_wpnonce'], $_POST['_wpnonce'] );
+}
+```
+
+With only the header stripped the dashboard must still load (the `_wpnonce` parameter carries it) and `/self-check` must report `nonce_header_stripped`. With both stripped it must show the `AuthTrouble` screen naming the host, not a blank page.

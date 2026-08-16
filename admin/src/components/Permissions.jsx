@@ -108,7 +108,7 @@ export default function Permissions( {
 		const jobs = [];
 		if ( dirty ) {
 			jobs.push(
-				api( 'settings', {
+				api( 'preferences', {
 					method: 'POST',
 					data: { tier: choice },
 				} ).then( ( res ) => {

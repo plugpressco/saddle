@@ -268,7 +268,7 @@ class Saddle_Approval {
 		// Single-use: burn the token now, before any further branching.
 		wp_delete_post( $post_id, true );
 
-		if ( $stored_user !== get_current_user_id() ) {
+		if ( get_current_user_id() !== $stored_user ) {
 			return new WP_Error(
 				'saddle_token_user_mismatch',
 				__( 'This confirmation token was issued to a different user. Preview the action yourself, then confirm with the token it returns.', 'saddle' ),

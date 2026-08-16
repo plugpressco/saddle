@@ -139,7 +139,7 @@ class McpValidator {
 			if ( ! is_array( $icon ) ) {
 				$all_errors[] = array(
 					'index'  => $index,
-					'errors' => array( __( 'Icon must be an array', 'mcp-adapter' ) ),
+					'errors' => array( __( 'Icon must be an array', 'saddle' ) ),
 				);
 				continue;
 			}
@@ -193,21 +193,21 @@ class McpValidator {
 
 		// src is required.
 		if ( ! isset( $icon['src'] ) ) {
-			$errors[] = __( 'Icon must have a src field', 'mcp-adapter' );
+			$errors[] = __( 'Icon must have a src field', 'saddle' );
 		} elseif ( ! is_string( $icon['src'] ) ) {
-			$errors[] = __( 'Icon src must be a string', 'mcp-adapter' );
+			$errors[] = __( 'Icon src must be a string', 'saddle' );
 		} elseif ( ! self::validate_icon_src( $icon['src'] ) ) {
-			$errors[] = __( 'Icon src must be a valid URL (http/https) or data: URI', 'mcp-adapter' );
+			$errors[] = __( 'Icon src must be a valid URL (http/https) or data: URI', 'saddle' );
 		}
 
 		// mimeType is optional but must be valid if present.
 		if ( isset( $icon['mimeType'] ) ) {
 			if ( ! is_string( $icon['mimeType'] ) ) {
-				$errors[] = __( 'Icon mimeType must be a string', 'mcp-adapter' );
+				$errors[] = __( 'Icon mimeType must be a string', 'saddle' );
 			} elseif ( ! self::validate_icon_mime_type( $icon['mimeType'] ) ) {
 				$errors[] = sprintf(
 				/* translators: %s: comma-separated list of allowed MIME types */
-					__( 'Icon mimeType must be one of: %s', 'mcp-adapter' ),
+					__( 'Icon mimeType must be one of: %s', 'saddle' ),
 					implode( ', ', self::$allowed_icon_mime_types )
 				);
 			}
@@ -216,19 +216,19 @@ class McpValidator {
 		// sizes is optional but must be valid if present.
 		if ( isset( $icon['sizes'] ) ) {
 			if ( ! is_array( $icon['sizes'] ) ) {
-				$errors[] = __( 'Icon sizes must be an array', 'mcp-adapter' );
+				$errors[] = __( 'Icon sizes must be an array', 'saddle' );
 			} else {
 				foreach ( $icon['sizes'] as $index => $size ) {
 					if ( ! is_string( $size ) ) {
 						$errors[] = sprintf(
 						/* translators: %d: array index */
-							__( 'Icon size at index %d must be a string', 'mcp-adapter' ),
+							__( 'Icon size at index %d must be a string', 'saddle' ),
 							$index
 						);
 					} elseif ( ! self::validate_icon_size( $size ) ) {
 						$errors[] = sprintf(
 						/* translators: 1: size value, 2: array index */
-							__( 'Icon size "%1$s" at index %2$d must be in WxH format (e.g., "48x48") or "any"', 'mcp-adapter' ),
+							__( 'Icon size "%1$s" at index %2$d must be in WxH format (e.g., "48x48") or "any"', 'saddle' ),
 							$size,
 							$index
 						);
@@ -240,9 +240,9 @@ class McpValidator {
 		// theme is optional but must be valid if present.
 		if ( isset( $icon['theme'] ) ) {
 			if ( ! is_string( $icon['theme'] ) ) {
-				$errors[] = __( 'Icon theme must be a string', 'mcp-adapter' );
+				$errors[] = __( 'Icon theme must be a string', 'saddle' );
 			} elseif ( ! self::validate_icon_theme( $icon['theme'] ) ) {
-				$errors[] = __( 'Icon theme must be "light" or "dark"', 'mcp-adapter' );
+				$errors[] = __( 'Icon theme must be "light" or "dark"', 'saddle' );
 			}
 		}
 
@@ -366,31 +366,31 @@ class McpValidator {
 			switch ( $field ) {
 				case 'audience':
 					if ( ! is_array( $value ) ) {
-						$errors[] = __( 'Annotation field audience must be an array', 'mcp-adapter' );
+						$errors[] = __( 'Annotation field audience must be an array', 'saddle' );
 						break;
 					}
 					if ( ! self::validate_roles_array( $value ) ) {
-						$errors[] = __( 'Annotation field audience must contain only valid roles ("user" or "assistant")', 'mcp-adapter' );
+						$errors[] = __( 'Annotation field audience must contain only valid roles ("user" or "assistant")', 'saddle' );
 					}
 					break;
 
 				case 'lastModified':
 					if ( ! is_string( $value ) || empty( trim( $value ) ) ) {
-						$errors[] = __( 'Annotation field lastModified must be a non-empty string', 'mcp-adapter' );
+						$errors[] = __( 'Annotation field lastModified must be a non-empty string', 'saddle' );
 						break;
 					}
 					if ( ! self::validate_iso8601_timestamp( trim( $value ) ) ) {
-						$errors[] = __( 'Annotation field lastModified must be a valid ISO 8601 timestamp', 'mcp-adapter' );
+						$errors[] = __( 'Annotation field lastModified must be a valid ISO 8601 timestamp', 'saddle' );
 					}
 					break;
 
 				case 'priority':
 					if ( ! is_numeric( $value ) ) {
-						$errors[] = __( 'Annotation field priority must be a number', 'mcp-adapter' );
+						$errors[] = __( 'Annotation field priority must be a number', 'saddle' );
 						break;
 					}
 					if ( ! self::validate_priority( $value ) ) {
-						$errors[] = __( 'Annotation field priority must be between 0.0 and 1.0', 'mcp-adapter' );
+						$errors[] = __( 'Annotation field priority must be between 0.0 and 1.0', 'saddle' );
 					}
 					break;
 

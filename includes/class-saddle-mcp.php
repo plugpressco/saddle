@@ -77,7 +77,9 @@ class Saddle_MCP {
 			return;
 		}
 
-		$adapter->create_server(
+		$names = self::adapter_tool_names();
+
+		$created = $adapter->create_server(
 			self::ADAPTER_SERVER_ID,
 			self::REST_NAMESPACE,
 			ltrim( self::ROUTE, '/' ),
@@ -87,15 +89,117 @@ class Saddle_MCP {
 			array( '\\WP\\MCP\\Transport\\HttpTransport' ),
 			'\\WP\\MCP\\Infrastructure\\ErrorHandling\\ErrorLogMcpErrorHandler',
 			'\\WP\\MCP\\Infrastructure\\Observability\\NullMcpObservabilityHandler',
-			self::adapter_tool_names(),
+			$names,
 			array(),
-			array()
+			array(),
+			// Transport permission callback. WITHOUT this the adapter falls back to
+			// a bare `current_user_can('read')` (HttpTransport::check_permission),
+			// which means Saddle's own gate — and the legible 401s it produces, and
+			// the OAuth `WWW-Authenticate` challenge that hangs off them — would
+			// only ever run on the fallback transport, i.e. never in practice.
+			array( __CLASS__, 'authenticated' )
 		);
+
+		// Record what the server actually came up with. The adapter skips any
+		// ability it fails to convert, one at a time, into error_log — so a
+		// short or empty tool list is otherwise invisible until a customer
+		// reports that their connected app has nothing to offer.
+		self::record_server_health( $adapter, $created, $names );
 
 		// Serve the full context in the initialize handshake, so a client that
 		// surfaces `instructions` spares the agent a whole get-instructions
 		// round trip — on shared hosts each round trip is a full WP boot.
+		// Third-party hook: this filter belongs to the MCP Adapter plugin, so its
+		// name is theirs and cannot carry a Saddle prefix. It only ever fires
+		// when that plugin is the active transport.
 		add_filter( 'mcp_adapter_initialize_response', array( __CLASS__, 'filter_adapter_initialize' ), 10, 2 );
+
+		// Advertise only what this credential could actually call. Third-party
+		// hook, same as the one above: it is the adapter's, fires inside
+		// ToolsHandler::list_tools() at DISPATCH time — after authentication,
+		// and after Saddle_OAuth_Bearer has set its scope ceiling on
+		// determine_current_user — which is why the tier read here is the real
+		// one. Registration above stays complete on purpose; see
+		// adapter_tool_names().
+		add_filter( 'mcp_adapter_tools_list', array( __CLASS__, 'filter_adapter_tools_list' ), 10, 2 );
+	}
+
+	/**
+	 * Drop tools the current credential cannot call from the adapter's
+	 * tools/list response.
+	 *
+	 * A default install sits at the `read` tier, where a third of the free
+	 * toolset — and rather more of it once Pro and the integrations are on — is
+	 * refused on every call. Listing those tools costs a schema each in the
+	 * agent's context and buys a guaranteed refusal. What replaces them is one
+	 * sentence in the instructions saying how many are withheld and who can
+	 * unlock them, which is the part a user can act on.
+	 *
+	 * @param array  $tools  Tool DTOs the server holds.
+	 * @param object $server The adapter's McpServer instance.
+	 * @return array
+	 */
+	public static function filter_adapter_tools_list( $tools, $server = null ) {
+		if ( ! is_array( $tools ) || ! class_exists( 'Saddle_Capabilities' ) ) {
+			return $tools;
+		}
+
+		// Other servers may run on the same adapter; only ever filter ours.
+		if ( is_object( $server ) && method_exists( $server, 'get_server_id' ) && self::ADAPTER_SERVER_ID !== $server->get_server_id() ) {
+			return $tools;
+		}
+
+		$kept = array();
+		foreach ( $tools as $tool ) {
+			$name = is_object( $tool ) && method_exists( $tool, 'getName' ) ? (string) $tool->getName() : '';
+
+			// Anything we can't identify is left alone rather than dropped: a
+			// filter that silently eats an unrecognized tool is worse than one
+			// that shows a tool too many.
+			$ability = '' === $name ? '' : self::ability_name_for_tool( $name );
+			if ( '' === $ability || Saddle_Capabilities::is_callable_now( $ability ) ) {
+				$kept[] = $tool;
+			}
+		}
+
+		return $kept;
+	}
+
+	/**
+	 * Compare what we asked the server to expose against what it holds.
+	 *
+	 * @param object $adapter The McpAdapter instance.
+	 * @param mixed  $created What create_server() returned — a WP_Error when it refused.
+	 * @param array  $names   Ability names handed to the server.
+	 */
+	private static function record_server_health( $adapter, $created, array $names ) {
+		if ( ! class_exists( 'Saddle_MCP_Diagnostics' ) ) {
+			return;
+		}
+
+		if ( is_wp_error( $created ) ) {
+			Saddle_MCP_Diagnostics::record_health(
+				array(
+					'expected'   => count( $names ),
+					'registered' => 0,
+					'missing'    => array(),
+					'degraded'   => true,
+					'error'      => $created->get_error_code(),
+				)
+			);
+
+			return;
+		}
+
+		$registered = array();
+		if ( method_exists( $adapter, 'get_server' ) ) {
+			$server = $adapter->get_server( self::ADAPTER_SERVER_ID );
+			if ( is_object( $server ) && method_exists( $server, 'get_tools' ) ) {
+				$registered = array_keys( $server->get_tools() );
+			}
+		}
+
+		Saddle_MCP_Diagnostics::record_health( Saddle_MCP_Diagnostics::assess( $names, $registered ) );
 	}
 
 	/**
@@ -119,6 +223,20 @@ class Saddle_MCP {
 
 		$data                 = $result->toArray();
 		$data['instructions'] = self::server_instructions();
+
+		// Don't advertise what we can't serve. The adapter hard-codes prompts
+		// and resources into every handshake, but Saddle registers neither — so
+		// a client dutifully follows up with resources/templates/list, which the
+		// adapter's router doesn't implement, and gets a 404 back on a
+		// capability we told it we had. That reads as a broken connector.
+		if ( isset( $data['capabilities'] ) && is_array( $data['capabilities'] ) ) {
+			if ( method_exists( $server, 'get_resources' ) && ! $server->get_resources() ) {
+				unset( $data['capabilities']['resources'] );
+			}
+			if ( method_exists( $server, 'get_prompts' ) && ! $server->get_prompts() ) {
+				unset( $data['capabilities']['prompts'] );
+			}
+		}
 
 		$class = get_class( $result );
 		return $class::fromArray( $data );
@@ -157,38 +275,125 @@ class Saddle_MCP {
 			self::REST_NAMESPACE,
 			self::ROUTE,
 			array(
-				'methods'             => 'POST',
-				'callback'            => array( __CLASS__, 'handle' ),
-				'permission_callback' => array( __CLASS__, 'authenticated' ),
+				array(
+					'methods'             => 'POST',
+					'callback'            => array( __CLASS__, 'handle' ),
+					'permission_callback' => array( __CLASS__, 'authenticated' ),
+				),
+				// GET and DELETE exist only to be refused correctly.
+				//
+				// "The server MUST provide a single HTTP endpoint path … that
+				// supports both POST and GET methods", and for GET: "The server
+				// MUST either return Content-Type: text/event-stream … or else
+				// return HTTP 405 Method Not Allowed."
+				//
+				// Leaving them unregistered looks like it produces that 405 —
+				// WP_REST_Server::dispatch() returns one, which is what a unit
+				// test sees. Over real HTTP it does not: the request never
+				// matches a route and the client gets 404 rest_no_route. A
+				// client probing for a stream reads 404 as a broken endpoint,
+				// so the only way to answer the spec is to own both methods.
+				array(
+					'methods'             => array( 'GET', 'DELETE' ),
+					'callback'            => array( __CLASS__, 'refuse_method' ),
+					'permission_callback' => array( __CLASS__, 'authenticated' ),
+				),
 			)
+		);
+
+		add_filter( 'rest_pre_serve_request', array( __CLASS__, 'serve_empty_acknowledgement' ), 10, 3 );
+	}
+
+	/**
+	 * Answer GET and DELETE with the 405 the spec asks for.
+	 *
+	 * GET: Saddle has no SSE stream to offer, and 405 is the spec's own
+	 * sanctioned way of saying so.
+	 *
+	 * DELETE: "Clients … SHOULD send an HTTP DELETE … to explicitly terminate
+	 * the session. The server MAY respond to this request with HTTP 405 Method
+	 * Not Allowed." This transport is stateless and issues no session id, so
+	 * there is nothing to terminate.
+	 *
+	 * The permission callback still runs first, so an unauthenticated probe
+	 * gets Saddle's legible 401 rather than confirmation that the endpoint is
+	 * here.
+	 *
+	 * @param WP_REST_Request $request The request.
+	 * @return WP_REST_Response
+	 */
+	public static function refuse_method( WP_REST_Request $request ) {
+		// No Allow header set here on purpose. Core's rest_send_allow_header()
+		// runs on rest_post_dispatch and rewrites it from the route's declared
+		// methods, so anything set here is overwritten before the client sees
+		// it — and a test asserting our value would pass while the wire said
+		// something else. That is the same false negative that hid the 404.
+		return new WP_REST_Response(
+			self::error_envelope(
+				null,
+				-32600,
+				'GET' === $request->get_method()
+					? __( 'This MCP endpoint does not offer an event stream. Send JSON-RPC over POST instead.', 'saddle' )
+					: __( 'This MCP endpoint is stateless and issues no session to terminate.', 'saddle' )
+			),
+			405
 		);
 	}
 
 	/**
 	 * Transport-level gate: an authenticated WordPress user must be resolved.
+	 * Wired on BOTH transports — as the fallback route's `permission_callback`
+	 * and as the adapter's `$transport_permission_callback` (see
+	 * {@see self::register_adapter_server()}).
 	 *
-	 * A failed request can be here for two very different reasons that both look
+	 * A failed request can be here for three very different reasons that all look
 	 * like a bare 401 to the caller — and each needs a different fix:
 	 *
-	 *   - Credentials reached PHP but core rejected them: the Application
+	 *   - A `Bearer` token was sent but didn't resolve: the OAuth access token
+	 *     expired, was revoked, or is bound to another site. Fix = refresh, or
+	 *     re-authorize the app.
+	 *   - `Basic` credentials reached PHP but core rejected them: the Application
 	 *     Password was revoked/deleted (or is wrong). Fix = reconnect the app.
 	 *   - No credentials reached PHP at all: the host likely stripped the
 	 *     `Authorization` header in transit. Fix = the connection self-check /
 	 *     .htaccess forwarding rule.
 	 *
-	 * In practice core's own authenticator short-circuits a *rejected* credential
-	 * before the route runs (see {@see Saddle_Connection::explain_auth_error()},
-	 * which relabels that 401); this gate is reached mainly for the
-	 * no-credentials case, but it still distinguishes both defensively.
+	 * In practice core's own authenticator short-circuits a *rejected* Basic
+	 * credential before the route runs (see {@see Saddle_Connection::explain_auth_error()},
+	 * which relabels that 401); this gate distinguishes all three defensively.
 	 *
+	 * Note the adapter discards a WP_Error return and denies with core's generic
+	 * message (HttpTransport::check_permission). {@see Saddle_OAuth_Bearer::challenge()}
+	 * restores the legible body — and attaches the OAuth challenge — for both
+	 * transports on the way out.
+	 *
+	 * @param WP_REST_Request|null $request Unused; the adapter passes the request.
 	 * @return bool|WP_Error
 	 */
-	public static function authenticated() {
+	public static function authenticated( $request = null ) {
+		// Accepted and discarded: the adapter hands its transport permission
+		// callback the request, while the fallback route's permission_callback
+		// passes nothing. Taking it optionally is what lets one gate serve both.
+		unset( $request );
+
 		if ( is_user_logged_in() ) {
 			return true;
 		}
 
-		if ( class_exists( 'Saddle_Connection' ) && Saddle_Connection::request_carried_credentials() ) {
+		$scheme = class_exists( 'Saddle_Connection' ) ? Saddle_Connection::credential_scheme() : '';
+
+		if ( 'bearer' === $scheme ) {
+			return new WP_Error(
+				'saddle_token_rejected',
+				__( 'The access token was rejected — it has expired, been revoked, or was issued for a different site. Refresh it, or reconnect the app to authorize a new one.', 'saddle' ),
+				array(
+					'status' => 401,
+					'reason' => 'token_rejected',
+				)
+			);
+		}
+
+		if ( 'basic' === $scheme ) {
 			return new WP_Error(
 				'saddle_credential_rejected',
 				__( 'Your sign-in key was rejected — it was most likely revoked or removed. Reconnect the app from Saddle to issue a fresh key.', 'saddle' ),
@@ -223,10 +428,18 @@ class Saddle_MCP {
 		$ob_level = ob_get_level();
 		ob_start();
 		try {
+			$version = self::protocol_version_error( $request );
+			if ( $version instanceof WP_REST_Response ) {
+				return $version;
+			}
+
 			$body = $request->get_json_params();
 
 			if ( ! is_array( $body ) || array() === $body ) {
-				return new WP_REST_Response( self::error_envelope( null, -32700, __( 'Parse error: request body is not valid JSON-RPC.', 'saddle' ) ), 200 );
+				// 400, not 200: the spec asks for an HTTP error status here,
+				// and a parse failure recorded as a success is a trace row that
+				// reads like everything worked.
+				return self::respond( self::error_envelope( null, -32700, __( 'Parse error: request body is not valid JSON-RPC.', 'saddle' ) ), 400, $request );
 			}
 
 			// A JSON array (sequential integer keys) is a batch of requests.
@@ -240,12 +453,16 @@ class Saddle_MCP {
 						$responses[] = $result;
 					}
 				}
-				// All-notification batches yield no responses; reply with 204-equivalent empty body.
-				return new WP_REST_Response( empty( $responses ) ? null : $responses, 200 );
+				return empty( $responses )
+					? self::acknowledge( $request )
+					: self::respond( $responses, 200, $request );
 			}
 
 			$response = self::dispatch( $body );
-			return new WP_REST_Response( $response, 200 );
+
+			return null === $response
+				? self::acknowledge( $request )
+				: self::respond( $response, 200, $request );
 		} finally {
 			// Handlers may open/close buffers of their own — unwind exactly
 			// back to where this method started, never past it.
@@ -253,6 +470,141 @@ class Saddle_MCP {
 				ob_end_clean();
 			}
 		}
+	}
+
+	/**
+	 * Acknowledge a notification: 202 Accepted, with no body at all.
+	 *
+	 * THE FIX FOR #97, and worth stating plainly because it looks like a
+	 * cosmetic status change. The spec: "If the input is a JSON-RPC response or
+	 * notification … the server MUST return HTTP status code 202 Accepted with
+	 * no body." Saddle answered 200 with the JSON literal `null`.
+	 *
+	 * Every client's handshake is initialize → notifications/initialized →
+	 * tools/list, and the middle step is a notification. A lenient client
+	 * shrugs at the wrong answer and carries on — which is exactly what
+	 * mcp-remote does, and why Claude Desktop worked against a site where
+	 * ChatGPT reported no callable actions. A strict client treats the
+	 * handshake as unfinished and never sends tools/list.
+	 *
+	 * WordPress serializes a null body as the four characters `null`, so "no
+	 * body" takes a deliberate short-circuit: rest_pre_serve_request lets us
+	 * tell WP_REST_Server the response is already served, having printed
+	 * nothing. It removes itself on the way through, so it cannot empty the
+	 * next response in the same process — which the test suite would notice
+	 * long before a site did.
+	 *
+	 * @param WP_REST_Request $request The request being acknowledged.
+	 * @return WP_REST_Response
+	 */
+	private static function acknowledge( WP_REST_Request $request ) {
+		return self::respond( null, 202, $request );
+	}
+
+	/**
+	 * Print nothing for the 202 above, and tell WP_REST_Server it is done.
+	 *
+	 * Registered once, at route registration, rather than added per-request:
+	 * a filter added mid-request only unhooks itself if it actually fires, and
+	 * a response that never reaches the serving stage — short-circuited by
+	 * another plugin, or replaced downstream — would leave it armed to swallow
+	 * the body of whatever came next. Standing and stateless is the version
+	 * that cannot do that.
+	 *
+	 * Narrow on purpose: our own MCP route, and a 202, which nothing else here
+	 * returns.
+	 *
+	 * @param bool             $served   Whether the response has been served.
+	 * @param WP_HTTP_Response $result   The response about to be printed.
+	 * @param WP_REST_Request  $request  The request.
+	 * @return bool
+	 */
+	public static function serve_empty_acknowledgement( $served, $result, $request = null ) {
+		if ( $served || ! $result instanceof WP_HTTP_Response || 202 !== $result->get_status() ) {
+			return $served;
+		}
+
+		if ( ! $request instanceof WP_REST_Request || ! self::owns_route( $request ) ) {
+			return $served;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Whether a request is aimed at Saddle's MCP endpoint.
+	 *
+	 * @param WP_REST_Request $request The request.
+	 * @return bool
+	 */
+	private static function owns_route( WP_REST_Request $request ) {
+		return 0 === strpos( (string) $request->get_route(), '/' . self::REST_NAMESPACE . self::ROUTE );
+	}
+
+	/**
+	 * Build a response, echoing the negotiated protocol version back.
+	 *
+	 * @param mixed                $data    Response payload (null for a 202).
+	 * @param int                  $status  HTTP status.
+	 * @param WP_REST_Request|null $request Originating request.
+	 * @return WP_REST_Response
+	 */
+	private static function respond( $data, $status, $request = null ) {
+		$response = new WP_REST_Response( $data, $status );
+
+		// The spec has the client sending MCP-Protocol-Version on every request
+		// after initialize; echoing it back is what lets a client confirm the
+		// server is speaking the revision it negotiated.
+		$sent = $request instanceof WP_REST_Request ? (string) $request->get_header( 'Mcp-Protocol-Version' ) : '';
+		$response->header( 'MCP-Protocol-Version', '' !== $sent ? $sent : self::PROTOCOL_VERSION );
+
+		return $response;
+	}
+
+	/**
+	 * Refuse a request whose MCP-Protocol-Version header names a revision this
+	 * server does not speak.
+	 *
+	 * "If the server receives a request with an invalid or unsupported
+	 * MCP-Protocol-Version, it MUST respond with 400 Bad Request." Absent the
+	 * header the spec says assume 2025-03-26 and carry on, which matters here:
+	 * every Application Password client in the field omits it, so a missing
+	 * header must never be an error.
+	 *
+	 * 2025-03-26 is accepted even though it is not in SUPPORTED_PROTOCOL_VERSIONS.
+	 * That list drives *negotiation* — what initialize will agree to — and
+	 * widening it there would change what Saddle offers. Here the question is
+	 * only whether a version is recognizable enough not to refuse, and the
+	 * spec names that revision as the one to assume by default; refusing the
+	 * value it tells servers to infer would be perverse.
+	 *
+	 * @param WP_REST_Request $request The request.
+	 * @return WP_REST_Response|null A 400 response, or null when the header is fine.
+	 */
+	private static function protocol_version_error( WP_REST_Request $request ) {
+		$sent = (string) $request->get_header( 'Mcp-Protocol-Version' );
+		if ( '' === $sent ) {
+			return null;
+		}
+
+		$known = array_merge( self::SUPPORTED_PROTOCOL_VERSIONS, array( '2025-03-26' ) );
+		if ( in_array( $sent, $known, true ) ) {
+			return null;
+		}
+
+		return new WP_REST_Response(
+			self::error_envelope(
+				null,
+				-32600,
+				sprintf(
+					/* translators: 1: protocol version the client asked for, 2: comma-separated list of supported versions. */
+					__( 'Unsupported MCP protocol version "%1$s". This server speaks %2$s.', 'saddle' ),
+					$sent,
+					implode( ', ', self::SUPPORTED_PROTOCOL_VERSIONS )
+				)
+			),
+			400
+		);
 	}
 
 	/**
@@ -296,6 +648,22 @@ class Saddle_MCP {
 
 			case 'tools/call':
 				return self::call_tool( $id, $params );
+
+			// Saddle advertises only the `tools` capability, so a conformant
+			// client has no reason to ask for these — but ChatGPT probes all
+			// three during connector setup, and Method-not-found is a poor
+			// answer to hand a client mid-handshake. An empty list costs
+			// nothing and is the truth. The vendored adapter already answers
+			// two of the three this way, so this also stops Saddle's two
+			// transports behaving differently on the same call.
+			case 'resources/list':
+				return self::result_envelope( $id, array( 'resources' => array() ) );
+
+			case 'resources/templates/list':
+				return self::result_envelope( $id, array( 'resourceTemplates' => array() ) );
+
+			case 'prompts/list':
+				return self::result_envelope( $id, array( 'prompts' => array() ) );
 
 			default:
 				// Notifications (e.g. notifications/initialized) carry no id and
@@ -360,6 +728,18 @@ class Saddle_MCP {
 	 */
 	private static function server_instructions() {
 		if ( class_exists( 'Saddle_Context' ) ) {
+			// The handshake is not a way around the gates. It runs before any
+			// ability's permission_callback — its only check is that someone is
+			// logged in — so without this it served MORE than get-instructions
+			// would (the whole context plus the owner's own instructions) with
+			// FEWER checks: a paused site still answered, and every tier got the
+			// same payload. Pause is the owner saying stop; honour it here too.
+			if ( class_exists( 'Saddle_Capabilities' ) && Saddle_Capabilities::is_paused() ) {
+				return __( 'Saddle is paused on this site, so no tools will run. The site owner can resume it in Saddle → Settings. Do not retry until they do.', 'saddle' );
+			}
+
+			// system_context() is already tier-aware, so what a session is told
+			// tracks what it is allowed to do.
 			$text = Saddle_Context::system_context();
 			$user = Saddle_Context::user();
 			if ( '' !== $user ) {
@@ -379,14 +759,112 @@ class Saddle_MCP {
 		$tools = array();
 
 		foreach ( self::saddle_abilities() as $name => $ability ) {
-			$tools[] = array(
-				'name'        => $name,
+			// Same rule as the adapter path (filter_adapter_tools_list): only
+			// advertise what this credential could call. On a WordPress.org
+			// install this transport is the only one there is, so this is the
+			// line that does the work for most sites.
+			if ( class_exists( 'Saddle_Capabilities' ) && ! Saddle_Capabilities::is_callable_now( $name ) ) {
+				continue;
+			}
+
+			$tool = array(
+				'name'        => self::mcp_tool_name( $name ),
 				'description' => $ability->get_description(),
 				'inputSchema' => self::normalize_input_schema( $ability->get_input_schema() ),
 			);
+
+			$label = $ability->get_label();
+			if ( '' !== $label ) {
+				$tool['title'] = $label;
+			}
+
+			$annotations = self::tool_annotations( $ability, $label );
+			if ( ! empty( $annotations ) ) {
+				$tool['annotations'] = $annotations;
+			}
+
+			$tools[] = $tool;
 		}
 
 		return $tools;
+	}
+
+	/**
+	 * The MCP tool name for an ability.
+	 *
+	 * Ability names are namespaced with a slash (`saddle/list-posts`), which MCP
+	 * does not allow in a tool name and which OpenAI's clients reject outright
+	 * (`^[a-zA-Z0-9_-]{1,64}$`) — a single bad name loses the whole tool list.
+	 * Producing the same hyphenated form the official adapter produces keeps a
+	 * tool's identity stable whichever transport served it.
+	 *
+	 * @param string $ability_name Full ability name.
+	 * @return string
+	 */
+	private static function mcp_tool_name( $ability_name ) {
+		return str_replace( '/', '-', (string) $ability_name );
+	}
+
+	/**
+	 * Resolve a client-supplied tool name back to an ability name.
+	 *
+	 * Accepts both the hyphenated MCP form and the raw ability name, so a client
+	 * that cached either one keeps working.
+	 *
+	 * @param string $tool_name Name as sent by the client.
+	 * @return string Ability name, or '' when it isn't one of ours.
+	 */
+	private static function ability_name_for_tool( $tool_name ) {
+		$tool_name = (string) $tool_name;
+
+		if ( 0 === strpos( $tool_name, self::ABILITY_PREFIX ) ) {
+			return $tool_name;
+		}
+
+		$prefix = self::mcp_tool_name( self::ABILITY_PREFIX );
+		if ( 0 !== strpos( $tool_name, $prefix ) ) {
+			return '';
+		}
+
+		// Only the namespace separator was rewritten, so restore that one
+		// character — ability names may legitimately contain hyphens of their own.
+		return self::ABILITY_PREFIX . substr( $tool_name, strlen( $prefix ) );
+	}
+
+	/**
+	 * MCP behaviour hints for a tool.
+	 *
+	 * Every Saddle ability already declares whether it reads, destroys or is
+	 * idempotent (see saddle_ability_meta()); this hands that to the client in
+	 * MCP's own vocabulary so an agent can weigh a call before making it rather
+	 * than discovering the answer from a refusal.
+	 *
+	 * @param WP_Ability $ability The ability.
+	 * @param string     $label   Human-readable label, if any.
+	 * @return array
+	 */
+	private static function tool_annotations( $ability, $label ) {
+		$declared = $ability->get_meta_item( 'annotations' );
+		if ( ! is_array( $declared ) ) {
+			return array();
+		}
+
+		$annotations = array();
+
+		if ( '' !== $label ) {
+			$annotations['title'] = $label;
+		}
+		if ( isset( $declared['readonly'] ) ) {
+			$annotations['readOnlyHint'] = (bool) $declared['readonly'];
+		}
+		if ( isset( $declared['destructive'] ) ) {
+			$annotations['destructiveHint'] = (bool) $declared['destructive'];
+		}
+		if ( isset( $declared['idempotent'] ) ) {
+			$annotations['idempotentHint'] = (bool) $declared['idempotent'];
+		}
+
+		return $annotations;
 	}
 
 	/**
@@ -433,9 +911,10 @@ class Saddle_MCP {
 	 * @return array Response envelope.
 	 */
 	private static function call_tool( $id, array $params ) {
-		$name = isset( $params['name'] ) && is_string( $params['name'] ) ? $params['name'] : '';
+		$requested = isset( $params['name'] ) && is_string( $params['name'] ) ? $params['name'] : '';
+		$name      = self::ability_name_for_tool( $requested );
 
-		if ( '' === $name || 0 !== strpos( $name, self::ABILITY_PREFIX ) ) {
+		if ( '' === $name ) {
 			return self::error_envelope( $id, -32602, __( 'Invalid params: a Saddle tool name is required.', 'saddle' ) );
 		}
 
@@ -485,7 +964,28 @@ class Saddle_MCP {
 			if ( ! empty( $error_data ) ) {
 				$data['details'] = $error_data;
 			}
-			return self::error_envelope( $id, -32000, $message, $data );
+
+			// A refusal is a tool RESULT, not a protocol fault: the tool exists
+			// and was called correctly, it just said no. MCP reserves JSON-RPC
+			// errors for protocol-level problems and asks for execution failures
+			// as `isError` results — and the distinction is load-bearing here,
+			// because several clients treat a JSON-RPC error as a broken
+			// transport and never show the model the message. Saddle's denial
+			// text is written for the agent to act on ("the site is at the read
+			// access level… do not retry"), so it has to reach the agent.
+			return self::result_envelope(
+				$id,
+				array(
+					'content' => array(
+						array(
+							'type' => 'text',
+							'text' => $message,
+						),
+					),
+					'isError' => true,
+					'_meta'   => array( 'saddle' => $data ),
+				)
+			);
 		}
 
 		return self::result_envelope(

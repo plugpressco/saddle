@@ -317,7 +317,7 @@ class Saddle_Blocks_Schema {
 			),
 			'core/group'     => array(
 				'type'     => 'core/group',
-				'attrs'    => array( 'backgroundColor' => 'a-palette-slug-from-get-design-tokens' ),
+				'attrs'    => array( 'backgroundColor' => 'a-palette-slug-from-get-design-system' ),
 				'children' => array(
 					array(
 						'type'    => 'core/paragraph',
@@ -371,7 +371,7 @@ class Saddle_Blocks_Schema {
 
 		$guidance = array(
 			'mode' => $mode,
-			'how'  => __( 'Author it as {"type","content","attrs","children"}. "content" carries the text/media payload (Saddle composes the editor-valid markup, including preset classes from attrs like backgroundColor/textColor/fontSize — use slugs from saddle/get-design-tokens). "attrs" are the block attributes above; markup-sourced ones are fed from "content", so never set those in attrs.', 'saddle' ),
+			'how'  => __( 'Author it as {"type","content","attrs","children"}. "content" carries the text/media payload (Saddle composes the editor-valid markup, including preset classes from attrs like backgroundColor/textColor/fontSize — use slugs from saddle/get-design-system). "attrs" are the block attributes above; markup-sourced ones are fed from "content", so never set those in attrs.', 'saddle' ),
 		);
 		if ( isset( $examples[ $name ] ) ) {
 			$guidance['example'] = $examples[ $name ];
