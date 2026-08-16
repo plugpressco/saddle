@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name:       Saddle
- * Plugin URI:        https://plugpress.co/saddle
+ * Plugin Name:       Saddle – Control Your Site with AI (MCP Server)
+ * Plugin URI:        https://plugpress.co/saddle/
  * Description:       Self-hosted MCP server for WordPress. Tiered, default-safe, approval-gated access to posts, pages, and media for AI agents — with no third-party credential custody.
- * Version:           1.1.0
+ * Version:           1.0.0-rc3
  * Requires at least: 6.9
  * Requires PHP:      7.4
  * Author:            PlugPress
@@ -18,11 +18,16 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SADDLE_VERSION', '1.1.0' );
+define( 'SADDLE_VERSION', '1.0.0-rc3' );
 define( 'SADDLE_FILE', __FILE__ );
 define( 'SADDLE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SADDLE_URL', plugin_dir_url( __FILE__ ) );
 define( 'SADDLE_MIN_WP', '6.9' );
+// The admin app's extension-contract version (admin/src/extensions.js).
+// Deliberately decoupled from SADDLE_VERSION: addons feature-detect this
+// constant (never a plugin-version floor), and it bumps ONLY on breaking
+// changes to the wp.hooks seams or the ui context object.
+define( 'SADDLE_SHELL_VERSION', 1 );
 
 /**
  * Load plugin classes.
@@ -50,6 +55,7 @@ require_once SADDLE_DIR . 'includes/lint/rules/class-rule-double-background.php'
 require_once SADDLE_DIR . 'includes/lint/rules/class-rule-mixed-accents.php';
 require_once SADDLE_DIR . 'includes/lint/rules/class-rule-unaligned-buttons.php';
 require_once SADDLE_DIR . 'includes/lint/rules/class-rule-section-padding.php';
+require_once SADDLE_DIR . 'includes/lint/rules/class-rule-single-column-flow.php';
 require_once SADDLE_DIR . 'includes/lint/rules/class-rule-featured-plan.php';
 require_once SADDLE_DIR . 'includes/lint/rules/class-rule-text-contrast.php';
 require_once SADDLE_DIR . 'includes/lint/rules/class-rule-missing-alt.php';
@@ -62,17 +68,52 @@ require_once SADDLE_DIR . 'includes/verify/class-saddle-verify.php';
 require_once SADDLE_DIR . 'includes/class-saddle-capabilities.php';
 require_once SADDLE_DIR . 'includes/class-saddle-approval.php';
 require_once SADDLE_DIR . 'includes/class-saddle-context.php';
+require_once SADDLE_DIR . 'includes/class-saddle-context-bundle.php';
+require_once SADDLE_DIR . 'includes/class-saddle-playbook.php';
 require_once SADDLE_DIR . 'includes/class-saddle-skills.php';
 require_once SADDLE_DIR . 'includes/class-saddle-memory.php';
 require_once SADDLE_DIR . 'includes/class-saddle-log.php';
 require_once SADDLE_DIR . 'includes/class-saddle-unsplash.php';
 require_once SADDLE_DIR . 'includes/class-saddle-connection.php';
+require_once SADDLE_DIR . 'includes/class-saddle-http.php';
 require_once SADDLE_DIR . 'includes/class-saddle-accessors.php';
 require_once SADDLE_DIR . 'includes/class-saddle-integration-engine.php';
 require_once SADDLE_DIR . 'includes/class-saddle-integrations.php';
 require_once SADDLE_DIR . 'includes/class-saddle-mcp.php';
+require_once SADDLE_DIR . 'includes/class-saddle-mcp-diagnostics.php';
+
+// Adapter-only, and absent from the WordPress.org build along with the library
+// itself — file_exists() is what makes that build .org-safe, exactly as it is
+// for class-saddle-updater.php. Both degrade to no-ops.
+foreach ( array( 'class-saddle-bundled-adapter.php', 'class-saddle-mcp-compat.php' ) as $saddle_adapter_file ) {
+	if ( file_exists( SADDLE_DIR . 'includes/' . $saddle_adapter_file ) ) {
+		require_once SADDLE_DIR . 'includes/' . $saddle_adapter_file;
+	}
+}
+unset( $saddle_adapter_file );
+require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth.php';
+require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-store.php';
+require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-discovery.php';
+require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-clients.php';
+require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-endpoints.php';
+require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-consent.php';
+require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-bearer.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-settings.php';
+
+/*
+ * Self-hosted updates — PRESENT ONLY IN THE SELF-HOSTED BUILD.
+ *
+ * The WordPress.org build ships without `class-saddle-updater.php` (the zip
+ * task drops it), because a plugin in the directory must not fetch its own
+ * updates from a third-party host. The file's absence is the switch: there is
+ * no constant to set and no option to forget, and an install that later
+ * updates to a .org zip simply loses the file and falls back to WordPress's
+ * native updates.
+ */
+if ( file_exists( SADDLE_DIR . 'includes/class-saddle-updater.php' ) ) {
+	require_once SADDLE_DIR . 'includes/class-saddle-updater.php';
+}
 
 /**
  * Bootstrap container. Wires WordPress hooks to the plugin's components.
@@ -98,12 +139,21 @@ final class Saddle {
 		// priority so core has already produced its auth result to relabel.
 		add_filter( 'rest_authentication_errors', array( 'Saddle_Connection', 'explain_auth_error' ), 20 );
 
+		// Self-hosted updates, when this is the self-hosted build. Scoped to
+		// admin + cron: the update transient is only ever built there, and
+		// cron is NOT optional — `wp_update_plugins` runs as a scheduled event,
+		// so an is_admin()-only guard would silently kill background updates.
+		if ( class_exists( 'Saddle_Updater' ) && ( is_admin() || wp_doing_cron() ) ) {
+			Saddle_Updater::init();
+		}
+
 		// Always-on infrastructure (independent of the Abilities API).
 		// The preview serving path stays up even when minting isn't — an
 		// outstanding token must keep working for its full (short) life.
 		Saddle_Preview::register();
 		add_action( 'init', array( 'Saddle_Approval', 'register_cpt' ) );
 		add_action( 'init', array( 'Saddle_Log', 'register_cpt' ) );
+		add_action( 'init', array( 'Saddle_OAuth_Store', 'register_cpt' ) );
 		add_action( 'init', array( 'Saddle_Skills', 'register_cpt' ) );
 		add_action( 'init', array( 'Saddle_Memory', 'register_cpt' ) );
 
@@ -111,9 +161,23 @@ final class Saddle {
 		// receives (the initialize handshake + get-instructions), via the
 		// shared filter.
 		add_filter( 'saddle_system_context', array( 'Saddle_Skills', 'append_index' ) );
+
+		// The build-a-page playbook, bundled with free on a block theme. It is
+		// a skill rather than context prose so the how-to stays behind one
+		// call instead of riding every session's token budget.
+		add_filter( 'saddle_builtin_skills', array( 'Saddle_Playbook', 'register' ) );
+
+		// The context bundle caches the site's working memory. Anything that
+		// changes which blocks, patterns or templates exist must drop it; the
+		// content signature catches the rest on the next read.
+		add_action( 'activated_plugin', array( 'Saddle_Context_Bundle', 'flush' ) );
+		add_action( 'deactivated_plugin', array( 'Saddle_Context_Bundle', 'flush' ) );
+		add_action( 'switch_theme', array( 'Saddle_Context_Bundle', 'flush' ) );
+		add_action( 'saddle_flush_cache', array( 'Saddle_Context_Bundle', 'flush' ) );
 		add_filter( 'saddle_system_context', array( 'Saddle_Memory', 'append_context' ) );
 		add_action( 'rest_api_init', array( 'Saddle_REST_Admin', 'register_routes' ) );
 		add_action( 'rest_api_init', array( 'Saddle_Connection', 'register_routes' ) );
+		add_action( 'rest_api_init', array( 'Saddle_MCP_Diagnostics', 'register_routes' ) );
 		add_action( 'init', array( 'Saddle_Unsplash', 'register_taxonomy' ) );
 		Saddle_Unsplash::register_admin_hooks();
 		add_action( 'admin_menu', array( 'Saddle_Settings', 'register_menu' ) );
@@ -121,11 +185,20 @@ final class Saddle {
 		add_action( Saddle_Approval::GC_HOOK, array( 'Saddle_Approval', 'gc' ) );
 		add_action( Saddle_Approval::GC_HOOK, array( 'Saddle_Log', 'gc' ) );
 		add_action( Saddle_Approval::GC_HOOK, array( 'Saddle_Memory', 'gc' ) );
+		add_action( Saddle_Approval::GC_HOOK, array( 'Saddle_OAuth_Store', 'gc' ) );
+
+		// OAuth 2.1 authorization server. Off by default; Saddle_OAuth::register()
+		// wires only the bearer resolver and the 401 challenge until the owner
+		// turns it on, so a site that never connects ChatGPT never exposes an
+		// OAuth surface. See includes/oauth/class-saddle-oauth.php for why this
+		// exists alongside Application Passwords rather than replacing them.
+		Saddle_OAuth::register();
 
 		// The MCP surface and abilities require core's Abilities API (WP 6.9+).
 		if ( self::abilities_api_available() ) {
 			require_once SADDLE_DIR . 'includes/abilities/core-content.php';
 			require_once SADDLE_DIR . 'includes/abilities/blocks.php';
+			require_once SADDLE_DIR . 'includes/abilities/site-editor.php';
 			require_once SADDLE_DIR . 'includes/abilities/site.php';
 			require_once SADDLE_DIR . 'includes/abilities/users.php';
 			require_once SADDLE_DIR . 'includes/abilities/context.php';
@@ -137,6 +210,7 @@ final class Saddle {
 			add_action( 'wp_abilities_api_categories_init', 'saddle_register_ability_category' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_block_abilities' );
+			add_action( 'wp_abilities_api_init', 'saddle_register_site_editor_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_site_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_user_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_context_abilities' );
@@ -177,10 +251,28 @@ final class Saddle {
 	 * tier + approval gate live in the abilities regardless of transport.
 	 */
 	public static function setup_mcp_transport() {
-		self::load_bundled_mcp_adapter();
+		// Absent from the WordPress.org build, together with the library it
+		// loads. Guarded at the point of use, per the house rule — a guard that
+		// is always true hides the mistake it was meant to catch.
+		if ( class_exists( 'Saddle_Bundled_Adapter' ) ) {
+			Saddle_Bundled_Adapter::load();
+		}
 
-		if ( self::mcp_adapter_available() ) {
+		// The traffic recorder is transport-agnostic and belongs on both paths:
+		// the build most likely to need it is the one without the adapter.
+		Saddle_MCP_Diagnostics::register();
+
+		if ( self::adapter_available() ) {
+			// Third-party hook, owned by the MCP Adapter plugin — its name is
+			// theirs, and this is the documented way to register a server with
+			// it. Reached only when that plugin is present.
 			add_action( 'mcp_adapter_init', array( 'Saddle_MCP', 'register_adapter_server' ) );
+
+			// Shims the adapter's session and protocol-header strictness; it has
+			// no purpose without the adapter, so it ships with it.
+			if ( class_exists( 'Saddle_MCP_Compat' ) ) {
+				Saddle_MCP_Compat::register();
+			}
 		} else {
 			add_action( 'rest_api_init', array( 'Saddle_MCP', 'register_routes' ) );
 		}
@@ -191,58 +283,10 @@ final class Saddle {
 	 *
 	 * @return bool
 	 */
-	public static function mcp_adapter_available() {
+	public static function adapter_available() {
 		return class_exists( '\\WP\\MCP\\Core\\McpAdapter' );
 	}
 
-	/**
-	 * Boot the bundled WordPress MCP Adapter library.
-	 *
-	 * Guarded so that if any other plugin (e.g. the standalone mcp-adapter
-	 * plugin) already loaded `WP\MCP`, that copy wins and we don't redeclare its
-	 * classes. Composer's autoloader in the bundle uses paths relative to its own
-	 * location, so the vendored copy works from inside Saddle unchanged.
-	 */
-	private static function load_bundled_mcp_adapter() {
-		if ( class_exists( '\\WP\\MCP\\Core\\McpAdapter' ) ) {
-			return; // Provided elsewhere — defer to it.
-		}
-
-		/**
-		 * Filter whether Saddle loads its bundled MCP Adapter library.
-		 *
-		 * Return false to keep the bundle dormant — e.g. if you prefer to run the
-		 * standalone WordPress "MCP Adapter" plugin instead. (Two copies of the
-		 * un-guarded library cannot load in one request, so use one or the other.)
-		 *
-		 * @param bool $load Whether to load the bundled library. Default true.
-		 */
-		if ( ! apply_filters( 'saddle_load_bundled_mcp_adapter', true ) ) {
-			return;
-		}
-
-		$lib        = SADDLE_DIR . 'includes/lib/wp-mcp/';
-		$autoloader = $lib . 'includes/Autoloader.php';
-		if ( ! is_readable( $autoloader ) ) {
-			return; // Bundle missing — the built-in transport will take over.
-		}
-
-		if ( ! defined( 'WP_MCP_DIR' ) ) {
-			define( 'WP_MCP_DIR', $lib );
-		}
-		if ( ! defined( 'WP_MCP_VERSION' ) ) {
-			define( 'WP_MCP_VERSION', '0.5.0' );
-		}
-
-		require_once $autoloader;
-
-		if ( class_exists( '\\WP\\MCP\\Autoloader' )
-			&& \WP\MCP\Autoloader::autoload()
-			&& class_exists( '\\WP\\MCP\\Plugin' )
-		) {
-			\WP\MCP\Plugin::instance();
-		}
-	}
 
 	/**
 	 * Whether core's Abilities API is present.

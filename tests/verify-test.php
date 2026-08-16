@@ -117,6 +117,34 @@ class Saddle_Verify_Test extends WP_UnitTestCase {
 		$this->assertSame( 75, $result['score'] ); // 100 - 25.
 	}
 
+	/* -------- grade honesty -------- */
+
+	public function test_one_echo_finding_caps_the_grade_at_b() {
+		// 100 - 10 = 90 — numerically an A, categorically not: the styling
+		// never rendered. The letter demotes; the arithmetic stays.
+		$result = $this->verify(
+			$this->page( '<!-- wp:paragraph {"style":{"nonsense":{"x":1}}} --><p>Styled into the void.</p><!-- /wp:paragraph -->' )
+		);
+
+		$this->assertSame( 90, $result['score'] );
+		$this->assertSame( 'B', $result['grade'], 'An ignored attribute is categorically not an A page.' );
+	}
+
+	public function test_structural_finding_caps_the_grade_at_c() {
+		$result = $this->verify( $this->page( '<div class="hand-rolled"><p>Not blocks at all.</p></div>' ) );
+
+		$this->assertSame( 75, $result['score'] ); // Numerically a B.
+		$this->assertSame( 'C', $result['grade'], 'A structural break is categorically not a B page.' );
+	}
+
+	public function test_every_report_carries_the_coverage_caveat() {
+		$clean = $this->verify( $this->page( $this->clean_markup() ) );
+		$dirty = $this->verify( $this->page( $this->bad_markup() ) );
+
+		$this->assertStringContainsString( 'get-preview-url', $clean['coverage'], 'A clean report must still say the score is not a visual sign-off.' );
+		$this->assertStringContainsString( 'get-preview-url', $dirty['coverage'] );
+	}
+
 	/* -------- bounded payload -------- */
 
 	public function test_findings_are_capped_with_an_overflow_count() {

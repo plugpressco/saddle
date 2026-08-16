@@ -5,3 +5,6 @@
 *.log
 /dist
 .phpunit.result.cache
+
+# Local, per-machine Claude Code settings (permissions etc) — not project config.
+.claude/settings.local.json

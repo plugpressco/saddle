@@ -90,9 +90,18 @@ export default function Dashboard( { tier, clients, onNavigate, onConnect } ) {
 	}, [] );
 
 	const level = levelFor( tier );
-	const healthOk = health && health.status === 'ok';
+	// This tile is about whether connected apps can reach the site. A stripped
+	// X-WP-Nonce header only affects this dashboard's own requests, which Saddle
+	// already works around — so it counts as healthy here, and the note about
+	// telling the host lives on the Connect tab where the detail belongs.
+	const healthOk =
+		health &&
+		( health.status === 'ok' || health.status === 'nonce_header_stripped' );
 	const healthProblem =
-		health && health.status !== 'ok' && health.status !== 'unknown';
+		health &&
+		health.status !== 'ok' &&
+		health.status !== 'unknown' &&
+		health.status !== 'nonce_header_stripped';
 	let healthValue = '—';
 	if ( healthOk ) {
 		healthValue = __( 'Healthy', 'saddle' );
@@ -147,7 +156,7 @@ export default function Dashboard( { tier, clients, onNavigate, onConnect } ) {
 					label={
 						<StatLabel
 							help={ __(
-								'Whether apps can reach your site. If your host strips the Authorization header, connections fail — fix it from the Connect tab.',
+								'Whether apps can reach your site. If your host blocks the sign-in details apps send, connections fail — check and fix it from the Connect tab.',
 								'saddle'
 							) }
 						>

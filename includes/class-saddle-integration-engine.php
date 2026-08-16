@@ -75,7 +75,7 @@ class Saddle_Integration_Engine {
 	private $registered = array();
 
 	/**
-	 * Configure the engine for one catalog.
+	 * Configure the engine for one plugin's catalog.
 	 *
 	 * @param array  $default_catalog Catalog served when the filter adds nothing.
 	 * @param string $catalog_filter  Filter name exposing the catalog.
@@ -225,6 +225,44 @@ class Saddle_Integration_Engine {
 	}
 
 	/**
+	 * Input keys that name the item a partner tool acts on, best first.
+	 *
+	 * @return string[]
+	 */
+	private static function target_keys() {
+		/**
+		 * Filter the input keys treated as a partner tool's target item.
+		 *
+		 * Only used to make the log line and the token's target readable — the
+		 * `bind` hash is what actually holds a confirm to its preview, so a key
+		 * missing from this list costs legibility, never safety.
+		 *
+		 * @param string[] $keys Candidate keys, best first.
+		 */
+		return (array) apply_filters(
+			'saddle_integration_target_keys',
+			array( 'id', 'post_id', 'page_id', 'doc_id', 'attachment_id', 'media_id', 'campaign_id', 'term_id', 'user_id', 'redirect_id' )
+		);
+	}
+
+	/**
+	 * Sort an argument array by key, recursively, so two calls carrying the
+	 * same arguments hash the same however the client ordered its JSON.
+	 *
+	 * @param array $args Arguments.
+	 * @return array Key-sorted copy.
+	 */
+	private static function canonical( array $args ) {
+		ksort( $args );
+		foreach ( $args as $key => $value ) {
+			if ( is_array( $value ) ) {
+				$args[ $key ] = self::canonical( $value );
+			}
+		}
+		return $args;
+	}
+
+	/**
 	 * Build the wrapper's execute callback: delegate to the source ability
 	 * (whose own permission_callback core re-checks inside execute()), gate
 	 * destructive calls, and log every mutation.
@@ -267,9 +305,9 @@ class Saddle_Integration_Engine {
 			// A stable target for logging and token identity, so a preview
 			// token can't be replayed against a different item.
 			$target = '';
-			foreach ( array( 'id', 'post_id', 'doc_id', 'attachment_id' ) as $key ) {
-				if ( isset( $input[ $key ] ) && is_scalar( $input[ $key ] ) ) {
-					$target = (string) $input[ $key ];
+			foreach ( self::target_keys() as $key ) {
+				if ( isset( $bindable[ $key ] ) && is_scalar( $bindable[ $key ] ) ) {
+					$target = (string) $bindable[ $key ];
 					break;
 				}
 			}
@@ -287,7 +325,11 @@ class Saddle_Integration_Engine {
 					array(
 						'action'  => $short,
 						'target'  => $target,
-						'bind'    => $bindable ? substr( md5( wp_json_encode( $bindable ) ), 0, 12 ) : '',
+						// sha256 over a recursively key-sorted copy, not a
+						// truncated md5 of the raw array: a client that
+						// serializes the same arguments in a different key
+						// order must not have a legitimate confirm refused.
+						'bind'    => $bindable ? hash( 'sha256', (string) wp_json_encode( self::canonical( $bindable ) ) ) : '',
 						'summary' => sprintf(
 							/* translators: 1: tool label, 2: target, 3: plugin name. */
 							__( 'Run "%1$s" on %2$s via the %3$s integration. This is flagged destructive by %3$s.', 'saddle' ),

@@ -904,61 +904,18 @@ class Saddle_Abilities {
 	 * residual TOCTOU is acknowledged; blocking the common metadata SSRF is the
 	 * priority here.
 	 *
+	 * The check itself now lives in {@see Saddle_HTTP::url_is_safe()}, so the
+	 * media path and OAuth client-metadata fetching share one implementation
+	 * instead of two drifting copies. This wrapper stays because the media
+	 * escape hatch is its own documented filter, and widening media sideloading
+	 * should not silently widen what an OAuth client may point Saddle at.
+	 *
 	 * @param string $url Candidate URL.
 	 * @return bool True if safe to fetch.
 	 */
 	private static function source_url_is_safe( $url ) {
-		$host = wp_parse_url( $url, PHP_URL_HOST );
-		if ( ! $host ) {
-			return false;
-		}
-		$host = trim( $host, '[]' ); // Strip IPv6 brackets.
-
-		$ips = array();
-		if ( filter_var( $host, FILTER_VALIDATE_IP ) ) {
-			$ips[] = $host;
-		} else {
-			foreach ( array( DNS_A, DNS_AAAA ) as $dns_type ) {
-				// Silenced by design: this is an SSRF pre-flight resolving a
-				// user-supplied host to reject internal targets. A lookup
-				// failure just means "no records" — we must not warn or throw
-				// on an attacker-chosen name, only fall through to refusal.
-				$records = @dns_get_record( $host, $dns_type ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- see comment above.
-				if ( is_array( $records ) ) {
-					foreach ( $records as $record ) {
-						if ( ! empty( $record['ip'] ) ) {
-							$ips[] = $record['ip'];
-						}
-						if ( ! empty( $record['ipv6'] ) ) {
-							$ips[] = $record['ipv6'];
-						}
-					}
-				}
-			}
-			if ( empty( $ips ) ) {
-				$resolved = gethostbyname( $host );
-				if ( $resolved && $resolved !== $host ) {
-					$ips[] = $resolved;
-				}
-			}
-		}
-
-		// Fail CLOSED when the host resolved to nothing. If PHP can't resolve the
-		// host (some locked-down hosts disable dns_get_record / gethostbyname even
-		// where HTTP fetches still work) we can't prove the target is external, so
-		// we refuse rather than let an unverifiable name through — an internal
-		// name that only resolves at fetch time would otherwise slip past this
-		// pre-flight. A trusted/NAT'd environment that legitimately can't resolve
-		// here can allow the source via the `saddle_source_url_is_safe` filter
-		// below (the WP_Error returned to the agent names that escape hatch). The
-		// residual DNS-rebinding TOCTOU on names that DO resolve is acknowledged.
-		$safe = ! empty( $ips );
-		foreach ( $ips as $ip ) {
-			if ( ! filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) ) {
-				$safe = false;
-				break;
-			}
-		}
+		$ips  = array();
+		$safe = Saddle_HTTP::url_is_safe( $url );
 
 		/**
 		 * Filter whether a media source URL is safe to fetch.
@@ -1003,6 +960,11 @@ class Saddle_Abilities {
 				'media' => array_sum( (array) wp_count_attachments() ),
 			),
 			'access_tier'  => Saddle_Capabilities::get_tier(),
+			// The tool list is filtered to what this credential can call, so
+			// say what isn't in it. Without this an agent cannot tell "the site
+			// can't do that" from "this connection isn't allowed to", and those
+			// have very different answers for the person asking.
+			'tools'        => Saddle_Capabilities::hidden_tool_counts(),
 			'connected_as' => array(
 				'id'    => $user->ID,
 				'login' => $user->user_login,

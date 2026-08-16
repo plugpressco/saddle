@@ -49,6 +49,36 @@ class Saddle_Capabilities_Test extends WP_UnitTestCase {
 		$this->assertSame( 'write', Saddle_Capabilities::get_tier(), 'A rejected tier must not change state.' );
 	}
 
+	/**
+	 * Re-saving the current tier must succeed. Activation seeds 'read' and the
+	 * wizard's default choice IS 'read', so treating update_option's unchanged-
+	 * value false as a failure rejected the onboarding happy path with
+	 * "Unknown access tier." (customer report, 2026-08-03).
+	 */
+	public function test_set_tier_accepts_unchanged_tier() {
+		update_option( Saddle_Capabilities::OPTION, 'read' );
+		$this->assertTrue( Saddle_Capabilities::set_tier( 'read' ), 'Saving the already-stored tier is a success, not an error.' );
+		$this->assertTrue( Saddle_Capabilities::set_tier( 'read' ), 'And it stays a success on every repeat.' );
+		$this->assertSame( 'read', Saddle_Capabilities::get_tier() );
+	}
+
+	/** The same REST path the wizard takes: POST the preselected default tier. */
+	public function test_settings_endpoint_accepts_unchanged_tier() {
+		update_option( Saddle_Capabilities::OPTION, 'read' );
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+
+		// update_settings() reads changed fields via get_json_params(), which only
+		// parses an actual JSON request body — set_param() alone doesn't populate it.
+		$request = new WP_REST_Request( 'POST', '/saddle/v1/settings' );
+		$request->set_header( 'content-type', 'application/json' );
+		$request->set_body( wp_json_encode( array( 'tier' => 'read' ) ) );
+
+		$response = Saddle_REST_Admin::update_settings( $request );
+
+		$this->assertNotWPError( $response, 'Re-confirming the current tier must not 400 with "Unknown access tier."' );
+		$this->assertSame( 200, $response->get_status() );
+	}
+
 	/** An out-of-set value living in the DB must be coerced back to the safe default. */
 	public function test_get_tier_coerces_invalid_stored_value() {
 		update_option( Saddle_Capabilities::OPTION, 'garbage' );
@@ -227,6 +257,140 @@ class Saddle_Capabilities_Test extends WP_UnitTestCase {
 
 		$this->assertNotSame( 'old-domain.example.test', Saddle_Capabilities::current_domain() );
 		$this->assertFalse( Saddle_Capabilities::domain_matches_recorded() );
+	}
+
+	/* -------- what this credential could actually call -------- */
+
+	public function test_is_callable_now_follows_the_tier() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+
+		Saddle_Capabilities::set_tier( 'read' );
+		$this->assertTrue( Saddle_Capabilities::is_callable_now( 'saddle/get-site-info' ) );
+		$this->assertFalse( Saddle_Capabilities::is_callable_now( 'saddle/create-post' ) );
+		$this->assertFalse( Saddle_Capabilities::is_callable_now( 'saddle/list-plugins' ) );
+
+		Saddle_Capabilities::set_tier( 'write' );
+		$this->assertTrue( Saddle_Capabilities::is_callable_now( 'saddle/create-post' ) );
+		$this->assertFalse( Saddle_Capabilities::is_callable_now( 'saddle/list-plugins' ) );
+
+		Saddle_Capabilities::set_tier( 'admin' );
+		$this->assertTrue( Saddle_Capabilities::is_callable_now( 'saddle/list-plugins' ) );
+	}
+
+	public function test_is_callable_now_respects_a_per_tool_switch() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+		Saddle_Capabilities::set_tier( 'admin' );
+		Saddle_Capabilities::set_disabled_abilities( array( 'delete-post' ) );
+
+		$this->assertFalse( Saddle_Capabilities::is_callable_now( 'saddle/delete-post' ) );
+		$this->assertTrue( Saddle_Capabilities::is_callable_now( 'saddle/delete-page' ) );
+	}
+
+	public function test_is_callable_now_respects_the_capability_the_account_lacks() {
+		// The ordering this pins: required_cap()'s registry is filled as
+		// abilities register, and abilities register lazily on the first
+		// wp_get_abilities() call — so a check that reads the registry before
+		// resolving the ability silently passes every capability test.
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'subscriber' ) ) );
+		Saddle_Capabilities::set_tier( 'admin' );
+
+		$this->assertFalse(
+			Saddle_Capabilities::is_callable_now( 'saddle/create-post' ),
+			'A subscriber cannot edit_posts, whatever the tier says.'
+		);
+	}
+
+	public function test_pause_does_not_change_what_is_advertised() {
+		// Pause denies at call time; it deliberately does not empty the tool
+		// list, so resuming needs no reconnect.
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+		Saddle_Capabilities::set_tier( 'admin' );
+		Saddle_Capabilities::set_paused( true );
+
+		$this->assertTrue( Saddle_Capabilities::is_callable_now( 'saddle/get-site-info' ) );
+
+		Saddle_Capabilities::set_paused( false );
+	}
+
+	public function test_an_anonymous_caller_can_call_nothing() {
+		wp_set_current_user( 0 );
+		Saddle_Capabilities::set_tier( 'admin' );
+
+		$this->assertFalse( Saddle_Capabilities::is_callable_now( 'saddle/get-site-info' ) );
+	}
+
+	public function test_hidden_tool_counts_add_up_and_attribute_correctly() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+		Saddle_Capabilities::set_tier( 'read' );
+		Saddle_Capabilities::set_disabled_abilities( array( 'get-site-info' ) );
+
+		$counts = Saddle_Capabilities::hidden_tool_counts();
+
+		$this->assertSame(
+			$counts['total'],
+			$counts['visible'] + $counts['tier'] + $counts['disabled'] + $counts['capability'],
+			'Every tool must be accounted for exactly once.'
+		);
+		$this->assertGreaterThan( 0, $counts['tier'], 'The read tier withholds the write and admin tools.' );
+		$this->assertSame( 1, $counts['disabled'] );
+	}
+
+	/* -------- denial_reason: an agent must be told the right fix -------- */
+
+	public function test_a_capability_denial_blames_the_account_not_a_saddle_switch() {
+		// A subscriber at the admin tier: nothing the owner controls is in the
+		// way, so before #89 this fell through to the generic "none of Saddle's
+		// gates blocked this" paragraph — which lists three fixes, none of them
+		// the real one.
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'subscriber' ) ) );
+		Saddle_Capabilities::set_tier( 'admin' );
+
+		$reason = Saddle_Capabilities::denial_reason( 'saddle/create-post' );
+
+		$this->assertIsArray( $reason, 'A capability denial must be explained, not left to the generic fallback.' );
+		$this->assertSame( 'saddle_capability_denied', $reason['code'] );
+		$this->assertStringContainsString( 'edit_posts', $reason['message'] );
+	}
+
+	/**
+	 * When two gates would both refuse, the reason must name the one that
+	 * actually fires first — permission() checks the capability BEFORE the
+	 * per-tool switch, so a capability denial outranks a disabled tool.
+	 *
+	 * This test used to assert the opposite, back when denial_reason() derived
+	 * its own order instead of mirroring permission()'s. It was wrong, and it
+	 * only surfaced when #68 made denial_reason() read the same recorded gate
+	 * the closure enforces. Kept pointed at the ordering rather than deleted,
+	 * because "which refusal is reported" is the whole value of this function.
+	 */
+	public function test_the_first_gate_to_fire_is_the_one_reported() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'subscriber' ) ) );
+		Saddle_Capabilities::set_tier( 'admin' );
+		Saddle_Capabilities::set_disabled_abilities( array( 'create-post' ) );
+
+		$this->assertSame(
+			'saddle_capability_denied',
+			Saddle_Capabilities::denial_reason( 'saddle/create-post' )['code'],
+			'permission() checks the capability before the toggle, so that is the refusal the agent gets.'
+		);
+
+		// And with a capable account, the toggle is what refuses.
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+
+		$this->assertSame(
+			'saddle_tool_disabled',
+			Saddle_Capabilities::denial_reason( 'saddle/create-post' )['code']
+		);
+	}
+
+	public function test_an_account_that_holds_the_capability_gets_no_capability_reason() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+		Saddle_Capabilities::set_tier( 'admin' );
+
+		$this->assertNull(
+			Saddle_Capabilities::denial_reason( 'saddle/create-post' ),
+			'Nothing of Saddle’s blocked this call, so nothing should be claimed.'
+		);
 	}
 
 	public function test_re_saving_the_tier_clears_a_stale_domain_warning() {
