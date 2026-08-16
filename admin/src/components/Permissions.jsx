@@ -159,6 +159,18 @@ export default function Permissions( {
 		( c ) => tierUnlocks( choice, c.tier ) && ! localDisabled.has( c.short )
 	).length;
 
+	// What a connected app is actually offered, and what it is not. Since the
+	// tool list is filtered to the level in force, the tools above it are not
+	// merely refused — they are invisible to the app, so the owner is the only
+	// one who can know they exist. Counted off `choice`, not the saved tier,
+	// so the numbers move as the level is picked rather than after saving.
+	const hiddenByTier = caps.filter(
+		( c ) => ! tierUnlocks( choice, c.tier )
+	).length;
+	const switchedOff = caps.filter(
+		( c ) => tierUnlocks( choice, c.tier ) && localDisabled.has( c.short )
+	).length;
+
 	let deltaLine;
 	if ( choice === 'admin' ) {
 		deltaLine = __(
@@ -219,6 +231,42 @@ export default function Permissions( {
 						'Click any tool below to turn it off individually — that stays off no matter which level above is chosen.',
 						'saddle'
 					) }
+				</p>
+
+				<p className="saddle-lanes__hint">
+					{ sprintf(
+						/* translators: 1: tools offered, 2: tools installed in total. */
+						__(
+							'Connected apps are offered %1$d of the %2$d tools installed here.',
+							'saddle'
+						),
+						enabledCount,
+						caps.length
+					) }
+					{ hiddenByTier > 0 &&
+						' ' +
+							sprintf(
+								/* translators: %d: number of tools above the chosen level. */
+								_n(
+									'%d needs a higher level, and is not shown to them at all — they cannot ask for it, so tell them if you want it used.',
+									'%d need a higher level, and are not shown to them at all — they cannot ask for those, so tell them if you want any used.',
+									hiddenByTier,
+									'saddle'
+								),
+								hiddenByTier
+							) }
+					{ switchedOff > 0 &&
+						' ' +
+							sprintf(
+								/* translators: %d: number of individually switched-off tools. */
+								_n(
+									'%d more is switched off below.',
+									'%d more are switched off below.',
+									switchedOff,
+									'saddle'
+								),
+								switchedOff
+							) }
 				</p>
 
 				<input
@@ -364,6 +412,16 @@ export default function Permissions( {
 											'saddle'
 										),
 										abilityDelta
+								  )
+								: null,
+							// Most AI apps read the tool list once, when they
+							// connect. Saving a change they can't see until
+							// they reconnect is the kind of thing that reads
+							// as "it didn't work".
+							dirty || abilitiesDirty
+								? __(
+										'Already-connected apps keep the old tool list until they reconnect.',
+										'saddle'
 								  )
 								: null,
 						]

@@ -17,13 +17,32 @@
 class Saddle_REST_Routes_Test extends WP_UnitTestCase {
 
 	/**
-	 * Boot the REST server outside any test's incorrect-usage capture — the
-	 * MCP adapter's registration emits a `_doing_it_wrong` in the test
-	 * environment (same reason `nonce-fallback-test.php` does this).
+	 * Saddle declares exactly one MCP endpoint. The vendored adapter used to
+	 * stand up a second of its own at /mcp/mcp-adapter-default-server, serving
+	 * discover-abilities, get-ability-info and execute-ability with no
+	 * transport permission callback — a public surface we never declared
+	 * (issue #86). It is disabled on plugins_loaded; this is what would notice
+	 * if that filter ever stopped being registered early enough.
 	 */
-	public static function set_up_before_class() {
-		parent::set_up_before_class();
-		rest_get_server();
+	public function test_no_second_undeclared_mcp_endpoint_is_served() {
+		$mcp = array_values(
+			array_filter(
+				array_keys( rest_get_server()->get_routes() ),
+				static function ( $route ) {
+					return false !== strpos( $route, 'mcp' );
+				}
+			)
+		);
+
+		$this->assertContains( '/saddle/v1/mcp', $mcp, 'Saddle’s own endpoint must still be there.' );
+
+		foreach ( $mcp as $route ) {
+			$this->assertStringStartsWith(
+				'/saddle/v1/',
+				$route,
+				sprintf( 'Every MCP route must be one of Saddle’s own; %s is not.', $route )
+			);
+		}
 	}
 
 	/** Both paths must answer: the app needs /preferences, old bundles /settings. */

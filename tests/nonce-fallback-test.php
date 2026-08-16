@@ -28,21 +28,6 @@ class Saddle_Nonce_Fallback_Test extends WP_UnitTestCase {
 	private $server_backup;
 	private $admin;
 
-	/**
-	 * Boot the REST server before any test's incorrect-usage capture starts.
-	 *
-	 * On its success path `rest_cookie_check_errors()` calls `rest_get_server()`
-	 * to send a refreshed nonce header, which fires `rest_api_init` and with it
-	 * the MCP adapter's server registration — and that emits a `_doing_it_wrong`
-	 * in the test environment. Doing it here means it happens once, outside any
-	 * test, rather than being attributed to whichever test authenticates first.
-	 * Same reason `oauth-bearer-test.php` does it.
-	 */
-	public static function set_up_before_class() {
-		parent::set_up_before_class();
-		rest_get_server();
-	}
-
 	public function set_up() {
 		parent::set_up();
 		$this->server_backup = $_SERVER;
