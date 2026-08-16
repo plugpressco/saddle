@@ -57,8 +57,8 @@ class Saddle_Settings {
 			: false;
 
 		if ( ! $svg ) {
-			// Fallback: the mark as of 0.9.0, so a broken build still has an icon.
-			$svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="black" d="M12 4c-4.4 0-8 3.6-8 8v7a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-6.5a3.5 3.5 0 1 1 7 0V19a1 1 0 0 0 1 1H19a1 1 0 0 0 1-1v-7c0-4.4-3.6-8-8-8Z"/></svg>';
+			// Fallback: the draped-saddle disc mark as of 1.0.0, so a broken build still has an icon.
+			$svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 280"><path fill="black" fill-rule="evenodd" clip-rule="evenodd" d="M140 0C217.32 0 280 62.6801 280 140C280 217.32 217.32 280 140 280C62.6801 280 1.9021e-06 217.32 0 140C0 62.6801 62.6801 1.47276e-06 140 0ZM185.037 71.0938C167.923 71.0938 159.816 92.6963 140 92.6963C120.184 92.6963 112.077 71.0938 94.9629 71.0938C77.8491 71.0939 63.4375 85.0455 63.4375 104.848V199.358C63.4375 201.746 64.387 204.035 66.0762 205.723C67.7654 207.411 70.0564 208.359 72.4453 208.359H94.9629C97.3518 208.359 99.6428 207.411 101.332 205.723C103.021 204.035 103.971 201.746 103.971 199.358V158.854C103.971 149.305 107.767 140.147 114.523 133.395C121.28 126.643 130.445 122.85 140 122.85C149.555 122.85 158.72 126.643 165.477 133.395C172.233 140.147 176.029 149.305 176.029 158.854V199.358C176.029 201.746 176.979 204.035 178.668 205.723C180.357 207.411 182.648 208.359 185.037 208.359H207.555C209.944 208.359 212.235 207.411 213.924 205.723C215.613 204.035 216.562 201.746 216.562 199.358V104.848C216.562 85.0455 202.151 71.0939 185.037 71.0938Z"/></svg>';
 		}
 
 		$svg = str_replace( 'currentColor', 'black', $svg );
@@ -235,6 +235,10 @@ class Saddle_Settings {
 			'window.saddleData = ' . wp_json_encode(
 				array(
 					'root'         => esc_url_raw( rest_url() ),
+					// Base for the ?rest_route= fallback when a host WAF blocks a
+					// pretty REST path before WordPress runs (20i StackProtect
+					// blocks */settings) — see admin/src/api.js.
+					'homeUrl'      => esc_url_raw( trailingslashit( home_url() ) ),
 					'nonce'        => wp_create_nonce( 'wp_rest' ),
 					'ns'           => Saddle_REST_Admin::REST_NAMESPACE,
 					'mcpUrl'       => esc_url_raw( rest_url( Saddle_MCP::REST_NAMESPACE . Saddle_MCP::ROUTE ) ),
@@ -243,21 +247,48 @@ class Saddle_Settings {
 					// connecting several Saddle sites gets distinct entries in
 					// their client, not five servers all named "saddle".
 					'serverSlug'   => Saddle_MCP::server_slug(),
-					'adapter'      => Saddle::mcp_adapter_available(),
+					'adapter'      => Saddle::adapter_available(),
+					// Whether ChatGPT can connect at all. ChatGPT's connector
+					// screen has no field for a custom HTTP header, so it needs
+					// the OAuth path — the wizard uses this to show the right
+					// instructions instead of one that cannot be followed.
+					'oauth'        => Saddle_OAuth::is_enabled(),
 					// Environment facts so the UI can warn before a connect fails.
 					'appPasswords' => function_exists( 'wp_is_application_passwords_available' ) ? (bool) wp_is_application_passwords_available() : true,
 					'ssl'          => is_ssl(),
 					// Where WordPress itself lists these credentials — linked
 					// from the Connect tab for transparency.
 					'profileUrl'   => esc_url_raw( admin_url( 'profile.php#application-passwords-section' ) ),
-					// Header chrome: plugin version + outbound links (filterable so
-					// the real docs/review URLs are configurable without a rebuild).
+					// Offered when the dashboard's own REST calls come back 401 —
+					// one cause is simply an expired session, and signing in again
+					// is the whole fix. Returns to this screen afterwards.
+					'loginUrl'     => esc_url_raw( wp_login_url( admin_url( 'admin.php?page=' . self::PAGE_SLUG ) ) ),
+					// Header chrome: plugin version + outbound links. Both point at
+					// the plugin's WordPress.org listing rather than a vendor site:
+					// that is where a free .org-hosted plugin's docs and reviews
+					// actually live, and it keeps the review CTA on .org. Filterable
+					// so first-party docs can be repointed without a rebuild.
 					'version'      => SADDLE_VERSION,
-					'docsUrl'      => esc_url_raw( apply_filters( 'saddle_docs_url', 'https://plugpress.co/docs/saddle' ) ),
-					'rateUrl'      => esc_url_raw( apply_filters( 'saddle_rate_url', 'https://plugpress.co/saddle/#reviews' ) ),
+					'docsUrl'      => esc_url_raw( apply_filters( 'saddle_docs_url', 'https://wordpress.org/plugins/saddle/' ) ),
+					'rateUrl'      => esc_url_raw( apply_filters( 'saddle_rate_url', 'https://wordpress.org/support/plugin/saddle/reviews/' ) ),
+					// The admin app's extension-contract version — addon bundles
+					// gate on it before registering (admin/src/extensions.js).
+					'shellVersion' => SADDLE_SHELL_VERSION,
 				)
 			) . ';',
 			'before'
 		);
+
+		/**
+		 * Fires after Saddle's admin bundle is enqueued on its page.
+		 *
+		 * Extenders hook this to enqueue their own bundle with a dependency on
+		 * the passed handle — that ordering guarantees their wp.hooks filters
+		 * register (at script evaluation) before the app mounts on
+		 * DOMContentLoaded. See admin/src/extensions.js for the seam contract.
+		 *
+		 * @param string $handle Saddle's admin script handle.
+		 */
+		do_action( 'saddle_admin_enqueue', 'saddle-admin' );
 	}
 }

@@ -18,6 +18,23 @@ defined( 'ABSPATH' ) || exit;
 function saddle_register_context_abilities() {
 
 	wp_register_ability(
+		'saddle/context-bundle',
+		array(
+			'label'               => __( 'Get the context bundle', 'saddle' ),
+			'description'         => __( 'Returns this site\'s whole working memory in ONE call: the design system (the colors, fonts and spacing to build with), the block types worth using, the theme\'s patterns and the owner\'s saved ones, the site\'s templates and parts, the section recipes, and the authoring conventions. Call this ONCE at the start of a session instead of get-design-system + list-block-types + list-block-patterns + list-section-recipes + list-templates separately. Cached and cheap; the "version" changes whenever anything in it does. Read-only.', 'saddle' ),
+			'category'            => 'saddle',
+			'input_schema'        => array(
+				'type'       => 'object',
+				'default'    => (object) array(),
+				'properties' => (object) array(),
+			),
+			'execute_callback'    => array( 'Saddle_Context_Abilities', 'context_bundle' ),
+			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'context-bundle' ),
+			'meta'                => saddle_ability_meta( true, false, true, 'read' ),
+		)
+	);
+
+	wp_register_ability(
 		'saddle/list-skills',
 		array(
 			'label'               => __( 'List skills', 'saddle' ),
@@ -93,6 +110,15 @@ function saddle_register_context_abilities() {
  * Execute callbacks for the context abilities.
  */
 class Saddle_Context_Abilities {
+
+	/**
+	 * saddle/context-bundle.
+	 *
+	 * @return array
+	 */
+	public static function context_bundle() {
+		return Saddle_Context_Bundle::get();
+	}
 
 	/**
 	 * saddle/list-skills.

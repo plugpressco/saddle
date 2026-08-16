@@ -201,7 +201,7 @@ class Saddle_Skills {
 			}
 			$name = sanitize_title( isset( $skill['name'] ) ? (string) $skill['name'] : '' );
 			$desc = sanitize_text_field( isset( $skill['description'] ) ? (string) $skill['description'] : '' );
-			$body = trim( wp_kses( isset( $skill['body'] ) ? (string) $skill['body'] : '', array() ) );
+			$body = self::sanitize_body( isset( $skill['body'] ) ? (string) $skill['body'] : '' );
 			if ( '' === $name || '' === $desc || '' === $body ) {
 				continue;
 			}
@@ -212,6 +212,11 @@ class Saddle_Skills {
 				'enabled'     => true,
 				'source'      => sanitize_text_field( isset( $skill['source'] ) ? (string) $skill['source'] : 'builtin' ),
 				'updated'     => '',
+				// Bundled by a plugin, not stored: set_enabled() and delete()
+				// both look the skill up in the CPT first and return false, so
+				// offering those controls produces a 404. The admin UI reads
+				// this flag and renders a label instead of a switch.
+				'builtin'     => true,
 				'body'        => mb_substr( $body, 0, self::MAX_BODY ),
 			);
 		}
@@ -300,12 +305,36 @@ class Saddle_Skills {
 	 */
 
 	/**
+	 * Sanitize a skill body while preserving it byte-for-byte as prose.
+	 *
+	 * Deliberately NOT wp_kses: a skill body is Markdown the agent reads as
+	 * data (served over JSON), never markup a browser renders — and kses
+	 * parses instructional placeholders like `<id>`, `<module>`, or
+	 * `<addr>` as HTML tags and deletes them, silently mutilating the
+	 * playbook before it ever reaches an agent (`post_id=<id>` became
+	 * `post_id=`). The admin UI only ever echoes name/description (both
+	 * sanitize_text_field'd); the body is never printed as HTML. So the
+	 * body keeps its angle brackets and only sheds what could never be
+	 * legitimate prose: invalid UTF-8 and control characters (newlines and
+	 * tabs stay — it's Markdown).
+	 *
+	 * @param string $body Raw body text.
+	 * @return string Sanitized body, trimmed.
+	 */
+	private static function sanitize_body( $body ) {
+		$body = wp_check_invalid_utf8( (string) $body, true );
+		$body = preg_replace( '/[^\P{C}\n\t]/u', '', $body );
+		return trim( (string) $body );
+	}
+
+	/**
 	 * Parse and sanitize raw SKILL.md text into name/description/when/body.
 	 *
 	 * Frontmatter is the simple `key: value` form between `---` fences —
 	 * the same subset every SKILL.md ecosystem actually uses. Unknown keys
-	 * are ignored. The body is stripped of HTML: a skill is Markdown the
-	 * agent reads, never markup a browser renders.
+	 * are ignored. The body is kept verbatim as Markdown (see
+	 * sanitize_body()): a skill is text the agent reads, never markup a
+	 * browser renders, so angle-bracket placeholders must survive.
 	 *
 	 * @param string $markdown Raw content.
 	 * @return array{name:string,description:string,when_to_use:string,body:string}|WP_Error
@@ -345,7 +374,7 @@ class Saddle_Skills {
 			);
 		}
 
-		$body = trim( wp_kses( $m[2], array() ) );
+		$body = self::sanitize_body( $m[2] );
 		if ( '' === $body ) {
 			return new WP_Error(
 				'saddle_skill_empty',
@@ -427,6 +456,9 @@ class Saddle_Skills {
 			'enabled'     => '0' !== (string) get_post_meta( $post->ID, '_saddle_skill_enabled', true ),
 			'source'      => (string) get_post_meta( $post->ID, '_saddle_skill_source', true ),
 			'updated'     => $post->post_modified_gmt,
+			// Owner-installed: it lives in the CPT, so it can be toggled and
+			// deleted. The admin UI keys its controls off this.
+			'builtin'     => false,
 		);
 		if ( $with_body ) {
 			$skill['body'] = $post->post_content;

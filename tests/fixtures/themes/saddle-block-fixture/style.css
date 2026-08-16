@@ -1,0 +1,13 @@
+/*
+Theme Name: Saddle Block Fixture
+Theme URI: https://plugpress.co/saddle/
+Author: PlugPress
+Description: A minimal block theme used only by Saddle's test suite. The host WordPress this suite runs against has no block theme installed, and without one every site-editor test skips — which looks green while verifying nothing.
+Version: 1.0.0
+Requires at least: 6.9
+Tested up to: 7.0
+Requires PHP: 7.4
+License: GPL-2.0-or-later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: saddle-block-fixture
+*/

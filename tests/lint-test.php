@@ -203,6 +203,70 @@ class Saddle_Lint_Test extends WP_UnitTestCase {
 		$this->assertSame( array(), $this->by_rule( $scattered, 'section-padding' ) );
 	}
 
+	/* -------- single-column-flow -------- */
+
+	private function single_column_wrapper( $text ) {
+		return '<!-- wp:columns --><div class="wp-block-columns">'
+			. '<!-- wp:column --><div class="wp-block-column">'
+			. '<!-- wp:paragraph --><p>' . $text . '</p><!-- /wp:paragraph -->'
+			. '</div><!-- /wp:column -->'
+			. '</div><!-- /wp:columns -->';
+	}
+
+	public function test_single_column_flow_fires_once_per_run_of_four() {
+		$violations = $this->by_rule(
+			$this->lint(
+				$this->single_column_wrapper( 'One' )
+				. $this->single_column_wrapper( 'Two' )
+				. $this->single_column_wrapper( 'Three' )
+				. $this->single_column_wrapper( 'Four' )
+			),
+			'single-column-flow'
+		);
+
+		$this->assertCount( 1, $violations, 'One advisory per run, not one per row.' );
+		$this->assertSame( '0', $violations[0]['address'] );
+		$this->assertSame( 'warn', $violations[0]['severity'] );
+		$this->assertStringContainsString( '4 consecutive', $violations[0]['message'] );
+		$this->assertNotSame( '', $violations[0]['fix_hint'] );
+	}
+
+	public function test_single_column_flow_silent_below_threshold_and_on_real_composition() {
+		// Three stacked wrappers: a deliberate rhythm, not a document.
+		$three = $this->lint(
+			$this->single_column_wrapper( 'One' )
+			. $this->single_column_wrapper( 'Two' )
+			. $this->single_column_wrapper( 'Three' )
+		);
+		$this->assertSame( array(), $this->by_rule( $three, 'single-column-flow' ) );
+
+		// A column holding two modules breaks the run (that is composition).
+		$hero = '<!-- wp:columns --><div class="wp-block-columns">'
+			. '<!-- wp:column --><div class="wp-block-column">'
+			. '<!-- wp:heading --><h2 class="wp-block-heading">Hi</h2><!-- /wp:heading -->'
+			. '<!-- wp:paragraph --><p>Sub</p><!-- /wp:paragraph -->'
+			. '</div><!-- /wp:column -->'
+			. '</div><!-- /wp:columns -->';
+		$mixed = $this->lint(
+			$this->single_column_wrapper( 'One' )
+			. $this->single_column_wrapper( 'Two' )
+			. $hero
+			. $this->single_column_wrapper( 'Three' )
+			. $this->single_column_wrapper( 'Four' )
+		);
+		$this->assertSame( array(), $this->by_rule( $mixed, 'single-column-flow' ) );
+
+		// Bare prose at the root never matches — ordinary posts stay silent.
+		$prose = $this->lint(
+			'<!-- wp:paragraph --><p>A</p><!-- /wp:paragraph -->'
+			. '<!-- wp:paragraph --><p>B</p><!-- /wp:paragraph -->'
+			. '<!-- wp:paragraph --><p>C</p><!-- /wp:paragraph -->'
+			. '<!-- wp:paragraph --><p>D</p><!-- /wp:paragraph -->'
+			. '<!-- wp:paragraph --><p>E</p><!-- /wp:paragraph -->'
+		);
+		$this->assertSame( array(), $this->by_rule( $prose, 'single-column-flow' ) );
+	}
+
 	/* -------- no-featured-plan -------- */
 
 	private function plan_card( $attrs = array() ) {

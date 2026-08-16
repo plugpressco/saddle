@@ -184,7 +184,7 @@ class RegisterAbilityAsMcpResource {
 						self::class . '::get_data',
 						sprintf(
 						/* translators: 1: ability name, 2: validation errors */
-							__( 'Invalid annotations for resource ability "%1$s" will be dropped: %2$s', 'mcp-adapter' ),
+							__( 'Invalid annotations for resource ability "%1$s" will be dropped: %2$s', 'saddle' ),
 							$this->ability->get_name(),
 							implode( '; ', $validation_errors )
 						),
@@ -238,7 +238,7 @@ class RegisterAbilityAsMcpResource {
 				'resource_uri_not_found',
 				sprintf(
 				/* translators: %s: ability name */
-					__( "Resource URI not found in ability meta for '%s'. URI must be provided at 'mcp.uri'.", 'mcp-adapter' ),
+					__( "Resource URI not found in ability meta for '%s'. URI must be provided at 'mcp.uri'.", 'saddle' ),
 					$this->ability->get_name()
 				)
 			);
@@ -252,7 +252,7 @@ class RegisterAbilityAsMcpResource {
 				'resource_uri_invalid',
 				sprintf(
 				/* translators: 1: ability name, 2: invalid URI */
-					__( "Invalid resource URI '%2\$s' for ability '%1\$s'. URI must be RFC 3986 compliant with a scheme.", 'mcp-adapter' ),
+					__( "Invalid resource URI '%2\$s' for ability '%1\$s'. URI must be RFC 3986 compliant with a scheme.", 'saddle' ),
 					$this->ability->get_name(),
 					$uri
 				)
@@ -275,7 +275,7 @@ class RegisterAbilityAsMcpResource {
 				'mcp_resource_uri_filter_invalid',
 				sprintf(
 				/* translators: %s: invalid URI returned by filter */
-					__( 'Filter returned invalid MCP resource URI: %s', 'mcp-adapter' ),
+					__( 'Filter returned invalid MCP resource URI: %s', 'saddle' ),
 					is_string( $filtered_uri ) ? $filtered_uri : gettype( $filtered_uri )
 				)
 			);
@@ -317,7 +317,7 @@ class RegisterAbilityAsMcpResource {
 					__METHOD__,
 					sprintf(
 					/* translators: 1: deprecated meta key, 2: new meta key path */
-						__( 'Ability meta key "%1$s" is deprecated. Use "mcp.%1$s" instead.', 'mcp-adapter' ),
+						__( 'Ability meta key "%1$s" is deprecated. Use "mcp.%1$s" instead.', 'saddle' ),
 						$key
 					),
 					array( 'deprecated_key' => $key )
@@ -454,7 +454,7 @@ class RegisterAbilityAsMcpResource {
 				'mcp_resource_dto_creation_failed',
 				sprintf(
 				/* translators: %s: error message */
-					__( 'Failed to create Resource DTO for ability %1$s: %2$s', 'mcp-adapter' ),
+					__( 'Failed to create Resource DTO for ability %1$s: %2$s', 'saddle' ),
 					$ability->get_name(),
 					$e->getMessage()
 				),

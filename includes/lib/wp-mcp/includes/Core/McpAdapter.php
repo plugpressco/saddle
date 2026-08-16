@@ -178,7 +178,7 @@ final class McpAdapter {
 				'invalid_error_handler',
 				sprintf(
 					/* translators: %s: error handler class name */
-					esc_html__( 'Error handler class "%s" does not exist.', 'mcp-adapter' ),
+					esc_html__( 'Error handler class "%s" does not exist.', 'saddle' ),
 					esc_html( $error_handler )
 				)
 			);
@@ -189,7 +189,7 @@ final class McpAdapter {
 				'invalid_error_handler',
 				sprintf(
 				/* translators: %s: error handler class name */
-					esc_html__( 'Error handler class "%s" must implement the McpErrorHandlerInterface.', 'mcp-adapter' ),
+					esc_html__( 'Error handler class "%s" must implement the McpErrorHandlerInterface.', 'saddle' ),
 					esc_html( $error_handler )
 				)
 			);
@@ -206,7 +206,7 @@ final class McpAdapter {
 				'invalid_observability_handler',
 				sprintf(
 				/* translators: %s: observability handler class name */
-					esc_html__( 'Observability handler class "%s" does not exist.', 'mcp-adapter' ),
+					esc_html__( 'Observability handler class "%s" does not exist.', 'saddle' ),
 					esc_html( $observability_handler )
 				)
 			);
@@ -217,7 +217,7 @@ final class McpAdapter {
 				'invalid_observability_handler',
 				sprintf(
 				/* translators: %s: observability handler class name */
-					esc_html__( 'Observability handler class "%s" must implement the McpObservabilityHandlerInterface interface.', 'mcp-adapter' ),
+					esc_html__( 'Observability handler class "%s" must implement the McpObservabilityHandlerInterface interface.', 'saddle' ),
 					esc_html( $observability_handler )
 				)
 			);
@@ -226,13 +226,13 @@ final class McpAdapter {
 		if ( ! doing_action( 'mcp_adapter_init' ) ) {
 			_doing_it_wrong(
 				__FUNCTION__,
-				esc_html__( 'MCP Servers must be created during the "mcp_adapter_init" action. Hook into "mcp_adapter_init" to register your server.', 'mcp-adapter' ),
+				esc_html__( 'MCP Servers must be created during the "mcp_adapter_init" action. Hook into "mcp_adapter_init" to register your server.', 'saddle' ),
 				'0.1.0'
 			);
 
 			return new WP_Error(
 				'invalid_timing',
-				esc_html__( 'MCP Server creation must be done during mcp_adapter_init action.', 'mcp-adapter' )
+				esc_html__( 'MCP Server creation must be done during mcp_adapter_init action.', 'saddle' )
 			);
 		}
 
@@ -241,7 +241,7 @@ final class McpAdapter {
 				__FUNCTION__,
 				sprintf(
 				// translators: %s: server ID
-					esc_html__( 'Server with ID "%s" already exists. Each server must have a unique ID.', 'mcp-adapter' ),
+					esc_html__( 'Server with ID "%s" already exists. Each server must have a unique ID.', 'saddle' ),
 					esc_html( $server_id )
 				),
 				'0.1.0'
@@ -250,7 +250,7 @@ final class McpAdapter {
 			return new WP_Error(
 				'duplicate_server_id',
 				// translators: %s: server ID.
-				sprintf( esc_html__( 'Server with ID "%s" already exists.', 'mcp-adapter' ), esc_html( $server_id ) )
+				sprintf( esc_html__( 'Server with ID "%s" already exists.', 'saddle' ), esc_html( $server_id ) )
 			);
 		}
 
@@ -276,7 +276,7 @@ final class McpAdapter {
 				'server_creation_failed',
 				sprintf(
 					/* translators: 1: server ID, 2: error message */
-					esc_html__( 'Failed to create server "%1$s": %2$s', 'mcp-adapter' ),
+					esc_html__( 'Failed to create server "%1$s": %2$s', 'saddle' ),
 					esc_html( $server_id ),
 					esc_html( $e->getMessage() )
 				)

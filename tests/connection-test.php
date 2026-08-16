@@ -134,6 +134,179 @@ class Saddle_Connection_Test extends WP_UnitTestCase {
 		$this->assertFalse( Saddle_Connection::rest_auth_probe()->get_data()['received'] );
 	}
 
+	public function test_auth_probe_reports_which_credentials_arrived() {
+		$_SERVER['HTTP_X_WP_NONCE']            = 'whatever';
+		$_SERVER['HTTP_X_SADDLE_PROBE']        = '1';
+		$_REQUEST['_wpnonce']                  = 'whatever';
+		$_COOKIE['wordpress_logged_in_abc123'] = 'value';
+
+		$data = Saddle_Connection::rest_auth_probe()->get_data();
+
+		$this->assertTrue( $data['nonce_header'] );
+		$this->assertTrue( $data['nonce_query'] );
+		$this->assertTrue( $data['cookie'] );
+		$this->assertTrue( $data['custom_header'] );
+
+		unset( $_SERVER['HTTP_X_WP_NONCE'], $_SERVER['HTTP_X_SADDLE_PROBE'], $_REQUEST['_wpnonce'], $_COOKIE['wordpress_logged_in_abc123'] );
+
+		$data = Saddle_Connection::rest_auth_probe()->get_data();
+
+		$this->assertFalse( $data['nonce_header'] );
+		$this->assertFalse( $data['nonce_query'] );
+		$this->assertFalse( $data['cookie'] );
+		$this->assertFalse( $data['custom_header'] );
+	}
+
+	/**
+	 * The probe is a public route. Its whole safety argument is that it reports
+	 * booleans about the caller's own request and nothing else, so pin the exact
+	 * key set — a new key must be a deliberate decision, not a slip.
+	 */
+	public function test_auth_probe_returns_only_the_documented_booleans() {
+		$data = Saddle_Connection::rest_auth_probe()->get_data();
+
+		$this->assertSame(
+			array( 'received', 'nonce_header', 'nonce_query', 'cookie', 'identified', 'custom_header' ),
+			array_keys( $data )
+		);
+
+		foreach ( $data as $key => $value ) {
+			$this->assertIsBool( $value, "Probe key '{$key}' must be a boolean." );
+		}
+	}
+
+	public function test_auth_probe_never_echoes_a_credential_or_a_user() {
+		$user = self::factory()->user->create( array( 'role' => 'administrator' ) );
+		wp_set_current_user( $user );
+
+		$nonce                                 = wp_create_nonce( 'wp_rest' );
+		$_SERVER['HTTP_X_WP_NONCE']            = $nonce;
+		$_REQUEST['_wpnonce']                  = $nonce;
+		$_COOKIE['wordpress_logged_in_abc123'] = 'secret-cookie-value';
+
+		$json = wp_json_encode( Saddle_Connection::rest_auth_probe()->get_data() );
+
+		$this->assertStringNotContainsString( $nonce, $json );
+		$this->assertStringNotContainsString( 'secret-cookie-value', $json );
+		$this->assertStringNotContainsString( (string) $user, $json );
+		$this->assertStringNotContainsString( get_userdata( $user )->user_login, $json );
+
+		unset( $_SERVER['HTTP_X_WP_NONCE'], $_REQUEST['_wpnonce'], $_COOKIE['wordpress_logged_in_abc123'] );
+		wp_set_current_user( 0 );
+	}
+
+	/* -------- self-check: telling the two stripped headers apart -------- */
+
+	/**
+	 * Point the loopback probe at a canned response.
+	 *
+	 * Also forces Application Passwords "available": the test site is plain HTTP,
+	 * where core turns them off, and `app_passwords_off` outranks everything else
+	 * in the status ladder — so without this every status assertion would read
+	 * that instead of the thing under test.
+	 *
+	 * @param array $body    What the probe endpoint "returns".
+	 * @param array $capture Filled with the request args, by reference.
+	 * @return callable Cleanup — call it to unhook everything this added.
+	 */
+	private function fake_loopback( array $body, &$capture = null ) {
+		$http = function ( $pre, $args ) use ( $body, &$capture ) {
+			$capture = $args;
+			return array(
+				'body'     => wp_json_encode( $body ),
+				'response' => array( 'code' => 200 ),
+			);
+		};
+		add_filter( 'pre_http_request', $http, 10, 2 );
+		add_filter( 'wp_is_application_passwords_available', '__return_true' );
+
+		return function () use ( $http ) {
+			remove_filter( 'pre_http_request', $http, 10 );
+			remove_filter( 'wp_is_application_passwords_available', '__return_true' );
+		};
+	}
+
+	public function test_self_check_reports_a_stripped_nonce_header() {
+		$args   = null;
+		$restore = $this->fake_loopback(
+			array(
+				'received'     => true,
+				'nonce_header' => false,
+			),
+			$args
+		);
+
+		$report = Saddle_Connection::self_check();
+
+		$this->assertSame( 'ok', $report['auth_header'] );
+		$this->assertSame( 'stripped', $report['nonce_header'] );
+		$this->assertSame( 'nonce_header_stripped', $report['status'] );
+
+		// The loopback has to actually send the header it is asking about.
+		$this->assertSame( 'saddle-probe', $args['headers']['X-WP-Nonce'] );
+
+		$restore();
+	}
+
+	/**
+	 * A stripped Authorization header breaks every external app; a stripped nonce
+	 * only costs this dashboard a workaround it already applies. The louder
+	 * problem must win, or the fixable one hides behind the cosmetic one.
+	 */
+	public function test_self_check_prefers_the_authorization_problem() {
+		$restore = $this->fake_loopback(
+			array(
+				'received'     => false,
+				'nonce_header' => false,
+			)
+		);
+
+		$report = Saddle_Connection::self_check();
+
+		$this->assertSame( 'stripped', $report['auth_header'] );
+		$this->assertSame( 'stripped', $report['nonce_header'] );
+		$this->assertSame( 'auth_header_stripped', $report['status'] );
+
+		$restore();
+	}
+
+	/**
+	 * There is no .htaccess rule that fixes a stripped nonce — the standard rule
+	 * forwards Authorization only, and an edge-level strip is upstream of Apache
+	 * anyway. Offering a button that cannot work would be worse than saying so.
+	 */
+	public function test_stripped_nonce_alone_offers_no_htaccess_fix() {
+		$_SERVER['SERVER_SOFTWARE'] = 'Apache/2.4';
+		$restore                    = $this->fake_loopback(
+			array(
+				'received'     => true,
+				'nonce_header' => false,
+			)
+		);
+
+		$report = Saddle_Connection::self_check();
+
+		$this->assertSame( 'nonce_header_stripped', $report['status'] );
+		$this->assertFalse( $report['htaccess_fixable'] );
+
+		$restore();
+	}
+
+	/**
+	 * Older responses (a cached probe, a site mid-upgrade) have no nonce key.
+	 * That must read as "don't know", never as "stripped".
+	 */
+	public function test_self_check_treats_a_missing_nonce_key_as_unknown() {
+		$restore = $this->fake_loopback( array( 'received' => true ) );
+
+		$report = Saddle_Connection::self_check();
+
+		$this->assertSame( 'unknown', $report['nonce_header'] );
+		$this->assertSame( 'ok', $report['status'] );
+
+		$restore();
+	}
+
 	/* -------- legible 401s: revoked key vs stripped header (#36) -------- */
 
 	public function test_request_carried_credentials_true_from_php_auth_user() {

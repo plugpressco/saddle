@@ -27,6 +27,9 @@ $saddle_options = array(
 	'saddle_memory_core_budget',      // Saddle_Memory::OPTION_CORE_BUDGET.
 	'saddle_preview_secret',          // Saddle_Preview::OPTION.
 	'saddle_unsplash_access_key',     // Saddle_Unsplash::OPTION.
+	'saddle_oauth_enabled',           // Saddle_OAuth::ENABLED_OPTION.
+	'saddle_oauth_dcr_enabled',       // Saddle_OAuth_Clients::DCR_OPTION.
+	'saddle_oauth_cimd_enabled',      // Saddle_OAuth_Clients::CIMD_OPTION.
 );
 foreach ( $saddle_options as $saddle_option ) {
 	delete_option( $saddle_option );
@@ -56,7 +59,7 @@ if ( class_exists( 'Saddle_Connection' ) ) {
 do {
 	$saddle_posts = get_posts(
 		array(
-			'post_type'      => array( 'saddle_approval', 'saddle_log', 'saddle_skill', 'saddle_memory' ),
+			'post_type'      => array( 'saddle_approval', 'saddle_log', 'saddle_skill', 'saddle_memory', 'saddle_oauth' ),
 			'post_status'    => 'any',
 			'posts_per_page' => 200, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page -- Fixed-size delete batch; the do/while drains the rest.
 			'fields'         => 'ids',

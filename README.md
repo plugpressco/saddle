@@ -1,4 +1,4 @@
-# Saddle – Control WordPress with AI (MCP Server)
+# Saddle – Control Your Site with AI (MCP Server)
 
 **A safe, self-hosted MCP server for WordPress.** Turn your own site into a [Model Context Protocol](https://modelcontextprotocol.io) server so AI agents like Claude can work with your content — under access levels you set, with no third-party credential custody.
 
