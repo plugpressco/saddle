@@ -64,4 +64,29 @@ class Saddle_Log_Test extends WP_UnitTestCase {
 	public function cap_at_five() {
 		return 5;
 	}
+
+	/**
+	 * Denials and executed mutations are capped as separate buckets, so a
+	 * flood of denial noise can never evict real change history.
+	 */
+	public function test_gc_caps_denials_and_mutations_independently() {
+		add_filter( 'saddle_log_max_entries', array( $this, 'cap_at_five' ) );
+		add_filter( 'saddle_log_max_denials', array( $this, 'cap_at_three' ) );
+
+		for ( $i = 0; $i < 9; $i++ ) {
+			Saddle_Log::record( array( 'action' => "mutation-{$i}", 'summary' => "mutation {$i}" ) );
+			Saddle_Log::record( array( 'action' => "denied-{$i}", 'summary' => "denial {$i}", 'type' => 'denied' ) );
+		}
+		Saddle_Log::gc();
+
+		remove_filter( 'saddle_log_max_entries', array( $this, 'cap_at_five' ) );
+		remove_filter( 'saddle_log_max_denials', array( $this, 'cap_at_three' ) );
+
+		$this->assertSame( 5, Saddle_Log::query( 100, 1, 'executed' )['total'], 'Executed history must keep its own cap.' );
+		$this->assertSame( 3, Saddle_Log::query( 100, 1, 'denied' )['total'], 'Denials must be trimmed to their own, smaller cap.' );
+	}
+
+	public function cap_at_three() {
+		return 3;
+	}
 }

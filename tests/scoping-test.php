@@ -166,6 +166,57 @@ class Saddle_Scoping_Test extends WP_UnitTestCase {
 		$this->assertSame( 200, $res->get_status() );
 	}
 
+	/* -------- the immutable issued marker -------- */
+
+	/**
+	 * The scope must key on the stored UUID marker, not the display name —
+	 * renaming the key in wp-admin → Application Passwords must not silently
+	 * hand it full wp/v2 access.
+	 */
+	public function test_renamed_saddle_credential_stays_scoped() {
+		$created = WP_Application_Passwords::create_new_application_password(
+			$this->admin,
+			array( 'name' => 'Saddle: Claude Code' )
+		);
+		$this->assertNotWPError( $created );
+		$uuid = $created[1]['uuid'];
+
+		// Issued the way create_client issues: marker recorded at creation.
+		Saddle_Connection::mark_issued( $this->admin, $uuid );
+
+		// The owner renames the key — the prefix is gone.
+		WP_Application_Passwords::update_application_password( $this->admin, $uuid, array( 'name' => 'my api key' ) );
+
+		$user = wp_authenticate_application_password( null, $this->login, $created[0] );
+		$this->assertInstanceOf( 'WP_User', $user );
+		wp_set_current_user( $user->ID );
+
+		$res = rest_do_request( new WP_REST_Request( 'GET', '/wp/v2/posts' ) );
+		$this->assertSame( 403, $res->get_status(), 'A renamed Saddle key must stay confined to the MCP endpoint.' );
+		$this->assertSame( 'saddle_credential_scope', $res->as_error()->get_error_code() );
+	}
+
+	/**
+	 * Keys issued before the marker existed are recognized by their name
+	 * prefix and migrate into the marker on first sight.
+	 */
+	public function test_legacy_prefix_key_migrates_into_the_marker() {
+		$created = WP_Application_Passwords::create_new_application_password(
+			$this->admin,
+			array( 'name' => 'Saddle: Legacy Key' )
+		);
+		$this->assertNotWPError( $created );
+		$uuid = $created[1]['uuid'];
+
+		$this->assertEmpty( get_user_meta( $this->admin, Saddle_Connection::ISSUED_META, true ), 'A legacy key starts unmarked.' );
+		$this->assertTrue( Saddle_Connection::is_saddle_issued( $this->admin, $uuid ) );
+		$this->assertContains(
+			$uuid,
+			(array) get_user_meta( $this->admin, Saddle_Connection::ISSUED_META, true ),
+			'Prefix recognition must migrate the key into the marker so a later rename cannot un-scope it.'
+		);
+	}
+
 	/* -------- XML-RPC surface -------- */
 
 	public function test_saddle_credential_is_refused_over_xmlrpc() {

@@ -245,6 +245,25 @@ class Saddle_Approval_Test extends WP_UnitTestCase {
 		$this->assertSame( 'saddle_gate_misconfigured', $result->get_error_code() );
 	}
 
+	/**
+	 * With several agents on one site (separate users / app passwords), a
+	 * token previewed by one user must never be confirmable by another.
+	 */
+	public function test_token_bound_to_user_rejects_a_different_user() {
+		$issuer = self::factory()->user->create( array( 'role' => 'administrator' ) );
+		$other  = self::factory()->user->create( array( 'role' => 'administrator' ) );
+
+		wp_set_current_user( $issuer );
+		$token = Saddle_Approval::gate( $this->gate_args( $calls ) )['confirm_token'];
+
+		wp_set_current_user( $other );
+		$result = Saddle_Approval::gate( $this->gate_args( $calls, array( 'input' => array( 'confirm_token' => $token ) ) ) );
+
+		$this->assertWPError( $result );
+		$this->assertSame( 'saddle_token_user_mismatch', $result->get_error_code() );
+		$this->assertSame( 0, $calls, 'Another user must never confirm a token they did not preview.' );
+	}
+
 	/* -------- audit logging -------- */
 
 	/**

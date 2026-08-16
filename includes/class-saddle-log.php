@@ -228,14 +228,35 @@ class Saddle_Log {
 	/**
 	 * Trim the log to a bounded number of entries (keeps it from growing without
 	 * limit). Wired to the same hourly cron as the approval-token GC.
+	 *
+	 * Denials and executed mutations are capped SEPARATELY: they share one
+	 * CPT, and under a single cap a burst of denial noise (many tools × many
+	 * reasons) could evict the security-relevant "what did the agent actually
+	 * change" history.
 	 */
 	public static function gc() {
 		/**
-		 * Filter the maximum number of activity log entries to retain.
+		 * Filter the maximum number of executed-mutation log entries to retain.
 		 *
 		 * @param int $max Maximum entries. Default 1000.
 		 */
-		$max = (int) apply_filters( 'saddle_log_max_entries', 1000 );
+		self::trim( (int) apply_filters( 'saddle_log_max_entries', 1000 ), false );
+
+		/**
+		 * Filter the maximum number of denial log entries to retain.
+		 *
+		 * @param int $max Maximum denial entries. Default 300.
+		 */
+		self::trim( (int) apply_filters( 'saddle_log_max_denials', 300 ), true );
+	}
+
+	/**
+	 * Delete one bucket's entries beyond its cap, oldest first.
+	 *
+	 * @param int  $max    Entries to retain; below 1 the bucket is left alone.
+	 * @param bool $denied True to trim denial entries, false for executed ones.
+	 */
+	private static function trim( $max, $denied ) {
 		if ( $max < 1 ) {
 			return;
 		}
@@ -244,12 +265,31 @@ class Saddle_Log {
 			array(
 				'post_type'      => self::CPT,
 				'post_status'    => 'publish',
-				'posts_per_page' => 200, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page -- Bounded GC batch trimming a private log CPT to its cap.
+				'posts_per_page' => 500, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page -- Bounded GC batch trimming a private log CPT to its cap.
 				'offset'         => $max,
 				'orderby'        => 'date',
 				'order'          => 'DESC',
 				'fields'         => 'ids',
 				'no_found_rows'  => true,
+				'meta_query'     => $denied // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Bounded private CPT; the type filter is the point of the split caps.
+					? array(
+						array(
+							'key'   => '_saddle_type',
+							'value' => 'denied',
+						),
+					)
+					: array(
+						'relation' => 'OR',
+						array(
+							'key'     => '_saddle_type',
+							'compare' => 'NOT EXISTS',
+						),
+						array(
+							'key'     => '_saddle_type',
+							'value'   => 'denied',
+							'compare' => '!=',
+						),
+					),
 			)
 		);
 
