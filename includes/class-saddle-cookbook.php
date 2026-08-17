@@ -158,6 +158,23 @@ class Saddle_Cookbook {
 
 			/* --------------------------------------------------------------- divi */
 
+			// The flagship Pro recipe, and the longest prompt here on purpose.
+			// Everything in it is load-bearing: a named scenario so it can be
+			// run as a test on any site, the layout settings that are what make
+			// a landing page a landing page, the fallback when a module pack is
+			// absent, and the read-back at the end. The read-back is the part
+			// people skip and the part that matters — a build that reports
+			// success is not evidence, and these settings are invisible in the
+			// module tree.
+			array(
+				'group'  => 'divi',
+				'title'  => __( 'Build a true Divi landing page', 'saddle' ),
+				'prompt' => __( 'My site runs Divi. Build me a test landing page for Pet Shop and save it as a draft, do not publish it. Make it a true landing page: full width, no page title, no sidebar. Include: a hero band with the headline "Awesome Pet Shop", a short supporting line, and a call to action button in [#hex colour]; a three-column Services section for Hair Trim, Clean and Bath, and Feeding; and a closing call to action band. If Divi Torque Lite is installed use it, otherwise use core modules, and reuse my site\'s global colours where they fit. When you are done, give me the preview link and the editor link, read the full-width, hidden-title and no-sidebar settings back to confirm they stuck, and list every section you built so I can spot-check before I publish. After I publish, double-check those layout settings took effect on the live page.', 'saddle' ),
+				'tier'   => 'write',
+				'pro'    => true,
+				'expect' => __( 'A draft that is genuinely full width with no title and no sidebar, not just a page with the right modules on it. Replace [#hex colour] with your brand colour before you paste. It should hand back both links, repeat the three layout settings as saved, and list its sections.', 'saddle' ),
+				'uses'   => array( 'saddle/divi-set-page', 'saddle/divi-set-page-settings', 'saddle/get-preview-url' ),
+			),
 			array(
 				'group'  => 'divi',
 				'title'  => __( 'Build a Divi page properly', 'saddle' ),
