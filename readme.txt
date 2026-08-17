@@ -143,6 +143,8 @@ If you happen to have the separate MCP Adapter plugin active, Saddle notices and
 
 = 1.0.0 =
 * Initial public release.
+* Fixed: on sites that also run the separate MCP Adapter plugin, an app could finish connecting and then report that the site has no actions it can use. The piece that prevents that was missing from the plugin package, so the fix for it had never actually reached anyone. It now ships.
+* Connection details and health now reports what it knows on every site, not only on sites running the separate MCP Adapter plugin. It previously opened with "No app has connected yet" no matter what had happened, which made the request recorder underneath it look broken — and that recorder is the thing that shows whether a connected app's requests are arriving and what they got back.
 * The guidance an assistant reads when it connects is now one document with one set of headings, however many PlugPress plugins are adding to it. Previously each plugin appended in its own style — one added a heading two levels down, another a bare sentence with no heading at all — and it read like four notes stapled together.
 * Removed a second web address the plugin was serving without saying so. Saddle publishes one address for AI apps; a bundled library was quietly adding another with weaker checks around it. Nothing documented ever pointed at it, and your access levels and confirmations applied there too — but it should not have existed, and now it doesn't.
 * Permissions now tells you how many tools your connected apps are actually offered at the level you pick, how many are being held back, and that already-connected apps keep the old list until you refresh or reopen them.
