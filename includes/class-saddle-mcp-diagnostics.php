@@ -44,6 +44,29 @@ class Saddle_MCP_Diagnostics {
 	const TRACE_OPTION = 'saddle_mcp_trace';
 
 	/**
+	 * Whether the adapter path is running without Saddle_MCP_Compat.
+	 *
+	 * Set during transport setup and merged into the health record by
+	 * {@see self::record_health()}. It is request state, not stored state: the
+	 * next request re-derives it from whether the class loaded.
+	 *
+	 * @var bool
+	 */
+	private static $compat_missing = false;
+
+	/**
+	 * Note that the adapter is serving requests without its compatibility shim.
+	 *
+	 * This is a build fault, not a configuration one — the shim was excluded
+	 * from every zip for a month while the adapter path stayed reachable through
+	 * the official MCP Adapter plugin, and the only outward symptom was a client
+	 * connecting and then finding no callable tools (#111).
+	 */
+	public static function note_compat_missing() {
+		self::$compat_missing = true;
+	}
+
+	/**
 	 * Option holding the unix timestamp recording stops at.
 	 */
 	const RECORDING_OPTION = 'saddle_mcp_trace_until';
@@ -152,6 +175,14 @@ class Saddle_MCP_Diagnostics {
 	public static function record_health( array $facts ) {
 		$facts['recorded_at'] = time();
 		$facts['init_fired']  = did_action( 'init' ) > 0;
+
+		// Merged into every write rather than recorded on its own, because this
+		// option is replaced wholesale and the adapter writes it later in the
+		// request than the point where the shim's absence is discovered.
+		if ( self::$compat_missing ) {
+			$facts['compat_missing'] = true;
+			$facts['degraded']       = true;
+		}
 
 		$previous = get_option( self::HEALTH_OPTION );
 		if ( is_array( $previous ) ) {
