@@ -22,11 +22,12 @@ import {
 	Card,
 	CardContent,
 	HelpTip,
+	NativeSelect,
 	useConfirm,
 	toast,
 } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
-import { saddleData, api } from '../api';
+import { saddleData, api, LEVELS, tierUnlocks } from '../api';
 import ConnectionHealth from './ConnectionHealth';
 import McpDiagnostics from './McpDiagnostics';
 import SetupGuideDrawer from './SetupGuideDrawer';
@@ -60,12 +61,16 @@ const isStaleNeverUsed = ( c ) =>
 	c.created &&
 	Date.now() / 1000 - c.created > NEVER_USED_STALE_SECONDS;
 
+const levelTitle = ( key ) =>
+	( LEVELS.find( ( l ) => l.key === key ) || {} ).title || key;
+
 export default function Apps( {
 	clients,
 	loading,
 	onConnect,
 	onClientsChanged,
 	onClientRemoved,
+	siteTier,
 } ) {
 	const confirm = useConfirm();
 	const [ showAdvanced, setShowAdvanced ] = useState( false );
@@ -114,6 +119,44 @@ export default function Apps( {
 
 		api( `oauth-connections/${ c.id }`, { method: 'DELETE' } )
 			.then( refreshOauth )
+			.catch( ( e ) => {
+				toast.error( e.message );
+				refreshOauth();
+			} );
+	};
+
+	// Apps that sign in themselves are granted a level once, at the consent
+	// screen, and used to be stuck with it — an app that requests no scope
+	// (ChatGPT does not request one) landed on read and no screen anywhere could
+	// raise it. This is that screen.
+	const changeOauthLevel = ( c, level ) => {
+		if ( level === c.level ) {
+			return;
+		}
+
+		// Optimistic, then reconcile — the same pattern revoke uses above.
+		setOauthConnections( ( list ) =>
+			list.map( ( x ) => ( x.id === c.id ? { ...x, level } : x ) )
+		);
+
+		api( `oauth-connections/${ c.id }`, {
+			method: 'POST',
+			data: { level },
+		} )
+			.then( () => {
+				toast.success(
+					sprintf(
+						/* translators: 1: the app name, 2: its new access level. */
+						__(
+							'“%1$s” is now set to “%2$s”. Refresh or reopen the app to pick up its new tools — apps don’t notice on their own.',
+							'saddle'
+						),
+						c.name,
+						levelTitle( level )
+					)
+				);
+				refreshOauth();
+			} )
 			.catch( ( e ) => {
 				toast.error( e.message );
 				refreshOauth();
@@ -447,15 +490,56 @@ export default function Apps( {
 														{ c.name }
 													</>
 												}
-												description={ sprintf(
-													/* translators: 1: access level, 2: WordPress username. */
-													__(
-														'%1$s access, acting as %2$s',
-														'saddle'
-													),
-													c.level,
-													c.user_login
-												) }
+												description={
+													<>
+														<NativeSelect
+															value={ c.level }
+															aria-label={ sprintf(
+																/* translators: %s: the app name. */
+																__(
+																	'Access level for %s',
+																	'saddle'
+																),
+																c.name
+															) }
+															onChange={ ( e ) =>
+																changeOauthLevel(
+																	c,
+																	e.target
+																		.value
+																)
+															}
+														>
+															{ LEVELS.filter(
+																( l ) =>
+																	tierUnlocks(
+																		siteTier ||
+																			c.level,
+																		l.key
+																	)
+															).map( ( l ) => (
+																<option
+																	key={
+																		l.key
+																	}
+																	value={
+																		l.key
+																	}
+																>
+																	{ l.title }
+																</option>
+															) ) }
+														</NativeSelect>{ ' ' }
+														{ sprintf(
+															/* translators: %s: WordPress username. */
+															__(
+																'acting as %s',
+																'saddle'
+															),
+															c.user_login
+														) }
+													</>
+												}
 												actions={
 													<>
 														<Badge

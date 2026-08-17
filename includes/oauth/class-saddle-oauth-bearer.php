@@ -22,11 +22,30 @@ defined( 'ABSPATH' ) || exit;
 class Saddle_OAuth_Bearer {
 
 	/**
-	 * The grant backing the current request, once a token has resolved.
+	 * The ACCESS TOKEN record backing the current request, once one has resolved.
+	 *
+	 * Named for what it holds. It used to be called `$grant`, which was a lie
+	 * worth the rename: the grant and its tokens each carry their own copy of
+	 * `scope`, this is the token's, and reading it as though it were the grant's
+	 * is how a change to a connection's access level would appear to do nothing
+	 * for an hour. {@see Saddle_OAuth_Store::set_grant_scope()} rewrites both for
+	 * the same reason.
 	 *
 	 * @var array|null
 	 */
-	private static $grant = null;
+	private static $token_record = null;
+
+	/**
+	 * The scope currently on the grant behind that token.
+	 *
+	 * Read live on every request and applied as a second ceiling, so lowering a
+	 * connection's access level takes effect on the next call rather than
+	 * whenever its hour-long access token happens to expire. Raising still needs
+	 * the token record rewritten, which is the safe direction to be strict in.
+	 *
+	 * @var string
+	 */
+	private static $grant_scope = '';
 
 	/**
 	 * Why the current request's token failed, for the challenge to report.
@@ -113,7 +132,8 @@ class Saddle_OAuth_Bearer {
 			return $user_id;
 		}
 
-		self::$grant = $record;
+		self::$token_record = $record;
+		self::$grant_scope  = isset( $grant['scope'] ) ? (string) $grant['scope'] : '';
 		Saddle_OAuth_Store::touch_grant( (string) $record['grant_id'] );
 
 		// The ceiling. Every ability's permission_callback reads the tier
@@ -127,15 +147,27 @@ class Saddle_OAuth_Bearer {
 	/**
 	 * The tier ceiling implied by the current token's scope.
 	 *
+	 * The lower of the token's own scope and the scope on its grant right now.
+	 * They are normally the same string; they differ for the minutes or hours
+	 * after an administrator changes a connection's access level, and taking the
+	 * lower of the two is what makes *lowering* it immediate.
+	 *
 	 * @param string|null $ceiling Existing ceiling, if another filter set one.
 	 * @return string|null
 	 */
 	public static function tier_ceiling( $ceiling ) {
-		if ( null === self::$grant ) {
+		if ( null === self::$token_record ) {
 			return $ceiling;
 		}
 
-		$scoped = Saddle_OAuth::scope_to_tier( (string) self::$grant['scope'] );
+		$scoped = Saddle_OAuth::scope_to_tier( (string) self::$token_record['scope'] );
+
+		if ( '' !== self::$grant_scope ) {
+			$granted = Saddle_OAuth::scope_to_tier( self::$grant_scope );
+			if ( Saddle_Capabilities::rank( $granted ) < Saddle_Capabilities::rank( $scoped ) ) {
+				$scoped = $granted;
+			}
+		}
 
 		// Never raise an existing ceiling — a ceiling is a maximum, and two of
 		// them means the lower one applies.
@@ -164,7 +196,7 @@ class Saddle_OAuth_Bearer {
 	 * @return mixed
 	 */
 	public static function confine( $response, $handler, $request ) {
-		if ( null !== $response || null === self::$grant ) {
+		if ( null !== $response || null === self::$token_record ) {
 			return $response;
 		}
 
@@ -239,7 +271,12 @@ class Saddle_OAuth_Bearer {
 		}
 
 		$params['resource_metadata'] = Saddle_OAuth_Discovery::protected_resource_url();
-		$params['scope']             = Saddle_OAuth::DEFAULT_SCOPE;
+
+		// What this site would actually grant, not a constant. Naming the read
+		// scope here told every spec-following client to ask for read-only even
+		// on a site the owner had set to write or admin, and the answer to "why
+		// can't my connected app edit anything" started right here.
+		$params['scope'] = Saddle_OAuth::site_scope();
 
 		$parts = array();
 		foreach ( $params as $key => $value ) {

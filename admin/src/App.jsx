@@ -642,6 +642,7 @@ export default function App() {
 										onConnect={ openWizard }
 										onClientsChanged={ refreshClients }
 										onClientRemoved={ removeClient }
+										siteTier={ tier }
 									/>
 								) }
 								{ tab === 'integrations' && (

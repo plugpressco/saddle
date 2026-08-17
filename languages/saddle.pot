@@ -2,14 +2,14 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Saddle – Control Your Site with AI (MCP Server) 1.0.0-rc3\n"
+"Project-Id-Version: Saddle – Control Your Site with AI (MCP Server) 1.0.0-rc4\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/saddle\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-16T07:34:16+00:00\n"
+"POT-Creation-Date: 2026-08-16T19:02:59+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -1634,62 +1634,76 @@ msgstr ""
 msgid "This score covers only what the server can verify — persisted structure, attributes, and design rules. It is NOT a visual sign-off: a page can pass every server-side check and still look wrong. Open get-preview-url and judge the real pixels before calling the page done."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:403
+#: includes/admin/class-saddle-rest.php:417
 msgid "Sign-in with OAuth needs your site to be served over HTTPS — an access token sent over plain HTTP can be read in transit."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:404
+#: includes/admin/class-saddle-rest.php:418
 msgid "Sign-in with OAuth needs pretty permalinks. Go to Settings → Permalinks and choose any option other than Plain, then try again."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:470
+#: includes/admin/class-saddle-rest.php:484
+#: includes/admin/class-saddle-rest.php:514
+#: includes/admin/class-saddle-rest.php:536
 msgid "That connection no longer exists — it may already have been disconnected."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:542
+#. translators: %s: the site's current access level.
+#: includes/admin/class-saddle-rest.php:525
+#, php-format
+msgid "This site is set to “%s”, so a connected app cannot be given more than that. Raise the site's access level first."
+msgstr ""
+
+#. translators: 1: connected app name, 2: the access level it now has.
+#: includes/admin/class-saddle-rest.php:548
+#, php-format
+msgid "Changed %1$s to the “%2$s” access level"
+msgstr ""
+
+#: includes/admin/class-saddle-rest.php:640
 msgid "Unknown access tier."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:636
-#: includes/admin/class-saddle-rest.php:649
+#: includes/admin/class-saddle-rest.php:734
+#: includes/admin/class-saddle-rest.php:747
 msgid "No skill with that name."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:718
-#: includes/admin/class-saddle-rest.php:734
+#: includes/admin/class-saddle-rest.php:816
+#: includes/admin/class-saddle-rest.php:832
 msgid "No memory entry with that key."
 msgstr ""
 
 #. translators: %d: entries removed.
-#: includes/admin/class-saddle-rest.php:773
+#: includes/admin/class-saddle-rest.php:871
 #, php-format
 msgid "Owner cleared all agent-written memory (%d entries)."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:956
+#: includes/admin/class-saddle-rest.php:1054
 msgid "MCP Client"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:991
-#: includes/admin/class-saddle-rest.php:1099
-#: includes/admin/class-saddle-rest.php:1154
+#: includes/admin/class-saddle-rest.php:1089
+#: includes/admin/class-saddle-rest.php:1197
+#: includes/admin/class-saddle-rest.php:1252
 msgid "Application Passwords are not available on this site."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:995
+#: includes/admin/class-saddle-rest.php:1093
 msgid "Application Passwords are turned off on this site — often because it isn’t served over HTTPS, or a security plugin disabled them."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1000
+#: includes/admin/class-saddle-rest.php:1098
 msgid "AI app"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1108
-#: includes/admin/class-saddle-rest.php:1160
+#: includes/admin/class-saddle-rest.php:1206
+#: includes/admin/class-saddle-rest.php:1258
 msgid "No Saddle client with that ID."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1179
+#: includes/admin/class-saddle-rest.php:1277
 msgid "The old key was removed, but issuing its replacement failed. Connect the app again from the Connections screen."
 msgstr ""
 
@@ -2161,7 +2175,7 @@ msgid "# About this WordPress site"
 msgstr ""
 
 #: includes/class-saddle-context.php:80
-#: admin/src/connect-apps.js:180
+#: admin/src/connect-apps.js:185
 msgid "Name"
 msgstr ""
 
@@ -2170,7 +2184,7 @@ msgid "Tagline"
 msgstr ""
 
 #: includes/class-saddle-context.php:87
-#: admin/src/connect-apps.js:181
+#: admin/src/connect-apps.js:186
 msgid "Address"
 msgstr ""
 
@@ -2490,7 +2504,9 @@ msgid "Unsupported MCP protocol version \"%1$s\". This server speaks %2$s."
 msgstr ""
 
 #. translators: %s: JSON-RPC method name.
+#. translators: %s: method name
 #: includes/class-saddle-mcp.php:679
+#: includes/lib/wp-mcp/includes/Infrastructure/ErrorHandling/McpErrorFactory.php:117
 #, php-format
 msgid "Method not found: %s"
 msgstr ""
@@ -2508,7 +2524,9 @@ msgid "Invalid params: a Saddle tool name is required."
 msgstr ""
 
 #. translators: %s: tool name.
+#. translators: %s: tool name
 #: includes/class-saddle-mcp.php:928
+#: includes/lib/wp-mcp/includes/Infrastructure/ErrorHandling/McpErrorFactory.php:246
 #, php-format
 msgid "Tool not found: %s"
 msgstr ""
@@ -3086,6 +3104,741 @@ msgstr ""
 msgid "Unsplash · %s"
 msgstr ""
 
+#: includes/lib/wp-mcp/includes/Autoloader.php:75
+msgid "MCP Adapter: The Composer autoloader was not found. If you installed the plugin from the GitHub source code, make sure to run `composer install`."
+msgstr ""
+
+#. translators: %s: error handler class name
+#: includes/lib/wp-mcp/includes/Core/McpAdapter.php:181
+#, php-format
+msgid "Error handler class \"%s\" does not exist."
+msgstr ""
+
+#. translators: %s: error handler class name
+#: includes/lib/wp-mcp/includes/Core/McpAdapter.php:192
+#, php-format
+msgid "Error handler class \"%s\" must implement the McpErrorHandlerInterface."
+msgstr ""
+
+#. translators: %s: observability handler class name
+#: includes/lib/wp-mcp/includes/Core/McpAdapter.php:209
+#, php-format
+msgid "Observability handler class \"%s\" does not exist."
+msgstr ""
+
+#. translators: %s: observability handler class name
+#: includes/lib/wp-mcp/includes/Core/McpAdapter.php:220
+#, php-format
+msgid "Observability handler class \"%s\" must implement the McpObservabilityHandlerInterface interface."
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Core/McpAdapter.php:229
+msgid "MCP Servers must be created during the \"mcp_adapter_init\" action. Hook into \"mcp_adapter_init\" to register your server."
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Core/McpAdapter.php:235
+msgid "MCP Server creation must be done during mcp_adapter_init action."
+msgstr ""
+
+#. translators: %s: server ID
+#: includes/lib/wp-mcp/includes/Core/McpAdapter.php:244
+#, php-format
+msgid "Server with ID \"%s\" already exists. Each server must have a unique ID."
+msgstr ""
+
+#. translators: %s: server ID.
+#: includes/lib/wp-mcp/includes/Core/McpAdapter.php:253
+#, php-format
+msgid "Server with ID \"%s\" already exists."
+msgstr ""
+
+#. translators: 1: server ID, 2: error message
+#: includes/lib/wp-mcp/includes/Core/McpAdapter.php:279
+#, php-format
+msgid "Failed to create server \"%1$s\": %2$s"
+msgstr ""
+
+#. translators: %s: Transport class name
+#: includes/lib/wp-mcp/includes/Core/McpTransportFactory.php:53
+#, php-format
+msgid "Transport class \"%s\" does not exist. Make sure the class is properly autoloaded or included."
+msgstr ""
+
+#. translators: %s: Transport class name
+#: includes/lib/wp-mcp/includes/Core/McpTransportFactory.php:72
+#, php-format
+msgid "Transport class \"%s\" must implement McpTransportInterface. Check your transport implementation."
+msgstr ""
+
+#. translators: %s: error message
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPrompt.php:197
+#, php-format
+msgid "Failed to create Prompt DTO: %s"
+msgstr ""
+
+#. translators: %s: comma-separated list of validation errors
+#. translators: %s: list of validation errors
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:42
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:84
+#, php-format
+msgid "Prompt validation failed: %s"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:63
+msgid "Prompt name must be 1-128 characters and contain only [A-Za-z0-9_.-]"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:118
+msgid "Prompt name is required and must be 1-128 characters and contain only [A-Za-z0-9_.-]"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:123
+msgid "Prompt title must be a string if provided"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:127
+msgid "Prompt description must be a string if provided"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:153
+msgid "Prompt arguments must be an array if provided"
+msgstr ""
+
+#. translators: %d: argument index
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:161
+#, php-format
+msgid "Prompt argument at index %d must be an object"
+msgstr ""
+
+#. translators: %d: argument index
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:171
+#, php-format
+msgid "Prompt argument at index %d must have a non-empty name string"
+msgstr ""
+
+#. translators: %s: argument name
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:181
+#, php-format
+msgid "Prompt argument '%s' name must only contain letters, numbers, hyphens (-), underscores (_), and dots (.), and be 128 characters or less"
+msgstr ""
+
+#. translators: %s: argument name
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:190
+#, php-format
+msgid "Prompt argument '%s' description must be a string if provided"
+msgstr ""
+
+#. translators: %s: argument name
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:202
+#, php-format
+msgid "Prompt argument '%s' required field must be a boolean if provided"
+msgstr ""
+
+#. translators: %d: message index
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:224
+#, php-format
+msgid "Message at index %d must be an object"
+msgstr ""
+
+#. translators: %d: message index
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:234
+#, php-format
+msgid "Message at index %d must have a role field"
+msgstr ""
+
+#. translators: %d: message index
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:244
+#, php-format
+msgid "Message at index %d role must be either 'user' or 'assistant'"
+msgstr ""
+
+#. translators: %d: message index
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:253
+#, php-format
+msgid "Message at index %d must have a content object"
+msgstr ""
+
+#. translators: 1: icon index, 2: error message
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:286
+#: includes/lib/wp-mcp/includes/Domain/Resources/McpResourceValidator.php:191
+#: includes/lib/wp-mcp/includes/Domain/Tools/McpToolValidator.php:380
+#, php-format
+msgid "Icon at index %1$d: %2$s"
+msgstr ""
+
+#. translators: %d: message index
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:313
+#, php-format
+msgid "Message %d content must have a type field"
+msgstr ""
+
+#. translators: %d: message index
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:326
+#, php-format
+msgid "Message %d text content must have a text field"
+msgstr ""
+
+#. translators: %d: message index
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:336
+#, php-format
+msgid "Message %d image content must have a data field with base64-encoded image"
+msgstr ""
+
+#. translators: %d: message index
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:342
+#, php-format
+msgid "Message %d image content data must be valid base64"
+msgstr ""
+
+#. translators: %d: message index
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:350
+#, php-format
+msgid "Message %d image content must have a mimeType field"
+msgstr ""
+
+#. translators: %d: message index
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:356
+#, php-format
+msgid "Message %d image content must have a valid image MIME type"
+msgstr ""
+
+#. translators: %d: message index
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:366
+#, php-format
+msgid "Message %d audio content must have a data field with base64-encoded audio"
+msgstr ""
+
+#. translators: %d: message index
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:372
+#, php-format
+msgid "Message %d audio content data must be valid base64"
+msgstr ""
+
+#. translators: %d: message index
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:380
+#, php-format
+msgid "Message %d audio content must have a mimeType field"
+msgstr ""
+
+#. translators: %d: message index
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:386
+#, php-format
+msgid "Message %d audio content must have a valid audio MIME type"
+msgstr ""
+
+#. translators: %d: message index
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:397
+#, php-format
+msgid "Message %d resource_link content must have a name field"
+msgstr ""
+
+#. translators: %d: message index
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:405
+#, php-format
+msgid "Message %d resource_link content must have a uri field"
+msgstr ""
+
+#. translators: %d: message index
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:411
+#, php-format
+msgid "Message %d resource_link content uri must be a valid URI format"
+msgstr ""
+
+#. translators: %d: message index
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:420
+#, php-format
+msgid "Message %d resource_link content mimeType must be a string if provided"
+msgstr ""
+
+#. translators: %d: message index
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:426
+#, php-format
+msgid "Message %d resource_link content mimeType must be a valid MIME type format"
+msgstr ""
+
+#. translators: %d: message index
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:435
+#, php-format
+msgid "Message %d resource_link content size must be an integer if provided"
+msgstr ""
+
+#. translators: %d: message index
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:443
+#, php-format
+msgid "Message %d resource_link content title must be a string if provided"
+msgstr ""
+
+#. translators: %d: message index
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:451
+#, php-format
+msgid "Message %d resource_link content description must be a string if provided"
+msgstr ""
+
+#. translators: %d: message index
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:460
+#, php-format
+msgid "Message %d resource_link content icons must be an array if provided"
+msgstr ""
+
+#. translators: %d: message index
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:475
+#, php-format
+msgid "Message %d resource content must have a resource object"
+msgstr ""
+
+#. translators: %1$d: message index, %2$s: resource error
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:484
+#, php-format
+msgid "Message %1$d embedded resource: %2$s"
+msgstr ""
+
+#. translators: %1$d: message index, %2$s: content type
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:495
+#, php-format
+msgid "Message %1$d content type '%2$s' is not supported. Must be 'text', 'image', 'audio', 'resource', or 'resource_link'"
+msgstr ""
+
+#. translators: %d: message index
+#: includes/lib/wp-mcp/includes/Domain/Prompts/McpPromptValidator.php:507
+#, php-format
+msgid "Message %d content annotations must be an array if provided"
+msgstr ""
+
+#. translators: 1: argument index, 2: ability name
+#: includes/lib/wp-mcp/includes/Domain/Prompts/RegisterAbilityAsMcpPrompt.php:318
+#, php-format
+msgid "Argument at index %1$d must be an array for ability \"%2$s\"."
+msgstr ""
+
+#. translators: 1: argument index, 2: ability name
+#: includes/lib/wp-mcp/includes/Domain/Prompts/RegisterAbilityAsMcpPrompt.php:331
+#, php-format
+msgid "Argument at index %1$d is missing required \"name\" field for ability \"%2$s\"."
+msgstr ""
+
+#. translators: %s: invalid prompt name returned by filter
+#: includes/lib/wp-mcp/includes/Domain/Prompts/RegisterAbilityAsMcpPrompt.php:470
+#, php-format
+msgid "Filter returned invalid MCP prompt name: %s"
+msgstr ""
+
+#. translators: %s: error message
+#: includes/lib/wp-mcp/includes/Domain/Prompts/RegisterAbilityAsMcpPrompt.php:507
+#, php-format
+msgid "Failed to create Prompt DTO for ability %1$s: %2$s"
+msgstr ""
+
+#. translators: %s: error message
+#: includes/lib/wp-mcp/includes/Domain/Resources/McpResource.php:190
+#, php-format
+msgid "Failed to create Resource DTO: %s"
+msgstr ""
+
+#. translators: %s: comma-separated list of validation errors
+#. translators: %s: list of validation errors
+#: includes/lib/wp-mcp/includes/Domain/Resources/McpResourceValidator.php:41
+#: includes/lib/wp-mcp/includes/Domain/Resources/McpResourceValidator.php:92
+#, php-format
+msgid "Resource validation failed: %s"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Resources/McpResourceValidator.php:62
+msgid "Resource URI must be a valid URI string"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Resources/McpResourceValidator.php:68
+msgid "Resource MIME type is invalid"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Resources/McpResourceValidator.php:134
+msgid "Resource URI is required and must be a non-empty string"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Resources/McpResourceValidator.php:136
+msgid "Resource URI must be a valid URI format"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Resources/McpResourceValidator.php:148
+msgid "Resource contents must include at least one of: text (string) or blob (base64 string)"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Resources/McpResourceValidator.php:152
+msgid "Resource text content must be a string when provided"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Resources/McpResourceValidator.php:156
+msgid "Resource blob content must be a string when provided"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Resources/McpResourceValidator.php:161
+msgid "Resource blob content must be valid base64-encoded data"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Resources/McpResourceValidator.php:167
+msgid "Resource mimeType must be a string if provided"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Resources/McpResourceValidator.php:169
+msgid "Resource mimeType must be a valid MIME type format"
+msgstr ""
+
+#. translators: 1: ability name, 2: validation errors
+#: includes/lib/wp-mcp/includes/Domain/Resources/RegisterAbilityAsMcpResource.php:187
+#, php-format
+msgid "Invalid annotations for resource ability \"%1$s\" will be dropped: %2$s"
+msgstr ""
+
+#. translators: %s: ability name
+#: includes/lib/wp-mcp/includes/Domain/Resources/RegisterAbilityAsMcpResource.php:241
+#, php-format
+msgid "Resource URI not found in ability meta for '%s'. URI must be provided at 'mcp.uri'."
+msgstr ""
+
+#. translators: 1: ability name, 2: invalid URI
+#: includes/lib/wp-mcp/includes/Domain/Resources/RegisterAbilityAsMcpResource.php:255
+#, php-format
+msgid "Invalid resource URI '%2$s' for ability '%1$s'. URI must be RFC 3986 compliant with a scheme."
+msgstr ""
+
+#. translators: %s: invalid URI returned by filter
+#: includes/lib/wp-mcp/includes/Domain/Resources/RegisterAbilityAsMcpResource.php:278
+#, php-format
+msgid "Filter returned invalid MCP resource URI: %s"
+msgstr ""
+
+#. translators: 1: deprecated meta key, 2: new meta key path
+#: includes/lib/wp-mcp/includes/Domain/Resources/RegisterAbilityAsMcpResource.php:320
+#, php-format
+msgid "Ability meta key \"%1$s\" is deprecated. Use \"mcp.%1$s\" instead."
+msgstr ""
+
+#. translators: %s: error message
+#: includes/lib/wp-mcp/includes/Domain/Resources/RegisterAbilityAsMcpResource.php:457
+#, php-format
+msgid "Failed to create Resource DTO for ability %1$s: %2$s"
+msgstr ""
+
+#. translators: %s: error message
+#: includes/lib/wp-mcp/includes/Domain/Tools/McpTool.php:183
+#, php-format
+msgid "Failed to create Tool DTO: %s"
+msgstr ""
+
+#. translators: %s: comma-separated list of validation errors
+#. translators: %s: list of validation errors
+#: includes/lib/wp-mcp/includes/Domain/Tools/McpToolValidator.php:54
+#: includes/lib/wp-mcp/includes/Domain/Tools/McpToolValidator.php:140
+#, php-format
+msgid "Tool validation failed: %s"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Tools/McpToolValidator.php:87
+msgid "Tool name must be 1-128 characters and contain only [A-Za-z0-9_.-]"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Tools/McpToolValidator.php:162
+msgid "Tool name is required and must only contain letters, numbers, hyphens (-), underscores (_), and dots (.), and be 128 characters or less"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Tools/McpToolValidator.php:167
+msgid "Tool description must be a string if provided"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Tools/McpToolValidator.php:178
+msgid "Tool title must be a string if provided"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Tools/McpToolValidator.php:208
+msgid "Tool annotations must be an array if provided"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Tools/McpToolValidator.php:220
+msgid "Tool _meta must be an object/array if provided"
+msgstr ""
+
+#. translators: %s: field name (inputSchema or outputSchema)
+#: includes/lib/wp-mcp/includes/Domain/Tools/McpToolValidator.php:245
+#, php-format
+msgid "Tool %s must be a valid JSON schema object"
+msgstr ""
+
+#. translators: %s: field name
+#: includes/lib/wp-mcp/includes/Domain/Tools/McpToolValidator.php:257
+#, php-format
+msgid "Tool %s must specify a root type of 'object'"
+msgstr ""
+
+#. translators: %s: field name
+#: includes/lib/wp-mcp/includes/Domain/Tools/McpToolValidator.php:263
+#, php-format
+msgid "Tool %s root type must be 'object'"
+msgstr ""
+
+#. translators: %s: field name
+#: includes/lib/wp-mcp/includes/Domain/Tools/McpToolValidator.php:272
+#, php-format
+msgid "Tool %s properties must be an object/array"
+msgstr ""
+
+#. translators: %s: field name
+#: includes/lib/wp-mcp/includes/Domain/Tools/McpToolValidator.php:281
+#, php-format
+msgid "Tool %s required field must be an array"
+msgstr ""
+
+#. translators: %1$s: field name, %2$s: property name
+#: includes/lib/wp-mcp/includes/Domain/Tools/McpToolValidator.php:297
+#, php-format
+msgid "Tool %1$s property '%2$s' must be an object"
+msgstr ""
+
+#. translators: %1$s: field name, %2$s: property name
+#: includes/lib/wp-mcp/includes/Domain/Tools/McpToolValidator.php:312
+#, php-format
+msgid "Tool %1$s property '%2$s' type must be a string or array of strings (union type)"
+msgstr ""
+
+#. translators: %s: field name
+#: includes/lib/wp-mcp/includes/Domain/Tools/McpToolValidator.php:325
+#, php-format
+msgid "Tool %s required field names must be strings"
+msgstr ""
+
+#. translators: %1$s: field name, %2$s: required field
+#: includes/lib/wp-mcp/includes/Domain/Tools/McpToolValidator.php:338
+#, php-format
+msgid "Tool %1$s required field '%2$s' does not exist in properties"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Tools/McpToolValidator.php:357
+msgid "Tool icons must be an array if provided"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Tools/McpToolValidator.php:403
+msgid "Tool execution must be an object/array if provided"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Tools/McpToolValidator.php:411
+msgid "Tool execution taskSupport must be a string"
+msgstr ""
+
+#. translators: %s: comma-separated list of valid values
+#: includes/lib/wp-mcp/includes/Domain/Tools/McpToolValidator.php:415
+#, php-format
+msgid "Tool execution taskSupport must be one of: %s"
+msgstr ""
+
+#. translators: %s: annotation field name
+#: includes/lib/wp-mcp/includes/Domain/Tools/McpToolValidator.php:450
+#, php-format
+msgid "Tool annotation field %s must be a boolean"
+msgstr ""
+
+#. translators: %s: annotation field name
+#: includes/lib/wp-mcp/includes/Domain/Tools/McpToolValidator.php:460
+#, php-format
+msgid "Tool annotation field %s must be a string"
+msgstr ""
+
+#. translators: %s: annotation field name
+#: includes/lib/wp-mcp/includes/Domain/Tools/McpToolValidator.php:468
+#, php-format
+msgid "Tool annotation field %s must be a non-empty string"
+msgstr ""
+
+#. translators: %s: error message
+#: includes/lib/wp-mcp/includes/Domain/Tools/RegisterAbilityAsMcpTool.php:75
+#, php-format
+msgid "Failed to create Tool DTO for ability %1$s: %2$s"
+msgstr ""
+
+#. translators: %s: invalid tool name returned by filter
+#: includes/lib/wp-mcp/includes/Domain/Tools/RegisterAbilityAsMcpTool.php:233
+#, php-format
+msgid "Filter returned invalid MCP tool name: %s"
+msgstr ""
+
+#. translators: %s: original ability name
+#: includes/lib/wp-mcp/includes/Domain/Utils/McpNameSanitizer.php:106
+#, php-format
+msgid "Unable to derive valid MCP name from: %s"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Utils/McpValidator.php:142
+msgid "Icon must be an array"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Utils/McpValidator.php:196
+msgid "Icon must have a src field"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Utils/McpValidator.php:198
+msgid "Icon src must be a string"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Utils/McpValidator.php:200
+msgid "Icon src must be a valid URL (http/https) or data: URI"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Utils/McpValidator.php:206
+msgid "Icon mimeType must be a string"
+msgstr ""
+
+#. translators: %s: comma-separated list of allowed MIME types
+#: includes/lib/wp-mcp/includes/Domain/Utils/McpValidator.php:210
+#, php-format
+msgid "Icon mimeType must be one of: %s"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Utils/McpValidator.php:219
+msgid "Icon sizes must be an array"
+msgstr ""
+
+#. translators: %d: array index
+#: includes/lib/wp-mcp/includes/Domain/Utils/McpValidator.php:225
+#, php-format
+msgid "Icon size at index %d must be a string"
+msgstr ""
+
+#. translators: 1: size value, 2: array index
+#: includes/lib/wp-mcp/includes/Domain/Utils/McpValidator.php:231
+#, php-format
+msgid "Icon size \"%1$s\" at index %2$d must be in WxH format (e.g., \"48x48\") or \"any\""
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Utils/McpValidator.php:243
+msgid "Icon theme must be a string"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Utils/McpValidator.php:245
+msgid "Icon theme must be \"light\" or \"dark\""
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Utils/McpValidator.php:369
+msgid "Annotation field audience must be an array"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Utils/McpValidator.php:373
+msgid "Annotation field audience must contain only valid roles (\"user\" or \"assistant\")"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Utils/McpValidator.php:379
+msgid "Annotation field lastModified must be a non-empty string"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Utils/McpValidator.php:383
+msgid "Annotation field lastModified must be a valid ISO 8601 timestamp"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Utils/McpValidator.php:389
+msgid "Annotation field priority must be a number"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Domain/Utils/McpValidator.php:393
+msgid "Annotation field priority must be between 0.0 and 1.0"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Handlers/Tools/ToolsHandler.php:150
+#: includes/lib/wp-mcp/includes/Infrastructure/ErrorHandling/McpErrorFactory.php:321
+msgid "Permission denied"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Infrastructure/ErrorHandling/McpErrorFactory.php:56
+msgid "Parse error"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Infrastructure/ErrorHandling/McpErrorFactory.php:132
+msgid "Invalid params"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Infrastructure/ErrorHandling/McpErrorFactory.php:149
+msgid "Internal error"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Infrastructure/ErrorHandling/McpErrorFactory.php:168
+msgid "MCP functionality is currently disabled"
+msgstr ""
+
+#. translators: %s: validation details
+#: includes/lib/wp-mcp/includes/Infrastructure/ErrorHandling/McpErrorFactory.php:186
+#, php-format
+msgid "Validation error: %s"
+msgstr ""
+
+#. translators: %s: parameter name
+#: includes/lib/wp-mcp/includes/Infrastructure/ErrorHandling/McpErrorFactory.php:206
+#, php-format
+msgid "Missing required parameter: %s"
+msgstr ""
+
+#. translators: %s: resource identifier
+#: includes/lib/wp-mcp/includes/Infrastructure/ErrorHandling/McpErrorFactory.php:226
+#, php-format
+msgid "Resource not found: %s"
+msgstr ""
+
+#. translators: %s: ability name
+#: includes/lib/wp-mcp/includes/Infrastructure/ErrorHandling/McpErrorFactory.php:266
+#, php-format
+msgid "Ability not found: %s"
+msgstr ""
+
+#. translators: %s: prompt name
+#: includes/lib/wp-mcp/includes/Infrastructure/ErrorHandling/McpErrorFactory.php:286
+#, php-format
+msgid "Prompt not found: %s"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Infrastructure/ErrorHandling/McpErrorFactory.php:304
+msgid "Session not found"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Infrastructure/ErrorHandling/McpErrorFactory.php:338
+msgid "Unauthorized"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Infrastructure/ErrorHandling/McpErrorFactory.php:433
+msgid "Message must be a JSON object"
+msgstr ""
+
+#. translators: %s: JSON-RPC version
+#: includes/lib/wp-mcp/includes/Infrastructure/ErrorHandling/McpErrorFactory.php:442
+#, php-format
+msgid "jsonrpc version must be \"%s\""
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Infrastructure/ErrorHandling/McpErrorFactory.php:453
+msgid "Message must have either method or result/error field"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Infrastructure/ErrorHandling/McpErrorFactory.php:458
+msgid "Response messages must have an id field"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Infrastructure/ErrorHandling/McpErrorFactory.php:473
+msgid "Invalid Request"
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Plugin.php:76
+msgid "Abilities API not available (wp_register_ability function not found)"
+msgstr ""
+
+#. translators: %s: Class name.
+#: includes/lib/wp-mcp/includes/Plugin.php:99
+#, php-format
+msgid "The %s class should not be cloned."
+msgstr ""
+
+#. translators: %s: Class name.
+#: includes/lib/wp-mcp/includes/Plugin.php:114
+#, php-format
+msgid "De-serializing instances of %s is not allowed."
+msgstr ""
+
+#: includes/lib/wp-mcp/includes/Transport/Infrastructure/RequestRouter.php:334
+msgid "Failed to create session"
+msgstr ""
+
 #. translators: 1: text color, 2: background color, 3: contrast ratio.
 #: includes/lint/rules/class-rule-button-contrast.php:59
 #, php-format
@@ -3214,7 +3967,7 @@ msgstr ""
 msgid "Give sibling buttons the same alignment (or put them in one row container that owns the alignment)."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-bearer.php:178
+#: includes/oauth/class-saddle-oauth-bearer.php:210
 msgid "This app signed in through Saddle and can only reach Saddle’s tools — the rest of the WordPress API is off limits to it by design."
 msgstr ""
 
@@ -3278,79 +4031,109 @@ msgid "Authorization requests are only good for a few minutes. Start the connect
 msgstr ""
 
 #. translators: 1: connecting app name, 2: site name.
-#: includes/oauth/class-saddle-oauth-consent.php:102
+#: includes/oauth/class-saddle-oauth-consent.php:100
 #, php-format
 msgid "Connect %1$s to %2$s?"
 msgstr ""
 
 #. translators: %s: URL the app's identity document was fetched from.
-#: includes/oauth/class-saddle-oauth-consent.php:116
+#: includes/oauth/class-saddle-oauth-consent.php:114
 #, php-format
 msgid "This app identified itself at %s, and Saddle confirmed that address vouches for it."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-consent.php:120
+#: includes/oauth/class-saddle-oauth-consent.php:118
 msgid "This app registered itself with your site. Saddle could not verify who it is — only connect it if you started this yourself, just now."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-consent.php:124
-msgid "What it will be able to do"
-msgstr ""
-
 #. translators: %s: the site's current access level.
-#: includes/oauth/class-saddle-oauth-consent.php:138
+#: includes/oauth/class-saddle-oauth-consent.php:131
 #, php-format
 msgid "This site is set to “%s”, so the app will only get that much no matter what it asked for."
 msgstr ""
 
-#. translators: %s: WordPress user display name.
+#: includes/oauth/class-saddle-oauth-consent.php:146
+msgid "What it will be able to do"
+msgstr ""
+
 #: includes/oauth/class-saddle-oauth-consent.php:147
+msgid "You choose. This is the most this app will ever be able to do, and you can change it later from Saddle → Connections."
+msgstr ""
+
+#. translators: %s: WordPress user display name.
+#: includes/oauth/class-saddle-oauth-consent.php:164
 #, php-format
 msgid "It will act as %s, and can never do more than that account is allowed to."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-consent.php:152
+#: includes/oauth/class-saddle-oauth-consent.php:169
 msgid "Deletions and overwrites will still show you a preview and ask for confirmation every time. You can disconnect this app at any point from Saddle → Connections."
 msgstr ""
 
 #. translators: %s: redirect address.
-#: includes/oauth/class-saddle-oauth-consent.php:157
+#: includes/oauth/class-saddle-oauth-consent.php:174
 #, php-format
 msgid "When you decide, you will be sent back to %s"
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-consent.php:167
+#: includes/oauth/class-saddle-oauth-consent.php:180
 msgid "Allow"
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-consent.php:168
+#: includes/oauth/class-saddle-oauth-consent.php:181
 msgid "Deny"
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-consent.php:186
+#: includes/oauth/class-saddle-oauth-consent.php:203
+msgid "Just reading"
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-consent.php:204
+msgid "Reads posts, pages, media, and site information. Changes nothing."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-consent.php:207
+msgid "Reading & writing"
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-consent.php:208
+msgid "Also creates and edits posts, pages, and media. Every deletion previews and asks first."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-consent.php:211
+msgid "Managing the site"
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-consent.php:212
+msgid "Also manages settings, plugins, and themes. Overwrites and deletions ask first."
+msgstr ""
+
+#: includes/oauth/class-saddle-oauth-consent.php:237
 msgid "You do not have permission to connect apps to this site."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-consent.php:191
+#: includes/oauth/class-saddle-oauth-consent.php:242
 msgid "This authorization request has expired or was already answered. Start the connection again from the app."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-consent.php:197
+#: includes/oauth/class-saddle-oauth-consent.php:248
 msgid "Declined to connect an app"
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-consent.php:202
+#: includes/oauth/class-saddle-oauth-consent.php:253
 msgid "The site owner declined the connection."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-consent.php:215
-#: includes/oauth/class-saddle-oauth-endpoints.php:301
-#: includes/oauth/class-saddle-oauth.php:337
+#: includes/oauth/class-saddle-oauth-consent.php:284
+#: includes/oauth/class-saddle-oauth-endpoints.php:319
+#: includes/oauth/class-saddle-oauth.php:397
 msgid "Could not generate a secure token on this server."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-consent.php:244
-msgid "Connected an app with OAuth"
+#. translators: %s: the access level granted (read, write, or admin).
+#: includes/oauth/class-saddle-oauth-consent.php:318
+#, php-format
+msgid "Connected an app with OAuth at the “%s” level"
 msgstr ""
 
 #: includes/oauth/class-saddle-oauth-endpoints.php:92
@@ -3373,63 +4156,63 @@ msgstr ""
 msgid "The requested resource is not served by this site."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:195
+#: includes/oauth/class-saddle-oauth-endpoints.php:213
 msgid "This server issues tokens for the authorization code and refresh token grants only."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:209
+#: includes/oauth/class-saddle-oauth-endpoints.php:227
 msgid "No authorization code was supplied."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:216
+#: includes/oauth/class-saddle-oauth-endpoints.php:234
 msgid "That authorization code is invalid, expired, or has already been used."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:221
+#: includes/oauth/class-saddle-oauth-endpoints.php:239
 msgid "That authorization code was issued to a different app."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:226
+#: includes/oauth/class-saddle-oauth-endpoints.php:244
 msgid "The redirect address does not match the one used to authorize."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:231
+#: includes/oauth/class-saddle-oauth-endpoints.php:249
 msgid "The PKCE code verifier does not match the challenge sent when authorizing."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:236
+#: includes/oauth/class-saddle-oauth-endpoints.php:254
 msgid "The requested resource does not match the one authorized."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:251
+#: includes/oauth/class-saddle-oauth-endpoints.php:269
 msgid "No refresh token was supplied."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:256
+#: includes/oauth/class-saddle-oauth-endpoints.php:274
 msgid "That refresh token is invalid, expired, or has already been used."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:261
+#: includes/oauth/class-saddle-oauth-endpoints.php:279
 msgid "That connection has been revoked. The app needs to be authorized again."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:266
+#: includes/oauth/class-saddle-oauth-endpoints.php:284
 msgid "That refresh token was issued to a different app."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:276
+#: includes/oauth/class-saddle-oauth-endpoints.php:294
 msgid "A refresh cannot ask for more access than was originally granted."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:294
+#: includes/oauth/class-saddle-oauth-endpoints.php:312
 msgid "That connection no longer exists."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:532
+#: includes/oauth/class-saddle-oauth-endpoints.php:550
 msgid "Nothing on your site has changed. You can close this window."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:533
+#: includes/oauth/class-saddle-oauth-endpoints.php:551
 msgid "Saddle did not authorize this app"
 msgstr ""
 
@@ -3437,15 +4220,15 @@ msgstr ""
 msgid "Could not store the OAuth record."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth.php:316
+#: includes/oauth/class-saddle-oauth.php:376
 msgid "Create and edit posts, pages, and media"
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth.php:318
+#: includes/oauth/class-saddle-oauth.php:378
 msgid "Manage site settings, plugins, and themes"
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth.php:321
+#: includes/oauth/class-saddle-oauth.php:381
 msgid "Read posts, pages, media, and site information"
 msgstr ""
 
@@ -3515,7 +4298,7 @@ msgid "Dashboard"
 msgstr ""
 
 #: admin/src/App.jsx:68
-#: admin/src/components/Permissions.jsx:195
+#: admin/src/components/Permissions.jsx:215
 msgid "Permissions"
 msgstr ""
 
@@ -3741,167 +4524,179 @@ msgid "Check again"
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/src/components/ConnectedClients.jsx:94
-#: admin/src/components/ConnectedClients.jsx:159
+#: admin/src/components/ConnectedClients.jsx:99
+#: admin/src/components/ConnectedClients.jsx:202
 #, js-format
 msgid "Disconnect “%s”?"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:97
+#: admin/src/components/ConnectedClients.jsx:102
 msgid "It loses access the moment you confirm — no waiting for anything to expire. To use it again you’ll approve it once more."
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:102
-#: admin/src/components/ConnectedClients.jsx:167
-#: admin/src/components/ConnectedClients.jsx:400
-#: admin/src/components/ConnectedClients.jsx:485
+#: admin/src/components/ConnectedClients.jsx:107
+#: admin/src/components/ConnectedClients.jsx:210
+#: admin/src/components/ConnectedClients.jsx:443
+#: admin/src/components/ConnectedClients.jsx:569
 msgid "Disconnect"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:103
-#: admin/src/components/ConnectedClients.jsx:168
+#: admin/src/components/ConnectedClients.jsx:108
+#: admin/src/components/ConnectedClients.jsx:211
 msgid "Keep it connected"
 msgstr ""
 
+#. translators: 1: the app name, 2: its new access level.
+#: admin/src/components/ConnectedClients.jsx:150
+#, js-format
+msgid "“%1$s” is now set to “%2$s”. Refresh or reopen the app to pick up its new tools — apps don’t notice on their own."
+msgstr ""
+
 #. translators: %s: the app name.
-#: admin/src/components/ConnectedClients.jsx:127
+#: admin/src/components/ConnectedClients.jsx:170
 #, js-format
 msgid "Rotate “%s”’s key?"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:130
+#: admin/src/components/ConnectedClients.jsx:173
 msgid "The current key stops working the moment you confirm, and a fresh one is issued under the same name. You’ll paste the new setup into the app right after — until then it can’t connect."
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:135
-#: admin/src/components/ConnectedClients.jsx:388
+#: admin/src/components/ConnectedClients.jsx:178
+#: admin/src/components/ConnectedClients.jsx:431
 msgid "Rotate key"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:136
+#: admin/src/components/ConnectedClients.jsx:179
 msgid "Keep the current key"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:162
+#: admin/src/components/ConnectedClients.jsx:205
 msgid "Its sign-in key stops working the moment you confirm — the app loses access to this site immediately. This can’t be undone, but you can always connect the app again with a fresh key."
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:181
+#: admin/src/components/ConnectedClients.jsx:224
 msgid "Disconnected. That app’s sign-in no longer works."
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:259
+#: admin/src/components/ConnectedClients.jsx:302
 msgid "Every app here has its own sign-in you can take away at any moment, and they all follow the same rules you set on Permissions."
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:264
+#: admin/src/components/ConnectedClients.jsx:307
 #: admin/src/components/Dashboard.jsx:126
 #: admin/src/components/Dashboard.jsx:213
 msgid "Connected apps"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:267
+#: admin/src/components/ConnectedClients.jsx:310
 msgid "Apps you’ve let talk to this site."
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:273
-#: admin/src/components/ConnectedClients.jsx:294
+#: admin/src/components/ConnectedClients.jsx:316
+#: admin/src/components/ConnectedClients.jsx:337
 #: admin/src/components/Dashboard.jsx:201
 msgid "Connect an app"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:287
+#: admin/src/components/ConnectedClients.jsx:330
 msgid "Nothing connected yet"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:288
+#: admin/src/components/ConnectedClients.jsx:331
 msgid "Connect Claude, Cursor, or another AI app — it takes about a minute."
 msgstr ""
 
 #. translators: %s: date and time.
-#: admin/src/components/ConnectedClients.jsx:335
+#: admin/src/components/ConnectedClients.jsx:378
 #, js-format
 msgid "Last active %s"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:341
+#: admin/src/components/ConnectedClients.jsx:384
 msgid "Hasn’t connected yet — it will on first use"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:346
+#: admin/src/components/ConnectedClients.jsx:389
 msgid "never connected — safe to disconnect"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:355
+#: admin/src/components/ConnectedClients.jsx:398
 msgid "key"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:377
+#: admin/src/components/ConnectedClients.jsx:420
 msgid "Setup guide"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:416
+#: admin/src/components/ConnectedClients.jsx:459
 msgid "These connected through the sign-in screen instead of a pasted key — ChatGPT works this way. Disconnecting one takes effect immediately."
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:421
+#: admin/src/components/ConnectedClients.jsx:464
 msgid "Signed in themselves"
 msgstr ""
 
-#. translators: 1: access level, 2: WordPress username.
-#: admin/src/components/ConnectedClients.jsx:452
+#. translators: %s: the app name.
+#: admin/src/components/ConnectedClients.jsx:499
 #, js-format
-msgid "%1$s access, acting as %2$s"
+msgid "Access level for %s"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:469
+#. translators: %s: WordPress username.
+#: admin/src/components/ConnectedClients.jsx:535
+#, js-format
+msgid "acting as %s"
+msgstr ""
+
+#: admin/src/components/ConnectedClients.jsx:553
 msgid "Verified"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:473
+#: admin/src/components/ConnectedClients.jsx:557
 msgid "Unverified"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:508
+#: admin/src/components/ConnectedClients.jsx:592
 msgid "Manage these keys in WordPress"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:514
+#: admin/src/components/ConnectedClients.jsx:598
 msgid "These keys also appear under Users → Profile → Application Passwords — the same keys, and either place works for revoking."
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:529
+#: admin/src/components/ConnectedClients.jsx:613
 msgid "Connection details & health"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:537
+#: admin/src/components/ConnectedClients.jsx:621
 msgid "Your site’s address for AI apps"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:551
+#: admin/src/components/ConnectedClients.jsx:635
 msgid "Test the endpoint"
 msgstr ""
 
 #. translators: 1: tool count, 2: milliseconds.
-#: admin/src/components/ConnectedClients.jsx:558
+#: admin/src/components/ConnectedClients.jsx:642
 #, js-format
 msgid "%1$d tools · %2$dms"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:565
+#: admin/src/components/ConnectedClients.jsx:649
 msgid "Responding"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:576
+#: admin/src/components/ConnectedClients.jsx:660
 #: admin/src/components/Settings.jsx:297
 msgid "Transport"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:579
+#: admin/src/components/ConnectedClients.jsx:663
 msgid "Saddle is using the MCP Adapter plugin, which is active on this site. Your tools, access levels and approvals are unchanged — this only affects how requests are carried."
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:583
+#: admin/src/components/ConnectedClients.jsx:667
 msgid "Saddle speaks MCP itself, so there is nothing else to install. If you ever add the separate MCP Adapter plugin, Saddle will use it automatically; your tools, access levels and approvals stay the same either way."
 msgstr ""
 
@@ -3993,7 +4788,7 @@ msgstr ""
 #: admin/src/components/Guidance.jsx:172
 #: admin/src/components/Memory.jsx:88
 #: admin/src/components/Memory.jsx:108
-#: admin/src/components/Permissions.jsx:434
+#: admin/src/components/Permissions.jsx:483
 #: admin/src/components/UnsplashKeyCard.jsx:71
 #: admin/src/components/UnsplashKeyCard.jsx:137
 msgid "Cancel"
@@ -4327,7 +5122,7 @@ msgstr ""
 #: admin/src/components/Guidance.jsx:171
 #: admin/src/components/Guidance.jsx:388
 #: admin/src/components/Memory.jsx:234
-#: admin/src/components/Permissions.jsx:30
+#: admin/src/components/Permissions.jsx:31
 msgid "Delete"
 msgstr ""
 
@@ -4777,66 +5572,74 @@ msgstr ""
 msgid "Continue — connect an app"
 msgstr ""
 
-#: admin/src/components/Permissions.jsx:28
+#: admin/src/components/Permissions.jsx:29
 msgid "Read"
 msgstr ""
 
-#: admin/src/components/Permissions.jsx:29
+#: admin/src/components/Permissions.jsx:30
 msgid "Create & edit"
 msgstr ""
 
-#: admin/src/components/Permissions.jsx:38
+#: admin/src/components/Permissions.jsx:39
 msgid "Other"
 msgstr ""
 
-#: admin/src/components/Permissions.jsx:139
+#: admin/src/components/Permissions.jsx:159
 msgid "Saved."
 msgstr ""
 
-#: admin/src/components/Permissions.jsx:143
+#: admin/src/components/Permissions.jsx:163
 msgid "Some changes could not be saved — they’re still marked below."
 msgstr ""
 
-#: admin/src/components/Permissions.jsx:176
+#: admin/src/components/Permissions.jsx:196
 msgid "This also lets your AI manage plugins, themes, and site settings. Overwrites and deletions always ask you first."
 msgstr ""
 
-#: admin/src/components/Permissions.jsx:181
+#: admin/src/components/Permissions.jsx:201
 msgid "This lets your AI create and edit content. Deleting will always ask you first."
 msgstr ""
 
-#: admin/src/components/Permissions.jsx:186
+#: admin/src/components/Permissions.jsx:206
 msgid "Your AI will only be able to read. It won’t be able to make any changes."
 msgstr ""
 
-#: admin/src/components/Permissions.jsx:196
+#: admin/src/components/Permissions.jsx:216
 msgid "Pick how much your connected apps are allowed to do. You can change this whenever you like."
 msgstr ""
 
-#: admin/src/components/Permissions.jsx:203
+#: admin/src/components/Permissions.jsx:223
 msgid "What your AI can do"
 msgstr ""
 
+#. translators: 1: comma-separated app names, 2: the level each app is stuck at, 3: the site's level.
+#: admin/src/components/Permissions.jsx:238
+#, js-format
+msgid "%1$s is connected at “%2$s”, so it is not offered the tools this “%3$s” level unlocks. Change it on the Connect tab — apps that sign in themselves keep the level they were approved with."
+msgid_plural "%1$s are connected at “%2$s” or lower, so they are not offered the tools this “%3$s” level unlocks. Change them on the Connect tab — apps that sign in themselves keep the level they were approved with."
+msgstr[0] ""
+msgstr[1] ""
+
 #. translators: %d: number of tools active at the chosen level.
-#: admin/src/components/Permissions.jsx:220
+#: admin/src/components/Permissions.jsx:265
 #, js-format
 msgid "See everything it can do (%d tool)"
 msgid_plural "See everything it can do (%d tools)"
 msgstr[0] ""
 msgstr[1] ""
 
-#: admin/src/components/Permissions.jsx:230
+#: admin/src/components/Permissions.jsx:275
 msgid "Click any tool below to turn it off individually — that stays off no matter which level above is chosen."
 msgstr ""
 
 #. translators: 1: tools offered, 2: tools installed in total.
-#: admin/src/components/Permissions.jsx:239
+#: admin/src/components/Permissions.jsx:284
 #, js-format
 msgid "Connected apps are offered %1$d of the %2$d tools installed here."
 msgstr ""
 
 #. translators: %d: number of tools above the chosen level.
-#: admin/src/components/Permissions.jsx:250
+#: admin/src/components/Permissions.jsx:295
 #, js-format
 msgid "%d needs a higher level, and is not shown to them at all — they cannot ask for it, so tell them if you want it used."
 msgid_plural "%d need a higher level, and are not shown to them at all — they cannot ask for those, so tell them if you want any used."
@@ -4844,55 +5647,55 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of individually switched-off tools.
-#: admin/src/components/Permissions.jsx:262
+#: admin/src/components/Permissions.jsx:307
 #, js-format
 msgid "%d more is switched off below."
 msgid_plural "%d more are switched off below."
 msgstr[0] ""
 msgstr[1] ""
 
-#: admin/src/components/Permissions.jsx:277
+#: admin/src/components/Permissions.jsx:322
 msgid "Filter tools…"
 msgstr ""
 
-#: admin/src/components/Permissions.jsx:278
+#: admin/src/components/Permissions.jsx:323
 msgid "Filter tools by name"
 msgstr ""
 
-#: admin/src/components/Permissions.jsx:302
+#: admin/src/components/Permissions.jsx:347
 msgid "on"
 msgstr ""
 
-#: admin/src/components/Permissions.jsx:303
-#: admin/src/components/Permissions.jsx:370
+#: admin/src/components/Permissions.jsx:348
+#: admin/src/components/Permissions.jsx:415
 msgid "off"
 msgstr ""
 
-#: admin/src/components/Permissions.jsx:312
+#: admin/src/components/Permissions.jsx:357
 msgid "No matches"
 msgstr ""
 
-#: admin/src/components/Permissions.jsx:378
+#: admin/src/components/Permissions.jsx:423
 msgid "asks first"
 msgstr ""
 
 #. translators: %d: number of individually-toggled tools.
-#: admin/src/components/Permissions.jsx:408
+#: admin/src/components/Permissions.jsx:453
 #, js-format
 msgid "%d tool changed."
 msgid_plural "%d tools changed."
 msgstr[0] ""
 msgstr[1] ""
 
-#: admin/src/components/Permissions.jsx:422
-msgid "Already-connected apps keep the old tool list until they reconnect."
+#: admin/src/components/Permissions.jsx:471
+msgid "Already-connected apps keep the old tool list until you refresh or reopen them."
 msgstr ""
 
-#: admin/src/components/Permissions.jsx:431
+#: admin/src/components/Permissions.jsx:480
 msgid "Not saved yet."
 msgstr ""
 
-#: admin/src/components/Permissions.jsx:433
+#: admin/src/components/Permissions.jsx:482
 msgid "Save"
 msgstr ""
 
@@ -5155,104 +5958,104 @@ msgstr ""
 msgid "In ChatGPT on the web: turn on Developer mode (Settings → Apps & Connectors → Advanced settings), then create a connector. Paste the address, choose OAuth, and leave the client ID and secret blank. ChatGPT sends you here to approve it — the connector then works in the desktop app too."
 msgstr ""
 
-#: admin/src/connect-apps.js:54
-msgid "Enable the connector in a ChatGPT chat and ask it about your site."
+#: admin/src/connect-apps.js:59
+msgid "Enable the connector in a ChatGPT chat and ask it about your site. If it can read but refuses to change anything, check your ChatGPT plan — write-capable custom connectors have been limited to Business, Enterprise and Edu workspaces."
 msgstr ""
 
-#: admin/src/connect-apps.js:65
+#: admin/src/connect-apps.js:70
 msgid "Codex"
 msgstr ""
 
-#: admin/src/connect-apps.js:66
+#: admin/src/connect-apps.js:71
 msgid "In the ChatGPT app"
 msgstr ""
 
-#: admin/src/connect-apps.js:67
+#: admin/src/connect-apps.js:72
 msgid "Codex reads a settings file. Open ~/.codex/config.toml, paste this at the end, save, then restart the app. The codex terminal command reads the same file."
 msgstr ""
 
-#: admin/src/connect-apps.js:71
+#: admin/src/connect-apps.js:76
 msgid "Open Codex in the ChatGPT app and ask it about your site."
 msgstr ""
 
-#: admin/src/connect-apps.js:78
+#: admin/src/connect-apps.js:83
 msgid "Claude Code"
 msgstr ""
 
-#: admin/src/connect-apps.js:79
-#: admin/src/connect-apps.js:102
+#: admin/src/connect-apps.js:84
+#: admin/src/connect-apps.js:107
 msgid "Terminal"
 msgstr ""
 
-#: admin/src/connect-apps.js:80
-#: admin/src/connect-apps.js:103
+#: admin/src/connect-apps.js:85
+#: admin/src/connect-apps.js:108
 msgid "Paste this into your terminal and press Enter. That’s the whole setup."
 msgstr ""
 
-#: admin/src/connect-apps.js:84
+#: admin/src/connect-apps.js:89
 msgid "Run claude in any folder and ask it about your site."
 msgstr ""
 
-#: admin/src/connect-apps.js:91
+#: admin/src/connect-apps.js:96
 msgid "Cursor"
 msgstr ""
 
-#: admin/src/connect-apps.js:92
+#: admin/src/connect-apps.js:97
 msgid "Code editor"
 msgstr ""
 
-#: admin/src/connect-apps.js:93
+#: admin/src/connect-apps.js:98
 msgid "In Cursor: Settings → MCP → Add new server. Paste this (or save it as .cursor/mcp.json)."
 msgstr ""
 
-#: admin/src/connect-apps.js:97
+#: admin/src/connect-apps.js:102
 msgid "Open Cursor’s chat and ask it about your site."
 msgstr ""
 
-#: admin/src/connect-apps.js:101
+#: admin/src/connect-apps.js:106
 msgid "Gemini CLI"
 msgstr ""
 
-#: admin/src/connect-apps.js:107
+#: admin/src/connect-apps.js:112
 msgid "Run gemini in any folder and ask it about your site."
 msgstr ""
 
-#: admin/src/connect-apps.js:114
+#: admin/src/connect-apps.js:119
 msgid "VS Code"
 msgstr ""
 
-#: admin/src/connect-apps.js:115
+#: admin/src/connect-apps.js:120
 msgid "Copilot (agent mode)"
 msgstr ""
 
-#: admin/src/connect-apps.js:116
+#: admin/src/connect-apps.js:121
 msgid "Save this as .vscode/mcp.json in your project, then start the server from the MCP: List Servers command."
 msgstr ""
 
-#: admin/src/connect-apps.js:120
+#: admin/src/connect-apps.js:125
 msgid "Open Copilot Chat in agent mode and ask it about your site."
 msgstr ""
 
-#: admin/src/connect-apps.js:127
+#: admin/src/connect-apps.js:132
 msgid "Any MCP app"
 msgstr ""
 
-#: admin/src/connect-apps.js:128
+#: admin/src/connect-apps.js:133
 msgid "Everything else"
 msgstr ""
 
-#: admin/src/connect-apps.js:129
+#: admin/src/connect-apps.js:134
 msgid "Most AI apps accept this standard setup — look for “Add MCP server” in their settings and paste it there."
 msgstr ""
 
-#: admin/src/connect-apps.js:133
+#: admin/src/connect-apps.js:138
 msgid "Open your app and ask it about your site."
 msgstr ""
 
-#: admin/src/connect-apps.js:182
+#: admin/src/connect-apps.js:187
 msgid "Authentication"
 msgstr ""
 
-#: admin/src/connect-apps.js:182
+#: admin/src/connect-apps.js:187
 msgid "OAuth (leave client ID and secret blank)"
 msgstr ""

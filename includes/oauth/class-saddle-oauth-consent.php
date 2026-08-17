@@ -91,8 +91,6 @@ class Saddle_OAuth_Consent {
 		$name     = '' !== (string) $pending['client_name']
 			? (string) $pending['client_name']
 			: (string) wp_parse_url( (string) $pending['redirect_uri'], PHP_URL_HOST );
-		$scopes   = preg_split( '/\s+/', trim( (string) $pending['scope'] ), -1, PREG_SPLIT_NO_EMPTY );
-		$scopes   = is_array( $scopes ) ? $scopes : array();
 
 		printf(
 			'<h1>%s</h1>',
@@ -121,17 +119,12 @@ class Saddle_OAuth_Consent {
 		}
 		echo '</p>';
 
-		echo '<h2>' . esc_html__( 'What it will be able to do', 'saddle' ) . '</h2><ul style="list-style:disc;margin-left:1.5em">';
-		foreach ( $scopes as $scope ) {
-			echo '<li>' . esc_html( Saddle_OAuth::describe_scope( $scope ) ) . '</li>';
-		}
-		echo '</ul>';
-
 		// The clamp, shown before the decision rather than discovered later as a
 		// string of refusals. The site tier always wins.
 		$site_tier  = Saddle_Capabilities::get_site_tier();
 		$asked_tier = Saddle_OAuth::scope_to_tier( (string) $pending['scope'] );
 		if ( Saddle_Capabilities::rank( $asked_tier ) > Saddle_Capabilities::rank( $site_tier ) ) {
+			$asked_tier = $site_tier;
 			echo '<p><strong>' . esc_html(
 				sprintf(
 					/* translators: %s: the site's current access level. */
@@ -140,6 +133,30 @@ class Saddle_OAuth_Consent {
 				)
 			) . '</strong></p>';
 		}
+
+		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
+		wp_nonce_field( self::ACTION . '_' . $request_id );
+		echo '<input type="hidden" name="action" value="' . esc_attr( self::ACTION ) . '">';
+		echo '<input type="hidden" name="saddle_req" value="' . esc_attr( $request_id ) . '">';
+
+		// The choice is the owner's, not the app's. Most apps ask for a level;
+		// some — ChatGPT among them — ask for nothing at all and used to be pinned
+		// to read forever as a result. Either way this screen decides, and it can
+		// never offer more than the site's own level.
+		echo '<h2>' . esc_html__( 'What it will be able to do', 'saddle' ) . '</h2>';
+		echo '<p>' . esc_html__( 'You choose. This is the most this app will ever be able to do, and you can change it later from Saddle → Connections.', 'saddle' ) . '</p>';
+
+		echo '<ul style="list-style:none;margin:0 0 1.5em">';
+		foreach ( self::level_choices( $site_tier ) as $tier => $choice ) {
+			printf(
+				'<li style="margin-bottom:.75em"><label><input type="radio" name="saddle_level" value="%1$s"%2$s> <strong>%3$s</strong><br><span style="margin-left:1.9em">%4$s</span></label></li>',
+				esc_attr( $tier ),
+				checked( $tier, $asked_tier, false ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- checked() returns its own fixed markup.
+				esc_html( $choice['title'] ),
+				esc_html( $choice['summary'] )
+			);
+		}
+		echo '</ul>';
 
 		echo '<p>' . esc_html(
 			sprintf(
@@ -159,10 +176,6 @@ class Saddle_OAuth_Consent {
 			)
 		) . '</p>';
 
-		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
-		wp_nonce_field( self::ACTION . '_' . $request_id );
-		echo '<input type="hidden" name="action" value="' . esc_attr( self::ACTION ) . '">';
-		echo '<input type="hidden" name="saddle_req" value="' . esc_attr( $request_id ) . '">';
 		echo '<p>';
 		echo '<button type="submit" name="decision" value="allow" class="button button-primary">' . esc_html__( 'Allow', 'saddle' ) . '</button> ';
 		echo '<button type="submit" name="decision" value="deny" class="button">' . esc_html__( 'Deny', 'saddle' ) . '</button>';
@@ -170,6 +183,44 @@ class Saddle_OAuth_Consent {
 		echo '</form>';
 
 		echo '</div>';
+	}
+
+	/**
+	 * The access levels this site can offer an app, most limited first.
+	 *
+	 * Capped at the site's own level, because the consent screen must not offer
+	 * something the tier system would then refuse — a choice that silently does
+	 * nothing is worse than no choice at all. The wording matches the Permissions
+	 * screen (`admin/src/api.js`) deliberately: the same three levels described
+	 * two different ways is how an owner ends up unsure which one they picked.
+	 *
+	 * @param string $site_tier The site's configured tier.
+	 * @return array<string,array{title:string,summary:string}>
+	 */
+	private static function level_choices( $site_tier ) {
+		$all = array(
+			'read'  => array(
+				'title'   => __( 'Just reading', 'saddle' ),
+				'summary' => __( 'Reads posts, pages, media, and site information. Changes nothing.', 'saddle' ),
+			),
+			'write' => array(
+				'title'   => __( 'Reading & writing', 'saddle' ),
+				'summary' => __( 'Also creates and edits posts, pages, and media. Every deletion previews and asks first.', 'saddle' ),
+			),
+			'admin' => array(
+				'title'   => __( 'Managing the site', 'saddle' ),
+				'summary' => __( 'Also manages settings, plugins, and themes. Overwrites and deletions ask first.', 'saddle' ),
+			),
+		);
+
+		$offered = array();
+		foreach ( $all as $tier => $choice ) {
+			if ( Saddle_Capabilities::rank( $tier ) <= Saddle_Capabilities::rank( $site_tier ) ) {
+				$offered[ $tier ] = $choice;
+			}
+		}
+
+		return $offered;
 	}
 
 	/**
@@ -204,6 +255,24 @@ class Saddle_OAuth_Consent {
 			);
 		}
 
+		// The level the owner picked, never trusted as it arrives. An unknown name
+		// falls back to what the client asked for, and anything above the site's
+		// own level is clamped down to it — the same ceiling that applies at call
+		// time, applied here so the grant can never encode a promise the tier
+		// system will refuse to keep.
+		$site_tier = Saddle_Capabilities::get_site_tier();
+		$level     = isset( $_POST['saddle_level'] ) ? sanitize_key( wp_unslash( (string) $_POST['saddle_level'] ) ) : '';
+
+		if ( ! in_array( $level, Saddle_Capabilities::tiers(), true ) ) {
+			$level = Saddle_OAuth::scope_to_tier( (string) $pending['scope'] );
+		}
+
+		if ( Saddle_Capabilities::rank( $level ) > Saddle_Capabilities::rank( $site_tier ) ) {
+			$level = $site_tier;
+		}
+
+		$scope = Saddle_OAuth::tier_to_scope( $level );
+
 		$grant_id = Saddle_OAuth::random_secret( 16 );
 		$code     = Saddle_OAuth::random_secret( 32 );
 
@@ -223,7 +292,7 @@ class Saddle_OAuth_Consent {
 				'client_id'   => (string) $pending['client_id'],
 				'client_name' => (string) $pending['client_name'],
 				'user_id'     => get_current_user_id(),
-				'scope'       => (string) $pending['scope'],
+				'scope'       => $scope,
 				'resource'    => (string) $pending['resource'],
 			)
 		);
@@ -234,14 +303,22 @@ class Saddle_OAuth_Consent {
 				'grant_id'       => $grant_id,
 				'client_id'      => (string) $pending['client_id'],
 				'redirect_uri'   => (string) $pending['redirect_uri'],
-				'scope'          => (string) $pending['scope'],
+				'scope'          => $scope,
 				'resource'       => (string) $pending['resource'],
 				'code_challenge' => (string) $pending['code_challenge'],
 				'user_id'        => get_current_user_id(),
 			)
 		);
 
-		self::log( $pending, 'oauth-authorized', __( 'Connected an app with OAuth', 'saddle' ) );
+		self::log(
+			$pending,
+			'oauth-authorized',
+			sprintf(
+				/* translators: %s: the access level granted (read, write, or admin). */
+				__( 'Connected an app with OAuth at the “%s” level', 'saddle' ),
+				$level
+			)
+		);
 
 		self::bounce_back( $pending, array( 'code' => $code ) );
 	}

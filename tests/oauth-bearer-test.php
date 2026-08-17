@@ -51,11 +51,14 @@ class Saddle_OAuth_Bearer_Test extends WP_UnitTestCase {
 
 		unset( $_SERVER['HTTP_AUTHORIZATION'], $_SERVER['REQUEST_URI'] );
 
-		// The resolver caches the grant for the request; reset it between
-		// scenarios so one test's token can't leak into the next.
-		$reset = new ReflectionProperty( 'Saddle_OAuth_Bearer', 'grant' );
-		$reset->setAccessible( true );
-		$reset->setValue( null, null );
+		// The resolver caches the token record and its grant's scope for the
+		// request; reset both between scenarios so one test's token can't leak
+		// into the next.
+		foreach ( array( 'token_record' => null, 'grant_scope' => '' ) as $property => $empty ) {
+			$reset = new ReflectionProperty( 'Saddle_OAuth_Bearer', $property );
+			$reset->setAccessible( true );
+			$reset->setValue( null, $empty );
+		}
 
 		parent::tear_down();
 	}
