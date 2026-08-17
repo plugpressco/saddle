@@ -2,14 +2,14 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Saddle – Control Your Site with AI (MCP Server) 1.0.0-rc4\n"
+"Project-Id-Version: Saddle – Control Your Site with AI (MCP Server) 1.0.0-rc5\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/saddle\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-16T19:02:59+00:00\n"
+"POT-Creation-Date: 2026-08-17T19:37:27+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -2519,19 +2519,19 @@ msgstr ""
 msgid "Saddle exposes tiered, approval-gated access to this site's posts, pages, and media. Call saddle/get-instructions for the current scope and safety rules before acting."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:918
+#: includes/class-saddle-mcp.php:943
 msgid "Invalid params: a Saddle tool name is required."
 msgstr ""
 
 #. translators: %s: tool name.
 #. translators: %s: tool name
-#: includes/class-saddle-mcp.php:928
+#: includes/class-saddle-mcp.php:953
 #: includes/lib/wp-mcp/includes/Infrastructure/ErrorHandling/McpErrorFactory.php:246
 #, php-format
 msgid "Tool not found: %s"
 msgstr ""
 
-#: includes/class-saddle-mcp.php:958
+#: includes/class-saddle-mcp.php:983
 msgid "None of Saddle’s site-wide gates (pause, access level, per-tool toggles) blocked this — the connected WordPress account likely lacks a capability this tool requires, or the specific item is protected. Do not retry the same call."
 msgstr ""
 
@@ -4255,7 +4255,7 @@ msgid "This persisted attribute does nothing — rewrite it on a path the block 
 msgstr ""
 
 #. translators: %s: minimum WordPress version.
-#: saddle.php:332
+#: saddle.php:345
 #, php-format
 msgid "Saddle requires WordPress %s or later (the core Abilities API). The MCP server is disabled until you upgrade."
 msgstr ""
@@ -5263,13 +5263,13 @@ msgid "If a connected app says it can’t see any tools, record its next attempt
 msgstr ""
 
 #: admin/src/components/McpDiagnostics.jsx:94
-msgid "No app has connected yet, so there’s nothing to report."
+msgid "No app has asked for the tool list yet. Requests are recorded below either way."
 msgstr ""
 
-#. translators: 1: number of tools available, 2: number expected.
+#. translators: 1: number of tools that loaded, 2: number installed.
 #: admin/src/components/McpDiagnostics.jsx:100
 #, js-format
-msgid "%1$d of %2$d tools are available to connected apps."
+msgid "%1$d of the %2$d tools installed here loaded correctly. How many an app is offered depends on its access level — the requests below show that number."
 msgstr ""
 
 #. translators: %s: comma-separated tool names.

@@ -92,13 +92,13 @@ export default function McpDiagnostics() {
 				<p className="saddle-mcp-diag__health">
 					{ health.registered === undefined
 						? __(
-								'No app has connected yet, so there’s nothing to report.',
+								'No app has asked for the tool list yet. Requests are recorded below either way.',
 								'saddle'
 						  )
 						: sprintf(
-								/* translators: 1: number of tools available, 2: number expected. */
+								/* translators: 1: number of tools that loaded, 2: number installed. */
 								__(
-									'%1$d of %2$d tools are available to connected apps.',
+									'%1$d of the %2$d tools installed here loaded correctly. How many an app is offered depends on its access level — the requests below show that number.',
 									'saddle'
 								),
 								health.registered,
