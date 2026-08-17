@@ -678,4 +678,45 @@ class Saddle_MCP_Transport_Test extends WP_UnitTestCase {
 
 		wp_set_current_user( 0 );
 	}
+
+	/**
+	 * The health record had one writer, on the adapter path — so on every zip
+	 * Saddle ships, none of which carry the vendored library, it was never
+	 * written and the Client traffic card opened with "No app has connected
+	 * yet" whatever had actually happened (#115). That sentence is the first
+	 * thing a customer reads on the one screen support points them at.
+	 */
+	public function test_a_tools_list_on_this_transport_writes_the_health_record() {
+		delete_option( Saddle_MCP_Diagnostics::HEALTH_OPTION );
+
+		$tools = $this->list_tools();
+		$this->assertNotEmpty( $tools, 'Precondition: this transport must offer tools.' );
+
+		$health = Saddle_MCP_Diagnostics::health();
+
+		$this->assertNotEmpty( $health, 'A tools/list must leave a health record on the built-in transport.' );
+		$this->assertSame( $health['expected'], $health['registered'], 'Nothing can fail to convert on this path.' );
+		$this->assertFalse( $health['degraded'], 'A server that listed tools is not degraded.' );
+	}
+
+	/**
+	 * The count is a property of the site, not of the caller. Reading it off
+	 * the tier-filtered payload would report a read-tier site as having lost
+	 * the tools it is merely not offering — turning the working guardrail into
+	 * a fault report on the support screen.
+	 */
+	public function test_the_health_count_is_not_narrowed_by_the_caller_tier() {
+		delete_option( Saddle_MCP_Diagnostics::HEALTH_OPTION );
+		$this->list_tools();
+		$installed = Saddle_MCP_Diagnostics::health()['registered'];
+
+		Saddle_Capabilities::set_tier( 'read' );
+		delete_option( Saddle_MCP_Diagnostics::HEALTH_OPTION );
+		$offered = count( $this->list_tools() );
+		$health  = Saddle_MCP_Diagnostics::health();
+
+		$this->assertLessThan( $installed, $offered, 'Precondition: the read tier must withhold something.' );
+		$this->assertSame( $installed, $health['registered'], 'The health count must not follow the tier filter.' );
+		$this->assertFalse( $health['degraded'], 'Withholding tools by tier is not degradation.' );
+	}
 }
