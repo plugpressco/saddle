@@ -291,8 +291,9 @@ module.exports = function ( grunt ) {
 				// predates the JSON-RPC transport being hardened as the one a
 				// .org install will ever have, and re-adding it would make the
 				// tester's transport differ from the shipped one in the exact
-				// subsystem we most need field evidence about. Left as its own
-				// decision (#113), deliberately not bundled into #111.
+				// subsystem we most need field evidence about. #112 acted on
+				// that comment; this reverts that half and leaves it as its own
+				// decision (#113). The shim half of #112 stands.
 				const files = grunt.config.get( 'copy.dist.files' );
 				files[ 0 ].src.push( 'includes/class-saddle-updater.php' );
 				grunt.config.set( 'copy.dist.files', files );
