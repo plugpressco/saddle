@@ -124,9 +124,13 @@ module.exports = function ( grunt ) {
 							// installs the official MCP Adapter plugin gets the
 							// adapter path back automatically.
 							//
-							// Keep this exclusion in the WordPress.org build. When
-							// the self-hosted channel lands, re-include it there the
-							// same way that branch re-includes the updater.
+							// Excluded on BOTH channels, not just .org. The earlier
+							// plan was to re-include it for self-hosted; that was
+							// written before Saddle_MCP's own transport was hardened
+							// as the one a .org install will ever have, and shipping
+							// a different transport to testers than to .org users
+							// costs us the field evidence we most need. Tracked as
+							// its own decision in #113.
 							'!includes/lib/**',
 							// The loader that declares the library's own reserved
 							// WP_MCP_* constants. Useless without the library, and
@@ -152,6 +156,7 @@ module.exports = function ( grunt ) {
 							// SessionManager is absent, so it costs a .org build
 							// nothing. Unlike the updater, its absence is not a
 							// guarantee we are making to anyone.
+							//
 							// WP.org listing assets — go to SVN assets/, never in the zip.
 							'!.wordpress.org/**',
 							// Lint config — dev-only.
@@ -274,20 +279,22 @@ module.exports = function ( grunt ) {
 			}
 
 			if ( 'selfhosted' === channel ) {
-				// Put the self-hosted-only files back by appending un-negated
-				// patterns after the exclusions — grunt-contrib-copy applies src
-				// patterns in order, so the later include wins.
+				// Put the updater back by appending an un-negated pattern after
+				// the exclusion — grunt-contrib-copy applies src patterns in
+				// order, so the later include wins.
 				//
-				// The adapter belongs here and did not arrive with the updater:
-				// the exclusion list has said "re-include it there the same way
-				// that branch re-includes the updater" since the channel landed,
-				// and this branch only ever pushed the updater (#111). Every
-				// build shipped so far therefore runs the JSON-RPC transport
-				// unless the site installs the official adapter plugin itself.
+				// The updater is the ONLY difference between the two channels,
+				// and that is the invariant to protect: a self-hosted build is
+				// the .org artifact plus an update check, so a customer testing
+				// a build is testing what .org ships. The exclusion list above
+				// asks for the vendored adapter to be re-added here too — that
+				// predates the JSON-RPC transport being hardened as the one a
+				// .org install will ever have, and re-adding it would make the
+				// tester's transport differ from the shipped one in the exact
+				// subsystem we most need field evidence about. Left as its own
+				// decision (#113), deliberately not bundled into #111.
 				const files = grunt.config.get( 'copy.dist.files' );
 				files[ 0 ].src.push( 'includes/class-saddle-updater.php' );
-				files[ 0 ].src.push( 'includes/lib/**' );
-				files[ 0 ].src.push( 'includes/class-saddle-bundled-adapter.php' );
 				grunt.config.set( 'copy.dist.files', files );
 			}
 
