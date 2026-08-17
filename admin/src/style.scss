@@ -1475,3 +1475,69 @@ body.toplevel_page_saddle {
 		}
 	}
 }
+
+/* Cookbook — ready-to-paste prompts.
+   The prompt is the hero of each card, so it gets the surface treatment and
+   the rest is quiet around it: the person is scanning for something to copy,
+   not reading prose. */
+.saddle-cookbook {
+	&__group {
+		margin-bottom: 16px;
+	}
+}
+
+.saddle-recipe {
+	padding: 16px 0;
+	border-bottom: 1px solid var(--s-border);
+
+	&:last-child {
+		border-bottom: 0;
+		padding-bottom: 0;
+	}
+
+	&:first-child {
+		padding-top: 0;
+	}
+
+	&__head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+		flex-wrap: wrap;
+		margin-bottom: 8px;
+	}
+
+	&__tags {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		flex-shrink: 0;
+	}
+
+	/* The thing they came to copy. Monospace would read as code and this is a
+	   sentence, so it is set apart by surface rather than by family. */
+	&__prompt {
+		margin: 0 0 8px;
+		padding: 12px 14px;
+		background: var(--s-surface-2);
+		border-left: 3px solid var(--s-accent);
+		border-radius: var(--s-radius);
+		font-size: 14px;
+		line-height: 1.55;
+		color: var(--s-fg);
+	}
+
+	&__expect {
+		margin: 0 0 10px;
+		font-size: 13px;
+		line-height: 1.5;
+		color: var(--s-fg-subtle);
+	}
+
+	&__blocked {
+		margin: 0 0 10px;
+		font-size: 13px;
+		color: var(--s-fg-muted);
+	}
+}

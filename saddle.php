@@ -71,6 +71,7 @@ require_once SADDLE_DIR . 'includes/class-saddle-context.php';
 require_once SADDLE_DIR . 'includes/class-saddle-context-bundle.php';
 require_once SADDLE_DIR . 'includes/class-saddle-playbook.php';
 require_once SADDLE_DIR . 'includes/class-saddle-skills.php';
+require_once SADDLE_DIR . 'includes/class-saddle-cookbook.php';
 require_once SADDLE_DIR . 'includes/class-saddle-memory.php';
 require_once SADDLE_DIR . 'includes/class-saddle-log.php';
 require_once SADDLE_DIR . 'includes/class-saddle-unsplash.php';

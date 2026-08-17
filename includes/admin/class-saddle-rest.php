@@ -365,6 +365,29 @@ class Saddle_REST_Admin {
 				),
 			)
 		);
+
+		register_rest_route(
+			self::REST_NAMESPACE,
+			'/cookbook',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( __CLASS__, 'get_cookbook' ),
+				'permission_callback' => array( __CLASS__, 'can_manage' ),
+			)
+		);
+	}
+
+	/**
+	 * GET /cookbook — the prompt recipes, plus what the site can currently run.
+	 *
+	 * Served rather than inlined into the bundle so the recipes stay PHP data:
+	 * the same array publishes to the docs site, and a copy compiled into JS
+	 * would be a second source to keep true.
+	 *
+	 * @return WP_REST_Response
+	 */
+	public static function get_cookbook() {
+		return new WP_REST_Response( Saddle_Cookbook::payload(), 200 );
 	}
 
 	/**

@@ -40,6 +40,7 @@ import {
 	PlugIcon,
 	ActivityIcon,
 	SettingsIcon,
+	SparklesIcon,
 } from '@plugpress/ui';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { api, levelFor } from './api';
@@ -49,6 +50,7 @@ import Dashboard from './components/Dashboard';
 import Permissions from './components/Permissions';
 import Guidance from './components/Guidance';
 import Memory from './components/Memory';
+import Cookbook from './components/Cookbook';
 import Apps from './components/ConnectedClients';
 import Integrations from './components/Integrations';
 import Activity from './components/Activity';
@@ -62,6 +64,11 @@ const TABS = [
 		name: 'dashboard',
 		title: __( 'Dashboard', 'saddle' ),
 		icon: <DashboardIcon />,
+	},
+	{
+		name: 'cookbook',
+		title: __( 'Cookbook', 'saddle' ),
+		icon: <SparklesIcon />,
 	},
 	{
 		name: 'permissions',
@@ -100,7 +107,7 @@ const TABS = [
 // wall. Names reference TABS (routing stays keyed by name); Settings lives in
 // the rail footer.
 const NAV_GROUPS = [
-	{ key: 'top', label: '', items: [ 'dashboard' ] },
+	{ key: 'top', label: '', items: [ 'dashboard', 'cookbook' ] },
 	{
 		key: 'ai',
 		label: __( 'Your AI', 'saddle' ),
@@ -631,6 +638,9 @@ export default function App() {
 										onTierSaved={ handleTierSaved }
 										onCapsChanged={ loadCaps }
 									/>
+								) }
+								{ tab === 'cookbook' && (
+									<Cookbook onNavigate={ setTab } />
 								) }
 								{ tab === 'guidance' && <Guidance /> }
 								{ tab === 'memory' && <Memory /> }
