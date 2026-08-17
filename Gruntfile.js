@@ -262,6 +262,28 @@ module.exports = function ( grunt ) {
 				JSON.stringify( pkg, null, '\t' ) + '\n'
 			);
 
+			// package-lock.json: BOTH copies. It carries the version at the root
+			// and again under packages[''], and this task wrote neither — so
+			// the lockfile silently kept the previous version while the other
+			// four sites moved, which is exactly the drift the "five places
+			// must agree" rule exists to prevent.
+			//
+			// Addressed structurally, NOT by a text substitution. Every
+			// dependency in this file has a "version" field too, and a global
+			// regex for `"version": "<semver>"` rewrites all of them to the
+			// plugin's version. Only these two keys mean the plugin.
+			if ( grunt.file.exists( 'package-lock.json' ) ) {
+				const lock = grunt.file.readJSON( 'package-lock.json' );
+				lock.version = to;
+				if ( lock.packages && lock.packages[ '' ] ) {
+					lock.packages[ '' ].version = to;
+				}
+				grunt.file.write(
+					'package-lock.json',
+					JSON.stringify( lock, null, '\t' ) + '\n'
+				);
+			}
+
 			grunt.log.ok( 'Version ' + from + ' → ' + to );
 		}
 	);
