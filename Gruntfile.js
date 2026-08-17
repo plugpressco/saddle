@@ -128,13 +128,30 @@ module.exports = function ( grunt ) {
 							// the self-hosted channel lands, re-include it there the
 							// same way that branch re-includes the updater.
 							'!includes/lib/**',
-							// The two files that exist only to serve it: the
-							// loader (which declares the library's own reserved
-							// WP_MCP_* constants) and the shim for its session
-							// strictness. Both are guarded with file_exists()/
-							// class_exists() and degrade to no-ops.
+							// The loader that declares the library's own reserved
+							// WP_MCP_* constants. Useless without the library, and
+							// guarded with class_exists() at the call site.
 							'!includes/class-saddle-bundled-adapter.php',
-							'!includes/class-saddle-mcp-compat.php',
+							// class-saddle-mcp-compat.php is deliberately NOT
+							// excluded, on either channel. It used to be, and that
+							// is how the ChatGPT fix in #80/#81 shipped to nobody
+							// for a month (#111).
+							//
+							// The trap: adapter_available() tests for
+							// \WP\MCP\Core\McpAdapter, not for OUR bundled copy. A
+							// site that installs the official MCP Adapter plugin
+							// takes the adapter path on ANY channel, including
+							// .org — and then class_exists( 'Saddle_MCP_Compat' )
+							// is false, the shim never registers, and the owner
+							// gets an app that connects and reports no callable
+							// actions. Excluding it never made a build safer; it
+							// only made that failure reachable.
+							//
+							// It is ~300 lines of our own code with no library
+							// behind it, and applies_to() already no-ops when
+							// SessionManager is absent, so it costs a .org build
+							// nothing. Unlike the updater, its absence is not a
+							// guarantee we are making to anyone.
 							// WP.org listing assets — go to SVN assets/, never in the zip.
 							'!.wordpress.org/**',
 							// Lint config — dev-only.
@@ -257,11 +274,20 @@ module.exports = function ( grunt ) {
 			}
 
 			if ( 'selfhosted' === channel ) {
-				// Put the updater back by appending an un-negated pattern after
-				// the exclusion — grunt-contrib-copy applies src patterns in
-				// order, so the later include wins.
+				// Put the self-hosted-only files back by appending un-negated
+				// patterns after the exclusions — grunt-contrib-copy applies src
+				// patterns in order, so the later include wins.
+				//
+				// The adapter belongs here and did not arrive with the updater:
+				// the exclusion list has said "re-include it there the same way
+				// that branch re-includes the updater" since the channel landed,
+				// and this branch only ever pushed the updater (#111). Every
+				// build shipped so far therefore runs the JSON-RPC transport
+				// unless the site installs the official adapter plugin itself.
 				const files = grunt.config.get( 'copy.dist.files' );
 				files[ 0 ].src.push( 'includes/class-saddle-updater.php' );
+				files[ 0 ].src.push( 'includes/lib/**' );
+				files[ 0 ].src.push( 'includes/class-saddle-bundled-adapter.php' );
 				grunt.config.set( 'copy.dist.files', files );
 			}
 
