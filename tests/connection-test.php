@@ -159,20 +159,52 @@ class Saddle_Connection_Test extends WP_UnitTestCase {
 
 	/**
 	 * The probe is a public route. Its whole safety argument is that it reports
-	 * booleans about the caller's own request and nothing else, so pin the exact
+	 * facts about the caller's own request and nothing else, so pin the exact
 	 * key set — a new key must be a deliberate decision, not a slip.
+	 *
+	 * `scheme` is that deliberate decision. It is the one non-boolean, and it is
+	 * a closed enum naming the SHAPE of the credential the caller itself just
+	 * sent — never any part of its value. It exists because "did a header
+	 * arrive" cannot distinguish a host that forwards Basic (which Apache
+	 * consumes into PHP_AUTH_USER natively) from one that also forwards Bearer,
+	 * and only the second kind can run an app that signs in through Saddle.
 	 */
-	public function test_auth_probe_returns_only_the_documented_booleans() {
+	public function test_auth_probe_returns_only_the_documented_fields() {
 		$data = Saddle_Connection::rest_auth_probe()->get_data();
 
 		$this->assertSame(
-			array( 'received', 'nonce_header', 'nonce_query', 'cookie', 'identified', 'custom_header' ),
+			array( 'received', 'scheme', 'nonce_header', 'nonce_query', 'cookie', 'identified', 'custom_header' ),
 			array_keys( $data )
 		);
 
 		foreach ( $data as $key => $value ) {
+			if ( 'scheme' === $key ) {
+				$this->assertContains( $value, array( '', 'basic', 'bearer' ), 'scheme must stay a closed enum.' );
+				continue;
+			}
 			$this->assertIsBool( $value, "Probe key '{$key}' must be a boolean." );
 		}
+	}
+
+	/**
+	 * And it must name the scheme it actually saw, or the loopback below cannot
+	 * tell a forwarded Bearer from a Basic-only host.
+	 */
+	public function test_auth_probe_names_the_scheme_that_arrived() {
+		$_SERVER['HTTP_AUTHORIZATION'] = 'Bearer some-token-value';
+		$this->assertSame( 'bearer', Saddle_Connection::rest_auth_probe()->get_data()['scheme'] );
+
+		$_SERVER['HTTP_AUTHORIZATION'] = 'Basic ' . base64_encode( 'saddle-probe:x' );
+		$this->assertSame( 'basic', Saddle_Connection::rest_auth_probe()->get_data()['scheme'] );
+
+		unset( $_SERVER['HTTP_AUTHORIZATION'], $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] );
+		$this->assertSame( '', Saddle_Connection::rest_auth_probe()->get_data()['scheme'] );
+
+		// And still no credential in it.
+		$this->assertStringNotContainsString(
+			'some-token-value',
+			wp_json_encode( Saddle_Connection::rest_auth_probe()->get_data() )
+		);
 	}
 
 	public function test_auth_probe_never_echoes_a_credential_or_a_user() {
@@ -224,6 +256,121 @@ class Saddle_Connection_Test extends WP_UnitTestCase {
 			remove_filter( 'pre_http_request', $http, 10 );
 			remove_filter( 'wp_is_application_passwords_available', '__return_true' );
 		};
+	}
+
+	/**
+	 * Point the loopback at a different canned response per Authorization
+	 * scheme, so a host that forwards one and drops the other can be simulated.
+	 *
+	 * @param array $by_scheme Keyed 'basic' / 'bearer'.
+	 * @return callable Cleanup.
+	 */
+	private function fake_loopback_by_scheme( array $by_scheme ) {
+		$http = function ( $pre, $args ) use ( $by_scheme ) {
+			$sent   = isset( $args['headers']['Authorization'] ) ? (string) $args['headers']['Authorization'] : '';
+			$scheme = 0 === stripos( $sent, 'bearer ' ) ? 'bearer' : 'basic';
+
+			return array(
+				'body'     => wp_json_encode( isset( $by_scheme[ $scheme ] ) ? $by_scheme[ $scheme ] : array() ),
+				'response' => array( 'code' => 200 ),
+			);
+		};
+		add_filter( 'pre_http_request', $http, 10, 2 );
+		add_filter( 'wp_is_application_passwords_available', '__return_true' );
+
+		return function () use ( $http ) {
+			remove_filter( 'pre_http_request', $http, 10 );
+			remove_filter( 'wp_is_application_passwords_available', '__return_true' );
+		};
+	}
+
+	/**
+	 * THE case this whole probe exists for, and the one the old Basic-only
+	 * version reported as healthy.
+	 *
+	 * Apache and LiteSpeed consume a Basic Authorization header natively into
+	 * PHP_AUTH_USER, so it reaches PHP on setups that never forward the raw
+	 * header — and a firewall rule can match `Bearer` alone. On such a host
+	 * every pasted-key client works and every app that signs in through Saddle
+	 * gets 401, which reads from the outside as "the AI app is broken" rather
+	 * than "my server is dropping a header". A customer lost two weeks in it.
+	 */
+	public function test_self_check_catches_a_bearer_stripped_while_basic_survives() {
+		$_SERVER['SERVER_SOFTWARE'] = 'Apache/2.4';
+
+		$restore = $this->fake_loopback_by_scheme(
+			array(
+				'basic'  => array(
+					'received'     => true,
+					'scheme'       => 'basic',
+					'nonce_header' => true,
+				),
+				'bearer' => array(
+					'received'     => false,
+					'scheme'       => '',
+					'nonce_header' => true,
+				),
+			)
+		);
+
+		$report = Saddle_Connection::self_check();
+
+		$this->assertSame( 'ok', $report['auth_header'], 'Basic survives, which is why this goes unnoticed.' );
+		$this->assertSame( 'stripped', $report['bearer_header'] );
+		$this->assertSame( 'bearer_header_stripped', $report['status'] );
+		$this->assertTrue( $report['htaccess_fixable'], 'The same rule forwards the header whatever scheme it carries.' );
+
+		$restore();
+	}
+
+	/**
+	 * A host that forwards both is healthy, and must not be told otherwise —
+	 * a false positive here sends people to their host for nothing.
+	 */
+	public function test_self_check_is_ok_when_both_schemes_survive() {
+		$restore = $this->fake_loopback_by_scheme(
+			array(
+				'basic'  => array(
+					'received'     => true,
+					'scheme'       => 'basic',
+					'nonce_header' => true,
+				),
+				'bearer' => array(
+					'received'     => true,
+					'scheme'       => 'bearer',
+					'nonce_header' => true,
+				),
+			)
+		);
+
+		$report = Saddle_Connection::self_check();
+
+		$this->assertSame( 'ok', $report['auth_header'] );
+		$this->assertSame( 'ok', $report['bearer_header'] );
+		$this->assertSame( 'ok', $report['status'] );
+
+		$restore();
+	}
+
+	/**
+	 * A probe response with no `scheme` key — an older cached one, or a site
+	 * mid-upgrade — must read as "don't know", never as stripped. Guessing here
+	 * would put a scary, wrong warning on a healthy site.
+	 */
+	public function test_self_check_treats_a_missing_scheme_key_as_unknown() {
+		$restore = $this->fake_loopback(
+			array(
+				'received'     => true,
+				'nonce_header' => true,
+			)
+		);
+
+		$report = Saddle_Connection::self_check();
+
+		$this->assertSame( 'unknown', $report['bearer_header'] );
+		$this->assertSame( 'ok', $report['status'] );
+
+		$restore();
 	}
 
 	public function test_self_check_reports_a_stripped_nonce_header() {
