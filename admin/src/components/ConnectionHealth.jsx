@@ -122,18 +122,39 @@ export default function ConnectionHealth() {
 		);
 	}
 
-	// status === 'auth_header_stripped'
+	// status === 'auth_header_stripped' | 'bearer_header_stripped'
 	const snippets = report.fix_snippet || {};
+
+	// The partial case is the one that costs people weeks, so it gets its own
+	// words rather than the generic warning. Pasted-key apps keep working, so
+	// every obvious test passes and the natural conclusion — "sign-in headers
+	// are fine here" — is wrong. Only apps that sign in through Saddle break,
+	// and ChatGPT is the one that can only connect that way.
+	const bearerOnly = report.status === 'bearer_header_stripped';
 
 	return (
 		<CalloutCard
 			className="saddle-health"
 			tone="warning"
-			title={ __( 'Your server is blocking app sign-ins', 'saddle' ) }
-			description={ __(
-				'When an AI app connects, it sends its password in a sign-in header. Your web server removes that header before WordPress can see it, so every connection will fail as “unauthorized” — even with the right password. (The test above can still pass, because your browser signs in a different way.)',
-				'saddle'
-			) }
+			title={
+				bearerOnly
+					? __(
+							'Your server is blocking apps that sign in through Saddle',
+							'saddle'
+					  )
+					: __( 'Your server is blocking app sign-ins', 'saddle' )
+			}
+			description={
+				bearerOnly
+					? __(
+							'Apps you connect with a pasted key are fine. But apps that sign in through Saddle — ChatGPT is the one that can only connect this way — send a different kind of sign-in header, and your web server removes it before WordPress sees it. Those apps will finish signing in and then report that the site has no actions they can use. The rule below lets that header through.',
+							'saddle'
+					  )
+					: __(
+							'When an AI app connects, it sends its password in a sign-in header. Your web server removes that header before WordPress can see it, so every connection will fail as “unauthorized” — even with the right password. (The test above can still pass, because your browser signs in a different way.)',
+							'saddle'
+					  )
+			}
 		>
 			{ report.htaccess_fixable && fixOutcome !== 'still_stripped' && (
 				<div className="saddle-health__actions">

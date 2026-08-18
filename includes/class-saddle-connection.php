@@ -455,6 +455,15 @@ class Saddle_Connection {
 		return new WP_REST_Response(
 			array(
 				'received'      => ( '' !== self::authorization_header() ),
+				// WHICH scheme survived, not merely whether one did. Basic is
+				// the scheme that gets through when others do not — Apache and
+				// LiteSpeed consume it natively into PHP_AUTH_USER, so it is
+				// visible to PHP even where the raw header is never forwarded,
+				// and a WAF rule can match `Bearer` specifically. A probe that
+				// only ever sent Basic could therefore report a healthy site
+				// while every OAuth client was being refused. Safe to return:
+				// it is the shape of what the caller itself just sent.
+				'scheme'        => self::credential_scheme(),
 				// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- reports only whether a nonce arrived; the value is never read, verified, or returned.
 				'nonce_header'  => isset( $_SERVER['HTTP_X_WP_NONCE'] ),
 				// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- as above.
@@ -521,9 +530,10 @@ class Saddle_Connection {
 	 * @return array
 	 */
 	public static function self_check() {
-		$probe        = self::probe_headers();
-		$auth_header  = $probe['auth'];
-		$nonce_header = $probe['nonce'];
+		$probe         = self::probe_headers();
+		$auth_header   = $probe['auth'];
+		$bearer_header = $probe['bearer'];
+		$nonce_header  = $probe['nonce'];
 
 		$report = array(
 			'app_passwords_available' => function_exists( 'wp_is_application_passwords_available' ) ? (bool) wp_is_application_passwords_available() : false,
@@ -531,11 +541,18 @@ class Saddle_Connection {
 			'server'                  => self::server_software(),
 			'endpoint'                => rest_url( ltrim( Saddle_MCP::REST_NAMESPACE . Saddle_MCP::ROUTE, '/' ) ),
 			'auth_header'             => $auth_header, // One of: ok, stripped, unknown.
+			// The same question asked with a Bearer token, because the two
+			// schemes fail independently and Saddle has clients on each: pasted
+			// Application Passwords send Basic, and an app that signs in through
+			// Saddle's OAuth server — ChatGPT, which has no field for a custom
+			// header — can only ever send Bearer.
+			'bearer_header'           => $bearer_header, // One of: ok, stripped, unknown.
 			'nonce_header'            => $nonce_header, // One of: ok, stripped, unknown.
-			// Bound to the Authorization case on purpose. The .htaccess rule
-			// forwards that one header, and there is no equivalent for a nonce —
-			// an edge-level strip happens upstream of Apache entirely.
-			'htaccess_fixable'        => ( 'stripped' === $auth_header ) && self::htaccess_fixable(),
+			// Bound to the Authorization cases on purpose. The .htaccess rule
+			// forwards that one header whatever scheme it carries, so it is the
+			// fix for both; there is no equivalent for a nonce — an edge-level
+			// strip happens upstream of Apache entirely.
+			'htaccess_fixable'        => ( 'stripped' === $auth_header || 'stripped' === $bearer_header ) && self::htaccess_fixable(),
 			'fix_snippet'             => self::fix_snippet(),
 		);
 
@@ -546,6 +563,13 @@ class Saddle_Connection {
 			$report['status'] = 'app_passwords_off';
 		} elseif ( 'stripped' === $auth_header ) {
 			$report['status'] = 'auth_header_stripped';
+		} elseif ( 'stripped' === $bearer_header ) {
+			// Below auth_header_stripped, above the nonce: it breaks every app
+			// that signs in through Saddle rather than with a pasted key, while
+			// leaving the pasted-key apps working — which is the reason it can
+			// go unnoticed for weeks. "Claude works, so the header is fine" is
+			// the wrong inference, and this status exists to refuse it.
+			$report['status'] = 'bearer_header_stripped';
 		} elseif ( 'stripped' === $nonce_header ) {
 			$report['status'] = 'nonce_header_stripped';
 		} elseif ( 'ok' === $auth_header ) {
@@ -566,17 +590,56 @@ class Saddle_Connection {
 	 * stripping rules. Neither header carries a real credential — the probe
 	 * reports only whether they arrived.
 	 *
-	 * @return array{auth:string,nonce:string} Each 'ok' | 'stripped' | 'unknown'.
+	 * Two requests, not one, because **the schemes fail independently** and
+	 * Saddle has a client population on each. Basic is the scheme that survives
+	 * where others do not: Apache and LiteSpeed consume an RFC 7617 header
+	 * natively into `PHP_AUTH_USER`, so it reaches PHP even on setups that never
+	 * forward the raw `Authorization` header, and a WAF rule can be written
+	 * against `Bearer` alone. Probing Basic only therefore returns `ok` on a site
+	 * where every OAuth client is being refused — which is exactly the shape of
+	 * "my pasted-key apps work and ChatGPT gets 401", and exactly the report this
+	 * function gave while that was happening.
+	 *
+	 * @return array{auth:string,bearer:string,nonce:string} Each 'ok' | 'stripped' | 'unknown'.
 	 */
 	private static function probe_headers() {
 		$unknown = array(
-			'auth'  => 'unknown',
-			'nonce' => 'unknown',
+			'auth'   => 'unknown',
+			'bearer' => 'unknown',
+			'nonce'  => 'unknown',
 		);
 
-		$url  = rest_url( Saddle_REST_Admin::REST_NAMESPACE . '/auth-probe' );
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- building a standard RFC 7617 Basic header for the loopback probe.
+		$basic = self::probe_once( 'Basic ' . base64_encode( 'saddle-probe:x' ) );
+		if ( null === $basic ) {
+			return $unknown;
+		}
+
+		// Neither value is a credential. Nothing on the other end reads them —
+		// the probe route reports only that a header arrived and of what shape.
+		$bearer = self::probe_once( 'Bearer saddle-probe' );
+
+		return array(
+			'auth'   => array_key_exists( 'received', $basic ) ? ( ! empty( $basic['received'] ) ? 'ok' : 'stripped' ) : 'unknown',
+			'nonce'  => array_key_exists( 'nonce_header', $basic ) ? ( ! empty( $basic['nonce_header'] ) ? 'ok' : 'stripped' ) : 'unknown',
+			// Judged on the SCHEME that arrived, not merely on arrival. A host
+			// that rewrites an unrecognised Authorization header into something
+			// else would otherwise pass a test it should fail.
+			'bearer' => ( is_array( $bearer ) && array_key_exists( 'scheme', $bearer ) )
+				? ( 'bearer' === $bearer['scheme'] ? 'ok' : 'stripped' )
+				: 'unknown',
+		);
+	}
+
+	/**
+	 * One loopback request to the probe route, carrying one Authorization header.
+	 *
+	 * @param string $authorization Header value to send. Never a real credential.
+	 * @return array|null Decoded probe response, or null when the loopback failed.
+	 */
+	private static function probe_once( $authorization ) {
 		$resp = wp_remote_get(
-			$url,
+			rest_url( Saddle_REST_Admin::REST_NAMESPACE . '/auth-probe' ),
 			array(
 				'timeout'     => 5,
 				// Loopback to our own rest_url with throwaway credentials —
@@ -586,8 +649,7 @@ class Saddle_Connection {
 				'redirection' => 0,
 				'cookies'     => array(),
 				'headers'     => array(
-					// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- building a standard RFC 7617 Basic header for the loopback probe.
-					'Authorization' => 'Basic ' . base64_encode( 'saddle-probe:x' ),
+					'Authorization' => $authorization,
 					// Not a real nonce and never verified against anything.
 					'X-WP-Nonce'    => 'saddle-probe',
 				),
@@ -595,18 +657,12 @@ class Saddle_Connection {
 		);
 
 		if ( is_wp_error( $resp ) ) {
-			return $unknown;
+			return null;
 		}
 
 		$body = json_decode( (string) wp_remote_retrieve_body( $resp ), true );
-		if ( ! is_array( $body ) ) {
-			return $unknown;
-		}
 
-		return array(
-			'auth'  => array_key_exists( 'received', $body ) ? ( ! empty( $body['received'] ) ? 'ok' : 'stripped' ) : 'unknown',
-			'nonce' => array_key_exists( 'nonce_header', $body ) ? ( ! empty( $body['nonce_header'] ) ? 'ok' : 'stripped' ) : 'unknown',
-		);
+		return is_array( $body ) ? $body : null;
 	}
 
 	/**

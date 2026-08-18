@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-18T03:18:22+00:00\n"
+"POT-Creation-Date: 2026-08-18T03:22:27+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -2096,11 +2096,11 @@ msgstr ""
 msgid "Your sign-in key was rejected — it was most likely revoked or removed. Reconnect the app from Saddle to issue a fresh key."
 msgstr ""
 
-#: includes/class-saddle-connection.php:657
+#: includes/class-saddle-connection.php:713
 msgid "Saddle can’t edit this server’s configuration automatically. Add the rule shown below by hand or send it to your host."
 msgstr ""
 
-#: includes/class-saddle-connection.php:677
+#: includes/class-saddle-connection.php:733
 msgid "Saddle could not write to .htaccess. Check file permissions, or add the rule by hand."
 msgstr ""
 
@@ -4513,13 +4513,13 @@ msgstr ""
 
 #: admin/src/components/AuthTrouble.jsx:160
 #: admin/src/components/ConnectionHealth.jsx:118
-#: admin/src/components/ConnectionHealth.jsx:214
+#: admin/src/components/ConnectionHealth.jsx:235
 msgid "Checking…"
 msgstr ""
 
 #: admin/src/components/AuthTrouble.jsx:161
 #: admin/src/components/ConnectionHealth.jsx:119
-#: admin/src/components/ConnectionHealth.jsx:215
+#: admin/src/components/ConnectionHealth.jsx:236
 msgid "Check again"
 msgstr ""
 
@@ -4728,43 +4728,51 @@ msgstr ""
 msgid "Something on your hosting — usually a security or firewall layer — strips the X-WP-Nonce header from requests. Saddle works around it, so this dashboard is fine. But the same layer may interfere with other plugins’ settings screens, so it’s worth asking your host to let that header through."
 msgstr ""
 
-#: admin/src/components/ConnectionHealth.jsx:132
+#: admin/src/components/ConnectionHealth.jsx:141
+msgid "Your server is blocking apps that sign in through Saddle"
+msgstr ""
+
+#: admin/src/components/ConnectionHealth.jsx:145
 msgid "Your server is blocking app sign-ins"
 msgstr ""
 
-#: admin/src/components/ConnectionHealth.jsx:133
+#: admin/src/components/ConnectionHealth.jsx:149
+msgid "Apps you connect with a pasted key are fine. But apps that sign in through Saddle — ChatGPT is the one that can only connect this way — send a different kind of sign-in header, and your web server removes it before WordPress sees it. Those apps will finish signing in and then report that the site has no actions they can use. The rule below lets that header through."
+msgstr ""
+
+#: admin/src/components/ConnectionHealth.jsx:153
 msgid "When an AI app connects, it sends its password in a sign-in header. Your web server removes that header before WordPress can see it, so every connection will fail as “unauthorized” — even with the right password. (The test above can still pass, because your browser signs in a different way.)"
 msgstr ""
 
-#: admin/src/components/ConnectionHealth.jsx:147
+#: admin/src/components/ConnectionHealth.jsx:168
 msgid "Fixing…"
 msgstr ""
 
-#: admin/src/components/ConnectionHealth.jsx:148
+#: admin/src/components/ConnectionHealth.jsx:169
 msgid "Fix it for me"
 msgstr ""
 
-#: admin/src/components/ConnectionHealth.jsx:155
+#: admin/src/components/ConnectionHealth.jsx:176
 msgid "Hide the rule"
 msgstr ""
 
-#: admin/src/components/ConnectionHealth.jsx:156
+#: admin/src/components/ConnectionHealth.jsx:177
 msgid "See what this adds"
 msgstr ""
 
-#: admin/src/components/ConnectionHealth.jsx:163
+#: admin/src/components/ConnectionHealth.jsx:184
 msgid "Saddle added the rule, but the header still isn’t arriving — something earlier in the chain (a proxy or your host’s own config) is removing it. Send the rule below to your hosting support and ask them to allow the Authorization header."
 msgstr ""
 
-#: admin/src/components/ConnectionHealth.jsx:180
+#: admin/src/components/ConnectionHealth.jsx:201
 msgid "Saddle can’t edit this server’s configuration automatically. Add the matching rule below yourself, or send it to your hosting support."
 msgstr ""
 
-#: admin/src/components/ConnectionHealth.jsx:192
+#: admin/src/components/ConnectionHealth.jsx:213
 msgid "Apache / LiteSpeed — add to .htaccess"
 msgstr ""
 
-#: admin/src/components/ConnectionHealth.jsx:202
+#: admin/src/components/ConnectionHealth.jsx:223
 msgid "nginx — add to the PHP location block"
 msgstr ""
 
