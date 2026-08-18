@@ -187,6 +187,7 @@ export default function McpDiagnostics() {
 							<tr>
 								<th>{ __( 'When', 'saddle' ) }</th>
 								<th>{ __( 'Asked for', 'saddle' ) }</th>
+								<th>{ __( 'Signed in with', 'saddle' ) }</th>
 								<th>{ __( 'Result', 'saddle' ) }</th>
 								<th>{ __( 'App', 'saddle' ) }</th>
 							</tr>
@@ -202,7 +203,25 @@ export default function McpDiagnostics() {
 									<td>
 										{ ( entry.methods || [] ).join(
 											', '
-										) || '—' }
+										) ||
+											entry.method ||
+											'—' }
+									</td>
+									<td>
+										{ /* The column that answers "was it
+										     refused because the key was wrong,
+										     or because none arrived?" — which a
+										     401 alone cannot. */ }
+										{ entry.auth === 'absent' ? (
+											<Badge tone="warning">
+												{ __(
+													'nothing sent',
+													'saddle'
+												) }
+											</Badge>
+										) : (
+											entry.scheme || '—'
+										) }
 									</td>
 									<td>
 										{ entry.status >= 200 &&
