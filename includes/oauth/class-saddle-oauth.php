@@ -250,6 +250,7 @@ class Saddle_OAuth {
 		}
 
 		/** This filter is documented in wp-includes/rest-api.php */
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Core's own rest_url filter, applied with core's argument shape so the pre-init replica stays byte-identical to get_rest_url().
 		return apply_filters( 'rest_url', $url, $path, null, 'rest' );
 	}
 
