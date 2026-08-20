@@ -143,6 +143,7 @@ If you happen to have the separate MCP Adapter plugin active, Saddle notices and
 
 = 1.0.0 =
 * Initial public release.
+* Fixed: on sites where another plugin checks who is signed in very early in the request — several SEO plugins do — every ChatGPT request crashed before Saddle could examine its token, so the connection failed with a sign-in error forever while the same build worked elsewhere. The token check now works no matter how early in the request it runs.
 * Fixed: the connection check could report that sign-ins were working on a server that was actually blocking half of them. Apps you connect with a pasted key send one kind of sign-in header and apps that sign in through Saddle — ChatGPT is the one that can only connect that way — send another, and some servers pass the first and drop the second. The check now tests both, says which one is being blocked, and offers the same one-click fix, which always covered both.
 * Connection details and health now shows how each request signed in, so "the key was rejected" and "no key ever arrived" stop looking identical. They are the same error message and they need opposite fixes — one is reconnecting the app, the other is a word with your host.
 * Fixed: the request recorder was logging its own screen refreshing, which pushed the requests you were trying to capture out of the list within about two minutes. It now records only real app traffic, and keeps four times as much of it.
