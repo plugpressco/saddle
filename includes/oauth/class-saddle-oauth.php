@@ -180,7 +180,77 @@ class Saddle_OAuth {
 	 * @return string
 	 */
 	public static function resource_id() {
-		return untrailingslashit( rest_url( ltrim( Saddle_MCP::REST_NAMESPACE . Saddle_MCP::ROUTE, '/' ) ) );
+		return untrailingslashit( self::rest_url_early( ltrim( Saddle_MCP::REST_NAMESPACE . Saddle_MCP::ROUTE, '/' ) ) );
+	}
+
+	/**
+	 * `rest_url()` that also works before `init`.
+	 *
+	 * The bearer resolver runs on `determine_current_user`, which another
+	 * plugin can fire during `plugins_loaded` by calling `is_user_logged_in()`
+	 * — before wp-settings.php has created `$GLOBALS['wp_rewrite']`, which
+	 * core's `get_rest_url()` dereferences unconditionally whenever a
+	 * permalink structure is set. This is the same pre-init window
+	 * {@see Saddle_OAuth_Store::find()} documents for the DB path; this
+	 * hardens the URL path. Any new pre-init caller of `rest_url()` must come
+	 * through here.
+	 *
+	 * When the global exists this defers to core untouched. When it does not,
+	 * it replicates core's `get_rest_url( null, $path, 'rest' )` exactly —
+	 * including the `rest_url` filter with core's argument shape — because
+	 * the result is compared against the RFC 8707 `resource` stored on every
+	 * access token, and any divergence would refuse every token on the site
+	 * as `invalid_token`. The only substitution is
+	 * `WP_Rewrite::using_index_permalinks()`, which is a pure function of the
+	 * `permalink_structure` option and the hard-coded `index.php` default;
+	 * anything customizing `WP_Rewrite::$index` does so on the real instance,
+	 * which only exists once the branch below defers to core anyway.
+	 *
+	 * @param string $path REST route below the REST prefix.
+	 * @return string Full URL to the endpoint.
+	 */
+	private static function rest_url_early( $path ) {
+		if ( ( $GLOBALS['wp_rewrite'] ?? null ) instanceof WP_Rewrite ) {
+			return rest_url( $path );
+		}
+
+		$path = '/' . ltrim( (string) $path, '/' );
+
+		// Core's multisite leg, get_blog_option( null, … ), reads the current
+		// site's option — identical to get_option() here. Truthiness, not
+		// '' !==, to mirror core.
+		$structure = get_option( 'permalink_structure' );
+
+		if ( $structure ) {
+			$prefix = rest_get_url_prefix();
+			if ( preg_match( '#^/*index\.php#', (string) $structure ) ) {
+				$prefix = 'index.php/' . $prefix;
+			}
+			$url = get_home_url( null, $prefix, 'rest' ) . $path;
+		} else {
+			$url = trailingslashit( get_home_url( null, '', 'rest' ) );
+			// Core appends index.php to dodge an nginx redirect that only
+			// allows HTTP/1.0 methods; substr instead of str_ends_with for
+			// the PHP 7.4 floor.
+			if ( 'index.php' !== substr( $url, -9 ) ) {
+				$url .= 'index.php';
+			}
+			$url = add_query_arg( 'rest_route', $path, $url );
+		}
+
+		if ( is_ssl() && isset( $_SERVER['SERVER_NAME'] ) ) {
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- Mirrors core's get_rest_url() host comparison byte for byte; the strict equality against the parsed home host is the validation.
+			if ( wp_parse_url( get_home_url( null ), PHP_URL_HOST ) === $_SERVER['SERVER_NAME'] ) {
+				$url = set_url_scheme( $url, 'https' );
+			}
+		}
+
+		if ( is_admin() && force_ssl_admin() ) {
+			$url = set_url_scheme( $url, 'https' );
+		}
+
+		/** This filter is documented in wp-includes/rest-api.php */
+		return apply_filters( 'rest_url', $url, $path, null, 'rest' );
 	}
 
 	/**

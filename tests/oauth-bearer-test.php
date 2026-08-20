@@ -170,6 +170,103 @@ class Saddle_OAuth_Bearer_Test extends WP_UnitTestCase {
 	}
 
 	/* ------------------------------------------------------------------
+	 * Pre-init resolution
+	 *
+	 * determine_current_user is not a REST-time hook: any plugin calling
+	 * is_user_logged_in() during plugins_loaded fires it before
+	 * wp-settings.php has created $GLOBALS['wp_rewrite'] — the same window
+	 * Saddle_OAuth_Store::find() documents for the DB path. The resolver
+	 * must authenticate there too, not just avoid the fatal: core memoizes
+	 * whatever user it resolves for the rest of the request, so a refusal
+	 * here is a dead connector exactly like a crash.
+	 * --------------------------------------------------------------- */
+
+	/**
+	 * Run $fn in the state determine_current_user fires in when another
+	 * plugin checks the user during plugins_loaded — before wp-settings.php
+	 * has created $wp_rewrite.
+	 *
+	 * try/finally, per call: WP_UnitTestCase never restores this global, so
+	 * a failing assertion must not leak a nulled instance into later tests.
+	 *
+	 * @param callable $fn What to run without the rewrite global.
+	 * @return mixed Whatever $fn returns.
+	 */
+	private function before_wp_rewrite_exists( $fn ) {
+		$saved                 = $GLOBALS['wp_rewrite'];
+		$GLOBALS['wp_rewrite'] = null;
+		try {
+			return $fn();
+		} finally {
+			$GLOBALS['wp_rewrite'] = $saved;
+		}
+	}
+
+	public function test_resolve_works_before_wp_rewrite_exists() {
+		$this->issue_token();
+
+		$user = $this->before_wp_rewrite_exists(
+			function () {
+				return Saddle_OAuth_Bearer::resolve( false );
+			}
+		);
+
+		$this->assertSame(
+			$this->admin,
+			$user,
+			'is_user_logged_in() during plugins_loaded fires determine_current_user before $wp_rewrite exists; a valid token must resolve there, not fatal or 401.'
+		);
+	}
+
+	public function test_resource_id_is_identical_before_and_after_init() {
+		$structures = array(
+			'pretty' => '/%postname%/',
+			'index'  => '/index.php/%postname%/',
+			'plain'  => '',
+		);
+
+		foreach ( $structures as $label => $structure ) {
+			// set_permalink_structure(), not update_option(): rest_url()
+			// reads the live instance, and a stale one would make this
+			// compare the replica against the wrong baseline.
+			$this->set_permalink_structure( $structure );
+
+			$post_init = Saddle_OAuth::resource_id();
+			$pre_init  = $this->before_wp_rewrite_exists(
+				function () {
+					return Saddle_OAuth::resource_id();
+				}
+			);
+
+			$this->assertSame(
+				$post_init,
+				$pre_init,
+				sprintf( 'resource_id() diverged on %s permalinks — every stored token audience would stop matching.', $label )
+			);
+		}
+
+		// Leave the live instance matching what set_up put in the option,
+		// so state cannot leak into whichever test runs next.
+		$this->set_permalink_structure( '/%postname%/' );
+	}
+
+	public function test_a_foreign_token_is_still_refused_before_wp_rewrite_exists() {
+		$this->issue_token();
+
+		$record = Saddle_OAuth_Store::get_access_token( $this->token );
+		update_post_meta( $record['id'], '_saddle_resource', 'https://elsewhere.example/wp-json/saddle/v1/mcp' );
+
+		$this->assertFalse(
+			$this->before_wp_rewrite_exists(
+				function () {
+					return Saddle_OAuth_Bearer::resolve( false );
+				}
+			),
+			'Being early is not a reason to skip the RFC 8707 audience check.'
+		);
+	}
+
+	/* ------------------------------------------------------------------
 	 * Confinement
 	 * --------------------------------------------------------------- */
 
