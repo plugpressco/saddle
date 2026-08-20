@@ -757,8 +757,18 @@ class Saddle_MCP {
 	 */
 	private static function list_tools() {
 		$tools = array();
+		$names = array();
+		$built = array();
 
 		foreach ( self::saddle_abilities() as $name => $ability ) {
+			// Counted before the filter below, and deliberately so. These feed
+			// the health record, which answers "did the tools load?" — a
+			// property of the site. How many of them a given credential is
+			// offered is a different question, answered per request by the
+			// trace's own tool count.
+			$names[] = $name;
+			$built[] = self::mcp_tool_name( $name );
+
 			// Same rule as the adapter path (filter_adapter_tools_list): only
 			// advertise what this credential could call. On a WordPress.org
 			// install this transport is the only one there is, so this is the
@@ -785,6 +795,21 @@ class Saddle_MCP {
 
 			$tools[] = $tool;
 		}
+
+		// The health record's only other writer is register_adapter_server(),
+		// so on every zip Saddle actually ships — none of which carry the
+		// vendored library — nothing wrote it at all, and the Client traffic
+		// card told the owner "no app has connected yet" no matter what had
+		// happened (#115). It is the first line of the one screen a support
+		// conversation points at.
+		//
+		// Recorded here rather than at route registration because this is the
+		// first moment the number is real: abilities register lazily, and
+		// rest_api_init fires on requests that have nothing to do with MCP.
+		// Nothing can fail to convert on this path — every resolved ability
+		// becomes a tool — so expected and registered are the same list, and
+		// assess() flags the case that does happen: an empty one.
+		Saddle_MCP_Diagnostics::record_health( Saddle_MCP_Diagnostics::assess( $names, $built ) );
 
 		return $tools;
 	}

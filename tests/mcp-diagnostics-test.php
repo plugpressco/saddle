@@ -60,6 +60,16 @@ class Saddle_MCP_Diagnostics_Test extends WP_UnitTestCase {
 
 		foreach ( $headers as $name => $value ) {
 			$request->set_header( $name, $value );
+
+			// And into $_SERVER, because that is where the credential actually
+			// lives as far as every consumer is concerned. Saddle_Connection
+			// reads $_SERVER on purpose: the failure this whole surface exists
+			// to diagnose is a host stripping the header BEFORE PHP, and only
+			// $_SERVER can tell you that. A WP_REST_Request built in a test is
+			// synthetic and populates neither.
+			if ( 0 === strcasecmp( $name, 'Authorization' ) ) {
+				$_SERVER['HTTP_AUTHORIZATION'] = $value;
+			}
 		}
 
 		$request->set_body(
@@ -171,6 +181,82 @@ class Saddle_MCP_Diagnostics_Test extends WP_UnitTestCase {
 
 		$this->assertStringNotContainsString( 'super-secret-token-value', $serialized );
 		$this->assertStringNotContainsString( 'Authorization', $serialized );
+
+		// The row now names the SHAPE of the credential, which is the whole
+		// point — and must still name nothing else. Asserted here rather than
+		// in its own test so the two can never drift apart: whatever new field
+		// describes a credential gets added above this line and is covered by
+		// the assertions above it.
+		$entry = Saddle_MCP_Diagnostics::entries()[0];
+		$this->assertSame( 'bearer', $entry['scheme'] );
+		$this->assertSame( 'present', $entry['auth'] );
+	}
+
+	/**
+	 * The pair that answers a 401. "The key was rejected" and "no key arrived"
+	 * are the same HTTP status and opposite fixes — one is reconnect the app,
+	 * the other is talk to your host about a stripped Authorization header. A
+	 * customer lost two weeks inside that ambiguity.
+	 */
+	public function test_a_request_with_no_credential_is_recorded_as_such() {
+		Saddle_MCP_Diagnostics::start_recording();
+
+		$this->rpc( 'tools/list' );
+
+		$entry = Saddle_MCP_Diagnostics::entries()[0];
+
+		$this->assertSame( 'absent', $entry['auth'], 'No Authorization header must read as absent, never as present.' );
+		$this->assertSame( 'none', $entry['scheme'] );
+		$this->assertSame( 'POST', $entry['method'], 'The HTTP method disambiguates a row that carried no MCP method.' );
+	}
+
+	/**
+	 * Both facts have to survive into the text that actually gets pasted into a
+	 * support reply. They were recorded on every row for a month and rendered
+	 * nowhere, so the one question the trace could answer was the one question
+	 * we kept asking the customer to answer for us.
+	 */
+	public function test_the_report_names_the_credential_scheme() {
+		Saddle_MCP_Diagnostics::start_recording();
+
+		$this->rpc( 'tools/list', array( 'Authorization' => 'Bearer super-secret-token-value' ) );
+
+		$report = Saddle_MCP_Diagnostics::report();
+
+		$this->assertStringContainsString( 'auth:present', $report );
+		$this->assertStringContainsString( 'scheme:bearer', $report );
+		$this->assertStringNotContainsString( 'super-secret-token-value', $report );
+	}
+
+	/**
+	 * The panel polls this route every 5 seconds while recording, and the admin
+	 * API shares the `saddle/v1` namespace — so a prefix test matched it and the
+	 * instrument filled its own ring buffer with itself. At 25 entries that was
+	 * a ~125-second memory; a customer's capture of a failing connection came
+	 * back 23 parts panel to 2 parts evidence.
+	 */
+	public function test_the_diagnostics_route_is_not_recorded_as_mcp_traffic() {
+		Saddle_MCP_Diagnostics::start_recording();
+
+		// Through rest_post_dispatch, not rest_do_request() alone. The recorder
+		// closes an entry on that filter, and dispatch() does not fire it — so
+		// the obvious version of this test passes against the BUG, because
+		// nothing ever gets written either way. Verified red before the fix
+		// only in this form.
+		$request  = new WP_REST_Request( 'GET', '/saddle/v1/mcp-diagnostics' );
+		$response = rest_do_request( $request );
+		apply_filters( 'rest_post_dispatch', $response, rest_get_server(), $request );
+
+		$this->assertSame(
+			array(),
+			Saddle_MCP_Diagnostics::entries(),
+			'The panel must not record its own polling as MCP traffic.'
+		);
+
+		// And the real endpoint still is recorded — a filter that records
+		// nothing would also pass the assertion above.
+		$this->rpc( 'tools/list' );
+		$this->assertCount( 1, Saddle_MCP_Diagnostics::entries() );
 	}
 
 	/**

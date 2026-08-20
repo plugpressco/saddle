@@ -3,7 +3,7 @@
  * Plugin Name:       Saddle – Control Your Site with AI (MCP Server)
  * Plugin URI:        https://plugpress.co/saddle/
  * Description:       Self-hosted MCP server for WordPress. Tiered, default-safe, approval-gated access to posts, pages, and media for AI agents — with no third-party credential custody.
- * Version:           1.0.0-rc5
+ * Version:           1.0.0-rc7
  * Requires at least: 6.9
  * Requires PHP:      7.4
  * Author:            PlugPress
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SADDLE_VERSION', '1.0.0-rc5' );
+define( 'SADDLE_VERSION', '1.0.0-rc7' );
 define( 'SADDLE_FILE', __FILE__ );
 define( 'SADDLE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SADDLE_URL', plugin_dir_url( __FILE__ ) );
@@ -291,10 +291,23 @@ final class Saddle {
 			// it. Reached only when that plugin is present.
 			add_action( 'mcp_adapter_init', array( 'Saddle_MCP', 'register_adapter_server' ) );
 
-			// Shims the adapter's session and protocol-header strictness; it has
-			// no purpose without the adapter, so it ships with it.
+			// Shims the adapter's session and protocol-header strictness.
+			//
+			// The guard stays — it is the house rule — but it no longer fails
+			// quietly. This exact class_exists() returned false in every build
+			// for a month because the zip excluded the file, and the only
+			// symptom reachable from outside was ChatGPT reporting that the
+			// site has no callable actions (#111). A guard whose false branch
+			// is invisible is how that lasted, so the false branch now says so
+			// where the owner and a support conversation can both see it.
 			if ( class_exists( 'Saddle_MCP_Compat' ) ) {
 				Saddle_MCP_Compat::register();
+			} else {
+				// Noted, not recorded: the health record is rewritten wholesale
+				// on mcp_adapter_init, a few hooks later, so anything written
+				// here would be erased on precisely the sites where the adapter
+				// is present — the only sites where this matters.
+				Saddle_MCP_Diagnostics::note_compat_missing();
 			}
 		} else {
 			add_action( 'rest_api_init', array( 'Saddle_MCP', 'register_routes' ) );

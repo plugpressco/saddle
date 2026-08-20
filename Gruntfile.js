@@ -124,17 +124,39 @@ module.exports = function ( grunt ) {
 							// installs the official MCP Adapter plugin gets the
 							// adapter path back automatically.
 							//
-							// Keep this exclusion in the WordPress.org build. When
-							// the self-hosted channel lands, re-include it there the
-							// same way that branch re-includes the updater.
+							// Excluded on BOTH channels, not just .org. The earlier
+							// plan was to re-include it for self-hosted; that was
+							// written before Saddle_MCP's own transport was hardened
+							// as the one a .org install will ever have, and shipping
+							// a different transport to testers than to .org users
+							// costs us the field evidence we most need. Tracked as
+							// its own decision in #113.
 							'!includes/lib/**',
-							// The two files that exist only to serve it: the
-							// loader (which declares the library's own reserved
-							// WP_MCP_* constants) and the shim for its session
-							// strictness. Both are guarded with file_exists()/
-							// class_exists() and degrade to no-ops.
+							// The loader that declares the library's own reserved
+							// WP_MCP_* constants. Useless without the library, and
+							// guarded with class_exists() at the call site.
 							'!includes/class-saddle-bundled-adapter.php',
-							'!includes/class-saddle-mcp-compat.php',
+							// class-saddle-mcp-compat.php is deliberately NOT
+							// excluded, on either channel. It used to be, and that
+							// is how the ChatGPT fix in #80/#81 shipped to nobody
+							// for a month (#111).
+							//
+							// The trap: adapter_available() tests for
+							// \WP\MCP\Core\McpAdapter, not for OUR bundled copy. A
+							// site that installs the official MCP Adapter plugin
+							// takes the adapter path on ANY channel, including
+							// .org — and then class_exists( 'Saddle_MCP_Compat' )
+							// is false, the shim never registers, and the owner
+							// gets an app that connects and reports no callable
+							// actions. Excluding it never made a build safer; it
+							// only made that failure reachable.
+							//
+							// It is ~300 lines of our own code with no library
+							// behind it, and applies_to() already no-ops when
+							// SessionManager is absent, so it costs a .org build
+							// nothing. Unlike the updater, its absence is not a
+							// guarantee we are making to anyone.
+							//
 							// WP.org listing assets — go to SVN assets/, never in the zip.
 							'!.wordpress.org/**',
 							// Lint config — dev-only.
@@ -240,6 +262,28 @@ module.exports = function ( grunt ) {
 				JSON.stringify( pkg, null, '\t' ) + '\n'
 			);
 
+			// package-lock.json: BOTH copies. It carries the version at the root
+			// and again under packages[''], and this task wrote neither — so
+			// the lockfile silently kept the previous version while the other
+			// four sites moved, which is exactly the drift the "five places
+			// must agree" rule exists to prevent.
+			//
+			// Addressed structurally, NOT by a text substitution. Every
+			// dependency in this file has a "version" field too, and a global
+			// regex for `"version": "<semver>"` rewrites all of them to the
+			// plugin's version. Only these two keys mean the plugin.
+			if ( grunt.file.exists( 'package-lock.json' ) ) {
+				const lock = grunt.file.readJSON( 'package-lock.json' );
+				lock.version = to;
+				if ( lock.packages && lock.packages[ '' ] ) {
+					lock.packages[ '' ].version = to;
+				}
+				grunt.file.write(
+					'package-lock.json',
+					JSON.stringify( lock, null, '\t' ) + '\n'
+				);
+			}
+
 			grunt.log.ok( 'Version ' + from + ' → ' + to );
 		}
 	);
@@ -260,6 +304,18 @@ module.exports = function ( grunt ) {
 				// Put the updater back by appending an un-negated pattern after
 				// the exclusion — grunt-contrib-copy applies src patterns in
 				// order, so the later include wins.
+				//
+				// The updater is the ONLY difference between the two channels,
+				// and that is the invariant to protect: a self-hosted build is
+				// the .org artifact plus an update check, so a customer testing
+				// a build is testing what .org ships. The exclusion list above
+				// asks for the vendored adapter to be re-added here too — that
+				// predates the JSON-RPC transport being hardened as the one a
+				// .org install will ever have, and re-adding it would make the
+				// tester's transport differ from the shipped one in the exact
+				// subsystem we most need field evidence about. #112 acted on
+				// that comment; this reverts that half and leaves it as its own
+				// decision (#113). The shim half of #112 stands.
 				const files = grunt.config.get( 'copy.dist.files' );
 				files[ 0 ].src.push( 'includes/class-saddle-updater.php' );
 				grunt.config.set( 'copy.dist.files', files );

@@ -44,14 +44,44 @@ class Saddle_MCP_Diagnostics {
 	const TRACE_OPTION = 'saddle_mcp_trace';
 
 	/**
+	 * Whether the adapter path is running without Saddle_MCP_Compat.
+	 *
+	 * Set during transport setup and merged into the health record by
+	 * {@see self::record_health()}. It is request state, not stored state: the
+	 * next request re-derives it from whether the class loaded.
+	 *
+	 * @var bool
+	 */
+	private static $compat_missing = false;
+
+	/**
+	 * Note that the adapter is serving requests without its compatibility shim.
+	 *
+	 * This is a build fault, not a configuration one — the shim was excluded
+	 * from every zip for a month while the adapter path stayed reachable through
+	 * the official MCP Adapter plugin, and the only outward symptom was a client
+	 * connecting and then finding no callable tools (#111).
+	 */
+	public static function note_compat_missing() {
+		self::$compat_missing = true;
+	}
+
+	/**
 	 * Option holding the unix timestamp recording stops at.
 	 */
 	const RECORDING_OPTION = 'saddle_mcp_trace_until';
 
 	/**
 	 * How many requests the ring buffer keeps.
+	 *
+	 * Was 25, which sounds ample and was not: paired with the panel recording
+	 * its own 5-second poll (see targets_mcp()), the buffer turned over every
+	 * ~125 seconds. A customer's capture of a failing connection spanned 114
+	 * seconds and held two real rows among twenty-three of the panel watching
+	 * itself. The poll is fixed; this is the margin, so a trace outlives the
+	 * round trip of someone reading it, copying it and sending it on.
 	 */
-	const MAX_ENTRIES = 25;
+	const MAX_ENTRIES = 100;
 
 	/**
 	 * Default recording window, in minutes.
@@ -153,6 +183,14 @@ class Saddle_MCP_Diagnostics {
 		$facts['recorded_at'] = time();
 		$facts['init_fired']  = did_action( 'init' ) > 0;
 
+		// Merged into every write rather than recorded on its own, because this
+		// option is replaced wholesale and the adapter writes it later in the
+		// request than the point where the shim's absence is discovered.
+		if ( self::$compat_missing ) {
+			$facts['compat_missing'] = true;
+			$facts['degraded']       = true;
+		}
+
 		$previous = get_option( self::HEALTH_OPTION );
 		if ( is_array( $previous ) ) {
 			// Ignore the timestamp when deciding whether anything changed, or a
@@ -252,12 +290,38 @@ class Saddle_MCP_Diagnostics {
 			}
 		}
 
+		// 'scheme' and 'auth' are the pair that answers "was this refused because
+		// the credential was rejected, or because none arrived?" — the question
+		// a 401 cannot answer on its own, and the one a host that strips the
+		// Authorization header turns into a fortnight of guesswork. Both report
+		// the SHAPE of the credential and never a byte of it; see
+		// tests/mcp-diagnostics-test.php.
+		//
+		// 'method' matters because a row with no MCP method in it is ambiguous
+		// between a GET, a POST with the wrong content type, and an empty body.
+		// Those need different answers and used to look identical here.
+		// credential_scheme() returns '' for "nothing arrived" and 'unknown' only
+		// when Saddle_Connection is somehow absent. Those are different answers
+		// and neither is "present" — collapsing them would put a confident word
+		// on the row that decides whether the owner goes to their host.
+		$scheme = class_exists( 'Saddle_Connection' ) ? Saddle_Connection::credential_scheme() : 'unknown';
+		if ( '' === $scheme ) {
+			$scheme = 'none';
+			$auth   = 'absent';
+		} elseif ( 'unknown' === $scheme ) {
+			$auth = 'unknown';
+		} else {
+			$auth = 'present';
+		}
+
 		self::$pending = array(
 			'time'     => time(),
+			'method'   => $request->get_method(),
 			'methods'  => $methods,
 			'session'  => is_string( $session ) && '' !== $session ? 'sent' : 'absent',
 			'protocol' => self::header_or_absent( $request, 'Mcp-Protocol-Version' ),
-			'scheme'   => class_exists( 'Saddle_Connection' ) ? Saddle_Connection::credential_scheme() : 'unknown',
+			'scheme'   => $scheme,
+			'auth'     => $auth,
 			'user'     => get_current_user_id(),
 			'client'   => self::client_name( $request, $body ),
 		);
@@ -399,11 +463,18 @@ class Saddle_MCP_Diagnostics {
 		$lines[] = '';
 		$lines[] = 'Recent requests (newest first):';
 
+		// auth + scheme come BEFORE session and protocol, because on a refused
+		// row they are the answer and the other two are trivia. Their absence
+		// from this line is the whole reason a customer had to ask us what his
+		// own trace already knew.
 		foreach ( array_reverse( $entries ) as $entry ) {
 			$lines[] = sprintf(
-				'%s  %-28s session:%-7s protocol:%-11s status:%-4s%s%s  %s',
+				'%s  %-6s %-28s auth:%-8s scheme:%-8s session:%-7s protocol:%-11s status:%-4s%s%s  %s',
 				gmdate( 'Y-m-d H:i:s', isset( $entry['time'] ) ? (int) $entry['time'] : 0 ),
+				isset( $entry['method'] ) ? $entry['method'] : '?',
 				implode( ',', isset( $entry['methods'] ) ? $entry['methods'] : array() ),
+				isset( $entry['auth'] ) ? $entry['auth'] : '?',
+				isset( $entry['scheme'] ) ? ( '' === $entry['scheme'] ? 'none' : $entry['scheme'] ) : '?',
 				isset( $entry['session'] ) ? $entry['session'] : '?',
 				isset( $entry['protocol'] ) ? $entry['protocol'] : '?',
 				isset( $entry['status'] ) ? $entry['status'] : '?',
@@ -452,13 +523,22 @@ class Saddle_MCP_Diagnostics {
 	/**
 	 * Whether the request is aimed at the MCP endpoint.
 	 *
+	 * The route, or something below it — never merely something that starts
+	 * with the same characters. This was a bare strpos() prefix test, and the
+	 * admin API shares the `saddle/v1` namespace, so `/saddle/v1/mcp-diagnostics`
+	 * matched: the panel below recorded its own 5-second poll as MCP traffic and
+	 * pushed the real rows out of the ring buffer within about two minutes. A
+	 * customer's capture of a failing connection came back twenty-three parts
+	 * panel to two parts evidence.
+	 *
 	 * @param WP_REST_Request $request The request.
 	 * @return bool
 	 */
 	private static function targets_mcp( $request ) {
-		$route = '/' . Saddle_MCP::REST_NAMESPACE . Saddle_MCP::ROUTE;
+		$mcp   = '/' . Saddle_MCP::REST_NAMESPACE . Saddle_MCP::ROUTE;
+		$route = (string) $request->get_route();
 
-		return 0 === strpos( (string) $request->get_route(), $route );
+		return $route === $mcp || 0 === strpos( $route, $mcp . '/' );
 	}
 
 	/**
