@@ -1,6 +1,6 @@
 === Saddle – Control Your Site with AI (MCP Server) ===
 Contributors: badhonrocks
-Tags: mcp, ai, application passwords, agents, automation
+Tags: mcp, ai, agents, automation
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
