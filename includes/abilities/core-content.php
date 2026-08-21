@@ -60,7 +60,7 @@ function saddle_register_abilities() {
 		'saddle/get-instructions',
 		array(
 			'label'               => __( 'Get instructions', 'saddle' ),
-			'description'         => __( 'Returns important context about this site (its setup and active plugins) and the site owner\'s instructions for AI agents. Call this first, before other actions, and follow the guidance it returns. Read-only.', 'saddle' ),
+			'description'         => __( 'Returns important context about this site and the site owner\'s instructions for AI agents. Call this first, before other actions, and follow the guidance it returns. The installed-plugin inventory is included only for admin-level credentials. Read-only.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
