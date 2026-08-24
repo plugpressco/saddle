@@ -1002,11 +1002,16 @@ class Saddle_Abilities {
 			? $input['post_type']
 			: array( 'post', 'page' );
 
+		// Same rule as list-posts, but there is no status input to refuse and
+		// both types are queried at once: `any` means any status this caller
+		// may see, which for someone who can edit neither is `publish`.
+		$status = ( self::can_see_unpublished( 'post' ) || self::can_see_unpublished( 'page' ) ) ? 'any' : 'publish';
+
 		$query = new WP_Query(
 			array(
 				's'              => $input['query'],
 				'post_type'      => $post_type,
-				'post_status'    => 'any',
+				'post_status'    => $status,
 				'posts_per_page' => self::per_page( $input ),
 				'paged'          => self::page( $input ),
 				'no_found_rows'  => false,
@@ -1667,9 +1672,14 @@ class Saddle_Abilities {
 	 * @return array
 	 */
 	private static function list_of_type( $type, array $input ) {
+		$status = self::status_filter( $input, $type );
+		if ( is_wp_error( $status ) ) {
+			return $status;
+		}
+
 		$args = array(
 			'post_type'      => $type,
-			'post_status'    => self::status_filter( $input ),
+			'post_status'    => $status,
 			'posts_per_page' => self::per_page( $input ),
 			'paged'          => self::page( $input ),
 			'orderby'        => self::orderby( $input ),
@@ -2222,16 +2232,53 @@ class Saddle_Abilities {
 	 * @return array
 	 */
 	private static function collection( WP_Query $query, $formatter ) {
-		$items = array();
+		// Prime every row's parent in one query: the per-row check below
+		// resolves an attachment's status through post_parent, and this is the
+		// only thing standing between that and a query in a loop.
+		update_post_parent_caches( $query->posts );
+
+		$items   = array();
+		$dropped = 0;
 		foreach ( $query->posts as $post ) {
+			// The status gate narrowed what could be QUERIED; this decides what
+			// may be READ, and both are needed — an author holds edit_posts and
+			// may legitimately ask for drafts, and must still not receive
+			// another author's. Equivalent to core's check_read_permission(),
+			// including the inherit-to-post_parent resolution for attachments,
+			// which is the only control that reaches list-media at all.
+			if ( ! current_user_can( 'read_post', $post->ID ) ) {
+				++$dropped;
+				continue;
+			}
 			$items[] = call_user_func( $formatter, $post );
 		}
-		return array(
+
+		$out = array(
 			'items'       => $items,
+			// Counted before the filter, so it includes rows that were dropped
+			// — the same inconsistency core accepts in
+			// WP_REST_Posts_Controller::get_items(), because recounting means a
+			// second unbounded query. What Saddle adds is the note below: an
+			// agent handed a short page with no explanation retries it.
 			'total'       => (int) $query->found_posts,
 			'total_pages' => (int) $query->max_num_pages,
 			'page'        => max( 1, (int) $query->get( 'paged' ) ),
 		);
+
+		if ( $dropped > 0 ) {
+			$out['note'] = sprintf(
+				/* translators: %d: number of items omitted from this page. */
+				_n(
+					'%d item on this page is not visible to the WordPress account this app is connected as, and was left out. "total" still counts it, so this page is shorter than the page size. This is not an error and retrying will not change it.',
+					'%d items on this page are not visible to the WordPress account this app is connected as, and were left out. "total" still counts them, so this page is shorter than the page size. This is not an error and retrying will not change it.',
+					$dropped,
+					'saddle'
+				),
+				$dropped
+			);
+		}
+
+		return $out;
 	}
 
 	/**
@@ -2371,18 +2418,74 @@ class Saddle_Abilities {
 	}
 
 	/**
-	 * Validate the status filter, falling back to 'any'.
+	 * Validate the status filter, and gate it on what this caller may see.
 	 *
-	 * @param array $input Input.
-	 * @return string|string[]
+	 * WP_Query does not gate non-public statuses by itself: `post_status =>
+	 * 'any'` excludes only the two `internal` statuses (trash, auto-draft),
+	 * because register_post_status() derives exclude_from_search from
+	 * `internal` and not from `protected` — so it returns every author's
+	 * drafts, pending and private posts.
+	 *
+	 * `'perm' => 'readable'` is NOT a fix and is deliberately not used here: it
+	 * is consulted at one place (class-wp-query.php, the $p_status branch),
+	 * applies only to an explicitly requested `private`, and is a complete
+	 * no-op against `any` — where $r_status and $p_status are both empty. A
+	 * query var that looks like the control but isn't is worse than none.
+	 *
+	 * The real controls are this gate on what may be QUERIED — the same rule as
+	 * WP_REST_Posts_Controller::sanitize_post_statuses() — and the per-row check
+	 * in collection() on what may be READ.
+	 *
+	 * @param array  $input Input.
+	 * @param string $type  Post type the listing targets.
+	 * @return string|WP_Error
 	 */
-	private static function status_filter( array $input ) {
+	private static function status_filter( array $input, $type ) {
 		$status = isset( $input['status'] ) ? (string) $input['status'] : 'any';
 		$valid  = array( 'publish', 'draft', 'pending', 'private', 'future', 'trash' );
-		if ( 'any' === $status || ! in_array( $status, $valid, true ) ) {
-			return 'any';
+		if ( ! in_array( $status, $valid, true ) ) {
+			$status = 'any';
 		}
-		return $status;
+
+		if ( self::can_see_unpublished( $type ) ) {
+			return $status;
+		}
+
+		$object = get_post_type_object( $type );
+		if ( 'private' === $status && $object && current_user_can( $object->cap->read_private_posts ) ) {
+			return $status;
+		}
+
+		// `any` is a request for whatever this caller may see, so narrow it
+		// rather than refusing it — refusing the default would break read-only
+		// listing entirely for a legitimate low-privilege connection.
+		if ( 'any' === $status || 'publish' === $status ) {
+			return 'publish';
+		}
+
+		return new WP_Error(
+			'saddle_forbidden_status',
+			sprintf(
+				/* translators: %s: requested post status, e.g. "draft". */
+				__( 'The WordPress account this app is connected as cannot see "%s" content on this site — only published items are available to it. That is the account\'s role, not a Saddle setting. Do not retry this status; tell the user to reconnect Saddle as an account that can edit this content.', 'saddle' ),
+				$status
+			),
+			array( 'status' => 403 )
+		);
+	}
+
+	/**
+	 * Whether the caller may see unpublished content of a post type at all.
+	 *
+	 * The same capability core gates its own status parameter on, read off the
+	 * post type object so pages resolve to `edit_pages` without a second branch.
+	 *
+	 * @param string $type Post type name.
+	 * @return bool
+	 */
+	private static function can_see_unpublished( $type ) {
+		$object = get_post_type_object( $type );
+		return $object && current_user_can( $object->cap->edit_posts );
 	}
 
 	/**
