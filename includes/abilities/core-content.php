@@ -1082,13 +1082,19 @@ class Saddle_Abilities {
 	 * @return array|WP_Error
 	 */
 	public static function list_post_revisions( $input = null ) {
-		$input = self::args( $input );
-		$id    = self::require_id( $input );
-		if ( is_wp_error( $id ) ) {
-			return $id;
+		$post = self::require_readable_post( self::args( $input ), 'id' );
+		if ( is_wp_error( $post ) ) {
+			return $post;
 		}
-		if ( ! get_post( $id ) ) {
-			return new WP_Error( 'saddle_not_found', __( 'No post or page with that ID.', 'saddle' ), array( 'status' => 404 ) );
+		$id = $post->ID;
+
+		// Revisions are the edit history, not the published artifact. Core
+		// requires edit access to the parent to list them —
+		// WP_REST_Revisions_Controller::get_items_permissions_check() — and so
+		// does Saddle. Being able to read a post is not being able to read the
+		// drafts it went through.
+		if ( ! current_user_can( 'edit_post', $id ) ) {
+			return self::forbidden( __( 'You do not have permission to view this item\'s revision history.', 'saddle' ) );
 		}
 
 		$revisions = wp_get_post_revisions( $id, array( 'posts_per_page' => 50 ) );
@@ -1232,15 +1238,15 @@ class Saddle_Abilities {
 	 * @return array|WP_Error
 	 */
 	public static function get_media( $input = null ) {
-		$input = self::args( $input );
-		$id    = self::require_id( $input );
-		if ( is_wp_error( $id ) ) {
-			return $id;
+		// read_post against an attachment resolves its status through
+		// get_post_status(), which follows post_parent for `inherit` — so an
+		// upload on a draft or private post is refused, and a parentless one
+		// stays readable, exactly as core's own media endpoint behaves.
+		$post = self::require_readable_post( self::args( $input ), 'id', array( 'attachment' ) );
+		if ( is_wp_error( $post ) ) {
+			return $post;
 		}
-		$post = get_post( $id );
-		if ( ! $post || 'attachment' !== $post->post_type ) {
-			return new WP_Error( 'saddle_not_found', __( 'No media item with that ID.', 'saddle' ), array( 'status' => 404 ) );
-		}
+		$id = $post->ID;
 
 		$meta = wp_get_attachment_metadata( $id );
 		return array(
@@ -1695,21 +1701,9 @@ class Saddle_Abilities {
 	 * @return array|WP_Error
 	 */
 	private static function get_single( $type, array $input ) {
-		$id = self::require_id( $input );
-		if ( is_wp_error( $id ) ) {
-			return $id;
-		}
-		$post = get_post( $id );
-		if ( ! $post || $type !== $post->post_type ) {
-			return new WP_Error(
-				'saddle_not_found',
-				sprintf(
-					/* translators: %s: post type. */
-					__( 'No %s with that ID.', 'saddle' ),
-					$type
-				),
-				array( 'status' => 404 )
-			);
+		$post = self::require_readable_post( $input, 'id', array( $type ) );
+		if ( is_wp_error( $post ) ) {
+			return $post;
 		}
 		return self::post_detail( $post );
 	}
@@ -1763,22 +1757,74 @@ class Saddle_Abilities {
 	}
 
 	/**
-	 * Resolve and authorize the post/page a read ability targets: it exists,
-	 * is a post or page, and the current user can read it. The shared
-	 * preamble of lint-page / render-node / verify-page.
+	 * Resolve and authorize the object a read ability targets: it exists, is one
+	 * of the accepted types, and the current user may actually read it.
 	 *
-	 * @param array $input Ability input (reads `post_id`).
+	 * The read-side mirror of authorize_write(). The permission callback proved
+	 * the caller holds `read` — which every logged-in Subscriber has, and which
+	 * says nothing about this object. `read_post` is the meta capability that
+	 * consults the object's own status, so it is the one that decides
+	 * disclosure. The single funnel for every id-taking read ability; anything
+	 * that reaches a specific post another way is a bug.
+	 *
+	 * @param array    $input Ability input.
+	 * @param string   $key   Input key holding the ID. Default `post_id`.
+	 * @param string[] $types Accepted post types. Default post + page.
 	 * @return WP_Post|WP_Error
 	 */
-	public static function require_readable_post( array $input ) {
-		$post = get_post( isset( $input['post_id'] ) ? (int) $input['post_id'] : 0 );
-		if ( ! $post || ! in_array( $post->post_type, array( 'post', 'page' ), true ) ) {
-			return new WP_Error( 'saddle_not_found', __( 'No post or page with that ID.', 'saddle' ), array( 'status' => 404 ) );
+	public static function require_readable_post( array $input, $key = 'post_id', array $types = array( 'post', 'page' ) ) {
+		$id = self::require_id( $input, $key );
+		if ( is_wp_error( $id ) ) {
+			return $id;
 		}
+
+		$post = get_post( $id );
+		if ( ! $post || ! in_array( $post->post_type, $types, true ) ) {
+			return self::not_found( $types );
+		}
+
 		if ( ! current_user_can( 'read_post', $post->ID ) ) {
 			return new WP_Error( 'saddle_forbidden', __( 'You cannot read this post.', 'saddle' ), array( 'status' => 403 ) );
 		}
+
+		// map_meta_cap never consults post_password — core blanks the content at
+		// render time instead. Saddle returns RAW post_content, which core only
+		// ever hands out in the edit context, behind exactly this capability
+		// (WP_REST_Posts_Controller::can_access_password_content()). Refuse
+		// rather than blank: this reader feeds a writer on the same id, and an
+		// agent handed an empty body concludes the page needs rebuilding.
+		if ( '' !== (string) $post->post_password && ! current_user_can( 'edit_post', $post->ID ) ) {
+			return new WP_Error(
+				'saddle_password_protected',
+				__( 'This item is password-protected. Reading it needs edit access to it, which the WordPress account this app is connected as does not have. Do not retry; tell the user to reconnect Saddle as an account that can edit this item.', 'saddle' ),
+				array( 'status' => 403 )
+			);
+		}
+
 		return $post;
+	}
+
+	/**
+	 * Standard 404 for a read target that does not exist or is the wrong type.
+	 *
+	 * Whole sentences rather than sprintf() with a post-type slug: the slug is
+	 * never translated, so the interpolated form ships a half-English string in
+	 * every locale.
+	 *
+	 * @param string[] $types Accepted post types.
+	 * @return WP_Error
+	 */
+	private static function not_found( array $types ) {
+		if ( array( 'attachment' ) === $types ) {
+			$message = __( 'No media item with that ID.', 'saddle' );
+		} elseif ( array( 'post' ) === $types ) {
+			$message = __( 'No post with that ID.', 'saddle' );
+		} elseif ( array( 'page' ) === $types ) {
+			$message = __( 'No page with that ID.', 'saddle' );
+		} else {
+			$message = __( 'No post or page with that ID.', 'saddle' );
+		}
+		return new WP_Error( 'saddle_not_found', $message, array( 'status' => 404 ) );
 	}
 
 	/**

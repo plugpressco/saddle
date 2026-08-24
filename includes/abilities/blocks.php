@@ -801,13 +801,9 @@ class Saddle_Blocks_Abilities {
 	 * @return array|WP_Error
 	 */
 	public static function get_blocks( $input = null ) {
-		$input = is_array( $input ) ? $input : array();
-		$post  = get_post( isset( $input['post_id'] ) ? (int) $input['post_id'] : 0 );
-		if ( ! $post || ! in_array( $post->post_type, array( 'post', 'page' ), true ) ) {
-			return new WP_Error( 'saddle_not_found', __( 'No post or page with that ID.', 'saddle' ), array( 'status' => 404 ) );
-		}
-		if ( ! current_user_can( 'read_post', $post->ID ) ) {
-			return new WP_Error( 'saddle_forbidden', __( 'You cannot read this post.', 'saddle' ), array( 'status' => 403 ) );
+		$post = Saddle_Abilities::require_readable_post( is_array( $input ) ? $input : array() );
+		if ( is_wp_error( $post ) ) {
+			return $post;
 		}
 
 		$guarded = self::guard_native( $post );

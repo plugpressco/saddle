@@ -137,6 +137,11 @@ class Saddle_Render_Abilities {
 	 * read access, anything else needs edit rights — a read-only viewer must
 	 * not mint a window into someone's draft.
 	 *
+	 * Deliberately NOT routed through Saddle_Abilities::require_readable_post()
+	 * like the other read abilities: the artifact here is an *unauthenticated*
+	 * URL, so unpublished content needs a higher bar than "may read". The
+	 * divergence is the point; don't collapse it.
+	 *
 	 * @param array $input Ability input.
 	 * @return array|WP_Error
 	 */
