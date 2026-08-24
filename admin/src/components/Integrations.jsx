@@ -43,10 +43,37 @@ const KNOWN = {
 			'saddle'
 		),
 	},
+	// Saddle Pro's native SEO integrations. Their tools join the Integrations
+	// category only while the plugin is detected (Pro gates its
+	// saddle_integration_ui_prefixes hook on detection), so a row here always
+	// reflects a plugin that is really present.
+	yoast: {
+		title: __( 'Yoast SEO', 'saddle' ),
+		description: __(
+			'Yoast’s own SEO fields — titles, descriptions, robots — edited natively by Saddle Pro.',
+			'saddle'
+		),
+	},
+	'rank-math': {
+		title: __( 'Rank Math', 'saddle' ),
+		description: __(
+			'Rank Math’s own SEO fields, edited natively by Saddle Pro.',
+			'saddle'
+		),
+	},
+	aioseo: {
+		title: __( 'AIOSEO', 'saddle' ),
+		description: __(
+			'AIOSEO’s own SEO fields, edited natively by Saddle Pro.',
+			'saddle'
+		),
+	},
 };
 
 // Group the Integrations-category capabilities by their prefix (waggle-…,
-// knovia-…, unsplash-…) into { key, count } rows.
+// knovia-…, unsplash-…) into { key, count } rows. A two-segment prefix is
+// tried against KNOWN first, so rank-math-* files under "Rank Math" instead
+// of a row named "rank".
 const detectIntegrations = ( caps ) => {
 	const counts = new Map();
 	caps.forEach( ( c ) => {
@@ -54,7 +81,9 @@ const detectIntegrations = ( caps ) => {
 		if ( 'Integrations' !== c.category ) {
 			return;
 		}
-		const prefix = ( c.short || '' ).split( '-' )[ 0 ];
+		const parts = ( c.short || '' ).split( '-' );
+		const two = parts.slice( 0, 2 ).join( '-' );
+		const prefix = KNOWN[ two ] ? two : parts[ 0 ];
 		if ( ! prefix ) {
 			return;
 		}
