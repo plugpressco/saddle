@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-21T04:13:52+00:00\n"
+"POT-Creation-Date: 2026-08-24T19:32:40+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -5788,6 +5788,38 @@ msgstr ""
 
 #: admin/build/index.js:29
 msgid "Stock-photo search and import, built into Saddle. Needs the Access Key above."
+msgstr ""
+
+#: admin/build/index.js:29
+msgid "Yoast SEO"
+msgstr ""
+
+#: admin/build/index.js:29
+msgid "Yoast’s own SEO fields — titles, descriptions, robots — edited natively by Saddle Pro."
+msgstr ""
+
+#: admin/build/index.js:29
+msgid "Rank Math"
+msgstr ""
+
+#: admin/build/index.js:29
+msgid "Rank Math’s own SEO fields, edited natively by Saddle Pro."
+msgstr ""
+
+#: admin/build/index.js:29
+msgid "AIOSEO"
+msgstr ""
+
+#: admin/build/index.js:29
+msgid "AIOSEO’s own SEO fields, edited natively by Saddle Pro."
+msgstr ""
+
+#: admin/build/index.js:29
+msgid "WooCommerce"
+msgstr ""
+
+#: admin/build/index.js:29
+msgid "Products, orders and bulk catalog edits, handled natively by Saddle Pro."
 msgstr ""
 
 #: admin/build/index.js:29
