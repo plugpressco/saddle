@@ -34,6 +34,10 @@ class Saddle_OAuth_Endpoints {
 	public static function register_routes() {
 		$prefix = Saddle_OAuth::ROUTE_PREFIX;
 
+		// Unauthenticated by RFC 6749 §3.1: this is where an anonymous browser
+		// ARRIVES to sign in. It authenticates nobody itself — it hands off to
+		// the WordPress login and then to an administrator's consent screen,
+		// and grants nothing until that consent completes.
 		register_rest_route(
 			Saddle_MCP::REST_NAMESPACE,
 			$prefix . '/authorize',
@@ -44,6 +48,10 @@ class Saddle_OAuth_Endpoints {
 			)
 		);
 
+		// Unauthenticated by RFC 6749 §3.2: the caller is a client presenting an
+		// authorization code plus its PKCE verifier, or a refresh token. Those
+		// credentials ARE the authentication, and they are verified inside the
+		// handler; there is no WordPress user to check first.
 		register_rest_route(
 			Saddle_MCP::REST_NAMESPACE,
 			$prefix . '/token',
@@ -54,6 +62,10 @@ class Saddle_OAuth_Endpoints {
 			)
 		);
 
+		// Unauthenticated by RFC 7009 §2.1: a client hands back a token it
+		// already holds so it can be destroyed. The token is the credential,
+		// and an unknown one is answered 200 by the spec so revocation can
+		// never be used to probe which tokens exist.
 		register_rest_route(
 			Saddle_MCP::REST_NAMESPACE,
 			$prefix . '/revoke',

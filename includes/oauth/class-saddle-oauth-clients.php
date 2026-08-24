@@ -93,6 +93,11 @@ class Saddle_OAuth_Clients {
 			return;
 		}
 
+		// Unauthenticated by RFC 7591 §3.1, and off unless the owner turns
+		// dynamic registration on. Registering GRANTS NOTHING: it records a
+		// client's name and redirect URI so the consent screen has something to
+		// show. Every capability still comes from an administrator completing
+		// that screen, so an unapproved registration can do nothing at all.
 		register_rest_route(
 			Saddle_MCP::REST_NAMESPACE,
 			Saddle_OAuth::ROUTE_PREFIX . '/register',

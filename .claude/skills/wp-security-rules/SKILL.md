@@ -32,7 +32,8 @@ this table and re-deriving every example.
 | Effective tier (decide) | `Saddle_Capabilities::get_tier()` |
 | Configured tier (report) | `Saddle_Capabilities::get_site_tier()` |
 | Destructive gate | `Saddle_Approval::gate()` |
-| Object-level authz | `Saddle_Abilities::authorize_write()` · `Saddle_Pro_Divi::editable_divi5_post()` |
+| Object-level authz (write) | `Saddle_Abilities::authorize_write()` · `Saddle_Pro_Divi::editable_divi5_post()` |
+| Object-level authz (read) | `Saddle_Abilities::require_readable_post()` |
 | SSRF guard | `Saddle_HTTP::url_is_safe()` |
 | Admin REST gate | `Saddle_REST_Admin::can_manage` |
 | Option allowlist | `Saddle_Abilities::guard_option()` |
@@ -140,6 +141,8 @@ route through `Saddle_Pro_Divi::editable_divi5_post()`
 `set_page` keeps a documented inline guard (`divi.php:1272`) — it deliberately
 allows building an empty non-Divi post. Any other route to `post_content` is a
 finding.
+
+**The read side has the same rule and a different mechanism — see rule 12.**
 
 ## 5. Agent-facing payloads must NOT be HTML-escaped — HIGH
 
@@ -261,6 +264,68 @@ discloses.
 'permission_callback' => '__return_true',
 ```
 
+## 12. A read ability must authorize the OBJECT, not just the tier — CRITICAL
+
+The mirror of rule 4, and the easier one to miss. Nearly every read-tier ability
+passes `$cap = 'read'` — a capability every logged-in Subscriber holds. Any
+logged-in user can mint a core Application Password, and the MCP route requires
+only `is_user_logged_in()` (`class-saddle-mcp.php:168`). So on the read side the
+permission callback proves the caller is signed in and *nothing else*. Anything
+that resolves a caller-supplied post id, or runs a `WP_Query` whose `post_status`
+is not `publish`, is deciding disclosure entirely by itself.
+
+Two things `current_user_can( 'read' )` does not know, both load-bearing.
+`read_post` is the meta capability that actually consults the object's status,
+and it resolves an attachment's status through `get_post_status()`, so it follows
+`post_parent` on its own — a parentless attachment reads as `publish`, matching
+core's own REST controller. And `map_meta_cap` never looks at `post_password` at
+all; core blanks that content at render time instead
+(`WP_REST_Posts_Controller::can_access_password_content()`).
+
+```php
+// BAD (constructed) — permission_callback passed 'read'; nothing checks THIS post
+public static function get_media( $input ) {
+    $post = get_post( (int) $input['id'] );
+    return array( 'url' => wp_get_attachment_url( $post->ID ), 'alt' => …, 'attached_to' => … );
+}
+// GOOD — includes/abilities/core-content.php:1250
+$post = self::require_readable_post( $input, 'id', array( 'attachment' ) );
+if ( is_wp_error( $post ) ) { return $post; }
+```
+
+`require_readable_post()` (`core-content.php:1785`) is the single funnel, and it
+takes the input key and the accepted post types as arguments so there is never a
+second copy: it resolves the id, restricts the type, checks `read_post` on the
+target, and refuses a password-protected item to a caller without `edit_post` —
+Saddle returns *raw* `post_content`, which core only ever hands out in the edit
+context. Callers: `get-post`, `get-page`, `get-media`, `list-post-revisions`
+(all `core-content.php`), `get-blocks` (`blocks.php:803`), `lint-page`
+(`lint.php:57`), `render-node` (`render.php:92`), `verify-page` (`verify.php:57`).
+`get-preview-url` (`render.php:148`) is deliberately stricter — `edit_post` for
+anything unpublished, because it mints an unauthenticated URL. A new read ability
+that reaches a specific object by any other route is a finding.
+
+Listing paths need the same rule in **two** places, exactly as core does:
+
+```php
+// BAD (constructed) — 'any' is every author's drafts, and perm does not save you
+'post_status' => 'any', 'perm' => 'readable',
+// GOOD — the status the caller may QUERY, then the rows the caller may READ
+$status = self::status_filter( $input, $type );                   // core: sanitize_post_statuses()
+if ( ! current_user_can( 'read_post', $post->ID ) ) { continue; } // core: get_items()
+```
+
+Neither alone is enough: an Author holds `edit_posts` and may legitimately query
+`draft`, but must not receive another author's draft. And **`'perm' => 'readable'`
+is not a substitute for either** — it narrows only an explicitly requested
+`private` status and is a complete no-op against `post_status => 'any'`, which
+excludes only the two `internal` statuses (`register_post_status()` derives
+`exclude_from_search` from `internal`, not from `protected`). Filtering rows after
+the query means `total` counts items that were not returned; core accepts that
+silently, Saddle narrates it in a `note`, because an agent handed a short page
+with no explanation retries it.
+
+
 ---
 
 ## Known-safe patterns — do not flag
@@ -271,7 +336,8 @@ discloses.
 - **`/auth-probe`** — `class-saddle-connection.php:366`. Returns booleans about
   the caller's own headers; reads no credential.
 - **MCP transport gated only on `is_user_logged_in()`** — `class-saddle-mcp.php:168`.
-  Per-tool authorization is each ability's `permission_callback`.
+  Per-tool authorization is each ability's `permission_callback`, and per-*object*
+  authorization is the check inside its execute callback (rules 4 and 12).
 - **Unescaped echo of captured admin notices** — `includes/admin/class-saddle-settings.php:134`,
   standing `phpcs:ignore`. Other plugins' rendered HTML moved to a hidden
   container; escaping breaks their dismiss buttons.

@@ -595,7 +595,7 @@ The problem from the issue.
 `Closes #N` is mandatory — it auto-closes the issue and keeps the board honest. Use
 `Refs #N` only when the PR genuinely doesn't finish the issue.
 
-**6. Verify before merge.** This repo has **no CI workflows**, so `gh pr checks` reports nothing. "Green" means you ran the repo's own build, lint and test commands locally and said so in the PR body. Do not claim CI passed when there is no CI.
+**6. Verify before merge.** CI is `.github/workflows/ci.yml` — `composer lint` and `composer test`, on every PR. Read `gh pr checks` rather than assuming, and run the same commands locally too: the suite is environment-sensitive and has failed in CI while green locally. **Report a red check even when the failure predates your branch** — say which test and which issue tracks it. Never write "green" over an inherited failure.
 
 **7. Merge — solo fast mode.** Once checks are green and the description is
 complete, merge it yourself:
