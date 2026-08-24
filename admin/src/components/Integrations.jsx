@@ -68,6 +68,14 @@ const KNOWN = {
 			'saddle'
 		),
 	},
+	// Detected the same way, but a store rather than an SEO plugin.
+	wc: {
+		title: __( 'WooCommerce', 'saddle' ),
+		description: __(
+			'Products, orders and bulk catalog edits, handled natively by Saddle Pro.',
+			'saddle'
+		),
+	},
 };
 
 // Group the Integrations-category capabilities by their prefix (waggle-…,
