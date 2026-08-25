@@ -40,7 +40,6 @@ import {
 	PlugIcon,
 	ActivityIcon,
 	SettingsIcon,
-	SparklesIcon,
 } from '@plugpress/ui';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { api, levelFor } from './api';
@@ -50,7 +49,6 @@ import Dashboard from './components/Dashboard';
 import Permissions from './components/Permissions';
 import Guidance from './components/Guidance';
 import Memory from './components/Memory';
-import Cookbook from './components/Cookbook';
 import Apps from './components/ConnectedClients';
 import Integrations from './components/Integrations';
 import Activity from './components/Activity';
@@ -66,24 +64,19 @@ const TABS = [
 		icon: <DashboardIcon />,
 	},
 	{
-		name: 'cookbook',
-		title: __( 'Cookbook', 'saddle' ),
-		icon: <SparklesIcon />,
-	},
-	{
 		name: 'permissions',
 		title: __( 'Permissions', 'saddle' ),
 		icon: <ShieldIcon />,
 	},
 	{
 		name: 'guidance',
-		title: __( 'Guidance', 'saddle' ),
+		title: __( 'Instructions', 'saddle' ),
 		icon: <BookOpenIcon />,
 	},
 	{ name: 'memory', title: __( 'Memory', 'saddle' ), icon: <InboxIcon /> },
 	{
 		name: 'connect',
-		title: __( 'Connections', 'saddle' ),
+		title: __( 'Apps', 'saddle' ),
 		icon: <LinkIcon />,
 	},
 	{
@@ -103,22 +96,18 @@ const TABS = [
 	},
 ];
 
-// Sidebar grouping — labeled sections so eight items don't read as a flat
-// wall. Names reference TABS (routing stays keyed by name); Settings lives in
-// the rail footer.
-const NAV_GROUPS = [
-	{ key: 'top', label: '', items: [ 'dashboard', 'cookbook' ] },
-	{
-		key: 'ai',
-		label: __( 'Your AI', 'saddle' ),
-		items: [ 'permissions', 'guidance', 'memory' ],
-	},
-	{
-		key: 'connect',
-		label: __( 'Connect', 'saddle' ),
-		items: [ 'connect', 'integrations' ],
-	},
-	{ key: 'monitor', label: __( 'Monitor', 'saddle' ), items: [ 'activity' ] },
+// The rail, in order. One flat list rather than labeled sections: seven items
+// is not a wall, and the headings were three more things to read before you
+// could read the thing you came for. Names reference TABS (routing stays keyed
+// by name); Settings sits in the rail footer.
+const NAV_MAIN = [
+	'dashboard',
+	'permissions',
+	'guidance',
+	'memory',
+	'connect',
+	'integrations',
+	'activity',
 ];
 const NAV_FOOTER = [ 'settings' ];
 
@@ -159,13 +148,11 @@ const DOT_TONES = {
 	paused: 'neutral',
 };
 
-// The slim sticky bar above the content column: page context on the left
-// (nav group · page title), the always-visible safety-status pill on the
-// right. The pill is a real button — it jumps to Settings, where the
-// controls it reflects live.
+// The slim sticky bar above the content column: the page title on the left,
+// the always-visible safety-status pill on the right. The pill is a real
+// button — it jumps to Settings, where the controls it reflects live.
 function TopBar( { tab, tier, paused, onNavigate, notices } ) {
 	const t = TABS.find( ( x ) => x.name === tab );
-	const group = NAV_GROUPS.find( ( g ) => g.items.includes( tab ) );
 	const level = levelFor( tier );
 	let tone = level.key === 'read' ? 'safe' : 'active';
 	if ( paused ) {
@@ -174,16 +161,6 @@ function TopBar( { tab, tier, paused, onNavigate, notices } ) {
 	return (
 		<header className="saddle-topbar">
 			<div className="saddle-topbar__context">
-				{ !! group?.label && (
-					<>
-						<span className="saddle-topbar__group">
-							{ group.label }
-						</span>
-						<span className="saddle-topbar__sep" aria-hidden="true">
-							·
-						</span>
-					</>
-				) }
 				<span className="saddle-topbar__title">{ t?.title }</span>
 			</div>
 			<div className="saddle-topbar__right">
@@ -310,7 +287,7 @@ export default function App() {
 	// every addon bundle registered its filters at script evaluation.
 	const extTabs = useMemo( collectTabs, [] );
 	const extNames = useMemo( () => extTabs.map( ( t ) => t.id ), [ extTabs ] );
-	const { navItems, navFooter } = useMemo( () => {
+	const navItems = useMemo( () => {
 		const allTabs = [
 			...TABS,
 			...extTabs.map( ( t ) => ( {
@@ -319,24 +296,31 @@ export default function App() {
 				icon: <t.Icon />,
 			} ) ),
 		];
-		return {
-			navItems: NAV_GROUPS.map( ( g ) => ( {
-				heading: g.label || undefined,
-				items: [
-					...g.items,
-					...extTabs
-						.filter( ( t ) => t.group === g.key )
-						.map( ( t ) => t.id ),
-				].map( ( name ) => navItem( name, allTabs ) ),
-			} ) ),
+		// A contributed tab joins the main list unless it asked for the footer.
+		// The groups it used to be able to name are gone, so anything that is
+		// not explicitly 'footer' lands in the one list rather than nowhere.
+		const extMain = extTabs
+			.filter( ( t ) => t.group !== 'footer' )
+			.map( ( t ) => t.id );
+		const extFooter = extTabs
+			.filter( ( t ) => t.group === 'footer' )
+			.map( ( t ) => t.id );
+
+		return [
+			...[ ...NAV_MAIN, ...extMain ].map( ( name ) =>
+				navItem( name, allTabs )
+			),
+			// A real DS group rather than hand-rolled buttons in the `footer`
+			// slot: `footer: true` is what puts it in .pp-nav__bottom, and it
+			// brings aria-current and the collapsed-rail tooltips with it.
 			// Extension footer entries sit above Settings, which stays last.
-			navFooter: [
-				...extTabs
-					.filter( ( t ) => t.group === 'footer' )
-					.map( ( t ) => t.id ),
-				...NAV_FOOTER,
-			].map( ( name ) => navItem( name, allTabs ) ),
-		};
+			{
+				footer: true,
+				items: [ ...extFooter, ...NAV_FOOTER ].map( ( name ) =>
+					navItem( name, allTabs )
+				),
+			},
+		];
 	}, [ extTabs ] );
 	const [ tab, setTabState ] = useState( () => tabFromHash( extNames ) );
 	const [ wizardOpen, setWizardOpen ] = useState( false );
@@ -544,42 +528,12 @@ export default function App() {
 									<span>{ __( 'Saddle', 'saddle' ) }</span>
 								</>
 							}
-							items={ navItems }
-							value={ tab }
-							onChange={ setTab }
 							// Navigation only. Docs, Rate Saddle and the version
 							// stamp all live in Settings → About; repeating them
 							// here made a five-item footer out of a two-item one.
-							footer={
-								<>
-									{ navFooter.map( ( item ) => (
-										<button
-											key={ item.value }
-											type="button"
-											className="pp-nav__item"
-											aria-current={
-												tab === item.value
-													? 'page'
-													: undefined
-											}
-											title={ item.label }
-											onClick={ () =>
-												setTab( item.value )
-											}
-										>
-											<span
-												className="pp-nav__icon"
-												aria-hidden="true"
-											>
-												{ item.icon }
-											</span>
-											<span className="pp-nav__label">
-												{ item.label }
-											</span>
-										</button>
-									) ) }
-								</>
-							}
+							items={ navItems }
+							value={ tab }
+							onChange={ setTab }
 						/>
 					}
 				>
@@ -638,9 +592,6 @@ export default function App() {
 										onTierSaved={ handleTierSaved }
 										onCapsChanged={ loadCaps }
 									/>
-								) }
-								{ tab === 'cookbook' && (
-									<Cookbook onNavigate={ setTab } />
 								) }
 								{ tab === 'guidance' && <Guidance /> }
 								{ tab === 'memory' && <Memory /> }

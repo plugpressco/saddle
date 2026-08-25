@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-24T20:21:50+00:00\n"
+"POT-Creation-Date: 2026-08-25T04:45:33+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -463,7 +463,7 @@ msgstr ""
 #: includes/admin/class-saddle-settings.php:27
 #: includes/admin/class-saddle-settings.php:28
 #: admin/build/index.js:46
-#: admin/src/App.jsx:544
+#: admin/src/App.jsx:528
 msgid "Saddle"
 msgstr ""
 
@@ -1661,76 +1661,76 @@ msgstr ""
 msgid "This score covers only what the server can verify — persisted structure, attributes, and design rules. It is NOT a visual sign-off: a page can pass every server-side check and still look wrong. Open get-preview-url and judge the real pixels before calling the page done."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:440
+#: includes/admin/class-saddle-rest.php:417
 msgid "Sign-in with OAuth needs your site to be served over HTTPS — an access token sent over plain HTTP can be read in transit."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:441
+#: includes/admin/class-saddle-rest.php:418
 msgid "Sign-in with OAuth needs pretty permalinks. Go to Settings → Permalinks and choose any option other than Plain, then try again."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:507
-#: includes/admin/class-saddle-rest.php:537
-#: includes/admin/class-saddle-rest.php:559
+#: includes/admin/class-saddle-rest.php:484
+#: includes/admin/class-saddle-rest.php:514
+#: includes/admin/class-saddle-rest.php:536
 msgid "That connection no longer exists — it may already have been disconnected."
 msgstr ""
 
 #. translators: %s: the site's current access level.
-#: includes/admin/class-saddle-rest.php:548
+#: includes/admin/class-saddle-rest.php:525
 #, php-format
 msgid "This site is set to “%s”, so a connected app cannot be given more than that. Raise the site's access level first."
 msgstr ""
 
 #. translators: 1: connected app name, 2: the access level it now has.
-#: includes/admin/class-saddle-rest.php:571
+#: includes/admin/class-saddle-rest.php:548
 #, php-format
 msgid "Changed %1$s to the “%2$s” access level"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:663
+#: includes/admin/class-saddle-rest.php:640
 msgid "Unknown access tier."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:757
-#: includes/admin/class-saddle-rest.php:770
+#: includes/admin/class-saddle-rest.php:734
+#: includes/admin/class-saddle-rest.php:747
 msgid "No skill with that name."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:839
-#: includes/admin/class-saddle-rest.php:855
+#: includes/admin/class-saddle-rest.php:816
+#: includes/admin/class-saddle-rest.php:832
 msgid "No memory entry with that key."
 msgstr ""
 
 #. translators: %d: entries removed.
-#: includes/admin/class-saddle-rest.php:894
+#: includes/admin/class-saddle-rest.php:871
 #, php-format
 msgid "Owner cleared all agent-written memory (%d entries)."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1077
+#: includes/admin/class-saddle-rest.php:1054
 msgid "MCP Client"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1112
-#: includes/admin/class-saddle-rest.php:1220
-#: includes/admin/class-saddle-rest.php:1275
+#: includes/admin/class-saddle-rest.php:1089
+#: includes/admin/class-saddle-rest.php:1197
+#: includes/admin/class-saddle-rest.php:1252
 msgid "Application Passwords are not available on this site."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1116
+#: includes/admin/class-saddle-rest.php:1093
 msgid "Application Passwords are turned off on this site — often because it isn’t served over HTTPS, or a security plugin disabled them."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1121
+#: includes/admin/class-saddle-rest.php:1098
 msgid "AI app"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1229
-#: includes/admin/class-saddle-rest.php:1281
+#: includes/admin/class-saddle-rest.php:1206
+#: includes/admin/class-saddle-rest.php:1258
 msgid "No Saddle client with that ID."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1300
+#: includes/admin/class-saddle-rest.php:1277
 msgid "The old key was removed, but issuing its replacement failed. Connect the app again from the Connections screen."
 msgstr ""
 
@@ -2063,7 +2063,6 @@ msgid "The site owner turned the \"%s\" tool off individually (Saddle → Permis
 msgstr ""
 
 #: includes/class-saddle-capabilities.php:476
-#: includes/class-saddle-capabilities.php:512
 msgid "This site's domain changed since write access was granted, and the owner has domain enforcement on — write tools are refused until they re-confirm the access level (Saddle → Permissions). Do not retry; tell the user."
 msgstr ""
 
@@ -2075,37 +2074,36 @@ msgstr ""
 
 #. translators: 1: required access level, 2: current access level.
 #: includes/class-saddle-capabilities.php:502
-#: includes/class-saddle-capabilities.php:521
 #, php-format
 msgid "This tool needs the \"%1$s\" access level, but this site allows \"%2$s\". Only the site owner can raise it (Saddle → Permissions). Do not retry — ask the user to change the level if they want this done."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:562
+#: includes/class-saddle-capabilities.php:543
 #, php-format
 msgid "Blocked: Saddle is paused — \"%s\" was refused."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:566
+#: includes/class-saddle-capabilities.php:547
 #, php-format
 msgid "Blocked: your account lacks permission for \"%s\"."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:570
+#: includes/class-saddle-capabilities.php:551
 #, php-format
 msgid "Blocked: the tool \"%s\" is turned off."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:574
+#: includes/class-saddle-capabilities.php:555
 #, php-format
 msgid "Blocked: the site domain changed since write access was granted — \"%s\" is refused until the access level is re-confirmed."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:579
+#: includes/class-saddle-capabilities.php:560
 #, php-format
 msgid "Blocked: \"%s\" needs a higher access level than is enabled."
 msgstr ""
@@ -2418,270 +2416,6 @@ msgstr ""
 
 #: includes/class-saddle-context.php:586
 msgid "Rhythm: align to a consistent content width, reuse the same handful of spacing/size steps across the page, and prefer one strong idea per section over dense walls of content."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:45
-msgid "Writing"
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:46
-msgid "Pages and design"
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:47
-msgid "Divi"
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:48
-msgid "Images"
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:49
-msgid "Checking your work"
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:50
-msgid "Teaching it your way"
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:85
-msgid "See what is already on the site"
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:86
-msgid "Show me my ten most recent posts with their titles, status and dates."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:88
-msgid "A list you can check against wp-admin. This is the safest first thing to try, because it proves the connection works without changing anything."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:93
-msgid "Turn my notes into a draft"
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:94
-msgid "Here are my rough notes. Turn them into a blog post in my site's usual voice, and save it as a draft so I can review it before it goes live. Do not publish it."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:96
-msgid "A draft post you open in the editor. Say \"publish it\" once you are happy."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:101
-msgid "Rewrite a page so it reads better"
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:102
-msgid "Read my About page and rewrite it to be clearer and shorter, keeping every fact the same. Show me the new version before you save anything."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:104
-msgid "The rewrite in the chat first. Nothing is saved until you say so."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:109
-msgid "Find every page that mentions something"
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:110
-msgid "Search my site for every post or page that mentions our old phone number, and list them with links so I can see what needs updating."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:112
-msgid "A list of matches with links. Useful before a rebrand, a price change, or a move."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:117
-msgid "Undo something that went wrong"
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:118
-msgid "Show me the revision history for my Pricing page so I can see what changed and when."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:120
-msgid "The list of saved revisions. Every change Saddle makes is a normal WordPress revision, so the editor can restore any of them."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:128
-msgid "Build a page that matches my site"
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:129
-msgid "Build me a new Services page: a short intro, three services with a sentence each, and a contact button at the bottom. Use my theme's own colours, fonts and spacing rather than inventing any. Save it as a draft."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:131
-msgid "A draft page built from real editor blocks, styled from your theme. It opens and edits in WordPress exactly like something you made by hand."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:136
-msgid "Change one thing without touching the rest"
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:137
-msgid "On my home page, change the big heading to \"Roofing you can forget about\" and leave everything else exactly as it is."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:139
-msgid "Just that heading changes. Blocks are addressed one at a time, so the rest of the layout is untouched."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:144
-msgid "Add a section to a page I already have"
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:145
-msgid "Add a frequently asked questions section to the bottom of my Pricing page, with the five questions customers actually ask us. Match the styling of the rest of the page."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:147
-msgid "A new section at the end, in your existing styling. Ask it to move the section if you want it somewhere else."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:152
-msgid "Find out what my design system actually is"
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:153
-msgid "What colours, font sizes and spacing does my theme define? List them the way you would use them, and tell me anything that looks inconsistent."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:155
-msgid "Your real palette and type scale. Worth running once so you know what it will build with."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:171
-msgid "Build a true Divi landing page"
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:172
-msgid "My site runs Divi. Build me a test landing page for Pet Shop and save it as a draft, do not publish it. Make it a true landing page: full width, no page title, no sidebar. Include: a hero band with the headline \"Awesome Pet Shop\", a short supporting line, and a call to action button in [#hex colour]; a three-column Services section for Hair Trim, Clean and Bath, and Feeding; and a closing call to action band. If Divi Torque Lite is installed use it, otherwise use core modules, and reuse my site's global colours where they fit. When you are done, give me the preview link and the editor link, read the full-width, hidden-title and no-sidebar settings back to confirm they stuck, and list every section you built so I can spot-check before I publish. After I publish, double-check those layout settings took effect on the live page."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:175
-msgid "A draft that is genuinely full width with no title and no sidebar, not just a page with the right modules on it. Replace [#hex colour] with your brand colour before you paste. It should hand back both links, repeat the three layout settings as saved, and list its sections."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:180
-msgid "Build a Divi page properly"
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:181
-msgid "Build a new Divi page for our winter offer: a hero with a heading and a button, three feature cards, and a call to action band. Use real Divi modules and my existing global colours and presets, not a code module with HTML in it. Save it as a draft."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:184
-msgid "A draft page that opens in the Divi Visual Builder and edits normally. If you get a code module full of HTML, say so and ask it to rebuild with real modules."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:189
-msgid "Restyle the whole site at once"
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:190
-msgid "Change our Divi global accent colour to a warmer orange and update the button preset to match, so every page picks it up. Show me what will change before you do it."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:193
-msgid "A preview of the change, then one edit that carries across every page using those globals. This is the thing that is painful by hand."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:198
-msgid "Fix a page that looks wrong"
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:199
-msgid "Look at my Divi home page, tell me what is off about the spacing and alignment, and fix the worst of it. Show me the list before you change anything."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:202
-msgid "A list of concrete problems pointed at specific modules, then fixes you approved."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:210
-msgid "Find a photo without leaving the chat"
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:211
-msgid "Find me a photo of a quiet workshop bench for the top of my About page, add it to my media library, and set it as the featured image."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:213
-msgid "A properly licensed photo in your library with the photographer credited automatically. Needs a free Unsplash key under Saddle then Integrations."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:218
-msgid "Fix missing alt text across the site"
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:219
-msgid "Find images in my media library with no alt text, and write proper alt text for each one describing what is actually in the picture."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:221
-msgid "Alt text written and saved. This is an accessibility job most sites never get round to, and it is tedious by hand."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:229
-msgid "Let it check its own work"
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:230
-msgid "Check the page you just built, tell me the score and what is wrong with it, fix what you can, then check it again."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:232
-msgid "A score out of 100 with named problems, then a second score after the fixes. Worth asking every time it builds something, and the single most useful habit here."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:237
-msgid "See it before anyone else does"
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:238
-msgid "Give me a preview link for that draft so I can look at it in my real theme before it goes live."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:240
-msgid "A temporary private link that search engines will not index. The checks are server-side, so this is how you judge the actual pixels."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:248
-msgid "Make drafts the default"
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:249
-msgid "From now on, always save new posts as drafts for me to review, and never publish anything unless I say the word publish."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:251
-msgid "Save this on the Guidance screen instead and it applies to every conversation, in every app, without you repeating it."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:256
-msgid "Teach it your house style"
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:257
-msgid "Remember that we write in British English, we never use exclamation marks, and we call our customers clients rather than users."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:259
-msgid "Facts that survive into the next conversation, so you stop re-explaining your own site every time you start a chat."
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:264
-msgid "Catch up on what changed"
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:265
-msgid "What has changed on my site recently, and which of it did an AI do rather than a person?"
-msgstr ""
-
-#: includes/class-saddle-cookbook.php:267
-msgid "A summary of recent changes. Every change Saddle makes is recorded, including the ones it was refused."
 msgstr ""
 
 #: includes/class-saddle-http.php:124
@@ -3150,8 +2884,6 @@ msgid "$0"
 msgstr ""
 
 #: includes/class-saddle-recipes.php:100
-#: admin/build/index.js:14
-#: admin/src/components/Cookbook.jsx:171
 msgid "Pro"
 msgstr ""
 
@@ -4382,6 +4114,8 @@ msgid "Deny"
 msgstr ""
 
 #: includes/oauth/class-saddle-oauth-consent.php:203
+#: admin/build/index.js:1
+#: admin/src/api.js:91
 msgid "Just reading"
 msgstr ""
 
@@ -4390,6 +4124,8 @@ msgid "Reads posts, pages, media, and site information. Changes nothing."
 msgstr ""
 
 #: includes/oauth/class-saddle-oauth-consent.php:207
+#: admin/build/index.js:1
+#: admin/src/api.js:105
 msgid "Reading & writing"
 msgstr ""
 
@@ -4398,6 +4134,8 @@ msgid "Also creates and edits posts, pages, and media. Every deletion previews a
 msgstr ""
 
 #: includes/oauth/class-saddle-oauth-consent.php:211
+#: admin/build/index.js:1
+#: admin/src/api.js:119
 msgid "Managing the site"
 msgstr ""
 
@@ -4552,9 +4290,39 @@ msgid "This persisted attribute does nothing — rewrite it on a path the block 
 msgstr ""
 
 #. translators: %s: minimum WordPress version.
-#: saddle.php:346
+#: saddle.php:345
 #, php-format
 msgid "Saddle requires WordPress %s or later (the core Abilities API). The MCP server is disabled until you upgrade."
+msgstr ""
+
+#: admin/build/index.js:1
+#: admin/src/api.js:92
+msgid "Your AI can read your content, but can’t change or delete anything."
+msgstr ""
+
+#: admin/build/index.js:1
+#: admin/src/api.js:96
+msgid "Reads posts, pages, and media. Makes no changes."
+msgstr ""
+
+#: admin/build/index.js:1
+#: admin/src/api.js:106
+msgid "Your AI can create and edit content. Deleting always asks you first."
+msgstr ""
+
+#: admin/build/index.js:1
+#: admin/src/api.js:110
+msgid "Creates and edits content. Every deletion previews and asks first."
+msgstr ""
+
+#: admin/build/index.js:1
+#: admin/src/api.js:120
+msgid "Your AI can also manage plugins, themes, and settings. Overwrites and deletions always ask you first."
+msgstr ""
+
+#: admin/build/index.js:1
+#: admin/src/api.js:124
+msgid "Also manages plugins, themes, and settings. Changes ask first."
 msgstr ""
 
 #: admin/build/index.js:1
@@ -4651,163 +4419,118 @@ msgstr ""
 msgid "Uploaded"
 msgstr ""
 
-#: admin/build/index.js:1
-#: admin/src/components/Dashboard.jsx:48
-msgid "Read-only"
-msgstr ""
+#. translators: %d: number of connected apps.
+#: admin/build/index.js:2
+#: admin/src/components/Dashboard.jsx:99
+#, js-format
+msgid "%d app connected"
+msgid_plural "%d apps connected"
+msgstr[0] ""
+msgstr[1] ""
 
-#: admin/build/index.js:1
-#: admin/src/components/Dashboard.jsx:49
-msgid "Read & write"
-msgstr ""
+#. translators: %d: number of actions recorded in the activity log.
+#: admin/build/index.js:3
+#: admin/src/components/Dashboard.jsx:113
+#, js-format
+msgid "%d action logged"
+msgid_plural "%d actions logged"
+msgstr[0] ""
+msgstr[1] ""
 
-#: admin/build/index.js:1
-#: admin/src/components/Dashboard.jsx:50
-msgid "Admin"
-msgstr ""
-
-#: admin/build/index.js:1
-#: admin/src/components/Dashboard.jsx:107
-msgid "Healthy"
-msgstr ""
-
-#: admin/build/index.js:1
-#: admin/src/components/Dashboard.jsx:109
-msgid "Needs a fix"
-msgstr ""
-
-#: admin/build/index.js:1
+#: admin/build/index.js:3
 #: admin/build/index.js:44
-#: admin/src/App.jsx:65
-#: admin/src/components/Dashboard.jsx:115
+#: admin/src/App.jsx:63
+#: admin/src/components/Dashboard.jsx:126
 msgid "Dashboard"
 msgstr ""
 
-#: admin/build/index.js:1
-#: admin/src/components/Dashboard.jsx:116
-msgid "What your AI can do right now, what’s connected, and what it has done."
-msgstr ""
-
-#: admin/build/index.js:1
-#: admin/build/index.js:20
-#: admin/src/components/ConnectedClients.jsx:307
-#: admin/src/components/Dashboard.jsx:126
-#: admin/src/components/Dashboard.jsx:213
-msgid "Connected apps"
-msgstr ""
-
-#: admin/build/index.js:1
-#: admin/src/components/Dashboard.jsx:132
-msgid "The most any connected app can do right now. Change it on the Permissions tab."
-msgstr ""
-
-#: admin/build/index.js:1
-#: admin/src/components/Dashboard.jsx:137
-msgid "Access level"
-msgstr ""
-
-#: admin/build/index.js:1
-#: admin/src/components/Dashboard.jsx:145
-msgid "Changes and blocked attempts recorded so far. Reading your site is never logged."
-msgstr ""
-
-#: admin/build/index.js:1
-#: admin/src/components/Dashboard.jsx:150
-msgid "Actions logged"
-msgstr ""
-
-#: admin/build/index.js:1
-#: admin/src/components/Dashboard.jsx:158
-msgid "Whether apps can reach your site. If your host blocks the sign-in details apps send, connections fail — check and fix it from the Connect tab."
-msgstr ""
-
-#: admin/build/index.js:1
-#: admin/build/index.js:32
-#: admin/src/components/Dashboard.jsx:163
-#: admin/src/components/Settings.jsx:282
-msgid "Connection"
-msgstr ""
-
-#: admin/build/index.js:1
-#: admin/src/components/Dashboard.jsx:175
+#: admin/build/index.js:3
+#: admin/src/components/Dashboard.jsx:146
 msgid "Connections may not work"
 msgstr ""
 
-#: admin/build/index.js:1
-#: admin/src/components/Dashboard.jsx:176
+#: admin/build/index.js:3
+#: admin/src/components/Dashboard.jsx:147
 msgid "Your server looks like it blocks the sign-in header apps need, or Application Passwords are turned off. Open Connect to check and fix it."
 msgstr ""
 
-#: admin/build/index.js:1
-#: admin/src/components/Dashboard.jsx:185
+#: admin/build/index.js:3
+#: admin/src/components/Dashboard.jsx:156
 msgid "Check connection"
 msgstr ""
 
-#: admin/build/index.js:1
-#: admin/src/components/Dashboard.jsx:194
+#: admin/build/index.js:3
+#: admin/src/components/Dashboard.jsx:165
 msgid "Connect your first app"
 msgstr ""
 
-#: admin/build/index.js:1
-#: admin/src/components/Dashboard.jsx:195
+#: admin/build/index.js:3
+#: admin/src/components/Dashboard.jsx:166
 msgid "Add an AI app like Claude, Cursor, or VS Code so it can work with your site."
 msgstr ""
 
-#: admin/build/index.js:1
+#: admin/build/index.js:3
 #: admin/build/index.js:20
 #: admin/src/components/ConnectedClients.jsx:316
 #: admin/src/components/ConnectedClients.jsx:337
-#: admin/src/components/Dashboard.jsx:201
+#: admin/src/components/Dashboard.jsx:172
 msgid "Connect an app"
 msgstr ""
 
-#: admin/build/index.js:1
-#: admin/src/components/Dashboard.jsx:229
+#: admin/build/index.js:3
+#: admin/build/index.js:20
+#: admin/src/components/ConnectedClients.jsx:307
+#: admin/src/components/Dashboard.jsx:184
+msgid "Connected apps"
+msgstr ""
+
+#: admin/build/index.js:3
+#: admin/src/components/Dashboard.jsx:200
 msgid "Manage connections"
 msgstr ""
 
-#: admin/build/index.js:1
-#: admin/src/components/Dashboard.jsx:238
+#: admin/build/index.js:3
+#: admin/src/components/Dashboard.jsx:209
 msgid "Recent activity"
 msgstr ""
 
-#: admin/build/index.js:1
-#: admin/src/components/Dashboard.jsx:245
+#: admin/build/index.js:3
+#: admin/src/components/Dashboard.jsx:216
 msgid "View all"
 msgstr ""
 
-#: admin/build/index.js:1
+#: admin/build/index.js:3
 #: admin/build/index.js:30
 #: admin/build/index.js:31
 #: admin/src/components/Activity.jsx:27
 #: admin/src/components/Activity.jsx:165
-#: admin/src/components/Dashboard.jsx:271
+#: admin/src/components/Dashboard.jsx:242
 msgid "Blocked"
 msgstr ""
 
-#: admin/build/index.js:1
+#: admin/build/index.js:3
 #: admin/src/activity-format.js:121
 msgid "Refused"
 msgstr ""
 
-#: admin/build/index.js:1
-#: admin/src/components/Dashboard.jsx:289
+#: admin/build/index.js:3
+#: admin/src/components/Dashboard.jsx:260
 msgid "Nothing yet. Changes your AI makes will show up here."
 msgstr ""
 
-#: admin/build/index.js:1
+#: admin/build/index.js:3
 #: admin/src/components/Permissions.jsx:29
 msgid "Read"
 msgstr ""
 
-#: admin/build/index.js:1
+#: admin/build/index.js:3
 #: admin/src/components/Permissions.jsx:30
 msgid "Create & edit"
 msgstr ""
 
-#: admin/build/index.js:1
-#: admin/build/index.js:9
-#: admin/build/index.js:12
+#: admin/build/index.js:3
+#: admin/build/index.js:11
+#: admin/build/index.js:14
 #: admin/src/components/Guidance.jsx:171
 #: admin/src/components/Guidance.jsx:388
 #: admin/src/components/Memory.jsx:234
@@ -4815,40 +4538,40 @@ msgstr ""
 msgid "Delete"
 msgstr ""
 
-#: admin/build/index.js:1
+#: admin/build/index.js:3
 #: admin/src/components/Permissions.jsx:196
 msgid "This also lets your AI manage plugins, themes, and site settings. Overwrites and deletions always ask you first."
 msgstr ""
 
-#: admin/build/index.js:1
+#: admin/build/index.js:3
 #: admin/src/components/Permissions.jsx:201
 msgid "This lets your AI create and edit content. Deleting will always ask you first."
 msgstr ""
 
-#: admin/build/index.js:1
+#: admin/build/index.js:3
 #: admin/src/components/Permissions.jsx:206
 msgid "Your AI will only be able to read. It won’t be able to make any changes."
 msgstr ""
 
-#: admin/build/index.js:1
+#: admin/build/index.js:3
 #: admin/build/index.js:44
-#: admin/src/App.jsx:75
+#: admin/src/App.jsx:68
 #: admin/src/components/Permissions.jsx:215
 msgid "Permissions"
 msgstr ""
 
-#: admin/build/index.js:1
+#: admin/build/index.js:3
 #: admin/src/components/Permissions.jsx:216
 msgid "Pick how much your connected apps are allowed to do. You can change this whenever you like."
 msgstr ""
 
-#: admin/build/index.js:1
+#: admin/build/index.js:3
 #: admin/src/components/Permissions.jsx:223
 msgid "What your AI can do"
 msgstr ""
 
 #. translators: 1: comma-separated app names, 2: the level each app is stuck at, 3: the site's level.
-#: admin/build/index.js:2
+#: admin/build/index.js:4
 #: admin/src/components/Permissions.jsx:238
 #, js-format
 msgid "%1$s is connected at “%2$s”, so it is not offered the tools this “%3$s” level unlocks. Change it on the Connect tab — apps that sign in themselves keep the level they were approved with."
@@ -4857,7 +4580,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of tools active at the chosen level.
-#: admin/build/index.js:3
+#: admin/build/index.js:5
 #: admin/src/components/Permissions.jsx:265
 #, js-format
 msgid "See everything it can do (%d tool)"
@@ -4865,20 +4588,20 @@ msgid_plural "See everything it can do (%d tools)"
 msgstr[0] ""
 msgstr[1] ""
 
-#: admin/build/index.js:3
+#: admin/build/index.js:5
 #: admin/src/components/Permissions.jsx:275
 msgid "Click any tool below to turn it off individually — that stays off no matter which level above is chosen."
 msgstr ""
 
 #. translators: 1: tools offered, 2: tools installed in total.
-#: admin/build/index.js:4
+#: admin/build/index.js:6
 #: admin/src/components/Permissions.jsx:284
 #, js-format
 msgid "Connected apps are offered %1$d of the %2$d tools installed here."
 msgstr ""
 
 #. translators: %d: number of tools above the chosen level.
-#: admin/build/index.js:5
+#: admin/build/index.js:7
 #: admin/src/components/Permissions.jsx:295
 #, js-format
 msgid "%d needs a higher level, and is not shown to them at all — they cannot ask for it, so tell them if you want it used."
@@ -4887,7 +4610,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of individually switched-off tools.
-#: admin/build/index.js:6
+#: admin/build/index.js:8
 #: admin/src/components/Permissions.jsx:307
 #, js-format
 msgid "%d more is switched off below."
@@ -4895,44 +4618,44 @@ msgid_plural "%d more are switched off below."
 msgstr[0] ""
 msgstr[1] ""
 
-#: admin/build/index.js:6
+#: admin/build/index.js:8
 #: admin/src/components/Permissions.jsx:322
 msgid "Filter tools…"
 msgstr ""
 
-#: admin/build/index.js:6
+#: admin/build/index.js:8
 #: admin/src/components/Permissions.jsx:323
 msgid "Filter tools by name"
 msgstr ""
 
-#: admin/build/index.js:6
+#: admin/build/index.js:8
 #: admin/src/components/Permissions.jsx:39
 msgid "Other"
 msgstr ""
 
-#: admin/build/index.js:6
+#: admin/build/index.js:8
 #: admin/src/components/Permissions.jsx:347
 msgid "on"
 msgstr ""
 
-#: admin/build/index.js:6
+#: admin/build/index.js:8
 #: admin/src/components/Permissions.jsx:348
 #: admin/src/components/Permissions.jsx:415
 msgid "off"
 msgstr ""
 
-#: admin/build/index.js:6
+#: admin/build/index.js:8
 #: admin/src/components/Permissions.jsx:357
 msgid "No matches"
 msgstr ""
 
-#: admin/build/index.js:6
+#: admin/build/index.js:8
 #: admin/src/components/Permissions.jsx:423
 msgid "asks first"
 msgstr ""
 
 #. translators: %d: number of individually-toggled tools.
-#: admin/build/index.js:7
+#: admin/build/index.js:9
 #: admin/src/components/Permissions.jsx:453
 #, js-format
 msgid "%d tool changed."
@@ -4940,25 +4663,25 @@ msgid_plural "%d tools changed."
 msgstr[0] ""
 msgstr[1] ""
 
-#: admin/build/index.js:7
+#: admin/build/index.js:9
 #: admin/src/components/Permissions.jsx:471
 msgid "Already-connected apps keep the old tool list until you refresh or reopen them."
 msgstr ""
 
-#: admin/build/index.js:7
+#: admin/build/index.js:9
 #: admin/src/components/Permissions.jsx:480
 msgid "Not saved yet."
 msgstr ""
 
-#: admin/build/index.js:7
+#: admin/build/index.js:9
 #: admin/src/components/Permissions.jsx:482
 msgid "Save"
 msgstr ""
 
-#: admin/build/index.js:7
 #: admin/build/index.js:9
-#: admin/build/index.js:12
-#: admin/build/index.js:13
+#: admin/build/index.js:11
+#: admin/build/index.js:14
+#: admin/build/index.js:15
 #: admin/build/index.js:28
 #: admin/build/index.js:29
 #: admin/build/index.js:33
@@ -4972,409 +4695,351 @@ msgstr ""
 msgid "Cancel"
 msgstr ""
 
-#: admin/build/index.js:7
+#: admin/build/index.js:9
 #: admin/src/components/Permissions.jsx:163
 msgid "Some changes could not be saved — they’re still marked below."
 msgstr ""
 
-#: admin/build/index.js:7
+#: admin/build/index.js:9
 #: admin/src/components/Permissions.jsx:159
 msgid "Saved."
 msgstr ""
 
-#: admin/build/index.js:7
-#: admin/build/index.js:44
-#: admin/src/App.jsx:80
+#: admin/build/index.js:9
 #: admin/src/components/Guidance.jsx:208
 msgid "Guidance"
 msgstr ""
 
-#: admin/build/index.js:7
+#: admin/build/index.js:9
 #: admin/src/components/Guidance.jsx:209
 msgid "Every connected AI is told the same things about your site and follows the same instructions from you."
 msgstr ""
 
-#: admin/build/index.js:7
+#: admin/build/index.js:9
 #: admin/src/components/Guidance.jsx:221
 msgid "Saddle writes this from your site and its active plugins and keeps it current. It’s shown for transparency — you don’t edit it here."
 msgstr ""
 
-#: admin/build/index.js:7
+#: admin/build/index.js:9
 #: admin/src/components/Guidance.jsx:226
 msgid "What your AI knows"
 msgstr ""
 
-#: admin/build/index.js:7
+#: admin/build/index.js:9
 #: admin/src/components/Guidance.jsx:231
 msgid "Automatic · read-only"
 msgstr ""
 
-#: admin/build/index.js:7
+#: admin/build/index.js:9
 #: admin/src/components/Guidance.jsx:238
 msgid "Show what your AI is told"
 msgstr ""
 
-#: admin/build/index.js:7
+#: admin/build/index.js:9
 #: admin/src/components/Guidance.jsx:256
 msgid "Show readable view"
 msgstr ""
 
-#: admin/build/index.js:7
+#: admin/build/index.js:9
 #: admin/src/components/Guidance.jsx:257
 msgid "View exact text"
 msgstr ""
 
-#: admin/build/index.js:7
+#: admin/build/index.js:9
 #: admin/src/components/Guidance.jsx:268
 msgid "Rules or preferences every connected AI follows — e.g. “Always save new posts as drafts,” or “Write in a warm, friendly tone.” Leave blank if you have none."
 msgstr ""
 
-#: admin/build/index.js:7
+#: admin/build/index.js:9
 #: admin/src/components/Guidance.jsx:273
 #: admin/src/components/Guidance.jsx:279
 msgid "Your instructions"
 msgstr ""
 
-#: admin/build/index.js:7
+#: admin/build/index.js:9
 #: admin/src/components/Guidance.jsx:283
 msgid "e.g. Always save new posts as drafts for me to review."
 msgstr ""
 
-#: admin/build/index.js:7
+#: admin/build/index.js:9
 #: admin/src/components/Guidance.jsx:191
 msgid "Instructions saved."
 msgstr ""
 
-#: admin/build/index.js:7
+#: admin/build/index.js:9
 #: admin/src/components/Guidance.jsx:295
 msgid "Save instructions"
 msgstr ""
 
-#: admin/build/index.js:7
+#: admin/build/index.js:9
 #: admin/src/components/Guidance.jsx:306
 msgid "Playbook files (.md) that teach your AI specific jobs on this site — “how we publish a post”, “our SEO checklist.” Every connected AI sees the list and reads one when a task matches. Only you can add them, and a skill can never grant more access than the level you chose."
 msgstr ""
 
-#: admin/build/index.js:7
+#: admin/build/index.js:9
 #: admin/src/components/Guidance.jsx:311
 msgid "Skills"
 msgstr ""
 
-#: admin/build/index.js:7
+#: admin/build/index.js:9
 #: admin/src/components/Guidance.jsx:320
 msgid "Add skill"
 msgstr ""
 
-#: admin/build/index.js:7
+#: admin/build/index.js:9
 #: admin/src/components/Guidance.jsx:143
 msgid "Skill installed."
 msgstr ""
 
-#: admin/build/index.js:7
+#: admin/build/index.js:9
 #: admin/src/components/Guidance.jsx:351
 msgid "Bundled"
 msgstr ""
 
 #. translators: %s: skill name.
-#: admin/build/index.js:8
+#: admin/build/index.js:10
 #: admin/src/components/Guidance.jsx:364
 #, js-format
 msgid "Enable the skill “%s”"
 msgstr ""
 
-#: admin/build/index.js:8
-#: admin/build/index.js:11
+#: admin/build/index.js:10
+#: admin/build/index.js:13
 #: admin/src/components/Guidance.jsx:378
 #: admin/src/components/Memory.jsx:222
 msgid "View"
 msgstr ""
 
 #. translators: %s: skill name.
-#: admin/build/index.js:9
+#: admin/build/index.js:11
 #: admin/src/components/Guidance.jsx:166
 #, js-format
 msgid "Delete the skill “%s”?"
 msgstr ""
 
-#: admin/build/index.js:9
-#: admin/build/index.js:12
+#: admin/build/index.js:11
+#: admin/build/index.js:14
 #: admin/src/components/Guidance.jsx:169
 #: admin/src/components/Memory.jsx:85
 msgid "This cannot be undone."
 msgstr ""
 
-#: admin/build/index.js:9
+#: admin/build/index.js:11
 #: admin/src/components/Guidance.jsx:398
 msgid "No skills yet. Add a .md playbook to teach your AI a repeatable job."
 msgstr ""
 
-#: admin/build/index.js:9
+#: admin/build/index.js:11
 #: admin/build/index.js:44
-#: admin/src/App.jsx:83
+#: admin/src/App.jsx:76
 #: admin/src/components/Memory.jsx:124
 msgid "Memory"
 msgstr ""
 
-#: admin/build/index.js:9
+#: admin/build/index.js:11
 #: admin/src/components/Memory.jsx:125
 msgid "Things worth knowing between sessions — saved by you here, or noted by your AI as it works."
 msgstr ""
 
-#: admin/build/index.js:9
-#: admin/build/index.js:13
+#: admin/build/index.js:11
+#: admin/build/index.js:15
 #: admin/src/components/Memory.jsx:135
 #: admin/src/components/Memory.jsx:393
 msgid "How memory works"
 msgstr ""
 
-#: admin/build/index.js:9
+#: admin/build/index.js:11
 #: admin/src/components/Memory.jsx:142
 msgid "Memories"
 msgstr ""
 
-#: admin/build/index.js:9
+#: admin/build/index.js:11
 #: admin/src/components/Memory.jsx:143
 msgid "Every entry with its provenance — yours, or written by an AI. Pin an entry so every session is told it."
 msgstr ""
 
-#: admin/build/index.js:9
+#: admin/build/index.js:11
 #: admin/src/components/Memory.jsx:151
 msgid "Nothing remembered yet — add the first note below, or let your AI save things as it works."
 msgstr ""
 
-#: admin/build/index.js:9
+#: admin/build/index.js:11
 #: admin/src/components/Memory.jsx:165
 msgid "You"
 msgstr ""
 
 #. translators: %s: client name.
-#: admin/build/index.js:10
+#: admin/build/index.js:12
 #: admin/src/components/Memory.jsx:168
 #, js-format
 msgid "AI · %s"
 msgstr ""
 
-#: admin/build/index.js:10
+#: admin/build/index.js:12
 #: admin/src/components/Memory.jsx:173
 msgid "unknown"
 msgstr ""
 
-#: admin/build/index.js:10
+#: admin/build/index.js:12
 #: admin/src/components/Memory.jsx:182
 msgid "pinned"
 msgstr ""
 
 #. translators: %s: entry key.
-#: admin/build/index.js:11
+#: admin/build/index.js:13
 #: admin/src/components/Memory.jsx:202
 #, js-format
 msgid "Pin “%s” so every session is told it"
 msgstr ""
 
-#: admin/build/index.js:11
+#: admin/build/index.js:13
 #: admin/src/components/Memory.jsx:221
 msgid "Hide"
 msgstr ""
 
 #. translators: %s: entry key.
-#: admin/build/index.js:12
+#: admin/build/index.js:14
 #: admin/src/components/Memory.jsx:82
 #, js-format
 msgid "Forget “%s”?"
 msgstr ""
 
-#: admin/build/index.js:12
+#: admin/build/index.js:14
 #: admin/src/components/Memory.jsx:87
 msgid "Forget"
 msgstr ""
 
-#: admin/build/index.js:12
+#: admin/build/index.js:14
 #: admin/src/components/Memory.jsx:255
 msgid "Add something to remember"
 msgstr ""
 
-#: admin/build/index.js:12
+#: admin/build/index.js:14
 #: admin/src/components/Memory.jsx:256
 msgid "Your own notes are told to every session automatically."
 msgstr ""
 
-#: admin/build/index.js:12
+#: admin/build/index.js:14
 #: admin/src/components/Memory.jsx:263
 msgid "What to remember"
 msgstr ""
 
-#: admin/build/index.js:12
+#: admin/build/index.js:14
 #: admin/src/components/Memory.jsx:275
 msgid "e.g. The pricing page is “Plans” (page 42) — update it, never create a new one."
 msgstr ""
 
-#: admin/build/index.js:12
+#: admin/build/index.js:14
 #: admin/src/components/Memory.jsx:282
 msgid "Name (optional)"
 msgstr ""
 
-#: admin/build/index.js:12
+#: admin/build/index.js:14
 #: admin/src/components/Memory.jsx:293
 msgid "e.g. pricing-page"
 msgstr ""
 
-#: admin/build/index.js:12
+#: admin/build/index.js:14
 #: admin/src/components/Memory.jsx:306
 msgid "Remember this"
 msgstr ""
 
-#: admin/build/index.js:12
+#: admin/build/index.js:14
 #: admin/src/components/Memory.jsx:315
 msgid "AI-written memory"
 msgstr ""
 
-#: admin/build/index.js:12
+#: admin/build/index.js:14
 #: admin/src/components/Memory.jsx:316
 msgid "Entries an AI saved on its own are only found when it searches — unless you pin them, or turn this on."
 msgstr ""
 
-#: admin/build/index.js:12
+#: admin/build/index.js:14
 #: admin/src/components/Memory.jsx:336
 msgid "Auto-include AI-written memory"
 msgstr ""
 
-#: admin/build/index.js:12
+#: admin/build/index.js:14
 #: admin/src/components/Memory.jsx:342
 msgid "Auto-include AI-written memory (off is safest — pin entries instead)"
 msgstr ""
 
-#: admin/build/index.js:12
+#: admin/build/index.js:14
 #: admin/src/components/Memory.jsx:97
 msgid "Clear AI-written memory?"
 msgstr ""
 
 #. translators: %d: entry count.
-#: admin/build/index.js:13
+#: admin/build/index.js:15
 #: admin/src/components/Memory.jsx:100
 #, js-format
 msgid "Delete all %d AI-written memory entries? Your own entries are kept."
 msgstr ""
 
-#: admin/build/index.js:13
+#: admin/build/index.js:15
 #: admin/src/components/Memory.jsx:107
 msgid "Clear it"
 msgstr ""
 
-#: admin/build/index.js:13
+#: admin/build/index.js:15
 #: admin/src/components/Memory.jsx:356
 msgid "Clear AI-written memory"
 msgstr ""
 
-#: admin/build/index.js:13
+#: admin/build/index.js:15
 #: admin/src/components/Memory.jsx:370
 #: admin/src/components/Memory.jsx:404
 msgid "What every session is told"
 msgstr ""
 
-#: admin/build/index.js:13
+#: admin/build/index.js:15
 #: admin/src/components/Memory.jsx:371
 msgid "The exact memory block a new AI session starts with."
 msgstr ""
 
-#: admin/build/index.js:13
+#: admin/build/index.js:15
 #: admin/src/components/Memory.jsx:378
 msgid "Show the exact text"
 msgstr ""
 
-#: admin/build/index.js:13
+#: admin/build/index.js:15
 #: admin/src/components/Memory.jsx:398
 msgid "Memory is background information your AI carries between sessions — saved by you on this page, or noted by an AI with its memory tools while it works. It saves you re-explaining your site every time."
 msgstr ""
 
-#: admin/build/index.js:13
+#: admin/build/index.js:15
 #: admin/src/components/Memory.jsx:408
 msgid "Your own entries — always included."
 msgstr ""
 
-#: admin/build/index.js:13
+#: admin/build/index.js:15
 #: admin/src/components/Memory.jsx:414
 msgid "Pinned entries — always included, whoever wrote them."
 msgstr ""
 
-#: admin/build/index.js:13
+#: admin/build/index.js:15
 #: admin/src/components/Memory.jsx:420
 msgid "Everything else — only found when an AI searches its memory."
 msgstr ""
 
-#: admin/build/index.js:13
+#: admin/build/index.js:15
 #: admin/src/components/Memory.jsx:427
 msgid "AI-written entries"
 msgstr ""
 
-#: admin/build/index.js:13
+#: admin/build/index.js:15
 #: admin/src/components/Memory.jsx:430
 msgid "Entries an AI saved on its own are never served to future sessions automatically — you stay in control of what becomes standing knowledge. Pin the ones worth keeping, or turn on auto-include if you trust the whole set (off is safest). “Clear AI-written memory” removes them all at once; your own entries are kept."
 msgstr ""
 
-#: admin/build/index.js:13
+#: admin/build/index.js:15
 #: admin/src/components/Memory.jsx:436
 msgid "Safety"
 msgstr ""
 
-#: admin/build/index.js:13
+#: admin/build/index.js:15
 #: admin/src/components/Memory.jsx:439
 msgid "Memory is background information only. It can never change what your AI is allowed to do — the access level and per-tool permissions always win."
-msgstr ""
-
-#: admin/build/index.js:13
-#: admin/src/components/Cookbook.jsx:44
-msgid "Could not load the cookbook."
-msgstr ""
-
-#: admin/build/index.js:13
-#: admin/src/components/Cookbook.jsx:83
-msgid "What can I ask Saddle to do?"
-msgstr ""
-
-#: admin/build/index.js:13
-#: admin/src/components/Cookbook.jsx:84
-msgid "Prompts you can paste straight into Claude, ChatGPT or any connected app. Each one says what it needs before you run it."
-msgstr ""
-
-#. translators: %s: the site's current access level, e.g. "Just reading".
-#: admin/build/index.js:14
-#: admin/src/components/Cookbook.jsx:123
-#, js-format
-msgid "Your site is set to %s. Prompts above that level are marked, and they will be refused until you raise it."
-msgstr ""
-
-#: admin/build/index.js:14
-#: admin/src/components/Cookbook.jsx:134
-msgid "Change the level"
-msgstr ""
-
-#: admin/build/index.js:14
-#: admin/src/components/Cookbook.jsx:202
-msgid "Needs Saddle Pro, which adds the Divi 5 tools."
-msgstr ""
-
-#. translators: %s: required access level, e.g. "Reading & writing".
-#: admin/build/index.js:15
-#: admin/src/components/Cookbook.jsx:212
-#, js-format
-msgid "Needs the access level raised to %s."
-msgstr ""
-
-#: admin/build/index.js:15
-#: admin/src/components/Cookbook.jsx:73
-msgid "Could not copy. Select the prompt and copy it by hand."
-msgstr ""
-
-#: admin/build/index.js:15
-#: admin/build/index.js:17
-#: admin/src/components/Cookbook.jsx:230
-#: admin/src/components/McpDiagnostics.jsx:144
-msgid "Copied"
-msgstr ""
-
-#: admin/build/index.js:15
-#: admin/src/components/Cookbook.jsx:231
-msgid "Copy prompt"
 msgstr ""
 
 #: admin/build/index.js:15
@@ -5535,6 +5200,11 @@ msgstr ""
 #: admin/build/index.js:17
 #: admin/src/components/McpDiagnostics.jsx:137
 msgid "Record the next hour"
+msgstr ""
+
+#: admin/build/index.js:17
+#: admin/src/components/McpDiagnostics.jsx:144
+msgid "Copied"
 msgstr ""
 
 #: admin/build/index.js:17
@@ -6203,7 +5873,7 @@ msgstr ""
 
 #: admin/build/index.js:29
 #: admin/build/index.js:44
-#: admin/src/App.jsx:91
+#: admin/src/App.jsx:84
 #: admin/src/components/Integrations.jsx:116
 msgid "Integrations"
 msgstr ""
@@ -6264,7 +5934,7 @@ msgstr ""
 
 #: admin/build/index.js:30
 #: admin/build/index.js:44
-#: admin/src/App.jsx:96
+#: admin/src/App.jsx:89
 #: admin/src/components/Activity.jsx:82
 msgid "Activity"
 msgstr ""
@@ -6340,7 +6010,7 @@ msgstr ""
 
 #: admin/build/index.js:32
 #: admin/build/index.js:44
-#: admin/src/App.jsx:101
+#: admin/src/App.jsx:94
 #: admin/src/components/Settings.jsx:112
 msgid "Settings"
 msgstr ""
@@ -6454,6 +6124,11 @@ msgstr ""
 #: admin/build/index.js:32
 #: admin/src/components/Settings.jsx:257
 msgid "When an app identifies itself by web address, Saddle fetches that address to confirm it vouches for the app. Turning this off means every app shows as unverified."
+msgstr ""
+
+#: admin/build/index.js:32
+#: admin/src/components/Settings.jsx:282
+msgid "Connection"
 msgstr ""
 
 #: admin/build/index.js:32
@@ -6855,43 +6530,28 @@ msgid "Sign in again"
 msgstr ""
 
 #: admin/build/index.js:44
-#: admin/src/App.jsx:70
-msgid "Cookbook"
+#: admin/src/App.jsx:73
+msgid "Instructions"
 msgstr ""
 
 #: admin/build/index.js:44
-#: admin/src/App.jsx:86
-msgid "Connections"
+#: admin/src/App.jsx:79
+msgid "Apps"
 msgstr ""
 
 #: admin/build/index.js:44
-#: admin/src/App.jsx:113
-msgid "Your AI"
-msgstr ""
-
-#: admin/build/index.js:44
-#: admin/src/App.jsx:118
-msgid "Connect"
-msgstr ""
-
-#: admin/build/index.js:44
-#: admin/src/App.jsx:121
-msgid "Monitor"
-msgstr ""
-
-#: admin/build/index.js:44
-#: admin/src/App.jsx:192
+#: admin/src/App.jsx:169
 msgid "Change this on the Settings page"
 msgstr ""
 
 #: admin/build/index.js:44
-#: admin/src/App.jsx:204
+#: admin/src/App.jsx:181
 msgid "Paused"
 msgstr ""
 
 #. translators: %d: number of notices.
 #: admin/build/index.js:45
-#: admin/src/App.jsx:261
+#: admin/src/App.jsx:238
 #, js-format
 msgid "%d notice from other plugins"
 msgid_plural "%d notices from other plugins"
@@ -6900,27 +6560,27 @@ msgstr[1] ""
 
 #. translators: %s: error message.
 #: admin/build/index.js:46
-#: admin/src/App.jsx:390
+#: admin/src/App.jsx:374
 #, js-format
 msgid "Couldn’t refresh the connections list: %s"
 msgstr ""
 
 #: admin/build/index.js:46
-#: admin/src/App.jsx:534
+#: admin/src/App.jsx:518
 msgid "Skip to content"
 msgstr ""
 
 #: admin/build/index.js:46
-#: admin/src/App.jsx:540
+#: admin/src/App.jsx:524
 msgid "Saddle sections"
 msgstr ""
 
 #: admin/build/index.js:46
-#: admin/src/App.jsx:598
+#: admin/src/App.jsx:552
 msgid "This site’s address has changed since AI write access was turned on — often a sign of a staging clone or a migration carrying over live credentials. If that wasn’t intentional, review your connected apps and revoke anything unexpected."
 msgstr ""
 
 #: admin/build/index.js:46
-#: admin/src/App.jsx:608
+#: admin/src/App.jsx:562
 msgid "This is expected — clear this warning"
 msgstr ""
