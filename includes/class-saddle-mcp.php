@@ -300,8 +300,87 @@ class Saddle_MCP {
 				),
 			)
 		);
+	}
 
+	/**
+	 * Make the notification acknowledgement true whichever transport answered.
+	 *
+	 * THE FIX FOR #155, and the reason it is separate from register_routes():
+	 * that method runs only when Saddle serves MCP itself. When the official
+	 * MCP Adapter plugin is installed, saddle.php hands the whole request to
+	 * it, and the answer to `notifications/initialized` is then that plugin's
+	 * code at whatever version the site has — not ours. A tester on Codex hit
+	 * exactly that: 200 with an empty body, then `EOF while parsing a value`,
+	 * which is what a strict client does when it tries to JSON-parse nothing.
+	 *
+	 * Saddle should not depend on a third-party plugin's spec compliance for
+	 * the one step that sits between "connected" and `tools/list`. Both filters
+	 * are our own and neither touches the vendored library. They are safe on
+	 * both paths because the adapter registers under Saddle's OWN namespace and
+	 * route ({@see self::register_adapter_server()}), so owns_route() matches
+	 * either way — and everything here is scoped to that route.
+	 */
+	public static function register_spec_guards() {
+		// Before WP_REST_Server sets the status from the response object
+		// (rest_post_dispatch fires first), so correcting it here is what
+		// actually reaches the wire.
+		add_filter( 'rest_post_dispatch', array( __CLASS__, 'normalize_notification_status' ), 10, 3 );
 		add_filter( 'rest_pre_serve_request', array( __CLASS__, 'serve_empty_acknowledgement' ), 10, 3 );
+	}
+
+	/**
+	 * Force 202 on a JSON-RPC notification aimed at Saddle's MCP route.
+	 *
+	 * Narrow twice over: our route only, and only when the body really is a
+	 * notification — no `id`, and a `notifications/` method. A batch qualifies
+	 * only if EVERY member does, because one real call in it expects a real
+	 * response. An unparseable body is left alone: that is a 400 the transport
+	 * already answered correctly, and guessing at it would hide the error.
+	 *
+	 * @param WP_HTTP_Response $response The dispatched response.
+	 * @param mixed            $server   The REST server (unused).
+	 * @param WP_REST_Request  $request  The request.
+	 * @return mixed
+	 */
+	public static function normalize_notification_status( $response, $server = null, $request = null ) {
+		if ( ! $response instanceof WP_HTTP_Response || ! $request instanceof WP_REST_Request ) {
+			return $response;
+		}
+
+		if ( ! self::owns_route( $request ) || ! self::is_notification_request( $request ) ) {
+			return $response;
+		}
+
+		$response->set_status( 202 );
+		return $response;
+	}
+
+	/**
+	 * Whether a request body is a JSON-RPC notification, or a batch of nothing
+	 * but notifications.
+	 *
+	 * @param WP_REST_Request $request The request.
+	 * @return bool
+	 */
+	private static function is_notification_request( WP_REST_Request $request ) {
+		$body = json_decode( (string) $request->get_body(), true );
+		if ( ! is_array( $body ) || array() === $body ) {
+			return false;
+		}
+
+		$messages = isset( $body['jsonrpc'] ) || isset( $body['method'] ) ? array( $body ) : $body;
+
+		foreach ( $messages as $message ) {
+			if ( ! is_array( $message ) ) {
+				return false;
+			}
+			$method = isset( $message['method'] ) ? (string) $message['method'] : '';
+			if ( isset( $message['id'] ) || 0 !== strpos( $method, 'notifications/' ) ) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**

@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-25T04:45:33+00:00\n"
+"POT-Creation-Date: 2026-08-25T07:53:05+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -2117,7 +2117,7 @@ msgid "Saddle sign-in keys cannot be used over XML-RPC."
 msgstr ""
 
 #: includes/class-saddle-connection.php:386
-#: includes/class-saddle-mcp.php:399
+#: includes/class-saddle-mcp.php:478
 msgid "Your sign-in key was rejected — it was most likely revoked or removed. Reconnect the app from Saddle to issue a fresh key."
 msgstr ""
 
@@ -2500,65 +2500,65 @@ msgstr ""
 msgid "Tiered, default-safe, approval-gated MCP access to posts, pages, and media."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:336
+#: includes/class-saddle-mcp.php:415
 msgid "This MCP endpoint does not offer an event stream. Send JSON-RPC over POST instead."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:337
+#: includes/class-saddle-mcp.php:416
 msgid "This MCP endpoint is stateless and issues no session to terminate."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:388
+#: includes/class-saddle-mcp.php:467
 msgid "The access token was rejected — it has expired, been revoked, or was issued for a different site. Refresh it, or reconnect the app to authorize a new one."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:409
+#: includes/class-saddle-mcp.php:488
 msgid "The request arrived without a sign-in key. If you did connect one, your host may be stripping the Authorization header — open Saddle and run the connection check to confirm and fix it."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:442
+#: includes/class-saddle-mcp.php:521
 msgid "Parse error: request body is not valid JSON-RPC."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:451
+#: includes/class-saddle-mcp.php:530
 msgid "Invalid request."
 msgstr ""
 
 #. translators: 1: protocol version the client asked for, 2: comma-separated list of supported versions.
-#: includes/class-saddle-mcp.php:601
+#: includes/class-saddle-mcp.php:680
 #, php-format
 msgid "Unsupported MCP protocol version \"%1$s\". This server speaks %2$s."
 msgstr ""
 
 #. translators: %s: JSON-RPC method name.
 #. translators: %s: method name
-#: includes/class-saddle-mcp.php:679
+#: includes/class-saddle-mcp.php:758
 #: includes/lib/wp-mcp/includes/Infrastructure/ErrorHandling/McpErrorFactory.php:117
 #, php-format
 msgid "Method not found: %s"
 msgstr ""
 
-#: includes/class-saddle-mcp.php:738
+#: includes/class-saddle-mcp.php:817
 msgid "Saddle is paused on this site, so no tools will run. The site owner can resume it in Saddle → Settings. Do not retry until they do."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:750
+#: includes/class-saddle-mcp.php:829
 msgid "Saddle exposes tiered, approval-gated access to this site's posts, pages, and media. Call saddle/get-instructions for the current scope and safety rules before acting."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:943
+#: includes/class-saddle-mcp.php:1022
 msgid "Invalid params: a Saddle tool name is required."
 msgstr ""
 
 #. translators: %s: tool name.
 #. translators: %s: tool name
-#: includes/class-saddle-mcp.php:953
+#: includes/class-saddle-mcp.php:1032
 #: includes/lib/wp-mcp/includes/Infrastructure/ErrorHandling/McpErrorFactory.php:246
 #, php-format
 msgid "Tool not found: %s"
 msgstr ""
 
-#: includes/class-saddle-mcp.php:983
+#: includes/class-saddle-mcp.php:1062
 msgid "None of Saddle’s site-wide gates (pause, access level, per-tool toggles) blocked this — the connected WordPress account likely lacks a capability this tool requires, or the specific item is protected. Do not retry the same call."
 msgstr ""
 
@@ -4290,7 +4290,7 @@ msgid "This persisted attribute does nothing — rewrite it on a path the block 
 msgstr ""
 
 #. translators: %s: minimum WordPress version.
-#: saddle.php:345
+#: saddle.php:351
 #, php-format
 msgid "Saddle requires WordPress %s or later (the core Abilities API). The MCP server is disabled until you upgrade."
 msgstr ""
