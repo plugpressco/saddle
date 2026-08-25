@@ -1,19 +1,19 @@
 # Saddle — Design Alignment
 
 > **DECIDED (2026-08-25, Fahim):** Saddle has a brand palette, built on
-> **Saddle Violet `#6D3BF5`**. This **supersedes the 2026-07-04 monochrome
+> **`#DA5CC7`**. This **supersedes the 2026-07-04 monochrome
 > decision** kept below for history. The register is unchanged — calm, restrained,
-> Vercel/Geist — but the one accent is now violet instead of near-black.
-> **Roughly 85% of the interface stays black, white and gray; violet is the
+> Vercel/Geist — but the one accent is now the brand colour instead of near-black.
+> **Roughly 85% of the interface stays black, white and gray; the accent is the
 > remaining 15%.** Don't re-litigate this; do hold the line on the 85/15.
 
 ## The palette
 
 | Role | Name | Hex |
 |---|---|---|
-| Primary brand | Saddle Violet | `#6D3BF5` |
-| Hover / active | Deep Violet | `#5121C7` |
-| Soft background | Lavender Mist | `#F1ECFF` |
+| Primary brand | — | `#DA5CC7` |
+| Hover / active | — | `#A82595` |
+| Soft background | — | `#FDF4FC` |
 | Main text | Near Black | `#111111` |
 | Page background | Warm White | `#FBFBFA` |
 | Success / read-only | Lime | `#84CC16` |
@@ -30,8 +30,11 @@ portaled overlays render outside `.pp-app` and would otherwise lose every token.
 ## The rule that governs every color
 
 **Every color has a bright value for FILLS and a darker same-hue value for TEXT.**
-This is not a preference. Measured on white: violet is 5.84:1, but lime is 1.98,
-cyan 2.43 and coral 3.67 — none of them can carry a label. The DS mandates the
+This is not a preference. Measured on white the brand colour is **3.31:1** — enough
+to be seen, not enough to be read — and lime is 1.98, cyan 2.43, coral 3.67. None
+of them can carry a label, and none can be the ground under a white one. The
+readable step of the same hue does that: `#BD2BA7` for links and for the primary
+button, `#A82595` on hover. The DS mandates the
 same split for the accent (`--pp-accent` paints surfaces at 3:1;
 `--pp-accent-text` paints links and labels at 4.5:1, measured against the *tint*,
 not just white).
@@ -50,18 +53,18 @@ Three consequences worth knowing before you touch a status color:
   "blocked or failed" (a denied call, a connection error). They need opposite
   reactions from the reader — don't fold them together.
 
-## Where violet is allowed to land
+## Where the accent is allowed to land
 
 **Yes:** primary buttons · links · focus rings · the active nav row · the brand
 mark · the Cookbook-style accent bars · `tone="accent"` fills · selection states.
 
 **No:** card backgrounds, page bands, table headers, every icon, borders at large,
-section headings. If a screen has more than a few violet elements, remove some
-rather than softening the violet.
+section headings. If a screen has more than a few accented elements, remove some
+rather than softening the accent.
 
 **One deliberate deviation from the DS guide, recorded so it isn't "fixed" back:**
 the guide says *"Primary buttons are near-black (`--pp-action`), never the accent
-color."* Saddle's are violet. The cost was that `.pp-code--dark` reads
+color."* Saddle's carry the accent. The cost was that `.pp-code--dark` reads
 `--pp-code-bg` from `--pp-action` while hard-coding its border, muted and body
 colors, so `--pp-code-bg` is pinned back to near-black in `style.scss`. Code panels
 are deliberately **not** the button color.

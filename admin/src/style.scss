@@ -2,10 +2,10 @@
  * Saddle admin styles — calm, modern, person-first.
  *
  * Powered by the PlugPress design system (@plugpress/ui). Saddle overrides the
- * shared --pp-* tokens below to carry its own brand (Saddle Violet), and every
+ * shared --pp-* tokens below to carry its own brand, and every
  * --s-* token then aliases one of those. Light-only (the design system dropped
  * dark mode in v0.2.0). See DESIGN-ALIGNMENT.md for the palette and the rules
- * that govern where violet is allowed to land.
+ * that govern where the accent is allowed to land.
  */
 
 // ---------------------------------------------------------------------------
@@ -52,25 +52,35 @@ body.pp-scope,
 
 	// Accent. --pp-accent paints surfaces and needs 3:1; --pp-accent-text
 	// paints links and labels and needs 4.5:1 measured against the TINT, not
-	// just white. Deep Violet clears 7.60 on Lavender Mist.
-	--pp-accent: #6d3bf5; // Saddle Violet
-	--pp-accent-hover: #5121c7; // Deep Violet
-	--pp-accent-text: #5121c7;
-	--pp-accent-tint: #f1ecff; // Lavender Mist
-	--pp-accent-muted: rgba( 109, 59, 245, 0.12 );
+	// just white.
+	//
+	// The brand colour is 3.31:1 on white: comfortably enough to be SEEN, not
+	// enough to be READ. So it is the fill everywhere a fill belongs — dots,
+	// the focus ring, the active nav row, bar fills — and the darker step of
+	// the same hue carries every label. The violet this replaced cleared both
+	// at 5.84, which made the two tokens nearly interchangeable and hid how
+	// load-bearing the split is; here it is doing real work.
+	--pp-accent: #da5cc7; // the brand colour, exactly as given
+	--pp-accent-hover: #a82595;
+	--pp-accent-text: #bd2ba7; // 4.99 on the page, 4.80 on the tint
+	--pp-accent-tint: #fdf4fc;
+	--pp-accent-muted: rgba( 218, 92, 199, 0.12 );
 	--pp-on-accent: #ffffff;
 
 	// Primary buttons. The DS guide reserves these for near-black and says the
 	// accent is for links and nav only; Saddle deviates deliberately (Fahim,
-	// 2026-08-25 — see DESIGN-ALIGNMENT.md). White on violet is 5.84:1.
-	--pp-action: #6d3bf5;
-	--pp-action-hover: #5121c7;
+	// 2026-08-25 — see DESIGN-ALIGNMENT.md). They take the readable step, not
+	// the brand colour itself: white on #da5cc7 is 3.31:1, which is a button
+	// label people cannot read. White on this is 5.16.
+	--pp-action: #bd2ba7;
+	--pp-action-hover: #a82595;
 	--pp-on-action: #ffffff;
 
 	// --pp-focus is NOT part of the accent contract: it is a separate literal
 	// in ui.css that no accent file touches, which is why Saddle shipped a
-	// monochrome accent with a WordPress-blue focus ring until now.
-	--pp-focus: #6d3bf5;
+	// monochrome accent with a WordPress-blue focus ring until #153. A ring is
+	// a mark, so it takes the brand colour.
+	--pp-focus: #da5cc7;
 
 	// Status. These paint MARKS — status dots, rings, small fills — so each has
 	// to clear 3:1 on a white card to be seen at all. The brand palette's lime
@@ -127,8 +137,9 @@ body.pp-scope,
 }
 
 // Code panels read --pp-code-bg from --pp-action, but hard-code their border,
-// muted and body colors — so a violet action token would leave 35 CodeBlock /
-// Snippet instances violet-backed with muted text at 2.26:1. Pin the ground
+// muted and body colors — so an accent-coloured action token would leave 35
+// CodeBlock / Snippet instances on that ground with muted text far below AA.
+// Pin the ground
 // back to near-black: code blocks look exactly as they did, and stop being
 // coupled to the button color. Upstream fix belongs in plugpress-ui.
 .pp-code--dark {

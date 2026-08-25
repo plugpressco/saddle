@@ -143,7 +143,7 @@ If you happen to have the separate MCP Adapter plugin active, Saddle notices and
 
 = 1.0.0 =
 * Initial public release.
-* Saddle's screens have a look of their own now — a violet accent on a warm, near-white background, squarer corners and flatter surfaces. About 85% of it is still black, white and grey; the colour is saved for the few things worth pointing at.
+* Saddle's screens have a look of their own now — a pink accent on a warm, near-white background, squarer corners and flatter surfaces. About 85% of it is still black, white and grey; the colour is saved for the few things worth pointing at.
 * The sidebar is one plain list instead of three labelled sections, and two items say what they do rather than what they are called: Guidance is now Instructions, and Connections is now Apps. Your bookmarks and links still work.
 * The Dashboard opens with a sentence telling you what your AI can do right now, instead of four boxes of numbers. The counts moved to one quiet line underneath, and the box that used to show a dash when there was nothing to report is gone.
 * Removed the Cookbook screen.
