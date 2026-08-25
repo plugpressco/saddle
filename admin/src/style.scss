@@ -1,14 +1,142 @@
 /**
  * Saddle admin styles — calm, modern, person-first.
  *
- * Powered by the PlugPress design system (@plugpress/ui): every --s-* token
- * aliases a shared --pp-* token (below), so Saddle rides the DS palette.
- * Monochrome with semantic color reserved for status. Light-only (the design
- * system dropped dark mode in v0.2.0). See DESIGN-ALIGNMENT.md.
+ * Powered by the PlugPress design system (@plugpress/ui). Saddle overrides the
+ * shared --pp-* tokens below to carry its own brand (Saddle Violet), and every
+ * --s-* token then aliases one of those. Light-only (the design system dropped
+ * dark mode in v0.2.0). See DESIGN-ALIGNMENT.md for the palette and the rules
+ * that govern where violet is allowed to land.
  */
 
+// ---------------------------------------------------------------------------
+// Brand tokens — Saddle's palette, written over the design system's.
+//
+// The DS defines its tokens inside :where(), which has ZERO specificity, so a
+// plain class selector wins with no !important. Both .pp-app and the body class
+// are needed: portaled overlays (Dialog, DropdownMenu, Select, Tooltip, toasts)
+// render OUTSIDE .pp-app and would lose every token without the body half.
+//
+// This is a consumer-side override, not a library edit. Never change anything
+// under node_modules/@plugpress/ui — see the consumer agent guide.
+//
+// THE RULE THAT GOVERNS THE WHOLE PALETTE: every color has a bright value for
+// FILLS and a darker same-hue value for TEXT. Three of the four brand hexes
+// cannot carry text at all — lime is 1.98:1 on white, cyan 2.43, coral 3.67 —
+// so using the bright value for a label is an accessibility regression, not a
+// style choice. The DS mandates this same split for the accent
+// (--pp-accent = surfaces, 3:1; --pp-accent-text = links and labels, 4.5:1).
+// ---------------------------------------------------------------------------
+body.toplevel_page_saddle,
+body.pp-scope,
+.saddle-app,
+.pp-app {
+	// Neutral ramp. No DS component reads --pp-n-* directly — all eleven are
+	// consumed only by the ten semantic aliases below them — so warming the
+	// ramp warms the entire neutral system in one place. Same lightness steps
+	// as the DS ramp, so nothing about the visual hierarchy moves.
+	--pp-n-50: #fafafa;
+	--pp-n-100: #fbfbfa; // Warm White -> --pp-canvas, the page ground
+	--pp-n-200: #efeeec;
+	--pp-n-300: #e7e6e4;
+	--pp-n-400: #d4d2cf;
+	--pp-n-500: #aaa8a4;
+	--pp-n-600: #767471; // --pp-text-muted   — 4.50 on page (DS ships 4.40)
+	--pp-n-700: #64625d; // --pp-text-secondary — 5.88 on page
+	--pp-n-800: #444341;
+	--pp-n-900: #292928;
+	--pp-n-950: #111111; // Near Black -> --pp-text, 18.24 on page
+
+	// Cards stay pure white against the warm page, a 1.04:1 step, so the
+	// hairline border carries the separation rather than a tonal shift.
+	--pp-surface: #ffffff;
+
+	// Accent. --pp-accent paints surfaces and needs 3:1; --pp-accent-text
+	// paints links and labels and needs 4.5:1 measured against the TINT, not
+	// just white. Deep Violet clears 7.60 on Lavender Mist.
+	--pp-accent: #6d3bf5; // Saddle Violet
+	--pp-accent-hover: #5121c7; // Deep Violet
+	--pp-accent-text: #5121c7;
+	--pp-accent-tint: #f1ecff; // Lavender Mist
+	--pp-accent-muted: rgba( 109, 59, 245, 0.12 );
+	--pp-on-accent: #ffffff;
+
+	// Primary buttons. The DS guide reserves these for near-black and says the
+	// accent is for links and nav only; Saddle deviates deliberately (Fahim,
+	// 2026-08-25 — see DESIGN-ALIGNMENT.md). White on violet is 5.84:1.
+	--pp-action: #6d3bf5;
+	--pp-action-hover: #5121c7;
+	--pp-on-action: #ffffff;
+
+	// --pp-focus is NOT part of the accent contract: it is a separate literal
+	// in ui.css that no accent file touches, which is why Saddle shipped a
+	// monochrome accent with a WordPress-blue focus ring until now.
+	--pp-focus: #6d3bf5;
+
+	// Status. These paint MARKS — status dots, rings, small fills — so each has
+	// to clear 3:1 on a white card to be seen at all. The brand palette's lime
+	// (#84cc16) and cyan (#06b6d4) are the -500 step of their ramps and sit at
+	// 1.98:1 and 2.43:1 on white: invisible as a dot, and far worse than what
+	// the DS ships. Each is moved one step down its own ramp, so the family and
+	// the hue are the brand's but the mark can actually be seen. Coral is
+	// already at 3.67:1 and is used exactly as given. Labels never use these —
+	// they use the -text partners at the tone layer below.
+	--pp-success: #65a30d; // Lime, one step down — 3.09 on white
+	--pp-success-bg: #f7fee7;
+	--pp-info: #0891b2; // Cyan, one step down — 3.68 on white
+	--pp-info-bg: #ecfeff;
+	--pp-warning: #d97706; // Amber — 3.19 on white
+	--pp-warning-bg: #fffbeb;
+	--pp-danger: #f43f5e; // Coral, exactly as given — 3.67 on white
+	--pp-danger-hover: #be123c;
+	--pp-danger-bg: #fff1f2;
+
+	// Geometry. Tighter than the DS ships, to sit closer to wp-admin's own
+	// square-ish register — core buttons are 3px and its boxes are 0-4px —
+	// while staying a hair softer than core so it still reads as modern.
+	// The pill is untouched: badges, dots and status chips stay fully round.
+	--pp-r-sm: 3px;
+	--pp-r: 4px;
+	--pp-r-lg: 6px;
+
+	// Flatter surfaces. wp-admin draws structure with hairlines, not elevation,
+	// so cards lean on the border and keep shadow for things that genuinely
+	// float. Overlays (dialogs, menus, toasts) keep the DS's own md/lg shadows.
+	--pp-shadow-xs: none;
+	--pp-shadow-sm: 0 1px 2px rgba( 17, 17, 17, 0.04 );
+}
+
+// The DS derives --pp-tone-text from --pp-tone for the status tones, so a
+// bright --pp-success would mean lime badge TEXT at 1.9:1. Put the readable
+// partner back at the tone layer — the same seam the accent tone already uses
+// (--pp-tone-text: var( --pp-accent-text )). All four clear AA on their own
+// tint: 4.82 / 5.15 / 4.84 / 5.72.
+.pp-tone--success {
+	--pp-tone-text: #4d7c0f;
+}
+
+.pp-tone--info {
+	--pp-tone-text: #0e7490;
+}
+
+.pp-tone--warning {
+	--pp-tone-text: #b45309;
+}
+
+.pp-tone--danger {
+	--pp-tone-text: #be123c;
+}
+
+// Code panels read --pp-code-bg from --pp-action, but hard-code their border,
+// muted and body colors — so a violet action token would leave 35 CodeBlock /
+// Snippet instances violet-backed with muted text at 2.26:1. Pin the ground
+// back to near-black: code blocks look exactly as they did, and stop being
+// coupled to the button color. Upstream fix belongs in plugpress-ui.
+.pp-code--dark {
+	--pp-code-bg: var( --s-code-bg );
+}
+
 // Every --s-* token aliases a shared design-system --pp-* token, so Saddle's
-// whole stylesheet rides the DS palette. The old s-palette-light/dark mixins
+// whole stylesheet rides the palette above. The old s-palette-light/dark mixins
 // and saddle-theme-* classes are retired.
 //
 // Requires the page body to carry .pp-scope and .saddle-app to carry .pp-app
@@ -27,37 +155,37 @@ body.toplevel_page_saddle,
 	--s-surface-3: var( --pp-surface-hover );
 
 	--s-action: var( --pp-action );
-	--s-action-hover: var( --pp-action-hover );
 	--s-on-action: var( --pp-on-action );
 
+	--s-accent: var( --pp-accent );
+	--s-accent-text: var( --pp-accent-text );
+
+	// Status, in fill/text pairs. Reach for -text whenever the color lands on
+	// a label, and for the plain token whenever it fills a shape.
 	--s-safe: var( --pp-success );
 	--s-safe-bg: var( --pp-success-bg );
+	--s-safe-text: #4d7c0f;
 	--s-active: var( --pp-warning );
 	--s-active-bg: var( --pp-warning-bg );
+	--s-active-text: #b45309;
 	--s-danger: var( --pp-danger );
-	--s-danger-bg: var( --pp-danger-bg );
+	--s-danger-text: #be123c;
+
+	// Thin elements are the exception to "bright fills": a 2px rail or a
+	// hairline at 1.9:1 is simply not there. The Permissions lane rails are how
+	// that screen is scanned, so they take the readable step.
+	--s-rail-safe: var( --s-safe-text );
+	--s-rail-change: var( --pp-accent );
+	--s-rail-remove: var( --s-active-text );
 
 	--s-focus: var( --pp-focus );
 
-	// Inverse sticky-bar surface: the DS action tokens ARE Saddle's inverse
-	// intent (near-black bar in light, near-white in dark). Muted text + tint
-	// are the on-action color at reduced alpha, so they flip with the theme too.
-	--s-inverse-bg: var( --pp-action );
-	--s-inverse-fg: var( --pp-on-action );
-	--s-inverse-fg-muted: color-mix( in srgb, var( --pp-on-action ) 66%, transparent );
-	--s-inverse-btn-bg: var( --pp-on-action );
-	--s-inverse-btn-fg: var( --pp-action );
-	--s-inverse-btn-hover: color-mix( in srgb, var( --pp-on-action ) 90%, var( --pp-action ) );
-	--s-inverse-tint: color-mix( in srgb, var( --pp-on-action ) 8%, transparent );
-
-	// Code panels stay dark in both themes by design.
-	--s-code-bg: #0a0a0a;
-	--s-code-border: #26262b;
-	--s-code-fg: #ededed;
+	// Code panels stay dark by design, and are deliberately NOT the action
+	// color — see the .pp-code--dark rule above.
+	--s-code-bg: #171717;
 
 	--s-shadow-sm: var( --pp-shadow-sm );
 	--s-shadow-md: var( --pp-shadow-md );
-	--s-shadow-lg: var( --pp-shadow-lg );
 }
 
 // ---------- App shell: Saddle owns its canvas on this screen ----------
@@ -90,9 +218,9 @@ body.toplevel_page_saddle {
 // up over wp-admin's admin bar. Fixed at source — see saddle#74.
 
 .saddle-app {
-	--s-radius: 8px;
-	--s-radius-lg: 14px;
-	--s-radius-pill: 999px;
+	--s-radius: var( --pp-r );
+	--s-radius-lg: var( --pp-r-lg );
+	--s-radius-pill: var( --pp-r-pill );
 	--s-ease: cubic-bezier( 0.4, 0, 0.2, 1 );
 	--s-dur: 160ms;
 
@@ -165,10 +293,10 @@ body.toplevel_page_saddle {
 		gap: 6px;
 		height: 28px;
 		padding: 0 10px;
-		border: 1px solid var(--pp-border);
-		border-radius: var(--pp-radius-full, 999px);
-		background: var(--pp-surface);
-		color: var(--pp-fg-muted);
+		border: 1px solid var(--s-border);
+		border-radius: var( --s-radius-pill );
+		background: var(--s-bg);
+		color: var( --s-fg-muted );
 		font-size: 12px;
 		line-height: 1;
 		cursor: pointer;
@@ -179,14 +307,14 @@ body.toplevel_page_saddle {
 		}
 
 		&:hover {
-			color: var(--pp-fg);
-			border-color: var(--pp-border-strong, var(--pp-border));
+			color: var( --s-fg );
+			border-color: var(--s-border-strong);
 		}
 	}
 
 	&__head {
 		margin-bottom: 8px;
-		color: var(--pp-fg-subtle);
+		color: var( --s-fg-subtle );
 		font-size: 12px;
 	}
 
@@ -224,6 +352,14 @@ body.toplevel_page_saddle {
 
 // Refined active state: the DS already tints the icon accent; add a calm
 // saddle-tinted chip so the active row reads at a glance (Waggle parity).
+// The brand mark is a single `currentColor` path shared with the wp-admin menu
+// icon, so it is recolored HERE rather than in the SVG — editing the file would
+// break class-saddle-settings.php's `black` sentinel, which core's svg-painter
+// needs to repaint the menu icon per the user's admin color scheme.
+.pp-nav__brand svg {
+	color: var(--s-accent);
+}
+
 .saddle-app .pp-nav__item[aria-current='page'] {
 	background: color-mix(in srgb, var(--pp-accent) 12%, var(--pp-surface));
 }
@@ -290,11 +426,11 @@ body.toplevel_page_saddle {
 
 	&--safe {
 		background: var(--s-safe-bg);
-		color: var(--s-safe);
+		color: var(--s-safe-text);
 	}
 	&--active {
 		background: var(--s-active-bg);
-		color: var(--s-active);
+		color: var(--s-active-text);
 	}
 	&--paused {
 		background: var(--s-surface-3);
@@ -433,7 +569,7 @@ body.toplevel_page_saddle {
 			height: 16px;
 			border-radius: 50%;
 			background: var(--s-safe-bg);
-			box-shadow: inset 0 0 0 1.5px var(--s-safe);
+			box-shadow: inset 0 0 0 1.5px var(--s-safe-text);
 		}
 		&::after {
 			content: '✓';
@@ -442,7 +578,7 @@ body.toplevel_page_saddle {
 			top: 1px;
 			font-size: 11px;
 			font-weight: 700;
-			color: var(--s-safe);
+			color: var(--s-safe-text);
 		}
 	}
 }
@@ -451,8 +587,30 @@ body.toplevel_page_saddle {
 // Hero, next-step callout, cards, and app rows come from the design system;
 // only the compact activity list (no DS timeline primitive) stays ours.
 
-.saddle-stats {
-	margin-bottom: 20px;
+// The Dashboard's lead. One sentence carrying the whole answer, so it gets the
+// size and the room a heading would get — and the supporting counts get as
+// little as they can while staying legible. No box: the statement is the
+// content, and a card around it would be chrome competing with it.
+.saddle-lede {
+	margin: 0 0 28px;
+
+	&__headline {
+		max-width: 34ch;
+		margin: 0;
+		font-size: 24px;
+		font-weight: 600;
+		line-height: 1.3;
+		letter-spacing: -0.02em;
+		color: var(--s-fg);
+	}
+
+	&__facts {
+		margin: 8px 0 0;
+		font-size: 13px;
+		line-height: 1.55;
+		color: var(--s-fg-subtle);
+		font-variant-numeric: tabular-nums;
+	}
 }
 
 .saddle-cards {
@@ -561,10 +719,10 @@ body.toplevel_page_saddle {
 
 // Quiet destructive row action (e.g. Disconnect) — link button, danger ink.
 .saddle-link-danger {
-	color: var(--pp-danger);
+	color: var(--s-danger-text);
 
 	&:hover:not( :disabled ) {
-		color: var(--pp-danger);
+		color: var(--s-danger-text);
 	}
 }
 
@@ -756,14 +914,17 @@ body.toplevel_page_saddle {
 		margin: 12px 0;
 		background: var(--s-border);
 	}
+	// A 2px rail is a thin element: the bright status values sit at ~1.9:1 on
+	// white and would simply not be there. These take the readable step, which
+	// is what makes the three lanes scannable at a glance.
 	&--look.is-on &__rail {
-		background: var(--s-safe);
+		background: var(--s-rail-safe);
 	}
 	&--change.is-on &__rail {
-		background: var(--s-fg);
+		background: var(--s-rail-change);
 	}
 	&--remove.is-on &__rail {
-		background: var(--s-active);
+		background: var(--s-rail-remove);
 	}
 }
 
@@ -864,7 +1025,7 @@ body.toplevel_page_saddle {
 		font-size: 10px;
 		font-weight: 500;
 		letter-spacing: 0.02em;
-		color: var(--s-active);
+		color: var(--s-active-text);
 		background: var(--s-active-bg);
 		border-radius: var(--s-radius-pill);
 		padding: 2px 8px;
@@ -919,7 +1080,7 @@ body.toplevel_page_saddle {
 	align-items: center;
 	gap: 10px;
 	margin-top: var(--pp-space-2);
-	color: var(--pp-fg-muted);
+	color: var( --s-fg-muted );
 	font-size: 12px;
 	font-weight: 600;
 	letter-spacing: 0.01em;
@@ -928,7 +1089,7 @@ body.toplevel_page_saddle {
 		content: '';
 		flex: 1;
 		height: 1px;
-		background: var(--pp-border);
+		background: var(--s-border);
 	}
 }
 
@@ -941,7 +1102,7 @@ body.toplevel_page_saddle {
 	font-size: 12px;
 
 	a {
-		color: var(--pp-fg-muted);
+		color: var( --s-fg-muted );
 	}
 }
 
@@ -964,7 +1125,7 @@ body.toplevel_page_saddle {
 }
 
 .saddle-apps__fieldlabel {
-	color: var(--pp-fg-muted);
+	color: var( --s-fg-muted );
 	font-size: 12px;
 	font-weight: 600;
 }
@@ -1140,7 +1301,7 @@ body.toplevel_page_saddle {
 		width: 64px;
 		height: 64px;
 		fill: none;
-		stroke: var(--s-safe);
+		stroke: var(--s-safe-text);
 		stroke-width: 3;
 		stroke-linecap: round;
 		stroke-linejoin: round;
@@ -1180,7 +1341,7 @@ body.toplevel_page_saddle {
 	}
 
 	&--ok {
-		color: var(--s-safe);
+		color: var(--s-safe-text);
 		font-weight: 600;
 	}
 
@@ -1195,7 +1356,7 @@ body.toplevel_page_saddle {
 	}
 
 	&__error {
-		color: var(--s-danger);
+		color: var(--s-danger-text);
 	}
 
 	&__actions {
@@ -1432,7 +1593,7 @@ body.toplevel_page_saddle {
 	&__degraded {
 		margin: 0 0 12px;
 		font-size: 13px;
-		color: var(--s-danger);
+		color: var(--s-danger-text);
 	}
 
 	&__actions {
@@ -1473,71 +1634,5 @@ body.toplevel_page_saddle {
 			white-space: nowrap;
 			color: var(--s-fg-subtle);
 		}
-	}
-}
-
-/* Cookbook — ready-to-paste prompts.
-   The prompt is the hero of each card, so it gets the surface treatment and
-   the rest is quiet around it: the person is scanning for something to copy,
-   not reading prose. */
-.saddle-cookbook {
-	&__group {
-		margin-bottom: 16px;
-	}
-}
-
-.saddle-recipe {
-	padding: 16px 0;
-	border-bottom: 1px solid var(--s-border);
-
-	&:last-child {
-		border-bottom: 0;
-		padding-bottom: 0;
-	}
-
-	&:first-child {
-		padding-top: 0;
-	}
-
-	&__head {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 12px;
-		flex-wrap: wrap;
-		margin-bottom: 8px;
-	}
-
-	&__tags {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		flex-shrink: 0;
-	}
-
-	/* The thing they came to copy. Monospace would read as code and this is a
-	   sentence, so it is set apart by surface rather than by family. */
-	&__prompt {
-		margin: 0 0 8px;
-		padding: 12px 14px;
-		background: var(--s-surface-2);
-		border-left: 3px solid var(--s-accent);
-		border-radius: var(--s-radius);
-		font-size: 14px;
-		line-height: 1.55;
-		color: var(--s-fg);
-	}
-
-	&__expect {
-		margin: 0 0 10px;
-		font-size: 13px;
-		line-height: 1.5;
-		color: var(--s-fg-subtle);
-	}
-
-	&__blocked {
-		margin: 0 0 10px;
-		font-size: 13px;
-		color: var(--s-fg-muted);
 	}
 }

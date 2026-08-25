@@ -1,7 +1,15 @@
 /**
- * Dashboard — the calm status screen. Answers, at a glance: what can the AI do
- * right now, what's connected, and what (if anything) it has done. Adapts when
- * nothing is set up yet.
+ * Dashboard — the calm status screen.
+ *
+ * One idea, stated in a sentence: what your AI can do right now. Everything
+ * else is quieter than that — the counts are a single supporting line, and the
+ * only things allowed to interrupt are the ones that need a decision.
+ *
+ * It used to open with four equal tiles of three different kinds (two counts, a
+ * setting and a health state), which read as a metrics dashboard for a question
+ * that is not a metric. The health tile in particular said "—" on most installs
+ * while a real problem already had its own callout with an explanation and a
+ * fix, so it cost a quarter of the page to say nothing.
  */
 import { useState, useEffect } from '@wordpress/element';
 import {
@@ -15,23 +23,11 @@ import {
 	RowList,
 	Row,
 	StatusDot,
-	StatCard,
-	StatGrid,
 	PageHeader,
-	HelpTip,
 } from '@plugpress/ui';
-import { __ } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { api, levelFor } from '../api';
 import { parseEntryDate, relativeWhen, shortLabel } from '../activity-format';
-
-// Stat label + inline "?" — the explanation rides a tooltip so the tile stays
-// a single clean number (DS HelpTip: content via children, 14px icon).
-const StatLabel = ( { children, help } ) => (
-	<span className="saddle-stat__label">
-		{ children }
-		<HelpTip>{ help }</HelpTip>
-	</span>
-);
 
 // How many recent entries the Dashboard preview shows; the full record lives on
 // the Activity screen. Kept small so the fetch stays light.
@@ -41,14 +37,6 @@ const PREVIEW_COUNT = 6;
 // doesn't re-run the loopback probe. Reset on full reload, which is the right
 // granularity.
 let healthCache = null;
-
-// Compact tile labels for the access level — the shared LEVELS titles
-// ("Just reading" …) read as sentences; a stat value wants one word.
-const LEVEL_STAT_LABEL = {
-	read: __( 'Read-only', 'saddle' ),
-	write: __( 'Read & write', 'saddle' ),
-	admin: __( 'Admin', 'saddle' ),
-};
 
 export default function Dashboard( { tier, clients, onNavigate, onConnect } ) {
 	const hasApps = clients.length > 0;
@@ -94,78 +82,61 @@ export default function Dashboard( { tier, clients, onNavigate, onConnect } ) {
 	// X-WP-Nonce header only affects this dashboard's own requests, which Saddle
 	// already works around — so it counts as healthy here, and the note about
 	// telling the host lives on the Connect tab where the detail belongs.
-	const healthOk =
-		health &&
-		( health.status === 'ok' || health.status === 'nonce_header_stripped' );
 	const healthProblem =
 		health &&
 		health.status !== 'ok' &&
 		health.status !== 'unknown' &&
 		health.status !== 'nonce_header_stripped';
-	let healthValue = '—';
-	if ( healthOk ) {
-		healthValue = __( 'Healthy', 'saddle' );
-	} else if ( healthProblem ) {
-		healthValue = __( 'Needs a fix', 'saddle' );
+
+	// The one thing the page is for, said in a sentence. `level.one` is already
+	// written for exactly this ("Your AI can create and edit content. Deleting
+	// always asks you first.") — the tiles were paraphrasing it into one word.
+	const facts = [];
+	if ( hasApps ) {
+		facts.push(
+			sprintf(
+				/* translators: %d: number of connected apps. */
+				_n(
+					'%d app connected',
+					'%d apps connected',
+					clients.length,
+					'saddle'
+				),
+				clients.length
+			)
+		);
+	}
+	if ( activity && activity.total > 0 ) {
+		facts.push(
+			sprintf(
+				/* translators: %d: number of actions recorded in the activity log. */
+				_n(
+					'%d action logged',
+					'%d actions logged',
+					activity.total,
+					'saddle'
+				),
+				activity.total
+			)
+		);
 	}
 
 	return (
 		<div className="saddle-home">
-			<PageHeader
-				title={ __( 'Dashboard', 'saddle' ) }
-				description={ __(
-					'What your AI can do right now, what’s connected, and what it has done.',
-					'saddle'
-				) }
-			/>
+			<PageHeader title={ __( 'Dashboard', 'saddle' ) } />
 
-			{ /* At-a-glance tiles: what's connected, what power it has, and how
-			     much it has done. Values come from data already loaded. */ }
-			<StatGrid className="saddle-stats" min={ 180 }>
-				<StatCard
-					label={ __( 'Connected apps', 'saddle' ) }
-					value={ clients.length }
-				/>
-				<StatCard
-					label={
-						<StatLabel
-							help={ __(
-								'The most any connected app can do right now. Change it on the Permissions tab.',
-								'saddle'
-							) }
-						>
-							{ __( 'Access level', 'saddle' ) }
-						</StatLabel>
-					}
-					value={ LEVEL_STAT_LABEL[ level.key ] || level.title }
-				/>
-				<StatCard
-					label={
-						<StatLabel
-							help={ __(
-								'Changes and blocked attempts recorded so far. Reading your site is never logged.',
-								'saddle'
-							) }
-						>
-							{ __( 'Actions logged', 'saddle' ) }
-						</StatLabel>
-					}
-					value={ activity ? activity.total : '—' }
-				/>
-				<StatCard
-					label={
-						<StatLabel
-							help={ __(
-								'Whether apps can reach your site. If your host blocks the sign-in details apps send, connections fail — check and fix it from the Connect tab.',
-								'saddle'
-							) }
-						>
-							{ __( 'Connection', 'saddle' ) }
-						</StatLabel>
-					}
-					value={ healthValue }
-				/>
-			</StatGrid>
+			{ /* The lead. Everything below it is quieter on purpose: the counts
+			     are a supporting line, not tiles, and when there are no apps the
+			     count is dropped entirely — the callout underneath already says
+			     it, and saying it twice is the opposite of clean. */ }
+			<section className="saddle-lede">
+				<p className="saddle-lede__headline">{ level.one }</p>
+				{ facts.length > 0 && (
+					<p className="saddle-lede__facts">
+						{ facts.join( ' · ' ) }
+					</p>
+				) }
+			</section>
 
 			{ /* A stripped Authorization header (or app passwords off) breaks
 			     every connection — surface it here with a path to the fix. */ }

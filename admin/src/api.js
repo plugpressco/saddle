@@ -2,6 +2,7 @@
  * Small shared helpers for the Saddle admin app.
  */
 import apiFetch from '@wordpress/api-fetch';
+import { __ } from '@wordpress/i18n';
 
 export const saddleData = window.saddleData || {};
 
@@ -87,25 +88,43 @@ export const LEVELS = [
 	{
 		key: 'read',
 		icon: 'read',
-		title: 'Just reading',
-		one: 'Your AI can read your content, but can’t change or delete anything.',
-		short: 'Reads posts, pages, and media. Makes no changes.',
+		title: __( 'Just reading', 'saddle' ),
+		one: __(
+			'Your AI can read your content, but can’t change or delete anything.',
+			'saddle'
+		),
+		short: __(
+			'Reads posts, pages, and media. Makes no changes.',
+			'saddle'
+		),
 		recommended: true,
 	},
 	{
 		key: 'write',
 		icon: 'write',
-		title: 'Reading & writing',
-		one: 'Your AI can create and edit content. Deleting always asks you first.',
-		short: 'Creates and edits content. Every deletion previews and asks first.',
+		title: __( 'Reading & writing', 'saddle' ),
+		one: __(
+			'Your AI can create and edit content. Deleting always asks you first.',
+			'saddle'
+		),
+		short: __(
+			'Creates and edits content. Every deletion previews and asks first.',
+			'saddle'
+		),
 		recommended: false,
 	},
 	{
 		key: 'admin',
 		icon: 'admin',
-		title: 'Managing the site',
-		one: 'Your AI can also manage plugins, themes, and settings. Overwrites and deletions always ask you first.',
-		short: 'Also manages plugins, themes, and settings. Changes ask first.',
+		title: __( 'Managing the site', 'saddle' ),
+		one: __(
+			'Your AI can also manage plugins, themes, and settings. Overwrites and deletions always ask you first.',
+			'saddle'
+		),
+		short: __(
+			'Also manages plugins, themes, and settings. Changes ask first.',
+			'saddle'
+		),
 		recommended: false,
 	},
 ];
