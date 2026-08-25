@@ -284,6 +284,12 @@ final class Saddle {
 		// the build most likely to need it is the one without the adapter.
 		Saddle_MCP_Diagnostics::register();
 
+		// Spec conformance Saddle owns on BOTH transports: a JSON-RPC
+		// notification on our route must be answered 202 with no body, and on
+		// the adapter path that answer would otherwise be the MCP Adapter
+		// plugin's, at whatever version the site happens to have (#155).
+		add_action( 'rest_api_init', array( 'Saddle_MCP', 'register_spec_guards' ) );
+
 		if ( self::adapter_available() ) {
 			// Third-party hook, owned by the MCP Adapter plugin — its name is
 			// theirs, and this is the documented way to register a server with
