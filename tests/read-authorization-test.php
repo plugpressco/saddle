@@ -482,6 +482,150 @@ class Saddle_Read_Authorization_Test extends WP_UnitTestCase {
 		$this->assertNotEmpty( $result['url'] );
 	}
 
+
+	/* -------- recall-changes and the recent-changes context (#150) -------- */
+
+	/**
+	 * The mutation log's rows carry a human-readable summary — usually the
+	 * title of the thing that changed. `recall-changes` is read tier, and the
+	 * read tier's capability is `read`, so without a filter a subscriber's
+	 * credential can enumerate the titles of drafts and private posts it can
+	 * never open. Same class as the rest of this file; different mechanism,
+	 * because the log is its own CPT and never passes through collection().
+	 */
+	private function log_change_on( $post_id, $summary ) {
+		Saddle_Log::record_action( 'update-post', $post_id, $summary );
+	}
+
+	private function summaries( array $result ) {
+		return wp_list_pluck( $result['changes'], 'summary' );
+	}
+
+	public function test_subscriber_does_not_see_log_entries_for_another_authors_draft() {
+		$draft = $this->other_post( 'draft' );
+		$this->log_change_on( $draft, 'Updated "Confidential draft post"' );
+		$this->as_subscriber();
+
+		$result = $this->ability( 'saddle/recall-changes' )->execute( array() );
+
+		$this->assertNotContains(
+			'Updated "Confidential draft post"',
+			$this->summaries( $result ),
+			'recall-changes must not disclose the title of a draft the caller cannot read.'
+		);
+	}
+
+	public function test_subscriber_does_not_see_log_entries_for_another_authors_private_post() {
+		$private = $this->other_post( 'private' );
+		$this->log_change_on( $private, 'Updated "Confidential private post"' );
+		$this->as_subscriber();
+
+		$result = $this->ability( 'saddle/recall-changes' )->execute( array() );
+
+		$this->assertNotContains( 'Updated "Confidential private post"', $this->summaries( $result ) );
+	}
+
+	public function test_subscriber_still_sees_log_entries_for_published_content() {
+		$published = $this->other_post( 'publish' );
+		$this->log_change_on( $published, 'Updated "Confidential publish post"' );
+		$this->as_subscriber();
+
+		$result = $this->ability( 'saddle/recall-changes' )->execute( array() );
+
+		$this->assertContains(
+			'Updated "Confidential publish post"',
+			$this->summaries( $result ),
+			'A change to public content is not a disclosure, and the ability has to stay useful at read tier.'
+		);
+	}
+
+	/**
+	 * Settings changes, plugin activations and the like name no post. They are
+	 * already admin-tier actions — nothing below admin can perform one — so the
+	 * row itself is the record of something the owner did, and there is no
+	 * per-object capability to consult. They stay.
+	 */
+	public function test_a_log_entry_naming_no_post_survives_the_filter() {
+		Saddle_Log::record_action( 'update-option', '', 'Changed the site tagline' );
+		$this->as_subscriber();
+
+		$result = $this->ability( 'saddle/recall-changes' )->execute( array() );
+
+		$this->assertContains( 'Changed the site tagline', $this->summaries( $result ) );
+	}
+
+	public function test_administrator_sees_every_log_entry() {
+		$draft = $this->other_post( 'draft' );
+		$this->log_change_on( $draft, 'Updated "Confidential draft post"' );
+
+		$result = $this->ability( 'saddle/recall-changes' )->execute( array() );
+
+		$this->assertContains(
+			'Updated "Confidential draft post"',
+			$this->summaries( $result ),
+			'The owner\'s administrator credential must be unaffected.'
+		);
+		$this->assertSame( 1, $result['count'] );
+	}
+
+	/**
+	 * The record of a deletion is the thing the log exists for, and the object
+	 * it names is gone, so there is nothing left to authorize against. It
+	 * survives for an account that could have deleted content, and is withheld
+	 * from one that could not — an owner never loses deletion history, and a
+	 * read-only connection never gains it.
+	 */
+	public function test_a_log_entry_whose_post_is_gone_survives_for_an_account_that_can_delete() {
+		$gone = $this->other_post( 'publish' );
+		$this->log_change_on( $gone, 'Deleted "Confidential publish post"' );
+		wp_delete_post( $gone, true );
+
+		$result = $this->ability( 'saddle/recall-changes' )->execute( array() );
+		$this->assertContains( 'Deleted "Confidential publish post"', $this->summaries( $result ) );
+
+		$this->as_subscriber();
+		$result = $this->ability( 'saddle/recall-changes' )->execute( array() );
+		$this->assertNotContains( 'Deleted "Confidential publish post"', $this->summaries( $result ) );
+	}
+
+	/**
+	 * A trashed post is still a post, so the ordinary read_post mapping decides
+	 * — which for `trash` falls through to the edit capabilities. Pinned
+	 * because it is the common shape: delete-post trashes by default.
+	 */
+	public function test_a_trashed_posts_entry_follows_read_post() {
+		$trashed = $this->other_post( 'publish' );
+		$this->log_change_on( $trashed, 'Trashed "Confidential publish post"' );
+		wp_trash_post( $trashed );
+
+		$result = $this->ability( 'saddle/recall-changes' )->execute( array() );
+		$this->assertContains( 'Trashed "Confidential publish post"', $this->summaries( $result ) );
+
+		$this->as_subscriber();
+		$result = $this->ability( 'saddle/recall-changes' )->execute( array() );
+		$this->assertNotContains( 'Trashed "Confidential publish post"', $this->summaries( $result ) );
+	}
+
+	/**
+	 * The filter belongs in Saddle_Log::recent_executed(), not in the ability:
+	 * the same rows are assembled into the "recent changes" section of the
+	 * system context that every connected session receives, at whatever tier.
+	 * Fixing only the ability would leave that path disclosing the same titles.
+	 */
+	public function test_the_recent_changes_context_section_is_filtered_too() {
+		$draft = $this->other_post( 'draft' );
+		$this->log_change_on( $draft, 'Updated "Confidential draft post"' );
+		$this->as_subscriber();
+
+		$context = Saddle_Context::system_context();
+
+		$this->assertStringNotContainsString(
+			'Confidential draft post',
+			$context,
+			'The system context is assembled from the same log rows and must be filtered at the source.'
+		);
+	}
+
 	/* -------- the tier itself must not have moved -------- */
 
 	/**
