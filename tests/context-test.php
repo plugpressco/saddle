@@ -8,6 +8,19 @@
 
 class Saddle_Context_Test extends WP_UnitTestCase {
 
+	/**
+	 * The system context is only ever assembled for a resolved WordPress user —
+	 * the MCP route requires one before any of this runs. Test as the normal
+	 * Saddle setup, an owner's administrator credential, so the recent-changes
+	 * section is judged the way it is in the field. Without a user,
+	 * Saddle_Log::recent_executed() correctly withholds every row that names a
+	 * post, which is right for user 0 and wrong for what these tests measure.
+	 */
+	public function set_up() {
+		parent::set_up();
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+	}
+
 	public function tear_down() {
 		delete_option( Saddle_Capabilities::OPTION );
 		delete_option( 'active_plugins' );

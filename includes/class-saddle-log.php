@@ -180,6 +180,10 @@ class Saddle_Log {
 	 * noise, not orientation an agent needs. Recency-bounded so a dormant site
 	 * serves nothing stale.
 	 *
+	 * Rows are filtered against the caller — see entry_is_visible(). Both
+	 * consumers are read tier, so the filter belongs here rather than in either
+	 * of them.
+	 *
 	 * @param int $limit Maximum entries (1–50).
 	 * @param int $days  Recency window in days.
 	 * @return array[] Entries: date, action, target, summary. Newest first.
@@ -214,15 +218,71 @@ class Saddle_Log {
 		);
 
 		$entries = array();
+		$targets = array();
 		foreach ( $q->posts as $post ) {
+			$target    = (string) get_post_meta( $post->ID, '_saddle_target', true );
 			$entries[] = array(
 				'date'    => $post->post_date_gmt,
 				'action'  => (string) get_post_meta( $post->ID, '_saddle_action', true ),
-				'target'  => (string) get_post_meta( $post->ID, '_saddle_target', true ),
+				'target'  => $target,
 				'summary' => $post->post_title,
 			);
+			if ( is_numeric( $target ) ) {
+				$targets[ (int) $target ] = true;
+			}
 		}
-		return $entries;
+
+		// Prime every post the log names in one query, so the per-row check
+		// below is not a query in a loop. read_post resolves an attachment's
+		// status through post_parent, so those get primed too.
+		if ( $targets ) {
+			$ids = array_keys( $targets );
+			_prime_post_caches( $ids, false, false );
+			$primed = array_filter( array_map( 'get_post', $ids ) );
+			if ( $primed ) {
+				update_post_parent_caches( $primed );
+			}
+		}
+
+		return array_values( array_filter( $entries, array( __CLASS__, 'entry_is_visible' ) ) );
+	}
+
+	/**
+	 * Whether one log row may be shown to the current user.
+	 *
+	 * `summary` carries the title of the thing that changed, so a row about a
+	 * post discloses that post. Both consumers are read tier, and the read
+	 * tier's capability is `read` — which every logged-in user holds, a
+	 * Subscriber included. So each row is judged against its own object, the
+	 * same way a listing is judged in Saddle_Abilities::collection().
+	 *
+	 * Two edges, both deliberate:
+	 *
+	 * - A row naming no post — a settings change, a plugin activation, a cache
+	 *   flush — has no object to authorize against, and the action itself is
+	 *   admin tier. It stays. Term ids are numeric and are judged as post ids;
+	 *   the worst that costs is hiding a public taxonomy row from a
+	 *   low-privilege connection, never disclosing anything.
+	 * - A row whose post no longer exists is the record of a deletion, which is
+	 *   the thing this log exists for. Dropping it would erase deletion history
+	 *   from the owner's own record, so it survives for an account that could
+	 *   have deleted content and is withheld from one that could not.
+	 *
+	 * @param array $entry One entry assembled by recent_executed().
+	 * @return bool
+	 */
+	private static function entry_is_visible( array $entry ) {
+		$target = isset( $entry['target'] ) ? $entry['target'] : '';
+		if ( ! is_numeric( $target ) ) {
+			return true;
+		}
+
+		$id = (int) $target;
+		if ( ! get_post( $id ) ) {
+			return current_user_can( 'delete_posts' );
+		}
+
+		return current_user_can( 'read_post', $id );
 	}
 
 	/**
