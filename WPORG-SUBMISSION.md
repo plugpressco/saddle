@@ -1,7 +1,7 @@
 # WordPress.org submission — checklist & reviewer notes
 
 Internal doc (never shipped in the zip — excluded in Gruntfile.js). Last audit:
-2026-07-28, responding to review round 1.
+2026-08-27, responding to review round 2.
 
 ## Review history
 
@@ -12,6 +12,14 @@ Review ID `AUTOPREREVIEW ❗TRM saddle/badhonrocks/25Jul26/T1 25Jul26/4.2A1
 proportions"), so several items were pattern-match flags rather than findings.
 Five flags; two were real. All addressed 2026-07-28 — see §8–§11 below for the
 answers, which are the ones to reuse if round 2 asks again.
+
+### Round 2 — pended 2026-08-24
+
+Two flags. **One was real and is fixed** (per-object read authorization, §13);
+**one is a false positive from the reviewer's URL checker** and needs an
+explanation rather than a change (§14). Both answers below are written to be
+reusable verbatim if a round 3 raises them again — the second one especially,
+because nothing in this plugin can make it stop being flagged.
 
 ## Submitting
 
@@ -307,3 +315,236 @@ connected app can never do more than the owner already allowed, and usually less
 
 Covered by 60 tests across `tests/oauth-flow-test.php`,
 `tests/oauth-bearer-test.php`, and `tests/oauth-discovery-test.php`.
+
+### 13. Per-object read authorization (round 2 blocker — fixed)
+
+**Flagged:** `saddle/get-media`, quoted from
+`includes/abilities/core-content.php`, with the note that the
+`permission_callback` "only checks the generic read capability, while
+`get_media` returns any attachment's metadata and URL without a per-attachment
+`read_post` authorization check."
+
+**The finding is correct, and it was five abilities wider than the line they
+cited.** The reason it generalizes: read-tier abilities pass `$cap = 'read'`,
+which **every logged-in user holds including a Subscriber**; any logged-in user
+can mint a core Application Password; and the MCP route requires only
+`is_user_logged_in()`. So the permission callback proved the caller was signed
+in and nothing more, across the whole read surface. (The write side has guarded
+against exactly this since day one, in `authorize_write()`.)
+
+Six gaps, all closed: `get-media`, `get-post` / `get-page`,
+`list-post-revisions`, `list-posts` / `list-pages`, `search-content`,
+`list-media`.
+
+**Authorization is two layers, and only the first is in the
+`permission_callback`.** This is documented at the top of
+`includes/abilities/core-content.php` and pointed at from every affected
+registration, so the split is legible at the line a scan quotes:
+
+| Layer | Where | Answers |
+|---|---|---|
+| Tool | `Saddle_Capabilities::permission( $tier, $cap, $tool )` | May this caller use this tool at all — authenticated, site access tier, generic capability, per-tool switch, global pause |
+| Object | `Saddle_Abilities::require_readable_post()` / `::collection()` | May this caller read *this* row |
+
+The object layer is on the execute path rather than in the gate on purpose.
+Core does pass `$input` to `WP_Ability::check_permissions()` and accepts a
+`WP_Error` back, but `Saddle_Capabilities::denial_reason()` and
+`is_callable_now()` — which build `tools/list` and every refusal message an
+agent reads — are input-free by construction, and a gate that answered "no"
+without naming which layer said so is what puts an agent into a retry loop.
+It is called *first* in every id-taking read callback, before the row is
+touched.
+
+**What each control does:**
+
+- `require_readable_post()` resolves the id, rejects a wrong post type, then
+  requires `read_post` on the object. For an attachment that is the whole
+  mechanism: `read_post` resolves an `inherit` status through
+  `get_post_status()`, which follows `post_parent`, so an upload on a draft or
+  private post is refused and a parentless one stays readable — exactly how
+  core's own media endpoint behaves.
+- **Password-protected posts refuse rather than blank.** `map_meta_cap` never
+  consults `post_password`; core blanks the content at render time instead.
+  Saddle returns *raw* `post_content`, which core only hands out in the edit
+  context, behind `WP_REST_Posts_Controller::can_access_password_content()` —
+  so the threshold here is core's own `edit_post`. It refuses rather than
+  blanks because this reader feeds a writer on the same id, and an agent handed
+  `content: ""` concludes the page is empty and rebuilds it.
+- `list-post-revisions` additionally requires `edit_post`, matching
+  `WP_REST_Revisions_Controller::get_items_permissions_check()`. Being able to
+  read a post is not being able to read the drafts it went through.
+- Listings gate the *requested status* on the post type's `edit_posts`
+  (core's `sanitize_post_statuses()`), then drop rows failing `read_post` in
+  `collection()` (core's `get_items()`). Both are needed: an Author holds
+  `edit_posts` and may legitimately ask for drafts, and must still not receive
+  another author's.
+- **One deliberate divergence from core, narrated rather than silent.**
+  Filtering after the query leaves `total` counting rows that were not
+  returned. Core accepts that silently, because recounting means a second
+  unbounded query. Saddle adds a `note` to the response instead, because an
+  agent handed a short page with no explanation retries it. It never fires for
+  an administrator, so that response shape is unchanged for the normal setup.
+- The same class of gap was swept for and closed in the activity log too:
+  `recall-changes` and the "recent changes" section of the system context now
+  filter each row against the object it names
+  (`Saddle_Log::entry_is_visible()`).
+
+**`get-preview-url` is deliberately stricter and does not use the shared
+funnel.** A preview link renders unpublished content on the front end, so an
+unpublished post needs `edit_post` there, not `read_post`.
+
+**Tests:** `tests/read-authorization-test.php` — 39 cases driving the real
+`wp_get_ability()->execute()` path an MCP client hits. Roughly half of them are
+the administrator half of the contract: the normal Saddle setup is an owner's
+administrator Application Password, and nothing about it may change. The core
+behaviours this leans on (`read_post` following `post_parent` for `inherit`)
+are pinned separately, so a core release surfaces as a red test rather than a
+support email.
+
+**Verified on a live install, not only in the suite.** Two Application
+Passwords (administrator + a throwaway subscriber) against a private post, a
+draft, and an attachment on the private post. Subscriber: 403 with a named
+reason on `get-post`, `get-media` and `list-post-revisions`, and a named
+refusal on `list-posts status=draft`; listings returned `publish` only.
+Administrator: everything, `status=draft` still works, and no `note` key.
+
+### 14. The Unsplash URL 401 (round 2 — a false positive in the checker)
+
+**Flagged:** "Terms/Privacy URL: `https://unsplash.com/api-terms` — readme.txt —
+This URL replies us with a 401 HTTP code, meaning that it does not work or is
+not public."
+
+**The page is public. `unsplash.com` sits behind Anubis** (the `within.website`
+anti-scraping proof-of-work challenge) and serves a challenge to any
+user-agent containing `Mozilla`. A human browser solves it and reads the page;
+a checker that does not run the challenge JavaScript sees the 401.
+
+Reproduction — same URL, two user agents:
+
+```console
+$ curl -sI -A 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 \
+    (KHTML, like Gecko) Chrome/120.0 Safari/537.36' https://unsplash.com/api-terms
+HTTP/2 307
+location: /.within.website?redir=%2Fapi-terms
+    → 401 Authorization required
+
+$ curl -s -o /dev/null -w '%{http_code}\n' -A 'curl/8.4.0' https://unsplash.com/api-terms
+200
+```
+
+Deterministic across repeated runs on 2026-08-25 and 2026-08-27.
+
+**It is not limited to the flagged path.** Every `unsplash.com` path behaves
+identically, including one that was **not** flagged:
+
+| URL | browser UA | `curl` UA |
+|---|---|---|
+| `https://unsplash.com/api-terms` | 401 | 200 |
+| `https://unsplash.com/privacy` | 401 | 200 |
+| `https://unsplash.com/terms` | 401 | 200 |
+| `https://unsplash.com/license` | 401 | 200 |
+| `https://help.unsplash.com/en/articles/2511245-unsplash-api-guidelines` | 200 | 200 |
+
+So swapping only the flagged URL would leave the identical landmine on the
+privacy link, and there is **no** browser-reachable canonical Unsplash terms or
+privacy URL to swap to. Both canonical URLs therefore stay — guideline 6 asks
+for the service's actual terms and privacy policy, and Unsplash's privacy
+policy exists nowhere else — with Unsplash's own help-centre API guidelines
+page, which answers 200 to everything, listed first alongside them.
+
+**Context for how little this reaches a user.** The Unsplash integration is off
+until the site owner pastes their own Unsplash Access Key on the Integrations
+screen. With no key saved, no request is ever made and the two tools are not
+offered. The disclosure exists because the integration can be turned on, not
+because it is on.
+
+## Draft reply — round 2
+
+Not sent. Re-run the two `curl` commands in §14 on the day it goes out, so the
+transcript in the mail is current rather than quoted from here.
+
+---
+
+Thanks for the review — both items below, with the second one needing an
+explanation rather than a change.
+
+**1. `permission_callback` on `saddle/get-media`**
+
+You were right, and it was wider than the line you cited. Our read-tier
+abilities pass `read` as the capability, which every logged-in user holds
+including a Subscriber, so the permission callback proved the caller was signed
+in and nothing more. Six abilities were affected: `get-media`, `get-post`,
+`get-page`, `list-post-revisions`, `list-posts`/`list-pages`, `search-content`
+and `list-media`.
+
+All of them now authorize the object, not just the tool:
+
+- Every id-taking read calls `Saddle_Abilities::require_readable_post()` first,
+  before touching the row. It resolves the id, rejects a wrong post type, and
+  requires `read_post` on the object. For an attachment that resolves the
+  `inherit` status through `post_parent`, so an upload on a draft or private
+  post is refused and a parentless one stays readable — the same behaviour as
+  core's media endpoint.
+- Raw `post_content` on a password-protected post now requires `edit_post`,
+  matching `WP_REST_Posts_Controller::can_access_password_content()`, since we
+  return the raw field rather than the rendered one.
+- `list-post-revisions` additionally requires `edit_post` on the parent, the
+  same threshold as `WP_REST_Revisions_Controller`.
+- Listings gate the requested status on the post type's `edit_posts` and then
+  drop rows failing `read_post`, mirroring `sanitize_post_statuses()` and
+  `get_items()`.
+
+To make the split easy to see at the line you quoted: the `permission_callback`
+gates the *tool* (authentication, the site's access level, the generic
+capability, the per-tool switch, the pause switch) and the object check is the
+first thing the execute callback does. Both layers are now documented at the top
+of `includes/abilities/core-content.php` and pointed at from each affected
+registration. It lives on the execute path because our refusal messages have to
+name which control refused — an AI agent given an unexplained "no" retries in a
+loop — and the tool-list filter that reads the same gate has no input to check
+an object against.
+
+Covered by 39 tests that drive the real ability-execution path, about half of
+them pinning that an administrator credential — the normal setup for this
+plugin — is unaffected. We also verified it on a live install with two
+Application Passwords, an administrator and a throwaway Subscriber, against a
+private post, a draft and an attachment on the private post.
+
+**2. `https://unsplash.com/api-terms` returning 401**
+
+This one is a false positive, and unfortunately there is nothing we can change
+in the plugin to make it stop. The page is public; `unsplash.com` sits behind
+Anubis, an anti-scraping proof-of-work challenge, and serves that challenge to
+any user agent containing `Mozilla`. A browser solves it and reads the page; a
+checker that does not run the challenge script sees a 401.
+
+Same URL, two user agents:
+
+```
+$ curl -sI -A 'Mozilla/5.0 … Chrome/120.0 Safari/537.36' https://unsplash.com/api-terms
+HTTP/2 307
+location: /.within.website?redir=%2Fapi-terms      → 401 Authorization required
+
+$ curl -s -o /dev/null -w '%{http_code}\n' -A 'curl/8.4.0' https://unsplash.com/api-terms
+200
+```
+
+It affects every path on that host, including `https://unsplash.com/privacy`,
+which your check did not flag. So swapping the flagged URL for another
+`unsplash.com` page would not fix anything, and there is no
+browser-reachable canonical Unsplash terms or privacy URL to point at instead.
+We have kept both canonical links, because guideline 6 asks for the service's
+actual terms and privacy policy and Unsplash's privacy policy exists nowhere
+else, and listed Unsplash's own help-centre API guidelines page — which answers
+200 to everything — alongside them.
+
+Worth adding for context: this integration is inert until the site owner pastes
+their own Unsplash API key on our Integrations screen. With no key saved, no
+request is ever made and the two tools are not offered at all. We disclose it
+because it can be turned on, not because it is on.
+
+Happy to make any change you would prefer here — including dropping the two
+`unsplash.com` links entirely and keeping only the help-centre page, if you
+would rather the readme contain no URL your checker flags.
+
+The corrected zip is uploaded.

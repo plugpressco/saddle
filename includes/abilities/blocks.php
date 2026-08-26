@@ -208,6 +208,9 @@ function saddle_register_block_abilities() {
 	 * ---------------------------------------------------------------------
 	 */
 
+	// The permission_callback below gates the TOOL. The TARGET is authorized by
+	// Saddle_Abilities::require_readable_post(), called first in get_blocks() — the
+	// shared read_post funnel documented at the top of core-content.php.
 	wp_register_ability(
 		'saddle/get-blocks',
 		array(
