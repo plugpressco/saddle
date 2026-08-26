@@ -10,6 +10,30 @@
  * meta.annotations + the approval gate). Do not infer either from the callback
  * body — see CLAUDE.md.
  *
+ * AUTHORIZATION IS TWO LAYERS, AND ONLY THE FIRST IS IN THE permission_callback.
+ *
+ * `Saddle_Capabilities::permission( $tier, $cap, $tool )` answers "may this
+ * caller use this tool at all": an authenticated user, the site's access tier,
+ * the generic WordPress capability, the per-tool switch and the global pause.
+ * It deliberately does NOT answer "may this caller read THIS object", because
+ * the read tier's capability is `read` — which every logged-in user holds,
+ * a Subscriber included.
+ *
+ * That second question is `Saddle_Abilities::require_readable_post()` (below),
+ * the single funnel every id-taking read calls FIRST, before touching the row:
+ * `read_post` on the resolved object, plus a refusal for password-protected
+ * content because Saddle returns raw `post_content`, which core only ever hands
+ * out behind `edit_post`. Listings use `Saddle_Abilities::collection()`, which
+ * drops rows the caller cannot `read_post`. Anything that reaches a specific
+ * post another way is a bug.
+ *
+ * It lives on the execute path rather than in the gate on purpose. Core does
+ * pass `$input` to `WP_Ability::check_permissions()` and accepts a `WP_Error`
+ * back, but `Saddle_Capabilities::denial_reason()` and `is_callable_now()` —
+ * which build `tools/list` and every refusal message an agent reads — are
+ * input-free by construction, and a gate that answered "no" without naming
+ * which of the two layers said so is what puts an agent into a retry loop.
+ *
  * @package Saddle
  */
 
@@ -73,6 +97,10 @@ function saddle_register_abilities() {
 		)
 	);
 
+	// Listings are authorized in two places, both in Saddle_Abilities: the
+	// requested status is gated on the post type's edit_posts, and collection()
+	// then drops every row the caller cannot read_post. See the two-layer note
+	// at the top of this file.
 	wp_register_ability(
 		'saddle/search-content',
 		array(
@@ -110,6 +138,10 @@ function saddle_register_abilities() {
 	 * ---------------------------------------------------------------------
 	 */
 
+	// Listings are authorized in two places, both in Saddle_Abilities: the
+	// requested status is gated on the post type's edit_posts, and collection()
+	// then drops every row the caller cannot read_post. See the two-layer note
+	// at the top of this file.
 	wp_register_ability(
 		'saddle/list-posts',
 		array(
@@ -153,6 +185,9 @@ function saddle_register_abilities() {
 		)
 	);
 
+	// The permission_callback below gates the TOOL. The TARGET is authorized by
+	// require_readable_post(), called first in get_post(). See the two-layer
+	// note at the top of this file.
 	wp_register_ability(
 		'saddle/get-post',
 		array(
@@ -205,6 +240,10 @@ function saddle_register_abilities() {
 		)
 	);
 
+	// The permission_callback below gates the TOOL. The TARGET is authorized by
+	// require_readable_post(), called first in list_post_revisions(), which then
+	// additionally requires edit_post — revisions are the edit history, not the
+	// published artifact. See the two-layer note at the top of this file.
 	wp_register_ability(
 		'saddle/list-post-revisions',
 		array(
@@ -224,6 +263,10 @@ function saddle_register_abilities() {
 	 * ---------------------------------------------------------------------
 	 */
 
+	// Listings are authorized in two places, both in Saddle_Abilities: the
+	// requested status is gated on the post type's edit_posts, and collection()
+	// then drops every row the caller cannot read_post. See the two-layer note
+	// at the top of this file.
 	wp_register_ability(
 		'saddle/list-pages',
 		array(
@@ -253,6 +296,9 @@ function saddle_register_abilities() {
 		)
 	);
 
+	// The permission_callback below gates the TOOL. The TARGET is authorized by
+	// require_readable_post(), called first in get_page(). See the two-layer
+	// note at the top of this file.
 	wp_register_ability(
 		'saddle/get-page',
 		array(
@@ -311,6 +357,10 @@ function saddle_register_abilities() {
 	 * ---------------------------------------------------------------------
 	 */
 
+	// Listings are authorized in two places, both in Saddle_Abilities: the
+	// requested status is gated on the post type's edit_posts, and collection()
+	// then drops every row the caller cannot read_post. See the two-layer note
+	// at the top of this file.
 	wp_register_ability(
 		'saddle/list-media',
 		array(
@@ -352,6 +402,11 @@ function saddle_register_abilities() {
 		)
 	);
 
+	// The permission_callback below gates the TOOL. The TARGET is authorized by
+	// require_readable_post(), called first in get_media() — read_post against
+	// the attachment, which resolves an `inherit` status through post_parent, so
+	// an upload on a draft or private post is refused. See the two-layer note at
+	// the top of this file.
 	wp_register_ability(
 		'saddle/get-media',
 		array(

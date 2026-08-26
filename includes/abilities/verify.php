@@ -18,6 +18,9 @@ defined( 'ABSPATH' ) || exit;
  */
 function saddle_register_verify_abilities() {
 
+	// The permission_callback below gates the TOOL. The TARGET is authorized by
+	// Saddle_Abilities::require_readable_post(), called first in verify_page() — the
+	// shared read_post funnel documented at the top of core-content.php.
 	wp_register_ability(
 		'saddle/verify-page',
 		array(

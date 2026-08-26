@@ -19,6 +19,9 @@ defined( 'ABSPATH' ) || exit;
  */
 function saddle_register_render_abilities() {
 
+	// The permission_callback below gates the TOOL. The TARGET is authorized by
+	// Saddle_Abilities::require_readable_post(), called first in render_node() — the
+	// shared read_post funnel documented at the top of core-content.php.
 	wp_register_ability(
 		'saddle/render-node',
 		array(
@@ -53,6 +56,11 @@ function saddle_register_render_abilities() {
 		)
 	);
 
+	// The permission_callback below gates the TOOL. The TARGET is authorized in
+	// get_preview_url() itself, deliberately NOT through the shared funnel: a
+	// preview link renders unpublished content on the front end, so an
+	// unpublished post needs edit_post rather than read_post. Stricter than the
+	// funnel, never looser — see the note above get_preview_url().
 	wp_register_ability(
 		'saddle/get-preview-url',
 		array(
