@@ -132,14 +132,36 @@ screen, then choose Allow.
 
 Only administrators can approve a connection.
 
-### Two things to expect
+### What to expect
 
-**On ChatGPT Plus and Pro, connectors are read-only.** Fully write-capable
-connectors need a Business, Enterprise or Edu workspace. So if ChatGPT reads your
-site happily but won't create a post, nothing is broken — that's ChatGPT's limit,
-not Saddle's.
+Re-checked against OpenAI's own help pages on 2026-09-07. In their current
+vocabulary Saddle is an **app** (the thing that connects to an external service);
+a **plugin** is a bundle of apps and skills you install from the Plugins
+Directory. Installing a plugin never bypasses an app's own limits, so everything
+below applies whichever screen you reach Saddle through.
 
-**ChatGPT Go doesn't have connectors at all.** You'll need Plus or above.
+**On ChatGPT Plus and Pro, custom apps are read-only.** OpenAI's developer-mode
+page says full MCP support, including write and modify actions, is available to
+Business, Enterprise and Edu workspaces, and that Pro users can connect MCP apps
+with read/fetch permissions only. So if ChatGPT reads your site happily but won't
+create a post or upload media, nothing is broken — that's ChatGPT's limit, not
+Saddle's. A Business workspace is the only fix.
+
+**ChatGPT Go doesn't have apps at all.** You'll need Plus or above.
+
+**On a workspace plan, the tool list is frozen when an admin approves it.** ChatGPT
+keeps a snapshot of Saddle's tools from the moment the connection is published.
+Saddle only ever adds optional parameters, so an existing connection keeps working
+across updates — but a brand-new tool won't appear until an admin opens the app in
+Workspace settings and refreshes its actions.
+
+**Agent mode never uses custom apps, and deep research only reads.** Ask in a
+normal chat, with the app selected, for anything that writes.
+
+**Uploading media needs a public URL.** A file you attach in the chat lives in
+ChatGPT's sandbox with no address Saddle can fetch, so `upload-media` can't reach
+it. Point it at a file that is already online (or use the Unsplash tools). Inline
+upload for write-capable clients is on the roadmap.
 
 ---
 
