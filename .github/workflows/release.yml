@@ -1,13 +1,29 @@
 name: Release
 
-# Self-hosted distribution for free Saddle: on a version tag, build the
-# production zip and publish it as a GitHub Release asset (the downloadable
-# artifact). No WordPress.org / Freemius / marketplace upload involved.
+# One tag, both channels.
 #
-# Release flow:
-#   grunt bump:patch   (or minor/major) — updates the version everywhere
-#   git commit -am "release vX.Y.Z" && git tag vX.Y.Z && git push --follow-tags
-#   → this workflow builds saddle-<version>.zip and attaches it to the release.
+#   grunt version:patch   (or minor/major, or --to=x.y.z[-rcN]) — five version
+#                          sites move together; readme Stable tag only on a
+#                          real release
+#   git commit -am "chore(release): X.Y.Z" && git tag vX.Y.Z && git push --follow-tags
+#
+# → build:          verifies tag = plugin header (= readme Stable tag on a real
+#                   release), builds the WordPress.org-channel zip with the
+#                   Gruntfile's exclusion list (updater absent, no dev files),
+#                   proves those exclusions inside the artifact, and publishes a
+#                   GitHub Release (marked pre-release for -rc/-beta tags).
+# → wordpress-org:  on a real release only, pushes dist/saddle/ to SVN trunk +
+#                   tags/X.Y.Z and .wordpress.org/ listing assets to assets/.
+#                   Never runs for a pre-release tag. Needs SVN_USERNAME and
+#                   SVN_PASSWORD repository secrets — absent, it fails fast
+#                   with a named reason and the GitHub Release still stands.
+#
+# The Gruntfile is the single source of truth for what ships. There is no
+# .distignore on purpose: two exclusion lists drift, and the one that drifts
+# wrong ships the self-hosted updater to WordPress.org.
+#
+# The self-hosted channel (updater included, published to R2) is a separate,
+# deliberate step and is NOT triggered here.
 
 on:
   push:
@@ -17,23 +33,51 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
-  release:
-    name: Build & publish zip
+  build:
+    name: Build & publish GitHub Release
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      prerelease: ${{ steps.version.outputs.prerelease }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Verify tag matches the plugin version
+      - name: Verify the tag, the plugin header and the readme agree
+        id: version
         run: |
+          set -euo pipefail
           TAG="${GITHUB_REF_NAME#v}"
-          HDR="$(grep -m1 -oE 'Version:[[:space:]]*[0-9.]+' saddle.php | grep -oE '[0-9.]+')"
-          echo "tag=$TAG  header=$HDR"
-          if [ "$TAG" != "$HDR" ]; then
-            echo "::error::Tag v$TAG does not match the plugin header version $HDR. Run 'grunt bump' and commit before tagging."
+          HDR="$(grep -m1 -oE 'Version:[[:space:]]*[0-9][0-9A-Za-z.-]*' saddle.php | sed -E 's/Version:[[:space:]]*//')"
+          CONST="$(grep -m1 -oE "SADDLE_VERSION',[[:space:]]*'[^']+'" saddle.php | sed -E "s/.*'([^']+)'$/\1/")"
+          STABLE="$(grep -m1 -oE 'Stable tag:[[:space:]]*[0-9][0-9A-Za-z.-]*' readme.txt | sed -E 's/Stable tag:[[:space:]]*//')"
+          echo "tag=$TAG header=$HDR constant=$CONST stable=$STABLE"
+
+          if [ "$TAG" != "$HDR" ] || [ "$TAG" != "$CONST" ]; then
+            echo "::error::Tag v$TAG does not match saddle.php (header $HDR, constant $CONST). Run 'grunt version' and commit before tagging."
             exit 1
           fi
-          echo "VERSION=$TAG" >> "$GITHUB_ENV"
+
+          if [[ "$TAG" == *-* ]]; then
+            # A release candidate must never become the Stable tag — that is
+            # the field WordPress.org serves to everyone.
+            if [ "$STABLE" = "$TAG" ]; then
+              echo "::error::readme.txt Stable tag is the pre-release $TAG. It must stay on the last real release."
+              exit 1
+            fi
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            if [ "$STABLE" != "$TAG" ]; then
+              echo "::error::readme.txt Stable tag is $STABLE but the release is $TAG. 'grunt version' updates it on a real release; commit that."
+              exit 1
+            fi
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "version=$TAG" >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-node@v4
         with:
@@ -52,12 +96,133 @@ jobs:
       - name: Build admin assets
         run: npm run build
 
-      - name: Build plugin zip
+      - name: Build the WordPress.org-channel zip
         run: npx grunt build
+
+      - name: Prove the exclusions inside the artifact
+        # The Gruntfile says what is excluded; this checks the built tree, not
+        # the config. Every line here is something that has actually been
+        # caught on a manual rebuild.
+        run: |
+          set -euo pipefail
+          D="dist/saddle"
+          test -f "$D/saddle.php" || { echo "::error::$D/saddle.php missing"; exit 1; }
+          test -f "dist/saddle-${{ steps.version.outputs.version }}.zip" || { echo "::error::zip missing"; exit 1; }
+
+          fail=0
+          check_absent() { if [ -e "$D/$1" ]; then echo "::error::$1 must not ship in the .org build"; fail=1; fi; }
+          check_absent includes/class-saddle-updater.php
+          check_absent includes/class-saddle-ecosystem.php
+          check_absent includes/lib
+          check_absent tests
+          check_absent dist
+          check_absent node_modules
+          check_absent vendor
+          check_absent .wordpress.org
+          check_absent Gruntfile.js
+          check_absent package.json
+          check_absent composer.json
+          check_absent phpcs.xml.dist
+
+          if find "$D" -name '*.md' ! -name 'LICENSE*' ! -path '*/lib/*' | grep -q .; then
+            echo "::error::Markdown files found in the .org build:"; find "$D" -name '*.md'; fail=1
+          fi
+          if find "$D" \( -name '.DS_Store' -o -name '*.log' -o -name '.git*' \) | grep -q .; then
+            echo "::error::Junk files found in the .org build"; fail=1
+          fi
+          if grep -rIl --include='*.php' -E '\b(error_log|var_dump|print_r)\s*\(' "$D" | grep -v '/lib/' | grep -q .; then
+            echo "::error::Debug output calls in the .org build:"; grep -rIl --include='*.php' -E '\b(error_log|var_dump|print_r)\s*\(' "$D"; fail=1
+          fi
+
+          # Every PHP file parses on the runner's PHP.
+          if ! find "$D" -name '*.php' -print0 | xargs -0 -n1 php -l >/dev/null; then
+            echo "::error::A PHP file in the .org build does not parse"; fail=1
+          fi
+
+          [ "$fail" -eq 0 ]
+          echo "OK: $(find "$D" -type f | wc -l) files"
+
+      - name: Keep the built tree for the deploy job
+        uses: actions/upload-artifact@v4
+        with:
+          name: saddle-wporg-build
+          path: dist/saddle
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/saddle-${{ env.VERSION }}.zip
+          files: dist/saddle-${{ steps.version.outputs.version }}.zip
           fail_on_unmatched_files: true
           generate_release_notes: true
+          prerelease: ${{ steps.version.outputs.prerelease == 'true' }}
+
+  wordpress-org:
+    name: Deploy to WordPress.org SVN
+    needs: build
+    if: needs.build.outputs.prerelease == 'false'
+    runs-on: ubuntu-latest
+    # A GitHub Environment. Created on first run; add a required reviewer under
+    # Settings → Environments → wordpress-org if you ever want a manual gate
+    # in front of SVN without touching this file.
+    environment: wordpress-org
+    steps:
+      - name: Require the SVN secrets
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+        run: |
+          if [ -z "$SVN_USERNAME" ] || [ -z "$SVN_PASSWORD" ]; then
+            echo "::error::SVN_USERNAME / SVN_PASSWORD are not set. Add them under Settings → Secrets (the wp.org account that owns the plugin — 'badhonrocks' per readme Contributors). The GitHub Release is published; only the SVN deploy is skipped."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+        # Only for .wordpress.org/ — the plugin tree comes from the artifact so
+        # SVN receives exactly what the Release zip contains.
+
+      - name: Fetch the built tree
+        uses: actions/download-artifact@v4
+        with:
+          name: saddle-wporg-build
+          path: build
+
+      - name: Stage the listing assets
+        # .wordpress.org/ carries a README and the banner's SVG source, which
+        # must not land in SVN assets/ — that folder is served as-is. Only the
+        # files the directory understands are copied.
+        run: |
+          set -euo pipefail
+          mkdir -p wporg-assets
+          shopt -s nullglob
+          for f in .wordpress.org/icon-*.png .wordpress.org/icon.svg .wordpress.org/banner-*.png .wordpress.org/screenshot-*.png .wordpress.org/screenshot-*.jpg; do
+            cp "$f" wporg-assets/
+          done
+          ls -la wporg-assets
+
+      - name: Install Subversion
+        # ubuntu-24.04 runners no longer ship svn.
+        run: sudo apt-get update -q && sudo apt-get install -y -q subversion
+
+      - name: Deploy to SVN
+        uses: 10up/action-wordpress-plugin-deploy@stable
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SLUG: saddle
+          VERSION: ${{ needs.build.outputs.version }}
+          # BUILD_DIR makes the action rsync this tree into trunk/ verbatim and
+          # ignore .distignore. The Gruntfile already applied every exclusion.
+          BUILD_DIR: build
+          ASSETS_DIR: wporg-assets
+
+      - name: Summary
+        run: |
+          {
+            echo "## Deployed saddle ${{ needs.build.outputs.version }} to WordPress.org"
+            echo
+            echo "- trunk and tags/${{ needs.build.outputs.version }} updated from the Release build"
+            echo "- listing assets synced from .wordpress.org/"
+            echo "- https://wordpress.org/plugins/saddle/"
+          } >> "$GITHUB_STEP_SUMMARY"

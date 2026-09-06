@@ -32,10 +32,35 @@ because nothing in this plugin can make it stop being flagged.
    plus banner/icon. Screenshots do NOT go in the zip.
    **Banner + icon are ready** in `.wordpress.org/` (icon.svg,
    icon-128/256 PNGs, banner-772x250 + banner-1544x500 — generated 2026-07-25
-   from the disc brand mark; see `.wordpress.org/README.md` for the SVN copy
-   commands). Only the screenshots remain to be captured.
+   from the disc brand mark). Only the screenshots remain to be captured —
+   drop them in `.wordpress.org/` as `screenshot-N.png` and they ship with
+   the next release automatically.
 4. First public GitHub tag/release only AFTER wp.org approval (CLAUDE.md
    distribution rule).
+
+### After approval: releases are automated (2026-09-07, #176)
+
+Once the SVN repo exists, **every update is one tag.** `.github/workflows/release.yml`:
+
+1. `grunt version:patch` (or `minor` / `major` / `--to=x.y.z`), commit, `git tag vX.Y.Z`,
+   `git push --follow-tags`. Version bumps still need Fahim's OK (CLAUDE.md).
+2. CI verifies tag = plugin header = `SADDLE_VERSION` = readme `Stable tag`, builds
+   the .org-channel zip with the Gruntfile's exclusions, **proves the exclusions
+   inside the artifact** (no updater, no `includes/lib`, no tests/docs/dev files,
+   no debug calls, every PHP file parses), and publishes the GitHub Release.
+3. On a real release (no `-rc`/`-beta` suffix) it then deploys `dist/saddle/` to
+   SVN `trunk/` + `tags/X.Y.Z` and `.wordpress.org/` icons, banners and
+   screenshots to `assets/`. A pre-release tag publishes the GitHub Release only
+   and never touches SVN.
+
+**One-time setup, after approval:** add repository secrets `SVN_USERNAME` and
+`SVN_PASSWORD` for the wp.org account that owns the plugin (Settings → Secrets and
+variables → Actions). Until they exist the SVN job fails with a named reason and
+the GitHub Release still stands. Optional: Settings → Environments →
+`wordpress-org` → add a required reviewer for a manual gate in front of SVN.
+
+There is deliberately **no `.distignore`**: the Gruntfile is the only exclusion
+list, so the two channels cannot drift apart.
 
 ## Pre-written answers for likely reviewer questions
 

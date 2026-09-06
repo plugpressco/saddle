@@ -26,11 +26,17 @@ the same trademark rule as the plugin name — the round-1 review called out
 "graphic resources such as this plugin icons and banners" explicitly. It now
 reads "Control your site with AI — safely."
 
-After the plugin is approved, copy these into the SVN repo:
+After the plugin is approved these are synced to SVN `assets/` automatically by
+`.github/workflows/release.yml` on every real release tag (#176). Only
+`icon*.png`, `icon.svg`, `banner-*.png` and `screenshot-*.{png,jpg}` are copied;
+this README and `src/` never leave the repo.
+
+Manual fallback, if ever needed:
 
     svn co https://plugins.svn.wordpress.org/saddle
-    cp .wordpress.org/icon* .wordpress.org/banner* saddle/assets/
+    cp .wordpress.org/icon* .wordpress.org/banner* .wordpress.org/screenshot-* saddle/assets/
     svn add saddle/assets/* && svn ci -m "Listing assets"
 
 Screenshots (`screenshot-N.png` + captions in readme.txt) are still to be
-captured from a live wp-admin before or after approval.
+captured from a live wp-admin. Drop them in this folder and they ship with the
+next release.
