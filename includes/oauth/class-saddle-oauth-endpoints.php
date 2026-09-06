@@ -154,7 +154,10 @@ class Saddle_OAuth_Endpoints {
 			return self::bounce( $redirect_uri, 'server_error', $request_id->get_error_message(), $state );
 		}
 
-		$asked = trim( (string) $request->get_param( 'scope' ) );
+		// `offline_access` is a request for a refresh token, which every grant
+		// gets anyway — it says nothing about access, so it must not count as
+		// having "named a scope" below. See Saddle_OAuth::strip_refresh_scope().
+		$asked = Saddle_OAuth::strip_refresh_scope( $request->get_param( 'scope' ) );
 
 		// A client that named its scopes is taken at its word — widening a
 		// deliberate `saddle:read` request would be both a spec violation and a
@@ -300,8 +303,14 @@ class Saddle_OAuth_Endpoints {
 
 		// A refresh may narrow the scope but never widen it — otherwise a
 		// read-only grant could quietly promote itself on renewal.
-		if ( isset( $params['scope'] ) && '' !== $params['scope'] ) {
-			$requested = Saddle_OAuth::normalize_scope( (string) $params['scope'] );
+		//
+		// `offline_access` is stripped first, same as at authorize: a refresh
+		// that names ONLY that word has not asked to narrow anything, and
+		// normalizing it alone would fall through to read — silently shrinking
+		// an admin grant on renewal, which is the opposite failure.
+		$asked = isset( $params['scope'] ) ? Saddle_OAuth::strip_refresh_scope( (string) $params['scope'] ) : '';
+		if ( '' !== $asked ) {
+			$requested = Saddle_OAuth::normalize_scope( $asked );
 			if ( ! self::scope_is_subset( $requested, $scope ) ) {
 				return Saddle_OAuth::error_response( 'invalid_scope', __( 'A refresh cannot ask for more access than was originally granted.', 'saddle' ) );
 			}

@@ -482,6 +482,35 @@ class Saddle_OAuth_Flow_Test extends WP_UnitTestCase {
 		$this->assertSame( 'invalid_scope', $response->get_data()['error'] );
 	}
 
+	/**
+	 * The refresh-side half of #159. A refresh naming only `offline_access`
+	 * has not asked to narrow anything; before the strip it normalized to read
+	 * and silently shrank the grant on renewal.
+	 */
+	public function test_refresh_asking_only_for_offline_access_keeps_the_granted_scope() {
+		Saddle_Capabilities::set_tier( 'admin' );
+
+		$client   = $this->register_client();
+		$verifier = $this->verifier();
+		$code     = $this->authorize( $client['client_id'], $this->challenge_for( $verifier ) );
+		$tokens   = $this->exchange( $client['client_id'], $code, $verifier )->get_data();
+
+		$request = new WP_REST_Request( 'POST', '/saddle/v1/oauth/token' );
+		$request->set_body_params(
+			array(
+				'grant_type'    => 'refresh_token',
+				'refresh_token' => $tokens['refresh_token'],
+				'client_id'     => $client['client_id'],
+				'scope'         => 'offline_access',
+			)
+		);
+
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( $tokens['scope'], $response->get_data()['scope'], 'The refresh scope alone must neither widen nor narrow the grant.' );
+	}
+
 	public function test_unsupported_grant_type_is_named_as_such() {
 		$request = new WP_REST_Request( 'POST', '/saddle/v1/oauth/token' );
 		$request->set_body_params( array( 'grant_type' => 'password' ) );
