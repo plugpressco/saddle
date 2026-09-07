@@ -332,17 +332,55 @@ class Saddle_Skills_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * The test site runs a CLASSIC theme, which is exactly the case the old
-	 * wp_is_block_theme() gate excluded — so a classic site with no builder,
-	 * the one with no site editor to fall back on, got no playbook at all.
+	 * Run assertions with a fixture theme active, then put the host theme back.
+	 *
+	 * The theme in force during a test is an environment fact, not a fixture:
+	 * the harness symlinks wp-content/themes from whichever WordPress it was
+	 * pointed at. On the developer's host that happens to be a classic theme;
+	 * CI provisions a fresh core whose bundled themes are ALL block themes. A
+	 * test that assumes either one passes on one machine and fails on the other
+	 * (#145), so anything that branches on wp_is_block_theme() switches to the
+	 * fixture it means, explicitly, the way site-editor-test.php already does.
+	 *
+	 * @param string   $slug 'saddle-classic-fixture' or 'saddle-block-fixture'.
+	 * @param callable $fn   Assertions.
+	 */
+	private function with_theme( $slug, callable $fn ) {
+		$previous = get_stylesheet();
+
+		register_theme_directory( __DIR__ . '/fixtures/themes' );
+		delete_site_transient( 'theme_roots' );
+		wp_clean_themes_cache();
+
+		$this->assertTrue( wp_get_theme( $slug )->exists(), "Fixture theme {$slug} is missing from tests/fixtures/themes." );
+		switch_theme( $slug );
+
+		try {
+			$fn();
+		} finally {
+			if ( get_stylesheet() !== $previous ) {
+				switch_theme( $previous );
+			}
+		}
+	}
+
+	/**
+	 * A classic theme is exactly the case the old wp_is_block_theme() gate
+	 * excluded — so a classic site with no builder, the one with no site editor
+	 * to fall back on, got no playbook at all.
 	 */
 	public function test_the_playbooks_ship_on_a_classic_theme_with_no_builder() {
-		$this->with_no_foreign_builder(
+		$this->with_theme(
+			'saddle-classic-fixture',
 			function () {
-				$names = $this->builtin_names();
+				$this->with_no_foreign_builder(
+					function () {
+						$names = $this->builtin_names();
 
-				$this->assertContains( 'build-page', $names );
-				$this->assertContains( 'fix-page', $names );
+						$this->assertContains( 'build-page', $names );
+						$this->assertContains( 'fix-page', $names );
+					}
+				);
 			}
 		);
 	}
@@ -381,12 +419,41 @@ class Saddle_Skills_Test extends WP_UnitTestCase {
 	 * not send the agent after get-template — it would be refused.
 	 */
 	public function test_the_playbook_adapts_step_two_to_a_classic_theme() {
-		$this->with_no_foreign_builder(
+		$this->with_theme(
+			'saddle-classic-fixture',
 			function () {
-				$body = Saddle_Skills::find( 'build-page' )['body'];
+				$this->assertFalse( wp_is_block_theme(), 'The classic fixture must not read as a block theme.' );
 
-				$this->assertStringContainsString( 'classic theme', $body );
-				$this->assertStringNotContainsString( 'saddle/get-template on the header', $body );
+				$this->with_no_foreign_builder(
+					function () {
+						$body = Saddle_Skills::find( 'build-page' )['body'];
+
+						$this->assertStringContainsString( 'classic theme', $body );
+						$this->assertStringNotContainsString( 'saddle/get-template on the header', $body );
+					}
+				);
+			}
+		);
+	}
+
+	/**
+	 * The other branch, pinned for the same reason: a block theme has header
+	 * and footer parts Saddle CAN read, so step 2 sends the agent to them.
+	 */
+	public function test_the_playbook_sends_step_two_to_the_template_parts_on_a_block_theme() {
+		$this->with_theme(
+			'saddle-block-fixture',
+			function () {
+				$this->assertTrue( wp_is_block_theme(), 'The block fixture must read as a block theme.' );
+
+				$this->with_no_foreign_builder(
+					function () {
+						$body = Saddle_Skills::find( 'build-page' )['body'];
+
+						$this->assertStringContainsString( 'saddle/get-template on the header', $body );
+						$this->assertStringNotContainsString( 'this is a classic theme', $body );
+					}
+				);
 			}
 		);
 	}
