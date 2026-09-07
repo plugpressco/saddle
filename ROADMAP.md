@@ -63,7 +63,9 @@ the issue and the rule is revisited there.
 - **Divi 4 → 5 conversion.** Divi ships its own converter.
 - **Filesystem writes in free, ever.** A theme-export addon is the only place that
   belongs, and CSS or code writing anywhere waits until that addon exists.
-- **Admin UI redesigns.** The re-brand landed 2026-08-25.
+- **Admin UI redesigns.** The re-brand landed 2026-08-25. One exception, approved
+  2026-09-07: a *consolidation* pass (#184) — same components, same styling, fewer
+  places for the same fact. Still no re-styling.
 - **Runtime license checks in Pro** (decided 2026-07-12, saddle-pro#23).
 - Per-connection access profiles, comment abilities, activity-log export and
   retention — closed as not planned on 2026-09-07.
@@ -87,3 +89,39 @@ the issue and the rule is revisited there.
   renamed tool or new required parameter errors there with no prompt to update.
 - The three non-negotiables in `CLAUDE.md` apply to every item above without
   exception.
+
+## Backlog from the 2026-09-07 brainstorm
+
+Direction, not tickets. Seven picks became issues the same day: MCP prompts from
+Skills (#178), one-click install links (#179), rehearsal mode (#180), undo-changes
+(#181), bulk-find-replace (#182), accessibility lint rules (#183), admin consolidation
+(#184). The rest is kept here so it is not lost and not re-litigated.
+
+**Safety (pillar 2).** A proposal inbox in admin — agent drafts and pending revisions
+listed as diffs with Approve / Reject, after #168. A unified text diff in every gate
+preview. A per-connection write budget (rows per bulk op, writes per hour), which is
+#141 reframed as a number the owner sets.
+
+**Content.** Custom post types (#137) plus generic post-meta get/set behind an
+owner-managed allowlist of keys. Optional `publish_at` on create/update. Compact reads
+for token efficiency: a page-as-markdown read in free and a `site-map` tool (URLs,
+titles, types, modified), both feeding the benchmark (#174). `edit-media` for crop,
+rotate, scale and thumbnail regeneration through `WP_Image_Editor`. `export-content`
+returning WXR or a JSON block tree, as the block-theme mirror of the Divi export and
+as a backup step before a bulk op.
+
+**Block-theme design (pillar 3).** `set-global-styles` writing the user global-styles
+post, gated on overwrite, DB-only. Create and update patterns as `wp_block` posts,
+alongside #172.
+
+**Protocol polish.** MCP resources for site info, design system and the served
+context. A `self-check` tool so an agent can diagnose a stripped auth header or
+missing permalinks and tell the user what to fix.
+
+**Trust and visibility.** A daily change digest by `wp_mail`, off by default. A
+Saddle section in Tools → Site Health. WP-CLI (`wp saddle connection create
+--app=claude-code`, `wp saddle tier set read`) and `SADDLE_TIER` / `SADDLE_PAUSED`
+constants for provisioning many sites from a script.
+
+**Ease of use.** Activity grouped by app and session, not only by day. Three sample
+prompts per app at the end of the wizard so the first session succeeds in read mode.
