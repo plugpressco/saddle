@@ -1,0 +1,13 @@
+/*
+Theme Name: Saddle Classic Fixture
+Theme URI: https://plugpress.co/saddle/
+Author: PlugPress
+Description: A minimal classic (PHP-template) theme used only by Saddle's test suite. CI provisions a fresh WordPress core whose bundled themes are all block themes, so without this fixture the classic-theme branches of the playbook can never be exercised there — they passed locally only because the developer's host install happened to run a classic theme.
+Version: 1.0.0
+Requires at least: 6.9
+Tested up to: 7.0
+Requires PHP: 7.4
+License: GPL-2.0-or-later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: saddle-classic-fixture
+*/
