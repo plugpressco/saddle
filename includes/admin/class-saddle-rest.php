@@ -49,23 +49,27 @@ class Saddle_REST_Admin {
 				'callback'            => array( __CLASS__, 'update_settings' ),
 				'permission_callback' => array( __CLASS__, 'can_manage' ),
 				'args'                => array(
-					'tier'      => array(
+					'tier'        => array(
 						'type'     => 'string',
 						'required' => false,
 						'enum'     => Saddle_Capabilities::tiers(),
 					),
-					'onboarded' => array(
+					'onboarded'   => array(
 						'type'     => 'boolean',
 						'required' => false,
 					),
-					'paused'    => array(
+					'paused'      => array(
 						'type'     => 'boolean',
 						'required' => false,
 					),
-					'theme'     => array(
+					'theme'       => array(
 						'type'     => 'string',
 						'required' => false,
 						'enum'     => array( 'system', 'light', 'dark' ),
+					),
+					'drafts_only' => array(
+						'type'     => 'boolean',
+						'required' => false,
 					),
 				),
 			),
@@ -602,6 +606,7 @@ class Saddle_REST_Admin {
 					'recorded' => Saddle_Capabilities::recorded_tier_domain(),
 					'enforced' => Saddle_Capabilities::is_domain_enforced(),
 				),
+				'drafts_only'    => Saddle_Capabilities::is_drafts_only(),
 				// The key itself never leaves the server — only whether one is
 				// set, plus a last-4 hint so the owner can recognize it.
 				'unsplash'       => array(
@@ -662,6 +667,10 @@ class Saddle_REST_Admin {
 
 		if ( array_key_exists( 'domain_enforced', $params ) ) {
 			Saddle_Capabilities::set_domain_enforcement( (bool) $request->get_param( 'domain_enforced' ) );
+		}
+
+		if ( array_key_exists( 'drafts_only', $params ) ) {
+			Saddle_Capabilities::set_drafts_only( (bool) $request->get_param( 'drafts_only' ) );
 		}
 
 		// Key absent from the body ⇒ untouched; '' or null ⇒ cleared;
