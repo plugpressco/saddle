@@ -330,7 +330,7 @@ class Saddle_OAuth_Discovery {
 		$document = array(
 			'resource'                 => Saddle_OAuth::resource_id(),
 			'authorization_servers'    => array( Saddle_OAuth::issuer() ),
-			'scopes_supported'         => Saddle_OAuth::SCOPES,
+			'scopes_supported'         => Saddle_OAuth::advertised_scopes(),
 			'bearer_methods_supported' => array( 'header' ),
 			'resource_name'            => Saddle_MCP::server_name(),
 			'resource_documentation'   => 'https://wordpress.org/plugins/saddle/',
@@ -358,7 +358,9 @@ class Saddle_OAuth_Discovery {
 			'authorization_endpoint'                     => Saddle_OAuth::endpoint( 'authorize' ),
 			'token_endpoint'                             => Saddle_OAuth::endpoint( 'token' ),
 			'revocation_endpoint'                        => Saddle_OAuth::endpoint( 'revoke' ),
-			'scopes_supported'                           => Saddle_OAuth::SCOPES,
+			// Includes `offline_access`: ChatGPT checks this list before trusting
+			// refresh-token renewal (#159). Advertised, never granted as access.
+			'scopes_supported'                           => Saddle_OAuth::advertised_scopes(),
 			'response_types_supported'                   => array( 'code' ),
 			'response_modes_supported'                   => array( 'query' ),
 			'grant_types_supported'                      => array( 'authorization_code', 'refresh_token' ),

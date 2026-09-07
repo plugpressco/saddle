@@ -49,6 +49,22 @@ class Saddle_OAuth {
 	const SCOPES = array( 'saddle:read', 'saddle:write', 'saddle:admin' );
 
 	/**
+	 * The OpenID Connect scope a client asks for to be issued a refresh token.
+	 *
+	 * Saddle issues refresh tokens unconditionally, so this scope changes
+	 * nothing about what a grant can do — it is NOT a tier and never reaches
+	 * {@see self::scope_to_tier()}. It exists because ChatGPT reads a provider's
+	 * discovery metadata for it before trusting refresh-token renewal (OpenAI,
+	 * "Developer mode and MCP apps in ChatGPT", 2026-08): a server that never
+	 * advertises it may be treated as one that never renews, and the connector
+	 * dies at ACCESS_TTL with a reconnect as the only remedy. See #159.
+	 *
+	 * Kept out of SCOPES on purpose: that constant is the tier-clamp set and
+	 * must stay exactly three.
+	 */
+	const REFRESH_SCOPE = 'offline_access';
+
+	/**
 	 * The scope challenged on an unauthenticated request. Least privilege: a
 	 * client that knows nothing else asks for read, and steps up if it needs to.
 	 */
@@ -324,6 +340,39 @@ class Saddle_OAuth {
 		 * @param string $capability Capability name. Default 'manage_options'.
 		 */
 		return (string) apply_filters( 'saddle_oauth_authorize_capability', 'manage_options' );
+	}
+
+	/**
+	 * Every scope the discovery documents list: the three tier scopes plus the
+	 * refresh scope. Discovery-only — {@see self::normalize_scope()} still grants
+	 * from SCOPES alone, so advertising the extra word cannot widen a token.
+	 *
+	 * @return string[]
+	 */
+	public static function advertised_scopes() {
+		return array_merge( self::SCOPES, array( self::REFRESH_SCOPE ) );
+	}
+
+	/**
+	 * Drop the refresh scope from a requested scope string, returning the rest.
+	 *
+	 * The authorize endpoint decides "did this client express a preference?" by
+	 * whether `scope` is empty, and a client that asked for nothing is offered
+	 * the site's own level. `offline_access` is not a preference about access:
+	 * a client that sends ONLY that word has still asked for nothing, and must
+	 * not be pinned to read-only for it (that is precisely the pre-#98 outcome
+	 * for ChatGPT). Strip it BEFORE that decision, not inside normalize_scope(),
+	 * whose "unrecognized words are a preference" rule is right for `openid
+	 * profile` and wrong for this one word.
+	 *
+	 * @param string $requested Space-delimited scope string.
+	 * @return string The same string without the refresh scope, trimmed.
+	 */
+	public static function strip_refresh_scope( $requested ) {
+		$asked = preg_split( '/\s+/', trim( (string) $requested ), -1, PREG_SPLIT_NO_EMPTY );
+		$asked = is_array( $asked ) ? $asked : array();
+
+		return implode( ' ', array_values( array_diff( $asked, array( self::REFRESH_SCOPE ) ) ) );
 	}
 
 	/**

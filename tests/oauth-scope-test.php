@@ -279,6 +279,32 @@ class Saddle_OAuth_Scope_Test extends WP_UnitTestCase {
 		);
 	}
 
+	/**
+	 * `offline_access` is the one unrecognized word that is NOT a preference
+	 * about access: it asks for a refresh token, which every grant gets. Now
+	 * that discovery advertises it (#159), a client that sends only that word
+	 * has still asked for nothing and must reach consent proposing the site's
+	 * own level — not be pinned to read the way `openid profile` is.
+	 */
+	public function test_asking_only_for_offline_access_is_asking_for_nothing() {
+		Saddle_Capabilities::set_tier( 'admin' );
+
+		$this->assertSame(
+			'saddle:read saddle:write saddle:admin',
+			$this->pending_scope( array( 'scope' => 'offline_access' ) )
+		);
+	}
+
+	public function test_offline_access_never_widens_an_explicit_request() {
+		Saddle_Capabilities::set_tier( 'admin' );
+
+		$this->assertSame(
+			'saddle:read',
+			$this->pending_scope( array( 'scope' => 'saddle:read offline_access' ) ),
+			'The refresh scope rides along; it must neither widen the request nor survive into the grant.'
+		);
+	}
+
 	/* ------------------------------------------------------------------
 	 * What the consent screen grants
 	 * --------------------------------------------------------------- */

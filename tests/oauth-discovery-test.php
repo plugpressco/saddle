@@ -62,6 +62,24 @@ class Saddle_OAuth_Discovery_Test extends WP_UnitTestCase {
 		$this->assertNotEmpty( $doc['scopes_supported'] );
 	}
 
+	/**
+	 * ChatGPT reads `scopes_supported` for `offline_access` before trusting
+	 * refresh-token renewal; a server that never lists it may be treated as one
+	 * that never renews, and the connector dies at the access-token TTL (#159).
+	 * Both documents carry it — and the tier-clamp set does not.
+	 */
+	public function test_offline_access_is_advertised_without_becoming_a_tier() {
+		$resource = Saddle_OAuth_Discovery::protected_resource_metadata();
+		$server   = Saddle_OAuth_Discovery::authorization_server_metadata();
+
+		$this->assertContains( 'offline_access', $resource['scopes_supported'] );
+		$this->assertContains( 'offline_access', $server['scopes_supported'] );
+		$this->assertContains( 'refresh_token', $server['grant_types_supported'], 'Advertising the scope only makes sense alongside the grant.' );
+
+		$this->assertSame( array( 'saddle:read', 'saddle:write', 'saddle:admin' ), Saddle_OAuth::SCOPES, 'SCOPES is the tier clamp and must stay exactly three.' );
+		$this->assertSame( 'read', Saddle_OAuth::scope_to_tier( 'offline_access' ), 'The refresh scope must never resolve above the least tier.' );
+	}
+
 	public function test_the_resource_id_has_no_trailing_slash() {
 		// RFC 8707 canonical form. A client sends this back verbatim as
 		// `resource=`, and the audience check is a string comparison.
