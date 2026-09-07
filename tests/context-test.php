@@ -23,6 +23,7 @@ class Saddle_Context_Test extends WP_UnitTestCase {
 
 	public function tear_down() {
 		delete_option( Saddle_Capabilities::OPTION );
+		delete_option( Saddle_Capabilities::DRAFTS_ONLY_OPTION );
 		delete_option( 'active_plugins' );
 		wp_cache_delete( 'plugins', 'plugins' );
 		remove_all_filters( 'saddle_system_context' );
@@ -134,6 +135,24 @@ class Saddle_Context_Test extends WP_UnitTestCase {
 
 		$this->assertStringContainsString( 'confirmation token', $ctx );
 		$this->assertStringContainsString( 'Nothing is ever deleted in one step', $ctx );
+	}
+
+	public function test_context_names_drafts_only_policy_when_on() {
+		Saddle_Capabilities::set_tier( 'write' );
+		Saddle_Capabilities::set_drafts_only( true );
+
+		$ctx = Saddle_Context::system_context();
+
+		$this->assertStringContainsString( 'drafts-only', $ctx );
+	}
+
+	public function test_context_does_not_mention_drafts_only_policy_when_off() {
+		Saddle_Capabilities::set_tier( 'write' );
+		Saddle_Capabilities::set_drafts_only( false );
+
+		$ctx = Saddle_Context::system_context();
+
+		$this->assertStringNotContainsString( 'drafts-only', $ctx );
 	}
 
 	public function test_context_reports_content_counts() {
