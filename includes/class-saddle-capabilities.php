@@ -70,6 +70,15 @@ class Saddle_Capabilities {
 	const ENFORCE_DOMAIN_OPTION = 'saddle_enforce_tier_domain';
 
 	/**
+	 * Option key for the drafts-only write policy. Off by default. When on,
+	 * a create request asking for status=publish lands as draft instead, and
+	 * an update that would flip an existing post/page to publish goes
+	 * through the approval gate rather than executing immediately. See
+	 * Saddle_Abilities::authorize_write().
+	 */
+	const DRAFTS_ONLY_OPTION = 'saddle_drafts_only';
+
+	/**
 	 * Tier name => numeric rank. Higher rank = more power.
 	 *
 	 * @var array<string,int>
@@ -608,6 +617,26 @@ class Saddle_Capabilities {
 	 */
 	public static function set_domain_enforcement( $enforce ) {
 		return update_option( self::ENFORCE_DOMAIN_OPTION, (bool) $enforce );
+	}
+
+	/**
+	 * Whether the drafts-only write policy is on (see DRAFTS_ONLY_OPTION).
+	 * Read fresh every call — never cached across requests.
+	 *
+	 * @return bool
+	 */
+	public static function is_drafts_only() {
+		return (bool) get_option( self::DRAFTS_ONLY_OPTION, false );
+	}
+
+	/**
+	 * Turn the drafts-only write policy on or off.
+	 *
+	 * @param bool $on Whether publish requests should be downgraded/gated.
+	 * @return bool
+	 */
+	public static function set_drafts_only( $on ) {
+		return update_option( self::DRAFTS_ONLY_OPTION, (bool) $on );
 	}
 
 	/**
