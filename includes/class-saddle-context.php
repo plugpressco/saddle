@@ -120,6 +120,10 @@ class Saddle_Context {
 		$lines[] = '- ' . __( 'Saddle exposes core content only: posts, pages, media, and their block structure.', 'saddle' );
 		$lines[] = '- ' . __( 'Stay within the tools Saddle provides. Do not attempt actions outside this scope.', 'saddle' );
 
+		if ( 'read' !== $tier && Saddle_Capabilities::is_drafts_only() ) {
+			$lines[] = '- ' . __( 'This site is set to drafts-only: publishing or scheduling a new post or page saves a draft instead. Publishing or scheduling an existing item requires a preview and confirmation. Edits to already-published content remain live.', 'saddle' );
+		}
+
 		foreach ( self::withheld_tools_lines() as $line ) {
 			$lines[] = $line;
 		}
