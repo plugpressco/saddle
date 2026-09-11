@@ -261,7 +261,7 @@ export default function Permissions( {
 				<CardHeader
 					title={ __( 'Drafts-only', 'saddle' ) }
 					description={ __(
-						'Agent writes always land as a draft. Publishing something brand new lands as a draft too, and publishing an existing post or page asks you to confirm first — the same way a deletion does.',
+						'New posts and pages requested for publication or scheduling are saved as drafts. Publishing or scheduling an existing item requires confirmation. Edits to already-published content remain live.',
 						'saddle'
 					) }
 				/>
@@ -276,14 +276,14 @@ export default function Permissions( {
 							disabled={ savingDraftsOnly }
 							onChange={ toggleDraftsOnly }
 							aria-label={ __(
-								'Agent writes always land as draft; publishing asks',
+								'Save new publications as drafts; confirm publishing existing content',
 								'saddle'
 							) }
 						/>
 						<span>
 							{ draftsOnly
 								? __(
-										'On — every write lands as a draft; publishing an existing item asks first.',
+										'On — new publications stay in draft; publishing existing items asks first.',
 										'saddle'
 								  )
 								: __(

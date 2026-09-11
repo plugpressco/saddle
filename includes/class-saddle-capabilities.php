@@ -71,10 +71,10 @@ class Saddle_Capabilities {
 
 	/**
 	 * Option key for the drafts-only write policy. Off by default. When on,
-	 * a create request asking for status=publish lands as draft instead, and
+	 * a create request asking to publish or schedule lands as draft instead, and
 	 * an update that would flip an existing post/page to publish goes
 	 * through the approval gate rather than executing immediately. See
-	 * Saddle_Abilities::authorize_write().
+	 * Saddle_Abilities::guard_publish_transition().
 	 */
 	const DRAFTS_ONLY_OPTION = 'saddle_drafts_only';
 

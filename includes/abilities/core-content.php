@@ -822,13 +822,17 @@ function saddle_writable_schema( $type, $is_update ) {
 	);
 
 	if ( $is_update ) {
-		$props['id']          = array(
+		$props['id']            = array(
 			'type'        => 'integer',
 			'minimum'     => 1,
 			'description' => __( 'The ID to update.', 'saddle' ),
 		);
-		$schema['properties'] = $props;
-		$schema['required']   = array( 'id' );
+		$props['confirm_token'] = array(
+			'type'        => 'string',
+			'description' => __( 'Single-use token returned by a publishing preview. Repeat the same arguments with this token to confirm.', 'saddle' ),
+		);
+		$schema['properties']   = $props;
+		$schema['required']     = array( 'id' );
 	}
 
 	return $schema;
@@ -927,7 +931,7 @@ class Saddle_Abilities {
 			return self::forbidden( __( 'You do not have permission to edit this item.', 'saddle' ) );
 		}
 
-		if ( isset( $input['status'] ) && 'publish' === sanitize_key( (string) $input['status'] ) ) {
+		if ( isset( $input['status'] ) && in_array( sanitize_key( (string) $input['status'] ), array( 'publish', 'future' ), true ) ) {
 			$publish_cap = $is_page ? 'publish_pages' : 'publish_posts';
 			if ( ! current_user_can( $publish_cap ) ) {
 				return self::forbidden( __( 'You do not have permission to publish content.', 'saddle' ) );
@@ -947,7 +951,7 @@ class Saddle_Abilities {
 	/**
 	 * Drafts-only policy for a brand-new post/page (see
 	 * Saddle_Capabilities::DRAFTS_ONLY_OPTION). There is no existing object to
-	 * protect on create, so an explicit status=publish is rewritten to draft
+	 * protect on create, so an explicit publish or future status is rewritten to draft
 	 * before insert rather than gated — nothing public exists yet either way.
 	 *
 	 * @param array $input Create input, mutated in place.
@@ -957,7 +961,7 @@ class Saddle_Abilities {
 		if ( ! Saddle_Capabilities::is_drafts_only() ) {
 			return false;
 		}
-		if ( ! isset( $input['status'] ) || 'publish' !== sanitize_key( (string) $input['status'] ) ) {
+		if ( ! isset( $input['status'] ) || ! in_array( sanitize_key( (string) $input['status'] ), array( 'publish', 'future' ), true ) ) {
 			return false;
 		}
 		$input['status'] = 'draft';
@@ -969,8 +973,8 @@ class Saddle_Abilities {
 	 * to publish: unlike create, something real is already sitting at its
 	 * current status, so this is gated the same way delete_of_type() gates a
 	 * deletion — a preview + confirm_token round trip — rather than silently
-	 * downgraded. Not triggered when the item is already published, since
-	 * nothing is being "flipped".
+	 * downgraded. Scheduling also requires confirmation. An already-published resave
+	 * without a token proceeds normally; a supplied token is always validated.
 	 *
 	 * @param string  $type     'post'|'page'.
 	 * @param int     $id       Post id being updated.
@@ -980,20 +984,27 @@ class Saddle_Abilities {
 	 *                             when the update should proceed unguarded.
 	 */
 	private static function guard_publish_transition( $type, $id, $existing, array $input ) {
-		if ( ! Saddle_Capabilities::is_drafts_only() ) {
-			return null;
-		}
-		if ( ! isset( $input['status'] ) || 'publish' !== sanitize_key( (string) $input['status'] ) ) {
-			return null;
-		}
-		if ( 'publish' === $existing->post_status ) {
+		// A supplied token must always be validated, even after publication or
+		// after the owner disables the policy. Otherwise a retry can execute
+		// again through the ordinary update path without consuming the token.
+		$has_token = isset( $input['confirm_token'] ) && '' !== trim( (string) $input['confirm_token'] );
+		$status    = isset( $input['status'] ) ? sanitize_key( (string) $input['status'] ) : '';
+		if ( ! $has_token && ( ! Saddle_Capabilities::is_drafts_only()
+			|| ! in_array( $status, array( 'publish', 'future' ), true )
+			|| ( 'publish' === $status && 'publish' === $existing->post_status ) ) ) {
 			return null;
 		}
 
-		// Fold the rest of the payload into the token identity: a preview
-		// shown for one edit must not be confirmable into publishing a
-		// different one (same principle as delete's trash-vs-permanent bind).
-		$bind = md5( (string) wp_json_encode( array_diff_key( $input, array( 'confirm_token' => true ) ) ) );
+		$changes = array_diff_key(
+			$input,
+			array(
+				'id'            => true,
+				'confirm_token' => true,
+			)
+		);
+		$payload = $changes;
+		ksort( $payload );
+		$bind = hash( 'sha256', (string) wp_json_encode( $payload ) );
 
 		return Saddle_Approval::gate(
 			array(
@@ -1002,7 +1013,7 @@ class Saddle_Abilities {
 				'bind'    => $bind,
 				'summary' => sprintf(
 					/* translators: 1: type, 2: id, 3: title. */
-					__( 'Publish %1$s #%2$d "%3$s". This site is set to drafts-only, so publishing an existing item asks for confirmation first.', 'saddle' ),
+					__( 'Approve publication of %1$s #%2$d "%3$s", including any requested schedule and edits.', 'saddle' ),
 					$type,
 					$id,
 					$existing->post_title
@@ -1012,7 +1023,8 @@ class Saddle_Abilities {
 					'type'           => $type,
 					'title'          => $existing->post_title,
 					'current_status' => $existing->post_status,
-					'new_status'     => 'publish',
+					'new_status'     => $status,
+					'changes'        => $changes,
 				),
 				'input'   => $input,
 				'execute' => function () use ( $type, $id, $input ) {
@@ -1899,7 +1911,7 @@ class Saddle_Abilities {
 			$detail['meta_denied'] = $meta_denied;
 		}
 		if ( $drafts_only_override ) {
-			$detail['drafts_only_override'] = __( 'This site is set to drafts-only: the requested "publish" status was not applied, and the item was saved as a draft instead.', 'saddle' );
+			$detail['drafts_only_override'] = __( 'This site is set to drafts-only: the requested publication or schedule was not applied, and the item was saved as a draft instead.', 'saddle' );
 		}
 		return $detail;
 	}
@@ -2258,6 +2270,9 @@ class Saddle_Abilities {
 		}
 		if ( ! empty( $input['date'] ) ) {
 			$postarr['post_date'] = sanitize_text_field( $input['date'] );
+			// Updates merge the old GMT date; keep it aligned with the new schedule.
+			$postarr['post_date_gmt'] = get_gmt_from_date( $postarr['post_date'] );
+			$postarr['edit_date']     = true;
 		}
 		if ( ! empty( $input['comment_status'] ) ) {
 			$postarr['comment_status'] = sanitize_key( $input['comment_status'] );

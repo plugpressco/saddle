@@ -205,4 +205,113 @@ class Saddle_Drafts_Only_Test extends WP_UnitTestCase {
 		$this->assertArrayNotHasKey( 'requires_confirmation', $result );
 		$this->assertSame( 'Just a title edit', get_post( $id )->post_title );
 	}
+	public static function content_types() {
+		return array( 'post' => array( 'post' ), 'page' => array( 'page' ) );
+	}
+
+	/** @dataProvider content_types */
+	public function test_update_schema_advertises_confirmation_token( $type ) {
+		$schema = $this->ability( 'saddle/update-' . $type )->get_input_schema();
+		$this->assertArrayHasKey( 'confirm_token', $schema['properties'] );
+	}
+
+	/** @dataProvider content_types */
+	public function test_confirmed_publish_cannot_execute_again_after_publication( $type ) {
+		Saddle_Capabilities::set_drafts_only( true );
+		$id = self::factory()->post->create( array( 'post_type' => $type, 'post_status' => 'draft' ) );
+		$input = array( 'id' => $id, 'status' => 'publish', 'title' => 'Approved title' );
+		$ability = $this->ability( 'saddle/update-' . $type );
+		$preview = $ability->execute( $input );
+		$this->assertSame( 'draft', get_post_status( $id ) );
+		$input['confirm_token'] = $preview['confirm_token'];
+		$this->assertNotWPError( $ability->execute( $input ) );
+		$this->assertSame( 'publish', get_post_status( $id ) );
+		wp_update_post( array( 'ID' => $id, 'post_title' => 'Subsequent owner edit' ) );
+		$this->assertWPError( $ability->execute( $input ) );
+		$this->assertSame( 'Subsequent owner edit', get_post( $id )->post_title );
+	}
+
+	/** @dataProvider content_types */
+	public function test_publish_preview_shows_the_other_requested_changes( $type ) {
+		Saddle_Capabilities::set_drafts_only( true );
+		$id = self::factory()->post->create( array( 'post_type' => $type, 'post_status' => 'draft' ) );
+		$changes = array( 'status' => 'publish', 'title' => 'New title', 'content' => 'New body', 'meta' => array( 'campaign' => 'launch' ) );
+		$result = $this->ability( 'saddle/update-' . $type )->execute( array_merge( array( 'id' => $id ), $changes ) );
+		$this->assertSame( $changes, $result['preview']['changes'] );
+		$this->assertNotSame( 'New title', get_post( $id )->post_title );
+		$this->assertSame( '', get_post_meta( $id, 'campaign', true ) );
+	}
+
+	/** @dataProvider content_types */
+	public function test_scheduling_new_content_stays_draft( $type ) {
+		Saddle_Capabilities::set_drafts_only( true );
+		$result = $this->ability( 'saddle/create-' . $type )->execute( array( 'title' => 'Scheduled', 'status' => 'future', 'date' => '2099-01-01 12:00:00' ) );
+		$this->assertNotWPError( $result );
+		$this->assertSame( 'draft', get_post_status( $result['id'] ) );
+		$this->assertNotEmpty( $result['drafts_only_override'] );
+	}
+
+	/** @dataProvider content_types */
+	public function test_scheduling_existing_content_requires_confirmation( $type ) {
+		Saddle_Capabilities::set_drafts_only( true );
+		$id = self::factory()->post->create( array( 'post_type' => $type, 'post_status' => 'draft' ) );
+		$input = array( 'id' => $id, 'status' => 'future', 'date' => '2099-01-01 12:00:00' );
+		$ability = $this->ability( 'saddle/update-' . $type );
+		$preview = $ability->execute( $input );
+		$this->assertTrue( $preview['requires_confirmation'] );
+		$this->assertSame( 'draft', get_post_status( $id ) );
+		$input['confirm_token'] = $preview['confirm_token'];
+		$this->assertNotWPError( $ability->execute( $input ) );
+		$this->assertSame( 'future', get_post_status( $id ) );
+	}
+
+	public function test_preferences_round_trip_and_subscriber_cannot_change_policy() {
+		$get = new WP_REST_Request( 'GET', '/saddle/v1/preferences' );
+		$this->assertFalse( rest_do_request( $get )->get_data()['drafts_only'] );
+		$post = new WP_REST_Request( 'POST', '/saddle/v1/preferences' );
+		$post->set_param( 'drafts_only', true );
+		$this->assertTrue( rest_do_request( $post )->get_data()['drafts_only'] );
+		$this->assertTrue( rest_do_request( $get )->get_data()['drafts_only'] );
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'subscriber' ) ) );
+		$post->set_param( 'drafts_only', false );
+		$this->assertSame( 403, rest_do_request( $post )->get_status() );
+		$this->assertTrue( Saddle_Capabilities::is_drafts_only() );
+	}
+
+	/** @dataProvider content_types */
+	public function test_read_tier_and_subscriber_cannot_publish_under_policy( $type ) {
+		Saddle_Capabilities::set_drafts_only( true );
+		$ability = $this->ability( 'saddle/create-' . $type );
+		$input = array( 'title' => 'Forbidden', 'status' => 'publish' );
+		Saddle_Capabilities::set_tier( 'read' );
+		$this->assertWPError( $ability->execute( $input ) );
+		Saddle_Capabilities::set_tier( 'write' );
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'subscriber' ) ) );
+		$this->assertWPError( $ability->execute( $input ) );
+	}
+
+	public function test_set_blocks_preserves_status_and_does_not_offer_publishing() {
+		Saddle_Capabilities::set_drafts_only( true );
+		$ability = $this->ability( 'saddle/set-blocks' );
+		$this->assertArrayNotHasKey( 'status', $ability->get_input_schema()['properties'] );
+		foreach ( array( 'draft', 'publish' ) as $status ) {
+			$id = self::factory()->post->create( array( 'post_type' => 'page', 'post_status' => $status ) );
+			$result = $ability->execute( array( 'post_id' => $id, 'nodes' => array( array( 'type' => 'core/paragraph', 'content' => 'Updated body' ) ) ) );
+			$this->assertNotWPError( $result );
+			$this->assertSame( $status, get_post_status( $id ) );
+			$this->assertStringContainsString( 'Updated body', get_post( $id )->post_content );
+		}
+	}
+
+	public function test_token_still_requires_validation_after_policy_disabled() {
+		Saddle_Capabilities::set_drafts_only( true );
+		$id = self::factory()->post->create( array( 'post_status' => 'draft' ) );
+		$ability = $this->ability( 'saddle/update-post' );
+		$input = array( 'id' => $id, 'status' => 'publish' );
+		$input['confirm_token'] = $ability->execute( $input )['confirm_token'];
+		Saddle_Capabilities::set_drafts_only( false );
+		$this->assertNotWPError( $ability->execute( $input ) );
+		$this->assertWPError( $ability->execute( $input ) );
+	}
+
 }
