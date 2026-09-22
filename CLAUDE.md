@@ -40,8 +40,10 @@ and finding each fails at least one. Check every change against all three.
    URL, no user data, no telemetry. The **WordPress.org build makes no outbound
    request at all**, because the updater file isn't in that zip. Any wording
    anywhere — readme, docs, marketing — must state it this precisely rather than
-   the old absolute, or it is simply false. *The public copy has not caught up
-   yet; that is an open task, not a settled position.*
+   the old absolute, or it is simply false. *readme.txt was corrected on
+   2026-09-22: it now leads with "never checks for its own updates" and lists
+   the four user-initiated requests without an "apart from that" that contradicts
+   the sentence before it. Docs and marketing still need the same pass.*
 
 2. **Default-safe, not opt-out-unsafe.** New installs default to the `read` tier.
    Never change this default. Power is something the owner turns on, never

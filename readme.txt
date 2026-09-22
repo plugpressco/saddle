@@ -74,9 +74,9 @@ Saddle Pro is a separate, optional add-on that adds page-builder-native editing 
 
 Saddle sends **no** analytics, telemetry, or usage data anywhere, and no content or credentials ever leave your site. Its MCP endpoint is *inbound* — agents call your site, not the other way round.
 
-**The version on WordPress.org makes no outbound request at all.** If you installed Saddle from plugpress.co instead, that copy checks for its own updates: it sends the plugin name and the version number you have, to one fixed address, at most once every six hours, and only when WordPress runs an update check. No site address, no content, no account, nothing about you. It is the same thing WordPress does for every plugin you install from WordPress.org, pointed at us instead.
+**The version on WordPress.org never checks for its own updates.** If you installed Saddle from plugpress.co instead, that copy does: it sends the plugin name and the version number you have, to one fixed address, at most once every six hours, and only when WordPress runs an update check. No site address, no content, no account, nothing about you. It is the same thing WordPress does for every plugin you install from WordPress.org, pointed at us instead.
 
-Apart from that, four things make an outbound request, and each one is started by you:
+Four things make an outbound request, and each one is started by you:
 
 1. **Upload from URL.** If you ask an agent to add a file to the media library by URL, WordPress's own HTTP API downloads that one URL to your server — the same mechanism core's "insert from URL" uses. Only the host in the URL you supplied is contacted.
 2. **Endpoint self-checks.** The connection checker sends requests to *your own site* — its REST URL, and, when OAuth sign-in is on, its `/.well-known/` discovery address — to confirm those endpoints are reachable. Nothing leaves your server.
@@ -104,7 +104,7 @@ Apart from that, four things make an outbound request, and each one is started b
 
 = Does my content or my password go through your servers? =
 
-No. Your content and your password never leave your WordPress install, and no telemetry is sent anywhere. Sign-in is WordPress core's own Application Passwords. The WordPress.org copy makes no outbound request at all; the copy from plugpress.co checks for its own updates, sending only the plugin name and version number.
+No. Your content and your password never leave your WordPress install, and no telemetry is sent anywhere. Sign-in is WordPress core's own Application Passwords. The WordPress.org copy never checks for its own updates; the copy from plugpress.co does, sending only the plugin name and version number. A few actions you can trigger yourself — uploading media from a URL, an optional Unsplash import, an optional OAuth sign-in check — also make an outbound request; see External services above.
 
 = Can an agent delete something without asking? =
 
