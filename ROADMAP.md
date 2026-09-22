@@ -1,5 +1,10 @@
 # Saddle — direction
 
+**Near-term authorizer.** What ships next, in order. The long-horizon product
+thesis — Cloud, multi-site, tasks, automations, agents — is
+[`ROADMAP-PRODUCT.md`](ROADMAP-PRODUCT.md); read it for destination, read this
+for what to pick up now. Where the two disagree on timing, this file wins.
+
 Reset on 2026-09-07 (issue #166). The previous version, written 2026-08-12 around the
 block-theme gap, is in git history; items 1 and 2 of it shipped, item 3 is carried
 below, items 4–6 are folded into the pillars. Each item here becomes a GitHub issue
