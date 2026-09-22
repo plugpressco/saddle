@@ -7,10 +7,14 @@
  */
 import { useState, useMemo, useEffect } from '@wordpress/element';
 import {
+	Card,
+	CardHeader,
+	CardContent,
 	CardRadioGroup,
 	Collapsible,
 	ApplyBar,
 	Notice,
+	Switch,
 	toast,
 	PageHeader,
 	Tooltip,
@@ -79,6 +83,28 @@ export default function Permissions( {
 			)
 			.catch( () => setUnderLevelled( [] ) );
 	}, [ savedTier ] );
+
+	// Drafts-only: saves immediately on toggle, like Settings' pause/OAuth
+	// switches — it isn't part of the level/tools ApplyBar below.
+	const [ draftsOnly, setDraftsOnly ] = useState( false );
+	const [ savingDraftsOnly, setSavingDraftsOnly ] = useState( false );
+
+	useEffect( () => {
+		api( 'preferences' )
+			.then( ( res ) => setDraftsOnly( !! res.drafts_only ) )
+			.catch( () => setDraftsOnly( false ) );
+	}, [] );
+
+	const toggleDraftsOnly = () => {
+		const next = ! draftsOnly;
+		setSavingDraftsOnly( true );
+		api( 'preferences', { method: 'POST', data: { drafts_only: next } } )
+			.then( ( res ) => setDraftsOnly( !! res.drafts_only ) )
+			.catch( () =>
+				toast.error( __( 'Could not save that setting.', 'saddle' ) )
+			)
+			.finally( () => setSavingDraftsOnly( false ) );
+	};
 
 	// Free text filter across a tool's name/id/description. Empty matches all.
 	const q = query.trim().toLowerCase();
@@ -230,6 +256,44 @@ export default function Permissions( {
 					description: lvl.short,
 				} ) ) }
 			/>
+
+			<Card>
+				<CardHeader
+					title={ __( 'Drafts-only', 'saddle' ) }
+					description={ __(
+						'New posts and pages requested for publication or scheduling are saved as drafts. Publishing or scheduling an existing item requires confirmation. Edits to already-published content remain live.',
+						'saddle'
+					) }
+				/>
+				<CardContent>
+					<label
+						className="saddle-toggle-row"
+						htmlFor="saddle-drafts-only-switch"
+					>
+						<Switch
+							id="saddle-drafts-only-switch"
+							checked={ draftsOnly }
+							disabled={ savingDraftsOnly }
+							onChange={ toggleDraftsOnly }
+							aria-label={ __(
+								'Save new publications as drafts; confirm publishing existing content',
+								'saddle'
+							) }
+						/>
+						<span>
+							{ draftsOnly
+								? __(
+										'On — new publications stay in draft; publishing existing items asks first.',
+										'saddle'
+								  )
+								: __(
+										'Off — the level above already decides who can publish.',
+										'saddle'
+								  ) }
+						</span>
+					</label>
+				</CardContent>
+			</Card>
 
 			{ underLevelled.length > 0 && (
 				<Notice tone="warning">

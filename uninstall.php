@@ -18,6 +18,7 @@ $saddle_options = array(
 	'saddle_onboarded',
 	'saddle_user_context',      // Saddle_Context::USER_OPTION.
 	'saddle_disabled_abilities', // Saddle_Capabilities::DISABLED_OPTION.
+	'saddle_drafts_only',       // Saddle_Capabilities::DRAFTS_ONLY_OPTION.
 	'saddle_paused',            // Saddle_Capabilities::PAUSED_OPTION.
 	'saddle_tier_domain',       // Saddle_Capabilities::TIER_DOMAIN_OPTION.
 	'saddle_enforce_tier_domain', // Saddle_Capabilities::ENFORCE_DOMAIN_OPTION.

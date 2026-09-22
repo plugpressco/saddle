@@ -822,13 +822,17 @@ function saddle_writable_schema( $type, $is_update ) {
 	);
 
 	if ( $is_update ) {
-		$props['id']          = array(
+		$props['id']            = array(
 			'type'        => 'integer',
 			'minimum'     => 1,
 			'description' => __( 'The ID to update.', 'saddle' ),
 		);
-		$schema['properties'] = $props;
-		$schema['required']   = array( 'id' );
+		$props['confirm_token'] = array(
+			'type'        => 'string',
+			'description' => __( 'Single-use token returned by a publishing preview. Repeat the same arguments with this token to confirm.', 'saddle' ),
+		);
+		$schema['properties']   = $props;
+		$schema['required']     = array( 'id' );
 	}
 
 	return $schema;
@@ -927,7 +931,7 @@ class Saddle_Abilities {
 			return self::forbidden( __( 'You do not have permission to edit this item.', 'saddle' ) );
 		}
 
-		if ( isset( $input['status'] ) && 'publish' === sanitize_key( (string) $input['status'] ) ) {
+		if ( isset( $input['status'] ) && in_array( sanitize_key( (string) $input['status'] ), array( 'publish', 'future' ), true ) ) {
 			$publish_cap = $is_page ? 'publish_pages' : 'publish_posts';
 			if ( ! current_user_can( $publish_cap ) ) {
 				return self::forbidden( __( 'You do not have permission to publish content.', 'saddle' ) );
@@ -942,6 +946,92 @@ class Saddle_Abilities {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Drafts-only policy for a brand-new post/page (see
+	 * Saddle_Capabilities::DRAFTS_ONLY_OPTION). There is no existing object to
+	 * protect on create, so an explicit publish or future status is rewritten to draft
+	 * before insert rather than gated — nothing public exists yet either way.
+	 *
+	 * @param array $input Create input, mutated in place.
+	 * @return bool Whether the requested status was overridden.
+	 */
+	private static function apply_drafts_only_to_create( array &$input ) {
+		if ( ! Saddle_Capabilities::is_drafts_only() ) {
+			return false;
+		}
+		if ( ! isset( $input['status'] ) || ! in_array( sanitize_key( (string) $input['status'] ), array( 'publish', 'future' ), true ) ) {
+			return false;
+		}
+		$input['status'] = 'draft';
+		return true;
+	}
+
+	/**
+	 * Drafts-only policy for an update that would flip an EXISTING post/page
+	 * to publish: unlike create, something real is already sitting at its
+	 * current status, so this is gated the same way delete_of_type() gates a
+	 * deletion — a preview + confirm_token round trip — rather than silently
+	 * downgraded. Scheduling also requires confirmation. An already-published resave
+	 * without a token proceeds normally; a supplied token is always validated.
+	 *
+	 * @param string  $type     'post'|'page'.
+	 * @param int     $id       Post id being updated.
+	 * @param WP_Post $existing The post before this update.
+	 * @param array   $input    Update input (read for status + confirm_token).
+	 * @return array|WP_Error|null Gate result to return immediately, or null
+	 *                             when the update should proceed unguarded.
+	 */
+	private static function guard_publish_transition( $type, $id, $existing, array $input ) {
+		// A supplied token must always be validated, even after publication or
+		// after the owner disables the policy. Otherwise a retry can execute
+		// again through the ordinary update path without consuming the token.
+		$has_token = isset( $input['confirm_token'] ) && '' !== trim( (string) $input['confirm_token'] );
+		$status    = isset( $input['status'] ) ? sanitize_key( (string) $input['status'] ) : '';
+		if ( ! $has_token && ( ! Saddle_Capabilities::is_drafts_only()
+			|| ! in_array( $status, array( 'publish', 'future' ), true )
+			|| ( 'publish' === $status && 'publish' === $existing->post_status ) ) ) {
+			return null;
+		}
+
+		$changes = array_diff_key(
+			$input,
+			array(
+				'id'            => true,
+				'confirm_token' => true,
+			)
+		);
+		$payload = $changes;
+		ksort( $payload );
+		$bind = hash( 'sha256', (string) wp_json_encode( $payload ) );
+
+		return Saddle_Approval::gate(
+			array(
+				'action'  => 'publish_' . $type,
+				'target'  => (string) $id,
+				'bind'    => $bind,
+				'summary' => sprintf(
+					/* translators: 1: type, 2: id, 3: title. */
+					__( 'Approve publication of %1$s #%2$d "%3$s", including any requested schedule and edits.', 'saddle' ),
+					$type,
+					$id,
+					$existing->post_title
+				),
+				'preview' => array(
+					'id'             => $id,
+					'type'           => $type,
+					'title'          => $existing->post_title,
+					'current_status' => $existing->post_status,
+					'new_status'     => $status,
+					'changes'        => $changes,
+				),
+				'input'   => $input,
+				'execute' => function () use ( $type, $id, $input ) {
+					return self::execute_update( $type, $id, $input, false );
+				},
+			)
+		);
 	}
 
 	/**
@@ -1788,6 +1878,8 @@ class Saddle_Abilities {
 			return $denied;
 		}
 
+		$drafts_only_override = self::apply_drafts_only_to_create( $input );
+
 		$postarr              = self::build_postarr( $type, $input );
 		$postarr['post_type'] = $type;
 		if ( empty( $postarr['post_status'] ) ) {
@@ -1817,6 +1909,9 @@ class Saddle_Abilities {
 		$detail = self::post_detail( $post );
 		if ( ! empty( $meta_denied ) ) {
 			$detail['meta_denied'] = $meta_denied;
+		}
+		if ( $drafts_only_override ) {
+			$detail['drafts_only_override'] = __( 'This site is set to drafts-only: the requested publication or schedule was not applied, and the item was saved as a draft instead.', 'saddle' );
 		}
 		return $detail;
 	}
@@ -2003,6 +2098,34 @@ class Saddle_Abilities {
 			}
 		}
 
+		// Drafts-only policy: flipping an EXISTING item to publish is gated
+		// (preview + confirm_token) rather than executed immediately. Returns
+		// null when the policy is off, the status isn't changing to publish,
+		// or the item is already published.
+		$gated = self::guard_publish_transition( $type, $id, $existing, $input );
+		if ( null !== $gated ) {
+			return $gated;
+		}
+
+		return self::execute_update( $type, $id, $input );
+	}
+
+	/**
+	 * Perform the actual post/page mutation: build_postarr(), wp_update_post(),
+	 * terms/meta, log, and the response detail. Split out of update_of_type()
+	 * so the drafts-only approval gate's `execute` closure can call the same
+	 * path a direct (ungated) update uses.
+	 *
+	 * @param string $type  'post'|'page'.
+	 * @param int    $id    Post id being updated.
+	 * @param array  $input Writable fields.
+	 * @param bool   $log   Whether to record this action in Saddle_Log. False
+	 *                      when called from inside Saddle_Approval::gate(),
+	 *                      which already logs the confirmed action itself —
+	 *                      logging here too would double the entry.
+	 * @return array|WP_Error
+	 */
+	private static function execute_update( $type, $id, array $input, $log = true ) {
 		$postarr       = self::build_postarr( $type, $input );
 		$postarr['ID'] = $id;
 
@@ -2014,17 +2137,19 @@ class Saddle_Abilities {
 		$meta_denied = self::apply_terms_and_meta( $type, $id, $input );
 
 		$post = get_post( $id );
-		Saddle_Log::record_action(
-			'update-' . $type,
-			$id,
-			sprintf(
-				/* translators: 1: post type, 2: id, 3: title. */
-				__( 'Updated %1$s #%2$d "%3$s"', 'saddle' ),
-				$type,
+		if ( $log ) {
+			Saddle_Log::record_action(
+				'update-' . $type,
 				$id,
-				$post->post_title
-			)
-		);
+				sprintf(
+					/* translators: 1: post type, 2: id, 3: title. */
+					__( 'Updated %1$s #%2$d "%3$s"', 'saddle' ),
+					$type,
+					$id,
+					$post->post_title
+				)
+			);
+		}
 
 		$detail = self::post_detail( $post );
 		if ( ! empty( $meta_denied ) ) {
@@ -2145,6 +2270,9 @@ class Saddle_Abilities {
 		}
 		if ( ! empty( $input['date'] ) ) {
 			$postarr['post_date'] = sanitize_text_field( $input['date'] );
+			// Updates merge the old GMT date; keep it aligned with the new schedule.
+			$postarr['post_date_gmt'] = get_gmt_from_date( $postarr['post_date'] );
+			$postarr['edit_date']     = true;
 		}
 		if ( ! empty( $input['comment_status'] ) ) {
 			$postarr['comment_status'] = sanitize_key( $input['comment_status'] );

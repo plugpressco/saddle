@@ -12,6 +12,7 @@ class Saddle_Capabilities_Test extends WP_UnitTestCase {
 		delete_option( Saddle_Capabilities::DISABLED_OPTION );
 		delete_option( Saddle_Capabilities::PAUSED_OPTION );
 		delete_option( Saddle_Capabilities::TIER_DOMAIN_OPTION );
+		delete_option( Saddle_Capabilities::DRAFTS_ONLY_OPTION );
 		parent::tear_down();
 	}
 
@@ -401,5 +402,19 @@ class Saddle_Capabilities_Test extends WP_UnitTestCase {
 		Saddle_Capabilities::set_tier( 'write' );
 
 		$this->assertTrue( Saddle_Capabilities::domain_matches_recorded(), 'Re-confirming the tier on the current domain must clear the warning.' );
+	}
+
+	/** Off by default, like every other opt-in policy option here. */
+	public function test_drafts_only_defaults_to_off() {
+		delete_option( Saddle_Capabilities::DRAFTS_ONLY_OPTION );
+		$this->assertFalse( Saddle_Capabilities::is_drafts_only() );
+	}
+
+	public function test_set_drafts_only_round_trips() {
+		Saddle_Capabilities::set_drafts_only( true );
+		$this->assertTrue( Saddle_Capabilities::is_drafts_only() );
+
+		Saddle_Capabilities::set_drafts_only( false );
+		$this->assertFalse( Saddle_Capabilities::is_drafts_only() );
 	}
 }
