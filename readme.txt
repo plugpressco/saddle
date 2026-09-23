@@ -4,7 +4,7 @@ Tags: mcp, ai, chatgpt, agents, automation
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -141,8 +141,10 @@ If you happen to have the separate MCP Adapter plugin active, Saddle notices and
 
 == Changelog ==
 
-= 1.0.0 =
+= 1.0.1 =
 * New: Optional drafts-only policy on Permissions. New publication and scheduling requests save drafts; publishing or scheduling existing posts and pages requires a preview and single-use confirmation. Edits to already-published content remain live.
+
+= 1.0.0 =
 * Initial public release.
 * Saddle's screens have a look of their own now — a pink accent on a warm, near-white background, squarer corners and flatter surfaces. About 85% of it is still black, white and grey; the colour is saved for the few things worth pointing at.
 * The sidebar is one plain list instead of three labelled sections, and two items say what they do rather than what they are called: Guidance is now Instructions, and Connections is now Apps. Your bookmarks and links still work.

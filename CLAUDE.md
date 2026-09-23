@@ -10,7 +10,7 @@ relay. The buyer is a developer or agency already driving WordPress from Claude
 Code or Codex; Saddle's job is to make the page *judgeable*, not to do the
 judging.
 
-Free Saddle is **1.0.0**, WordPress.org submission pending. **Saddle Pro** is a
+Free Saddle is **1.0.1**, approved and live on WordPress.org. **Saddle Pro** is a
 separate plugin — the Divi 5 layer, sold commercially. Free never contains
 license, upsell or builder-specific code.
 
@@ -306,8 +306,9 @@ files that never ship, and staging the zip under any folder name other than
 
 ## Release
 
-- **No public version above 1.0.0 until Fahim confirms WordPress.org approval.**
-  The short-lived 1.1.0 release was reversed on 2026-08-03.
+- **Approval confirmed 2026-09-07**, when 1.0.0 went live on WordPress.org, so the
+  old "no public version above 1.0.0" gate is released. The short-lived 1.1.0
+  release was reversed on 2026-08-03; that is why the gate existed.
 - **Interim builds use a release-candidate suffix: `1.0.0-rc1`, `-rc2`, …** Never
   ship two different zips under one number — three distinct builds were all
   called 1.0.0 at once, and "I'm on 1.0.0" stopped carrying information.
