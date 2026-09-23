@@ -153,6 +153,31 @@ Four decisions behind it:
   $60 rather than being pushed to One at $108. The 29-40% bundle saving is what
   holds One together for anyone wanting two or more.
 
+### Retired 2026-09-23: the Agency tier
+
+There is no Agency tier and no unlimited tier. §25 ("Saddle Agency", $39-79/month,
+50-100+ sites) and the Agency block in §50 are **dead** — they are kept below as
+written only because the rest of those sections still carries useful thinking, not
+because the tier is planned. Above 20 sites is a conversation, or PlugPress One.
+
+In its place, a **lifetime deal (LTD) page**, terms not yet set. Three things to
+settle before it ships:
+
+- **Price against retention, not against the annual figure.** At $108/year and a
+  four-year life, a 20-site LTD is revenue-neutral around $432. Priced at 3x
+  ($324) every annual subscriber who does the arithmetic switches, converting
+  recurring revenue to one-time while the support obligation continues forever.
+- **Cap it** — limited quantity or a closed window. A permanent LTD on the
+  pricing page is an annual plan nobody buys.
+- **Separate updates from support.** Freemius supports lifetime updates with
+  time-boxed, renewable support. It bounds an otherwise unbounded obligation.
+
+An LTD does not conflict with "your renewal never goes up" — there is no renewal.
+It does need its own Freemius plan (R1: never edit a live one).
+
+**Open: does PlugPress One get an LTD?** At any plausible price it would eat the
+annual revenue of all three plugins at once.
+
 > **Open: One's 10-site tier is mispriced.** $24 more buys double the sites, so
 > anyone who can afford One at 10 sites takes 20 instead; the tier converts to
 > near nothing and the customers who would have paid $180 are lost. Pro steps
@@ -1295,6 +1320,11 @@ This should be the main paid product.
 ---
 
 # 25. Saddle Agency
+
+> **RETIRED 2026-09-23.** There is no Agency tier. See "Retired 2026-09-23: the
+> Agency tier" in §0. Above 20 sites is a conversation, or PlugPress One; an LTD
+> page replaces this as the high-end offer. Kept below as written because the
+> segment thinking is still useful, not because the tier is planned.
 
 **Goal:** Agencies, freelancers, and operators managing many WordPress websites.
 
