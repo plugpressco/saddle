@@ -67,16 +67,29 @@ plugpress.co makes two promises about it in writing.
 
 ## What is already sold
 
-Saddle Pro, annual only, Freemius plugin `33502`:
+Saddle Pro, annual only, Freemius plugin `33502`. **Verified against the live
+pricing page on 2026-09-23** (`plugpress.co` now redirects to `plugpress.io`;
+this file still says `.co` in places below):
 
 | Sites | Price / year |
 |---|---:|
-| 1 | $29 |
-| 5 | $79 |
-| 50 | $149 |
+| 3 | $49 |
+| 10 | $99 |
+| Unlimited | $199 |
 
 Plus a 3-day trial with no card, and PlugPress One, which bundles "Saddle Pro
-with every Pro feature" at $99 / $199 / $399 a year for 10 / 20 / 100 sites.
+with every Pro feature" at $99 / $149 / $249 a year for 3 / 10 / unlimited sites.
+
+> **This table was wrong until 2026-09-23.** It read $29 / $79 / $149 for
+> 1 / 5 / 50 sites, and One at $99 / $199 / $399 for 10 / 20 / 100 — numbers
+> matching no live plan. Every later section reasoning about "a current 50-site
+> Pro customer at $149" (§24, §25, the conflicts table) inherits that error and
+> has **not** been re-derived.
+
+> **Still unverified: the authoritative plan list in the Freemius dashboard.**
+> The table above is what the pricing *page* renders. R2 needs the real plan
+> list and a count of who sits on each, including older plans still renewing
+> that the page no longer shows. Do not run a repricing off this table alone.
 
 The pricing page promises:
 
@@ -89,6 +102,160 @@ The product page promises:
 > It can only look at your site until you say otherwise.
 
 Those three sentences are the constraints. The rules below follow from them.
+
+## Decided 2026-09-23: the next price list
+
+Fahim's call. **Not live yet** — this is the target, and R1/R2 govern how it
+ships.
+
+Saddle Pro:
+
+| Sites | Price / year | Per month |
+|---|---:|---:|
+| 5 | $60 | $5 |
+| 10 | $84 | $7 |
+| 20 | $108 | $9 |
+
+Four decisions behind it:
+
+- **No unlimited tier.** The $199 unlimited plan meant the best-fit customer — a
+  large agency — paid the same as an 11-site freelancer. Above 20 sites is now a
+  conversation, or PlugPress One.
+- **No trial.** Free Saddle on WordPress.org is the evaluation path: unthrottled,
+  no expiry, no account. The 30-day refund becomes the risk-reversal and moves
+  onto the pricing cards — necessary because free carries no Divi code, so it
+  demos the safety model rather than the Pro feature set.
+- **PlugPress One moves onto the same brackets**, and also drops unlimited:
+
+  | Sites | Price / year | Per month | Premium over Pro |
+  |---|---:|---:|---:|
+  | 5 | $108 | $9 | 1.8x |
+  | 10 | $180 | $15 | 2.14x |
+  | 20 | $204 | $17 | 1.89x |
+
+  Matching brackets means one comparison for a buyer instead of two ladders that
+  do not line up.
+
+- **Waggle and Loggle take the same ladder as Saddle Pro** ($60 / $84 / $108 for
+  5 / 10 / 20 sites), which makes them standalone SKUs for the first time. Today
+  neither has a price: both product pages say "comes with PlugPress One". Noted
+  in Saddle's plan because One's bundle math depends on it —
+
+  | Sites | Each | All three | One | Saving |
+  |---|---:|---:|---:|---:|
+  | 5 | $60 | $180 | $108 | $72 (40%) |
+  | 10 | $84 | $252 | $180 | $72 (29%) |
+  | 20 | $108 | $324 | $204 | $120 (37%) |
+
+  This also retires the notional figures in One's value-stack copy — it can cite
+  real, purchasable prices instead of a $149 Waggle and a $129 Loggle that
+  nobody could buy. The cost of unbundling: a buyer who wants only Waggle pays
+  $60 rather than being pushed to One at $108. The 29-40% bundle saving is what
+  holds One together for anyone wanting two or more.
+
+### Retired 2026-09-23: the Agency tier
+
+There is no Agency tier and no unlimited tier. §25 ("Saddle Agency", $39-79/month,
+50-100+ sites) and the Agency block in §50 are **dead** — they are kept below as
+written only because the rest of those sections still carries useful thinking, not
+because the tier is planned. Above 20 sites is a conversation, or PlugPress One.
+
+In its place, a **lifetime deal (LTD) page**. Terms decided 2026-09-23,
+**for Saddle Pro only** — Waggle, Loggle and PlugPress One have no LTD:
+
+| Sites | Annual | LTD (3x) |
+|---|---:|---:|
+| 5 | $60 | $180 |
+| 10 | $84 | $252 |
+| 20 | $108 | $324 |
+
+**Lifetime updates. Technical support 3 years only.**
+
+The 3x multiple and the 3-year support window are the same number on purpose,
+and that is what makes 3x defensible. The buyer pays for three years of support
+and receives three years of support; after that the obligation is updates alone,
+which cost nothing extra because they are built for annual customers anyway. An
+LTD priced at 3x with *unbounded* support would be underwater — the
+revenue-neutral figure there is nearer 4x.
+
+An LTD does not conflict with "your renewal never goes up" — there is no renewal.
+It needs its own Freemius plan (R1: never edit a live one).
+
+Two open items:
+
+- **Verify Freemius can enforce the split.** A lifetime license there normally
+  never expires, and support entitlement usually follows license expiry — so
+  "lifetime updates, 3-year support" may be a policy stated in terms and enforced
+  by hand rather than something the dashboard tracks. Confirm in the product
+  settings before the page promises it.
+- **Cap it.** At 3x the breakeven is three years, so anyone intending to stay
+  longer takes the LTD over annual. That is a launch push; as a permanent tier it
+  is an annual plan nobody buys. A quantity or a closing date, not decided.
+
+**Open: do the other products get an LTD?** Waggle and Loggle would be
+mechanical — same annual ladder, same 3x, $180 / $252 / $324 each, and each is
+self-contained.
+
+PlugPress One is the dangerous one. At 3x its own annual it lands at
+$324 / $540 / $612, and the 5-site figure hands someone all three plugins
+forever for the price of a Saddle-Pro-only LTD at 20 sites — roughly 5.5 years
+of Saddle Pro alone. Anyone intending to use more than one plugin takes it, and
+three products' recurring revenue collapses into one payment. A bundle is fine
+and an LTD is fine; multiplied together they are how this goes wrong. If One
+gets one, price it off the bundle's value — the three individual LTDs less the
+usual 30-40% bundle discount, so nearer $540 than $324 at 5 sites.
+
+> **Open: One's 10-site tier is mispriced.** $24 more buys double the sites, so
+> anyone who can afford One at 10 sites takes 20 instead; the tier converts to
+> near nothing and the customers who would have paid $180 are lost. Pro steps
+> evenly (+$24, +$24); One steps +$72 then +$24. The bundle saving squeezes it
+> from the other side too — $72 off at 10 sites against $120 off at 20. So the
+> top tier is cheaper per site *and* the deeper discount. $9 / $13 / $17 —
+> $108 / $156 / $204 — holds both anchors and steps evenly. Raised 2026-09-23,
+> not adopted.
+
+**This price is permanent for everyone who buys at it.** "Start low, raise later"
+does not apply here: "your renewal never goes up" plus R1 means a customer who
+subscribes at $60 renews at $60 for as long as they stay subscribed. A later
+raise reaches new plans and new customers only. Priced deliberately at or below
+Respira's €9/month at every tier; for scale, WPVibe's comparable tier is $299/yr
+and its agency tier $599/yr (see "Why Saddle cannot bill on usage" below).
+
+### What shipping it requires
+
+- Freemius `33502`: create three **new** Saddle Pro plans, trial disabled.
+  Publish-but-hide every current plan; they keep renewing untouched. Test-renew
+  one real old subscription and confirm it charges the old price (R2). The same
+  treatment applies to PlugPress One's own Freemius product — its id is not
+  recorded here; get it from the dashboard before starting. Waggle and Loggle
+  need products and plans created from scratch, having never been sold alone.
+- `plugpress.io/saddle/`: new cards. Delete "Start 3-day trial", "No card
+  needed", and "Introductory price" — the last promised a discount the following
+  line withdrew. Surface the 30-day refund where the trial CTA was.
+- `plugpress.io/pricing/`: new One cards (5 / 10 / 20, no unlimited). The value
+  stack reads "Saddle Pro ($199) + Waggle ($149) + Loggle ($129)" → Pro becomes
+  $108, which leaves Waggle cited above the flagship's top tier; the two notional
+  figures want a second look at the same time.
+- `saddle-pro/readme.txt:39` and `assets/freemius/listing.md:59,62-65`: trial
+  copy out.
+- `plugpress.io/waggle/` and `/loggle/`: both currently say "comes with
+  PlugPress One" in place of pricing. Each needs its own cards.
+- §24, §25 and "Conflicts to resolve before building" below: re-derive against
+  the corrected numbers.
+
+### Why Saddle cannot bill on usage
+
+WPVibe meters **daily tool calls** (Free 100/day, $99 Pro 500, $299 Power 2,000,
+$599 Agency 5,000, $899 Scale 10,000; rolling 24-hour window, per account, sites
+unlimited and free). That metric tracks delivered value far better than site
+count does — and it is closed to Saddle. Counting tool calls requires the calls
+to cross a server you control, which is precisely non-negotiable #1 and the
+reason to choose Saddle over WPVibe. Their billing model is downstream of the
+architecture Saddle exists to reject; adopting it means becoming them.
+
+The inversion is worth stating on the comparison page (#173): WPVibe charges for
+usage and gives away sites, Saddle charges for sites and gives away usage.
+**Unmetered** belongs next to the no-relay sentence.
 
 ---
 
@@ -1180,6 +1347,11 @@ This should be the main paid product.
 ---
 
 # 25. Saddle Agency
+
+> **RETIRED 2026-09-23.** There is no Agency tier. See "Retired 2026-09-23: the
+> Agency tier" in §0. Above 20 sites is a conversation, or PlugPress One; an LTD
+> page replaces this as the high-end offer. Kept below as written because the
+> segment thinking is still useful, not because the tier is planned.
 
 **Goal:** Agencies, freelancers, and operators managing many WordPress websites.
 
