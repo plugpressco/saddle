@@ -67,16 +67,29 @@ plugpress.co makes two promises about it in writing.
 
 ## What is already sold
 
-Saddle Pro, annual only, Freemius plugin `33502`:
+Saddle Pro, annual only, Freemius plugin `33502`. **Verified against the live
+pricing page on 2026-09-23** (`plugpress.co` now redirects to `plugpress.io`;
+this file still says `.co` in places below):
 
 | Sites | Price / year |
 |---|---:|
-| 1 | $29 |
-| 5 | $79 |
-| 50 | $149 |
+| 3 | $49 |
+| 10 | $99 |
+| Unlimited | $199 |
 
 Plus a 3-day trial with no card, and PlugPress One, which bundles "Saddle Pro
-with every Pro feature" at $99 / $199 / $399 a year for 10 / 20 / 100 sites.
+with every Pro feature" at $99 / $149 / $249 a year for 3 / 10 / unlimited sites.
+
+> **This table was wrong until 2026-09-23.** It read $29 / $79 / $149 for
+> 1 / 5 / 50 sites, and One at $99 / $199 / $399 for 10 / 20 / 100 — numbers
+> matching no live plan. Every later section reasoning about "a current 50-site
+> Pro customer at $149" (§24, §25, the conflicts table) inherits that error and
+> has **not** been re-derived.
+
+> **Still unverified: the authoritative plan list in the Freemius dashboard.**
+> The table above is what the pricing *page* renders. R2 needs the real plan
+> list and a count of who sits on each, including older plans still renewing
+> that the page no longer shows. Do not run a repricing off this table alone.
 
 The pricing page promises:
 
@@ -89,6 +102,65 @@ The product page promises:
 > It can only look at your site until you say otherwise.
 
 Those three sentences are the constraints. The rules below follow from them.
+
+## Decided 2026-09-23: the next Saddle Pro price list
+
+Fahim's call. **Not live yet** — this is the target, and R1/R2 govern how it
+ships.
+
+| Sites | Price / year | Per month |
+|---|---:|---:|
+| 5 | $60 | $5 |
+| 10 | $84 | $7 |
+| 20 | $108 | $9 |
+
+Three decisions behind it:
+
+- **No unlimited tier.** The $199 unlimited plan meant the best-fit customer — a
+  large agency — paid the same as an 11-site freelancer. Above 20 sites is now a
+  conversation, or PlugPress One.
+- **No trial.** Free Saddle on WordPress.org is the evaluation path: unthrottled,
+  no expiry, no account. The 30-day refund becomes the risk-reversal and moves
+  onto the pricing cards — necessary because free carries no Divi code, so it
+  demos the safety model rather than the Pro feature set.
+- **PlugPress One is unchanged** ($99 / $149 / $249 for 3 / 10 / unlimited). It
+  is dearer than Pro at every comparable size and adds two plugins, so the ladder
+  reads correctly and One's unlimited tier is the answer above 20 sites.
+
+**This price is permanent for everyone who buys at it.** "Start low, raise later"
+does not apply here: "your renewal never goes up" plus R1 means a customer who
+subscribes at $60 renews at $60 for as long as they stay subscribed. A later
+raise reaches new plans and new customers only. Priced deliberately at or below
+Respira's €9/month at every tier; for scale, WPVibe's comparable tier is $299/yr
+and its agency tier $599/yr (see "Why Saddle cannot bill on usage" below).
+
+### What shipping it requires
+
+- Freemius `33502`: create three **new** plans, trial disabled. Publish-but-hide
+  every current plan; they keep renewing untouched. Test-renew one real old
+  subscription and confirm it charges the old price (R2).
+- `plugpress.io/saddle/`: new cards. Delete "Start 3-day trial", "No card
+  needed", and "Introductory price" — the last promised a discount the following
+  line withdrew. Surface the 30-day refund where the trial CTA was.
+- `plugpress.io/pricing/`: One's value stack reads "Saddle Pro ($199)" → $108.
+- `saddle-pro/readme.txt:39` and `assets/freemius/listing.md:59,62-65`: trial
+  copy out.
+- §24, §25 and "Conflicts to resolve before building" below: re-derive against
+  the corrected numbers.
+
+### Why Saddle cannot bill on usage
+
+WPVibe meters **daily tool calls** (Free 100/day, $99 Pro 500, $299 Power 2,000,
+$599 Agency 5,000, $899 Scale 10,000; rolling 24-hour window, per account, sites
+unlimited and free). That metric tracks delivered value far better than site
+count does — and it is closed to Saddle. Counting tool calls requires the calls
+to cross a server you control, which is precisely non-negotiable #1 and the
+reason to choose Saddle over WPVibe. Their billing model is downstream of the
+architecture Saddle exists to reject; adopting it means becoming them.
+
+The inversion is worth stating on the comparison page (#173): WPVibe charges for
+usage and gives away sites, Saddle charges for sites and gives away usage.
+**Unmetered** belongs next to the no-relay sentence.
 
 ---
 
