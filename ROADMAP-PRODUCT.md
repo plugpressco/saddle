@@ -103,10 +103,12 @@ The product page promises:
 
 Those three sentences are the constraints. The rules below follow from them.
 
-## Decided 2026-09-23: the next Saddle Pro price list
+## Decided 2026-09-23: the next price list
 
 Fahim's call. **Not live yet** — this is the target, and R1/R2 govern how it
 ships.
+
+Saddle Pro:
 
 | Sites | Price / year | Per month |
 |---|---:|---:|
@@ -123,9 +125,25 @@ Three decisions behind it:
   no expiry, no account. The 30-day refund becomes the risk-reversal and moves
   onto the pricing cards — necessary because free carries no Divi code, so it
   demos the safety model rather than the Pro feature set.
-- **PlugPress One is unchanged** ($99 / $149 / $249 for 3 / 10 / unlimited). It
-  is dearer than Pro at every comparable size and adds two plugins, so the ladder
-  reads correctly and One's unlimited tier is the answer above 20 sites.
+- **PlugPress One moves onto the same brackets**, and also drops unlimited:
+
+  | Sites | Price / year | Per month | Premium over Pro |
+  |---|---:|---:|---:|
+  | 5 | $108 | $9 | 1.8x |
+  | 10 | $180 | $15 | 2.14x |
+  | 20 | $204 | $17 | 1.89x |
+
+  Matching brackets means one comparison for a buyer instead of two ladders that
+  do not line up. Waggle and Loggle have no standalone price — both product pages
+  sell One — so One is the only way to buy them, and there is no standalone SKU
+  for it to cannibalise.
+
+  > **Open: the 10-site tier is mispriced.** $24 more buys double the sites, so
+  > anyone who can afford One at 10 sites takes 20 instead; the tier converts to
+  > near nothing and the customers who would have paid $180 are lost. Pro steps
+  > evenly (+$24, +$24); One steps +$72 then +$24. $9 / $13 / $17 —
+  > $108 / $156 / $204 — holds both anchors and steps evenly. Raised
+  > 2026-09-23, not adopted.
 
 **This price is permanent for everyone who buys at it.** "Start low, raise later"
 does not apply here: "your renewal never goes up" plus R1 means a customer who
@@ -136,13 +154,18 @@ and its agency tier $599/yr (see "Why Saddle cannot bill on usage" below).
 
 ### What shipping it requires
 
-- Freemius `33502`: create three **new** plans, trial disabled. Publish-but-hide
-  every current plan; they keep renewing untouched. Test-renew one real old
-  subscription and confirm it charges the old price (R2).
+- Freemius `33502`: create three **new** Saddle Pro plans, trial disabled.
+  Publish-but-hide every current plan; they keep renewing untouched. Test-renew
+  one real old subscription and confirm it charges the old price (R2). The same
+  treatment applies to PlugPress One's own Freemius product — its id is not
+  recorded here; get it from the dashboard before starting.
 - `plugpress.io/saddle/`: new cards. Delete "Start 3-day trial", "No card
   needed", and "Introductory price" — the last promised a discount the following
   line withdrew. Surface the 30-day refund where the trial CTA was.
-- `plugpress.io/pricing/`: One's value stack reads "Saddle Pro ($199)" → $108.
+- `plugpress.io/pricing/`: new One cards (5 / 10 / 20, no unlimited). The value
+  stack reads "Saddle Pro ($199) + Waggle ($149) + Loggle ($129)" → Pro becomes
+  $108, which leaves Waggle cited above the flagship's top tier; the two notional
+  figures want a second look at the same time.
 - `saddle-pro/readme.txt:39` and `assets/freemius/listing.md:59,62-65`: trial
   copy out.
 - §24, §25 and "Conflicts to resolve before building" below: re-derive against
