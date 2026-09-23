@@ -160,7 +160,8 @@ There is no Agency tier and no unlimited tier. §25 ("Saddle Agency", $39-79/mon
 written only because the rest of those sections still carries useful thinking, not
 because the tier is planned. Above 20 sites is a conversation, or PlugPress One.
 
-In its place, a **lifetime deal (LTD) page**. Terms decided 2026-09-23:
+In its place, a **lifetime deal (LTD) page**. Terms decided 2026-09-23,
+**for Saddle Pro only** — Waggle, Loggle and PlugPress One have no LTD:
 
 | Sites | Annual | LTD (3x) |
 |---|---:|---:|
@@ -191,8 +192,18 @@ Two open items:
   longer takes the LTD over annual. That is a launch push; as a permanent tier it
   is an annual plan nobody buys. A quantity or a closing date, not decided.
 
-**Open: does PlugPress One get an LTD?** At any plausible price it would eat the
-annual revenue of all three plugins at once.
+**Open: do the other products get an LTD?** Waggle and Loggle would be
+mechanical — same annual ladder, same 3x, $180 / $252 / $324 each, and each is
+self-contained.
+
+PlugPress One is the dangerous one. At 3x its own annual it lands at
+$324 / $540 / $612, and the 5-site figure hands someone all three plugins
+forever for the price of a Saddle-Pro-only LTD at 20 sites — roughly 5.5 years
+of Saddle Pro alone. Anyone intending to use more than one plugin takes it, and
+three products' recurring revenue collapses into one payment. A bundle is fine
+and an LTD is fine; multiplied together they are how this goes wrong. If One
+gets one, price it off the bundle's value — the three individual LTDs less the
+usual 30-40% bundle discount, so nearer $540 than $324 at 5 sites.
 
 > **Open: One's 10-site tier is mispriced.** $24 more buys double the sites, so
 > anyone who can afford One at 10 sites takes 20 instead; the tier converts to
