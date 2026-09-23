@@ -375,6 +375,10 @@ change. `Tested up to:` moves only when Fahim has verified against a newer WP.
   happened, "Next up" is what's queued) and update at the end. It is the session
   log; this file is the durable rules.
 - **`ROADMAP.md`** — direction and the ordered next moves.
+- **`ROADMAP-PRODUCT.md`** — the long-horizon product thesis (Cloud, multi-site,
+  tasks, automations, agents). Destination, not tickets. It carries one open
+  decision: Saddle Cloud as written would contradict non-negotiable #1, and that
+  must be amended explicitly before any Cloud code exists.
 - **GitHub Issues + project #3** — the backlog. Not chat, not a local file.
 - **`admin/DESIGN-ALIGNMENT.md`** — read before writing admin CSS.
 - **`tests/README.md`** — how the SQLite-backed suite runs.
