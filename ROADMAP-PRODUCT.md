@@ -116,7 +116,7 @@ Saddle Pro:
 | 10 | $84 | $7 |
 | 20 | $108 | $9 |
 
-Three decisions behind it:
+Four decisions behind it:
 
 - **No unlimited tier.** The $199 unlimited plan meant the best-fit customer — a
   large agency — paid the same as an 11-site freelancer. Above 20 sites is now a
@@ -134,16 +134,33 @@ Three decisions behind it:
   | 20 | $204 | $17 | 1.89x |
 
   Matching brackets means one comparison for a buyer instead of two ladders that
-  do not line up. Waggle and Loggle have no standalone price — both product pages
-  sell One — so One is the only way to buy them, and there is no standalone SKU
-  for it to cannibalise.
+  do not line up.
 
-  > **Open: the 10-site tier is mispriced.** $24 more buys double the sites, so
-  > anyone who can afford One at 10 sites takes 20 instead; the tier converts to
-  > near nothing and the customers who would have paid $180 are lost. Pro steps
-  > evenly (+$24, +$24); One steps +$72 then +$24. $9 / $13 / $17 —
-  > $108 / $156 / $204 — holds both anchors and steps evenly. Raised
-  > 2026-09-23, not adopted.
+- **Waggle and Loggle take the same ladder as Saddle Pro** ($60 / $84 / $108 for
+  5 / 10 / 20 sites), which makes them standalone SKUs for the first time. Today
+  neither has a price: both product pages say "comes with PlugPress One". Noted
+  in Saddle's plan because One's bundle math depends on it —
+
+  | Sites | Each | All three | One | Saving |
+  |---|---:|---:|---:|---:|
+  | 5 | $60 | $180 | $108 | $72 (40%) |
+  | 10 | $84 | $252 | $180 | $72 (29%) |
+  | 20 | $108 | $324 | $204 | $120 (37%) |
+
+  This also retires the notional figures in One's value-stack copy — it can cite
+  real, purchasable prices instead of a $149 Waggle and a $129 Loggle that
+  nobody could buy. The cost of unbundling: a buyer who wants only Waggle pays
+  $60 rather than being pushed to One at $108. The 29-40% bundle saving is what
+  holds One together for anyone wanting two or more.
+
+> **Open: One's 10-site tier is mispriced.** $24 more buys double the sites, so
+> anyone who can afford One at 10 sites takes 20 instead; the tier converts to
+> near nothing and the customers who would have paid $180 are lost. Pro steps
+> evenly (+$24, +$24); One steps +$72 then +$24. The bundle saving squeezes it
+> from the other side too — $72 off at 10 sites against $120 off at 20. So the
+> top tier is cheaper per site *and* the deeper discount. $9 / $13 / $17 —
+> $108 / $156 / $204 — holds both anchors and steps evenly. Raised 2026-09-23,
+> not adopted.
 
 **This price is permanent for everyone who buys at it.** "Start low, raise later"
 does not apply here: "your renewal never goes up" plus R1 means a customer who
@@ -158,7 +175,8 @@ and its agency tier $599/yr (see "Why Saddle cannot bill on usage" below).
   Publish-but-hide every current plan; they keep renewing untouched. Test-renew
   one real old subscription and confirm it charges the old price (R2). The same
   treatment applies to PlugPress One's own Freemius product — its id is not
-  recorded here; get it from the dashboard before starting.
+  recorded here; get it from the dashboard before starting. Waggle and Loggle
+  need products and plans created from scratch, having never been sold alone.
 - `plugpress.io/saddle/`: new cards. Delete "Start 3-day trial", "No card
   needed", and "Introductory price" — the last promised a discount the following
   line withdrew. Surface the 30-day refund where the trial CTA was.
@@ -168,6 +186,8 @@ and its agency tier $599/yr (see "Why Saddle cannot bill on usage" below).
   figures want a second look at the same time.
 - `saddle-pro/readme.txt:39` and `assets/freemius/listing.md:59,62-65`: trial
   copy out.
+- `plugpress.io/waggle/` and `/loggle/`: both currently say "comes with
+  PlugPress One" in place of pricing. Each needs its own cards.
 - §24, §25 and "Conflicts to resolve before building" below: re-derive against
   the corrected numbers.
 
