@@ -370,6 +370,61 @@ change. `Tested up to:` moves only when Fahim has verified against a newer WP.
 
 ---
 
+## WordPress plugin readme writing
+
+Apply these rules when writing or editing a plugin's `readme.txt`.
+
+### Agent workflow
+
+1. Read the existing readme, plugin code, and current product notes.
+2. Confirm features, requirements, and Free/Pro limits. Flag missing facts. Never guess.
+3. Draft the copy. Remove hype and repeated ideas.
+4. Check facts and WordPress formatting before finishing.
+
+### Writing rules
+
+- Use simple English, correct grammar, and active voice.
+- Keep one idea per sentence. Aim for fewer than 20 words per sentence.
+- Keep paragraphs to two or three short sentences.
+- Open with what the plugin does and who it helps.
+- Explain each feature as `Feature name: What the user can do.`
+- Use concrete verbs: add, create, choose, edit, display, export.
+- Group related features. Explain each feature once.
+- Avoid repeating the same benefit in different words.
+- No em dashes, emoji headings, all-caps slogans, or repeated exclamation marks.
+- Avoid filler: "unlock," "seamless," "game-changing," "revolutionary," and "take it to the next level."
+- Skip generic openings like "whether you're a beginner or a professional."
+- Replace "powerful" or "easy to use" with a specific action or result.
+- Never invent features, user counts, compatibility, speed gains, or guarantees.
+- Use keywords naturally. Do not repeat the plugin name in every paragraph.
+
+### Readme structure
+
+- Keep the short description within 150 characters, without markup.
+- Use WordPress headings: `=== Plugin Name ===`, `== Description ==`, and `= Feature group =`.
+- Start with a short introduction, then list the main features.
+- Separate Free and Pro features.
+- State account, API key, payment, and external service requirements where relevant.
+- Include useful setup steps, real FAQ answers, screenshot captions, and factual changelog entries when applicable.
+- Preserve accurate metadata and links.
+- Do not change versions or "Tested up to" without evidence.
+
+### Feature example
+
+Avoid:
+"Unlock stunning visual experiences with our powerful carousel."
+
+Use:
+"Image carousel: Display selected images in a slider."
+
+### Final check
+
+Can a WordPress user quickly understand what it does, what is included, and how to start?
+
+Remove any sentence that adds no useful information.
+
+---
+
 ## Where state lives
 
 **This repo is PUBLIC** — it is the WordPress.org source repo. Business record
