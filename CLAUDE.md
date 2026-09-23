@@ -371,18 +371,27 @@ change. `Tested up to:` moves only when Fahim has verified against a newer WP.
 
 ## Where state lives
 
-- **`STATUS.md`** — read at the start of a session ("Last session" is what
-  happened, "Next up" is what's queued) and update at the end. It is the session
-  log; this file is the durable rules.
-- **`ROADMAP.md`** — direction and the ordered next moves.
-- **`ROADMAP-PRODUCT.md`** — the long-horizon product thesis (Cloud, multi-site,
-  tasks, automations, agents). Destination, not tickets. It carries one open
-  decision: Saddle Cloud as written would contradict non-negotiable #1, and that
-  must be amended explicitly before any Cloud code exists.
+**This repo is PUBLIC** — it is the WordPress.org source repo. Business record
+lives in the private `plugpressco/saddle-planning`, cloned beside this one at
+`../planning`. Never commit pricing, margins, competitor analysis, customer
+detail or internal correspondence here. Engineering docs and the agent skills
+stay public on purpose: a repo where anyone can read the security rules and grep
+for `eval(` is evidence for the "no code execution, no filesystem writes" claim.
+
+- **`../planning/STATUS.md`** — read at the start of a session ("Last session" is
+  what happened, "Next up" is what's queued) and update at the end. It is the
+  session log; this file is the durable rules. **Private repo.**
+- **`ROADMAP.md`** — direction and the ordered next moves. Public, and it stays
+  the authorizer of what ships next.
+- **`../planning/ROADMAP-PRODUCT.md`** — the long-horizon product thesis (Cloud,
+  multi-site, tasks, automations, agents) and the pricing record in §0.
+  Destination, not tickets. It carries one open decision: Saddle Cloud as written
+  would contradict non-negotiable #1, and that must be amended explicitly before
+  any Cloud code exists. **Private repo.**
 - **GitHub Issues + project #3** — the backlog. Not chat, not a local file.
 - **`admin/DESIGN-ALIGNMENT.md`** — read before writing admin CSS.
 - **`tests/README.md`** — how the SQLite-backed suite runs.
-- **`WPORG-SUBMISSION.md`** — the submission checklist.
+- **`../planning/WPORG-SUBMISSION.md`** — the submission checklist. **Private repo.**
 - **`.claude/skills/wp-security-rules/`** — Saddle's tier/gate/escaping judgments
   that phpcs cannot make. Load it when writing request-handling PHP.
 
@@ -492,9 +501,9 @@ a forked copy goes stale against a pinned tag and starts telling agents the wron
 
 This repo is tracked on the [PlugPress HQ](https://github.com/orgs/plugpressco/projects/3) org board (plugpressco, project #3).
 
-- **Start of session:** read `STATUS.md` — "Last session" says what happened, "Next up" says what's queued.
+- **Start of session:** read `../planning/STATUS.md` (private repo) — "Last session" says what happened, "Next up" says what's queued.
 - **During the session:** keep the board honest — move cards across Status (Todo → In Progress → Done), and set Tier (`build` / `slow-burn` / `maintain`) and Work Type (`bug` / `feature` / `support` / `marketing` / `interrupt`) on anything new.
-- **End of session:** update `STATUS.md` — replace "Last session" with what actually happened this session, and refresh "Next up" for whoever (or whatever) picks this up next.
+- **End of session:** update `../planning/STATUS.md` — replace "Last session" with what actually happened this session, and refresh "Next up" for whoever (or whatever) picks this up next.
 <!-- END plugpress:session -->
 
 <!-- BEGIN plugpress:workflow (managed by fleet:blocks) -->
