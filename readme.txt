@@ -8,190 +8,156 @@ Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Connect Claude, Cursor, and other AI agents to WordPress. Structured tools, safe-by-default permissions, approval gates for destructive actions.
+Connect Claude, ChatGPT, Cursor and other AI apps to your WordPress site. Your AI starts read-only and asks before it deletes.
 
 == Description ==
 
-Saddle turns your WordPress site into a **Model Context Protocol (MCP) server**. AI apps you already use — Claude, Cursor, VS Code, and others — connect to your site and help with real work: reading and writing posts and pages, managing media, and designing pages with your theme's own styles.
+Saddle turns your WordPress site into an MCP server. AI apps like Claude, ChatGPT and Cursor can then read and edit your site.
 
-Everything runs on your own site. There is no account to create and no cloud service in the middle: your content, your credentials and every tool call stay in your WordPress. Agents sign in with WordPress core's **Application Passwords**, and you decide how much they are allowed to do.
+It helps site owners, developers and agencies who already work with an AI app. Saddle runs on your own site. It needs no account and no cloud service.
 
-= How it stays safe =
+= Works with =
 
-Saddle is built around three rules:
+* Claude and Claude Code
+* ChatGPT
+* Cursor and VS Code
+* Codex and Gemini CLI
+* Other apps that support MCP
 
-1. **Your credentials and content stay on your site.** Saddle has no relay, proxy, or backend of its own. Authentication is WordPress core's Application Passwords — Saddle never sees or stores a separate password, and your tool-call traffic never touches a server we operate.
-2. **New installs start read-only.** Out of the box, agents can look but not change anything. Writing and site management are levels *you* turn on. They are never on by default.
-3. **Deleting or overwriting always asks first.** A destructive action takes two calls: the first returns a preview and a single-use confirmation token and changes nothing; only a second call with that token executes. Tokens expire after 15 minutes. An agent — even a misbehaving one — cannot delete anything in a single step.
+= Content =
 
-= What your AI can do =
+* Posts and pages: Create, edit and delete posts and pages.
+* Media: Upload images from a URL and edit their details.
+* Categories and tags: Create and list categories and tags.
+* Search: Find any post, page or media item.
+* Users: List users and read their profiles.
 
-All tools are served from one authenticated endpoint on your site (`/wp-json/saddle/v1/mcp`). Each tool declares the access level it needs, so a read-only connection can only ever read.
+= Page building =
 
-* **Content** — list, read, create, update, and delete posts and pages (deletes trash by default and always confirm first); manage media, including upload from a URL; categories and tags; search; site info.
-* **Page design** — build and edit real Gutenberg blocks that stay editable in the editor, read block schemas and your theme's design tokens, and insert patterns. Agents design *with* your theme instead of pasting raw HTML, and page-builder layouts are protected from accidental overwrites.
-* **Site management** (separate opt-in level) — read and change common Settings screen options (site title, permalinks, reading and discussion settings), activate/deactivate plugins, switch themes, flush the cache.
+* Block pages: Build pages with real blocks that stay editable in the block editor.
+* Block editing: Add, edit, move and remove single blocks.
+* Theme styles: Use your theme's colors, fonts, spacing and patterns.
+* Templates: Read your theme's templates, template parts and global styles.
+* Design system: Add a color palette, type scale and spacing to a block theme.
+* Page check: Find layout and design problems on a page.
+* Preview: Get a preview link to see the result.
 
-  **Note:** everything here runs through WordPress's own functions. Saddle contains no shell commands, no `eval()`, and no arbitrary code execution — anywhere. Values are validated before saving, and sensitive settings (site URL, security keys, user roles, admin email) can never be touched.
-* **Guidance & memory** — install Skills (plain `.md` playbook files that teach your AI how you like things done), and let each new session start knowing what changed on the site recently, from Saddle's own activity log.
+= Site management =
 
-= What you see and control =
+This group is off until you choose the Managing the site level.
 
-* **Access levels** — pick Read, Read & write, or Managing the site, and see exactly which tools each level allows. Any individual tool can be switched off.
-* **Activity** — a day-by-day record of everything agents changed and every attempt that was blocked. Reads are not logged.
-* **Guidance** — the exact context every agent receives, plus your own instructions and Skills.
-* **Pause** — one switch that instantly blocks every tool call, without losing your settings.
+* Settings: Change the site title, permalinks and reading options.
+* Plugins: Activate and deactivate plugins.
+* Themes: Switch the active theme.
+* Cache: Clear the site cache.
 
-= How agents connect =
+= Skills and memory =
 
-Go to **Saddle → Connections**, name a connection, and approve it. WordPress core issues an Application Password for it, and you paste the shown settings into your AI app. Revoking a connection invalidates its credential immediately.
+* Skills: Add short Markdown guides that tell your AI how you work.
+* Built-in Skills: Use the included guides to build a page and fix a page.
+* Memory: Let your AI save notes and use them in later sessions.
+* Recent changes: Let each new session see what changed on the site.
 
-**Note:** a Saddle-issued credential only works on Saddle's own endpoint. It cannot be used against the rest of the REST API or XML-RPC.
+= Safety =
 
-= Sign-in for apps that can't paste a key (optional, off by default) =
+* Access levels: Choose Read, Read & write, or Managing the site. New installs start at Read.
+* Delete confirmation: Review a preview before anything is deleted or overwritten.
+* Drafts only: Save new posts as drafts until you publish them.
+* Tool switches: Turn off any single tool.
+* Pause: Block all AI requests with one switch.
+* Activity log: See every change and every blocked request.
+* Protected settings: The site URL, security keys, user roles and admin email cannot be changed.
 
-A few apps — ChatGPT's custom connectors among them — give you nowhere to paste a sign-in key. For those, Saddle can run a standard **OAuth 2.1 sign-in** on your own site: the app sends you to an approval screen in your WordPress admin, you see who is asking and what they want, and you decide.
+Saddle never runs code from the AI. It has no shell access and does not write files.
 
-This is **off until you turn it on**, on the Settings screen. It runs entirely inside your WordPress — there is no PlugPress server involved at any point, exactly as with Application Passwords. Only administrators can approve a connection, and an approval can never grant more than your chosen access level: if the site is set to read-only, an approved app gets read-only. You can see and revoke approved apps from the Connections screen at any time.
+= Connecting an app =
 
-Turning it on publishes the small set of addresses the OAuth standard requires so apps can find and complete the sign-in. With it off — the default — none of them exist.
+Saddle uses WordPress Application Passwords. Each key only works with Saddle, not the rest of the REST API.
 
-= No bundled libraries =
+ChatGPT cannot use a pasted key. For ChatGPT, turn on OAuth sign-in under **Saddle → Settings**. An administrator must approve each app.
 
-Saddle speaks MCP itself. It ships no third-party library, and every function, class, option and hook it defines is prefixed `saddle` / `Saddle_` / `SADDLE_`.
+= Unsplash =
 
-If the separate **MCP Adapter** plugin happens to be active on the same site, Saddle detects it and uses it instead. That is optional and nothing depends on it — the endpoint, the tools and the safety model are identical either way.
-
-= Source code =
-
-The admin screen is a React app. Its full human-readable source ships inside this plugin in `admin/src/`; the compiled bundle in `admin/build/` is produced from it with the official `@wordpress/scripts` toolchain.
+Unsplash search: Find and import free stock photos. This needs your own Unsplash API key.
 
 = Saddle Pro =
 
-Saddle Pro is a separate, optional add-on that adds page-builder-native editing (Divi first). This free plugin is complete on its own — nothing in it is locked, limited, or nagging you to upgrade.
+[Saddle Pro](https://plugpress.co/saddle) is a paid add-on. It needs this free plugin. Pro adds:
 
-== External services ==
+* Divi 5 pages: Build and edit Divi 5 pages with real Divi modules.
+* Divi design: Use Divi global colors, fonts, variables and presets.
+* Divi features: Manage loops, dynamic content, display conditions, the Library and the Theme Builder.
+* SEO plugins: Read and edit SEO fields in Yoast SEO, Rank Math and All in One SEO.
+* WooCommerce: List and read products.
 
-Saddle sends **no** analytics, telemetry, or usage data anywhere, and no content or credentials ever leave your site. Its MCP endpoint is *inbound* — agents call your site, not the other way round.
-
-**The version on WordPress.org never checks for its own updates.** If you installed Saddle from plugpress.co instead, that copy does: it sends the plugin name and the version number you have, to one fixed address, at most once every six hours, and only when WordPress runs an update check. No site address, no content, no account, nothing about you. It is the same thing WordPress does for every plugin you install from WordPress.org, pointed at us instead.
-
-Four things make an outbound request, and each one is started by you:
-
-1. **Upload from URL.** If you ask an agent to add a file to the media library by URL, WordPress's own HTTP API downloads that one URL to your server — the same mechanism core's "insert from URL" uses. Only the host in the URL you supplied is contacted.
-2. **Endpoint self-checks.** The connection checker sends requests to *your own site* — its REST URL, and, when OAuth sign-in is on, its `/.well-known/` discovery address — to confirm those endpoints are reachable. Nothing leaves your server.
-3. **Unsplash (optional, off until you add a key).** If you enter your own Unsplash API key on the Integrations screen, the `unsplash-search` and `unsplash-import` tools call the Unsplash API (`api.unsplash.com`, `images.unsplash.com`) directly from your site, sending only your search keywords or a photo id. With no key saved, no request is ever made. Unsplash API Guidelines: https://help.unsplash.com/en/articles/2511245-unsplash-api-guidelines — API Terms: https://unsplash.com/api-terms — privacy policy: https://unsplash.com/privacy
-
-  **Attribution:** a photo imported this way is saved with a caption crediting the photographer, containing links to their Unsplash profile and to unsplash.com. The Unsplash API Terms require this credit, so it is written for you. Because it is the image's caption, it is visible wherever your theme displays captions — including on the public side of your site. It is an ordinary caption: edit or clear it in the Media library whenever you like, or pass your own caption when importing. No other external link is ever added to your site, and nothing links back to the plugin author.
-
-4. **Checking an app's identity (optional, off unless you turn on OAuth sign-in).** ChatGPT can't be given a sign-in key by hand, so Saddle can let apps sign in through an approval screen instead. Some apps identify themselves with a web address that serves a small description of the app. If one does, Saddle fetches that address — and only that address, chosen by the app, never by us — to confirm it vouches for the app, so the approval screen can tell you whether the app was verified or merely self-described. Nothing about your site is sent; it is a plain read. The request is HTTPS-only, follows no redirects, times out in five seconds, is capped at 64 KB, and the answer is cached. With OAuth sign-in off — the default — this never happens.
-
-== Privacy ==
-
-* Saddle stores only its own settings (access level, tool toggles, your instructions, Skills, memory entries), its activity log, and short-lived confirmation tokens that expire after 15 minutes.
-* If you turn on OAuth sign-in, Saddle also stores the apps you approved and their sign-in tokens. Tokens are never kept in readable form — only a one-way fingerprint, so a database backup contains nothing anyone could sign in with. Disconnecting an app deletes its tokens immediately, and turning OAuth sign-in back off deletes all of them.
-* No personal data is sent off-site.
-* Uninstalling deletes all of the above. Application Passwords are left for you to revoke yourself (Users → Profile), since WordPress core owns them.
+All features in this free plugin stay free.
 
 == Installation ==
 
-1. Install and activate the plugin. Saddle needs WordPress 6.9+ (for the core Abilities API) and PHP 7.4+.
-2. Open **Saddle** in the admin menu. New installs start at the **Read** level.
-3. Go to **Connections**, name a connection (for example "Claude"), and approve it. Copy the settings it shows into your AI app.
-4. When you want agents to do more than read, raise the level on the **Permissions** screen. Deletes and overwrites will still ask for confirmation every time.
+1. Install and activate Saddle from **Plugins → Add New**.
+2. Go to **Saddle → Apps** and add an app.
+3. Copy the connection settings into your AI app.
+4. To allow changes, go to **Saddle → Permissions** and choose a higher level.
 
 == Frequently Asked Questions ==
 
-= Does my content or my password go through your servers? =
+= Do I need an account? =
 
-No. Your content and your password never leave your WordPress install, and no telemetry is sent anywhere. Sign-in is WordPress core's own Application Passwords. The WordPress.org copy never checks for its own updates; the copy from plugpress.co does, sending only the plugin name and version number. A few actions you can trigger yourself — uploading media from a URL, an optional Unsplash import, an optional OAuth sign-in check — also make an outbound request; see External services above.
+No. Saddle is free and runs on your own site.
 
-= Can an agent delete something without asking? =
+= Does my content go through your servers? =
 
-No. Every delete or destructive overwrite takes two calls: a preview first, then a confirmation with a single-use token that expires in 15 minutes. One call can never destroy anything.
+No. Your AI app connects to your site directly. Saddle sends no tracking data.
 
-= What stops an agent from doing more than I allowed? =
+= Can the AI delete my content? =
 
-Every tool is bound to an access level, and new installs start at Read. Calls above the current level are refused and logged. You can also switch off individual tools, or hit Pause to block everything at once.
+Only at the Read & write level or higher. Each delete shows a preview first. It runs only after a second confirmation. By default, deleted posts go to the trash.
 
-= Does a connected app get full access to my site? =
+= Can the AI run code on my server? =
 
-No. Its credential only works on Saddle's endpoint — not the rest of the REST API, not XML-RPC. Revoke the connection and the credential dies with it.
+No. Every action uses standard WordPress functions.
 
-= Do I need an account or subscription? =
+= Does it work with ChatGPT? =
 
-No. Saddle is free and entirely self-hosted. There is nothing to sign up for.
+Yes. Turn on OAuth sign-in under **Saddle → Settings**. Then add your site as a connector in ChatGPT.
 
-= Does it run shell commands or arbitrary code? =
+= Does it work with page builders? =
 
-Never. Every operation goes through WordPress's own PHP functions. There is no shell access, no `eval()`, and no way to add either through a tool call.
+Saddle protects page builder layouts from accidental overwrites. To edit Divi 5 pages, use Saddle Pro.
 
-= Do I need the MCP Adapter plugin as well? =
+= Do I need the MCP Adapter plugin? =
 
-No. Saddle speaks MCP on its own, and installing anything else changes nothing about what your AI app can do — same address, same tools, same access levels and approvals.
+No. Saddle works on its own. If MCP Adapter is active, Saddle uses it.
 
-If you happen to have the separate MCP Adapter plugin active, Saddle notices and uses it. That is the only difference, and it is optional.
+== External services ==
+
+Saddle sends no tracking or usage data. It connects to another site only in these cases:
+
+1. Upload from URL: WordPress downloads the one file you asked for.
+2. Connection check: Saddle sends a test request to your own site.
+3. Unsplash (optional): This runs only after you add your own API key under **Saddle → Integrations**. Saddle sends your search words or a photo ID to `api.unsplash.com`. It downloads photos from `images.unsplash.com`. Each imported photo gets a caption that credits the photographer, as Unsplash requires. You can edit or remove it. See the [API Guidelines](https://help.unsplash.com/en/articles/2511245-unsplash-api-guidelines), [API Terms](https://unsplash.com/api-terms) and [Privacy Policy](https://unsplash.com/privacy).
+4. OAuth app check (optional): This runs only when OAuth sign-in is on. Saddle reads a public web address the app provides to confirm who the app is. It sends nothing about your site.
+
+The WordPress.org version never checks for its own updates. The version from plugpress.co checks at most once every six hours. It sends only the plugin name and version number.
+
+== Privacy ==
+
+* Saddle stores its settings, Skills, memory, activity log and short-lived confirmation codes on your site.
+* With OAuth on, it also stores approved apps and a one-way hash of their tokens.
+* Saddle sends no personal data off your site.
+* Uninstalling removes all Saddle data. Remove Application Passwords yourself under **Users → Profile**.
 
 == Screenshots ==
 
-1. Access levels — choose how much your AI can do, and see exactly which tools each level allows.
-2. Connecting an app — name a connection and issue its credential without leaving the dashboard.
-3. Activity — a day-grouped record of everything agents changed, and everything that was blocked.
-4. Guidance — the exact context every agent receives, your own instructions, and your installed Skills.
+1. Permissions: Choose what your AI can do.
+2. Apps: Connect an AI app.
+3. Activity: See every change and every blocked request.
+4. Instructions: Read what your AI is told, and add your own instructions and Skills.
 
 == Changelog ==
 
 = 1.0.1 =
-* New: Optional drafts-only policy on Permissions. New publication and scheduling requests save drafts; publishing or scheduling existing posts and pages requires a preview and single-use confirmation. Edits to already-published content remain live.
+* New: Drafts-only mode. New posts save as drafts, and publishing needs a confirmation.
 
 = 1.0.0 =
-* Initial public release.
-* Saddle's screens have a look of their own now — a pink accent on a warm, near-white background, squarer corners and flatter surfaces. About 85% of it is still black, white and grey; the colour is saved for the few things worth pointing at.
-* The sidebar is one plain list instead of three labelled sections, and two items say what they do rather than what they are called: Guidance is now Instructions, and Connections is now Apps. Your bookmarks and links still work.
-* The Dashboard opens with a sentence telling you what your AI can do right now, instead of four boxes of numbers. The counts moved to one quiet line underneath, and the box that used to show a dash when there was nothing to report is gone.
-* Removed the Cookbook screen.
-* Security: read tools now check whether the connected account is actually allowed to see each item, not just that it is signed in. A connection made with a low-permission WordPress account could previously read any draft, private or password-protected post, any media item's details and any post's revision history — and could list and search all of it — even though the account could never see any of it in wp-admin. Nothing changes for the usual setup, where you connect as an administrator.
-* Security: the list of recent changes — both the one an assistant can ask for and the one it reads when it connects — now hides entries about items the connected account cannot see. It was naming the titles of drafts and private posts to accounts that could never open them. Entries about something that has since been deleted stay visible to accounts that can delete content, so you do not lose that history.
-* Fixed: on sites where another plugin checks who is signed in very early in the request — several SEO plugins do — every ChatGPT request crashed before Saddle could examine its token, so the connection failed with a sign-in error forever while the same build worked elsewhere. The token check now works no matter how early in the request it runs.
-* Fixed: the connection check could report that sign-ins were working on a server that was actually blocking half of them. Apps you connect with a pasted key send one kind of sign-in header and apps that sign in through Saddle — ChatGPT is the one that can only connect that way — send another, and some servers pass the first and drop the second. The check now tests both, says which one is being blocked, and offers the same one-click fix, which always covered both.
-* Connection details and health now shows how each request signed in, so "the key was rejected" and "no key ever arrived" stop looking identical. They are the same error message and they need opposite fixes — one is reconnecting the app, the other is a word with your host.
-* Fixed: the request recorder was logging its own screen refreshing, which pushed the requests you were trying to capture out of the list within about two minutes. It now records only real app traffic, and keeps four times as much of it.
-* Fixed: on sites that also run the separate MCP Adapter plugin, an app could finish connecting and then report that the site has no actions it can use. The piece that prevents that was missing from the plugin package, so the fix for it had never actually reached anyone. It now ships.
-* Connection details and health now reports what it knows on every site, not only on sites running the separate MCP Adapter plugin. It previously opened with "No app has connected yet" no matter what had happened, which made the request recorder underneath it look broken — and that recorder is the thing that shows whether a connected app's requests are arriving and what they got back.
-* The guidance an assistant reads when it connects is now one document with one set of headings, however many PlugPress plugins are adding to it. Previously each plugin appended in its own style — one added a heading two levels down, another a bare sentence with no heading at all — and it read like four notes stapled together.
-* Removed a second web address the plugin was serving without saying so. Saddle publishes one address for AI apps; a bundled library was quietly adding another with weaker checks around it. Nothing documented ever pointed at it, and your access levels and confirmations applied there too — but it should not have existed, and now it doesn't.
-* Permissions now tells you how many tools your connected apps are actually offered at the level you pick, how many are being held back, and that already-connected apps keep the old list until you refresh or reopen them.
-* Fixed: an app that signs in through Saddle instead of using a pasted key — ChatGPT is the one that does — was always granted read-only access, whatever you had set on the Permissions screen, and nothing anywhere could change it afterwards. It would happily read your site and then be unable to save a single thing, and reconnecting made no difference. You now choose the access level on the approval screen, and you can change it later for an app that is already connected.
-* Permissions now names any connected app that is sitting below the level you have chosen, instead of leaving you to work out why an app you granted full access still refuses to write anything.
-* Fixed: on hosts that rewrite request bodies, saving your access level could report success and quietly change nothing.
-* New: user directory read tools (list-users, get-user) — read-only, capability-gated, with personal details visible only to accounts that can manage users.
-* New: first-party integration wrappers — abilities from PlugPress plugins (Waggle) surface as saddle/* tools behind Saddle's full safety model (access levels, pause, per-tool switches, two-step confirmation, activity log).
-* Security: confirmation tokens are now bound to the user who previewed the action, and wrapped destructive tools bind their full argument set into the token — a confirmation can never change what was previewed.
-* Security: issued credentials are recognized by an internal marker instead of their display name, so renaming a key can no longer widen its access.
-* Security: optional domain enforcement — write access can auto-suspend when the site's domain changes (cloned or migrated database) until you re-confirm it.
-* Improved: denial explanations now mirror the enforced checks exactly (including missing-capability denials); the activity log keeps separate caps for changes and denials so denials can never crowd out change history; failed confirmed destructive actions are logged too.
-* Internal: one shared integration engine, unified builder detection, and a stricter validation contract for page-tree profiles.
-* Fixed: some connected apps signed in, reported the connection as healthy, and then said the site had no actions they could use — while the same site worked perfectly from another app. Saddle was answering one step of the connection handshake in a way the stricter apps refuse, so they stopped before ever asking what tools exist. Saddle now answers that step, and the two others it was getting wrong, exactly as the Model Context Protocol requires.
-* Connected apps are now offered only the tools your access level and switches actually allow. A read-only site no longer advertises tools that would be refused on every call — the assistant is told how many are being held back and that only you can unlock them, so it can point you at the setting instead of reporting that your site cannot do it. Raising the access level widens the list again; reconnect the app if it caches what it was told at sign-in.
-* Fixed: a destructive tool from a connected PlugPress plugin could be confirmed with different details than the preview showed. The confirmation now covers everything the preview showed, not just which item it was about.
-* A refused call caused by the WordPress account being short a permission now says so, instead of pointing at Saddle settings that would not have changed anything.
-* An assistant now starts a session already knowing your palette, what wraps your pages, and how many ready-made patterns your theme has — and is pointed at the single call that fetches the rest, instead of the four or five it used to make.
-* Repeated edits to the same page no longer fill the "recent changes" an assistant sees with the same line over and over; a run of them reads as one entry with a count.
-* The bundled build-a-page playbook now ships on classic themes too, not only block themes — a classic site editing its pages in the block editor was the one case that got no guidance at all. It adapts its "go look at the site first" step to what your theme actually has.
-* A second bundled playbook, fix-page: how to work a page-verification report down to nothing, which findings to fix first, and why block positions move under you after a structural change.
-* See the whole site, not just one page: list and read block templates and template parts, read the global styles the owner set, and list their saved patterns.
-* Set up a design system on a block theme: bootstrap-design-system now writes the palette, type scale and spacing into your global styles, so it appears in Appearance > Editor > Styles and stays yours to edit. Existing values are never overwritten.
-* Orient in one call: context-bundle returns the design system, the blocks worth using, the theme's patterns, the site's templates and the section recipes together, instead of five separate calls per session.
-* A bundled build-page playbook on block themes: the order to work in, the rules the plugin enforces, and what separates a designed page from a generated one.
-* MCP server on your own site: content tools (posts, pages, media, taxonomies, search), Gutenberg block design tools with schema validation and theme design tokens, opt-in site management (settings, plugins, themes, cache), Skills, memory, and an activity log.
-* Safety model: three access levels defaulting to read-only, per-tool switches, two-step confirmation on every destructive action, a master pause switch, and credentials confined to Saddle's endpoint.
-* Optional Unsplash integration (bring your own API key): search and import stock photos with automatic photographer attribution.
-* Design quality tools: page verification with a scored report, design lint, section recipes, and a design-system reader/seeder.
-* Works on hosts whose security layer strips custom request headers: the dashboard sends its sign-in token in the address as well as the header, and reports plainly when a host is blocking something it cannot work around.
-* Optional OAuth 2.1 sign-in (off by default) for apps that can't be given a sign-in key by hand, such as ChatGPT connectors — self-hosted, administrator-approved, and never able to grant more than the access level you chose.
-* Fixed: some connected apps — ChatGPT connectors in particular — signed in successfully but then reported that the site had no actions they could use. Saddle now serves apps that don't hold on to a session between requests, and no longer turns away an app for naming a protocol revision it hadn't seen. Apps that do hold a session are unaffected, and no access level or approval step changes.
-* Tools now tell connected apps what they do before they run: each carries a readable name and flags for whether it only reads, whether it can destroy anything, and whether repeating it is safe.
-* A refused tool call now returns its reason to the app as a readable answer rather than a protocol error, so the assistant can tell you which control to change instead of reporting a generic failure.
-* The list of plugins active on your site, and your theme's name, are now shared with an AI assistant only at the Admin access level — matching the access level already required to list them as a tool. The connection handshake also respects the pause switch.
-* Client traffic: a new panel under Connections → Connection details & health records what a connected app asked for and what it got back, so "it says it can't see any tools" can be answered without guesswork. Off by default, stops on its own after an hour, and records no keys or content.
-* Fixed: some connected apps — ChatGPT connectors in particular — signed in successfully but then reported that the site had no actions they could use. Saddle now serves apps that don't hold on to a session between requests, and no longer turns away an app for naming a protocol revision it hadn't seen. Apps that do hold a session are unaffected, and no access level or approval step changes.
+* Initial release.
