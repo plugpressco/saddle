@@ -160,20 +160,36 @@ There is no Agency tier and no unlimited tier. §25 ("Saddle Agency", $39-79/mon
 written only because the rest of those sections still carries useful thinking, not
 because the tier is planned. Above 20 sites is a conversation, or PlugPress One.
 
-In its place, a **lifetime deal (LTD) page**, terms not yet set. Three things to
-settle before it ships:
+In its place, a **lifetime deal (LTD) page**. Terms decided 2026-09-23:
 
-- **Price against retention, not against the annual figure.** At $108/year and a
-  four-year life, a 20-site LTD is revenue-neutral around $432. Priced at 3x
-  ($324) every annual subscriber who does the arithmetic switches, converting
-  recurring revenue to one-time while the support obligation continues forever.
-- **Cap it** — limited quantity or a closed window. A permanent LTD on the
-  pricing page is an annual plan nobody buys.
-- **Separate updates from support.** Freemius supports lifetime updates with
-  time-boxed, renewable support. It bounds an otherwise unbounded obligation.
+| Sites | Annual | LTD (3x) |
+|---|---:|---:|
+| 5 | $60 | $180 |
+| 10 | $84 | $252 |
+| 20 | $108 | $324 |
+
+**Lifetime updates. Technical support 3 years only.**
+
+The 3x multiple and the 3-year support window are the same number on purpose,
+and that is what makes 3x defensible. The buyer pays for three years of support
+and receives three years of support; after that the obligation is updates alone,
+which cost nothing extra because they are built for annual customers anyway. An
+LTD priced at 3x with *unbounded* support would be underwater — the
+revenue-neutral figure there is nearer 4x.
 
 An LTD does not conflict with "your renewal never goes up" — there is no renewal.
-It does need its own Freemius plan (R1: never edit a live one).
+It needs its own Freemius plan (R1: never edit a live one).
+
+Two open items:
+
+- **Verify Freemius can enforce the split.** A lifetime license there normally
+  never expires, and support entitlement usually follows license expiry — so
+  "lifetime updates, 3-year support" may be a policy stated in terms and enforced
+  by hand rather than something the dashboard tracks. Confirm in the product
+  settings before the page promises it.
+- **Cap it.** At 3x the breakeven is three years, so anyone intending to stay
+  longer takes the LTD over annual. That is a launch push; as a permanent tier it
+  is an annual plan nobody buys. A quantity or a closing date, not decided.
 
 **Open: does PlugPress One get an LTD?** At any plausible price it would eat the
 annual revenue of all three plugins at once.
