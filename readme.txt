@@ -4,7 +4,7 @@ Tags: mcp, ai, chatgpt, agents, automation
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.1
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -182,6 +182,14 @@ The WordPress.org version never checks for its own updates. The version from plu
 4. Instructions: Read what your AI is told, and add your own instructions and Skills.
 
 == Changelog ==
+
+= 1.2.0 =
+* New: Divi 5 pages. Build and edit Divi 5 pages with real Divi modules: add, edit, move and remove modules, change page settings, loops, dynamic content, display conditions and presets.
+* New: Page check for Divi 5. Lint, verify and render-node work on Divi 5 pages.
+* New: Read Divi global colors, fonts, variables and presets, and list Library items and Theme Builder templates.
+* New: Yoast SEO, Rank Math and All in One SEO. Read and edit SEO titles, descriptions, robots and social fields.
+* New: WooCommerce. List and read products, variations and orders.
+* Improved: Skills that ship with more than one plugin are listed once.
 
 = 1.0.1 =
 * New: Drafts-only mode. New posts save as drafts, and publishing needs a confirmation.

@@ -3,7 +3,7 @@
  * Plugin Name:       Saddle
  * Plugin URI:        https://saddle.to
  * Description:       Connect AI agents to your WordPress site through MCP. Manage posts, pages, and media.
- * Version:           1.0.1
+ * Version:           1.2.0
  * Requires at least: 6.9
  * Requires PHP:      7.4
  * Author:            PlugPress
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SADDLE_VERSION', '1.0.1' );
+define( 'SADDLE_VERSION', '1.2.0' );
 define( 'SADDLE_FILE', __FILE__ );
 define( 'SADDLE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SADDLE_URL', plugin_dir_url( __FILE__ ) );
