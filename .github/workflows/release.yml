@@ -199,7 +199,13 @@ jobs:
           for f in .wordpress.org/icon-*.png .wordpress.org/icon.svg .wordpress.org/banner-*.png .wordpress.org/screenshot-*.png .wordpress.org/screenshot-*.jpg; do
             cp "$f" wporg-assets/
           done
-          ls -la wporg-assets
+          # The Live Preview blueprint: WordPress.org reads it from
+          # assets/blueprints/blueprint.json and runs it in Playground.
+          if [ -f .wordpress.org/blueprints/blueprint.json ]; then
+            mkdir -p wporg-assets/blueprints
+            cp .wordpress.org/blueprints/blueprint.json wporg-assets/blueprints/
+          fi
+          ls -laR wporg-assets
 
       - name: Install Subversion
         # ubuntu-24.04 runners no longer ship svn.
