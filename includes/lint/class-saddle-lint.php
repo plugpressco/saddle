@@ -43,7 +43,7 @@ class Saddle_Lint {
 		 * @param Saddle_Lint_Rule[]   $rules    Rule instances.
 		 * @param Saddle_Lint_Accessor $accessor The accessor about to be used.
 		 */
-		$rules = apply_filters( 'saddle_lint_rules', self::default_rules(), $accessor );
+		$rules = apply_filters( 'saddle_lint_rules', self::default_rules( $accessor ), $accessor );
 
 		$violations = array();
 		foreach ( $rules as $rule ) {
@@ -70,10 +70,11 @@ class Saddle_Lint {
 	/**
 	 * The built-in rule set.
 	 *
+	 * @param Saddle_Lint_Accessor|null $accessor The accessor about to be used.
 	 * @return Saddle_Lint_Rule[]
 	 */
-	private static function default_rules() {
-		return array(
+	private static function default_rules( $accessor = null ) {
+		$rules = array(
 			new Saddle_Lint_Rule_Empty_Title(),
 			new Saddle_Lint_Rule_Button_Contrast(),
 			new Saddle_Lint_Rule_Ghost_Button(),
@@ -89,6 +90,18 @@ class Saddle_Lint {
 			new Saddle_Lint_Rule_Missing_Alt(),
 			new Saddle_Lint_Rule_Heading_Order(),
 		);
+
+		// Divi 5 composition rules — only on pages linted through the Divi
+		// accessor, so native block pages keep exactly the rule set above.
+		if ( $accessor instanceof Saddle_Divi_Lint_Accessor ) {
+			$rules[] = new Saddle_Lint_Rule_Sibling_Monotony();
+			$rules[] = new Saddle_Lint_Rule_Preset_Coupling();
+			$rules[] = new Saddle_Lint_Rule_Pinned_Max_Width();
+			$rules[] = new Saddle_Lint_Rule_Theme_Css_Class();
+			$rules[] = new Saddle_Lint_Rule_Unknown_Module();
+		}
+
+		return $rules;
 	}
 
 	/**

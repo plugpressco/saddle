@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
  * The build-native-accessor → filter → instanceof-gate sequence used to be
  * copy-pasted across lint-page, render-node, and verify-page, with three
  * hand-synced copies of the same 409 error. It lives here once, so the
- * resolution semantics (and the "needs Saddle Pro" message) cannot drift
+ * resolution semantics (and the "no accessor installed" message) cannot drift
  * between the three abilities.
  */
 class Saddle_Accessors {
@@ -30,14 +30,17 @@ class Saddle_Accessors {
 	 */
 	public static function lint( WP_Post $post, $code = 'saddle_lint_unsupported', $message = null ) {
 		$builder  = Saddle_Abilities::builder_signature( $post );
-		$accessor = null === $builder ? new Saddle_Lint_Gutenberg_Accessor() : null;
+		$driver   = null === $builder ? null : Saddle_Builder_Registry::for_builder( (string) $builder );
+		$accessor = null === $builder
+			? new Saddle_Lint_Gutenberg_Accessor()
+			: ( $driver ? $driver->lint_accessor( $post ) : null );
 
 		/**
 		 * Filter the lint accessor for a page.
 		 *
-		 * Builder integrations (Saddle Pro's Divi driver, Elementor/Bricks
-		 * later) return their Saddle_Lint_Accessor implementation when they
-		 * own $builder. Null means the page cannot be linted here.
+		 * Gutenberg and Divi 5 accessors are built in; a builder integration
+		 * returns its Saddle_Lint_Accessor implementation when it owns
+		 * $builder. Null means the page cannot be linted here.
 		 *
 		 * @param Saddle_Lint_Accessor|null $accessor Accessor (Gutenberg's for native pages).
 		 * @param string|null               $builder  Detected builder, null = native.
@@ -53,7 +56,7 @@ class Saddle_Accessors {
 				null !== $message
 					? $message
 					/* translators: 1: post ID, 2: builder name. */
-					: __( 'Post #%1$d is built with %2$s, and no lint accessor for that builder is installed. Divi 5 pages need Saddle Pro.', 'saddle' )
+					: __( 'Post #%1$d is built with %2$s, and no lint accessor for that builder is installed.', 'saddle' )
 			);
 		}
 		return $accessor;
@@ -68,14 +71,17 @@ class Saddle_Accessors {
 	 */
 	public static function render( WP_Post $post ) {
 		$builder  = Saddle_Abilities::builder_signature( $post );
-		$accessor = null === $builder ? new Saddle_Render_Gutenberg_Accessor() : null;
+		$driver   = null === $builder ? null : Saddle_Builder_Registry::for_builder( (string) $builder );
+		$accessor = null === $builder
+			? new Saddle_Render_Gutenberg_Accessor()
+			: ( $driver ? $driver->render_accessor() : null );
 
 		/**
 		 * Filter the render accessor for a page.
 		 *
-		 * Builder integrations (Saddle Pro's Divi driver, Elementor/Bricks
-		 * later) return their Saddle_Render_Accessor implementation when
-		 * they own $builder. Null means the page cannot be rendered here.
+		 * Gutenberg and Divi 5 accessors are built in; a builder integration
+		 * returns its Saddle_Render_Accessor implementation when it owns
+		 * $builder. Null means the page cannot be rendered here.
 		 *
 		 * @param Saddle_Render_Accessor|null $accessor Accessor (Gutenberg's for native pages).
 		 * @param string|null                 $builder  Detected builder, null = native.
@@ -89,7 +95,7 @@ class Saddle_Accessors {
 				$builder,
 				'saddle_render_unsupported',
 				/* translators: 1: post ID, 2: builder name. */
-				__( 'Post #%1$d is built with %2$s, and no render accessor for that builder is installed. Divi 5 pages need Saddle Pro.', 'saddle' )
+				__( 'Post #%1$d is built with %2$s, and no render accessor for that builder is installed.', 'saddle' )
 			);
 		}
 		return $accessor;

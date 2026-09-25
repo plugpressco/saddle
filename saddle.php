@@ -75,6 +75,27 @@ require_once SADDLE_DIR . 'includes/lint/rules/class-rule-heading-order.php';
 require_once SADDLE_DIR . 'includes/render/interface-saddle-render-accessor.php';
 require_once SADDLE_DIR . 'includes/render/class-saddle-render.php';
 require_once SADDLE_DIR . 'includes/render/class-saddle-render-gutenberg-accessor.php';
+require_once SADDLE_DIR . 'includes/builders/interface-saddle-builder-driver.php';
+require_once SADDLE_DIR . 'includes/builders/class-saddle-builder-registry.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-tree.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-author.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-schema.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-echo.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-driver.php';
+require_once SADDLE_DIR . 'includes/builders/divi/trait-saddle-divi-attr-resolution.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-view.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-bundle.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-recipes.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-lint-accessor.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-render-accessor.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-verify.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-context.php';
+require_once SADDLE_DIR . 'includes/lint/rules/class-rule-sibling-monotony.php';
+require_once SADDLE_DIR . 'includes/lint/rules/class-rule-preset-coupling.php';
+require_once SADDLE_DIR . 'includes/lint/rules/class-rule-pinned-max-width.php';
+require_once SADDLE_DIR . 'includes/lint/rules/class-rule-theme-css-class.php';
+require_once SADDLE_DIR . 'includes/lint/rules/class-rule-unknown-module.php';
 require_once SADDLE_DIR . 'includes/preview/class-saddle-preview.php';
 require_once SADDLE_DIR . 'includes/verify/class-saddle-verify.php';
 require_once SADDLE_DIR . 'includes/class-saddle-capabilities.php';
@@ -210,6 +231,18 @@ final class Saddle {
 		add_action( Saddle_Approval::GC_HOOK, array( 'Saddle_Memory', 'gc' ) );
 		add_action( Saddle_Approval::GC_HOOK, array( 'Saddle_OAuth_Store', 'gc' ) );
 
+		// The Divi context bundle stales on plugin churn (module packs) and
+		// theme switches (Divi versions); its signature self-corrects even when
+		// a hook is missed, but flushing keeps the next session fast and fresh.
+		// The module-schema index is keyed on Divi version + active plugins, so
+		// a pack updated in place needs an explicit clear too.
+		add_action( 'activated_plugin', array( 'Saddle_Divi_Bundle', 'flush' ) );
+		add_action( 'deactivated_plugin', array( 'Saddle_Divi_Bundle', 'flush' ) );
+		add_action( 'switch_theme', array( 'Saddle_Divi_Bundle', 'flush' ) );
+		add_action( 'upgrader_process_complete', array( 'Saddle_Divi_Schema', 'flush_index' ) );
+		add_action( 'saddle_flush_cache', array( 'Saddle_Divi_Schema', 'flush_index' ) );
+		add_action( 'saddle_flush_cache', array( 'Saddle_Divi_Bundle', 'flush' ) );
+
 		// OAuth 2.1 authorization server. Off by default; Saddle_OAuth::register()
 		// wires only the bearer resolver and the 401 challenge until the owner
 		// turns it on, so a site that never connects ChatGPT never exposes an
@@ -234,6 +267,10 @@ final class Saddle {
 			require_once SADDLE_DIR . 'includes/abilities/rank-math.php';
 			require_once SADDLE_DIR . 'includes/abilities/aioseo.php';
 			require_once SADDLE_DIR . 'includes/abilities/woocommerce.php';
+			require_once SADDLE_DIR . 'includes/abilities/divi.php';
+			require_once SADDLE_DIR . 'includes/abilities/divi-design.php';
+			require_once SADDLE_DIR . 'includes/abilities/divi-templates.php';
+			require_once SADDLE_DIR . 'includes/abilities/divi-bundle.php';
 			add_action( 'wp_abilities_api_categories_init', 'saddle_register_ability_category' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_block_abilities' );
@@ -253,11 +290,16 @@ final class Saddle {
 			add_action( 'wp_abilities_api_init', 'saddle_register_rankmath_abilities', 30 );
 			add_action( 'wp_abilities_api_init', 'saddle_register_aioseo_abilities', 30 );
 			add_action( 'wp_abilities_api_init', 'saddle_register_wc_abilities', 30 );
+			add_action( 'wp_abilities_api_init', 'saddle_register_divi_abilities', 30 );
+			add_action( 'wp_abilities_api_init', 'saddle_register_divi_design_abilities', 30 );
+			add_action( 'wp_abilities_api_init', 'saddle_register_divi_template_abilities', 30 );
+			add_action( 'wp_abilities_api_init', 'saddle_register_divi_bundle_abilities', 30 );
 			// First-party integration wrappers run late (30) so the partner
 			// plugins' own abilities exist to discover.
 			add_action( 'wp_abilities_api_init', array( 'Saddle_Integrations', 'register_wrappers' ), 30 );
 			add_filter( 'saddle_context_sections', array( 'Saddle_Integrations', 'context_section' ) );
 			Saddle_Seo_Skills::register();
+			Saddle_Divi_Context::register();
 
 			// Wire the MCP transport after all plugins have loaded. This MUST be
 			// deferred (see setup_mcp_transport) so the bundled adapter can't

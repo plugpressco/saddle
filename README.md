@@ -119,11 +119,14 @@ when_to_use: publishing or scheduling a post
 
 [Saddle Pro](https://saddle.to) is a paid add-on. It needs this free plugin. Pro adds:
 
-- **Divi 5 pages:** Build and edit Divi 5 pages with Divi modules.
-- **Divi design:** Use Divi global colors, fonts, variables and presets.
-- **Divi features:** Manage loops, dynamic content, display conditions, the Library and the Theme Builder.
-- **SEO plugins:** Read and edit SEO fields in Yoast SEO, Rank Math and All in One SEO.
-- **WooCommerce:** List and read products.
+- **Divi design system:** Create, edit and delete Divi global colors, fonts, variables and presets.
+- **Divi Library and Theme Builder:** Save, update, apply and delete Library items, and assign Theme Builder templates.
+- **Whole pages:** Build a new Divi page in one step, or clone one.
+- **Site-wide changes:** Swap an image or apply a preset across many pages, with undo.
+- **Design brief:** Save a page's design plan and check the page against it.
+- **WooCommerce:** Update prices, stock, status and categories across many products, with undo.
+
+Divi 5 page editing, the Yoast SEO, Rank Math and All in One SEO tools, and the WooCommerce product and order reads are part of the free plugin.
 
 Every feature in the free plugin stays free.
 
