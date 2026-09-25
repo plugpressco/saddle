@@ -75,6 +75,92 @@ define( 'WP_TESTS_CONFIG_FILE_PATH', __DIR__ . '/wp-tests-config.php' );
 
 require_once $tests_dir . '/includes/functions.php';
 
+/*
+ * Thin Yoast SEO stubs — Yoast won't be a real test dependency (same call
+ * the closed Rank Math plan made for its own test-bootstrap problem: prefer
+ * a thin stub so the actual logic — field mapping, the robots trap, length
+ * warnings — is covered, rather than skip-guarding the whole suite). These
+ * mirror Yoast's real meta-key prefixing/storage closely enough for unit
+ * coverage; live behavior is verified separately on divi-dev with real
+ * Yoast installed.
+ */
+if ( ! defined( 'WPSEO_VERSION' ) ) {
+	define( 'WPSEO_VERSION', '99.0-stub' );
+}
+
+// Rank Math needs no class stubs — its storage IS plain rank_math_* meta.
+// The version constant alone satisfies Saddle_Rank_Math::is_active().
+if ( ! defined( 'RANK_MATH_VERSION' ) ) {
+	define( 'RANK_MATH_VERSION', '99.0-stub' );
+}
+
+// AIOSEO stores in its own table behind a model class — see the stub file.
+if ( ! defined( 'AIOSEO_VERSION' ) ) {
+	define( 'AIOSEO_VERSION', '99.0-stub' );
+}
+require_once __DIR__ . '/stubs-aioseo-model.php';
+
+if ( ! class_exists( 'WPSEO_Meta' ) ) {
+	class WPSEO_Meta {
+		public static function get_value( $key, $post_id = 0 ) {
+			return get_post_meta( $post_id, '_yoast_wpseo_' . $key, true );
+		}
+		public static function set_value( $key, $value, $post_id = 0 ) {
+			update_post_meta( $post_id, '_yoast_wpseo_' . $key, $value );
+		}
+	}
+}
+
+// Term SEO reads/writes Yoast's Indexable model (Yoast\WP\SEO\... namespaced
+// classes), not WPSEO_Taxonomy_Meta — see the stub file for why.
+require_once __DIR__ . '/stubs-yoast-indexables.php';
+
+// WooCommerce CRUD-API stubs (WC_Product/wc_get_products/wc_get_orders) —
+// see the stub file. The product post type + taxonomies the stubs lean on
+// are registered on init below, and the WooCommerce-minted capabilities the
+// wc-* permission callbacks require are granted to administrators (real
+// WooCommerce grants them on activation).
+require_once __DIR__ . '/stubs-woocommerce.php';
+tests_add_filter(
+	'init',
+	static function () {
+		register_post_type(
+			'product',
+			array(
+				'public'       => true,
+				'map_meta_cap' => true,
+				'supports'     => array( 'title', 'editor' ),
+			)
+		);
+		register_taxonomy( 'product_cat', 'product', array( 'hierarchical' => true ) );
+		register_taxonomy( 'product_tag', 'product', array() );
+
+		$admin_role = get_role( 'administrator' );
+		if ( $admin_role ) {
+			$admin_role->add_cap( 'edit_products' );
+			$admin_role->add_cap( 'edit_shop_orders' );
+			$admin_role->add_cap( 'manage_woocommerce' );
+		}
+	}
+);
+
+if ( ! class_exists( 'WPSEO_Primary_Term' ) ) {
+	class WPSEO_Primary_Term {
+		private $taxonomy;
+		private $post_id;
+		public function __construct( $taxonomy, $post_id ) {
+			$this->taxonomy = $taxonomy;
+			$this->post_id  = $post_id;
+		}
+		public function get_primary_term() {
+			return (int) get_post_meta( $this->post_id, '_yoast_wpseo_primary_' . $this->taxonomy, true );
+		}
+		public function set_primary_term( $term_id ) {
+			update_post_meta( $this->post_id, '_yoast_wpseo_primary_' . $this->taxonomy, (int) $term_id );
+		}
+	}
+}
+
 // Load the Saddle plugin as a must-use plugin inside the test WordPress.
 tests_add_filter(
 	'muplugins_loaded',

@@ -214,6 +214,39 @@ class Saddle_Skills_Test extends WP_UnitTestCase {
 		);
 	}
 
+	public function test_builtin_skill_bundled_twice_is_listed_once() {
+		// An older add-on may still bundle a skill this plugin now ships
+		// (yoast-seo moved from Saddle Pro to free); the first provider wins.
+		$twice = static function ( $skills ) {
+			$skills[] = array(
+				'name'        => 'dup-skill',
+				'description' => 'First copy.',
+				'body'        => 'first body',
+			);
+			$skills[] = array(
+				'name'        => 'dup-skill',
+				'description' => 'Second copy.',
+				'body'        => 'second body',
+			);
+			return $skills;
+		};
+		add_filter( 'saddle_builtin_skills', $twice );
+		try {
+			$matches = array_values(
+				array_filter(
+					Saddle_Skills::all(),
+					static function ( $skill ) {
+						return 'dup-skill' === $skill['name'];
+					}
+				)
+			);
+			$this->assertCount( 1, $matches );
+			$this->assertSame( 'First copy.', $matches[0]['description'] );
+		} finally {
+			remove_filter( 'saddle_builtin_skills', $twice );
+		}
+	}
+
 	public function test_owner_installed_skill_shadows_builtin() {
 		$this->with_builtin(
 			array(

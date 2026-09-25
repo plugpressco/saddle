@@ -29,6 +29,18 @@ define( 'SADDLE_MIN_WP', '6.9' );
 // changes to the wp.hooks seams or the ui context object.
 define( 'SADDLE_SHELL_VERSION', 1 );
 
+// The saddle/wc-* tools use only WooCommerce's CRUD API (wc_get_products,
+// wc_get_orders), never raw post/postmeta queries, so they are safe with
+// High-Performance Order Storage on.
+add_action(
+	'before_woocommerce_init',
+	static function () {
+		if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
+			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+		}
+	}
+);
+
 /**
  * Load plugin classes.
  *
@@ -79,6 +91,17 @@ require_once SADDLE_DIR . 'includes/class-saddle-http.php';
 require_once SADDLE_DIR . 'includes/class-saddle-accessors.php';
 require_once SADDLE_DIR . 'includes/class-saddle-integration-engine.php';
 require_once SADDLE_DIR . 'includes/class-saddle-integrations.php';
+require_once SADDLE_DIR . 'includes/trait-saddle-mutation-log.php';
+require_once SADDLE_DIR . 'includes/integrations/class-saddle-seo-advice.php';
+require_once SADDLE_DIR . 'includes/integrations/yoast/class-saddle-yoast.php';
+require_once SADDLE_DIR . 'includes/integrations/yoast/class-saddle-yoast-seo.php';
+require_once SADDLE_DIR . 'includes/integrations/yoast/class-saddle-yoast-schema.php';
+require_once SADDLE_DIR . 'includes/integrations/rank-math/class-saddle-rank-math.php';
+require_once SADDLE_DIR . 'includes/integrations/rank-math/class-saddle-rank-math-seo.php';
+require_once SADDLE_DIR . 'includes/integrations/aioseo/class-saddle-aioseo.php';
+require_once SADDLE_DIR . 'includes/integrations/aioseo/class-saddle-aioseo-seo.php';
+require_once SADDLE_DIR . 'includes/integrations/woocommerce/class-saddle-wc.php';
+require_once SADDLE_DIR . 'includes/integrations/class-saddle-seo-skills.php';
 require_once SADDLE_DIR . 'includes/class-saddle-mcp.php';
 require_once SADDLE_DIR . 'includes/class-saddle-mcp-diagnostics.php';
 
@@ -207,6 +230,10 @@ final class Saddle {
 			require_once SADDLE_DIR . 'includes/abilities/verify.php';
 			require_once SADDLE_DIR . 'includes/abilities/memory.php';
 			require_once SADDLE_DIR . 'includes/abilities/unsplash.php';
+			require_once SADDLE_DIR . 'includes/abilities/yoast.php';
+			require_once SADDLE_DIR . 'includes/abilities/rank-math.php';
+			require_once SADDLE_DIR . 'includes/abilities/aioseo.php';
+			require_once SADDLE_DIR . 'includes/abilities/woocommerce.php';
 			add_action( 'wp_abilities_api_categories_init', 'saddle_register_ability_category' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_block_abilities' );
@@ -219,10 +246,18 @@ final class Saddle {
 			add_action( 'wp_abilities_api_init', 'saddle_register_verify_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_memory_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_unsplash_abilities' );
+			// Native SEO and WooCommerce integrations register at 30 behind
+			// saddle_register_ability_once(): an older add-on that still
+			// registers these names at 20 keeps its copy, with no duplicates.
+			add_action( 'wp_abilities_api_init', 'saddle_register_yoast_abilities', 30 );
+			add_action( 'wp_abilities_api_init', 'saddle_register_rankmath_abilities', 30 );
+			add_action( 'wp_abilities_api_init', 'saddle_register_aioseo_abilities', 30 );
+			add_action( 'wp_abilities_api_init', 'saddle_register_wc_abilities', 30 );
 			// First-party integration wrappers run late (30) so the partner
 			// plugins' own abilities exist to discover.
 			add_action( 'wp_abilities_api_init', array( 'Saddle_Integrations', 'register_wrappers' ), 30 );
 			add_filter( 'saddle_context_sections', array( 'Saddle_Integrations', 'context_section' ) );
+			Saddle_Seo_Skills::register();
 
 			// Wire the MCP transport after all plugins have loaded. This MUST be
 			// deferred (see setup_mcp_transport) so the bundled adapter can't

@@ -202,10 +202,13 @@ class Saddle_Skills {
 			$name = sanitize_title( isset( $skill['name'] ) ? (string) $skill['name'] : '' );
 			$desc = sanitize_text_field( isset( $skill['description'] ) ? (string) $skill['description'] : '' );
 			$body = self::sanitize_body( isset( $skill['body'] ) ? (string) $skill['body'] : '' );
-			if ( '' === $name || '' === $desc || '' === $body ) {
+			// First provider wins on a name clash: an older add-on may still
+			// bundle a skill this plugin now ships, and the list must not
+			// show it twice.
+			if ( '' === $name || '' === $desc || '' === $body || isset( $skills[ $name ] ) ) {
 				continue;
 			}
-			$skills[] = array(
+			$skills[ $name ] = array(
 				'name'        => $name,
 				'description' => $desc,
 				'when_to_use' => sanitize_text_field( isset( $skill['when_to_use'] ) ? (string) $skill['when_to_use'] : '' ),
@@ -220,7 +223,7 @@ class Saddle_Skills {
 				'body'        => mb_substr( $body, 0, self::MAX_BODY ),
 			);
 		}
-		return $skills;
+		return array_values( $skills );
 	}
 
 	/**

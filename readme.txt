@@ -80,6 +80,18 @@ ChatGPT cannot use a pasted key. For ChatGPT, turn on OAuth sign-in under **Sadd
 
 Unsplash search: Find and import free stock photos. This needs your own Unsplash API key.
 
+= SEO plugins =
+
+These tools work when the SEO plugin is active.
+
+* Yoast SEO: Read and edit the SEO title, meta description, robots and schema type of posts, pages and terms.
+* Rank Math: Read and edit the SEO title, meta description and robots of posts, pages and terms.
+* All in One SEO: Read and edit the SEO title, meta description, robots and social fields of posts and pages.
+
+= WooCommerce =
+
+* Products and orders: List and read products, variations and orders. This works when WooCommerce is active.
+
 = Saddle Pro =
 
 [Saddle Pro](https://saddle.to) is a paid add-on. It needs this free plugin. Pro adds:
@@ -87,8 +99,7 @@ Unsplash search: Find and import free stock photos. This needs your own Unsplash
 * Divi 5 pages: Build and edit Divi 5 pages with real Divi modules.
 * Divi design: Use Divi global colors, fonts, variables and presets.
 * Divi features: Manage loops, dynamic content, display conditions, the Library and the Theme Builder.
-* SEO plugins: Read and edit SEO fields in Yoast SEO, Rank Math and All in One SEO.
-* WooCommerce: List and read products.
+* WooCommerce: Update prices, stock, status and categories across many products, with undo.
 
 All features in this free plugin stay free.
 
