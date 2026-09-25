@@ -2,7 +2,7 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Saddle – Control Your Site with AI (MCP Server) 1.0.0\n"
+"Project-Id-Version: Saddle 1.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/saddle\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 
 #. Plugin Name of the plugin
 #: saddle.php
-msgid "Saddle – Control Your Site with AI (MCP Server)"
+msgid "Saddle"
 msgstr ""
 
 #. Plugin URI of the plugin

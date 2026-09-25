@@ -1,4 +1,4 @@
-=== Saddle – Control Your Site with AI (MCP Server) ===
+=== Saddle – AI Site Control (MCP Server) ===
 Contributors: badhonrocks
 Tags: mcp, ai, chatgpt, agents, automation
 Requires at least: 6.9
