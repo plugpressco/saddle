@@ -2,7 +2,7 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Saddle – Control Your Site with AI (MCP Server) 1.0.0\n"
+"Project-Id-Version: Saddle 1.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/saddle\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,17 +16,17 @@ msgstr ""
 
 #. Plugin Name of the plugin
 #: saddle.php
-msgid "Saddle – Control Your Site with AI (MCP Server)"
+msgid "Saddle"
 msgstr ""
 
 #. Plugin URI of the plugin
 #: saddle.php
-msgid "https://plugpress.co/saddle/"
+msgid "https://saddle.to"
 msgstr ""
 
 #. Description of the plugin
 #: saddle.php
-msgid "Self-hosted MCP server for WordPress. Tiered, default-safe, approval-gated access to posts, pages, and media for AI agents — with no third-party credential custody."
+msgid "Connect AI agents to your WordPress site through MCP. Manage posts, pages, and media."
 msgstr ""
 
 #. Author of the plugin
@@ -36,7 +36,7 @@ msgstr ""
 
 #. Author URI of the plugin
 #: saddle.php
-msgid "https://plugpress.co"
+msgid "https://plugpress.io/"
 msgstr ""
 
 #: includes/abilities/blocks.php:35

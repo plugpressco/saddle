@@ -1,13 +1,13 @@
 <?php
 /**
- * Plugin Name:       Saddle – Control Your Site with AI (MCP Server)
- * Plugin URI:        https://plugpress.co/saddle/
- * Description:       Self-hosted MCP server for WordPress. Tiered, default-safe, approval-gated access to posts, pages, and media for AI agents — with no third-party credential custody.
+ * Plugin Name:       Saddle
+ * Plugin URI:        https://saddle.to
+ * Description:       Connect AI agents to your WordPress site through MCP. Manage posts, pages, and media.
  * Version:           1.0.1
  * Requires at least: 6.9
  * Requires PHP:      7.4
  * Author:            PlugPress
- * Author URI:        https://plugpress.co
+ * Author URI:        https://plugpress.io/
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       saddle
