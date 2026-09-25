@@ -1,10 +1,10 @@
-=== Saddle – AI Site Control (MCP Server) ===
+=== Saddle – AI Site Control (MCP) ===
 Contributors: badhonrocks
 Tags: mcp, ai, chatgpt, agents, automation
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ Connect Claude, ChatGPT, Cursor and other AI apps to your WordPress site. Your A
 
 == Description ==
 
-Saddle turns your WordPress site into an MCP server. AI apps like Claude, ChatGPT and Cursor can then read and edit your site.
+Saddle is a plugin that lets AI apps like Claude, ChatGPT and Cursor read and edit your WordPress site. Your AI app connects straight to your site through MCP, the standard these apps use to talk to tools.
 
 It helps site owners, developers and agencies who already work with an AI app. Saddle runs on your own site. It needs no account and no cloud service.
 
@@ -182,6 +182,9 @@ The WordPress.org version never checks for its own updates. The version from plu
 4. Instructions: Read what your AI is told, and add your own instructions and Skills.
 
 == Changelog ==
+
+= 1.2.1 =
+* Improved: A clearer plugin description. Saddle is a plugin your AI app connects to, not a server.
 
 = 1.2.0 =
 * New: Divi 5 pages. Build and edit Divi 5 pages with real Divi modules: add, edit, move and remove modules, change page settings, loops, dynamic content, display conditions and presets.

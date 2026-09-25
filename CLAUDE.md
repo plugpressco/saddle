@@ -10,7 +10,7 @@ relay. The buyer is a developer or agency already driving WordPress from Claude
 Code or Codex; Saddle's job is to make the page *judgeable*, not to do the
 judging.
 
-Free Saddle is **1.2.0**, approved and live on WordPress.org. (1.1.0 is skipped on purpose: a different 1.1.0 was published on GitHub on 2026-08-02 and withdrawn, and two builds must never share a number.) **Saddle Pro** is a
+Free Saddle is **1.2.1**, approved and live on WordPress.org. (1.1.0 is skipped on purpose: a different 1.1.0 was published on GitHub on 2026-08-02 and withdrawn, and two builds must never share a number.) **Saddle Pro** is a
 separate plugin, sold commercially. Free never contains license or upsell code.
 
 **The split (decided 2026-09-26, reversing "no builder code in free"):** free
