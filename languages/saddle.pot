@@ -26,7 +26,7 @@ msgstr ""
 
 #. Description of the plugin
 #: saddle.php
-msgid "Self-hosted MCP server for WordPress. Tiered, default-safe, approval-gated access to posts, pages, and media for AI agents — with no third-party credential custody."
+msgid "Connect AI agents to your WordPress site through MCP. Manage posts, pages, and media."
 msgstr ""
 
 #. Author of the plugin
