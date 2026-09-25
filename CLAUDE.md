@@ -11,8 +11,16 @@ Code or Codex; Saddle's job is to make the page *judgeable*, not to do the
 judging.
 
 Free Saddle is **1.0.1**, approved and live on WordPress.org. **Saddle Pro** is a
-separate plugin — the Divi 5 layer, sold commercially. Free never contains
-license, upsell or builder-specific code.
+separate plugin, sold commercially. Free never contains license or upsell code.
+
+**The split (decided 2026-09-26, reversing "no builder code in free"):** free
+edits, Pro operates the site. Free carries Gutenberg *and* Divi 5 page editing —
+the Divi engine, the page/module/loop/dynamic-content tools, design-system and
+Library/Theme Builder *reads* — plus every SEO integration (Yoast, Rank Math,
+AIOSEO) and the WooCommerce reads. Pro keeps only site-wide Divi operations
+(design-system writes, Library and Theme Builder writes, compose/clone, bulk
+with undo, the design brief) and the WooCommerce bulk writes. Anything that
+ships free on .org stays free forever (R6); tool names never change (R4).
 
 Requires WordPress **6.9**, PHP **7.4**. Text domain `saddle`.
 
@@ -154,8 +162,9 @@ Gutenberg validation profile, the authoring surface, schema/tokens, and the
 applied-vs-ignored echo on top of it.
 
 **The quality loop.** `lint/` holds the design lint runner plus ~12 rules, and
-`Saddle_Lint_Accessor` is the *only* builder-specific surface — Pro plugs Divi in
-and adds its own rules through the `saddle_lint_rules` filter. `verify/` scores
+`Saddle_Lint_Accessor` is the builder seam — free ships the Gutenberg and Divi 5
+accessors, and Pro adds its site-ops rules (the design brief) through the
+`saddle_lint_rules` filter. `verify/` scores
 the result, and the grades are **honest by design**: a structural finding caps
 the letter at C, an echo finding at B, and every report carries a `coverage`
 caveat, because it is server-side only and real pixels need `get-preview-url`.
@@ -356,7 +365,9 @@ change. `Tested up to:` moves only when Fahim has verified against a newer WP.
 - Don't turn OAuth on by default, and don't let a scope grant more than the site
   tier. Both are load-bearing for non-negotiable #2.
 - Don't wire up `Saddle_Ecosystem`.
-- Don't put licensing, upsell or builder-specific code in free.
+- Don't put licensing or upsell code in free, and never let a free tool mention
+  Pro or leave a visible gap for a Pro tool (wp.org guidelines 5 and 11). Builder
+  code other than Gutenberg and Divi 5 still does not belong here (ROADMAP NO list).
 - Don't edit `includes/lib/wp-mcp/` — it is vendored. Fix upstream and re-vendor.
   **One deviation exists and is recorded, not hand-applied:** every i18n text
   domain in there is rewritten to `saddle`, so the self-hosted build (the only
