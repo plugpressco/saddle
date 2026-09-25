@@ -4,6 +4,7 @@ Connect Claude, ChatGPT, Cursor and other AI apps to your WordPress site. Your A
 
 - **Requires:** WordPress 6.9 or later, PHP 7.4 or later
 - **License:** GPL-2.0-or-later
+- **Website:** [saddle.to](https://saddle.to)
 - **Download:** [WordPress.org](https://wordpress.org/plugins/saddle/)
 - **Author:** [PlugPress](https://plugpress.co)
 
@@ -120,7 +121,7 @@ See `readme.txt` for the full list of external requests.
 
 ## Saddle Pro
 
-[Saddle Pro](https://plugpress.co/saddle) is a paid add-on. It needs this free plugin. Pro adds:
+[Saddle Pro](https://saddle.to) is a paid add-on. It needs this free plugin. Pro adds:
 
 - **Divi 5 pages:** Build and edit Divi 5 pages with real Divi modules.
 - **Divi design:** Use Divi global colors, fonts, variables and presets.

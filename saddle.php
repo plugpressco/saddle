@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       Saddle
- * Plugin URI:        https://plugpress.co/saddle/
+ * Plugin URI:        https://saddle.to
  * Description:       Self-hosted MCP server for WordPress. Tiered, default-safe, approval-gated access to posts, pages, and media for AI agents — with no third-party credential custody.
  * Version:           1.0.1
  * Requires at least: 6.9

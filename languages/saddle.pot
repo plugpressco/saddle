@@ -21,7 +21,7 @@ msgstr ""
 
 #. Plugin URI of the plugin
 #: saddle.php
-msgid "https://plugpress.co/saddle/"
+msgid "https://saddle.to"
 msgstr ""
 
 #. Description of the plugin

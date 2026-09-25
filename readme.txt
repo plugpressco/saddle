@@ -82,7 +82,7 @@ Unsplash search: Find and import free stock photos. This needs your own Unsplash
 
 = Saddle Pro =
 
-[Saddle Pro](https://plugpress.co/saddle) is a paid add-on. It needs this free plugin. Pro adds:
+[Saddle Pro](https://saddle.to) is a paid add-on. It needs this free plugin. Pro adds:
 
 * Divi 5 pages: Build and edit Divi 5 pages with real Divi modules.
 * Divi design: Use Divi global colors, fonts, variables and presets.
