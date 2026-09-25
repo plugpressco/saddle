@@ -2,20 +2,25 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Saddle 1.0.0\n"
+"Project-Id-Version: Saddle 1.2.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/saddle\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-11T17:25:38+00:00\n"
+"POT-Creation-Date: 2026-09-25T23:06:57+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
 
 #. Plugin Name of the plugin
 #: saddle.php
+#: includes/abilities/core-content.php:50
+#: includes/admin/class-saddle-settings.php:27
+#: includes/admin/class-saddle-settings.php:28
+#: admin/build/index.js:46
+#: admin/src/App.jsx:528
 msgid "Saddle"
 msgstr ""
 
@@ -37,6 +42,155 @@ msgstr ""
 #. Author URI of the plugin
 #: saddle.php
 msgid "https://plugpress.io/"
+msgstr ""
+
+#: includes/abilities/aioseo.php:31
+msgid "Check AIOSEO setup"
+msgstr ""
+
+#: includes/abilities/aioseo.php:32
+msgid "Reports whether AIOSEO (All in One SEO) is active on this site (and its version). Read-only. Call this before using the other aioseo-* tools."
+msgstr ""
+
+#: includes/abilities/aioseo.php:40
+#: includes/abilities/rank-math.php:41
+#: includes/abilities/yoast.php:42
+msgid "Optional post or page ID to check readability for."
+msgstr ""
+
+#: includes/abilities/aioseo.php:53
+msgid "Get AIOSEO post SEO"
+msgstr ""
+
+#: includes/abilities/aioseo.php:54
+msgid "Returns a post's AIOSEO fields: title, description, focus keyword, canonical URL, robots (index/follow/advanced), Open Graph + Twitter title/description/image, and whether it is marked pillar content. Read-only. Per-term SEO is an AIOSEO Pro feature and has no tool yet."
+msgstr ""
+
+#: includes/abilities/aioseo.php:62
+#: includes/abilities/rank-math.php:63
+#: includes/abilities/yoast.php:64
+msgid "The post or page ID to read."
+msgstr ""
+
+#: includes/abilities/aioseo.php:75
+msgid "Edit AIOSEO post SEO"
+msgstr ""
+
+#: includes/abilities/aioseo.php:76
+msgid "Sets a post's AIOSEO fields — partial merge, only the fields you pass change; an empty string resets a field to AIOSEO's own default. robots_index takes \"default\"/\"index\"/\"noindex\"; robots_follow takes \"follow\"/\"nofollow\". AIOSEO's \"default\" switch covers ALL robots flags together, so \"default\" only takes effect when no other robots flag remains set on the post. The response carries non-blocking length warnings when title/description run long."
+msgstr ""
+
+#: includes/abilities/aioseo.php:84
+#: includes/abilities/rank-math.php:85
+#: includes/abilities/yoast.php:86
+msgid "The post or page ID to edit."
+msgstr ""
+
+#: includes/abilities/aioseo.php:88
+#: includes/abilities/rank-math.php:89
+#: includes/abilities/yoast.php:90
+msgid "SEO title."
+msgstr ""
+
+#: includes/abilities/aioseo.php:92
+#: includes/abilities/rank-math.php:93
+#: includes/abilities/yoast.php:94
+msgid "Meta description."
+msgstr ""
+
+#: includes/abilities/aioseo.php:96
+msgid "Focus keyphrase. Additional keyphrases and their scores are preserved."
+msgstr ""
+
+#: includes/abilities/aioseo.php:100
+#: includes/abilities/rank-math.php:101
+#: includes/abilities/yoast.php:102
+msgid "Canonical URL override."
+msgstr ""
+
+#: includes/abilities/aioseo.php:105
+msgid "Search-index directive. \"default\" inherits the site setting — only honored when no other robots flag remains set."
+msgstr ""
+
+#: includes/abilities/aioseo.php:110
+msgid "Link-follow directive."
+msgstr ""
+
+#: includes/abilities/aioseo.php:114
+msgid "Comma list of advanced robots flags: noarchive, nosnippet, noimageindex. Empty string clears them."
+msgstr ""
+
+#: includes/abilities/aioseo.php:118
+#: includes/abilities/rank-math.php:119
+msgid "Open Graph (Facebook) title override."
+msgstr ""
+
+#: includes/abilities/aioseo.php:122
+#: includes/abilities/rank-math.php:123
+msgid "Open Graph (Facebook) description override."
+msgstr ""
+
+#: includes/abilities/aioseo.php:126
+msgid "Open Graph custom image URL. Setting it switches the OG image source to \"custom\"."
+msgstr ""
+
+#: includes/abilities/aioseo.php:130
+msgid "Twitter card title override. Setting any twitter field stops the card mirroring Open Graph."
+msgstr ""
+
+#: includes/abilities/aioseo.php:134
+#: includes/abilities/rank-math.php:135
+#: includes/abilities/yoast.php:136
+msgid "Twitter card description override."
+msgstr ""
+
+#: includes/abilities/aioseo.php:138
+msgid "Twitter card custom image URL. Setting it switches the Twitter image source to \"custom\"."
+msgstr ""
+
+#: includes/abilities/aioseo.php:142
+msgid "Mark/unmark this post as AIOSEO pillar content."
+msgstr ""
+
+#: includes/abilities/aioseo.php:176
+msgid "AIOSEO is not active on this site. The aioseo-* tools are unavailable; use the regular content tools."
+msgstr ""
+
+#: includes/abilities/aioseo.php:184
+#: includes/abilities/aioseo.php:211
+#: includes/abilities/aioseo.php:233
+#: includes/abilities/core-content.php:2006
+#: includes/abilities/divi.php:670
+#: includes/abilities/divi.php:1504
+#: includes/abilities/rank-math.php:244
+#: includes/abilities/rank-math.php:271
+#: includes/abilities/rank-math.php:294
+#: includes/abilities/yoast.php:292
+#: includes/abilities/yoast.php:319
+#: includes/abilities/yoast.php:343
+msgid "No post with that ID."
+msgstr ""
+
+#: includes/abilities/aioseo.php:187
+#: includes/abilities/aioseo.php:214
+#: includes/abilities/divi.php:675
+#: includes/abilities/rank-math.php:247
+#: includes/abilities/rank-math.php:274
+#: includes/abilities/yoast.php:295
+#: includes/abilities/yoast.php:322
+msgid "You are not allowed to read that post."
+msgstr ""
+
+#: includes/abilities/aioseo.php:236
+#: includes/abilities/rank-math.php:297
+#: includes/abilities/yoast.php:346
+msgid "You do not have permission to edit this post."
+msgstr ""
+
+#. translators: %d: post ID.
+#: includes/abilities/aioseo.php:277
+#, php-format
+msgid "Edited AIOSEO fields on post #%d."
 msgstr ""
 
 #: includes/abilities/blocks.php:35
@@ -120,7 +274,7 @@ msgid "Get design system"
 msgstr ""
 
 #: includes/abilities/blocks.php:170
-msgid "Returns this site's design system in ONE builder-agnostic shape — colors, fonts, font sizes, spacing, layout widths, plus builder-native design variables and module presets when a page builder is active. On a block theme it reads theme.json; on Divi (with Saddle Pro) it reads Divi's Global Data. Read this FIRST when designing a page, and use the returned slugs/ids instead of hardcoded values so everything you build inherits the real brand. Read-only."
+msgid "Returns this site's design system in ONE builder-agnostic shape — colors, fonts, font sizes, spacing, layout widths, plus builder-native design variables and module presets when a page builder is active. On a block theme it reads theme.json; on Divi 5 it reads Divi's Global Data. Read this FIRST when designing a page, and use the returned slugs/ids instead of hardcoded values so everything you build inherits the real brand. Read-only."
 msgstr ""
 
 #: includes/abilities/blocks.php:186
@@ -177,6 +331,7 @@ msgstr ""
 
 #: includes/abilities/blocks.php:283
 #: includes/abilities/blocks.php:402
+#: includes/abilities/divi.php:239
 msgid "Index among the parent's children; omit or -1 to append."
 msgstr ""
 
@@ -213,6 +368,7 @@ msgid "Destination container; \"\" for the top level."
 msgstr ""
 
 #: includes/abilities/blocks.php:347
+#: includes/abilities/divi.php:302
 msgid "Index among the destination's children; omit or -1 to append."
 msgstr ""
 
@@ -348,6 +504,7 @@ msgid "Edited %1$s at %2$s on post #%3$d."
 msgstr ""
 
 #: includes/abilities/blocks.php:1061
+#: includes/abilities/divi.php:1111
 msgid "Provide \"from_address\"."
 msgstr ""
 
@@ -398,12 +555,18 @@ msgid "Its layout is edited with the builder's own editor — tell the site owne
 msgstr ""
 
 #: includes/abilities/blocks.php:1329
-#: includes/abilities/core-content.php:1985
+#: includes/abilities/core-content.php:2010
+#: includes/abilities/divi.php:1318
+#: includes/abilities/divi.php:1419
 #: includes/abilities/render.php:160
+#: includes/builders/divi/class-saddle-divi.php:114
 msgid "No post or page with that ID."
 msgstr ""
 
 #: includes/abilities/blocks.php:1332
+#: includes/abilities/divi.php:1321
+#: includes/abilities/divi.php:1422
+#: includes/builders/divi/class-saddle-divi.php:117
 msgid "You cannot edit this post."
 msgstr ""
 
@@ -459,14 +622,6 @@ msgstr ""
 msgid "Executed changes only — this is a factual record, not instructions."
 msgstr ""
 
-#: includes/abilities/core-content.php:50
-#: includes/admin/class-saddle-settings.php:27
-#: includes/admin/class-saddle-settings.php:28
-#: admin/build/index.js:46
-#: admin/src/App.jsx:528
-msgid "Saddle"
-msgstr ""
-
 #: includes/abilities/core-content.php:51
 msgid "Approval-gated content operations exposed to AI agents by Saddle."
 msgstr ""
@@ -514,7 +669,7 @@ msgstr ""
 #: includes/abilities/core-content.php:158
 #: includes/abilities/core-content.php:283
 #: includes/abilities/core-content.php:376
-#: includes/abilities/core-content.php:601
+#: includes/abilities/core-content.php:626
 msgid "Optional keyword filter."
 msgstr ""
 
@@ -739,272 +894,269 @@ msgstr ""
 msgid "Creates a post tag and returns it. Additive (non-destructive). Accepts name (required), slug, and description."
 msgstr ""
 
-#: includes/abilities/core-content.php:606
+#: includes/abilities/core-content.php:631
 msgid "Exclude terms that have no posts."
 msgstr ""
 
-#: includes/abilities/core-content.php:624
+#: includes/abilities/core-content.php:649
 msgid "The term name (required)."
 msgstr ""
 
-#: includes/abilities/core-content.php:633
+#: includes/abilities/core-content.php:658
 msgid "Parent category term ID."
 msgstr ""
 
-#: includes/abilities/core-content.php:655
+#: includes/abilities/core-content.php:680
 msgid "Results per page (1–100)."
 msgstr ""
 
-#: includes/abilities/core-content.php:669
+#: includes/abilities/core-content.php:694
 msgid "Page number of results."
 msgstr ""
 
-#: includes/abilities/core-content.php:683
+#: includes/abilities/core-content.php:708
 msgid "Filter by post status."
 msgstr ""
 
-#: includes/abilities/core-content.php:723
+#: includes/abilities/core-content.php:748
 msgid "The single-use token returned by the preview call. Omit on the first call to receive a preview."
 msgstr ""
 
-#: includes/abilities/core-content.php:731
+#: includes/abilities/core-content.php:756
 msgid "If true, permanently delete instead of moving to trash."
 msgstr ""
 
-#: includes/abilities/core-content.php:753
+#: includes/abilities/core-content.php:778
 msgid "The title."
 msgstr ""
 
-#: includes/abilities/core-content.php:757
+#: includes/abilities/core-content.php:782
 msgid "The body content (HTML or blocks)."
 msgstr ""
 
-#: includes/abilities/core-content.php:763
+#: includes/abilities/core-content.php:788
 msgid "Publication status. Defaults to draft on create."
 msgstr ""
 
-#: includes/abilities/core-content.php:768
+#: includes/abilities/core-content.php:793
 msgid "Author user ID."
 msgstr ""
 
-#: includes/abilities/core-content.php:772
+#: includes/abilities/core-content.php:797
 msgid "Publish date in site time, \"YYYY-MM-DD HH:MM:SS\"."
 msgstr ""
 
-#: includes/abilities/core-content.php:784
+#: includes/abilities/core-content.php:809
 msgid "Attachment ID to set as the featured image."
 msgstr ""
 
-#: includes/abilities/core-content.php:789
+#: includes/abilities/core-content.php:814
 msgid "Custom fields (post meta) as key/value pairs. Values may be strings, numbers, booleans, or arrays; pass null as a value to delete that key. Keys starting with an underscore are protected — writable only when the owning plugin registered them as editable. Denied keys are skipped and reported back in \"meta_denied\"; the rest of the request still applies."
 msgstr ""
 
-#: includes/abilities/core-content.php:797
+#: includes/abilities/core-content.php:822
 msgid "Category term IDs to assign."
 msgstr ""
 
-#: includes/abilities/core-content.php:802
+#: includes/abilities/core-content.php:827
 msgid "Tag names to assign (created if missing)."
 msgstr ""
 
-#: includes/abilities/core-content.php:807
+#: includes/abilities/core-content.php:832
 msgid "Page template filename, e.g. \"template-full.php\"."
 msgstr ""
 
-#: includes/abilities/core-content.php:811
+#: includes/abilities/core-content.php:836
 msgid "Parent page ID."
 msgstr ""
 
-#: includes/abilities/core-content.php:815
+#: includes/abilities/core-content.php:840
 msgid "Ordering value among sibling pages."
 msgstr ""
 
-#: includes/abilities/core-content.php:828
+#: includes/abilities/core-content.php:853
 msgid "The ID to update."
 msgstr ""
 
-#: includes/abilities/core-content.php:832
+#: includes/abilities/core-content.php:857
 msgid "Single-use token returned by a publishing preview. Repeat the same arguments with this token to confirm."
 msgstr ""
 
 #. translators: %s: field name.
-#: includes/abilities/core-content.php:879
+#: includes/abilities/core-content.php:904
 #, php-format
 msgid "A numeric \"%s\" is required."
 msgstr ""
 
 #. translators: %s: field name.
-#: includes/abilities/core-content.php:891
+#: includes/abilities/core-content.php:916
 #, php-format
 msgid "The \"%s\" must be a positive integer."
 msgstr ""
 
-#: includes/abilities/core-content.php:909
+#: includes/abilities/core-content.php:934
 msgid "You do not have permission to do that with this item."
 msgstr ""
 
-#: includes/abilities/core-content.php:931
+#: includes/abilities/core-content.php:956
 msgid "You do not have permission to edit this item."
 msgstr ""
 
-#: includes/abilities/core-content.php:937
+#: includes/abilities/core-content.php:962
 msgid "You do not have permission to publish content."
 msgstr ""
 
-#: includes/abilities/core-content.php:944
+#: includes/abilities/core-content.php:969
 msgid "You do not have permission to assign content to another user."
 msgstr ""
 
 #. translators: 1: type, 2: id, 3: title.
-#: includes/abilities/core-content.php:1016
+#: includes/abilities/core-content.php:1041
 #, php-format
 msgid "Approve publication of %1$s #%2$d \"%3$s\", including any requested schedule and edits."
 msgstr ""
 
-#: includes/abilities/core-content.php:1143
+#: includes/abilities/core-content.php:1168
 msgid "A non-empty \"query\" is required."
 msgstr ""
 
-#: includes/abilities/core-content.php:1247
+#: includes/abilities/core-content.php:1272
 msgid "You do not have permission to view this item's revision history."
 msgstr ""
 
-#: includes/abilities/core-content.php:1431
+#: includes/abilities/core-content.php:1456
 msgid "The \"source_url\" is not a valid, fetchable URL, or it resolves to a disallowed internal address. If the host is external but cannot be resolved on this server, the site owner can allow it via the \"saddle_source_url_is_safe\" filter."
 msgstr ""
 
 #. translators: %s: maximum size, e.g. "64 MB".
-#: includes/abilities/core-content.php:1452
+#: includes/abilities/core-content.php:1477
 #, php-format
 msgid "The file exceeds the maximum allowed size (%s)."
 msgstr ""
 
-#: includes/abilities/core-content.php:1492
+#: includes/abilities/core-content.php:1517
 msgid "A \"source_url\" is required."
 msgstr ""
 
-#: includes/abilities/core-content.php:1498
+#: includes/abilities/core-content.php:1523
 #: includes/abilities/unsplash.php:230
 msgid "You do not have permission to attach media to that item."
 msgstr ""
 
 #. translators: %d: attachment id.
-#: includes/abilities/core-content.php:1534
+#: includes/abilities/core-content.php:1559
 #, php-format
 msgid "Uploaded media #%d"
 msgstr ""
 
-#: includes/abilities/core-content.php:1556
-#: includes/abilities/core-content.php:1609
-#: includes/abilities/core-content.php:1979
+#: includes/abilities/core-content.php:1581
+#: includes/abilities/core-content.php:1634
+#: includes/abilities/core-content.php:2004
 msgid "No media item with that ID."
 msgstr ""
 
-#: includes/abilities/core-content.php:1559
+#: includes/abilities/core-content.php:1584
 msgid "You do not have permission to edit this media item."
 msgstr ""
 
 #. translators: %d: attachment id.
-#: includes/abilities/core-content.php:1587
+#: includes/abilities/core-content.php:1612
 #, php-format
 msgid "Updated media #%d"
 msgstr ""
 
-#: includes/abilities/core-content.php:1612
+#: includes/abilities/core-content.php:1637
 msgid "You do not have permission to delete this media item."
 msgstr ""
 
 #. translators: 1: attachment id, 2: title.
-#: includes/abilities/core-content.php:1621
+#: includes/abilities/core-content.php:1646
 #, php-format
 msgid "Permanently delete media #%1$d \"%2$s\" and its files. Media has no trash — this cannot be undone."
 msgstr ""
 
-#: includes/abilities/core-content.php:1637
+#: includes/abilities/core-content.php:1662
 msgid "WordPress could not delete the media item."
 msgstr ""
 
-#: includes/abilities/core-content.php:1751
+#: includes/abilities/core-content.php:1776
 msgid "A \"name\" is required."
 msgstr ""
 
 #. translators: 1: term type, 2: name.
-#: includes/abilities/core-content.php:1777
+#: includes/abilities/core-content.php:1802
 #, php-format
 msgid "Created %1$s \"%2$s\""
 msgstr ""
 
 #. translators: 1: post type, 2: id, 3: title.
-#: includes/abilities/core-content.php:1902
+#: includes/abilities/core-content.php:1927
 #, php-format
 msgid "Created %1$s #%2$d \"%3$s\""
 msgstr ""
 
-#: includes/abilities/core-content.php:1914
+#: includes/abilities/core-content.php:1939
 msgid "This site is set to drafts-only: the requested publication or schedule was not applied, and the item was saved as a draft instead."
 msgstr ""
 
-#: includes/abilities/core-content.php:1947
+#: includes/abilities/core-content.php:1972
+#: includes/abilities/divi.php:1507
 msgid "You cannot read this post."
 msgstr ""
 
-#: includes/abilities/core-content.php:1959
+#: includes/abilities/core-content.php:1984
 msgid "This item is password-protected. Reading it needs edit access to it, which the WordPress account this app is connected as does not have. Do not retry; tell the user to reconnect Saddle as an account that can edit this item."
 msgstr ""
 
-#: includes/abilities/core-content.php:1981
-msgid "No post with that ID."
-msgstr ""
-
-#: includes/abilities/core-content.php:1983
+#: includes/abilities/core-content.php:2008
 msgid "No page with that ID."
 msgstr ""
 
 #. translators: 1: post ID, 2: builder name.
-#: includes/abilities/core-content.php:2047
+#: includes/abilities/core-content.php:2072
 #, php-format
 msgid "Post #%1$d is built with %2$s — overwriting its content field would destroy the layout, so Saddle refuses. You can still edit its title, status, excerpt, taxonomy, and meta. "
 msgstr ""
 
-#: includes/abilities/core-content.php:2051
+#: includes/abilities/core-content.php:2076
 msgid "To change the layout itself, use the saddle/divi-* tools (divi-get-page, divi-edit-module, divi-set-page)."
 msgstr ""
 
-#: includes/abilities/core-content.php:2052
+#: includes/abilities/core-content.php:2077
 msgid "Layout changes need the builder’s own editor — tell the site owner instead of forcing the edit."
 msgstr ""
 
 #. translators: %s: post type.
-#: includes/abilities/core-content.php:2075
-#: includes/abilities/core-content.php:2180
+#: includes/abilities/core-content.php:2100
+#: includes/abilities/core-content.php:2205
 #, php-format
 msgid "No %s with that ID."
 msgstr ""
 
 #. translators: 1: post type, 2: id, 3: title.
-#: includes/abilities/core-content.php:2146
+#: includes/abilities/core-content.php:2171
 #, php-format
 msgid "Updated %1$s #%2$d \"%3$s\""
 msgstr ""
 
 #. translators: 1: type, 2: id, 3: title.
-#: includes/abilities/core-content.php:2197
+#: includes/abilities/core-content.php:2222
 #, php-format
 msgid "Permanently delete %1$s #%2$d \"%3$s\". This cannot be undone."
 msgstr ""
 
 #. translators: 1: type, 2: id, 3: title.
-#: includes/abilities/core-content.php:2204
+#: includes/abilities/core-content.php:2229
 #, php-format
 msgid "Move %1$s #%2$d \"%3$s\" to the trash. It can be restored from Trash."
 msgstr ""
 
-#: includes/abilities/core-content.php:2230
+#: includes/abilities/core-content.php:2255
 msgid "WordPress could not delete the item."
 msgstr ""
 
 #. translators: %d: number of items omitted from this page.
-#: includes/abilities/core-content.php:2454
+#: includes/abilities/core-content.php:2479
 #, php-format
 msgid "%d item on this page is not visible to the WordPress account this app is connected as, and was left out. \"total\" still counts it, so this page is shorter than the page size. This is not an error and retrying will not change it."
 msgid_plural "%d items on this page are not visible to the WordPress account this app is connected as, and were left out. \"total\" still counts them, so this page is shorter than the page size. This is not an error and retrying will not change it."
@@ -1012,9 +1164,775 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: requested post status, e.g. "draft".
-#: includes/abilities/core-content.php:2653
+#: includes/abilities/core-content.php:2678
 #, php-format
 msgid "The WordPress account this app is connected as cannot see \"%s\" content on this site — only published items are available to it. That is the account's role, not a Saddle setting. Do not retry this status; tell the user to reconnect Saddle as an account that can edit this content."
+msgstr ""
+
+#: includes/abilities/divi-bundle.php:21
+msgid "Get the Divi context bundle"
+msgstr ""
+
+#: includes/abilities/divi-bundle.php:22
+msgid "Returns this site's whole Divi working memory in ONE call: the full module catalog (with installed module packs), the design system (global colors, variables, presets, fonts), the site's brand basics, and the authoring conventions. Call this ONCE at the start of a session instead of divi-list-modules + divi-list-global-colors + divi-list-variables + divi-get-global-fonts separately. Cached and cheap; the \"version\" changes when anything in it does. Read-only."
+msgstr ""
+
+#: includes/abilities/divi-bundle.php:48
+#: includes/builders/divi/class-saddle-divi.php:110
+msgid "Divi 5 is not active on this site."
+msgstr ""
+
+#: includes/abilities/divi-design.php:28
+msgid "List Divi global colors"
+msgstr ""
+
+#: includes/abilities/divi-design.php:29
+msgid "Lists the site's Divi global color palette — each entry's id (e.g. \"gcid-…\"), color value, and status. Read-only. Reference a global color in a module by its CSS variable, var(--<id>). Prefer these over hardcoded hex values so a palette change updates every page."
+msgstr ""
+
+#: includes/abilities/divi-design.php:45
+msgid "Get Divi global fonts"
+msgstr ""
+
+#: includes/abilities/divi-design.php:46
+msgid "Returns the site's Divi global heading and body font families. Read-only."
+msgstr ""
+
+#: includes/abilities/divi-design.php:62
+msgid "List Divi design variables"
+msgstr ""
+
+#: includes/abilities/divi-design.php:63
+msgid "Lists the site's Divi design variables (reusable tokens) — each id (\"gvid-…\"), type (numbers, strings, colors, images, links, gradients), label, and value. Read-only. Reference one in a module as var(--<id>) so a value change updates everywhere."
+msgstr ""
+
+#: includes/abilities/divi-design.php:79
+msgid "List Divi global presets"
+msgstr ""
+
+#: includes/abilities/divi-design.php:80
+msgid "Lists the site's Divi module style presets — for each: the module type it applies to, the preset id, name, and whether it is that module's default. Read-only. Apply one to a module with divi-apply-global-preset."
+msgstr ""
+
+#: includes/abilities/divi-design.php:88
+msgid "Optional: only presets for this module type."
+msgstr ""
+
+#: includes/abilities/divi-design.php:101
+msgid "Get Divi global preset"
+msgstr ""
+
+#: includes/abilities/divi-design.php:102
+msgid "Returns one preset's full definition (name and style attrs) for a module type and preset id. Read-only."
+msgstr ""
+
+#: includes/abilities/divi-design.php:269
+msgid "No preset with that module + id. Use divi-list-global-presets."
+msgstr ""
+
+#: includes/abilities/divi-design.php:325
+msgid "The Divi 5 design-system API is not available (Divi 5 is not active). Use divi-check-setup."
+msgstr ""
+
+#: includes/abilities/divi-templates.php:25
+msgid "List Divi library items"
+msgstr ""
+
+#: includes/abilities/divi-templates.php:26
+msgid "Lists saved Divi library items (layouts, sections, rows, modules) with id, title, type, and whether the item is global (live-linked). Read-only."
+msgstr ""
+
+#: includes/abilities/divi-templates.php:42
+msgid "List Divi Theme Builder templates"
+msgstr ""
+
+#: includes/abilities/divi-templates.php:43
+msgid "Lists the site's Theme Builder templates — id, title, whether it is the default, its header/body/footer layout post ids, and its assignment conditions (use_on/exclude_from). Read-only."
+msgstr ""
+
+#: includes/abilities/divi-templates.php:59
+msgid "List Theme Builder conditions"
+msgstr ""
+
+#: includes/abilities/divi-templates.php:60
+msgid "Reference of the assignment conditions a Theme Builder template can be applied to / excluded from (e.g. singular, page, post, category:ID). Read-only."
+msgstr ""
+
+#: includes/abilities/divi-templates.php:157
+msgid "These are the condition ids a Theme Builder template's use_on / exclude_from lists accept."
+msgstr ""
+
+#: includes/abilities/divi-templates.php:169
+msgid "This needs Divi 5 active (its Library / Theme Builder API is not available). Use divi-check-setup."
+msgstr ""
+
+#: includes/abilities/divi.php:27
+msgid "Check Divi setup"
+msgstr ""
+
+#: includes/abilities/divi.php:28
+msgid "Reports whether Divi 5 is active on this site (and its version), and — given a post_id — whether that post is built with Divi 5, legacy Divi 4, or something else, plus whether its module tree is structurally valid. Read-only. Call this before editing any page on a Divi site: Divi 4 pages and non-Divi pages must not be edited with divi-* tools."
+msgstr ""
+
+#: includes/abilities/divi.php:36
+msgid "Optional post or page ID to inspect."
+msgstr ""
+
+#: includes/abilities/divi.php:49
+msgid "List Divi modules"
+msgstr ""
+
+#: includes/abilities/divi.php:50
+msgid "Returns the catalog of Divi 5 module types available for building pages, each with a one-line purpose and whether it is a structural container (section/row/column) or a content module. Read-only. Use real modules from this catalog — never approximate a layout by dumping HTML into a code module."
+msgstr ""
+
+#: includes/abilities/divi.php:66
+msgid "Get Divi page tree"
+msgstr ""
+
+#: includes/abilities/divi.php:67
+msgid "Returns a Divi 5 page's module tree as a flat, addressable node list: each node has an address (dot-separated child indexes like \"0.1.0\"), its module type, child count, and a text excerpt. The default \"compact\" mode omits attributes (a \"styled\" flag says whether a node has any) — pass an \"address\" to get one subtree WITH full attributes, or mode=\"full\" for everything. The response carries a \"version\": pass it back on your next read and an unchanged page returns one line instead of the tree. Addresses are positional — re-read after any edit before addressing further nodes (writes also return their changed nodes, which usually makes that re-read unnecessary). Read-only. Fails with an explanation on Divi 4 or non-Divi posts."
+msgstr ""
+
+#: includes/abilities/divi.php:75
+msgid "The post or page ID whose Divi tree to read."
+msgstr ""
+
+#: includes/abilities/divi.php:81
+msgid "compact = skeleton without attrs (default); full = every node with attrs."
+msgstr ""
+
+#: includes/abilities/divi.php:85
+msgid "Focus one subtree — its nodes come back with full attrs regardless of mode."
+msgstr ""
+
+#: includes/abilities/divi.php:90
+msgid "Limit levels: 1 = roots only, 2 = roots + children. 0/omit = all."
+msgstr ""
+
+#: includes/abilities/divi.php:94
+msgid "The version from a previous read — an unchanged page short-circuits."
+msgstr ""
+
+#: includes/abilities/divi.php:107
+msgid "Build Divi page"
+msgstr ""
+
+#: includes/abilities/divi.php:108
+msgid "Replaces a page's entire Divi 5 layout with a new module tree — the bulk-build tool for \"create this page\". Structure: sections contain rows, rows contain columns, columns contain content modules. Each node is {\"type\":\"divi/…\", \"fields\":{…}, \"attrs\":{…}, \"children\":[…]}. Use \"fields\" for content — the value goes into that attribute's content slot: strings for text-like attributes (fields.title on divi/heading, fields.content on divi/text), objects for composite ones (fields.button {\"text\",\"linkUrl\"} on divi/button; fields.image {\"src\",\"alt\"} on divi/image). Use \"attrs\" only for advanced styling, with full canonical Divi attribute paths and {\"desktop\":{\"value\":…}} breakpoint envelopes; omit it to inherit the site's design. The tree is structurally validated and rejected with per-node errors if invalid — nothing partial is saved. If the response carries \"warnings\", those fields/style paths will silently not render (unknown attribute, content field, or decoration group) — fix and re-edit. The previous layout is kept as a WordPress revision and can be restored. Only works on Divi 5 pages or empty posts/pages; refuses Divi 4 and non-empty non-Divi content."
+msgstr ""
+
+#: includes/abilities/divi.php:116
+msgid "The post or page whose layout to build."
+msgstr ""
+
+#: includes/abilities/divi.php:120
+msgid "Top-level sections (each {\"type\",\"fields\",\"attrs\",\"children\"}). Saddle wraps them in Divi's root container automatically."
+msgstr ""
+
+#: includes/abilities/divi.php:137
+msgid "Set Divi page settings"
+msgstr ""
+
+#: includes/abilities/divi.php:138
+msgid "Sets a Divi page's own layout settings: full width vs sidebar, whether the post title shows, and whether the navigation is hidden. These are page settings, not modules — building a full-width landing page with no title needs this as well as divi-set-page, and without it a page you built module-by-module still renders with the theme's default title and sidebar. Returns the settings as saved, so read them back to confirm they stuck. Omit a field to leave it unchanged. Refuses Divi 4 and non-Divi posts."
+msgstr ""
+
+#: includes/abilities/divi.php:146
+msgid "The post or page to configure."
+msgstr ""
+
+#: includes/abilities/divi.php:151
+msgid "Page width and sidebar. \"full_width\" is what a landing page needs; \"no_sidebar\" keeps the content column but drops the sidebar."
+msgstr ""
+
+#: includes/abilities/divi.php:155
+msgid "Whether WordPress renders the post title above the layout. A landing page whose hero carries its own headline wants this false."
+msgstr ""
+
+#: includes/abilities/divi.php:159
+msgid "Whether to hide the theme navigation on this page. Rarely wanted; leave unset unless asked."
+msgstr ""
+
+#: includes/abilities/divi.php:172
+msgid "Get Divi module schema"
+msgstr ""
+
+#: includes/abilities/divi.php:173
+msgid "Returns one Divi module type's distilled schema: its content attributes with the exact \"fields\" syntax to write them (string vs object with named fields), and whether it is a container and which children it accepts. That is everything needed to COMPOSE the module; pass verbose=true to also list each element's design (decoration) option groups, or use divi-get-style-schema for styling paths. Covers core and third-party modules discovered on this site."
+msgstr ""
+
+#: includes/abilities/divi.php:181
+msgid "The module type, e.g. \"divi/button\"."
+msgstr ""
+
+#: includes/abilities/divi.php:186
+msgid "Include each element's decoration/advanced option groups."
+msgstr ""
+
+#: includes/abilities/divi.php:199
+msgid "Get Divi style schema"
+msgstr ""
+
+#: includes/abilities/divi.php:200
+msgid "Returns a module's STYLING vocabulary — the universal decoration groups (background, spacing, border, sizing, fonts, filters, transform, …) and advanced options it supports, each with the exact attribute path to set it. This is separate from divi-get-module-schema (which covers content); read it before styling a module. Call without \"group\" for the list, then with a \"group\" for that group's settable fields. Style paths are per-module — never reuse one module's path on another."
+msgstr ""
+
+#: includes/abilities/divi.php:208
+msgid "The module type, e.g. \"divi/text\"."
+msgstr ""
+
+#: includes/abilities/divi.php:212
+msgid "Optional decoration group to expand, e.g. \"spacing\"."
+msgstr ""
+
+#: includes/abilities/divi.php:225
+msgid "Add Divi module"
+msgstr ""
+
+#: includes/abilities/divi.php:226
+msgid "Inserts one module (with optional children) into a Divi 5 page at an addressed position. parent_address is the container node from divi-get-page (\"\" for the page root); position is the index among its children (omit to append). The node uses the same {\"type\",\"fields\",\"attrs\",\"children\"} format as divi-set-page. Structure is validated — an insertion that would break section>row>column rules is rejected and nothing is saved. Re-read the page afterwards: addresses shift."
+msgstr ""
+
+#: includes/abilities/divi.php:235
+msgid "Container address from divi-get-page; \"\" for the page root."
+msgstr ""
+
+#: includes/abilities/divi.php:256
+msgid "Edit Divi module"
+msgstr ""
+
+#: includes/abilities/divi.php:257
+msgid "Patches one addressed module on a Divi 5 page. \"fields\" replaces content values (same syntax as divi-set-page); \"attrs\" deep-merges raw canonical attributes over the existing ones (styling). Children are untouched. The result is validated before saving, and the previous state is kept as a revision. Response \"warnings\" flag fields or style paths this module will silently ignore."
+msgstr ""
+
+#: includes/abilities/divi.php:266
+msgid "Node address from divi-get-page, e.g. \"0.0.0.1\"."
+msgstr ""
+
+#: includes/abilities/divi.php:287
+msgid "Move Divi module"
+msgstr ""
+
+#: includes/abilities/divi.php:288
+msgid "Moves an addressed module (with its subtree) to a new parent and position on the same Divi 5 page. Both addresses come from the same divi-get-page read. Moving a node into its own subtree is refused; the result is structurally validated before saving. Re-read the page afterwards: addresses shift."
+msgstr ""
+
+#: includes/abilities/divi.php:298
+msgid "Destination container; \"\" for the page root."
+msgstr ""
+
+#: includes/abilities/divi.php:315
+msgid "Remove Divi module"
+msgstr ""
+
+#: includes/abilities/divi.php:316
+msgid "Removes an addressed module from a Divi 5 page. Removing a leaf module happens immediately (recoverable from revisions). Removing a container WITH children previews first: the call returns a summary and a confirm_token — repeat the call with that token to execute. Re-read the page afterwards: addresses shift."
+msgstr ""
+
+#: includes/abilities/divi.php:326
+msgid "Token from the preview step, required to remove a module that has children."
+msgstr ""
+
+#: includes/abilities/divi.php:345
+msgid "List Divi loop query types"
+msgstr ""
+
+#: includes/abilities/divi.php:346
+msgid "Reference for Divi 5 query loops: the valid query_type values (post_types, post_taxonomies, terms, users, user_roles, menus), what sub_types means for each, and the ordering options. Read-only. Call before enable-loop."
+msgstr ""
+
+#: includes/abilities/divi.php:362
+msgid "Enable Divi loop"
+msgstr ""
+
+#: includes/abilities/divi.php:363
+msgid "Turns a module at an address into a query loop that repeats once per result (e.g. latest posts). Replaces any existing loop config on the module. Inside the loop, bind per-item values with apply-dynamic-content using loop_* sources. Reversible with disable-loop."
+msgstr ""
+
+#: includes/abilities/divi.php:371
+msgid "The Divi page."
+msgstr ""
+
+#: includes/abilities/divi.php:375
+msgid "Module address from divi-get-page."
+msgstr ""
+
+#: includes/abilities/divi.php:381
+msgid "What the loop iterates over."
+msgstr ""
+
+#: includes/abilities/divi.php:386
+msgid "Scope within the query type: post types (\"post\", \"page\"), taxonomies, or roles."
+msgstr ""
+
+#: includes/abilities/divi.php:390
+msgid "Sort field, e.g. \"date\", \"title\"."
+msgstr ""
+
+#: includes/abilities/divi.php:419
+msgid "Edit Divi loop"
+msgstr ""
+
+#: includes/abilities/divi.php:420
+msgid "Changes some of a live loop's query settings (per_page, order, sub_types, …) without replacing the whole config. Only the parameters you pass change. Fails if the module has no loop — use enable-loop first."
+msgstr ""
+
+#: includes/abilities/divi.php:461
+msgid "Disable Divi loop"
+msgstr ""
+
+#: includes/abilities/divi.php:462
+msgid "Switches a module's loop off while keeping its query config, so enable-loop can restore it later. The module renders once again."
+msgstr ""
+
+#: includes/abilities/divi.php:487
+msgid "List Divi dynamic sources"
+msgstr ""
+
+#: includes/abilities/divi.php:488
+msgid "Reference of dynamic-content sources a module field can bind to: current-post values (post_title, post_excerpt, post_featured_image, …), site values (home_url, current_date), and per-item loop_* sources for loop-enabled modules. Read-only. Call before apply-dynamic-content."
+msgstr ""
+
+#: includes/abilities/divi.php:504
+msgid "Apply Divi dynamic content"
+msgstr ""
+
+#: includes/abilities/divi.php:505
+msgid "Binds a module field to a dynamic source (e.g. a heading inside a loop to loop_post_title), replacing the field's static value with a live binding. Provide the field's attribute path from divi-get-module-schema, e.g. \"title.innerContent\". Reversible with clear-dynamic-content."
+msgstr ""
+
+#: includes/abilities/divi.php:515
+msgid "Attribute path of the field, e.g. \"title.innerContent\"."
+msgstr ""
+
+#: includes/abilities/divi.php:519
+msgid "Dynamic source name from list-dynamic-sources."
+msgstr ""
+
+#: includes/abilities/divi.php:523
+msgid "Optional source settings (e.g. before/after text, date_format, meta key)."
+msgstr ""
+
+#: includes/abilities/divi.php:540
+msgid "Clear Divi dynamic content"
+msgstr ""
+
+#: includes/abilities/divi.php:541
+msgid "Removes a dynamic binding from a module field, leaving any literal text around it, or replaces the field with an explicit static \"value\" you provide."
+msgstr ""
+
+#: includes/abilities/divi.php:552
+msgid "Optional static replacement value."
+msgstr ""
+
+#: includes/abilities/divi.php:575
+msgid "Apply Divi global preset"
+msgstr ""
+
+#: includes/abilities/divi.php:576
+msgid "Applies an existing global style preset to the module at an address, so it inherits that preset's styling. Provide the preset_id from divi-list-global-presets (its module type must match the target module). Prefer presets over repeating the same edit-module styling."
+msgstr ""
+
+#: includes/abilities/divi.php:586
+msgid "Preset id from divi-list-global-presets."
+msgstr ""
+
+#: includes/abilities/divi.php:599
+msgid "List Divi display condition types"
+msgstr ""
+
+#: includes/abilities/divi.php:600
+msgid "Reference of the display-condition types a module can use to show/hide itself (logged-in status, post type, category page, date, author, and more), with the displayRule values each accepts. Read-only. Call before set-display-conditions."
+msgstr ""
+
+#: includes/abilities/divi.php:616
+msgid "Set Divi display conditions"
+msgstr ""
+
+#: includes/abilities/divi.php:617
+msgid "Sets the display (show/hide) conditions on the module at an address, replacing any existing set. Provide \"conditions\" as a list of {conditionName, displayRule, settings?, operator?}. An empty list clears all conditions (module always shows). Call divi-list-condition-types for valid names."
+msgstr ""
+
+#: includes/abilities/divi.php:627
+msgid "List of {conditionName, displayRule, settings?, operator?}. Empty clears all."
+msgstr ""
+
+#: includes/abilities/divi.php:662
+msgid "Divi 5 is not the active theme. The divi-* tools are unavailable; use the regular content tools."
+msgstr ""
+
+#: includes/abilities/divi.php:692
+msgid "This post uses legacy Divi 4 shortcodes. Saddle edits Divi 5 pages only — do not modify this post's content."
+msgstr ""
+
+#: includes/abilities/divi.php:713
+msgid "Top-level page band. Pages are a stack of sections."
+msgstr ""
+
+#: includes/abilities/divi.php:718
+msgid "Horizontal layout inside a section; holds columns."
+msgstr ""
+
+#: includes/abilities/divi.php:723
+msgid "Vertical slot inside a row; holds content modules."
+msgstr ""
+
+#: includes/abilities/divi.php:728
+msgid "A heading (h1–h6)."
+msgstr ""
+
+#: includes/abilities/divi.php:733
+msgid "Rich text content."
+msgstr ""
+
+#: includes/abilities/divi.php:738
+msgid "A single image."
+msgstr ""
+
+#: includes/abilities/divi.php:743
+msgid "A call-to-action button."
+msgstr ""
+
+#: includes/abilities/divi.php:748
+msgid "Icon/image + title + short text, the classic feature card."
+msgstr ""
+
+#: includes/abilities/divi.php:753
+msgid "Call-to-action band with title, text, and button."
+msgstr ""
+
+#: includes/abilities/divi.php:758
+msgid "Horizontal separator/spacer."
+msgstr ""
+
+#: includes/abilities/divi.php:763
+msgid "Quote with author attribution."
+msgstr ""
+
+#: includes/abilities/divi.php:768
+msgid "Collapsible content panel."
+msgstr ""
+
+#: includes/abilities/divi.php:773
+msgid "Stack of toggles."
+msgstr ""
+
+#: includes/abilities/divi.php:778
+msgid "Image gallery grid or slider."
+msgstr ""
+
+#: includes/abilities/divi.php:783
+msgid "Embedded video."
+msgstr ""
+
+#: includes/abilities/divi.php:814
+msgid "Build pages from these real module types (divi-get-module-schema explains any one of them). Never fake a layout by dumping HTML into a single module — pages must stay editable in the Visual Builder."
+msgstr ""
+
+#: includes/abilities/divi.php:918
+msgid "Provide a module \"type\", e.g. \"divi/button\"."
+msgstr ""
+
+#: includes/abilities/divi.php:945
+msgid "Provide a module \"type\", e.g. \"divi/text\"."
+msgstr ""
+
+#: includes/abilities/divi.php:965
+msgid "Provide the module to add as \"node\"."
+msgstr ""
+
+#. translators: 1: module type, 2: post ID, 3: address.
+#: includes/abilities/divi.php:999
+#, php-format
+msgid "Added %1$s to Divi page #%2$d at %3$s."
+msgstr ""
+
+#: includes/abilities/divi.php:1012
+msgid "The added node is in \"changed\" — no re-read needed for it. Other addresses shift after edits; re-read before addressing other nodes."
+msgstr ""
+
+#. translators: %s: node address.
+#: includes/abilities/divi.php:1036
+#: includes/abilities/divi.php:1120
+#: includes/abilities/divi.php:1218
+#: includes/abilities/divi.php:2017
+#: includes/builders/divi/class-saddle-divi-tree.php:47
+#, php-format
+msgid "No module at address %s."
+msgstr ""
+
+#: includes/abilities/divi.php:1042
+msgid "Provide \"fields\" and/or \"attrs\" to change."
+msgstr ""
+
+#. translators: 1: module type, 2: address, 3: post ID.
+#: includes/abilities/divi.php:1074
+#, php-format
+msgid "Edited %1$s at %2$s on Divi page #%3$d."
+msgstr ""
+
+#: includes/abilities/divi.php:1114
+msgid "A module cannot be moved into its own subtree."
+msgstr ""
+
+#. translators: 1: module type, 2: old address, 3: new address, 4: post ID.
+#: includes/abilities/divi.php:1153
+#, php-format
+msgid "Moved %1$s from %2$s to %3$s on Divi page #%4$d."
+msgstr ""
+
+#: includes/abilities/divi.php:1166
+msgid "The moved node is in \"changed\" at its new address. Other addresses shift after edits; re-read before addressing other nodes."
+msgstr ""
+
+#: includes/abilities/divi.php:1235
+msgid "Recoverable from the post’s revisions. Addresses shift — re-read the page."
+msgstr ""
+
+#. translators: 1: module type, 2: address, 3: post ID.
+#: includes/abilities/divi.php:1252
+#, php-format
+msgid "Removed %1$s at %2$s from Divi page #%3$d."
+msgstr ""
+
+#. translators: 1: module type, 2: child count, 3: address, 4: post ID.
+#: includes/abilities/divi.php:1274
+#, php-format
+msgid "Remove %1$s and the %2$d modules inside it at %3$s on Divi page #%4$d. Recoverable from revisions."
+msgstr ""
+
+#: includes/abilities/divi.php:1313
+msgid "Divi 5 is not active on this site, so its page settings would do nothing."
+msgstr ""
+
+#: includes/abilities/divi.php:1328
+msgid "This post is built with legacy Divi 4 shortcodes, which Saddle does not edit."
+msgstr ""
+
+#: includes/abilities/divi.php:1331
+msgid "This post is not a Divi page, so Divi page settings would not apply to it."
+msgstr ""
+
+#. translators: %s: comma-separated list of accepted values.
+#: includes/abilities/divi.php:1351
+#, php-format
+msgid "Unknown layout. Use one of: %s."
+msgstr ""
+
+#: includes/abilities/divi.php:1414
+msgid "Divi 5 is not active on this site, so a Divi layout would not render. Use the regular content tools instead."
+msgstr ""
+
+#: includes/abilities/divi.php:1429
+#: includes/abilities/divi.php:1515
+msgid "This post is built with legacy Divi 4 shortcodes, which Saddle does not edit. Leave its content untouched."
+msgstr ""
+
+#: includes/abilities/divi.php:1432
+msgid "This post already has non-Divi content. Building a Divi layout would overwrite it — edit it with update-post/update-page instead, or use an empty page."
+msgstr ""
+
+#: includes/abilities/divi.php:1437
+msgid "Provide at least one section node."
+msgstr ""
+
+#. translators: 1: post ID, 2: module count.
+#: includes/abilities/divi.php:1455
+#, php-format
+msgid "Built Divi layout for post #%1$d (%2$d modules). Previous layout kept as a revision."
+msgstr ""
+
+#: includes/abilities/divi.php:1480
+msgid "The page is NOT published (drafts 404 for visitors) — publish it with update-page status=publish when ready."
+msgstr ""
+
+#: includes/abilities/divi.php:1482
+msgid "The previous layout is recoverable from the post's revisions."
+msgstr ""
+
+#: includes/abilities/divi.php:1516
+msgid "This post is not built with Divi. Use the regular content tools instead."
+msgstr ""
+
+#: includes/abilities/divi.php:1575
+msgid "Posts of the post types named in sub_types (e.g. [\"post\"], [\"page\", \"product\"])."
+msgstr ""
+
+#: includes/abilities/divi.php:1579
+msgid "Terms attached to the current post, from the taxonomies in sub_types."
+msgstr ""
+
+#: includes/abilities/divi.php:1583
+msgid "All terms of the taxonomies in sub_types (e.g. [\"category\"])."
+msgstr ""
+
+#: includes/abilities/divi.php:1587
+msgid "Site users."
+msgstr ""
+
+#: includes/abilities/divi.php:1591
+msgid "Users holding the roles in sub_types (e.g. [\"author\"])."
+msgstr ""
+
+#: includes/abilities/divi.php:1595
+msgid "Items of the navigation menus in sub_types."
+msgstr ""
+
+#: includes/abilities/divi.php:1599
+msgid "Inside a loop-enabled module, bind per-item values with apply-dynamic-content and loop_* sources (see divi-list-dynamic-sources)."
+msgstr ""
+
+#: includes/abilities/divi.php:1639
+msgid "This module has no loop to edit. Use divi-enable-loop first."
+msgstr ""
+
+#: includes/abilities/divi.php:1674
+msgid "Unknown loop query_type. Call divi-list-loop-query-types for the valid values."
+msgstr ""
+
+#. translators: 1: address, 2: post ID.
+#: includes/abilities/divi.php:1688
+#, php-format
+msgid "Enabled a loop on the module at %1$s on Divi page #%2$d."
+msgstr ""
+
+#. translators: 1: address, 2: post ID.
+#: includes/abilities/divi.php:1688
+#, php-format
+msgid "Edited the loop on the module at %1$s on Divi page #%2$d."
+msgstr ""
+
+#: includes/abilities/divi.php:1711
+msgid "This module has no loop to disable."
+msgstr ""
+
+#. translators: 1: address, 2: post ID.
+#: includes/abilities/divi.php:1725
+#, php-format
+msgid "Disabled the loop on the module at %1$s on Divi page #%2$d."
+msgstr ""
+
+#: includes/abilities/divi.php:1758
+msgid "Inside a loop-enabled module, the post_* sources resolve per loop item; menu loops use the loop_menu_* sources."
+msgstr ""
+
+#: includes/abilities/divi.php:1761
+msgid "Bind with apply-dynamic-content: field = the attribute path from divi-get-module-schema (e.g. \"title.innerContent\"), source = a name above. post_meta_key needs settings.key."
+msgstr ""
+
+#. translators: %s: settings context, e.g. "dynamic content".
+#: includes/abilities/divi.php:1787
+#, php-format
+msgid "Too many %s settings (max 30 keys)."
+msgstr ""
+
+#. translators: %s: settings context.
+#: includes/abilities/divi.php:1801
+#, php-format
+msgid "Invalid %s settings key: keys must be non-empty strings under 64 characters."
+msgstr ""
+
+#. translators: 1: settings context, 2: key name.
+#: includes/abilities/divi.php:1813
+#, php-format
+msgid "The %1$s setting \"%2$s\" must be a scalar value, not a nested structure."
+msgstr ""
+
+#. translators: 1: settings context, 2: key name.
+#: includes/abilities/divi.php:1827
+#, php-format
+msgid "The %1$s setting \"%2$s\" is too long (max 2000 characters)."
+msgstr ""
+
+#: includes/abilities/divi.php:1863
+msgid "Provide the dynamic \"source\" name. Call divi-list-dynamic-sources for options."
+msgstr ""
+
+#. translators: 1: written segment, 2: module type, 3: attribute list.
+#: includes/abilities/divi.php:1879
+#, php-format
+msgid "\"%1$s\" is not an attribute of %2$s, so this binding would never render. Module attributes: %3$s — use the path from divi-get-module-schema (e.g. \"title.innerContent\")."
+msgstr ""
+
+#: includes/abilities/divi.php:1907
+msgid "The bound meta key is protected (starts with \"_\") — its value would become publicly visible on the page, so Saddle refuses it. A site owner can allow a specific key via the \"saddle_dynamic_meta_allowlist\" filter."
+msgstr ""
+
+#: includes/abilities/divi.php:1913
+msgid "dynamic content"
+msgstr ""
+
+#. translators: 1: source, 2: address, 3: post ID.
+#: includes/abilities/divi.php:1939
+#, php-format
+msgid "Bound %1$s to a module field at %2$s on Divi page #%3$d."
+msgstr ""
+
+#. translators: 1: address, 2: post ID.
+#: includes/abilities/divi.php:1987
+#, php-format
+msgid "Cleared a dynamic binding on the module at %1$s on Divi page #%2$d."
+msgstr ""
+
+#: includes/abilities/divi.php:2033
+msgid "Provide the field's attribute path from divi-get-module-schema, e.g. \"title.innerContent\"."
+msgstr ""
+
+#: includes/abilities/divi.php:2160
+msgid "Provide the \"preset_id\" from divi-list-global-presets."
+msgstr ""
+
+#. translators: 1: preset id, 2: address, 3: post ID.
+#: includes/abilities/divi.php:2174
+#, php-format
+msgid "Applied preset %1$s to the module at %2$s on Divi page #%3$d."
+msgstr ""
+
+#: includes/abilities/divi.php:2198
+msgid "settings.roles = list of role slugs."
+msgstr ""
+
+#: includes/abilities/divi.php:2202
+msgid "settings.postTypes = list of post type slugs."
+msgstr ""
+
+#: includes/abilities/divi.php:2206
+msgid "settings.categories = list of category ids."
+msgstr ""
+
+#: includes/abilities/divi.php:2210
+msgid "settings.tags = list of tag ids."
+msgstr ""
+
+#: includes/abilities/divi.php:2214
+msgid "settings.authors = list of author ids."
+msgstr ""
+
+#: includes/abilities/divi.php:2226
+msgid "settings for view count + window."
+msgstr ""
+
+#: includes/abilities/divi.php:2229
+msgid "Set with divi-set-display-conditions: each condition is {conditionName, displayRule, settings?, operator?}. operator OR/AND joins multiple. conditionSettings vary per type — this is the common set, not exhaustive."
+msgstr ""
+
+#: includes/abilities/divi.php:2248
+msgid "Provide \"conditions\" as a list (empty to clear)."
+msgstr ""
+
+#: includes/abilities/divi.php:2254
+msgid "Each condition needs a string \"conditionName\". See divi-list-condition-types."
+msgstr ""
+
+#: includes/abilities/divi.php:2257
+msgid "display condition"
+msgstr ""
+
+#. translators: 1: count, 2: address, 3: post ID.
+#: includes/abilities/divi.php:2283
+#, php-format
+msgid "Set %1$d display condition(s) on the module at %2$s on Divi page #%3$d."
 msgstr ""
 
 #: includes/abilities/lint.php:27
@@ -1022,7 +1940,7 @@ msgid "Lint page design"
 msgstr ""
 
 #: includes/abilities/lint.php:28
-msgid "Reviews a post or page's design and returns violations per node address: empty titles, button contrast below WCAG AA, ghost/outline buttons, duplicated backgrounds, mixed accent colors, unaligned sibling buttons, broken section padding rhythm, and equal card rows with no featured plan. Read-only — run it after building or editing a page, fix what you agree with (severity \"error\" first), then re-run. Works on native block pages, and on builder pages whose tools are installed (Divi 5 with Saddle Pro). This is the design half ON ITS OWN, with no score: use saddle/verify-page instead when you want the graded report, which adds structural and applied-vs-ignored findings and is the one to work down after a build."
+msgid "Reviews a post or page's design and returns violations per node address: empty titles, button contrast below WCAG AA, ghost/outline buttons, duplicated backgrounds, mixed accent colors, unaligned sibling buttons, broken section padding rhythm, and equal card rows with no featured plan. Read-only — run it after building or editing a page, fix what you agree with (severity \"error\" first), then re-run. Works on native block pages and Divi 5 pages. This is the design half ON ITS OWN, with no score: use saddle/verify-page instead when you want the graded report, which adds structural and applied-vs-ignored findings and is the one to work down after a build."
 msgstr ""
 
 #: includes/abilities/lint.php:36
@@ -1145,6 +2063,125 @@ msgstr ""
 #: includes/abilities/memory.php:228
 #, php-format
 msgid "Deleted memory \"%s\"."
+msgstr ""
+
+#: includes/abilities/rank-math.php:32
+msgid "Check Rank Math setup"
+msgstr ""
+
+#: includes/abilities/rank-math.php:33
+msgid "Reports whether Rank Math is active on this site (and its version). Read-only. Call this before using any other rank-math-* tool."
+msgstr ""
+
+#: includes/abilities/rank-math.php:54
+msgid "Get Rank Math post SEO"
+msgstr ""
+
+#: includes/abilities/rank-math.php:55
+msgid "Returns a post's Rank Math SEO fields: title, description, focus keyword, canonical URL, robots (index/follow/advanced), Open Graph + Twitter title/description/image, primary category, and whether it is marked pillar content. Read-only."
+msgstr ""
+
+#: includes/abilities/rank-math.php:76
+msgid "Edit Rank Math post SEO"
+msgstr ""
+
+#: includes/abilities/rank-math.php:77
+msgid "Sets a post's Rank Math SEO fields — partial merge, only the fields you pass change; an empty string resets a field to Rank Math's own default. robots_index takes \"default\"/\"index\"/\"noindex\" (default inherits the site setting); robots_follow takes \"follow\"/\"nofollow\". Unrelated robots flags are preserved. The response carries non-blocking length warnings when title/description run long."
+msgstr ""
+
+#: includes/abilities/rank-math.php:97
+msgid "Focus keyword(s); Rank Math accepts a comma-separated list."
+msgstr ""
+
+#: includes/abilities/rank-math.php:106
+#: includes/abilities/yoast.php:107
+msgid "Search-index directive. \"default\" inherits the site setting."
+msgstr ""
+
+#: includes/abilities/rank-math.php:111
+msgid "Link-follow directive. \"follow\" removes the nofollow flag (Rank Math has no separate inherit state for follow)."
+msgstr ""
+
+#: includes/abilities/rank-math.php:115
+msgid "Comma list of advanced robots flags: noarchive, noimageindex, nosnippet. Empty string clears them."
+msgstr ""
+
+#: includes/abilities/rank-math.php:127
+msgid "Open Graph (Facebook) image URL."
+msgstr ""
+
+#: includes/abilities/rank-math.php:131
+msgid "Twitter card title override. Setting any twitter field switches the card off \"use Facebook data\"."
+msgstr ""
+
+#: includes/abilities/rank-math.php:139
+#: includes/abilities/yoast.php:140
+msgid "Twitter card image URL."
+msgstr ""
+
+#: includes/abilities/rank-math.php:143
+msgid "Category term ID to mark as the primary category. Only applies to post types that support categories; 0 clears it."
+msgstr ""
+
+#: includes/abilities/rank-math.php:147
+msgid "Mark/unmark this post as Rank Math pillar content."
+msgstr ""
+
+#: includes/abilities/rank-math.php:160
+msgid "Get Rank Math term SEO"
+msgstr ""
+
+#: includes/abilities/rank-math.php:161
+msgid "Returns a term's (category/tag/custom taxonomy) Rank Math SEO title and meta description. Read-only."
+msgstr ""
+
+#: includes/abilities/rank-math.php:169
+#: includes/abilities/yoast.php:170
+msgid "The term ID to read."
+msgstr ""
+
+#: includes/abilities/rank-math.php:174
+#: includes/abilities/yoast.php:175
+msgid "The term's taxonomy, e.g. \"category\" or \"post_tag\"."
+msgstr ""
+
+#: includes/abilities/rank-math.php:187
+msgid "Edit Rank Math term SEO"
+msgstr ""
+
+#: includes/abilities/rank-math.php:188
+msgid "Sets a term's Rank Math SEO title and/or meta description — partial merge; an empty string resets the field to Rank Math's default."
+msgstr ""
+
+#: includes/abilities/rank-math.php:196
+#: includes/abilities/yoast.php:197
+msgid "The term ID to edit."
+msgstr ""
+
+#: includes/abilities/rank-math.php:236
+msgid "Rank Math is not active on this site. The rank-math-* tools are unavailable; use the regular content tools."
+msgstr ""
+
+#: includes/abilities/rank-math.php:316
+#: includes/abilities/yoast.php:366
+msgid "No term with that ID in that taxonomy."
+msgstr ""
+
+#. translators: %d: post ID.
+#: includes/abilities/rank-math.php:357
+#, php-format
+msgid "Edited Rank Math SEO fields on post #%d."
+msgstr ""
+
+#: includes/abilities/rank-math.php:391
+#: includes/abilities/yoast.php:441
+msgid "You do not have permission to edit this term."
+msgstr ""
+
+#. translators: %d: term ID.
+#: includes/abilities/rank-math.php:404
+#, php-format
+msgid "Edited Rank Math SEO fields on term #%d."
 msgstr ""
 
 #: includes/abilities/render.php:28
@@ -1660,7 +2697,7 @@ msgstr ""
 #. translators: 1: post ID, 2: builder name.
 #: includes/abilities/verify.php:70
 #, php-format
-msgid "Post #%1$d is built with %2$s, and no verifier for that builder is installed. Divi 5 pages need Saddle Pro."
+msgid "Post #%1$d is built with %2$s, and no verifier for that builder is installed."
 msgstr ""
 
 #: includes/abilities/verify.php:95
@@ -1673,6 +2710,222 @@ msgstr ""
 
 #: includes/abilities/verify.php:97
 msgid "This score covers only what the server can verify — persisted structure, attributes, and design rules. It is NOT a visual sign-off: a page can pass every server-side check and still look wrong. Open get-preview-url and judge the real pixels before calling the page done."
+msgstr ""
+
+#: includes/abilities/woocommerce.php:32
+msgid "Exact product IDs to target. When given, every other filter is ignored. Variation IDs are refused — target the parent variable product where supported."
+msgstr ""
+
+#: includes/abilities/woocommerce.php:37
+msgid "Product category slugs to match."
+msgstr ""
+
+#: includes/abilities/woocommerce.php:42
+msgid "Product tag slugs to match."
+msgstr ""
+
+#: includes/abilities/woocommerce.php:46
+msgid "Match products by name/content search."
+msgstr ""
+
+#: includes/abilities/woocommerce.php:50
+msgid "Match by SKU (partial matches included)."
+msgstr ""
+
+#: includes/abilities/woocommerce.php:55
+msgid "Match one product type."
+msgstr ""
+
+#: includes/abilities/woocommerce.php:60
+msgid "Match one post status."
+msgstr ""
+
+#: includes/abilities/woocommerce.php:65
+msgid "Match one stock status."
+msgstr ""
+
+#: includes/abilities/woocommerce.php:69
+msgid "Explicitly target every product (still capped at 100 per batch). Required if no other selector is given — an empty selector never silently means \"the whole store\"."
+msgstr ""
+
+#: includes/abilities/woocommerce.php:84
+msgid "Check WooCommerce setup"
+msgstr ""
+
+#: includes/abilities/woocommerce.php:85
+msgid "Reports whether WooCommerce is active on this site, its version, whether High-Performance Order Storage is enabled, the store currency, and the product count. Read-only. Call this before using any other wc-* tool."
+msgstr ""
+
+#: includes/abilities/woocommerce.php:101
+msgid "List WooCommerce products"
+msgstr ""
+
+#: includes/abilities/woocommerce.php:102
+msgid "Lists products as compact rows (id, name, sku, type, status, prices, stock), filterable by category, tag, search, sku, type, status, and stock status. Paginated. Read-only."
+msgstr ""
+
+#: includes/abilities/woocommerce.php:112
+#: includes/abilities/woocommerce.php:165
+msgid "Page number (default 1)."
+msgstr ""
+
+#: includes/abilities/woocommerce.php:116
+#: includes/abilities/woocommerce.php:169
+msgid "Rows per page, 1–100 (default 20)."
+msgstr ""
+
+#: includes/abilities/woocommerce.php:130
+msgid "Get WooCommerce product"
+msgstr ""
+
+#: includes/abilities/woocommerce.php:131
+msgid "Returns one product in full: prices, stock, visibility, categories, tags — and for a variable product, its variations with their attributes and prices. Read-only."
+msgstr ""
+
+#: includes/abilities/woocommerce.php:139
+msgid "The product ID to read."
+msgstr ""
+
+#: includes/abilities/woocommerce.php:152
+msgid "List WooCommerce orders"
+msgstr ""
+
+#: includes/abilities/woocommerce.php:153
+msgid "Lists orders as compact rows (id, status, date, total, customer, item count), filterable by status. Paginated, HPOS-native. Read-only — order rows include customer name and email."
+msgstr ""
+
+#: includes/abilities/woocommerce.php:161
+msgid "Order status to match, e.g. \"processing\", \"completed\", \"on-hold\". Omit for all."
+msgstr ""
+
+#: includes/abilities/woocommerce.php:201
+msgid "WooCommerce is not active on this site. The wc-* tools are unavailable."
+msgstr ""
+
+#: includes/abilities/woocommerce.php:269
+msgid "No product with that ID."
+msgstr ""
+
+#: includes/abilities/yoast.php:33
+msgid "Check Yoast SEO setup"
+msgstr ""
+
+#: includes/abilities/yoast.php:34
+msgid "Reports whether Yoast SEO is active on this site (and its version). Read-only. Call this before using any other yoast-* tool."
+msgstr ""
+
+#: includes/abilities/yoast.php:55
+msgid "Get Yoast post SEO"
+msgstr ""
+
+#: includes/abilities/yoast.php:56
+msgid "Returns a post's Yoast SEO fields: title, meta description, focus keyword, canonical URL, robots (index/follow/advanced), Open Graph + Twitter title/description/image, primary category, and whether it is marked cornerstone content. Read-only."
+msgstr ""
+
+#: includes/abilities/yoast.php:77
+msgid "Edit Yoast post SEO"
+msgstr ""
+
+#: includes/abilities/yoast.php:78
+msgid "Sets a post's Yoast SEO fields — partial merge, only the fields you pass change. robots_index/robots_follow take the friendly words \"default\"/\"noindex\"/\"index\" and \"default\"/\"nofollow\"/\"follow\" (never Yoast's raw 0/1/2 encoding). The response carries non-blocking length warnings when title/description run long."
+msgstr ""
+
+#: includes/abilities/yoast.php:98
+msgid "Focus keyword/keyphrase."
+msgstr ""
+
+#: includes/abilities/yoast.php:112
+msgid "Link-follow directive. \"default\" inherits the site setting."
+msgstr ""
+
+#: includes/abilities/yoast.php:116
+msgid "Comma-separated Yoast advanced robots tokens, e.g. \"noimageindex,noarchive,nosnippet\". Empty string clears them."
+msgstr ""
+
+#: includes/abilities/yoast.php:120
+msgid "Open Graph title override."
+msgstr ""
+
+#: includes/abilities/yoast.php:124
+msgid "Open Graph description override."
+msgstr ""
+
+#: includes/abilities/yoast.php:128
+msgid "Open Graph image URL."
+msgstr ""
+
+#: includes/abilities/yoast.php:132
+msgid "Twitter card title override."
+msgstr ""
+
+#: includes/abilities/yoast.php:144
+msgid "Category term ID to mark as the primary category. Only applies to post types that support categories."
+msgstr ""
+
+#: includes/abilities/yoast.php:148
+msgid "Mark/unmark this post as Yoast cornerstone content."
+msgstr ""
+
+#: includes/abilities/yoast.php:161
+msgid "Get Yoast term SEO"
+msgstr ""
+
+#: includes/abilities/yoast.php:162
+msgid "Returns a term's (category/tag/custom taxonomy) Yoast SEO title and meta description. Read-only."
+msgstr ""
+
+#: includes/abilities/yoast.php:188
+msgid "Edit Yoast term SEO"
+msgstr ""
+
+#: includes/abilities/yoast.php:189
+msgid "Sets a term's Yoast SEO title and/or meta description — partial merge."
+msgstr ""
+
+#: includes/abilities/yoast.php:216
+msgid "Get Yoast post schema"
+msgstr ""
+
+#: includes/abilities/yoast.php:217
+msgid "Returns a post's Yoast schema type overrides: page_type and (for Article-family pages) article_type. Empty means Yoast's site default applies. Read-only."
+msgstr ""
+
+#: includes/abilities/yoast.php:235
+msgid "Edit Yoast post schema"
+msgstr ""
+
+#: includes/abilities/yoast.php:236
+msgid "Sets a post's Yoast schema type overrides — partial merge; an empty string resets a field to Yoast's site default. Yoast validates both fields against its own fixed option list and silently keeps the prior value for anything outside it — read the response's \"changed\" (or re-read with get-post-schema) to confirm a value actually took effect rather than assuming the call succeeded because it didn't error."
+msgstr ""
+
+#: includes/abilities/yoast.php:245
+msgid "Yoast schema page type OVERRIDE, e.g. \"WebPage\", \"FAQPage\", \"AboutPage\", \"ContactPage\". A post's default type (Article for posts, WebPage for pages) is implicit — do not pass \"Article\" here; use article_type to refine it instead."
+msgstr ""
+
+#: includes/abilities/yoast.php:249
+msgid "Yoast schema article type, e.g. \"Article\", \"BlogPosting\", \"NewsArticle\" — refines the implicit Article type most single posts already have; unrelated to page_type."
+msgstr ""
+
+#: includes/abilities/yoast.php:284
+msgid "Yoast SEO is not active on this site. The yoast-* tools are unavailable; use the regular content tools."
+msgstr ""
+
+#. translators: %d: post ID.
+#: includes/abilities/yoast.php:407
+#, php-format
+msgid "Edited Yoast SEO fields on post #%d."
+msgstr ""
+
+#. translators: %d: term ID.
+#: includes/abilities/yoast.php:454
+#, php-format
+msgid "Edited Yoast SEO fields on term #%d."
+msgstr ""
+
+#. translators: %d: post ID.
+#: includes/abilities/yoast.php:498
+#, php-format
+msgid "Edited Yoast schema type on post #%d."
 msgstr ""
 
 #: includes/admin/class-saddle-rest.php:421
@@ -1721,30 +2974,30 @@ msgstr ""
 msgid "Owner cleared all agent-written memory (%d entries)."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1063
+#: includes/admin/class-saddle-rest.php:1078
 msgid "MCP Client"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1098
-#: includes/admin/class-saddle-rest.php:1206
-#: includes/admin/class-saddle-rest.php:1261
+#: includes/admin/class-saddle-rest.php:1113
+#: includes/admin/class-saddle-rest.php:1221
+#: includes/admin/class-saddle-rest.php:1276
 msgid "Application Passwords are not available on this site."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1102
+#: includes/admin/class-saddle-rest.php:1117
 msgid "Application Passwords are turned off on this site — often because it isn’t served over HTTPS, or a security plugin disabled them."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1107
+#: includes/admin/class-saddle-rest.php:1122
 msgid "AI app"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1215
-#: includes/admin/class-saddle-rest.php:1267
+#: includes/admin/class-saddle-rest.php:1230
+#: includes/admin/class-saddle-rest.php:1282
 msgid "No Saddle client with that ID."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1286
+#: includes/admin/class-saddle-rest.php:1301
 msgid "The old key was removed, but issuing its replacement failed. Connect the app again from the Connections screen."
 msgstr ""
 
@@ -1752,16 +3005,299 @@ msgstr ""
 msgid "Saddle: the admin UI has not been built yet. Run \"npm install && npm run build\" in the plugin folder."
 msgstr ""
 
-#. translators: 1: post ID, 2: builder name.
-#: includes/class-saddle-accessors.php:56
+#. translators: 1: node address, 2: the unknown key(s), 3: the valid keys.
+#: includes/builders/divi/class-saddle-divi-author.php:104
 #, php-format
-msgid "Post #%1$d is built with %2$s, and no lint accessor for that builder is installed. Divi 5 pages need Saddle Pro."
+msgid "Node at %1$s has an unrecognized key: %2$s. Module content goes in \"fields\" (e.g. {\"type\":\"divi/heading\",\"fields\":{\"title\":\"…\"}}); valid node keys are %3$s."
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-bundle.php:136
+msgid "Structure: section > row > column > modules; trees are validated on every write, invalid ones rejected."
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-bundle.php:137
+msgid "Prefer global colors/variables (var(--gcid-…)/var(--gvid-…)) over ad-hoc hex — a token change updates everywhere."
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-bundle.php:138
+msgid "A styled button needs the enable switch on ( <attr>.decoration.button.desktop.value.enable = \"on\" ) or it renders ghost."
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-bundle.php:139
+msgid "After building, run verify-page and fix by address until the score is acceptable."
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-bundle.php:152
+msgid "The design-system slice (colors/variables/presets/fonts) was unavailable in this process — use the divi-list-global-colors / divi-list-variables tools directly if you need it."
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-context.php:105
+msgid "This is a Divi 5 site — the real brand lives in Divi Global Data above. Use the color/variable IDs (e.g. \"gcid-…\", \"gvid-…\") and the var(--gcid-…) tokens in module attrs, and apply module \"presets\" by name, instead of hardcoding values."
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-context.php:124
+msgid "Build or edit a Divi 5 page end-to-end with the saddle/divi-* tools: the module-tree model, the authoring format, and the closed loop — plan, build, verify-page, fix by address, re-verify — with a worked example."
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-context.php:125
+msgid "creating, rebuilding, or editing any page built with Divi"
+msgstr ""
+
+#. translators: 1: module type, 2: module + address.
+#: includes/builders/divi/class-saddle-divi-echo.php:207
+#, php-format
+msgid "No module.json exists for \"%1$s\" on this site, so Saddle cannot verify its fields or style paths (%2$s). If the type is misspelled the module renders nothing — confirm the exact type with divi-list-modules. If it is a runtime-registered third-party module that renders fine, ignore this."
+msgstr ""
+
+#. translators: 1: sub-key, 2: field, 3: module + address, 4: valid sub-keys.
+#: includes/builders/divi/class-saddle-divi-echo.php:229
+#, php-format
+msgid "\"%1$s\" is not a sub-field of \"%2$s\" on %3$s — it will be stored but never rendered. Write fields.%2$s = { %4$s }."
+msgstr ""
+
+#. translators: 1: field key, 2: module + address.
+#: includes/builders/divi/class-saddle-divi-echo.php:243
+#, php-format
+msgid "\"%1$s\" on %2$s is a module attribute but NOT a content field — written via \"fields\" it will not render. Set it through \"attrs\" using the paths from divi-get-style-schema."
+msgstr ""
+
+#. translators: 1: field key, 2: module + address, 3: content field list.
+#: includes/builders/divi/class-saddle-divi-echo.php:250
+#, php-format
+msgid "Content field \"%1$s\" on %2$s does not exist — it will be stored but never rendered. This module's content fields: %3$s."
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-echo.php:253
+#: includes/builders/divi/class-saddle-divi-echo.php:516
+msgid "(none)"
+msgstr ""
+
+#. translators: 1: group, 2: module + address, 3: canonical path, 4: missing segment.
+#: includes/builders/divi/class-saddle-divi-echo.php:339
+#, php-format
+msgid "The \"%1$s\" group on %2$s nests its value deeper than written — Divi reads %3$s (note the extra \"%4$s\" level), so this write will silently not render. Rewrite on that exact path."
+msgstr ""
+
+#. translators: 1: written key, 2: group, 3: module + address, 4: valid breakpoints.
+#: includes/builders/divi/class-saddle-divi-echo.php:391
+#, php-format
+msgid "\"%1$s\" is not a Divi breakpoint on the \"%2$s\" group of %3$s — the styling will silently not render. Valid breakpoints: %4$s."
+msgstr ""
+
+#. translators: 1: written key, 2: group, 3: module + address, 4: valid states.
+#: includes/builders/divi/class-saddle-divi-echo.php:408
+#, php-format
+msgid "\"%1$s\" is not a value state on the \"%2$s\" group of %3$s — the styling will silently not render. Expected one of: %4$s."
+msgstr ""
+
+#. translators: 1: written field, 2: group, 3: module + address, 4: valid fields.
+#: includes/builders/divi/class-saddle-divi-echo.php:424
+#, php-format
+msgid "\"%1$s\" is not a settable field of the \"%2$s\" group on %3$s — the styling will silently not render. Fields: %4$s."
+msgstr ""
+
+#. translators: 1: attr name, 2: module + address, 3: attribute list.
+#: includes/builders/divi/class-saddle-divi-echo.php:483
+#, php-format
+msgid "Attribute \"%1$s\" on %2$s is not part of this module — Divi will store and ignore it. Module attributes: %3$s."
+msgstr ""
+
+#. translators: 1: group kind, 2: group, 3: attr name, 4: module + address, 5: valid groups.
+#: includes/builders/divi/class-saddle-divi-echo.php:511
+#, php-format
+msgid "No \"%2$s\" %1$s group exists on \"%3$s\" of %4$s — the styling will silently not render. Valid %1$s groups: %5$s."
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-recipes.php:47
+#: includes/class-saddle-recipes.php:75
+msgid "A clear, benefit-led headline"
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-recipes.php:59
+#: includes/class-saddle-recipes.php:76
+msgid "One supporting sentence that says who it is for and why it matters."
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-recipes.php:68
+#: includes/builders/divi/class-saddle-divi-recipes.php:125
+msgid "Get Started"
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-recipes.php:71
+msgid "See How It Works"
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-recipes.php:80
+#: includes/class-saddle-recipes.php:87
+msgid "First benefit"
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-recipes.php:81
+#: includes/class-saddle-recipes.php:88
+msgid "Second benefit"
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-recipes.php:82
+#: includes/class-saddle-recipes.php:89
+msgid "Third benefit"
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-recipes.php:94
+#: includes/class-saddle-recipes.php:99
+msgid "Starter"
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-recipes.php:96
+#: includes/class-saddle-recipes.php:100
+msgid "Pro"
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-recipes.php:97
+#: includes/class-saddle-recipes.php:101
+msgid "Team"
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-recipes.php:122
+#: includes/class-saddle-recipes.php:122
+msgid "Ready to start?"
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-recipes.php:123
+#: includes/class-saddle-recipes.php:123
+msgid "A short line that removes the last bit of hesitation."
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-recipes.php:142
+#: includes/class-saddle-recipes.php:131
+msgid "Frequently asked questions"
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-recipes.php:146
+#: includes/class-saddle-recipes.php:132
+msgid "A common question?"
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-recipes.php:147
+#: includes/class-saddle-recipes.php:134
+msgid "Another common question?"
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-recipes.php:148
+#: includes/class-saddle-recipes.php:136
+msgid "A third common question?"
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-recipes.php:298
+#: includes/class-saddle-recipes.php:234
+msgid "One or two sentences describing this benefit in plain language."
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-recipes.php:320
+msgid "mo"
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-recipes.php:323
+#: includes/class-saddle-recipes.php:257
+msgid "What this plan includes"
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-recipes.php:323
+#: includes/class-saddle-recipes.php:261
+msgid "A second included item"
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-recipes.php:323
+#: includes/class-saddle-recipes.php:265
+msgid "A third included item"
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-recipes.php:325
+msgid "Choose Plan"
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-recipes.php:344
+msgid "A specific, believable sentence about the result they got."
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-recipes.php:345
+#: includes/class-saddle-context.php:80
+#: admin/build/index.js:19
+#: admin/src/connect-apps.js:185
+msgid "Name"
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-recipes.php:346
+msgid "Role"
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-recipes.php:347
+msgid "Company"
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-recipes.php:365
+#: includes/class-saddle-recipes.php:133
+#: includes/class-saddle-recipes.php:135
+#: includes/class-saddle-recipes.php:137
+msgid "A clear, direct answer in one or two sentences."
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-render-accessor.php:89
+#: includes/render/class-saddle-render-gutenberg-accessor.php:75
+msgid "No node at that address."
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-render-accessor.php:96
+msgid "Divi did not render this module in the current process. The effective styles above are still the persisted truth; for real pixels call saddle/get-preview-url and open it in your browser."
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-schema.php:311
+msgid "Set content via \"fields\" as shown per attribute (Saddle wraps values in the correct envelope). Styling via raw \"attrs\" uses canonical paths like <attr>.decoration.<option> with {\"desktop\":{\"value\":…}} breakpoints — omit styling to inherit the site’s design."
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-schema.php:515
+msgid "Universal styling. Call again with \"group\" for a group's fields. Style via divi-edit-module raw \"attrs\" at <path>.<field> with {\"desktop\":{\"value\":…}} breakpoints. A module's own paths never transfer to another module."
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-tree.php:140
+msgid "The Divi module tree is structurally invalid."
+msgstr ""
+
+#. translators: 1: module type, 2: the structural problem.
+#: includes/builders/divi/class-saddle-divi-verify.php:58
+#, php-format
+msgid "%1$s: %2$s"
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-verify.php:59
+msgid "(unknown module)"
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-verify.php:60
+msgid "breaks the Divi containment contract."
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-verify.php:62
+msgid "Restore the section > row > column > module skeleton at this address — the Visual Builder cannot edit a broken tree."
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-verify.php:91
+msgid "This persisted attribute does nothing — rewrite it on a path from divi-get-style-schema, or remove it."
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi.php:120
+msgid "This post is not a Divi 5 page. Use divi-set-page to build an empty post, or the regular content tools for non-Divi content."
 msgstr ""
 
 #. translators: 1: post ID, 2: builder name.
-#: includes/class-saddle-accessors.php:92
+#: includes/class-saddle-accessors.php:59
 #, php-format
-msgid "Post #%1$d is built with %2$s, and no render accessor for that builder is installed. Divi 5 pages need Saddle Pro."
+msgid "Post #%1$d is built with %2$s, and no lint accessor for that builder is installed."
+msgstr ""
+
+#. translators: 1: post ID, 2: builder name.
+#: includes/class-saddle-accessors.php:98
+#, php-format
+msgid "Post #%1$d is built with %2$s, and no render accessor for that builder is installed."
 msgstr ""
 
 #: includes/class-saddle-approval.php:100
@@ -2211,12 +3747,6 @@ msgstr ""
 
 #: includes/class-saddle-context.php:78
 msgid "# About this WordPress site"
-msgstr ""
-
-#: includes/class-saddle-context.php:80
-#: admin/build/index.js:19
-#: admin/src/connect-apps.js:185
-msgid "Name"
 msgstr ""
 
 #: includes/class-saddle-context.php:84
@@ -2850,14 +4380,6 @@ msgstr ""
 msgid "A heading over a list of question/answer pairs."
 msgstr ""
 
-#: includes/class-saddle-recipes.php:75
-msgid "A clear, benefit-led headline"
-msgstr ""
-
-#: includes/class-saddle-recipes.php:76
-msgid "One supporting sentence that says who it is for and why it matters."
-msgstr ""
-
 #: includes/class-saddle-recipes.php:77
 #: includes/class-saddle-recipes.php:124
 #: admin/build/index.js:1
@@ -2873,24 +4395,8 @@ msgstr ""
 msgid "What you get"
 msgstr ""
 
-#: includes/class-saddle-recipes.php:87
-msgid "First benefit"
-msgstr ""
-
-#: includes/class-saddle-recipes.php:88
-msgid "Second benefit"
-msgstr ""
-
-#: includes/class-saddle-recipes.php:89
-msgid "Third benefit"
-msgstr ""
-
 #: includes/class-saddle-recipes.php:96
 msgid "Simple pricing"
-msgstr ""
-
-#: includes/class-saddle-recipes.php:99
-msgid "Starter"
 msgstr ""
 
 #: includes/class-saddle-recipes.php:99
@@ -2898,15 +4404,7 @@ msgid "$0"
 msgstr ""
 
 #: includes/class-saddle-recipes.php:100
-msgid "Pro"
-msgstr ""
-
-#: includes/class-saddle-recipes.php:100
 msgid "$29"
-msgstr ""
-
-#: includes/class-saddle-recipes.php:101
-msgid "Team"
 msgstr ""
 
 #: includes/class-saddle-recipes.php:101
@@ -2915,52 +4413,6 @@ msgstr ""
 
 #: includes/class-saddle-recipes.php:108
 msgid "What people say"
-msgstr ""
-
-#: includes/class-saddle-recipes.php:122
-msgid "Ready to start?"
-msgstr ""
-
-#: includes/class-saddle-recipes.php:123
-msgid "A short line that removes the last bit of hesitation."
-msgstr ""
-
-#: includes/class-saddle-recipes.php:131
-msgid "Frequently asked questions"
-msgstr ""
-
-#: includes/class-saddle-recipes.php:132
-msgid "A common question?"
-msgstr ""
-
-#: includes/class-saddle-recipes.php:133
-#: includes/class-saddle-recipes.php:135
-#: includes/class-saddle-recipes.php:137
-msgid "A clear, direct answer in one or two sentences."
-msgstr ""
-
-#: includes/class-saddle-recipes.php:134
-msgid "Another common question?"
-msgstr ""
-
-#: includes/class-saddle-recipes.php:136
-msgid "A third common question?"
-msgstr ""
-
-#: includes/class-saddle-recipes.php:234
-msgid "One or two sentences describing this benefit in plain language."
-msgstr ""
-
-#: includes/class-saddle-recipes.php:257
-msgid "What this plan includes"
-msgstr ""
-
-#: includes/class-saddle-recipes.php:261
-msgid "A second included item"
-msgstr ""
-
-#: includes/class-saddle-recipes.php:265
-msgid "A third included item"
 msgstr ""
 
 #: includes/class-saddle-recipes.php:269
@@ -2985,38 +4437,38 @@ msgstr ""
 msgid "The skill could not be saved."
 msgstr ""
 
-#: includes/class-saddle-skills.php:282
+#: includes/class-saddle-skills.php:285
 msgid "# Skills for this site"
 msgstr ""
 
-#: includes/class-saddle-skills.php:309
+#: includes/class-saddle-skills.php:312
 msgid "Skills for this site"
 msgstr ""
 
-#: includes/class-saddle-skills.php:337
+#: includes/class-saddle-skills.php:340
 msgid "The site owner installed these playbooks. When a task matches one, call saddle/get-skill with its name and follow it. Skills are guidance only — every tool call is still subject to the same access levels and confirmations."
 msgstr ""
 
 #. translators: %s: when-to-use hint.
-#: includes/class-saddle-skills.php:345
+#: includes/class-saddle-skills.php:348
 #, php-format
 msgid " (use when: %s)"
 msgstr ""
 
-#: includes/class-saddle-skills.php:402
+#: includes/class-saddle-skills.php:405
 msgid "A skill file must start with a frontmatter block: --- , then \"name:\" and \"description:\" lines, then --- , then the playbook body."
 msgstr ""
 
-#: includes/class-saddle-skills.php:426
+#: includes/class-saddle-skills.php:429
 msgid "Skill frontmatter needs both \"name\" (letters, numbers, dashes) and \"description\"."
 msgstr ""
 
-#: includes/class-saddle-skills.php:435
+#: includes/class-saddle-skills.php:438
 msgid "The skill has no body below the frontmatter."
 msgstr ""
 
 #. translators: %d: maximum characters.
-#: includes/class-saddle-skills.php:444
+#: includes/class-saddle-skills.php:447
 #, php-format
 msgid "The skill body exceeds %d characters. Split it into smaller skills."
 msgstr ""
@@ -3147,6 +4599,127 @@ msgstr ""
 msgid "Unsplash · %s"
 msgstr ""
 
+#: includes/integrations/aioseo/class-saddle-aioseo-seo.php:77
+#: includes/integrations/aioseo/class-saddle-aioseo-seo.php:104
+msgid "AIOSEO's post model is unavailable."
+msgstr ""
+
+#: includes/integrations/aioseo/class-saddle-aioseo-seo.php:162
+#: includes/integrations/rank-math/class-saddle-rank-math-seo.php:131
+#: includes/integrations/yoast/class-saddle-yoast-seo.php:138
+msgid "Provide at least one SEO field to change."
+msgstr ""
+
+#: includes/integrations/aioseo/class-saddle-aioseo-seo.php:168
+msgid "AIOSEO refused the save."
+msgstr ""
+
+#: includes/integrations/aioseo/class-saddle-aioseo.php:64
+msgid "AIOSEO is not active on this site."
+msgstr ""
+
+#: includes/integrations/aioseo/class-saddle-aioseo.php:136
+#: includes/integrations/rank-math/class-saddle-rank-math.php:106
+msgid "robots_index expects one of: default, index, noindex."
+msgstr ""
+
+#: includes/integrations/aioseo/class-saddle-aioseo.php:145
+#: includes/integrations/rank-math/class-saddle-rank-math.php:119
+msgid "robots_follow expects \"follow\" or \"nofollow\"."
+msgstr ""
+
+#. translators: %s: comma-separated list of accepted tokens.
+#: includes/integrations/aioseo/class-saddle-aioseo.php:158
+#: includes/integrations/rank-math/class-saddle-rank-math.php:135
+#, php-format
+msgid "robots_advanced expects a comma list of: %s (empty clears them)."
+msgstr ""
+
+#. translators: %d: character count.
+#: includes/integrations/class-saddle-seo-advice.php:33
+#, php-format
+msgid "SEO title is %d characters — search engines typically truncate past ~60."
+msgstr ""
+
+#. translators: %d: character count.
+#: includes/integrations/class-saddle-seo-advice.php:41
+#, php-format
+msgid "Meta description is %d characters — aim for roughly 155-160 or less."
+msgstr ""
+
+#: includes/integrations/class-saddle-seo-skills.php:41
+msgid "Read and edit a post or term's Yoast SEO fields with the saddle/yoast-* tools: the robots tri-state trap, length targets, and what the schema-type tools do and don't cover."
+msgstr ""
+
+#: includes/integrations/class-saddle-seo-skills.php:42
+msgid "reading or editing SEO title, meta description, robots, or schema type on a site running Yoast SEO"
+msgstr ""
+
+#: includes/integrations/class-saddle-seo-skills.php:62
+msgid "Read and edit a post or term's Rank Math SEO fields with the saddle/rank-math-* tools: the robots flag model, length targets, and what is deliberately out of scope."
+msgstr ""
+
+#: includes/integrations/class-saddle-seo-skills.php:63
+msgid "reading or editing SEO title, meta description, or robots on a site running Rank Math"
+msgstr ""
+
+#: includes/integrations/class-saddle-seo-skills.php:83
+msgid "Read and edit a post's AIOSEO fields with the saddle/aioseo-* tools: the all-or-nothing robots default switch, length targets, and what is deliberately out of scope."
+msgstr ""
+
+#: includes/integrations/class-saddle-seo-skills.php:84
+msgid "reading or editing SEO title, meta description, or robots on a site running AIOSEO (All in One SEO)"
+msgstr ""
+
+#: includes/integrations/rank-math/class-saddle-rank-math-seo.php:120
+msgid "This post type has no category taxonomy."
+msgstr ""
+
+#: includes/integrations/rank-math/class-saddle-rank-math-seo.php:124
+#: includes/integrations/yoast/class-saddle-yoast-seo.php:131
+msgid "No category with that ID."
+msgstr ""
+
+#: includes/integrations/rank-math/class-saddle-rank-math-seo.php:183
+#: includes/integrations/yoast/class-saddle-yoast-seo.php:222
+msgid "Provide \"title\" and/or \"description\" to change."
+msgstr ""
+
+#: includes/integrations/rank-math/class-saddle-rank-math.php:63
+msgid "Rank Math is not active on this site."
+msgstr ""
+
+#: includes/integrations/woocommerce/class-saddle-wc.php:75
+msgid "WooCommerce is not active on this site."
+msgstr ""
+
+#: includes/integrations/yoast/class-saddle-yoast-schema.php:71
+msgid "Provide \"page_type\" and/or \"article_type\" to change."
+msgstr ""
+
+#: includes/integrations/yoast/class-saddle-yoast-seo.php:127
+msgid "This post type has no primary-category support in Yoast."
+msgstr ""
+
+#: includes/integrations/yoast/class-saddle-yoast-seo.php:182
+#: includes/integrations/yoast/class-saddle-yoast-seo.php:203
+msgid "This Yoast SEO version has no term indexable API."
+msgstr ""
+
+#: includes/integrations/yoast/class-saddle-yoast-seo.php:208
+msgid "Yoast could not build an indexable for this term."
+msgstr ""
+
+#: includes/integrations/yoast/class-saddle-yoast.php:60
+msgid "Yoast SEO is not active on this site."
+msgstr ""
+
+#. translators: %s: comma-separated list of accepted values.
+#: includes/integrations/yoast/class-saddle-yoast.php:125
+#, php-format
+msgid "Expected one of: %s."
+msgstr ""
+
 #. translators: 1: text color, 2: background color, 3: contrast ratio.
 #: includes/lint/rules/class-rule-button-contrast.php:59
 #, php-format
@@ -3235,6 +4808,42 @@ msgstr ""
 msgid "Use ONE accent color for all primary buttons (neutrals are fine for secondary actions), ideally a design-token color so it follows redesigns."
 msgstr ""
 
+#. translators: 1: module type, 2: max width.
+#: includes/lint/rules/class-rule-pinned-max-width.php:75
+#, php-format
+msgid "%1$s caps its width at %2$s but nothing centers it — it renders pinned to the left edge with a dead right half."
+msgstr ""
+
+#: includes/lint/rules/class-rule-pinned-max-width.php:79
+msgid "Center it: attrs { \"module.decoration.sizing.desktop.value.alignment\": \"center\" } (or auto side margins) — or make the asymmetry deliberate by placing content beside it."
+msgstr ""
+
+#: includes/lint/rules/class-rule-preset-coupling.php:57
+msgid "background"
+msgstr ""
+
+#: includes/lint/rules/class-rule-preset-coupling.php:60
+msgid "text color"
+msgstr ""
+
+#: includes/lint/rules/class-rule-preset-coupling.php:63
+msgid "padding"
+msgstr ""
+
+#: includes/lint/rules/class-rule-preset-coupling.php:66
+msgid "radius"
+msgstr ""
+
+#. translators: 1: preset id, 2: the overridden properties.
+#: includes/lint/rules/class-rule-preset-coupling.php:77
+#, php-format
+msgid "Bound to global preset \"%1$s\" but locally overriding %2$s — editing the preset will silently not change this node, and editing this node leaves its preset siblings behind."
+msgstr ""
+
+#: includes/lint/rules/class-rule-preset-coupling.php:81
+msgid "Pick one lever: move the override into the preset (or a new preset) so siblings stay in sync, or detach the preset so this node is honestly standalone."
+msgstr ""
+
 #. translators: %s: block/module type.
 #: includes/lint/rules/class-rule-section-padding.php:76
 #, php-format
@@ -3243,6 +4852,16 @@ msgstr ""
 
 #: includes/lint/rules/class-rule-section-padding.php:79
 msgid "Match the other sections' vertical padding (a consistent ~96px rhythm is the usual mark), unless this section is deliberately tighter, like a thin banner."
+msgstr ""
+
+#. translators: 1: sibling count, 2: module type.
+#: includes/lint/rules/class-rule-sibling-monotony.php:112
+#, php-format
+msgid "%1$d identical %2$s cards — same radius, same padding, all centered. This is the layout every generated page defaults to."
+msgstr ""
+
+#: includes/lint/rules/class-rule-sibling-monotony.php:116
+msgid "Break the monotony deliberately: feature one card, vary the rhythm or emphasis, or left-align the copy — sameness should be a choice, not a default."
 msgstr ""
 
 #. translators: %d: number of consecutive single-column wrappers.
@@ -3265,6 +4884,16 @@ msgstr ""
 msgid "Darken the text or lighten the background (or vice versa) so the pair reaches WCAG AA."
 msgstr ""
 
+#. translators: 1: module type, 2: CSS class list.
+#: includes/lint/rules/class-rule-theme-css-class.php:53
+#, php-format
+msgid "%1$s delegates styling to the CSS class(es) \"%2$s\" — Saddle cannot see theme stylesheets, so nothing server-side can verify what these classes render."
+msgstr ""
+
+#: includes/lint/rules/class-rule-theme-css-class.php:57
+msgid "Unless the user named this exact class, remove it and style through attrs, tokens (var(--gcid-…)), or presets — then check real pixels with get-preview-url."
+msgstr ""
+
 #. translators: 1: alignment, 2: sibling alignment.
 #: includes/lint/rules/class-rule-unaligned-buttons.php:66
 #, php-format
@@ -3273,6 +4902,16 @@ msgstr ""
 
 #: includes/lint/rules/class-rule-unaligned-buttons.php:70
 msgid "Give sibling buttons the same alignment (or put them in one row container that owns the alignment)."
+msgstr ""
+
+#. translators: %s: module type.
+#: includes/lint/rules/class-rule-unknown-module.php:64
+#, php-format
+msgid "\"%s\" has no module.json on this site — the module may not exist here, and a nonexistent type renders nothing at all."
+msgstr ""
+
+#: includes/lint/rules/class-rule-unknown-module.php:67
+msgid "Pick a real module from divi-list-modules (this is usually a typo). If this pack registers modules without module.json and the page renders fine, ignore this finding."
 msgstr ""
 
 #: includes/oauth/class-saddle-oauth-bearer.php:210
@@ -3546,30 +5185,26 @@ msgstr ""
 msgid "Read posts, pages, media, and site information"
 msgstr ""
 
-#: includes/render/class-saddle-render-gutenberg-accessor.php:75
-msgid "No node at that address."
-msgstr ""
-
 #. translators: %s: node address.
 #: includes/render/class-saddle-render.php:47
 #, php-format
 msgid "No node at address \"%s\". Re-read the page first — addresses shift when the tree changes."
 msgstr ""
 
-#: includes/verify/class-saddle-verify.php:153
+#: includes/verify/class-saddle-verify.php:161
 msgid "The content is not block markup — the editor cannot address or edit it."
 msgstr ""
 
-#: includes/verify/class-saddle-verify.php:154
+#: includes/verify/class-saddle-verify.php:162
 msgid "Rebuild the content as blocks (set-blocks) instead of raw HTML."
 msgstr ""
 
-#: includes/verify/class-saddle-verify.php:179
+#: includes/verify/class-saddle-verify.php:187
 msgid "This persisted attribute does nothing — rewrite it on a path the block actually supports, or remove it."
 msgstr ""
 
 #. translators: %s: minimum WordPress version.
-#: saddle.php:351
+#: saddle.php:428
 #, php-format
 msgid "Saddle requires WordPress %s or later (the core Abilities API). The MCP server is disabled until you upgrade."
 msgstr ""
@@ -5149,7 +6784,7 @@ msgstr ""
 
 #: admin/build/index.js:29
 #: admin/src/components/Integrations.jsx:52
-msgid "Yoast’s own SEO fields — titles, descriptions, robots — edited natively by Saddle Pro."
+msgid "Yoast’s own SEO fields — titles, descriptions, robots — edited natively."
 msgstr ""
 
 #: admin/build/index.js:29
@@ -5159,7 +6794,7 @@ msgstr ""
 
 #: admin/build/index.js:29
 #: admin/src/components/Integrations.jsx:59
-msgid "Rank Math’s own SEO fields, edited natively by Saddle Pro."
+msgid "Rank Math’s own SEO fields, edited natively."
 msgstr ""
 
 #: admin/build/index.js:29
@@ -5169,7 +6804,7 @@ msgstr ""
 
 #: admin/build/index.js:29
 #: admin/src/components/Integrations.jsx:66
-msgid "AIOSEO’s own SEO fields, edited natively by Saddle Pro."
+msgid "AIOSEO’s own SEO fields, edited natively."
 msgstr ""
 
 #: admin/build/index.js:29
@@ -5179,7 +6814,7 @@ msgstr ""
 
 #: admin/build/index.js:29
 #: admin/src/components/Integrations.jsx:74
-msgid "Products, orders and bulk catalog edits, handled natively by Saddle Pro."
+msgid "Products and orders, handled natively."
 msgstr ""
 
 #: admin/build/index.js:29
