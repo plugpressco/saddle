@@ -912,6 +912,21 @@ class Saddle_REST_Admin {
 			}
 		}
 
+		// The native integrations — each only while its plugin is detected:
+		// the panel says DETECTED, and a Yoast row on a site without Yoast
+		// would be a lie.
+		$natives = array(
+			'yoast-'     => array( 'Saddle_Yoast', 'is_active' ),
+			'rank-math-' => array( 'Saddle_Rank_Math', 'is_active' ),
+			'aioseo-'    => array( 'Saddle_Aioseo', 'is_active' ),
+			'wc-'        => array( 'Saddle_WC', 'is_active' ),
+		);
+		foreach ( $natives as $prefix => $probe ) {
+			if ( is_callable( $probe ) && call_user_func( $probe ) ) {
+				$prefixes[] = $prefix;
+			}
+		}
+
 		/**
 		 * Filter the prefixes grouped under "Integrations" in the Permissions UI.
 		 *

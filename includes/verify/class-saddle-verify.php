@@ -27,7 +27,7 @@ defined( 'ABSPATH' ) || exit;
  * deterministic arithmetic, never vibes.
  *
  * Builder pages plug in through `saddle_verify_builder_findings` (structural
- * + echo, Saddle Pro's Divi driver) and the existing `saddle_lint_accessor`
+ * + echo, the built-in Divi 5 verifier) and the existing `saddle_lint_accessor`
  * filter (judgment) — same one-tool-surface pattern as lint and render.
  */
 class Saddle_Verify {
@@ -66,11 +66,11 @@ class Saddle_Verify {
 			/**
 			 * Filter builder structural + echo findings for verify-page.
 			 *
-			 * Builder integrations (Saddle Pro's Divi driver) validate the
-			 * persisted tree and echo-check persisted attrs, returning
+			 * A builder integration validates the persisted tree and
+			 * echo-checks persisted attrs, returning
 			 * findings in the engine's shape: { address, source
-			 * (structural|echo), severity, message, fix_hint }. Null means
-			 * the builder has no verifier installed.
+			 * (structural|echo), severity, message, fix_hint }. Null leaves
+			 * it to the built-in Divi 5 verifier, or none.
 			 *
 			 * @param array[]|null $findings Builder findings, null = unhandled.
 			 * @param array[]      $tree     Parsed persisted tree.
@@ -78,6 +78,14 @@ class Saddle_Verify {
 			 * @param WP_Post      $post     The post.
 			 */
 			$builder_findings = apply_filters( 'saddle_verify_builder_findings', null, $tree, $builder, $post );
+
+			// Divi 5 is verified here unless an integration already answered.
+			if ( null === $builder_findings ) {
+				$driver = Saddle_Builder_Registry::for_builder( (string) $builder );
+				if ( $driver && 'divi' === $driver->slug() ) {
+					$builder_findings = Saddle_Divi_Verify::findings( $tree );
+				}
+			}
 			if ( is_array( $builder_findings ) ) {
 				$findings = array_merge( $findings, $builder_findings );
 			} else {

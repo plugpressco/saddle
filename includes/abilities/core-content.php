@@ -587,6 +587,31 @@ function saddle_ability_meta( $is_readonly, $destructive, $idempotent, $tier = '
 }
 
 /**
+ * Register an ability unless one of the same name already exists.
+ *
+ * For the integration and builder tools that an older add-on may still
+ * register under the same `saddle/` name (tool names are a public API and
+ * never change). Callers hook at `wp_abilities_api_init` priority 30, after
+ * the add-on's priority 20, so the existing copy wins without a duplicate
+ * registration notice and the tool list stays identical either way.
+ *
+ * @param string $name Ability name.
+ * @param array  $args Arguments for wp_register_ability().
+ * @return WP_Ability|null The registered ability, or null when skipped.
+ */
+function saddle_register_ability_once( $name, array $args ) {
+	$exists = function_exists( 'wp_has_ability' )
+		? wp_has_ability( $name )
+		: WP_Abilities_Registry::get_instance()->is_registered( $name );
+
+	if ( $exists ) {
+		return null;
+	}
+
+	return wp_register_ability( $name, $args );
+}
+
+/**
  * Schema for a term-listing ability (categories/tags).
  *
  * @return array

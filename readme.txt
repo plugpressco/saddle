@@ -80,15 +80,42 @@ ChatGPT cannot use a pasted key. For ChatGPT, turn on OAuth sign-in under **Sadd
 
 Unsplash search: Find and import free stock photos. This needs your own Unsplash API key.
 
+= Divi 5 =
+
+These tools work on sites running Divi 5.
+
+* Divi pages: Build and edit Divi 5 pages with real Divi modules. Add, edit, move and remove modules, and change page settings.
+* Loops and dynamic content: Repeat a module for each post in a query, and show live post data in module fields.
+* Display conditions: Show or hide a module by rule.
+* Presets: Apply a saved Divi preset to a module.
+* Design system: Read Divi global colors, fonts, variables and presets.
+* Library and Theme Builder: List saved Library items and Theme Builder templates.
+* Page check: Check a Divi 5 page for structure and design problems, and see what a module renders.
+
+Saddle only edits Divi 5 pages. It leaves Divi 4 shortcode pages untouched.
+
+= SEO plugins =
+
+These tools work when the SEO plugin is active.
+
+* Yoast SEO: Read and edit the SEO title, meta description, robots and schema type of posts, pages and terms.
+* Rank Math: Read and edit the SEO title, meta description and robots of posts, pages and terms.
+* All in One SEO: Read and edit the SEO title, meta description, robots and social fields of posts and pages.
+
+= WooCommerce =
+
+* Products and orders: List and read products, variations and orders. This works when WooCommerce is active.
+
 = Saddle Pro =
 
 [Saddle Pro](https://saddle.to) is a paid add-on. It needs this free plugin. Pro adds:
 
-* Divi 5 pages: Build and edit Divi 5 pages with real Divi modules.
-* Divi design: Use Divi global colors, fonts, variables and presets.
-* Divi features: Manage loops, dynamic content, display conditions, the Library and the Theme Builder.
-* SEO plugins: Read and edit SEO fields in Yoast SEO, Rank Math and All in One SEO.
-* WooCommerce: List and read products.
+* Divi design system: Create, edit and delete Divi global colors, fonts, variables and presets.
+* Divi Library and Theme Builder: Save, update, apply and delete Library items, and assign Theme Builder templates.
+* Whole pages: Build a new Divi page in one step, or clone one.
+* Site-wide changes: Swap an image or apply a preset across many pages, with undo.
+* Design brief: Save a page's design plan and check the page against it.
+* WooCommerce: Update prices, stock, status and categories across many products, with undo.
 
 All features in this free plugin stay free.
 
@@ -123,7 +150,7 @@ Yes. Turn on OAuth sign-in under **Saddle → Settings**. Then add your site as 
 
 = Does it work with page builders? =
 
-Saddle protects page builder layouts from accidental overwrites. To edit Divi 5 pages, use Saddle Pro.
+Saddle edits Divi 5 pages with real Divi modules. It protects layouts from other page builders against accidental overwrites.
 
 = Do I need the MCP Adapter plugin? =
 

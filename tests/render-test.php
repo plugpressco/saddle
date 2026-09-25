@@ -163,7 +163,8 @@ class Saddle_Render_Test extends WP_UnitTestCase {
 	/* -------- builder resolution -------- */
 
 	public function test_builder_page_without_accessor_is_refused() {
-		$id     = $this->page( '<!-- wp:divi/placeholder --><!-- wp:divi/section --><!-- /wp:divi/section --><!-- /wp:divi/placeholder -->' );
+		$id = $this->page( '<div class="elementor">Built elsewhere.</div>' );
+		update_post_meta( $id, '_elementor_edit_mode', 'builder' );
 		$result = $this->run_ability( array( 'post_id' => $id ) );
 
 		$this->assertWPError( $result );

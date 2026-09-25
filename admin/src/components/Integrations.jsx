@@ -43,28 +43,28 @@ const KNOWN = {
 			'saddle'
 		),
 	},
-	// Saddle Pro's native SEO integrations. Their tools join the Integrations
-	// category only while the plugin is detected (Pro gates its
-	// saddle_integration_ui_prefixes hook on detection), so a row here always
-	// reflects a plugin that is really present.
+	// The native SEO integrations. Their tools join the Integrations category
+	// only while the plugin is detected (integration_prefixes() gates each
+	// prefix on detection), so a row here always reflects a plugin that is
+	// really present.
 	yoast: {
 		title: __( 'Yoast SEO', 'saddle' ),
 		description: __(
-			'Yoast’s own SEO fields — titles, descriptions, robots — edited natively by Saddle Pro.',
+			'Yoast’s own SEO fields — titles, descriptions, robots — edited natively.',
 			'saddle'
 		),
 	},
 	'rank-math': {
 		title: __( 'Rank Math', 'saddle' ),
 		description: __(
-			'Rank Math’s own SEO fields, edited natively by Saddle Pro.',
+			'Rank Math’s own SEO fields, edited natively.',
 			'saddle'
 		),
 	},
 	aioseo: {
 		title: __( 'AIOSEO', 'saddle' ),
 		description: __(
-			'AIOSEO’s own SEO fields, edited natively by Saddle Pro.',
+			'AIOSEO’s own SEO fields, edited natively.',
 			'saddle'
 		),
 	},
@@ -72,7 +72,7 @@ const KNOWN = {
 	wc: {
 		title: __( 'WooCommerce', 'saddle' ),
 		description: __(
-			'Products, orders and bulk catalog edits, handled natively by Saddle Pro.',
+			'Products and orders, handled natively.',
 			'saddle'
 		),
 	},

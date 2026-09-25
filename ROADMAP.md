@@ -43,7 +43,8 @@ when it is picked up; this file names direction, not tickets.
    has; `upload-media` accepting inline content so a write-capable client without a
    public URL is not stranded; `verify-page` proving the *public* page serves the
    new content, not just the read-back. All free.
-3. **The agency workflow.** Divi design-system export/import as JSON (Pro) —
+3. **The agency workflow.** Divi 5 page editing moves to free (2026-09-26 split:
+   free edits, Pro operates the site). Divi design-system export/import as JSON (Pro) —
    global colors, fonts, variables, presets, Theme Builder templates, library
    items — the version-control story Divi AI Agents does not have. Template, part
    and pattern writes on block themes (free, DB-only, built on `Saddle_Tree`,
