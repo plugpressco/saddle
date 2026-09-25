@@ -1,0 +1,31 @@
+{
+	"$schema": "https://playground.wordpress.net/blueprint-schema.json",
+	"meta": {
+		"title": "Saddle live preview",
+		"description": "Saddle installed on a fresh WordPress, logged in, on the Saddle screen.",
+		"author": "badhonrocks",
+		"categories": [ "AI", "MCP" ]
+	},
+	"landingPage": "/wp-admin/admin.php?page=saddle",
+	"preferredVersions": {
+		"php": "8.3",
+		"wp": "latest"
+	},
+	"steps": [
+		{
+			"step": "login",
+			"username": "admin",
+			"password": "password"
+		},
+		{
+			"step": "installPlugin",
+			"pluginData": {
+				"resource": "wordpress.org/plugins",
+				"slug": "saddle"
+			},
+			"options": {
+				"activate": true
+			}
+		}
+	]
+}

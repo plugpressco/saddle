@@ -1,6 +1,6 @@
 === Saddle – AI Site Control (MCP) ===
 Contributors: badhonrocks
-Tags: mcp, ai, chatgpt, agents, automation
+Tags: mcp, ai, claude, chatgpt, divi
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
@@ -8,21 +8,29 @@ Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Connect Claude, ChatGPT, Cursor and other AI apps to your WordPress site. Your AI starts read-only and asks before it deletes.
+Let Claude, ChatGPT and Cursor work on your WordPress site. Your AI starts read-only, and every delete asks first.
 
 == Description ==
 
-Saddle is a plugin that lets AI apps like Claude, ChatGPT and Cursor read and edit your WordPress site. Your AI app connects straight to your site through MCP, the standard these apps use to talk to tools.
+Saddle lets your AI app work on your WordPress site without handing it the keys.
 
-It helps site owners, developers and agencies who already work with an AI app. Saddle runs on your own site. It needs no account and no cloud service.
+Ask Claude, ChatGPT or Cursor to write a post, fix a page or update SEO titles. The app does the work through Saddle, using real WordPress tools. You decide which tools it may use.
 
-= Works with =
+Saddle is built for live sites. A new install can only read. Every delete shows a preview and waits for your approval. Your AI app connects straight to your site, so your content never passes through our servers.
 
-* Claude and Claude Code
-* ChatGPT
-* Cursor and VS Code
-* Codex and Gemini CLI
-* Other apps that support MCP
+Guides, examples and docs: [saddle.to](https://saddle.to)
+
+= Try it now =
+
+Click **Live Preview** at the top of this page. A test WordPress opens in your browser with Saddle installed, so you can explore every screen. The preview runs only in your browser, so AI apps cannot connect to it. To connect an app, install Saddle on your own site.
+
+= How it works =
+
+1. Install Saddle and choose what your AI may do.
+2. Add your AI app under **Saddle → Apps** and paste the settings Saddle gives you.
+3. Ask your AI to write, edit or check your content.
+
+Saddle works with Claude and Claude Code, ChatGPT, Cursor, VS Code, Codex, Gemini CLI and other apps that support MCP (Model Context Protocol). Step-by-step setup for each app is at [saddle.to/docs](https://saddle.to/docs).
 
 = Content =
 
@@ -32,24 +40,40 @@ It helps site owners, developers and agencies who already work with an AI app. S
 * Search: Find any post, page or media item.
 * Users: List users and read their profiles.
 
-= Page building =
+= Block editor pages =
 
 * Block pages: Build pages with real blocks that stay editable in the block editor.
 * Block editing: Add, edit, move and remove single blocks.
 * Theme styles: Use your theme's colors, fonts, spacing and patterns.
 * Templates: Read your theme's templates, template parts and global styles.
 * Design system: Add a color palette, type scale and spacing to a block theme.
-* Page check: Find layout and design problems on a page.
-* Preview: Get a preview link to see the result.
 
-= Site management =
+= Divi 5 pages =
 
-This group is off until you choose the Managing the site level.
+These tools work on sites running Divi 5.
 
-* Settings: Change the site title, permalinks and reading options.
-* Plugins: Activate and deactivate plugins.
-* Themes: Switch the active theme.
-* Cache: Clear the site cache.
+* Divi pages: Build and edit pages with real Divi modules. Add, edit, move and remove modules, and change page settings.
+* Loops and dynamic content: Repeat a module for each post in a query, and show live post data in module fields.
+* Display conditions and presets: Show or hide a module by rule, and apply a saved preset.
+* Divi design data: Read global colors, fonts, variables and presets, and list Library items and Theme Builder templates.
+
+Saddle edits Divi 5 pages only. It leaves Divi 4 shortcode pages untouched.
+
+= Check the result =
+
+* Page check: Find layout, contrast and accessibility problems on a block or Divi 5 page, with a score and a fix for each problem.
+* Node view: See the real styles and HTML of any part of a page.
+* Preview: Get a short-lived preview link to see the page before it goes live.
+
+= Integrations =
+
+The SEO and WooCommerce tools work when that plugin is active.
+
+* Yoast SEO: Read and edit the SEO title, meta description, robots and schema type of posts, pages and terms.
+* Rank Math: Read and edit the SEO title, meta description and robots of posts, pages and terms.
+* All in One SEO: Read and edit the SEO title, meta description, robots and social fields of posts and pages.
+* WooCommerce: List and read products, variations and orders.
+* Unsplash: Find and import free stock photos. This needs your own Unsplash API key.
 
 = Skills and memory =
 
@@ -58,9 +82,17 @@ This group is off until you choose the Managing the site level.
 * Memory: Let your AI save notes and use them in later sessions.
 * Recent changes: Let each new session see what changed on the site.
 
+= Site management =
+
+These tools stay off until you choose the Managing the site level.
+
+* Settings: Change the site title, permalinks and reading options.
+* Plugins and themes: Activate and deactivate plugins, and switch the active theme.
+* Cache: Clear the site cache.
+
 = Safety =
 
-* Access levels: Choose Read, Read & write, or Managing the site. New installs start at Read.
+* Access levels: Choose Just reading, Reading & writing, or Managing the site. New installs start at Just reading.
 * Delete confirmation: Review a preview before anything is deleted or overwritten.
 * Drafts only: Save new posts as drafts until you publish them.
 * Tool switches: Turn off any single tool.
@@ -72,59 +104,29 @@ Saddle never runs code from the AI. It has no shell access and does not write fi
 
 = Connecting an app =
 
-Saddle uses WordPress Application Passwords. Each key only works with Saddle, not the rest of the REST API.
+Saddle uses WordPress Application Passwords. Each key works only with Saddle, not with the rest of the REST API.
 
 ChatGPT cannot use a pasted key. For ChatGPT, turn on OAuth sign-in under **Saddle → Settings**. An administrator must approve each app.
 
-= Unsplash =
-
-Unsplash search: Find and import free stock photos. This needs your own Unsplash API key.
-
-= Divi 5 =
-
-These tools work on sites running Divi 5.
-
-* Divi pages: Build and edit Divi 5 pages with real Divi modules. Add, edit, move and remove modules, and change page settings.
-* Loops and dynamic content: Repeat a module for each post in a query, and show live post data in module fields.
-* Display conditions: Show or hide a module by rule.
-* Presets: Apply a saved Divi preset to a module.
-* Design system: Read Divi global colors, fonts, variables and presets.
-* Library and Theme Builder: List saved Library items and Theme Builder templates.
-* Page check: Check a Divi 5 page for structure and design problems, and see what a module renders.
-
-Saddle only edits Divi 5 pages. It leaves Divi 4 shortcode pages untouched.
-
-= SEO plugins =
-
-These tools work when the SEO plugin is active.
-
-* Yoast SEO: Read and edit the SEO title, meta description, robots and schema type of posts, pages and terms.
-* Rank Math: Read and edit the SEO title, meta description and robots of posts, pages and terms.
-* All in One SEO: Read and edit the SEO title, meta description, robots and social fields of posts and pages.
-
-= WooCommerce =
-
-* Products and orders: List and read products, variations and orders. This works when WooCommerce is active.
-
 = Saddle Pro =
 
-[Saddle Pro](https://saddle.to) is a paid add-on. It needs this free plugin. Pro adds:
+[Saddle Pro](https://saddle.to) is a paid add-on for Divi 5 sites. It needs this free plugin. Pro adds work that changes more than one page:
 
-* Divi design system: Create, edit and delete Divi global colors, fonts, variables and presets.
+* Divi design system: Create, edit and delete global colors, fonts, variables and presets.
 * Divi Library and Theme Builder: Save, update, apply and delete Library items, and assign Theme Builder templates.
 * Whole pages: Build a new Divi page in one step, or clone one.
 * Site-wide changes: Swap an image or apply a preset across many pages, with undo.
 * Design brief: Save a page's design plan and check the page against it.
 * WooCommerce: Update prices, stock, status and categories across many products, with undo.
 
-All features in this free plugin stay free.
+Every feature in this free plugin stays free.
 
 == Installation ==
 
 1. Install and activate Saddle from **Plugins → Add New**.
 2. Go to **Saddle → Apps** and add an app.
 3. Copy the connection settings into your AI app.
-4. To allow changes, go to **Saddle → Permissions** and choose a higher level.
+4. To allow changes, go to **Saddle → Permissions** and choose Reading & writing or Managing the site.
 
 == Frequently Asked Questions ==
 
@@ -136,9 +138,13 @@ No. Saddle is free and runs on your own site.
 
 No. Your AI app connects to your site directly. Saddle sends no tracking data.
 
+= Can I try Saddle before installing it? =
+
+Yes. Click Live Preview on this page. You can explore every screen. To connect an AI app, install Saddle on a real site, because the preview runs only in your browser.
+
 = Can the AI delete my content? =
 
-Only at the Read & write level or higher. Each delete shows a preview first. It runs only after a second confirmation. By default, deleted posts go to the trash.
+Only at the Reading & writing level or higher. Each delete shows a preview first. It runs only after a second confirmation. By default, deleted posts go to the trash.
 
 = Can the AI run code on my server? =
 
@@ -184,7 +190,8 @@ The WordPress.org version never checks for its own updates. The version from plu
 == Changelog ==
 
 = 1.2.1 =
-* Improved: A clearer plugin description. Saddle is a plugin your AI app connects to, not a server.
+* New: Live Preview. Try Saddle in a test WordPress in your browser, straight from this page.
+* Improved: A clearer, rewritten description. Saddle is a plugin your AI app connects to, not a server.
 
 = 1.2.0 =
 * New: Divi 5 pages. Build and edit Divi 5 pages with real Divi modules: add, edit, move and remove modules, change page settings, loops, dynamic content, display conditions and presets.
