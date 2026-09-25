@@ -36,7 +36,7 @@ msgstr ""
 
 #. Author URI of the plugin
 #: saddle.php
-msgid "https://plugpress.co"
+msgid "https://plugpress.io/"
 msgstr ""
 
 #: includes/abilities/blocks.php:35

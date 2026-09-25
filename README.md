@@ -6,7 +6,7 @@ Saddle connects AI apps to your WordPress site through MCP. Your AI can read and
 - **Website:** [saddle.to](https://saddle.to)
 - **Download:** [WordPress.org](https://wordpress.org/plugins/saddle/)
 - **License:** GPL-2.0-or-later
-- **Author:** [PlugPress](https://plugpress.co)
+- **Author:** [PlugPress](https://plugpress.io/)
 
 ## Who it is for
 
@@ -159,4 +159,4 @@ The tests run inside WordPress. They cover access levels, delete confirmation, k
 
 [GPL-2.0-or-later](https://www.gnu.org/licenses/gpl-2.0.html). The bundled MCP Adapter (`WP\MCP`) is GPLv2 or later.
 
-Made by [PlugPress](https://plugpress.co).
+Made by [PlugPress](https://plugpress.io/).
