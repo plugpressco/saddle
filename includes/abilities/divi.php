@@ -818,11 +818,12 @@ class Saddle_Divi_Abilities {
 	/**
 	 * Shared guard for the surgical write abilities: Divi present, a real
 	 * post/page the user may edit, and content that is actually a Divi 5 tree.
+	 * Public for sibling ability classes that write the same pages.
 	 *
 	 * @param array $input Ability input.
 	 * @return WP_Post|WP_Error
 	 */
-	private static function edit_guard( $input ) {
+	public static function edit_guard( $input ) {
 		return Saddle_Divi::editable_divi5_post( isset( $input['post_id'] ) ? (int) $input['post_id'] : 0 );
 	}
 
@@ -887,13 +888,14 @@ class Saddle_Divi_Abilities {
 	 * The context-discipline extras every write response carries: the fresh
 	 * post version, and the full node(s) the write touched — extracted from
 	 * the just-persisted tree so the follow-up divi-get-page is unnecessary.
+	 * Public for sibling ability classes that write the same pages.
 	 *
 	 * @param int      $post_id   The post.
 	 * @param array[]  $tree      The just-persisted tree.
 	 * @param string[] $addresses Addresses the write touched ([] = none survive).
 	 * @return array
 	 */
-	private static function view_extras( $post_id, array $tree, array $addresses ) {
+	public static function view_extras( $post_id, array $tree, array $addresses ) {
 		$fresh  = get_post( (int) $post_id );
 		$extras = array( 'version' => $fresh ? Saddle_Divi_View::version( $fresh ) : null );
 
