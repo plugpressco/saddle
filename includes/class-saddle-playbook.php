@@ -37,7 +37,7 @@ class Saddle_Playbook {
 		// with no playbook at all. A FOREIGN builder is the disqualifier: its
 		// pages are markup inside the content and the native block tools refuse
 		// them, so a Gutenberg playbook would be worse than saying nothing.
-		// Divi with Saddle Pro is not foreign, and Pro bundles its own.
+		// Divi 5 is not foreign: it is edited natively and bundles its own.
 		if ( class_exists( 'Saddle_Context' ) && Saddle_Context::foreign_builders() ) {
 			return $skills;
 		}

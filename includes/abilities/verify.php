@@ -67,7 +67,7 @@ class Saddle_Verify_Abilities {
 			$post,
 			'saddle_verify_unsupported',
 			/* translators: 1: post ID, 2: builder name. */
-			__( 'Post #%1$d is built with %2$s, and no verifier for that builder is installed. Divi 5 pages need Saddle Pro.', 'saddle' )
+			__( 'Post #%1$d is built with %2$s, and no verifier for that builder is installed.', 'saddle' )
 		);
 
 		// Verify can still run its structural + echo passes without a lint

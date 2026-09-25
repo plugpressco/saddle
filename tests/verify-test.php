@@ -162,11 +162,19 @@ class Saddle_Verify_Test extends WP_UnitTestCase {
 	/* -------- builder resolution -------- */
 
 	public function test_builder_page_with_no_verifier_is_refused() {
-		$id     = $this->page( '<!-- wp:divi/placeholder --><!-- wp:divi/section --><!-- /wp:divi/section --><!-- /wp:divi/placeholder -->' );
+		$id = $this->page( '<div class="elementor">Built elsewhere.</div>' );
+		update_post_meta( $id, '_elementor_edit_mode', 'builder' );
 		$result = $this->verify( $id );
 
 		$this->assertWPError( $result );
 		$this->assertSame( 'saddle_verify_unsupported', $result->get_error_code() );
+	}
+
+	public function test_divi_5_pages_are_verified_natively() {
+		$result = $this->verify( $this->page( '<!-- wp:divi/placeholder --><!-- wp:divi/section --><!-- /wp:divi/section --><!-- /wp:divi/placeholder -->' ) );
+
+		$this->assertNotWPError( $result );
+		$this->assertNotContains( 'structural', isset( $result['skipped'] ) ? (array) $result['skipped'] : array(), 'The built-in Divi verifier runs the structural pass.' );
 	}
 
 	public function test_builder_findings_and_accessor_arrive_through_the_filters() {

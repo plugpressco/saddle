@@ -167,7 +167,7 @@ function saddle_register_block_abilities() {
 		'saddle/get-design-system',
 		array(
 			'label'               => __( 'Get design system', 'saddle' ),
-			'description'         => __( 'Returns this site\'s design system in ONE builder-agnostic shape — colors, fonts, font sizes, spacing, layout widths, plus builder-native design variables and module presets when a page builder is active. On a block theme it reads theme.json; on Divi (with Saddle Pro) it reads Divi\'s Global Data. Read this FIRST when designing a page, and use the returned slugs/ids instead of hardcoded values so everything you build inherits the real brand. Read-only.', 'saddle' ),
+			'description'         => __( 'Returns this site\'s design system in ONE builder-agnostic shape — colors, fonts, font sizes, spacing, layout widths, plus builder-native design variables and module presets when a page builder is active. On a block theme it reads theme.json; on Divi 5 it reads Divi\'s Global Data. Read this FIRST when designing a page, and use the returned slugs/ids instead of hardcoded values so everything you build inherits the real brand. Read-only.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',

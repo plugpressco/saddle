@@ -465,13 +465,26 @@ class Saddle_Lint_Test extends WP_UnitTestCase {
 		$id = self::factory()->post->create(
 			array(
 				'post_type'    => 'page',
+				'post_content' => '<div class="elementor">Built elsewhere.</div>',
+			)
+		);
+		update_post_meta( $id, '_elementor_edit_mode', 'builder' );
+
+		$result = $this->run_ability( 'lint-page', array( 'post_id' => $id ) );
+		$this->assertWPError( $result );
+		$this->assertSame( 'saddle_lint_unsupported', $result->get_error_code() );
+	}
+
+	public function test_lint_page_lints_divi_5_pages_natively() {
+		$id = self::factory()->post->create(
+			array(
+				'post_type'    => 'page',
 				'post_content' => '<!-- wp:divi/placeholder --><!-- wp:divi/section --><!-- /wp:divi/section --><!-- /wp:divi/placeholder -->',
 			)
 		);
 
 		$result = $this->run_ability( 'lint-page', array( 'post_id' => $id ) );
-		$this->assertWPError( $result );
-		$this->assertSame( 'saddle_lint_unsupported', $result->get_error_code() );
+		$this->assertNotWPError( $result );
 	}
 
 	public function test_lint_page_uses_the_accessor_a_builder_integration_provides() {
