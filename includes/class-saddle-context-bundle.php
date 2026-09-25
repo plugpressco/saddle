@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
  * session starts oriented before it calls anything at all.
  *
  * COMPOSES the existing reads, never re-implements them. Saddle Pro proved this
- * shape for Divi (Saddle_Pro_Divi_Bundle); this is the Gutenberg equivalent.
+ * shape for Divi (Saddle_Divi_Bundle); this is the Gutenberg equivalent.
  *
  * The cache is belt and braces: a 12-hour TTL AND a content signature checked on
  * every read. A signature miss self-corrects even when an invalidation hook
