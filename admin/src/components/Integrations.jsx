@@ -72,7 +72,7 @@ const KNOWN = {
 	wc: {
 		title: __( 'WooCommerce', 'saddle' ),
 		description: __(
-			'Products and orders, read natively.',
+			'Products and orders, handled natively.',
 			'saddle'
 		),
 	},
