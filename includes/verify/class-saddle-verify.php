@@ -212,6 +212,7 @@ class Saddle_Verify {
 		setup_postdata( $post );
 		wp_set_current_user( 0 );
 
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Core's own the_content filter, applied so the saved page renders exactly as the front end renders it.
 		$html = apply_filters( 'the_content', $post->post_content );
 
 		wp_set_current_user( $user_id );

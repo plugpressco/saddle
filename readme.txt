@@ -4,7 +4,7 @@ Tags: mcp, ai, claude, chatgpt, divi
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.3.0
+Stable tag: 1.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -191,7 +191,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 
 == Changelog ==
 
-= Unreleased =
+= 1.4.0 =
 * New: Your AI app can check that a change is live. It loads the published page as a visitor would and says when a page cache is still serving the old version.
 * New: Your AI app can upload a file it has no public link for, such as an image it made. It sends the file itself, and WordPress checks it like any other upload.
 * New: A "Check the connection" tool. Your AI app can find out why tools are missing or why another app cannot connect, and tell you how to fix it.
