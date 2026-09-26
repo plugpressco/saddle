@@ -487,6 +487,111 @@ class Saddle_MCP_Diagnostics {
 		return implode( "\n", $lines );
 	}
 
+	/**
+	 * saddle/self-check: what an agent can learn about its own connection,
+	 * each problem stated with the fix in plain words (#222).
+	 *
+	 * Nothing here is a new probe. It gathers what Saddle_Capabilities,
+	 * Saddle_Connection and this class already know. The one request it can
+	 * make is the loopback "Connection check" the readme already lists, and
+	 * only for an account that can manage the site: it tells a connection
+	 * that works over Basic that apps signing in with OAuth (Bearer) are
+	 * being stripped at the edge, which nothing on this side of the request
+	 * can see. Pause is not reported: a paused site refuses this call too,
+	 * and that refusal already says so.
+	 *
+	 * @return array
+	 */
+	public static function agent_self_check() {
+		$scheme    = class_exists( 'Saddle_Connection' ) ? Saddle_Connection::credential_scheme() : '';
+		$site_tier = Saddle_Capabilities::get_site_tier();
+		$tier      = Saddle_Capabilities::get_tier();
+		$problems  = array();
+
+		if ( $tier !== $site_tier ) {
+			$problems[] = array(
+				'code'    => 'scope_below_site_tier',
+				'message' => sprintf(
+					/* translators: 1: this connection's access level, 2: the site's access level. */
+					__( 'This app signed in with "%1$s" access, below the "%2$s" access the site allows, so some tools are withheld from it.', 'saddle' ),
+					$tier,
+					$site_tier
+				),
+				'fix'     => __( 'Reconnect the app and approve the wider access on the consent screen.', 'saddle' ),
+			);
+		}
+
+		if ( Saddle_Capabilities::is_domain_enforced() && ! Saddle_Capabilities::domain_matches_recorded() ) {
+			$problems[] = array(
+				'code'    => 'site_address_changed',
+				'message' => __( 'The site\'s address changed since write access was granted, and the owner turned on domain enforcement, so every write tool is refused.', 'saddle' ),
+				'fix'     => __( 'The owner re-confirms the access level in Saddle → Permissions.', 'saddle' ),
+			);
+		}
+
+		if ( '' === (string) get_option( 'permalink_structure' ) ) {
+			$problems[] = array(
+				'code'    => 'plain_permalinks',
+				'message' => __( 'The site uses plain permalinks. Apps that expect /wp-json/ addresses, and OAuth sign-in, do not work that way.', 'saddle' ),
+				'fix'     => __( 'Choose any setting other than "Plain" in Settings → Permalinks.', 'saddle' ),
+			);
+		}
+
+		$app_passwords = function_exists( 'wp_is_application_passwords_available' ) && wp_is_application_passwords_available();
+		if ( ! $app_passwords ) {
+			$problems[] = array(
+				'code'    => 'app_passwords_off',
+				'message' => __( 'Application Passwords are unavailable on this site, so apps that connect with a pasted key cannot sign in.', 'saddle' ),
+				'fix'     => __( 'Serve the site over HTTPS, or ask whoever turned Application Passwords off (a security plugin or the host) to allow them.', 'saddle' ),
+			);
+		}
+
+		$headers = array( 'checked' => false );
+		if ( class_exists( 'Saddle_Connection' ) && current_user_can( 'manage_options' ) ) {
+			$probe   = Saddle_Connection::self_check();
+			$headers = array(
+				'checked' => true,
+				'basic'   => $probe['auth_header'],
+				'bearer'  => $probe['bearer_header'],
+			);
+
+			if ( 'stripped' === $probe['auth_header'] || 'stripped' === $probe['bearer_header'] ) {
+				$problems[] = array(
+					'code'    => 'stripped' === $probe['bearer_header'] && 'stripped' !== $probe['auth_header'] ? 'bearer_header_stripped' : 'auth_header_stripped',
+					'message' => 'stripped' === $probe['auth_header']
+						? __( 'The web server drops the Authorization header before WordPress sees it, so apps that connect with a key are refused.', 'saddle' )
+						: __( 'The web server drops Bearer sign-ins, so apps that connect through OAuth (such as ChatGPT) are refused even though pasted-key apps work.', 'saddle' ),
+					'fix'     => $probe['htaccess_fixable']
+						? __( 'Saddle → Settings → Connection check can add the fix to .htaccess in one click.', 'saddle' )
+						: __( 'Ask the host to forward the Authorization header to PHP. Saddle → Settings → Connection check shows the exact rule.', 'saddle' ),
+				);
+			}
+		} else {
+			$headers['reason'] = __( 'Checking which sign-in headers reach WordPress needs an account that can manage the site.', 'saddle' );
+		}
+
+		$auth = array(
+			'basic'  => 'application_password',
+			'bearer' => 'oauth',
+		);
+
+		return array(
+			'status'     => $problems ? 'attention' : 'ok',
+			'connection' => array(
+				'signed_in_with' => isset( $auth[ $scheme ] ) ? $auth[ $scheme ] : 'browser_session',
+				'site_tier'      => $site_tier,
+				'effective_tier' => $tier,
+				'transport'      => self::transport_description(),
+				'saddle_version' => defined( 'SADDLE_VERSION' ) ? SADDLE_VERSION : '',
+				'wp_version'     => get_bloginfo( 'version' ),
+			),
+			'tools'      => Saddle_Capabilities::hidden_tool_counts(),
+			'policies'   => array( 'drafts_only' => Saddle_Capabilities::is_drafts_only() ),
+			'headers'    => $headers,
+			'problems'   => $problems,
+		);
+	}
+
 	/* --------------------------------------------------------------- helpers */
 
 	/**
