@@ -38,11 +38,14 @@ when it is picked up; this file names direction, not tickets.
 1. **Ship what exists.** WordPress.org approval of 1.0.0; a green CI that means
    green; Pro releases for what is already on `main`.
 2. **The production-safe write path is the product.** A drafts-only policy switch
-   (the advice every thread gives by hand, as a checkbox); bulk post operations with
-   preview → confirm token → batch undo, the same shape Pro's `wc-bulk-*` already
-   has; `upload-media` accepting inline content so a write-capable client without a
+   (the advice every thread gives by hand, as a checkbox; shipped in #168);
+   `upload-media` accepting inline content so a write-capable client without a
    public URL is not stranded; `verify-page` proving the *public* page serves the
-   new content, not just the read-back. All free.
+   new content, not just the read-back. All free. **Bulk post operations** with
+   preview → confirm token → batch undo, the same shape as Pro's `wc-bulk-*`, are
+   **Pro** (decided 2026-09-27; this line said free until then). That matches the
+   2026-09-26 split, where free edits and Pro operates the site. They can move to
+   free later, but never back (R6).
 3. **The agency workflow.** Divi 5 page editing moves to free (2026-09-26 split:
    free edits, Pro operates the site). Divi design-system export/import as JSON (Pro) —
    global colors, fonts, variables, presets, Theme Builder templates, library
@@ -56,6 +59,15 @@ when it is picked up; this file names direction, not tickets.
    token-per-task benchmark, because nobody measures it and address-based edits
    with compact reads are Saddle's answer to the "burns a five-hour window in an
    hour" complaint.
+
+**Decided 2026-09-27, while starting Phase 1:**
+
+- **Pause keeps tools listed.** A paused site refuses every call and names the
+  pause as the reason, but `tools/list` still lists every tool. Hiding them would
+  leave ChatGPT's frozen tool list stale after resume.
+- **OAuth accepts any port on a loopback redirect URI** (`127.0.0.1`, `[::1]`,
+  `localhost`), as RFC 8252 §7.3 requires for native clients such as Claude Code.
+  Every other redirect URI stays an exact string match.
 
 ## Explicit NO list
 
