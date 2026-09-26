@@ -1002,7 +1002,7 @@ class Saddle_REST_Admin {
 			// section the owner has never seen them in.
 			'Site editor'     => array( 'template', 'global-styles', 'pattern' ),
 			'Users'           => array( 'user' ),
-			'Site & settings' => array( 'option', 'plugin', 'theme', 'cache', 'site-info' ),
+			'Site & settings' => array( 'option', 'plugin', 'theme', 'cache', 'site-info', 'self-check' ),
 			'Content'         => array( 'post', 'page', 'media', 'categor', 'tag', 'revision', 'search' ),
 		);
 

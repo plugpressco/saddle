@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-26T22:32:20+00:00\n"
+"POT-Creation-Date: 2026-09-26T23:07:22+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -161,7 +161,7 @@ msgstr ""
 #: includes/abilities/aioseo.php:184
 #: includes/abilities/aioseo.php:211
 #: includes/abilities/aioseo.php:233
-#: includes/abilities/core-content.php:2006
+#: includes/abilities/core-content.php:2023
 #: includes/abilities/divi.php:670
 #: includes/abilities/divi.php:1504
 #: includes/abilities/rank-math.php:244
@@ -557,7 +557,7 @@ msgid "Its layout is edited with the builder's own editor — tell the site owne
 msgstr ""
 
 #: includes/abilities/blocks.php:1329
-#: includes/abilities/core-content.php:2010
+#: includes/abilities/core-content.php:2027
 #: includes/abilities/divi.php:1318
 #: includes/abilities/divi.php:1419
 #: includes/abilities/render.php:160
@@ -637,528 +637,536 @@ msgid "Returns orientation data about this WordPress site: name, tagline, URL, W
 msgstr ""
 
 #: includes/abilities/core-content.php:86
-msgid "Get instructions"
+msgid "Check the connection"
 msgstr ""
 
 #: includes/abilities/core-content.php:87
+msgid "Diagnoses this connection and the site setup around it. Returns how this app signed in (application password or OAuth), the site's access level and the one in force for this app, how many tools are withheld and why, the MCP transport, and a \"problems\" list where each entry says what is wrong and how to fix it, in words you can pass to the user. For an account that can manage the site it also checks whether the web server strips sign-in headers, which breaks OAuth apps like ChatGPT while pasted-key apps keep working; that check sends a test request to the site itself and can take a few seconds. Read-only. Call it when tools you expect are missing, or when the user says another app cannot connect."
+msgstr ""
+
+#: includes/abilities/core-content.php:103
+msgid "Get instructions"
+msgstr ""
+
+#: includes/abilities/core-content.php:104
 msgid "Returns important context about this site and the site owner's instructions for AI agents. Call this first, before other actions, and follow the guidance it returns. The installed-plugin inventory is included only for admin-level credentials. Read-only."
 msgstr ""
 
-#: includes/abilities/core-content.php:107
+#: includes/abilities/core-content.php:124
 msgid "Search content"
 msgstr ""
 
-#: includes/abilities/core-content.php:108
+#: includes/abilities/core-content.php:125
 msgid "Full-text search across posts and pages by keyword. Returns matching items as summaries (id, type, title, slug, status, link, excerpt; pages also carry parent and menu order). Read-only. Use post_type to restrict to \"post\", \"page\", or \"any\"."
 msgstr ""
 
-#: includes/abilities/core-content.php:117
+#: includes/abilities/core-content.php:134
 msgid "Search keywords."
 msgstr ""
 
-#: includes/abilities/core-content.php:123
+#: includes/abilities/core-content.php:140
 msgid "Restrict results to this type."
 msgstr ""
 
-#: includes/abilities/core-content.php:148
+#: includes/abilities/core-content.php:165
 msgid "List posts"
 msgstr ""
 
-#: includes/abilities/core-content.php:149
+#: includes/abilities/core-content.php:166
 msgid "Lists posts as summaries (id, title, slug, status, author, date, link, excerpt). Read-only. Supports filtering by status, author, category, and search term, plus pagination via per_page/page."
 msgstr ""
 
-#: includes/abilities/core-content.php:158
-#: includes/abilities/core-content.php:283
-#: includes/abilities/core-content.php:376
-#: includes/abilities/core-content.php:626
+#: includes/abilities/core-content.php:175
+#: includes/abilities/core-content.php:300
+#: includes/abilities/core-content.php:393
+#: includes/abilities/core-content.php:643
 msgid "Optional keyword filter."
 msgstr ""
 
-#: includes/abilities/core-content.php:162
+#: includes/abilities/core-content.php:179
 msgid "Filter by author user ID."
 msgstr ""
 
-#: includes/abilities/core-content.php:166
+#: includes/abilities/core-content.php:183
 msgid "Filter by category term ID."
 msgstr ""
 
-#: includes/abilities/core-content.php:194
+#: includes/abilities/core-content.php:211
 msgid "Get post"
 msgstr ""
 
-#: includes/abilities/core-content.php:195
+#: includes/abilities/core-content.php:212
 msgid "Returns a single post in full: title, content, excerpt, status, slug, author, dates, categories, tags, featured image, discussion settings, and custom fields (meta). Read-only."
 msgstr ""
 
-#: includes/abilities/core-content.php:197
+#: includes/abilities/core-content.php:214
 msgid "The post ID."
 msgstr ""
 
-#: includes/abilities/core-content.php:207
+#: includes/abilities/core-content.php:224
 msgid "Create post"
 msgstr ""
 
-#: includes/abilities/core-content.php:208
+#: includes/abilities/core-content.php:225
 msgid "Creates a new post and returns its id and summary. Additive (non-destructive). Accepts title, content, excerpt, status (draft/publish/pending/private), slug, author, date, category_ids, tags, featured_media, discussion settings, and custom fields via \"meta\". Defaults to draft status."
 msgstr ""
 
-#: includes/abilities/core-content.php:220
+#: includes/abilities/core-content.php:237
 msgid "Update post"
 msgstr ""
 
-#: includes/abilities/core-content.php:221
+#: includes/abilities/core-content.php:238
 msgid "Updates an existing post by id. Only the fields you pass are changed; omitted fields are left untouched. Accepts the same fields as create-post, including slug, author, and custom fields via \"meta\" (null deletes a key). WordPress stores a revision, so changes are recoverable (non-destructive). Returns the updated summary."
 msgstr ""
 
-#: includes/abilities/core-content.php:233
+#: includes/abilities/core-content.php:250
 msgid "Delete post"
 msgstr ""
 
-#: includes/abilities/core-content.php:234
+#: includes/abilities/core-content.php:251
 msgid "Deletes a post. DESTRUCTIVE — runs through a two-step confirmation: the first call returns a preview and a confirm_token without changing anything; call again with confirm_token to execute. Without \"force\" the post is trashed (recoverable); with force=true it is permanently deleted (not recoverable)."
 msgstr ""
 
-#: includes/abilities/core-content.php:236
+#: includes/abilities/core-content.php:253
 msgid "The post ID to delete."
 msgstr ""
 
-#: includes/abilities/core-content.php:250
+#: includes/abilities/core-content.php:267
 msgid "List post revisions"
 msgstr ""
 
-#: includes/abilities/core-content.php:251
+#: includes/abilities/core-content.php:268
 msgid "Lists the stored revisions of a post or page (id, author, date, title). Read-only. Restoring a revision is not available in this version."
 msgstr ""
 
-#: includes/abilities/core-content.php:253
+#: includes/abilities/core-content.php:270
 msgid "The post or page ID."
 msgstr ""
 
-#: includes/abilities/core-content.php:273
+#: includes/abilities/core-content.php:290
 msgid "List pages"
 msgstr ""
 
-#: includes/abilities/core-content.php:274
+#: includes/abilities/core-content.php:291
 msgid "Lists pages as summaries (id, title, slug, status, parent, menu order, author, date, link, excerpt). Read-only. Supports status filtering and pagination. A parent of 0 means a top-level page; a draft may have an empty slug until it is published."
 msgstr ""
 
-#: includes/abilities/core-content.php:287
+#: includes/abilities/core-content.php:304
 msgid "Filter by parent page ID."
 msgstr ""
 
-#: includes/abilities/core-content.php:305
+#: includes/abilities/core-content.php:322
 msgid "Get page"
 msgstr ""
 
-#: includes/abilities/core-content.php:306
+#: includes/abilities/core-content.php:323
 msgid "Returns a single page in full: title, content, excerpt, status, slug, author, dates, page template, parent, menu order, featured image, discussion settings, and custom fields (meta). Read-only."
 msgstr ""
 
-#: includes/abilities/core-content.php:308
+#: includes/abilities/core-content.php:325
 msgid "The page ID."
 msgstr ""
 
-#: includes/abilities/core-content.php:318
+#: includes/abilities/core-content.php:335
 msgid "Create page"
 msgstr ""
 
-#: includes/abilities/core-content.php:319
+#: includes/abilities/core-content.php:336
 msgid "Creates a new page and returns its id and summary. Additive (non-destructive). Accepts title, content, excerpt, status, slug, author, date, page template, parent, menu_order, featured_media, discussion settings, and custom fields via \"meta\". Defaults to draft status."
 msgstr ""
 
-#: includes/abilities/core-content.php:331
+#: includes/abilities/core-content.php:348
 msgid "Update page"
 msgstr ""
 
-#: includes/abilities/core-content.php:332
+#: includes/abilities/core-content.php:349
 msgid "Updates an existing page by id. Only the fields you pass are changed. Accepts the same fields as create-page, including slug, author, and custom fields via \"meta\" (null deletes a key). WordPress stores a revision, so changes are recoverable (non-destructive). Returns the updated summary."
 msgstr ""
 
-#: includes/abilities/core-content.php:344
+#: includes/abilities/core-content.php:361
 msgid "Delete page"
 msgstr ""
 
-#: includes/abilities/core-content.php:345
+#: includes/abilities/core-content.php:362
 msgid "Deletes a page. DESTRUCTIVE — two-step confirmation required (preview + confirm_token). Without \"force\" the page is trashed (recoverable); with force=true it is permanently deleted."
 msgstr ""
 
-#: includes/abilities/core-content.php:347
+#: includes/abilities/core-content.php:364
 msgid "The page ID to delete."
 msgstr ""
 
-#: includes/abilities/core-content.php:367
+#: includes/abilities/core-content.php:384
 msgid "List media"
 msgstr ""
 
-#: includes/abilities/core-content.php:368
+#: includes/abilities/core-content.php:385
 msgid "Lists media library items as summaries (id, title, mime type, URL, date, attached post, and media tags when assigned). Read-only. Supports filtering by mime type, parent, source (\"unsplash\" lists everything imported from Unsplash, with the total count), and tag (a media-tag name — Unsplash imports are auto-tagged), plus pagination."
 msgstr ""
 
-#: includes/abilities/core-content.php:380
+#: includes/abilities/core-content.php:397
 msgid "Filter by MIME type or prefix, e.g. \"image\" or \"image/png\"."
 msgstr ""
 
-#: includes/abilities/core-content.php:384
+#: includes/abilities/core-content.php:401
 msgid "Filter by the post the media is attached to."
 msgstr ""
 
-#: includes/abilities/core-content.php:389
+#: includes/abilities/core-content.php:406
 msgid "Only media imported from this source. \"unsplash\" answers what was downloaded from Unsplash and how many."
 msgstr ""
 
-#: includes/abilities/core-content.php:393
+#: includes/abilities/core-content.php:410
 msgid "Only media assigned this media tag (matched case-insensitively). Unsplash imports are auto-tagged with the photo's Unsplash tags plus any tags passed at import."
 msgstr ""
 
-#: includes/abilities/core-content.php:413
+#: includes/abilities/core-content.php:430
 msgid "Get media"
 msgstr ""
 
-#: includes/abilities/core-content.php:414
+#: includes/abilities/core-content.php:431
 msgid "Returns a single media item in full: URL, MIME type, alt text, caption, description, available image sizes, and the post it is attached to. Read-only."
 msgstr ""
 
-#: includes/abilities/core-content.php:416
-#: includes/abilities/core-content.php:471
+#: includes/abilities/core-content.php:433
+#: includes/abilities/core-content.php:488
 msgid "The attachment ID."
 msgstr ""
 
-#: includes/abilities/core-content.php:426
+#: includes/abilities/core-content.php:443
 msgid "Upload media from URL"
 msgstr ""
 
-#: includes/abilities/core-content.php:427
+#: includes/abilities/core-content.php:444
 msgid "Downloads a file from a source URL you provide and adds it to the media library, returning the new attachment id and URL. Additive (non-destructive). This is the only ability that fetches an external URL, and it fetches only the URL you pass. Optionally set title, alt text, caption, description, and the post to attach it to."
 msgstr ""
 
-#: includes/abilities/core-content.php:436
+#: includes/abilities/core-content.php:453
 msgid "Publicly reachable URL of the file to download."
 msgstr ""
 
-#: includes/abilities/core-content.php:440
+#: includes/abilities/core-content.php:457
 msgid "Override the stored filename (with extension)."
 msgstr ""
 
-#: includes/abilities/core-content.php:448
+#: includes/abilities/core-content.php:465
 msgid "Attach the media to this post/page ID."
 msgstr ""
 
-#: includes/abilities/core-content.php:461
+#: includes/abilities/core-content.php:478
 msgid "Update media metadata"
 msgstr ""
 
-#: includes/abilities/core-content.php:462
+#: includes/abilities/core-content.php:479
 msgid "Updates a media item's metadata (title, alt text, caption, description) by id. Does not replace the file. Non-destructive. Returns the updated summary."
 msgstr ""
 
-#: includes/abilities/core-content.php:488
+#: includes/abilities/core-content.php:505
 msgid "Delete media"
 msgstr ""
 
-#: includes/abilities/core-content.php:489
+#: includes/abilities/core-content.php:506
 msgid "Deletes a media item and its files. DESTRUCTIVE and NOT RECOVERABLE — attachments have no trash state in WordPress, so deletion is permanent. Two-step confirmation required (preview + confirm_token)."
 msgstr ""
 
-#: includes/abilities/core-content.php:491
+#: includes/abilities/core-content.php:508
 msgid "The attachment ID to delete."
 msgstr ""
 
-#: includes/abilities/core-content.php:507
+#: includes/abilities/core-content.php:524
 msgid "List categories"
 msgstr ""
 
-#: includes/abilities/core-content.php:508
+#: includes/abilities/core-content.php:525
 msgid "Lists post categories as summaries (id, name, slug, parent, post count, description). Read-only. Supports search and pagination."
 msgstr ""
 
-#: includes/abilities/core-content.php:520
+#: includes/abilities/core-content.php:537
 msgid "Create category"
 msgstr ""
 
-#: includes/abilities/core-content.php:521
+#: includes/abilities/core-content.php:538
 msgid "Creates a post category and returns it. Additive (non-destructive). Accepts name (required), slug, parent category id, and description."
 msgstr ""
 
-#: includes/abilities/core-content.php:533
+#: includes/abilities/core-content.php:550
 msgid "List tags"
 msgstr ""
 
-#: includes/abilities/core-content.php:534
+#: includes/abilities/core-content.php:551
 msgid "Lists post tags as summaries (id, name, slug, post count, description). Read-only. Supports search and pagination."
 msgstr ""
 
-#: includes/abilities/core-content.php:546
+#: includes/abilities/core-content.php:563
 msgid "Create tag"
 msgstr ""
 
-#: includes/abilities/core-content.php:547
+#: includes/abilities/core-content.php:564
 msgid "Creates a post tag and returns it. Additive (non-destructive). Accepts name (required), slug, and description."
 msgstr ""
 
-#: includes/abilities/core-content.php:631
+#: includes/abilities/core-content.php:648
 msgid "Exclude terms that have no posts."
 msgstr ""
 
-#: includes/abilities/core-content.php:649
+#: includes/abilities/core-content.php:666
 msgid "The term name (required)."
 msgstr ""
 
-#: includes/abilities/core-content.php:658
+#: includes/abilities/core-content.php:675
 msgid "Parent category term ID."
 msgstr ""
 
-#: includes/abilities/core-content.php:680
+#: includes/abilities/core-content.php:697
 msgid "Results per page (1–100)."
 msgstr ""
 
-#: includes/abilities/core-content.php:694
+#: includes/abilities/core-content.php:711
 msgid "Page number of results."
 msgstr ""
 
-#: includes/abilities/core-content.php:708
+#: includes/abilities/core-content.php:725
 msgid "Filter by post status."
 msgstr ""
 
-#: includes/abilities/core-content.php:748
+#: includes/abilities/core-content.php:765
 msgid "The single-use token returned by the preview call. Omit on the first call to receive a preview."
 msgstr ""
 
-#: includes/abilities/core-content.php:756
+#: includes/abilities/core-content.php:773
 msgid "If true, permanently delete instead of moving to trash."
 msgstr ""
 
-#: includes/abilities/core-content.php:778
+#: includes/abilities/core-content.php:795
 msgid "The title."
 msgstr ""
 
-#: includes/abilities/core-content.php:782
+#: includes/abilities/core-content.php:799
 msgid "The body content (HTML or blocks)."
 msgstr ""
 
-#: includes/abilities/core-content.php:788
+#: includes/abilities/core-content.php:805
 msgid "Publication status. Defaults to draft on create."
 msgstr ""
 
-#: includes/abilities/core-content.php:793
+#: includes/abilities/core-content.php:810
 msgid "Author user ID."
 msgstr ""
 
-#: includes/abilities/core-content.php:797
+#: includes/abilities/core-content.php:814
 msgid "Publish date in site time, \"YYYY-MM-DD HH:MM:SS\"."
 msgstr ""
 
-#: includes/abilities/core-content.php:809
+#: includes/abilities/core-content.php:826
 msgid "Attachment ID to set as the featured image."
 msgstr ""
 
-#: includes/abilities/core-content.php:814
+#: includes/abilities/core-content.php:831
 msgid "Custom fields (post meta) as key/value pairs. Values may be strings, numbers, booleans, or arrays; pass null as a value to delete that key. Keys starting with an underscore are protected — writable only when the owning plugin registered them as editable. Denied keys are skipped and reported back in \"meta_denied\"; the rest of the request still applies."
 msgstr ""
 
-#: includes/abilities/core-content.php:822
+#: includes/abilities/core-content.php:839
 msgid "Category term IDs to assign."
 msgstr ""
 
-#: includes/abilities/core-content.php:827
+#: includes/abilities/core-content.php:844
 msgid "Tag names to assign (created if missing)."
 msgstr ""
 
-#: includes/abilities/core-content.php:832
+#: includes/abilities/core-content.php:849
 msgid "Page template filename, e.g. \"template-full.php\"."
 msgstr ""
 
-#: includes/abilities/core-content.php:836
+#: includes/abilities/core-content.php:853
 msgid "Parent page ID."
 msgstr ""
 
-#: includes/abilities/core-content.php:840
+#: includes/abilities/core-content.php:857
 msgid "Ordering value among sibling pages."
 msgstr ""
 
-#: includes/abilities/core-content.php:853
+#: includes/abilities/core-content.php:870
 msgid "The ID to update."
 msgstr ""
 
-#: includes/abilities/core-content.php:857
+#: includes/abilities/core-content.php:874
 msgid "Single-use token returned by a publishing preview. Repeat the same arguments with this token to confirm."
 msgstr ""
 
 #. translators: %s: field name.
-#: includes/abilities/core-content.php:904
+#: includes/abilities/core-content.php:921
 #, php-format
 msgid "A numeric \"%s\" is required."
 msgstr ""
 
 #. translators: %s: field name.
-#: includes/abilities/core-content.php:916
+#: includes/abilities/core-content.php:933
 #, php-format
 msgid "The \"%s\" must be a positive integer."
 msgstr ""
 
-#: includes/abilities/core-content.php:934
+#: includes/abilities/core-content.php:951
 msgid "You do not have permission to do that with this item."
 msgstr ""
 
-#: includes/abilities/core-content.php:956
+#: includes/abilities/core-content.php:973
 msgid "You do not have permission to edit this item."
 msgstr ""
 
-#: includes/abilities/core-content.php:962
+#: includes/abilities/core-content.php:979
 msgid "You do not have permission to publish content."
 msgstr ""
 
-#: includes/abilities/core-content.php:969
+#: includes/abilities/core-content.php:986
 msgid "You do not have permission to assign content to another user."
 msgstr ""
 
 #. translators: 1: type, 2: id, 3: title.
-#: includes/abilities/core-content.php:1041
+#: includes/abilities/core-content.php:1058
 #, php-format
 msgid "Approve publication of %1$s #%2$d \"%3$s\", including any requested schedule and edits."
 msgstr ""
 
-#: includes/abilities/core-content.php:1168
+#: includes/abilities/core-content.php:1185
 msgid "A non-empty \"query\" is required."
 msgstr ""
 
-#: includes/abilities/core-content.php:1272
+#: includes/abilities/core-content.php:1289
 msgid "You do not have permission to view this item's revision history."
 msgstr ""
 
-#: includes/abilities/core-content.php:1456
+#: includes/abilities/core-content.php:1473
 msgid "The \"source_url\" is not a valid, fetchable URL, or it resolves to a disallowed internal address. If the host is external but cannot be resolved on this server, the site owner can allow it via the \"saddle_source_url_is_safe\" filter."
 msgstr ""
 
 #. translators: %s: maximum size, e.g. "64 MB".
-#: includes/abilities/core-content.php:1477
+#: includes/abilities/core-content.php:1494
 #, php-format
 msgid "The file exceeds the maximum allowed size (%s)."
 msgstr ""
 
-#: includes/abilities/core-content.php:1517
+#: includes/abilities/core-content.php:1534
 msgid "A \"source_url\" is required."
 msgstr ""
 
-#: includes/abilities/core-content.php:1523
+#: includes/abilities/core-content.php:1540
 #: includes/abilities/unsplash.php:230
 msgid "You do not have permission to attach media to that item."
 msgstr ""
 
 #. translators: %d: attachment id.
-#: includes/abilities/core-content.php:1559
+#: includes/abilities/core-content.php:1576
 #, php-format
 msgid "Uploaded media #%d"
 msgstr ""
 
-#: includes/abilities/core-content.php:1581
-#: includes/abilities/core-content.php:1634
-#: includes/abilities/core-content.php:2004
+#: includes/abilities/core-content.php:1598
+#: includes/abilities/core-content.php:1651
+#: includes/abilities/core-content.php:2021
 msgid "No media item with that ID."
 msgstr ""
 
-#: includes/abilities/core-content.php:1584
+#: includes/abilities/core-content.php:1601
 msgid "You do not have permission to edit this media item."
 msgstr ""
 
 #. translators: %d: attachment id.
-#: includes/abilities/core-content.php:1612
+#: includes/abilities/core-content.php:1629
 #, php-format
 msgid "Updated media #%d"
 msgstr ""
 
-#: includes/abilities/core-content.php:1637
+#: includes/abilities/core-content.php:1654
 msgid "You do not have permission to delete this media item."
 msgstr ""
 
 #. translators: 1: attachment id, 2: title.
-#: includes/abilities/core-content.php:1646
+#: includes/abilities/core-content.php:1663
 #, php-format
 msgid "Permanently delete media #%1$d \"%2$s\" and its files. Media has no trash — this cannot be undone."
 msgstr ""
 
-#: includes/abilities/core-content.php:1662
+#: includes/abilities/core-content.php:1679
 msgid "WordPress could not delete the media item."
 msgstr ""
 
-#: includes/abilities/core-content.php:1776
+#: includes/abilities/core-content.php:1793
 msgid "A \"name\" is required."
 msgstr ""
 
 #. translators: 1: term type, 2: name.
-#: includes/abilities/core-content.php:1802
+#: includes/abilities/core-content.php:1819
 #, php-format
 msgid "Created %1$s \"%2$s\""
 msgstr ""
 
 #. translators: 1: post type, 2: id, 3: title.
-#: includes/abilities/core-content.php:1927
+#: includes/abilities/core-content.php:1944
 #, php-format
 msgid "Created %1$s #%2$d \"%3$s\""
 msgstr ""
 
-#: includes/abilities/core-content.php:1939
+#: includes/abilities/core-content.php:1956
 msgid "This site is set to drafts-only: the requested publication or schedule was not applied, and the item was saved as a draft instead."
 msgstr ""
 
-#: includes/abilities/core-content.php:1972
+#: includes/abilities/core-content.php:1989
 #: includes/abilities/divi.php:1507
 msgid "You cannot read this post."
 msgstr ""
 
-#: includes/abilities/core-content.php:1984
+#: includes/abilities/core-content.php:2001
 msgid "This item is password-protected. Reading it needs edit access to it, which the WordPress account this app is connected as does not have. Do not retry; tell the user to reconnect Saddle as an account that can edit this item."
 msgstr ""
 
-#: includes/abilities/core-content.php:2008
+#: includes/abilities/core-content.php:2025
 msgid "No page with that ID."
 msgstr ""
 
 #. translators: 1: post ID, 2: builder name.
-#: includes/abilities/core-content.php:2072
+#: includes/abilities/core-content.php:2089
 #, php-format
 msgid "Post #%1$d is built with %2$s — overwriting its content field would destroy the layout, so Saddle refuses. You can still edit its title, status, excerpt, taxonomy, and meta. "
 msgstr ""
 
-#: includes/abilities/core-content.php:2076
+#: includes/abilities/core-content.php:2093
 msgid "To change the layout itself, use the saddle/divi-* tools (divi-get-page, divi-edit-module, divi-set-page)."
 msgstr ""
 
-#: includes/abilities/core-content.php:2077
+#: includes/abilities/core-content.php:2094
 msgid "Layout changes need the builder’s own editor — tell the site owner instead of forcing the edit."
 msgstr ""
 
 #. translators: %s: post type.
-#: includes/abilities/core-content.php:2100
-#: includes/abilities/core-content.php:2205
+#: includes/abilities/core-content.php:2117
+#: includes/abilities/core-content.php:2222
 #, php-format
 msgid "No %s with that ID."
 msgstr ""
 
 #. translators: 1: post type, 2: id, 3: title.
-#: includes/abilities/core-content.php:2171
+#: includes/abilities/core-content.php:2188
 #, php-format
 msgid "Updated %1$s #%2$d \"%3$s\""
 msgstr ""
 
 #. translators: 1: type, 2: id, 3: title.
-#: includes/abilities/core-content.php:2222
+#: includes/abilities/core-content.php:2239
 #, php-format
 msgid "Permanently delete %1$s #%2$d \"%3$s\". This cannot be undone."
 msgstr ""
 
 #. translators: 1: type, 2: id, 3: title.
-#: includes/abilities/core-content.php:2229
+#: includes/abilities/core-content.php:2246
 #, php-format
 msgid "Move %1$s #%2$d \"%3$s\" to the trash. It can be restored from Trash."
 msgstr ""
 
-#: includes/abilities/core-content.php:2255
+#: includes/abilities/core-content.php:2272
 msgid "WordPress could not delete the item."
 msgstr ""
 
 #. translators: %d: number of items omitted from this page.
-#: includes/abilities/core-content.php:2479
+#: includes/abilities/core-content.php:2496
 #, php-format
 msgid "%d item on this page is not visible to the WordPress account this app is connected as, and was left out. \"total\" still counts it, so this page is shorter than the page size. This is not an error and retrying will not change it."
 msgid_plural "%d items on this page are not visible to the WordPress account this app is connected as, and were left out. \"total\" still counts them, so this page is shorter than the page size. This is not an error and retrying will not change it."
@@ -1166,7 +1174,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: requested post status, e.g. "draft".
-#: includes/abilities/core-content.php:2690
+#: includes/abilities/core-content.php:2707
 #, php-format
 msgid "The WordPress account this app is connected as cannot see \"%s\" content on this site — only published items are available to it. That is the account's role, not a Saddle setting. Do not retry this status; tell the user to reconnect Saddle as an account that can edit this content."
 msgstr ""
@@ -3648,68 +3656,68 @@ msgstr ""
 msgid "%1$s does not allow %2$s among its children."
 msgstr ""
 
-#: includes/class-saddle-capabilities.php:430
+#: includes/class-saddle-capabilities.php:435
 msgid "The site owner has paused all AI access — every tool is refused until they resume it from Saddle → Settings. Do not retry; tell the user Saddle is paused."
 msgstr ""
 
-#: includes/class-saddle-capabilities.php:437
+#: includes/class-saddle-capabilities.php:442
 msgid "The request is not authenticated. Reconnect the app from Saddle → Connections to issue a fresh sign-in key."
 msgstr ""
 
 #. translators: 1: WordPress capability name, 2: tool name.
-#: includes/class-saddle-capabilities.php:451
+#: includes/class-saddle-capabilities.php:456
 #, php-format
 msgid "The WordPress account this app is connected as cannot \"%1$s\", which \"%2$s\" requires. This is the account's role, not a Saddle setting — no access level or toggle will change it. Do not retry; tell the user to reconnect Saddle as an account with that permission."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:463
+#: includes/class-saddle-capabilities.php:468
 #, php-format
 msgid "The site owner turned the \"%s\" tool off individually (Saddle → Permissions). Other tools still work — do not retry this one; tell the user it is disabled."
 msgstr ""
 
-#: includes/class-saddle-capabilities.php:485
+#: includes/class-saddle-capabilities.php:490
 msgid "This site's domain changed since write access was granted, and the owner has domain enforcement on — write tools are refused until they re-confirm the access level (Saddle → Permissions). Do not retry; tell the user."
 msgstr ""
 
 #. translators: 1: required access level, 2: level granted to this connection.
-#: includes/class-saddle-capabilities.php:500
+#: includes/class-saddle-capabilities.php:505
 #, php-format
 msgid "This site allows the \"%1$s\" access level, but the app you are connected through was only granted \"%2$s\" when it was authorized. Do not retry — ask the user to reconnect the app and approve the higher level."
 msgstr ""
 
 #. translators: 1: required access level, 2: current access level.
-#: includes/class-saddle-capabilities.php:511
+#: includes/class-saddle-capabilities.php:516
 #, php-format
 msgid "This tool needs the \"%1$s\" access level, but this site allows \"%2$s\". Only the site owner can raise it (Saddle → Permissions). Do not retry — ask the user to change the level if they want this done."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:552
+#: includes/class-saddle-capabilities.php:557
 #, php-format
 msgid "Blocked: Saddle is paused — \"%s\" was refused."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:556
+#: includes/class-saddle-capabilities.php:561
 #, php-format
 msgid "Blocked: your account lacks permission for \"%s\"."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:560
+#: includes/class-saddle-capabilities.php:565
 #, php-format
 msgid "Blocked: the tool \"%s\" is turned off."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:564
+#: includes/class-saddle-capabilities.php:569
 #, php-format
 msgid "Blocked: the site domain changed since write access was granted — \"%s\" is refused until the access level is re-confirmed."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:569
+#: includes/class-saddle-capabilities.php:574
 #, php-format
 msgid "Blocked: \"%s\" needs a higher access level than is enabled."
 msgstr ""
@@ -4122,6 +4130,60 @@ msgstr ""
 
 #: includes/class-saddle-integrations.php:264
 msgid "Plugins connected to Saddle"
+msgstr ""
+
+#. translators: 1: this connection's access level, 2: the site's access level.
+#: includes/class-saddle-mcp-diagnostics.php:516
+#, php-format
+msgid "This app signed in with \"%1$s\" access, below the \"%2$s\" access the site allows, so some tools are withheld from it."
+msgstr ""
+
+#: includes/class-saddle-mcp-diagnostics.php:520
+msgid "Reconnect the app and approve the wider access on the consent screen."
+msgstr ""
+
+#: includes/class-saddle-mcp-diagnostics.php:527
+msgid "The site's address changed since write access was granted, and the owner turned on domain enforcement, so every write tool is refused."
+msgstr ""
+
+#: includes/class-saddle-mcp-diagnostics.php:528
+msgid "The owner re-confirms the access level in Saddle → Permissions."
+msgstr ""
+
+#: includes/class-saddle-mcp-diagnostics.php:535
+msgid "The site uses plain permalinks. Apps that expect /wp-json/ addresses, and OAuth sign-in, do not work that way."
+msgstr ""
+
+#: includes/class-saddle-mcp-diagnostics.php:536
+msgid "Choose any setting other than \"Plain\" in Settings → Permalinks."
+msgstr ""
+
+#: includes/class-saddle-mcp-diagnostics.php:544
+msgid "Application Passwords are unavailable on this site, so apps that connect with a pasted key cannot sign in."
+msgstr ""
+
+#: includes/class-saddle-mcp-diagnostics.php:545
+msgid "Serve the site over HTTPS, or ask whoever turned Application Passwords off (a security plugin or the host) to allow them."
+msgstr ""
+
+#: includes/class-saddle-mcp-diagnostics.php:562
+msgid "The web server drops the Authorization header before WordPress sees it, so apps that connect with a key are refused."
+msgstr ""
+
+#: includes/class-saddle-mcp-diagnostics.php:563
+msgid "The web server drops Bearer sign-ins, so apps that connect through OAuth (such as ChatGPT) are refused even though pasted-key apps work."
+msgstr ""
+
+#: includes/class-saddle-mcp-diagnostics.php:565
+msgid "Saddle → Settings → Connection check can add the fix to .htaccess in one click."
+msgstr ""
+
+#: includes/class-saddle-mcp-diagnostics.php:566
+msgid "Ask the host to forward the Authorization header to PHP. Saddle → Settings → Connection check shows the exact rule."
+msgstr ""
+
+#: includes/class-saddle-mcp-diagnostics.php:570
+msgid "Checking which sign-in headers reach WordPress needs an account that can manage the site."
 msgstr ""
 
 #: includes/class-saddle-mcp.php:94
@@ -5151,7 +5213,7 @@ msgid "The site owner declined the connection."
 msgstr ""
 
 #: includes/oauth/class-saddle-oauth-consent.php:284
-#: includes/oauth/class-saddle-oauth-endpoints.php:340
+#: includes/oauth/class-saddle-oauth-endpoints.php:342
 #: includes/oauth/class-saddle-oauth.php:517
 msgid "Could not generate a secure token on this server."
 msgstr ""
@@ -5166,79 +5228,79 @@ msgstr ""
 msgid "Too many sign-in attempts have been made to this site in the last hour. Wait a little and try again."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:128
+#: includes/oauth/class-saddle-oauth-endpoints.php:130
 msgid "That app asked to be sent back to an address it has not registered with this site. Nothing has been authorized."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:135
+#: includes/oauth/class-saddle-oauth-endpoints.php:137
 msgid "Only the authorization code flow is supported."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:144
+#: includes/oauth/class-saddle-oauth-endpoints.php:146
 msgid "This server requires PKCE with the S256 challenge method."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:149
+#: includes/oauth/class-saddle-oauth-endpoints.php:151
 msgid "The requested resource is not served by this site."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:228
+#: includes/oauth/class-saddle-oauth-endpoints.php:230
 msgid "This server issues tokens for the authorization code and refresh token grants only."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:242
+#: includes/oauth/class-saddle-oauth-endpoints.php:244
 msgid "No authorization code was supplied."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:249
+#: includes/oauth/class-saddle-oauth-endpoints.php:251
 msgid "That authorization code is invalid, expired, or has already been used."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:254
+#: includes/oauth/class-saddle-oauth-endpoints.php:256
 msgid "That authorization code was issued to a different app."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:259
+#: includes/oauth/class-saddle-oauth-endpoints.php:261
 msgid "The redirect address does not match the one used to authorize."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:264
+#: includes/oauth/class-saddle-oauth-endpoints.php:266
 msgid "The PKCE code verifier does not match the challenge sent when authorizing."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:269
+#: includes/oauth/class-saddle-oauth-endpoints.php:271
 msgid "The requested resource does not match the one authorized."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:284
+#: includes/oauth/class-saddle-oauth-endpoints.php:286
 msgid "No refresh token was supplied."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:289
+#: includes/oauth/class-saddle-oauth-endpoints.php:291
 msgid "That refresh token is invalid, expired, or has already been used."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:294
+#: includes/oauth/class-saddle-oauth-endpoints.php:296
 msgid "That connection has been revoked. The app needs to be authorized again."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:299
+#: includes/oauth/class-saddle-oauth-endpoints.php:301
 msgid "That refresh token was issued to a different app."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:315
+#: includes/oauth/class-saddle-oauth-endpoints.php:317
 msgid "A refresh cannot ask for more access than was originally granted."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:333
+#: includes/oauth/class-saddle-oauth-endpoints.php:335
 msgid "That connection no longer exists."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:571
+#: includes/oauth/class-saddle-oauth-endpoints.php:573
 msgid "Nothing on your site has changed. You can close this window."
 msgstr ""
 
-#: includes/oauth/class-saddle-oauth-endpoints.php:572
+#: includes/oauth/class-saddle-oauth-endpoints.php:574
 msgid "Saddle did not authorize this app"
 msgstr ""
 

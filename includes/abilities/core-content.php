@@ -81,6 +81,23 @@ function saddle_register_abilities() {
 	);
 
 	wp_register_ability(
+		'saddle/self-check',
+		array(
+			'label'               => __( 'Check the connection', 'saddle' ),
+			'description'         => __( 'Diagnoses this connection and the site setup around it. Returns how this app signed in (application password or OAuth), the site\'s access level and the one in force for this app, how many tools are withheld and why, the MCP transport, and a "problems" list where each entry says what is wrong and how to fix it, in words you can pass to the user. For an account that can manage the site it also checks whether the web server strips sign-in headers, which breaks OAuth apps like ChatGPT while pasted-key apps keep working; that check sends a test request to the site itself and can take a few seconds. Read-only. Call it when tools you expect are missing, or when the user says another app cannot connect.', 'saddle' ),
+			'category'            => 'saddle',
+			'input_schema'        => array(
+				'type'       => 'object',
+				'default'    => (object) array(),
+				'properties' => (object) array(),
+			),
+			'execute_callback'    => array( 'Saddle_MCP_Diagnostics', 'agent_self_check' ),
+			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'self-check' ),
+			'meta'                => saddle_ability_meta( true, false, true, 'read' ),
+		)
+	);
+
+	wp_register_ability(
 		'saddle/get-instructions',
 		array(
 			'label'               => __( 'Get instructions', 'saddle' ),
