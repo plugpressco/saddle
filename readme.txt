@@ -192,6 +192,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 
 = Unreleased =
 * Fixed: On Divi 5 sites, the design summary your AI app receives now includes the site's heading and body fonts. It was always empty.
+* Fixed: Page lists now include each page's slug, parent and menu order, as the tool description already said. Post lists include the slug.
 
 = 1.3.0 =
 * New: Other plugins can add their own tools to Saddle. Tools from other developers stay off until you switch them on under Saddle > Integrations.

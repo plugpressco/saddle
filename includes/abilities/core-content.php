@@ -105,7 +105,7 @@ function saddle_register_abilities() {
 		'saddle/search-content',
 		array(
 			'label'               => __( 'Search content', 'saddle' ),
-			'description'         => __( 'Full-text search across posts and pages by keyword. Returns matching items as summaries (id, type, title, status, link, excerpt). Read-only. Use post_type to restrict to "post", "page", or "any".', 'saddle' ),
+			'description'         => __( 'Full-text search across posts and pages by keyword. Returns matching items as summaries (id, type, title, slug, status, link, excerpt; pages also carry parent and menu order). Read-only. Use post_type to restrict to "post", "page", or "any".', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -146,7 +146,7 @@ function saddle_register_abilities() {
 		'saddle/list-posts',
 		array(
 			'label'               => __( 'List posts', 'saddle' ),
-			'description'         => __( 'Lists posts as summaries (id, title, status, author, date, link, excerpt). Read-only. Supports filtering by status, author, category, and search term, plus pagination via per_page/page.', 'saddle' ),
+			'description'         => __( 'Lists posts as summaries (id, title, slug, status, author, date, link, excerpt). Read-only. Supports filtering by status, author, category, and search term, plus pagination via per_page/page.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -271,7 +271,7 @@ function saddle_register_abilities() {
 		'saddle/list-pages',
 		array(
 			'label'               => __( 'List pages', 'saddle' ),
-			'description'         => __( 'Lists pages as summaries (id, title, status, parent, menu order, link). Read-only. Supports status filtering and pagination.', 'saddle' ),
+			'description'         => __( 'Lists pages as summaries (id, title, slug, status, parent, menu order, author, date, link, excerpt). Read-only. Supports status filtering and pagination. A parent of 0 means a top-level page; a draft may have an empty slug until it is published.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -2492,20 +2492,32 @@ class Saddle_Abilities {
 	/**
 	 * Compact summary of a post/page.
 	 *
+	 * Pages carry their place in the tree (parent, menu order) so a client can
+	 * rebuild paths without parsing permalinks (#215). A post's parent is
+	 * always 0, so posts leave both out rather than spend tokens on them.
+	 *
 	 * @param WP_Post $post Post object.
 	 * @return array
 	 */
 	public static function post_summary( $post ) {
-		return array(
+		$summary = array(
 			'id'       => $post->ID,
 			'type'     => $post->post_type,
 			'title'    => $post->post_title,
+			'slug'     => $post->post_name,
 			'status'   => $post->post_status,
 			'author'   => (int) $post->post_author,
 			'date_gmt' => $post->post_date_gmt,
 			'link'     => get_permalink( $post ),
 			'excerpt'  => wp_strip_all_tags( get_the_excerpt( $post ) ),
 		);
+
+		if ( is_post_type_hierarchical( $post->post_type ) ) {
+			$summary['parent']     = (int) $post->post_parent;
+			$summary['menu_order'] = (int) $post->menu_order;
+		}
+
+		return $summary;
 	}
 
 	/**
