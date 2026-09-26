@@ -53,9 +53,33 @@ and finding each fails at least one. Check every change against all three.
    the four user-initiated requests without an "apart from that" that contradicts
    the sentence before it. Docs and marketing still need the same pass.*
 
+   *Saddle Cloud, decided 2026-09-27 — opt-in, and nothing changes for a site
+   that is not connected.* Saddle Cloud is a separate hosted product: one AI
+   connection for many sites. A site that is not connected keeps every word of
+   this rule. A site talks to Cloud only after its owner connects it from
+   wp-admin — never by default, by update or by migration. Once connected:
+
+   - Cloud holds a grant the owner approved. It can only lower the site's tier,
+     never raise it, and revoking it in wp-admin cuts Cloud off on the next call.
+   - The site still enforces everything: `Saddle_Capabilities` decides every
+     call, `Saddle_Approval` issues and checks every confirm token. Cloud routes
+     and records; it never bypasses a gate.
+   - Cloud may store task history and, later, send content to the AI provider
+     the user chose with their own key. The connect screen says both before the
+     owner agrees.
+   - The connector lives in **Saddle Pro only**. Free — its code, its UI and
+     every WordPress.org build — contains no Cloud code and keeps making no
+     outbound request at all.
+   - Direct MCP keeps working unchanged (R5 in `../planning/ROADMAP-PRODUCT.md`).
+
+   "Nothing leaves your site" describes the plugin. It is false the moment it is
+   said of a Cloud-connected site; marketing keeps the two apart.
+
 2. **Default-safe, not opt-out-unsafe.** New installs default to the `read` tier.
    Never change this default. Power is something the owner turns on, never
-   something they have to turn off.
+   something they have to turn off. Under the ALLOW / ASK / BLOCK model (product
+   plan, Phase 2) this means every write tool starts BLOCK on a new install. A
+   starting preset may be offered; it is never pre-applied. Decided 2026-09-27.
 
 3. **No destructive action without a two-step confirm.** Any ability that mutates
    more than one row, or deletes/overwrites without recovery, goes through
@@ -78,6 +102,11 @@ dry-run, no diff and no revert.
 - No WP-CLI passthrough, no shelling out, no arbitrary SQL.
 - **No filesystem writes.** The only `fwrite` in the tree is inside the vendored
   MCP adapter's stdio bridge. Saddle writes to the database, never to disk.
+- **Updates are reported, never run.** Saddle may report available plugin, theme
+  and core updates, and may switch WordPress's own auto-update setting for a
+  plugin (a database option at the admin tier; core performs the update on its
+  own schedule). It never calls the upgrader, never installs a plugin, and never
+  offers "update now". Decided 2026-09-27; applies to Pro too.
 
 If a feature seems to need any of these, that is a signal to redesign the
 feature. Two reasons, both load-bearing: WordPress.org will not accept arbitrary
@@ -455,9 +484,8 @@ for `eval(` is evidence for the "no code execution, no filesystem writes" claim.
   the authorizer of what ships next.
 - **`../planning/ROADMAP-PRODUCT.md`** — the long-horizon product thesis (Cloud,
   multi-site, tasks, automations, agents) and the pricing record in §0.
-  Destination, not tickets. It carries one open decision: Saddle Cloud as written
-  would contradict non-negotiable #1, and that must be amended explicitly before
-  any Cloud code exists. **Private repo.**
+  Destination, not tickets. Its Cloud decision was resolved 2026-09-27: see
+  non-negotiable #1. **Private repo.**
 - **GitHub Issues + project #3** — the backlog. Not chat, not a local file.
 - **`admin/DESIGN-ALIGNMENT.md`** — read before writing admin CSS.
 - **`tests/README.md`** — how the SQLite-backed suite runs.
