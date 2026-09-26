@@ -190,6 +190,9 @@ The WordPress.org version never checks for its own updates. The version from plu
 
 == Changelog ==
 
+= Unreleased =
+* Fixed: On Divi 5 sites, the design summary your AI app receives now includes the site's heading and body fonts. It was always empty.
+
 = 1.3.0 =
 * New: Other plugins can add their own tools to Saddle. Tools from other developers stay off until you switch them on under Saddle > Integrations.
 * Improved: The Integrations screen shows each plugin's author, how many tools it adds, and whether it is built in, from PlugPress or from another developer.
