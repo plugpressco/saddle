@@ -191,6 +191,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 == Changelog ==
 
 = 1.3.0 =
+* New: Saddle Analytics, PlugPress's analytics plugin, is recognised as a PlugPress integration, so its read-only traffic tools are available as soon as it is active.
 * New: Other plugins can add their own tools to Saddle. Tools from other developers stay off until you switch them on under Saddle > Integrations.
 * Improved: The Integrations screen shows each plugin's author, how many tools it adds, and whether it is built in, from PlugPress or from another developer.
 
