@@ -462,9 +462,14 @@ class Saddle_MCP_Transport_Test extends WP_UnitTestCase {
 	/**
 	 * Pause denies everything anyway, so emptying the list would buy nothing
 	 * and would force every connected client to reconnect on resume. The
-	 * instructions carry the warning instead.
+	 * instructions carry the warning instead. Confirmed as the intended
+	 * behaviour on 2026-09-27 (#217): the list is not merely non-empty, it is
+	 * exactly the list the same credential sees unpaused.
 	 */
 	public function test_pause_leaves_the_tool_list_intact() {
+		Saddle_Capabilities::set_tier( 'write' );
+		$before = wp_list_pluck( $this->list_tools(), 'name' );
+
 		Saddle_Capabilities::set_paused( true );
 
 		$names = wp_list_pluck( $this->list_tools(), 'name' );
@@ -472,6 +477,7 @@ class Saddle_MCP_Transport_Test extends WP_UnitTestCase {
 		Saddle_Capabilities::set_paused( false );
 
 		$this->assertContains( 'saddle-get-site-info', $names );
+		$this->assertSame( $before, $names );
 	}
 
 	/**
