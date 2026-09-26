@@ -410,10 +410,14 @@ change. `Tested up to:` moves only when Fahim has verified against a newer WP.
   Pro or leave a visible gap for a Pro tool (wp.org guidelines 5 and 11). Builder
   code other than Gutenberg and Divi 5 still does not belong here (ROADMAP NO list).
 - Don't edit `includes/lib/wp-mcp/` — it is vendored. Fix upstream and re-vendor.
-  **One deviation exists and is recorded, not hand-applied:** every i18n text
-  domain in there is rewritten to `saddle`, so the self-hosted build (the only
-  one that ships the library) shows translators one domain instead of two.
-  That rewrite lives in `scripts/revendor-wp-mcp.php`. Re-vendoring is: drop in
+  **No zip ships the library:** the Gruntfile excludes `includes/lib/**` on
+  both channels (#113). It exists so the development tree and the test suite
+  run the adapter path that real sites get from the official MCP Adapter plugin
+  or from another plugin that bundles it, such as Gravity Forms 3.1. Keep it on
+  the version those sites run (0.6.1 since #218). **One deviation exists and
+  is recorded, not hand-applied:** every i18n text domain in there is rewritten
+  to `saddle`, so that if a build ever ships it again, translators see one
+  domain instead of two. That rewrite lives in `scripts/revendor-wp-mcp.php`. Re-vendoring is: drop in
   upstream, run the script, run the suite. `--check` reports pending work and
   exits non-zero — run it before a release, because a fresh upstream copy
   silently reverts the rewrite and nothing else would notice. The script
