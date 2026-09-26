@@ -517,6 +517,13 @@ class Saddle_MCP_Diagnostics {
 			$source = 'unknown';
 		}
 
+		// Present is not serving: when the adapter never put our server on the
+		// route, the built-in transport took it (Saddle_MCP::ensure_route()),
+		// and a support reply needs to know which one answered.
+		if ( Saddle_MCP::fell_back() ) {
+			return sprintf( 'Saddle built-in JSON-RPC (MCP Adapter %s from %s is loaded but did not serve the route)', $version, $source );
+		}
+
 		return sprintf( 'MCP Adapter %s (%s)', $version, $source );
 	}
 

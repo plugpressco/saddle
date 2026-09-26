@@ -4,7 +4,7 @@ Tags: mcp, ai, claude, chatgpt, divi
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -188,6 +188,9 @@ The WordPress.org version never checks for its own updates. The version from plu
 4. Instructions: Read what your AI is told, and add your own instructions and Skills.
 
 == Changelog ==
+
+= 1.2.2 =
+* Fixed: The MCP endpoint returned 404 when another plugin bundled the WordPress MCP Adapter without starting it, such as Gravity Forms 3.1. Saddle now starts the adapter itself, and falls back to its own transport if the adapter does not serve the endpoint.
 
 = 1.2.1 =
 * New: Live Preview. Try Saddle in a test WordPress in your browser, straight from this page.

@@ -3,7 +3,7 @@
  * Plugin Name:       Saddle
  * Plugin URI:        https://saddle.to
  * Description:       Connect AI agents to your WordPress site through MCP. Manage posts, pages, and media.
- * Version:           1.2.1
+ * Version:           1.2.2
  * Requires at least: 6.9
  * Requires PHP:      7.4
  * Author:            PlugPress
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SADDLE_VERSION', '1.2.1' );
+define( 'SADDLE_VERSION', '1.2.2' );
 define( 'SADDLE_FILE', __FILE__ );
 define( 'SADDLE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SADDLE_URL', plugin_dir_url( __FILE__ ) );
@@ -367,7 +367,23 @@ final class Saddle {
 		// plugin's, at whatever version the site happens to have (#155).
 		add_action( 'rest_api_init', array( 'Saddle_MCP', 'register_spec_guards' ) );
 
+		// Whichever transport ends up serving, /saddle/v1/mcp must exist. Runs
+		// after the adapter's own init (rest_api_init 15), so by then we know
+		// whether our server came up on it.
+		add_action( 'rest_api_init', array( 'Saddle_MCP', 'ensure_route' ), 99 );
+
 		if ( self::adapter_available() ) {
+			// The class being loadable does not mean the adapter is running.
+			// Gravity Forms 3.1 ships the adapter in its autoloader on every
+			// request but only calls instance() when its own MCP setting is on,
+			// which it is not by default — so mcp_adapter_init never fired,
+			// Saddle registered nothing, and the endpoint was a 404 on every
+			// site that installed it. instance() is an idempotent singleton:
+			// if the owner of that copy already started it, this is a no-op.
+			if ( method_exists( '\\WP\\MCP\\Core\\McpAdapter', 'instance' ) ) {
+				\WP\MCP\Core\McpAdapter::instance();
+			}
+
 			// Third-party hook, owned by the MCP Adapter plugin — its name is
 			// theirs, and this is the documented way to register a server with
 			// it. Reached only when that plugin is present.

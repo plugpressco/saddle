@@ -61,6 +61,13 @@ class Saddle_MCP {
 	const ADAPTER_SERVER_ID = 'saddle';
 
 	/**
+	 * Set when ensure_route() had to register the built-in transport.
+	 *
+	 * @var bool
+	 */
+	private static $fell_back = false;
+
+	/**
 	 * Register Saddle's abilities as a custom server on the WordPress MCP
 	 * Adapter. Hooked to `mcp_adapter_init`.
 	 *
@@ -267,8 +274,49 @@ class Saddle_MCP {
 	}
 
 	/**
+	 * Make sure /saddle/v1/mcp is registered. Hooked late on `rest_api_init`.
+	 *
+	 * When the adapter's classes are present Saddle hands the route to it and
+	 * skips its own. That hand-off can fail in ways Saddle never hears about:
+	 * the adapter never initializes (a plugin that bundles it without starting
+	 * it), `mcp_adapter_init` passes something older with a different
+	 * create_server() (MCP Adapter 0.1.0), or create_server() refuses. Each one
+	 * used to end in a 404. Now the built-in transport takes the route instead.
+	 * The tier and approval gate live in the abilities, so they hold either way.
+	 *
+	 * Asks the REST server rather than trusting a flag: the adapter's transport
+	 * registers at rest_api_init 16 and the built-in one at 10, so by 99 the
+	 * route table is the truth about whether anyone serves the endpoint.
+	 *
+	 * @param WP_REST_Server|null $server The REST server, as rest_api_init passes it.
+	 */
+	public static function ensure_route( $server = null ) {
+		if ( ! $server instanceof WP_REST_Server ) {
+			$server = rest_get_server();
+		}
+
+		$routes = $server->get_routes( self::REST_NAMESPACE );
+		if ( isset( $routes[ '/' . self::REST_NAMESPACE . self::ROUTE ] ) ) {
+			return;
+		}
+
+		self::register_routes();
+		self::$fell_back = true;
+	}
+
+	/**
+	 * Whether the adapter was present but the built-in transport had to take
+	 * the route in this request.
+	 *
+	 * @return bool
+	 */
+	public static function fell_back() {
+		return self::$fell_back;
+	}
+
+	/**
 	 * Register the JSON-RPC route (built-in transport; fallback when the MCP
-	 * Adapter is not installed).
+	 * Adapter is not installed, or is installed but did not serve our server).
 	 */
 	public static function register_routes() {
 		register_rest_route(
