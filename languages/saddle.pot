@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-26T23:15:51+00:00\n"
+"POT-Creation-Date: 2026-09-26T23:22:13+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -2722,29 +2722,37 @@ msgid "Verify a page"
 msgstr ""
 
 #: includes/abilities/verify.php:28
-msgid "Re-reads a page's SAVED state and returns one scored report (0–100 + grade): structural problems, attributes the builder silently ignores (your styling never took effect), and design/accessibility violations — each finding at a node address with a fix hint. Run it after building or editing: fix structural and \"ignored\" findings first, then errors, then re-run until the score is acceptable. This is how you know your work actually landed, not just that the write calls returned."
+msgid "Re-reads a page's SAVED state and returns one scored report (0–100 + grade): structural problems, attributes the builder silently ignores (your styling never took effect), and design/accessibility violations — each finding at a node address with a fix hint. Run it after building or editing: fix structural and \"ignored\" findings first, then errors, then re-run until the score is acceptable. This is how you know your work actually landed, not just that the write calls returned. After editing a PUBLISHED page, also pass check_public: true: it loads the live page as a visitor would and reports \"stale\" if a page cache or CDN is still serving the old version (then call flush-cache and check again)."
 msgstr ""
 
 #: includes/abilities/verify.php:36
 msgid "The post or page to verify."
 msgstr ""
 
+#: includes/abilities/verify.php:41
+msgid "Also load the public page as a logged-out visitor and confirm it serves the saved content. Published pages only. Sends one request to this site's own page; it does not change the score."
+msgstr ""
+
 #. translators: 1: post ID, 2: builder name.
-#: includes/abilities/verify.php:70
+#: includes/abilities/verify.php:75
 #, php-format
 msgid "Post #%1$d is built with %2$s, and no verifier for that builder is installed."
 msgstr ""
 
-#: includes/abilities/verify.php:95
+#: includes/abilities/verify.php:103
 msgid "Fix in order: structural, then \"ignored\" (echo — that styling never took effect), then errors, then warnings. Addresses match get-blocks/divi-get-page; re-read after structural edits, then re-run verify-page until the score is acceptable."
 msgstr ""
 
-#: includes/abilities/verify.php:96
+#: includes/abilities/verify.php:104
 msgid "Everything checked out: the persisted state is structurally sound, every attribute takes effect, and no design violations were found."
 msgstr ""
 
-#: includes/abilities/verify.php:97
+#: includes/abilities/verify.php:105
 msgid "This score covers only what the server can verify — persisted structure, attributes, and design rules. It is NOT a visual sign-off: a page can pass every server-side check and still look wrong. Open get-preview-url and judge the real pixels before calling the page done."
+msgstr ""
+
+#: includes/abilities/verify.php:113
+msgid "The saved page is not what visitors see yet: the public page is missing passages the saved version has, so a page cache or CDN is still serving the old copy. Call flush-cache, then run verify-page with check_public again. Do not report the change as live until \"public.status\" is \"served\"."
 msgstr ""
 
 #: includes/abilities/woocommerce.php:32
@@ -4081,6 +4089,10 @@ msgstr ""
 msgid "That document is not valid JSON."
 msgstr ""
 
+#: includes/class-saddle-http.php:206
+msgid "Only this site's own pages can be fetched this way."
+msgstr ""
+
 #. translators: 1: integration slug, 2: its tool-name prefix.
 #: includes/class-saddle-integration-engine.php:176
 #, php-format
@@ -5351,15 +5363,29 @@ msgstr ""
 msgid "No node at address \"%s\". Re-read the page first — addresses shift when the tree changes."
 msgstr ""
 
-#: includes/verify/class-saddle-verify.php:161
+#: includes/verify/class-saddle-verify.php:151
+msgid "Only a published page without a password has a public version to check. Preview it with get-preview-url instead."
+msgstr ""
+
+#: includes/verify/class-saddle-verify.php:159
+msgid "The page has no text distinctive enough to look for on the public page."
+msgstr ""
+
+#. translators: %d: HTTP status code.
+#: includes/verify/class-saddle-verify.php:173
+#, php-format
+msgid "The public page answered with HTTP %d."
+msgstr ""
+
+#: includes/verify/class-saddle-verify.php:294
 msgid "The content is not block markup — the editor cannot address or edit it."
 msgstr ""
 
-#: includes/verify/class-saddle-verify.php:162
+#: includes/verify/class-saddle-verify.php:295
 msgid "Rebuild the content as blocks (set-blocks) instead of raw HTML."
 msgstr ""
 
-#: includes/verify/class-saddle-verify.php:187
+#: includes/verify/class-saddle-verify.php:320
 msgid "This persisted attribute does nothing — rewrite it on a path the block actually supports, or remove it."
 msgstr ""
 
