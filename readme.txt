@@ -191,6 +191,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 == Changelog ==
 
 = Unreleased =
+* Fixed: OAuth sign-in from Claude Code and other apps that run on your own computer no longer fails when the app uses a different port than last time. Only the port may change; every other part of the return address must still match.
 * Fixed: On Divi 5 sites, the design summary your AI app receives now includes the site's heading and body fonts. It was always empty.
 
 = 1.3.0 =

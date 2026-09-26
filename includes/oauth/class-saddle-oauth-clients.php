@@ -313,6 +313,69 @@ class Saddle_OAuth_Clients {
 	}
 
 	/**
+	 * Whether a requested redirect URI matches one the client registered.
+	 *
+	 * Exact string comparison, with one exception that RFC 8252 §7.3 makes
+	 * mandatory: on a plain-HTTP loopback URI (127.0.0.1, [::1] or localhost)
+	 * the port may differ, because a native app such as Claude Code opens a
+	 * new listener on a new port each time. Nothing else may differ: not the
+	 * host (127.0.0.1 is not localhost), path, query, case or a single byte
+	 * after them. Prefix matching stays out; it is the most common way
+	 * authorization codes get stolen (#216, decided 2026-09-27).
+	 *
+	 * @param string $requested  The redirect_uri on the authorization request.
+	 * @param array  $registered The client's registered redirect URIs.
+	 * @return bool
+	 */
+	public static function redirect_uri_matches( $requested, array $registered ) {
+		$requested = (string) $requested;
+		if ( '' === $requested ) {
+			return false;
+		}
+
+		if ( in_array( $requested, $registered, true ) ) {
+			return true;
+		}
+
+		$portless = self::without_loopback_port( $requested );
+		if ( null === $portless ) {
+			return false;
+		}
+
+		foreach ( $registered as $uri ) {
+			if ( is_string( $uri ) && self::without_loopback_port( $uri ) === $portless ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * A loopback redirect URI with its port removed, or null for any URI the
+	 * port exception does not cover.
+	 *
+	 * Deliberately a whole-string pattern rather than wp_parse_url(): the port
+	 * must be followed by the path, the query or the end of the string, so
+	 * userinfo (`:9000@evil.example`), a backslash, or a longer host
+	 * (`localhost.evil.example`) cannot pass as a loopback authority.
+	 *
+	 * @param string $uri Redirect URI.
+	 * @return string|null
+	 */
+	private static function without_loopback_port( $uri ) {
+		if ( ! preg_match( '#\A(http://(?:127\.0\.0\.1|\[::1\]|localhost))(?::(\d{1,5}))?([/?][^\s\\\\]*)?\z#', (string) $uri, $m ) ) {
+			return null;
+		}
+
+		if ( isset( $m[2] ) && '' !== $m[2] && ( (int) $m[2] < 1 || (int) $m[2] > 65535 ) ) {
+			return null;
+		}
+
+		return $m[1] . ( isset( $m[3] ) ? $m[3] : '' );
+	}
+
+	/**
 	 * Whether a redirect URI is one Saddle will send an authorization code to.
 	 *
 	 * HTTPS anywhere, or plain HTTP only to the loopback interface — the

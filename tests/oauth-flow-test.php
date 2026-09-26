@@ -248,6 +248,84 @@ class Saddle_OAuth_Flow_Test extends WP_UnitTestCase {
 		rest_get_server()->dispatch( $request );
 	}
 
+	/* -------- loopback redirect ports (RFC 8252 §7.3, #216) -------- */
+
+	/**
+	 * Native clients such as Claude Code open a loopback listener on a new
+	 * port each time. RFC 8252 §7.3 says the server MUST accept any port on a
+	 * loopback redirect URI. Before #216 an exact string match refused every
+	 * attempt after the first, because the port no longer matched.
+	 */
+	public function test_a_loopback_redirect_may_come_back_on_another_port() {
+		$client   = $this->register_client( 'http://127.0.0.1:8080/cb' );
+		$verifier = $this->verifier();
+		$moved    = 'http://127.0.0.1:53682/cb';
+
+		$code = $this->authorize( $client['client_id'], $this->challenge_for( $verifier ), 'saddle:read', $moved );
+		$this->assertSame( 200, $this->exchange( $client['client_id'], $code, $verifier, $moved )->get_status() );
+
+		// The code is bound to the URI actually used, and the token endpoint
+		// still compares against THAT exactly (RFC 6749 §4.1.3): the registered
+		// port is not a way back in. A second code, because a refused exchange
+		// burns the one it was given.
+		$other = $this->authorize( $client['client_id'], $this->challenge_for( $verifier ), 'saddle:read', $moved );
+		$this->assertSame( 400, $this->exchange( $client['client_id'], $other, $verifier, 'http://127.0.0.1:8080/cb' )->get_status() );
+	}
+
+	public function test_a_loopback_registered_without_a_port_accepts_one() {
+		$client = $this->register_client( 'http://localhost/callback' );
+
+		$this->assertNotEmpty( $this->authorize( $client['client_id'], $this->challenge_for( $this->verifier() ), 'saddle:read', 'http://localhost:61000/callback' ) );
+	}
+
+	/**
+	 * Only the port may move, and only on a loopback URI. Each of these is
+	 * one character-class of attack on the relaxed rule.
+	 */
+	public function test_only_the_port_of_a_loopback_uri_may_differ() {
+		$refused = array(
+			'https://chatgpt.com/connector_callback' => 'https://chatgpt.com:8443/connector_callback',
+			'http://127.0.0.1:8080/cb'               => 'http://localhost:8080/cb',
+			'http://localhost/callback'              => 'http://localhost.evil.example:9000/callback',
+			'http://[::1]:8080/cb'                   => 'http://[::1]:9000/cb/extra',
+			'http://127.0.0.1/cb'                    => 'http://127.0.0.1:9000/cb?next=https://evil.example',
+			'http://127.0.0.1/c'                     => 'http://127.0.0.1:9000@evil.example/c',
+			'http://localhost/cb'                    => 'http://localhost:9000\\@evil.example/cb',
+			'http://127.0.0.1/p0'                    => 'http://127.0.0.1:0/p0',
+			'http://localhost/x'                     => 'http://localhost:99999/x',
+			'http://localhost/y'                     => "http://localhost:9000/y\n",
+			'http://127.0.0.1/z'                     => 'HTTP://127.0.0.1:9000/z',
+		);
+
+		foreach ( $refused as $registered => $requested ) {
+			$this->assertFalse(
+				Saddle_OAuth_Clients::redirect_uri_matches( $requested, array( $registered ) ),
+				sprintf( '%s must not match %s', $requested, $registered )
+			);
+		}
+
+		$this->assertTrue( Saddle_OAuth_Clients::redirect_uri_matches( 'http://[::1]:9000/cb', array( 'http://[::1]:8080/cb' ) ) );
+		$this->assertTrue( Saddle_OAuth_Clients::redirect_uri_matches( 'https://chatgpt.com/connector_callback', array( 'https://chatgpt.com/connector_callback' ) ), 'Exact matches still match.' );
+	}
+
+	public function test_authorize_still_refuses_a_port_swap_on_a_real_host_without_redirecting() {
+		$client = $this->register_client();
+
+		$request = new WP_REST_Request( 'GET', '/saddle/v1/oauth/authorize' );
+		$request->set_query_params(
+			array(
+				'client_id'             => $client['client_id'],
+				'redirect_uri'          => 'https://chatgpt.com:8443/connector_callback',
+				'response_type'         => 'code',
+				'code_challenge'        => $this->challenge_for( $this->verifier() ),
+				'code_challenge_method' => 'S256',
+			)
+		);
+
+		$this->expectException( 'WPDieException' );
+		rest_get_server()->dispatch( $request );
+	}
+
 	/**
 	 * `/authorize` is unauthenticated by necessity, and every accepted request
 	 * parks a record (post + ~10 postmeta) that the hourly GC only sweeps 200 at

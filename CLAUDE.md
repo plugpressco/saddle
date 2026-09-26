@@ -268,6 +268,15 @@ tokens rotate with reuse detection, authorization-code replay revokes the whole
 grant, and dynamic registration grants nothing until an administrator completes
 consent.
 
+The redirect rule has exactly one exception, which RFC 8252 §7.3 makes
+mandatory (decided 2026-09-27, #216). On a plain-HTTP loopback URI
+(`127.0.0.1`, `[::1]` or `localhost`), the **port** may differ from the
+registered one, because a native client like Claude Code listens on a new port
+each time. The host, path and query must still match byte for byte, and
+nothing else is relaxed. It lives in one place,
+`Saddle_OAuth_Clients::redirect_uri_matches()`. The token endpoint still
+compares against the exact URI used at authorize time.
+
 ---
 
 ## Conventions
