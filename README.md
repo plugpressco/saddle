@@ -136,6 +136,12 @@ Saddle registers each tool as a WordPress Ability. A bundled copy of the WordPre
 
 Each tool checks the access level and the user's capabilities. Delete tools also need the two-step confirmation.
 
+## Add Saddle support to your plugin
+
+Any plugin can offer its own tools through Saddle. Register them on the WordPress Abilities API, then add one entry to the `saddle_integrations` filter. Saddle applies its access levels, confirmations and activity log to them. Tools from other developers stay off until the site owner switches them on.
+
+See [Build a Saddle integration](docs/integrating.md).
+
 ## Development
 
 The admin app uses `@wordpress/scripts`. Composer installs the test tools.
