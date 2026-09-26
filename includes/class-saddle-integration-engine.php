@@ -36,12 +36,35 @@ defined( 'ABSPATH' ) || exit;
  * safety logic exists exactly once, here.
  *
  * A catalog entry may declare, besides `prefix` and `title`:
+ *   - `description`, `author`, `url` — shown to the owner on the
+ *     Integrations screen. Plain text and a link; nothing is fetched.
  *   - `force_destructive` (string[]) — source short names to gate even when
  *     the partner forgot the `destructive` annotation. Saddle's tier/gate
  *     promises are only as honest as partner annotation hygiene; this is
  *     the owner-side override for a partner that mislabels.
+ *
+ * Every entry is validated on read ({@see self::normalize()}): the prefix has
+ * to be one plain namespace the partner owns. An empty prefix would wrap
+ * every ability on the site, and `saddle/` or `core/` would re-expose
+ * abilities that aren't the partner's to offer.
  */
 class Saddle_Integration_Engine {
+
+	/**
+	 * Namespaces no integration may claim as its prefix.
+	 *
+	 * @var string[]
+	 */
+	const RESERVED_PREFIXES = array( 'saddle/', 'core/', 'mcp-adapter/' );
+
+	/**
+	 * Slugs no integration may take. Each is a prefix Saddle's own tools
+	 * already use, so a wrapper under it would collide with them or be filed
+	 * under the wrong group on the Permissions screen.
+	 *
+	 * @var string[]
+	 */
+	const RESERVED_SLUGS = array( 'divi', 'yoast', 'rank-math', 'aioseo', 'wc', 'unsplash' );
 
 	/**
 	 * Filter name for the catalog, e.g. 'saddle_integrations'.
@@ -75,26 +98,128 @@ class Saddle_Integration_Engine {
 	private $registered = array();
 
 	/**
+	 * Slugs already reported as invalid, so the notice fires once per request
+	 * rather than on every catalog read.
+	 *
+	 * @var array<string,bool>
+	 */
+	private $rejected = array();
+
+	/**
+	 * The owner's approval check, or null when every enabled entry is approved.
+	 *
+	 * @var callable|null
+	 */
+	private $gate;
+
+	/**
 	 * Configure the engine for one plugin's catalog.
 	 *
-	 * @param array  $default_catalog Catalog served when the filter adds nothing.
-	 * @param string $catalog_filter  Filter name exposing the catalog.
-	 * @param string $enabled_filter  Filter name for the per-integration switch.
+	 * @param array         $default_catalog Catalog served when the filter adds nothing.
+	 * @param string        $catalog_filter  Filter name exposing the catalog.
+	 * @param string        $enabled_filter  Filter name for the per-integration switch.
+	 * @param callable|null $gate            Optional owner-approval check, `fn( $slug ): bool`.
+	 *                                       Applied after the enabled filter, so a
+	 *                                       plugin cannot switch itself on.
 	 */
-	public function __construct( array $default_catalog, $catalog_filter, $enabled_filter ) {
+	public function __construct( array $default_catalog, $catalog_filter, $enabled_filter, $gate = null ) {
 		$this->default_catalog = $default_catalog;
 		$this->catalog_filter  = (string) $catalog_filter;
 		$this->enabled_filter  = (string) $enabled_filter;
+		$this->gate            = is_callable( $gate ) ? $gate : null;
 	}
 
 	/**
 	 * The integration catalog: slug => definition, after the caller's filter.
+	 * Invalid entries are dropped here, so nothing downstream ever sees them.
 	 *
-	 * @return array<string,array{prefix:string,title:string,force_destructive?:string[]}>
+	 * @return array<string,array{prefix:string,title:string,description:string,author:string,url:string,force_destructive?:string[]}>
 	 */
 	public function integrations() {
 		// phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores -- Filter name supplied by the wiring class ('saddle_integrations' / 'saddle_pro_integrations').
-		return (array) apply_filters( $this->catalog_filter, $this->default_catalog );
+		$raw = (array) apply_filters( $this->catalog_filter, $this->default_catalog );
+
+		$catalog = array();
+		foreach ( $raw as $slug => $def ) {
+			$entry = $this->normalize( $slug, $def );
+			if ( null !== $entry ) {
+				$catalog[ (string) $slug ] = $entry;
+			}
+		}
+		return $catalog;
+	}
+
+	/**
+	 * Validate and clean one catalog entry.
+	 *
+	 * @param mixed $slug Catalog key.
+	 * @param mixed $def  Catalog entry.
+	 * @return array|null The cleaned entry, or null when it must be skipped.
+	 */
+	private function normalize( $slug, $def ) {
+		$slug   = is_string( $slug ) ? $slug : '';
+		$def    = is_array( $def ) ? $def : array();
+		$prefix = isset( $def['prefix'] ) ? (string) $def['prefix'] : $slug . '/';
+
+		$valid = 1 === preg_match( '/^[a-z0-9][a-z0-9-]*$/', $slug )
+			&& 1 === preg_match( '#^[a-z0-9][a-z0-9-]*/$#', $prefix )
+			&& ! in_array( $prefix, self::RESERVED_PREFIXES, true )
+			&& ! in_array( $slug, self::RESERVED_SLUGS, true );
+
+		if ( ! $valid ) {
+			if ( ! isset( $this->rejected[ $slug ] ) ) {
+				$this->rejected[ $slug ] = true;
+				_doing_it_wrong(
+					__METHOD__,
+					sprintf(
+						/* translators: 1: integration slug, 2: its tool-name prefix. */
+						esc_html__( 'Integration "%1$s" (prefix "%2$s") was skipped. The slug must be lowercase letters, digits and hyphens, the prefix one namespace ending in a slash, and neither may be one Saddle reserves.', 'saddle' ),
+						esc_html( $slug ),
+						esc_html( $prefix )
+					),
+					'1.3.0'
+				);
+			}
+			return null;
+		}
+
+		$entry = array(
+			'prefix'      => $prefix,
+			'title'       => isset( $def['title'] ) ? sanitize_text_field( (string) $def['title'] ) : ucfirst( $slug ),
+			'description' => isset( $def['description'] ) ? sanitize_text_field( (string) $def['description'] ) : '',
+			'author'      => isset( $def['author'] ) ? sanitize_text_field( (string) $def['author'] ) : '',
+			'url'         => isset( $def['url'] ) ? esc_url_raw( (string) $def['url'], array( 'http', 'https' ) ) : '',
+		);
+		if ( '' === $entry['title'] ) {
+			$entry['title'] = ucfirst( $slug );
+		}
+		if ( isset( $def['force_destructive'] ) ) {
+			$entry['force_destructive'] = array_map( 'strval', (array) $def['force_destructive'] );
+		}
+		return $entry;
+	}
+
+	/**
+	 * Whether one integration's wrappers may register: the enabled filter
+	 * first, then the owner's approval, which no filter can override.
+	 *
+	 * @param string $slug Integration slug.
+	 * @return bool
+	 */
+	private function is_enabled( $slug ) {
+		/**
+		 * Filter whether one integration is enabled (default: on when the
+		 * partner plugin registers abilities; the tier system, pause
+		 * switch, and per-tool toggles all still apply on top).
+		 *
+		 * @param bool   $enabled Default true.
+		 * @param string $slug    Integration slug.
+		 */
+		// phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores -- Filter name supplied by the wiring class.
+		if ( ! apply_filters( $this->enabled_filter, true, $slug ) ) {
+			return false;
+		}
+		return null === $this->gate || (bool) call_user_func( $this->gate, $slug );
 	}
 
 	/**
@@ -110,20 +235,11 @@ class Saddle_Integration_Engine {
 		$all = wp_get_abilities();
 
 		foreach ( $this->integrations() as $slug => $def ) {
-			/**
-			 * Filter whether one integration is enabled (default: on when the
-			 * partner plugin registers abilities; the tier system, pause
-			 * switch, and per-tool toggles all still apply on top).
-			 *
-			 * @param bool   $enabled Default true.
-			 * @param string $slug    Integration slug.
-			 */
-			// phpcs:ignore WordPress.NamingConventions.ValidHookName.UseUnderscores -- Filter name supplied by the wiring class.
-			if ( ! apply_filters( $this->enabled_filter, true, $slug ) ) {
+			if ( ! $this->is_enabled( $slug ) ) {
 				continue;
 			}
 
-			$prefix = isset( $def['prefix'] ) ? (string) $def['prefix'] : $slug . '/';
+			$prefix = $def['prefix'];
 			foreach ( $all as $name => $ability ) {
 				$name = is_string( $name ) ? $name : $ability->get_name();
 				if ( 0 !== strpos( $name, $prefix ) ) {
@@ -144,7 +260,7 @@ class Saddle_Integration_Engine {
 	 * @param array  $all     The ability registry snapshot from this pass.
 	 */
 	private function wrap( $slug, array $def, $name, $ability, array $all ) {
-		$title        = isset( $def['title'] ) ? (string) $def['title'] : ucfirst( $slug );
+		$title        = $def['title'];
 		$source_short = substr( $name, strpos( $name, '/' ) + 1 );
 		$short        = $slug . '-' . $source_short; // knovia-create-doc.
 		$wrapper      = 'saddle/' . $short;
@@ -389,11 +505,36 @@ class Saddle_Integration_Engine {
 			}
 			if ( $count ) {
 				$active[ $slug ] = array(
-					'title' => isset( $def['title'] ) ? (string) $def['title'] : ucfirst( $slug ),
+					'title' => $def['title'],
 					'count' => $count,
 				);
 			}
 		}
 		return $active;
+	}
+
+	/**
+	 * Count of the partner's own source abilities per catalog entry, whether
+	 * or not they are wrapped: slug => count. A zero means the partner plugin
+	 * isn't active. Lets the owner see "6 tools, off" before approving.
+	 *
+	 * @return array<string,int>
+	 */
+	public function available_counts() {
+		if ( ! function_exists( 'wp_get_abilities' ) ) {
+			return array();
+		}
+		$names  = array_keys( wp_get_abilities() );
+		$counts = array();
+		foreach ( $this->integrations() as $slug => $def ) {
+			$count = 0;
+			foreach ( $names as $name ) {
+				if ( 0 === strpos( (string) $name, $def['prefix'] ) ) {
+					++$count;
+				}
+			}
+			$counts[ $slug ] = $count;
+		}
+		return $counts;
 	}
 }

@@ -106,6 +106,34 @@ class Saddle_REST_Admin {
 
 		register_rest_route(
 			self::REST_NAMESPACE,
+			'/integrations',
+			array(
+				array(
+					'methods'             => 'GET',
+					'callback'            => array( __CLASS__, 'get_integrations' ),
+					'permission_callback' => array( __CLASS__, 'can_manage' ),
+				),
+				array(
+					'methods'             => 'POST',
+					'callback'            => array( __CLASS__, 'update_integration' ),
+					'permission_callback' => array( __CLASS__, 'can_manage' ),
+					'args'                => array(
+						'slug'    => array(
+							'type'              => 'string',
+							'required'          => true,
+							'sanitize_callback' => 'sanitize_key',
+						),
+						'enabled' => array(
+							'type'     => 'boolean',
+							'required' => true,
+						),
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::REST_NAMESPACE,
 			'/context',
 			array(
 				array(
@@ -950,11 +978,22 @@ class Saddle_REST_Admin {
 	 * @return string Category label.
 	 */
 	private static function category_for( $short, $name ) {
+		$category = 'Other';
+
+		// Integrations match on the start of the name only, and before every
+		// other rule: as a substring rule further down, a partner tool such as
+		// acme-get-design-tokens was filed under "Design system".
+		foreach ( self::integration_prefixes() as $prefix ) {
+			if ( 0 === strpos( $short, $prefix ) ) {
+				$category = 'Integrations';
+				break;
+			}
+		}
+
 		$rules = array(
 			// label => substrings (first hit wins).
 			'Design system'   => array( 'design-system', 'design-tokens', 'bootstrap-design' ),
 			'Divi'            => array( 'divi-' ),
-			'Integrations'    => self::integration_prefixes(),
 			'Memory & skills' => array( 'remember', 'recall', 'forget', 'skill', 'instructions', 'context' ),
 			'Blocks & layout' => array( 'block', 'render-node', 'verify-page', 'lint-page', 'preview', 'recipe' ),
 			// AFTER 'Blocks & layout' on purpose: that rule matches 'block', so
@@ -967,8 +1006,7 @@ class Saddle_REST_Admin {
 			'Content'         => array( 'post', 'page', 'media', 'categor', 'tag', 'revision', 'search' ),
 		);
 
-		$category = 'Other';
-		foreach ( $rules as $label => $needles ) {
+		foreach ( 'Other' === $category ? $rules : array() as $label => $needles ) {
 			foreach ( $needles as $needle ) {
 				if ( false !== strpos( $short, $needle ) ) {
 					$category = $label;
@@ -1061,6 +1099,108 @@ class Saddle_REST_Admin {
 		$saved    = Saddle_Capabilities::set_disabled_abilities( $disabled );
 
 		return new WP_REST_Response( array( 'disabled' => $saved ), 200 );
+	}
+
+	/**
+	 * GET /integrations — every installed integration, for the Integrations
+	 * screen: enrolled plugins (PlugPress and third-party) plus Saddle's
+	 * built-in ones.
+	 *
+	 * @return WP_REST_Response
+	 */
+	public static function get_integrations() {
+		return new WP_REST_Response( array( 'integrations' => self::integration_rows() ), 200 );
+	}
+
+	/**
+	 * POST /integrations — switch one third-party integration on or off.
+	 *
+	 * @param WP_REST_Request $request Request with `slug` and `enabled`.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function update_integration( WP_REST_Request $request ) {
+		$slug    = (string) $request->get_param( 'slug' );
+		$enabled = (bool) $request->get_param( 'enabled' );
+		$result  = Saddle_Integrations::set_approved( $slug, $enabled );
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		$catalog = Saddle_Integrations::integrations();
+		$title   = isset( $catalog[ $slug ] ) ? $catalog[ $slug ]['title'] : $slug;
+
+		if ( class_exists( 'Saddle_Log' ) ) {
+			Saddle_Log::record(
+				array(
+					'action'  => $enabled ? 'integration-enabled' : 'integration-disabled',
+					'target'  => $slug,
+					'summary' => sprintf(
+						/* translators: %s: plugin name. */
+						$enabled ? __( 'Switched on the %s integration', 'saddle' ) : __( 'Switched off the %s integration', 'saddle' ),
+						$title
+					),
+				)
+			);
+		}
+
+		return new WP_REST_Response( array( 'integrations' => self::integration_rows() ), 200 );
+	}
+
+	/**
+	 * The Integrations screen's rows: enrolled integrations, then the
+	 * built-in ones whose plugin is detected.
+	 *
+	 * @return array[]
+	 */
+	private static function integration_rows() {
+		$rows  = Saddle_Integrations::listing();
+		$names = function_exists( 'wp_get_abilities' ) ? array_keys( wp_get_abilities() ) : array();
+
+		// Built in: tools Saddle ships itself, shown only while their plugin is
+		// detected (a Yoast row on a site without Yoast would be a lie).
+		$natives = array(
+			'yoast'     => array( __( 'Yoast SEO', 'saddle' ), __( 'Yoast’s own SEO fields — titles, descriptions, robots — edited natively.', 'saddle' ), array( 'Saddle_Yoast', 'is_active' ) ),
+			'rank-math' => array( __( 'Rank Math', 'saddle' ), __( 'Rank Math’s own SEO fields, edited natively.', 'saddle' ), array( 'Saddle_Rank_Math', 'is_active' ) ),
+			'aioseo'    => array( __( 'AIOSEO', 'saddle' ), __( 'AIOSEO’s own SEO fields, edited natively.', 'saddle' ), array( 'Saddle_Aioseo', 'is_active' ) ),
+			'wc'        => array( __( 'WooCommerce', 'saddle' ), __( 'Products and orders, handled natively.', 'saddle' ), array( 'Saddle_WC', 'is_active' ) ),
+			'unsplash'  => array( __( 'Unsplash', 'saddle' ), __( 'Stock-photo search and import, built into Saddle. Needs the Access Key above.', 'saddle' ), null ),
+		);
+		foreach ( $natives as $slug => $native ) {
+			list( $title, $description, $probe ) = $native;
+			if ( null !== $probe && ! ( is_callable( $probe ) && call_user_func( $probe ) ) ) {
+				continue;
+			}
+			$count = 0;
+			foreach ( $names as $name ) {
+				if ( 0 === strpos( (string) $name, 'saddle/' . $slug . '-' ) ) {
+					++$count;
+				}
+			}
+			if ( ! $count ) {
+				continue;
+			}
+			$rows[] = array(
+				'slug'        => $slug,
+				'title'       => $title,
+				'description' => $description,
+				'author'      => '',
+				'url'         => '',
+				'source'      => 'built-in',
+				'enabled'     => true,
+				'tools'       => $count,
+			);
+		}
+
+		/**
+		 * Filter the Integrations screen's rows.
+		 *
+		 * For an add-on that wraps tools through its own engine rather than
+		 * free's catalog, so its integrations can appear here too.
+		 *
+		 * @param array[] $rows Rows: slug, title, description, author, url,
+		 *                      source, enabled, tools.
+		 */
+		return array_values( (array) apply_filters( 'saddle_integration_listing', $rows ) );
 	}
 
 	/**
