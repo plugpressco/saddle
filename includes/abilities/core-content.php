@@ -440,21 +440,24 @@ function saddle_register_abilities() {
 	wp_register_ability(
 		'saddle/upload-media',
 		array(
-			'label'               => __( 'Upload media from URL', 'saddle' ),
-			'description'         => __( 'Downloads a file from a source URL you provide and adds it to the media library, returning the new attachment id and URL. Additive (non-destructive). This is the only ability that fetches an external URL, and it fetches only the URL you pass. Optionally set title, alt text, caption, description, and the post to attach it to.', 'saddle' ),
+			'label'               => __( 'Upload media', 'saddle' ),
+			'description'         => __( 'Adds a file to the media library and returns the new attachment id and URL. Pass EITHER source_url (the site downloads that one URL, nothing else) OR data: the file itself, base64-encoded, with a filename. Use data when the file has no public URL, such as an image you generated or one on the user\'s computer. WordPress checks that the file\'s content matches its extension and that the type is allowed on this site. Additive (non-destructive). Optionally set title, alt text, caption, description, and the post to attach it to.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
-				'required'   => array( 'source_url' ),
 				'properties' => array(
 					'source_url'  => array(
 						'type'        => 'string',
 						'format'      => 'uri',
-						'description' => __( 'Publicly reachable URL of the file to download.', 'saddle' ),
+						'description' => __( 'Publicly reachable URL of the file to download. Use this or data, not both.', 'saddle' ),
+					),
+					'data'        => array(
+						'type'        => 'string',
+						'description' => __( 'The file itself, base64-encoded. A "data:<type>;base64," prefix is accepted. Requires filename. Use this or source_url, not both.', 'saddle' ),
 					),
 					'filename'    => array(
 						'type'        => 'string',
-						'description' => __( 'Override the stored filename (with extension).', 'saddle' ),
+						'description' => __( 'The stored filename, with extension. Required with data; with source_url it overrides the name taken from the URL.', 'saddle' ),
 					),
 					'title'       => array( 'type' => 'string' ),
 					'alt'         => array( 'type' => 'string' ),
@@ -1522,7 +1525,77 @@ class Saddle_Abilities {
 	}
 
 	/**
-	 * Download a URL into the media library.
+	 * Add a file sent inline (base64) to the media library.
+	 *
+	 * The bytes go to core's own attachment controller, the handler behind
+	 * `POST /wp/v2/media`, so core writes the file, checks the content against
+	 * the extension (wp_check_filetype_and_ext) and creates the attachment.
+	 * Saddle itself writes nothing to disk. The controller is called directly
+	 * rather than through rest_do_request(): a nested REST dispatch would meet
+	 * Saddle_Connection::scope_credentials(), which confines a Saddle-issued
+	 * key to the MCP route, and widening that is not the answer. This
+	 * ability's own gate already required the write tier and upload_files.
+	 *
+	 * @param string $data     Base64 file content, optionally a data: URI.
+	 * @param string $filename Sanitized filename with extension.
+	 * @param int    $post_id  Post to attach to, or 0.
+	 * @return int|WP_Error Attachment ID.
+	 */
+	private static function upload_inline_to_library( $data, $filename, $post_id = 0 ) {
+		if ( '' === $filename ) {
+			return new WP_Error( 'saddle_missing_filename', __( 'A "filename" with an extension is required when sending "data", e.g. "hero.png".', 'saddle' ), array( 'status' => 400 ) );
+		}
+
+		$type = wp_check_filetype( $filename );
+		if ( empty( $type['type'] ) ) {
+			return new WP_Error( 'saddle_file_type_not_allowed', __( 'That file type is not allowed on this site. Use an extension WordPress accepts for uploads, such as .jpg, .png, .webp or .pdf.', 'saddle' ), array( 'status' => 400 ) );
+		}
+
+		$data = preg_replace( '#\Adata:[^,]*;base64,#i', '', trim( (string) $data ) );
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode -- decoding a file the caller sent inline; the bytes go to core's upload handler, never executed.
+		$bytes = base64_decode( (string) preg_replace( '/\s+/', '', $data ), true );
+		if ( false === $bytes || '' === $bytes ) {
+			return new WP_Error( 'saddle_invalid_data', __( '"data" is not valid base64.', 'saddle' ), array( 'status' => 400 ) );
+		}
+
+		$max_bytes = min( (int) apply_filters( 'saddle_max_upload_bytes', 64 * MB_IN_BYTES ), (int) wp_max_upload_size() );
+		if ( $max_bytes > 0 && strlen( $bytes ) > $max_bytes ) {
+			return new WP_Error(
+				'saddle_file_too_large',
+				sprintf(
+					/* translators: %s: maximum size, e.g. "64 MB". */
+					__( 'The file exceeds the maximum allowed size (%s).', 'saddle' ),
+					size_format( $max_bytes )
+				),
+				array( 'status' => 413 )
+			);
+		}
+
+		$request = new WP_REST_Request( 'POST', '/wp/v2/media' );
+		$request->set_header( 'content-type', $type['type'] );
+		$request->set_header( 'content-disposition', 'attachment; filename="' . $filename . '"' );
+		$request->set_body( $bytes );
+		if ( $post_id > 0 ) {
+			$request->set_param( 'post', $post_id );
+		}
+
+		$controller = new WP_REST_Attachments_Controller( 'attachment' );
+		$allowed    = $controller->create_item_permissions_check( $request );
+		if ( true !== $allowed ) {
+			return is_wp_error( $allowed ) ? $allowed : self::forbidden( __( 'You do not have permission to upload files.', 'saddle' ) );
+		}
+
+		$response = $controller->create_item( $request );
+		if ( is_wp_error( $response ) ) {
+			return new WP_Error( 'saddle_upload_failed', $response->get_error_message(), array( 'status' => 400 ) );
+		}
+
+		$created = $response->get_data();
+		return isset( $created['id'] ) ? (int) $created['id'] : new WP_Error( 'saddle_upload_failed', __( 'WordPress did not return the new media item.', 'saddle' ), array( 'status' => 500 ) );
+	}
+
+	/**
+	 * Add a file to the media library, from a URL or sent inline.
 	 *
 	 * @param mixed $input Upload fields.
 	 * @return array|WP_Error
@@ -1530,8 +1603,10 @@ class Saddle_Abilities {
 	public static function upload_media( $input = null ) {
 		$input = self::args( $input );
 
-		if ( ! isset( $input['source_url'] ) || ! is_string( $input['source_url'] ) || '' === trim( $input['source_url'] ) ) {
-			return new WP_Error( 'saddle_missing_source_url', __( 'A "source_url" is required.', 'saddle' ), array( 'status' => 400 ) );
+		$has_url  = isset( $input['source_url'] ) && is_string( $input['source_url'] ) && '' !== trim( $input['source_url'] );
+		$has_data = isset( $input['data'] ) && is_string( $input['data'] ) && '' !== trim( $input['data'] );
+		if ( $has_url === $has_data ) {
+			return new WP_Error( 'saddle_missing_source_url', __( 'Pass exactly one of "source_url" (a public URL to download) or "data" (the file, base64-encoded, with a "filename").', 'saddle' ), array( 'status' => 400 ) );
 		}
 
 		// If attaching to a post, require permission to edit that post.
@@ -1545,7 +1620,9 @@ class Saddle_Abilities {
 			$filename = sanitize_file_name( $input['filename'] );
 		}
 
-		$attachment_id = self::sideload_url_to_library( trim( $input['source_url'] ), $filename, $post_id );
+		$attachment_id = $has_url
+			? self::sideload_url_to_library( trim( $input['source_url'] ), $filename, $post_id )
+			: self::upload_inline_to_library( $input['data'], $filename, $post_id );
 		if ( is_wp_error( $attachment_id ) ) {
 			return $attachment_id;
 		}
