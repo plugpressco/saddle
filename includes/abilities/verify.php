@@ -25,15 +25,20 @@ function saddle_register_verify_abilities() {
 		'saddle/verify-page',
 		array(
 			'label'               => __( 'Verify a page', 'saddle' ),
-			'description'         => __( 'Re-reads a page\'s SAVED state and returns one scored report (0–100 + grade): structural problems, attributes the builder silently ignores (your styling never took effect), and design/accessibility violations — each finding at a node address with a fix hint. Run it after building or editing: fix structural and "ignored" findings first, then errors, then re-run until the score is acceptable. This is how you know your work actually landed, not just that the write calls returned.', 'saddle' ),
+			'description'         => __( 'Re-reads a page\'s SAVED state and returns one scored report (0–100 + grade): structural problems, attributes the builder silently ignores (your styling never took effect), and design/accessibility violations — each finding at a node address with a fix hint. Run it after building or editing: fix structural and "ignored" findings first, then errors, then re-run until the score is acceptable. This is how you know your work actually landed, not just that the write calls returned. After editing a PUBLISHED page, also pass check_public: true: it loads the live page as a visitor would and reports "stale" if a page cache or CDN is still serving the old version (then call flush-cache and check again).', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
 				'required'   => array( 'post_id' ),
 				'properties' => array(
-					'post_id' => array(
+					'post_id'      => array(
 						'type'        => 'integer',
 						'description' => __( 'The post or page to verify.', 'saddle' ),
+					),
+					'check_public' => array(
+						'type'        => 'boolean',
+						'default'     => false,
+						'description' => __( 'Also load the public page as a logged-out visitor and confirm it serves the saved content. Published pages only. Sends one request to this site\'s own page; it does not change the score.', 'saddle' ),
 					),
 				),
 			),
@@ -84,7 +89,10 @@ class Saddle_Verify_Abilities {
 			return $resolved;
 		}
 
-		return array_merge(
+		$public = ! empty( $input['check_public'] ) ? Saddle_Verify::public_check( $post ) : null;
+		$stale  = is_array( $public ) && isset( $public['status'] ) && 'stale' === $public['status'];
+
+		$result = array_merge(
 			array(
 				'id'      => $post->ID,
 				'builder' => null === $builder ? 'native' : $builder,
@@ -97,5 +105,14 @@ class Saddle_Verify_Abilities {
 				'coverage' => __( 'This score covers only what the server can verify — persisted structure, attributes, and design rules. It is NOT a visual sign-off: a page can pass every server-side check and still look wrong. Open get-preview-url and judge the real pixels before calling the page done.', 'saddle' ),
 			)
 		);
+
+		if ( null !== $public ) {
+			$result['public'] = $public;
+		}
+		if ( $stale ) {
+			$result['note'] .= ' ' . __( 'The saved page is not what visitors see yet: the public page is missing passages the saved version has, so a page cache or CDN is still serving the old copy. Call flush-cache, then run verify-page with check_public again. Do not report the change as live until "public.status" is "served".', 'saddle' );
+		}
+
+		return $result;
 	}
 }
