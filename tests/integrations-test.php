@@ -151,6 +151,12 @@ class Saddle_Integrations_Test extends WP_UnitTestCase {
 					'saddle/zzz-get-stuff',
 					'coll/get-stuff',
 					'saddle/coll-get-stuff',
+					'acme/get-report',
+					'acme/get-design-tokens',
+					'saddle/acme-get-report',
+					'saddle/acme-get-design-tokens',
+					'mailyard/get-log',
+					'saddle/mailyard-get-log',
 				);
 				$all = wp_get_abilities();
 				foreach ( $names as $name ) {
@@ -161,6 +167,7 @@ class Saddle_Integrations_Test extends WP_UnitTestCase {
 			}
 		);
 
+		delete_option( Saddle_Integrations::APPROVED_OPTION );
 		Saddle_Capabilities::set_tier( 'read' );
 		parent::tear_down();
 	}
@@ -450,6 +457,7 @@ class Saddle_Integrations_Test extends WP_UnitTestCase {
 			return $integrations;
 		};
 		add_filter( 'saddle_integrations', $add );
+		update_option( Saddle_Integrations::APPROVED_OPTION, array( 'coll' ) );
 
 		$this->within_abilities_init(
 			static function () {
@@ -501,6 +509,8 @@ class Saddle_Integrations_Test extends WP_UnitTestCase {
 		};
 		add_filter( 'saddle_integrations', $add );
 		add_filter( 'saddle_integration_enabled', $off, 10, 2 );
+		// Approved, so the filter alone is what keeps it off.
+		update_option( Saddle_Integrations::APPROVED_OPTION, array( 'zzz' ) );
 
 		$this->within_abilities_init(
 			static function () {
@@ -558,7 +568,7 @@ class Saddle_Integrations_Test extends WP_UnitTestCase {
 	public function test_the_integration_block_is_a_real_heading_in_the_context() {
 		$context = Saddle_Context::system_context();
 
-		$this->assertStringContainsString( '# Other PlugPress tools on this site', $context );
+		$this->assertStringContainsString( '# Plugins connected to Saddle', $context );
 		$this->assertStringNotContainsString( 'First-party integrations:', $context );
 	}
 
@@ -604,5 +614,244 @@ class Saddle_Integrations_Test extends WP_UnitTestCase {
 		$this->assertContains( 'mailyard-', $list, 'A self-enrolled integration must reach the UI grouping.' );
 		$this->assertContains( 'waggle-', $list );
 		$this->assertContains( 'knovia-', $list, 'The literal floor keeps Pro’s grouping from regressing.' );
+	}
+
+	/* -------- third-party integrations: owner-approved -------- */
+
+	/**
+	 * Enrol a third-party "acme" plugin and register its source abilities.
+	 *
+	 * @param string[] $tools Source short names, each registered readonly.
+	 * @return callable The catalog filter, for removal.
+	 */
+	private function enrol_acme( array $tools = array( 'get-report' ) ) {
+		$add = static function ( $integrations ) {
+			$integrations['acme'] = array(
+				'prefix'      => 'acme/',
+				'title'       => 'Acme Forms',
+				'description' => 'Form entries.',
+				'author'      => 'Acme Inc.',
+				'url'         => 'https://example.com/acme',
+			);
+			return $integrations;
+		};
+		add_filter( 'saddle_integrations', $add );
+
+		$this->within_abilities_init(
+			static function () use ( $tools ) {
+				foreach ( $tools as $tool ) {
+					wp_register_ability(
+						'acme/' . $tool,
+						array(
+							'label'               => 'Acme ' . $tool,
+							'description'         => 'x',
+							'category'            => 'saddle',
+							'input_schema'        => array( 'type' => 'object', 'default' => (object) array(), 'properties' => (object) array() ),
+							'execute_callback'    => static function () {
+								return array( 'entries' => 3 );
+							},
+							'permission_callback' => '__return_true',
+							'meta'                => array( 'annotations' => array( 'readonly' => true ) ),
+						)
+					);
+				}
+				Saddle_Integrations::register_wrappers();
+			}
+		);
+
+		return $add;
+	}
+
+	private function rewrap() {
+		$this->within_abilities_init(
+			static function () {
+				Saddle_Integrations::register_wrappers();
+			}
+		);
+	}
+
+	public function test_a_third_party_integration_stays_off_until_the_owner_approves() {
+		$add = $this->enrol_acme();
+
+		$this->assertArrayNotHasKey( 'saddle/acme-get-report', wp_get_abilities(), 'Enrolling alone must not put a third-party tool in front of an agent.' );
+
+		$rows = array_column( Saddle_Integrations::listing(), null, 'slug' );
+		$this->assertSame( 'third-party', $rows['acme']['source'] );
+		$this->assertFalse( $rows['acme']['enabled'] );
+		$this->assertSame( 1, $rows['acme']['tools'], 'The owner sees what switching it on would add.' );
+
+		$context = implode( "\n", Saddle_Integrations::context_section( array() )[0]['lines'] );
+		$this->assertStringContainsString( 'Acme Forms is installed, but the site owner has not switched on its tools', $context );
+
+		$this->assertTrue( Saddle_Integrations::set_approved( 'acme', true ) );
+		$this->rewrap();
+		remove_filter( 'saddle_integrations', $add );
+
+		$tool = wp_get_ability( 'saddle/acme-get-report' );
+		$this->assertNotNull( $tool, 'Once approved, the tool is wrapped like any other.' );
+		$this->assertSame( 'read', $tool->get_meta()['saddle']['tier'] );
+		$this->assertSame( array( 'entries' => 3 ), $tool->execute( array() ) );
+	}
+
+	public function test_the_enabled_filter_cannot_switch_on_an_unapproved_integration() {
+		$force_on = static function () {
+			return true;
+		};
+		add_filter( 'saddle_integration_enabled', $force_on, 99 );
+		$add = $this->enrol_acme();
+		remove_filter( 'saddle_integration_enabled', $force_on, 99 );
+		remove_filter( 'saddle_integrations', $add );
+
+		$this->assertArrayNotHasKey( 'saddle/acme-get-report', wp_get_abilities(), 'Only the owner can approve a third-party integration.' );
+	}
+
+	public function test_first_party_integrations_need_no_approval() {
+		$this->assertSame( array(), get_option( Saddle_Integrations::APPROVED_OPTION, array() ) );
+		$this->assertNotNull( wp_get_ability( 'saddle/waggle-get-aeo-score' ), 'Waggle is live with nothing approved.' );
+
+		$add = static function ( $integrations ) {
+			$integrations['mailyard'] = array( 'prefix' => 'mailyard/', 'title' => 'Mailyard' );
+			return $integrations;
+		};
+		add_filter( 'saddle_integrations', $add );
+		$this->within_abilities_init(
+			static function () {
+				wp_register_ability(
+					'mailyard/get-log',
+					array(
+						'label'               => 'Get log',
+						'description'         => 'x',
+						'category'            => 'saddle',
+						'input_schema'        => array( 'type' => 'object', 'default' => (object) array(), 'properties' => (object) array() ),
+						'execute_callback'    => '__return_empty_array',
+						'permission_callback' => '__return_true',
+						'meta'                => array( 'annotations' => array( 'readonly' => true ) ),
+					)
+				);
+				Saddle_Integrations::register_wrappers();
+			}
+		);
+		$rows = array_column( Saddle_Integrations::listing(), null, 'slug' );
+		remove_filter( 'saddle_integrations', $add );
+
+		$this->assertNotNull( wp_get_ability( 'saddle/mailyard-get-log' ), 'Mailyard self-enrols and is live with nothing approved.' );
+		$this->assertSame( 'plugpress', $rows['mailyard']['source'] );
+		$this->assertInstanceOf( 'WP_Error', Saddle_Integrations::set_approved( 'waggle', false ), 'A PlugPress integration has no owner switch to flip.' );
+	}
+
+	/**
+	 * An empty prefix would wrap every ability on the site; `saddle/` and
+	 * `core/` would re-expose abilities that aren't the partner's to offer.
+	 */
+	public function test_invalid_catalog_entries_are_skipped_with_a_notice() {
+		$this->setExpectedIncorrectUsage( 'Saddle_Integration_Engine::normalize' );
+
+		$bad = static function ( $integrations ) {
+			$integrations['empty-prefix'] = array( 'prefix' => '', 'title' => 'x' );
+			$integrations['own-saddle']   = array( 'prefix' => 'saddle/', 'title' => 'x' );
+			$integrations['own-core']     = array( 'prefix' => 'core/', 'title' => 'x' );
+			$integrations['no-slash']     = array( 'prefix' => 'noslash', 'title' => 'x' );
+			$integrations['Upper']        = array( 'prefix' => 'upper/', 'title' => 'x' );
+			$integrations['divi']         = array( 'prefix' => 'divi/', 'title' => 'x' );
+			return $integrations;
+		};
+		add_filter( 'saddle_integrations', $bad );
+		update_option( Saddle_Integrations::APPROVED_OPTION, array( 'empty-prefix', 'own-saddle', 'own-core', 'no-slash', 'upper', 'divi' ) );
+		$this->rewrap();
+		$catalog = Saddle_Integrations::integrations();
+		remove_filter( 'saddle_integrations', $bad );
+
+		foreach ( array( 'empty-prefix', 'own-saddle', 'own-core', 'no-slash', 'Upper', 'divi' ) as $slug ) {
+			$this->assertArrayNotHasKey( $slug, $catalog );
+		}
+		$this->assertArrayHasKey( 'waggle', $catalog, 'A valid entry survives next to invalid ones.' );
+
+		foreach ( array_keys( wp_get_abilities() ) as $name ) {
+			$this->assertStringStartsNotWith( 'saddle/own-saddle-', $name );
+			$this->assertStringStartsNotWith( 'saddle/empty-prefix-', $name );
+		}
+	}
+
+	/* -------- the owner's Integrations screen -------- */
+
+	public function test_the_integrations_endpoint_lists_every_installed_integration() {
+		$add  = $this->enrol_acme();
+		$data = rest_get_server()->dispatch( new WP_REST_Request( 'GET', '/saddle/v1/integrations' ) )->get_data();
+		remove_filter( 'saddle_integrations', $add );
+
+		$rows = array_column( $data['integrations'], null, 'slug' );
+		$this->assertSame(
+			array( 'slug', 'title', 'description', 'author', 'url', 'source', 'enabled', 'tools' ),
+			array_keys( $rows['acme'] ),
+			'The Integrations screen depends on this row shape.'
+		);
+		$this->assertSame( 'Acme Inc.', $rows['acme']['author'] );
+		$this->assertSame( 'https://example.com/acme', $rows['acme']['url'] );
+		$this->assertSame( 'plugpress', $rows['waggle']['source'] );
+		$this->assertSame( 4, $rows['waggle']['tools'] );
+		$this->assertTrue( $rows['waggle']['enabled'] );
+	}
+
+	public function test_switching_an_integration_needs_manage_options() {
+		$add = $this->enrol_acme();
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'editor' ) ) );
+
+		$request = new WP_REST_Request( 'POST', '/saddle/v1/integrations' );
+		$request->set_param( 'slug', 'acme' );
+		$request->set_param( 'enabled', true );
+		$response = rest_get_server()->dispatch( $request );
+		remove_filter( 'saddle_integrations', $add );
+
+		$this->assertSame( 403, $response->get_status() );
+		$this->assertSame( array(), get_option( Saddle_Integrations::APPROVED_OPTION, array() ) );
+	}
+
+	public function test_the_owner_switches_a_third_party_integration_on_and_off() {
+		$add = $this->enrol_acme();
+
+		$on = new WP_REST_Request( 'POST', '/saddle/v1/integrations' );
+		$on->set_param( 'slug', 'acme' );
+		$on->set_param( 'enabled', true );
+		$response = rest_get_server()->dispatch( $on );
+
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( array( 'acme' ), get_option( Saddle_Integrations::APPROVED_OPTION ) );
+		$rows = array_column( $response->get_data()['integrations'], null, 'slug' );
+		$this->assertTrue( $rows['acme']['enabled'] );
+
+		$off = new WP_REST_Request( 'POST', '/saddle/v1/integrations' );
+		$off->set_param( 'slug', 'acme' );
+		$off->set_param( 'enabled', false );
+		rest_get_server()->dispatch( $off );
+		remove_filter( 'saddle_integrations', $add );
+
+		$this->assertSame( array(), get_option( Saddle_Integrations::APPROVED_OPTION ) );
+	}
+
+	public function test_an_uninstalled_integration_cannot_be_switched_on() {
+		$request = new WP_REST_Request( 'POST', '/saddle/v1/integrations' );
+		$request->set_param( 'slug', 'not-installed' );
+		$request->set_param( 'enabled', true );
+
+		$this->assertSame( 404, rest_get_server()->dispatch( $request )->get_status() );
+	}
+
+	/**
+	 * Grouping used to be a substring match that ran after "Design system",
+	 * so a partner tool named for design tokens was filed there.
+	 */
+	public function test_integration_tools_are_grouped_by_the_start_of_their_name() {
+		update_option( Saddle_Integrations::APPROVED_OPTION, array( 'acme' ) );
+		$add = $this->enrol_acme( array( 'get-design-tokens' ) );
+
+		$catalog = wp_list_pluck(
+			rest_get_server()->dispatch( new WP_REST_Request( 'GET', '/saddle/v1/capabilities' ) )->get_data()['capabilities'],
+			'category',
+			'short'
+		);
+		remove_filter( 'saddle_integrations', $add );
+
+		$this->assertSame( 'Integrations', $catalog['acme-get-design-tokens'] );
+		$this->assertSame( 'Design system', $catalog['get-design-tokens'], 'Saddle’s own tool must not move.' );
 	}
 }

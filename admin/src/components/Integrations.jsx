@@ -1,12 +1,16 @@
 /**
- * Integrations — services Saddle can hand to the AI beyond core WordPress.
+ * Integrations — services and plugins Saddle can hand to the AI beyond core
+ * WordPress.
  *
- * Two kinds live here: native integrations that need owner setup (Unsplash's
- * Access Key card), and first-party partner plugins (Waggle, Knovia) whose
- * tools Saddle wraps automatically when the plugin is active — those are
- * detected, never configured here. Per-tool on/off switches stay on the
- * Permissions screen; this page answers "what is connected and how big is it".
+ * Three kinds of row, all served by GET /integrations: tools built into
+ * Saddle (Unsplash, which needs the Access Key card, and the SEO/store
+ * plugins it edits natively), PlugPress plugins whose tools Saddle wraps as
+ * soon as they are active, and third-party plugins that enrolled through the
+ * public `saddle_integrations` filter. Third-party rows start switched off;
+ * the owner turns them on here. Per-tool on/off switches stay on the
+ * Permissions screen.
  */
+import { useState, useEffect } from '@wordpress/element';
 import {
 	Card,
 	CardHeader,
@@ -14,101 +18,117 @@ import {
 	RowList,
 	Row,
 	Badge,
+	Switch,
+	toast,
 	PageHeader,
 } from '@plugpress/ui';
 import { __, sprintf, _n } from '@wordpress/i18n';
+import { api } from '../api';
 import UnsplashKeyCard from './UnsplashKeyCard';
 
-// Presentation for the integration prefixes the capability catalog can
-// contain. `detected` copy is only shown for partner plugins that appear.
-const KNOWN = {
-	waggle: {
-		title: __( 'Waggle', 'saddle' ),
-		description: __(
-			'SEO & AEO tools from the Waggle plugin, wrapped with Saddle’s safety model.',
-			'saddle'
-		),
-	},
-	knovia: {
-		title: __( 'Knovia', 'saddle' ),
-		description: __(
-			'Documentation tools from the Knovia plugin, wrapped with Saddle’s safety model.',
-			'saddle'
-		),
-	},
-	unsplash: {
-		title: __( 'Unsplash', 'saddle' ),
-		description: __(
-			'Stock-photo search and import, built into Saddle. Needs the Access Key above.',
-			'saddle'
-		),
-	},
-	// The native SEO integrations. Their tools join the Integrations category
-	// only while the plugin is detected (integration_prefixes() gates each
-	// prefix on detection), so a row here always reflects a plugin that is
-	// really present.
-	yoast: {
-		title: __( 'Yoast SEO', 'saddle' ),
-		description: __(
-			'Yoast’s own SEO fields — titles, descriptions, robots — edited natively.',
-			'saddle'
-		),
-	},
-	'rank-math': {
-		title: __( 'Rank Math', 'saddle' ),
-		description: __(
-			'Rank Math’s own SEO fields, edited natively.',
-			'saddle'
-		),
-	},
-	aioseo: {
-		title: __( 'AIOSEO', 'saddle' ),
-		description: __(
-			'AIOSEO’s own SEO fields, edited natively.',
-			'saddle'
-		),
-	},
-	// Detected the same way, but a store rather than an SEO plugin.
-	wc: {
-		title: __( 'WooCommerce', 'saddle' ),
-		description: __(
-			'Products and orders, handled natively.',
-			'saddle'
-		),
-	},
+const SOURCE_LABELS = {
+	plugpress: __( 'PlugPress', 'saddle' ),
+	'third-party': __( 'Third-party', 'saddle' ),
+	'built-in': __( 'Built in', 'saddle' ),
 };
 
-// Group the Integrations-category capabilities by their prefix (waggle-…,
-// knovia-…, unsplash-…) into { key, count } rows. A two-segment prefix is
-// tried against KNOWN first, so rank-math-* files under "Rank Math" instead
-// of a row named "rank".
-const detectIntegrations = ( caps ) => {
+// Integrations-category tools no listed row accounts for — an add-on that
+// wraps tools through its own engine and doesn't add a row — grouped by the
+// first segment of their name so they still show up.
+const unlistedRows = ( caps, rows ) => {
+	const listed = rows.map( ( r ) => `${ r.slug }-` );
 	const counts = new Map();
 	caps.forEach( ( c ) => {
-		// The category label comes verbatim from the server catalog.
-		if ( 'Integrations' !== c.category ) {
+		const short = c.short || '';
+		if (
+			'Integrations' !== c.category ||
+			listed.some( ( p ) => short.startsWith( p ) )
+		) {
 			return;
 		}
-		const parts = ( c.short || '' ).split( '-' );
-		const two = parts.slice( 0, 2 ).join( '-' );
-		const prefix = KNOWN[ two ] ? two : parts[ 0 ];
-		if ( ! prefix ) {
-			return;
+		const slug = short.split( '-' )[ 0 ];
+		if ( slug ) {
+			counts.set( slug, ( counts.get( slug ) || 0 ) + 1 );
 		}
-		counts.set( prefix, ( counts.get( prefix ) || 0 ) + 1 );
 	} );
-	return [ ...counts.entries() ].map( ( [ key, count ] ) => ( {
-		key,
-		count,
-		...( KNOWN[ key ] || { title: key, description: '' } ),
+	return [ ...counts.entries() ].map( ( [ slug, tools ] ) => ( {
+		slug,
+		title: slug.charAt( 0 ).toUpperCase() + slug.slice( 1 ),
+		description: '',
+		author: '',
+		url: '',
+		source: '',
+		enabled: true,
+		tools,
 	} ) );
 };
 
-export default function Integrations( { caps } ) {
-	const detected = detectIntegrations( caps || [] );
-	const partnersMissing = ! detected.some(
-		( d ) => d.key === 'waggle' || d.key === 'knovia'
+const describe = ( row ) => {
+	if ( ! row.author ) {
+		return row.description;
+	}
+	/* translators: %s: plugin author. */
+	const byline = sprintf( __( 'By %s', 'saddle' ), row.author );
+	return (
+		<>
+			{ row.description && <>{ row.description } · </> }
+			{ row.url ? (
+				<a href={ row.url } target="_blank" rel="noopener noreferrer">
+					{ byline }
+				</a>
+			) : (
+				byline
+			) }
+		</>
 	);
+};
+
+export default function Integrations( { caps, onChanged } ) {
+	const [ rows, setRows ] = useState( null );
+	const [ saving, setSaving ] = useState( '' );
+
+	useEffect( () => {
+		api( 'integrations' )
+			.then( ( res ) => setRows( res.integrations || [] ) )
+			.catch( ( e ) => {
+				setRows( [] );
+				toast.error( e.message );
+			} );
+	}, [] );
+
+	const toggle = ( row, next ) => {
+		setSaving( row.slug );
+		api( 'integrations', {
+			method: 'POST',
+			data: { slug: row.slug, enabled: next },
+		} )
+			.then( ( res ) => {
+				setRows( res.integrations || [] );
+				toast.success(
+					next
+						? sprintf(
+								/* translators: %s: plugin name. */
+								__(
+									'%s is on. Its tools follow your access level and approval rules.',
+									'saddle'
+								),
+								row.title
+						  )
+						: sprintf(
+								/* translators: %s: plugin name. */
+								__( '%s is off.', 'saddle' ),
+								row.title
+						  )
+				);
+				if ( onChanged ) {
+					onChanged();
+				}
+			} )
+			.catch( ( e ) => toast.error( e.message ) )
+			.finally( () => setSaving( '' ) );
+	};
+
+	const all = rows ? [ ...rows, ...unlistedRows( caps || [], rows ) ] : [];
 
 	return (
 		<div className="saddle-integrations">
@@ -124,44 +144,66 @@ export default function Integrations( { caps } ) {
 
 			<Card>
 				<CardHeader
-					title={ __( 'Detected integrations', 'saddle' ) }
+					title={ __( 'Connected plugins', 'saddle' ) }
 					description={ __(
-						'Tools these integrations currently add. Turn individual tools off on the Permissions screen.',
+						'Plugins whose tools your AI can use through Saddle. Turn individual tools off on the Permissions screen.',
 						'saddle'
 					) }
 				/>
 				<CardContent>
-					<RowList>
-						{ detected.map( ( d ) => (
+					<RowList loading={ null === rows }>
+						{ all.map( ( row ) => (
 							<Row
-								key={ d.key }
-								title={ d.title }
-								description={ d.description }
+								key={ row.slug }
+								title={ row.title }
+								description={ describe( row ) }
 								actions={
-									<Badge>
-										{ sprintf(
-											/* translators: %d: number of tools. */
-											_n(
-												'%d tool',
-												'%d tools',
-												d.count,
-												'saddle'
-											),
-											d.count
+									<>
+										{ SOURCE_LABELS[ row.source ] && (
+											<Badge>
+												{ SOURCE_LABELS[ row.source ] }
+											</Badge>
 										) }
-									</Badge>
+										<Badge>
+											{ sprintf(
+												/* translators: %d: number of tools. */
+												_n(
+													'%d tool',
+													'%d tools',
+													row.tools,
+													'saddle'
+												),
+												row.tools
+											) }
+										</Badge>
+										{ 'third-party' === row.source && (
+											<Switch
+												checked={ row.enabled }
+												disabled={ saving === row.slug }
+												onChange={ ( next ) =>
+													toggle( row, next )
+												}
+												aria-label={ sprintf(
+													/* translators: %s: plugin name. */
+													__(
+														'Let your AI use %s tools',
+														'saddle'
+													),
+													row.title
+												) }
+											/>
+										) }
+									</>
 								}
 							/>
 						) ) }
 					</RowList>
-					{ partnersMissing && (
-						<p className="saddle-integrations__hint">
-							{ __(
-								'Partner plugins are detected automatically: install Waggle (SEO) or Knovia (docs) and their tools appear here — no setup needed.',
-								'saddle'
-							) }
-						</p>
-					) }
+					<p className="saddle-integrations__hint">
+						{ __(
+							'Plugins that support Saddle appear here once they are active. Third-party plugins stay off until you switch them on.',
+							'saddle'
+						) }
+					</p>
 				</CardContent>
 			</Card>
 		</div>

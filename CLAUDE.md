@@ -147,7 +147,10 @@ throughout: only the index rides the context, bodies come from
 shadow a free one by using its name.
 
 The seams, in one place: `saddle_system_context`, `saddle_builtin_skills`,
-`saddle_ability_meta()`, `saddle_native_builders`, `mcp_adapter_tools_list`.
+`saddle_ability_meta()`, `saddle_native_builders`, `mcp_adapter_tools_list`,
+and `saddle_integrations` — the open API any plugin enrols through. Its tools
+are wrapped by `Saddle_Integration_Engine`; a third-party slug stays off until
+the owner approves it, and only `Saddle_Integrations::FIRST_PARTY` skips that.
 
 ---
 

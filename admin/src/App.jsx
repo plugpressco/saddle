@@ -607,7 +607,10 @@ export default function App() {
 									/>
 								) }
 								{ tab === 'integrations' && (
-									<Integrations caps={ caps } />
+									<Integrations
+										caps={ caps }
+										onChanged={ loadCaps }
+									/>
 								) }
 								{ tab === 'settings' && (
 									<Settings

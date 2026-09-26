@@ -74,6 +74,7 @@ The SEO and WooCommerce tools work when that plugin is active.
 * All in One SEO: Read and edit the SEO title, meta description, robots and social fields of posts and pages.
 * WooCommerce: List and read products, variations and orders.
 * Unsplash: Find and import free stock photos. This needs your own Unsplash API key.
+* Other plugins: Any plugin can add its own tools to Saddle. Tools from other developers stay off until you switch them on under Saddle > Integrations.
 
 = Skills and memory =
 
@@ -188,6 +189,10 @@ The WordPress.org version never checks for its own updates. The version from plu
 4. Instructions: Read what your AI is told, and add your own instructions and Skills.
 
 == Changelog ==
+
+= 1.3.0 =
+* New: Other plugins can add their own tools to Saddle. Tools from other developers stay off until you switch them on under Saddle > Integrations.
+* Improved: The Integrations screen shows each plugin's author, how many tools it adds, and whether it is built in, from PlugPress or from another developer.
 
 = 1.2.2 =
 * Fixed: The MCP endpoint returned 404 when another plugin bundled the WordPress MCP Adapter without starting it, such as Gravity Forms 3.1. Saddle now starts the adapter itself, and falls back to its own transport if the adapter does not serve the endpoint.
