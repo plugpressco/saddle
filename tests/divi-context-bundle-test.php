@@ -104,6 +104,53 @@ class Saddle_Divi_Context_Bundle_Test extends WP_UnitTestCase {
 		$this->assertFalse( get_transient( Saddle_Divi_Bundle::TRANSIENT ), 'Activating any plugin drops the cached bundle.' );
 	}
 
+	/* -------- the fonts slice (#214) -------- */
+
+	/**
+	 * Regression: design_system() read `$fonts['fonts']`, a key
+	 * get_global_fonts() never returns, so the bundle's fonts slice was
+	 * always empty and "global fonts: …" never reached the summary. The
+	 * harness has no Divi runtime, so this feeds fonts_slice() the exact shape
+	 * Saddle_Divi_Design::get_global_fonts() returns on a live site.
+	 */
+	public function test_fonts_slice_carries_heading_and_body_fonts() {
+		$live = array(
+			'heading_font' => 'Playfair Display',
+			'body_font'    => 'Inter',
+		);
+
+		$this->assertSame( $live, Saddle_Divi_Bundle::fonts_slice( $live ) );
+	}
+
+	public function test_fonts_slice_is_empty_when_divi_is_unavailable() {
+		$this->assertSame( array(), Saddle_Divi_Bundle::fonts_slice( Saddle_Divi_Design::get_global_fonts() ), 'No Divi runtime in the harness: the tool errors and the slice stays empty.' );
+		$this->assertSame(
+			array( 'body_font' => 'Inter' ),
+			Saddle_Divi_Bundle::fonts_slice(
+				array(
+					'heading_font' => '',
+					'body_font'    => 'Inter',
+				)
+			),
+			'An unset font is left out, not served as an empty string.'
+		);
+	}
+
+	public function test_fonts_slice_leaves_out_divis_none() {
+		// Found live on divi-dev (Divi 5, 2026-09-27): a site whose owner never
+		// chose fonts returns "none" for both, which the summary then printed
+		// as "global fonts: none/none".
+		$this->assertSame(
+			array(),
+			Saddle_Divi_Bundle::fonts_slice(
+				array(
+					'heading_font' => 'none',
+					'body_font'    => 'None',
+				)
+			)
+		);
+	}
+
 	/* -------- the index cache-key fix -------- */
 
 	public function test_module_index_cache_is_keyed_on_the_active_plugin_set() {

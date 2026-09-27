@@ -382,4 +382,23 @@ class Saddle_MCP_Adapter_Transport_Test extends WP_UnitTestCase {
 
 		$this->assertContains( 'saddle-create-post', $raised, 'Raising the tier must widen the same session’s list.' );
 	}
+
+	/**
+	 * Pause keeps the adapter's list exactly as it was (decided 2026-09-27,
+	 * #217). Every call is refused with the pause as the reason; hiding the
+	 * tools instead would leave ChatGPT's frozen tool list stale after resume.
+	 */
+	public function test_pause_leaves_the_adapter_list_unchanged() {
+		Saddle_Capabilities::set_tier( 'write' );
+		$session_id = $this->initialize_and_get_session_id();
+
+		$before = wp_list_pluck( $this->tools_from( $this->rpc( 'tools/list', array(), array( 'Mcp-Session-Id' => $session_id ) ) ), 'name' );
+
+		Saddle_Capabilities::set_paused( true );
+		$paused = wp_list_pluck( $this->tools_from( $this->rpc( 'tools/list', array(), array( 'Mcp-Session-Id' => $session_id ) ) ), 'name' );
+		Saddle_Capabilities::set_paused( false );
+
+		$this->assertNotEmpty( $before );
+		$this->assertSame( $before, $paused );
+	}
 }

@@ -180,6 +180,58 @@ class Saddle_HTTP {
 	}
 
 	/**
+	 * Fetch one of this site's own public pages, as a logged-out visitor sees it.
+	 *
+	 * The one fetch here whose target nobody else chose: the URL must be on this
+	 * site's own scheme and host, which the caller gets from get_permalink(), so
+	 * it is never agent input. That is why url_is_safe() does not apply. It
+	 * would refuse the site's own address on every host that resolves itself to
+	 * a private IP, which is most of them behind a load balancer. No cookies are
+	 * sent, so what comes back is what a visitor (and a page cache) serves.
+	 *
+	 * @param string $url       Absolute URL on this site.
+	 * @param int    $max_bytes Response size cap.
+	 * @return array|WP_Error { @type int $status, @type string $body }
+	 */
+	public static function fetch_own_page( $url, $max_bytes = 2097152 ) {
+		$home = wp_parse_url( home_url() );
+		$want = wp_parse_url( (string) $url );
+
+		if ( ! is_array( $home ) || ! is_array( $want )
+			|| empty( $want['host'] ) || empty( $home['host'] )
+			|| strtolower( $want['host'] ) !== strtolower( $home['host'] )
+			|| strtolower( (string) ( isset( $want['scheme'] ) ? $want['scheme'] : '' ) ) !== strtolower( (string) ( isset( $home['scheme'] ) ? $home['scheme'] : '' ) )
+			|| ( isset( $want['port'] ) ? (int) $want['port'] : 0 ) !== ( isset( $home['port'] ) ? (int) $home['port'] : 0 )
+		) {
+			return new WP_Error( 'saddle_http_not_own_site', __( 'Only this site\'s own pages can be fetched this way.', 'saddle' ) );
+		}
+
+		$response = wp_remote_get(
+			(string) $url,
+			array(
+				'timeout'             => 10,
+				// A permalink may redirect (trailing slash, http→https), but only
+				// a little; the body is read, never trusted as a target.
+				'redirection'         => 3,
+				// Local and staging sites often serve a self-signed certificate,
+				// and this reads our own public HTML, as the connection probe does.
+				'sslverify'           => false,
+				'cookies'             => array(),
+				'limit_response_size' => (int) $max_bytes,
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		return array(
+			'status' => (int) wp_remote_retrieve_response_code( $response ),
+			'body'   => (string) wp_remote_retrieve_body( $response ),
+		);
+	}
+
+	/**
 	 * How long a fetched document may be cached, from its own HTTP headers.
 	 *
 	 * @param array $headers  Headers as returned by {@see self::fetch_json()}.

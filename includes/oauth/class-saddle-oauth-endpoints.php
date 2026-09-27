@@ -122,8 +122,10 @@ class Saddle_OAuth_Endpoints {
 		$registered = isset( $client['redirect_uris'] ) ? (array) $client['redirect_uris'] : array();
 
 		// Exact string comparison, deliberately. Prefix matching on redirect URIs
-		// is the single most common way authorization codes get stolen.
-		if ( '' === $redirect_uri || ! in_array( $redirect_uri, $registered, true ) ) {
+		// is the single most common way authorization codes get stolen. The one
+		// exception, a loopback URI's port (RFC 8252 §7.3), lives in
+		// redirect_uri_matches().
+		if ( ! Saddle_OAuth_Clients::redirect_uri_matches( $redirect_uri, $registered ) ) {
 			return self::fatal(
 				__( 'That app asked to be sent back to an address it has not registered with this site. Nothing has been authorized.', 'saddle' )
 			);

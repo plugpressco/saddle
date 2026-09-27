@@ -454,6 +454,83 @@ class Saddle_Connection_Test extends WP_UnitTestCase {
 		$restore();
 	}
 
+	/* -------- the probe against core's real nonce check (#237) -------- */
+
+	/**
+	 * Pins the core behaviour the probe has to live with: an anonymous REST
+	 * request carrying ANY X-WP-Nonce has it verified, and a fake one is
+	 * refused before the route runs. The probe sent one alongside every
+	 * Authorization header from 2026-08-02, so on every real site the probe
+	 * route never ran and both headers read "unknown". Found on stage.saddle.to.
+	 */
+	public function test_core_refuses_a_fake_nonce_on_an_anonymous_rest_request() {
+		wp_set_current_user( 0 );
+		$_SERVER['HTTP_X_WP_NONCE'] = 'saddle-probe';
+
+		$result = rest_cookie_check_errors( null );
+
+		unset( $_SERVER['HTTP_X_WP_NONCE'] );
+
+		$this->assertWPError( $result );
+		$this->assertSame( 'rest_cookie_invalid_nonce', $result->get_error_code() );
+	}
+
+	/**
+	 * A loopback that answers the way a real site does: any request carrying
+	 * the fake nonce gets core's 403, everything else reaches the probe route.
+	 * The old fakes answered every request with the route's body, which is how
+	 * the bug went unseen by this suite.
+	 */
+	public function test_self_check_reads_every_header_from_a_loopback_that_answers_like_core() {
+		$sent = array();
+		$http = function ( $pre, $args ) use ( &$sent ) {
+			$headers = isset( $args['headers'] ) ? (array) $args['headers'] : array();
+			$sent[]  = $headers;
+
+			if ( isset( $headers['X-WP-Nonce'] ) ) {
+				return array(
+					'body'     => wp_json_encode(
+						array(
+							'code'    => 'rest_cookie_invalid_nonce',
+							'message' => 'Cookie check failed',
+							'data'    => array( 'status' => 403 ),
+						)
+					),
+					'response' => array( 'code' => 403 ),
+				);
+			}
+
+			$auth = isset( $headers['Authorization'] ) ? (string) $headers['Authorization'] : '';
+			return array(
+				'body'     => wp_json_encode(
+					array(
+						'received'     => '' !== $auth,
+						'scheme'       => 0 === stripos( $auth, 'bearer ' ) ? 'bearer' : ( '' !== $auth ? 'basic' : '' ),
+						'nonce_header' => false,
+					)
+				),
+				'response' => array( 'code' => 200 ),
+			);
+		};
+		add_filter( 'pre_http_request', $http, 10, 2 );
+		add_filter( 'wp_is_application_passwords_available', '__return_true' );
+
+		$report = Saddle_Connection::self_check();
+
+		remove_filter( 'pre_http_request', $http, 10 );
+		remove_filter( 'wp_is_application_passwords_available', '__return_true' );
+
+		$this->assertSame( 'ok', $report['auth_header'] );
+		$this->assertSame( 'ok', $report['bearer_header'] );
+		$this->assertSame( 'ok', $report['nonce_header'], 'Core refusing the fake nonce proves the header arrived.' );
+		$this->assertSame( 'ok', $report['status'] );
+
+		$this->assertCount( 3, $sent );
+		foreach ( $sent as $headers ) {
+			$this->assertFalse( isset( $headers['X-WP-Nonce'] ) && isset( $headers['Authorization'] ), 'No request may carry both: the nonce would get the Authorization probe refused.' );
+		}
+	}
+
 	/* -------- legible 401s: revoked key vs stripped header (#36) -------- */
 
 	public function test_request_carried_credentials_true_from_php_auth_user() {

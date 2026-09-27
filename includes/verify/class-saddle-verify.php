@@ -130,6 +130,143 @@ class Saddle_Verify {
 		);
 	}
 
+	/**
+	 * Whether the PUBLIC page serves what was saved (#221).
+	 *
+	 * The community's standing complaint about AI site tools: "it read its own
+	 * write back and reported success while the public page served old
+	 * content". The saved state says nothing about a page cache or CDN in
+	 * front of it. This fetches the permalink as a logged-out visitor and looks
+	 * for a few distinctive passages of the saved page's rendered text. Kept
+	 * out of the score on purpose: a stale cache is not a flaw in the page, and
+	 * docking the grade for it would send an agent back into the editor.
+	 *
+	 * @param WP_Post $post The post.
+	 * @return array { checked, status?, url?, looked_for?, missing?, reason? }
+	 */
+	public static function public_check( WP_Post $post ) {
+		if ( 'publish' !== $post->post_status || '' !== (string) $post->post_password ) {
+			return array(
+				'checked' => false,
+				'reason'  => __( 'Only a published page without a password has a public version to check. Preview it with get-preview-url instead.', 'saddle' ),
+			);
+		}
+
+		$markers = self::public_markers( $post );
+		if ( ! $markers ) {
+			return array(
+				'checked' => false,
+				'reason'  => __( 'The page has no text distinctive enough to look for on the public page.', 'saddle' ),
+			);
+		}
+
+		$url     = (string) get_permalink( $post );
+		$fetched = Saddle_HTTP::fetch_own_page( $url );
+		if ( is_wp_error( $fetched ) || $fetched['status'] < 200 || $fetched['status'] >= 300 ) {
+			return array(
+				'checked' => true,
+				'status'  => 'unreachable',
+				'url'     => $url,
+				'reason'  => is_wp_error( $fetched )
+					? $fetched->get_error_message()
+					/* translators: %d: HTTP status code. */
+					: sprintf( __( 'The public page answered with HTTP %d.', 'saddle' ), $fetched['status'] ),
+			);
+		}
+
+		$served  = self::plain_text( $fetched['body'] );
+		$missing = array();
+		foreach ( $markers as $marker ) {
+			if ( false === strpos( $served, $marker ) ) {
+				$missing[] = $marker;
+			}
+		}
+
+		return array(
+			'checked'    => true,
+			'status'     => $missing ? 'stale' : 'served',
+			'url'        => $url,
+			'looked_for' => count( $markers ),
+			'missing'    => $missing,
+		);
+	}
+
+	/**
+	 * Up to three distinctive passages of the saved page's rendered text.
+	 *
+	 * Rendered through the_content, so the same filters the front end applies
+	 * (texturized quotes, shortcodes, blocks) apply here too, and rendered as
+	 * a logged-out visitor, so a block that greets the signed-in user cannot
+	 * produce a passage the public page was never going to show. The longest
+	 * passages win: they are the least likely to also appear on the old copy.
+	 *
+	 * @param WP_Post $post The post.
+	 * @return string[]
+	 */
+	private static function public_markers( WP_Post $post ) {
+		$previous = isset( $GLOBALS['post'] ) ? $GLOBALS['post'] : null;
+		$user_id  = get_current_user_id();
+
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- render the_content in the post's own context, restored below.
+		$GLOBALS['post'] = $post;
+		setup_postdata( $post );
+		wp_set_current_user( 0 );
+
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Core's own the_content filter, applied so the saved page renders exactly as the front end renders it.
+		$html = apply_filters( 'the_content', $post->post_content );
+
+		wp_set_current_user( $user_id );
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- restoring the value saved above.
+		$GLOBALS['post'] = $previous;
+		if ( $previous instanceof WP_Post ) {
+			setup_postdata( $previous );
+		}
+
+		$passages = array();
+		foreach ( explode( "\n", self::plain_text( (string) $html, "\n" ) ) as $line ) {
+			$line = trim( $line );
+			if ( strlen( $line ) >= 16 ) {
+				$passages[ $line ] = strlen( $line );
+			}
+		}
+		arsort( $passages );
+
+		$markers = array();
+		foreach ( array_keys( $passages ) as $line ) {
+			// A long paragraph only needs its opening to identify it, and a
+			// shorter marker is less likely to be broken by a theme's markup.
+			$markers[] = function_exists( 'mb_substr' ) ? mb_substr( $line, 0, 80 ) : substr( $line, 0, 80 );
+			if ( 3 === count( $markers ) ) {
+				break;
+			}
+		}
+
+		return array_values( array_unique( $markers ) );
+	}
+
+	/**
+	 * HTML reduced to comparable text: tags become separators, entities are
+	 * decoded, and runs of whitespace (including non-breaking spaces) collapse.
+	 *
+	 * @param string $html      HTML.
+	 * @param string $separator What a tag becomes; "\n" keeps passages apart.
+	 * @return string
+	 */
+	private static function plain_text( $html, $separator = ' ' ) {
+		$html = preg_replace( '#<(script|style|noscript)\b[^>]*>.*?</\1>#is', ' ', (string) $html );
+		$text = html_entity_decode( (string) preg_replace( '/<[^>]+>/', $separator, $html ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+		$text = str_replace( "\xC2\xA0", ' ', $text );
+
+		if ( "\n" === $separator ) {
+			// Whitespace other than newlines. Not `\v`: in PCRE that is any
+			// vertical whitespace, newlines included, which collapsed a whole
+			// page into one passage (#238).
+			return (string) preg_replace( array( '/[^\S\n]+/u', '/\n\s*/u' ), array( ' ', "\n" ), $text );
+		}
+
+		return trim( (string) preg_replace( '/\s+/u', ' ', $text ) );
+	}
+
 	/*
 	---------------------------------------------------------------------
 	 * Native passes

@@ -349,4 +349,57 @@ class Saddle_Abilities_Test extends WP_UnitTestCase {
 
 		$this->assertNotWPError( $result );
 	}
+
+	/* -------- list summaries carry the page tree (#215) -------- */
+
+	/**
+	 * list-pages promised "parent, menu order" in its description and
+	 * returned neither; rebuilding saddle.to through Saddle had to parse
+	 * permalinks to recover the tree. Found 2026-09-26.
+	 */
+	public function test_list_pages_summaries_carry_slug_parent_and_menu_order() {
+		$parent = self::factory()->post->create(
+			array(
+				'post_type'  => 'page',
+				'post_title' => 'Docs',
+				'post_name'  => 'docs',
+			)
+		);
+		$child  = self::factory()->post->create(
+			array(
+				'post_type'   => 'page',
+				'post_title'  => 'Install',
+				'post_name'   => 'install',
+				'post_parent' => $parent,
+				'menu_order'  => 3,
+			)
+		);
+
+		$result = $this->ability( 'saddle/list-pages' )->execute( array( 'per_page' => 50 ) );
+		$this->assertNotWPError( $result );
+
+		$by_id = array();
+		foreach ( $result['items'] as $item ) {
+			$by_id[ $item['id'] ] = $item;
+		}
+
+		$this->assertSame( 'install', $by_id[ $child ]['slug'] );
+		$this->assertSame( $parent, $by_id[ $child ]['parent'] );
+		$this->assertSame( 3, $by_id[ $child ]['menu_order'] );
+		$this->assertSame( 0, $by_id[ $parent ]['parent'], 'A top-level page says so with 0.' );
+	}
+
+	public function test_list_posts_summaries_carry_slug_but_no_tree_fields() {
+		$post = self::factory()->post->create( array( 'post_name' => 'hello-saddle' ) );
+
+		$result = $this->ability( 'saddle/list-posts' )->execute( array( 'per_page' => 50 ) );
+		$this->assertNotWPError( $result );
+
+		$item = wp_list_filter( $result['items'], array( 'id' => $post ) );
+		$item = reset( $item );
+
+		$this->assertSame( 'hello-saddle', $item['slug'] );
+		$this->assertArrayNotHasKey( 'parent', $item, 'A post is never nested; the key would only cost tokens.' );
+		$this->assertArrayNotHasKey( 'menu_order', $item );
+	}
 }

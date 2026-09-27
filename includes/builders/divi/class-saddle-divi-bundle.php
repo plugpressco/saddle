@@ -178,8 +178,31 @@ class Saddle_Divi_Bundle {
 			'global_colors' => isset( $colors['colors'] ) ? $colors['colors'] : array(),
 			'variables'     => ! is_wp_error( $variables ) && isset( $variables['variables'] ) ? $variables['variables'] : array(),
 			'presets'       => ! is_wp_error( $presets ) && isset( $presets['presets'] ) ? $presets['presets'] : array(),
-			'fonts'         => ! is_wp_error( $fonts ) && isset( $fonts['fonts'] ) ? $fonts['fonts'] : array(),
+			'fonts'         => self::fonts_slice( $fonts ),
 		);
+	}
+
+	/**
+	 * The bundle's `fonts` slice from Saddle_Divi_Design::get_global_fonts(),
+	 * keyed as that tool returns them. It used to read a `fonts` key the tool
+	 * never had, so the slice was always empty (#214). Divi stores "none" for
+	 * a font the owner never chose; that is not a font, so it is left out.
+	 *
+	 * @param array|WP_Error $fonts get_global_fonts() result.
+	 * @return array
+	 */
+	public static function fonts_slice( $fonts ) {
+		if ( is_wp_error( $fonts ) || ! is_array( $fonts ) ) {
+			return array();
+		}
+		$slice = array();
+		foreach ( array( 'heading_font', 'body_font' ) as $key ) {
+			$font = isset( $fonts[ $key ] ) ? trim( (string) $fonts[ $key ] ) : '';
+			if ( '' !== $font && 'none' !== strtolower( $font ) ) {
+				$slice[ $key ] = $font;
+			}
+		}
+		return $slice;
 	}
 
 	/**

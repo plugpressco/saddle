@@ -327,6 +327,11 @@ class Saddle_Capabilities {
 			return false;
 		}
 
+		// Pause is deliberately not checked here, so a paused site still lists
+		// every tool (#217). permission() refuses each call with the pause as
+		// the reason, and the initialize instructions say Saddle is paused.
+		// Emptying tools/list would leave ChatGPT's frozen list stale on resume.
+
 		// Resolve the ability FIRST. wp_get_abilities() is what lazily fires
 		// wp_abilities_api_init, and required_cap()'s registry is filled by
 		// permission() as each ability registers — read it any earlier and the

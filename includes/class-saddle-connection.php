@@ -585,12 +585,13 @@ class Saddle_Connection {
 	 * Loopback probe: which credential-bearing headers survive the trip to our
 	 * own REST endpoint on this server?
 	 *
-	 * One request answers both questions, because the loopback leaves and
-	 * re-enters through the same edge a browser does and so meets the same
-	 * stripping rules. Neither header carries a real credential — the probe
-	 * reports only whether they arrived.
+	 * The loopback leaves and re-enters through the same edge a browser does,
+	 * so it meets the same stripping rules. No header carries a real
+	 * credential — the probe reports only whether each arrived.
 	 *
-	 * Two requests, not one, because **the schemes fail independently** and
+	 * Three requests: Basic, Bearer, and the nonce on its own (see
+	 * {@see self::nonce_verdict()} for why the nonce cannot ride along).
+	 * Basic and Bearer are separate because **the schemes fail independently** and
 	 * Saddle has a client population on each. Basic is the scheme that survives
 	 * where others do not: Apache and LiteSpeed consume an RFC 7617 header
 	 * natively into `PHP_AUTH_USER`, so it reaches PHP even on setups that never
@@ -609,19 +610,26 @@ class Saddle_Connection {
 			'nonce'  => 'unknown',
 		);
 
+		// Each header travels on its own request. The Authorization probes carry
+		// no nonce: core verifies ANY X-WP-Nonce on an anonymous REST request and
+		// refuses a fake one with 403 before the route runs, which made both of
+		// these read "unknown" on every real site from 2026-08-02 until #237.
 		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- building a standard RFC 7617 Basic header for the loopback probe.
-		$basic = self::probe_once( 'Basic ' . base64_encode( 'saddle-probe:x' ) );
+		$basic = self::probe_once( array( 'Authorization' => 'Basic ' . base64_encode( 'saddle-probe:x' ) ) );
 		if ( null === $basic ) {
 			return $unknown;
 		}
 
 		// Neither value is a credential. Nothing on the other end reads them —
 		// the probe route reports only that a header arrived and of what shape.
-		$bearer = self::probe_once( 'Bearer saddle-probe' );
+		$bearer = self::probe_once( array( 'Authorization' => 'Bearer saddle-probe' ) );
+
+		// Not a real nonce and never verified by Saddle; core is what reads it.
+		$nonce = self::probe_once( array( 'X-WP-Nonce' => 'saddle-probe' ) );
 
 		return array(
 			'auth'   => array_key_exists( 'received', $basic ) ? ( ! empty( $basic['received'] ) ? 'ok' : 'stripped' ) : 'unknown',
-			'nonce'  => array_key_exists( 'nonce_header', $basic ) ? ( ! empty( $basic['nonce_header'] ) ? 'ok' : 'stripped' ) : 'unknown',
+			'nonce'  => self::nonce_verdict( $nonce ),
 			// Judged on the SCHEME that arrived, not merely on arrival. A host
 			// that rewrites an unrecognised Authorization header into something
 			// else would otherwise pass a test it should fail.
@@ -632,12 +640,37 @@ class Saddle_Connection {
 	}
 
 	/**
-	 * One loopback request to the probe route, carrying one Authorization header.
+	 * Read the nonce probe's reply.
 	 *
-	 * @param string $authorization Header value to send. Never a real credential.
+	 * Core's own refusal is the answer: rest_cookie_check_errors() verifies
+	 * any X-WP-Nonce that reaches PHP on an anonymous request, and a fake one
+	 * comes back as `rest_cookie_invalid_nonce`, which proves the header
+	 * arrived. When the route runs instead, core saw no nonce, and the route
+	 * says so with `nonce_header`.
+	 *
+	 * @param array|null $body Decoded probe reply.
+	 * @return string 'ok' | 'stripped' | 'unknown'
+	 */
+	private static function nonce_verdict( $body ) {
+		if ( ! is_array( $body ) ) {
+			return 'unknown';
+		}
+		if ( isset( $body['code'] ) && 'rest_cookie_invalid_nonce' === $body['code'] ) {
+			return 'ok';
+		}
+		if ( array_key_exists( 'nonce_header', $body ) ) {
+			return ! empty( $body['nonce_header'] ) ? 'ok' : 'stripped';
+		}
+		return 'unknown';
+	}
+
+	/**
+	 * One loopback request to the probe route, carrying the headers under test.
+	 *
+	 * @param array $headers Headers to send. Never a real credential.
 	 * @return array|null Decoded probe response, or null when the loopback failed.
 	 */
-	private static function probe_once( $authorization ) {
+	private static function probe_once( array $headers ) {
 		$resp = wp_remote_get(
 			rest_url( Saddle_REST_Admin::REST_NAMESPACE . '/auth-probe' ),
 			array(
@@ -648,11 +681,7 @@ class Saddle_Connection {
 				'sslverify'   => false,
 				'redirection' => 0,
 				'cookies'     => array(),
-				'headers'     => array(
-					'Authorization' => $authorization,
-					// Not a real nonce and never verified against anything.
-					'X-WP-Nonce'    => 'saddle-probe',
-				),
+				'headers'     => $headers,
 			)
 		);
 
