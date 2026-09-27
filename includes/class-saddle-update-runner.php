@@ -225,6 +225,19 @@ class Saddle_Update_Runner {
 		};
 		add_filter( "auto_update_{$type}", $force, PHP_INT_MAX, 2 );
 
+		// As core's own WP_Automatic_Updater::run() does: the per-item
+		// completion hooks would re-check for updates and start language-pack
+		// upgrades after every item. The caches are refreshed once, below.
+		$completion_hooks = array(
+			array( array( 'Language_Pack_Upgrader', 'async_upgrade' ), 20 ),
+			array( 'wp_version_check', 10 ),
+			array( 'wp_update_plugins', 10 ),
+			array( 'wp_update_themes', 10 ),
+		);
+		foreach ( $completion_hooks as $hook ) {
+			remove_action( 'upgrader_process_complete', $hook[0], $hook[1] );
+		}
+
 		foreach ( $run['items'] as &$item ) {
 			$offer = isset( $offers[ $item['id'] ] ) ? $offers[ $item['id'] ] : null;
 			if ( ! $offer ) {
@@ -232,12 +245,22 @@ class Saddle_Update_Runner {
 				$item['message'] = __( 'No update was offered any more when the run started.', 'saddle' );
 				continue;
 			}
-			$offer  = is_array( $offer ) ? (object) $offer : $offer;
-			$result = $updater->update( $type, $offer );
+			$offer = is_array( $offer ) ? (object) $offer : $offer;
+			try {
+				$result = $updater->update( $type, $offer );
+			} catch ( Throwable $e ) {
+				// Something hooked into the upgrade threw. Core would have
+				// left the site in maintenance mode; lift it and report.
+				( new WP_Upgrader( new Automatic_Upgrader_Skin() ) )->maintenance_mode( false );
+				$result = new WP_Error( 'saddle_update_exception', $e->getMessage() );
+			}
 			self::record_item( $type, $item, $result );
 		}
 		unset( $item );
 
+		foreach ( $completion_hooks as $hook ) {
+			add_action( 'upgrader_process_complete', $hook[0], $hook[1] );
+		}
 		remove_filter( "auto_update_{$type}", $force, PHP_INT_MAX );
 		WP_Upgrader::release_lock( 'auto_updater' );
 

@@ -19,6 +19,12 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Register the update and health abilities. Hooked to `wp_abilities_api_init`.
+ *
+ * The WordPress capabilities are `activate_plugins` / `switch_themes`, not
+ * `update_plugins` / `update_themes`: core maps the latter to `do_not_allow`
+ * whenever file changes are forbidden (DISALLOW_FILE_MODS), which would refuse
+ * before Saddle can say why. The handlers name the reason instead, and
+ * list-updates stays readable on such a site so the agent learns it.
  */
 function saddle_register_update_abilities() {
 	$item_schema = static function ( $key, $what ) {
@@ -62,7 +68,7 @@ function saddle_register_update_abilities() {
 				),
 			),
 			'execute_callback'    => array( 'Saddle_Update_Abilities', 'list_updates' ),
-			'permission_callback' => Saddle_Capabilities::permission( 'admin', 'update_plugins', 'list-updates' ),
+			'permission_callback' => Saddle_Capabilities::permission( 'admin', 'activate_plugins', 'list-updates' ),
 			'meta'                => saddle_ability_meta( true, false, true, 'admin' ),
 		)
 	);
@@ -75,7 +81,7 @@ function saddle_register_update_abilities() {
 			'category'            => 'saddle',
 			'input_schema'        => $item_schema( 'plugins', __( 'Plugin files ("dir/file.php") or folder slugs, from list-updates.', 'saddle' ) ),
 			'execute_callback'    => array( 'Saddle_Update_Abilities', 'update_plugin' ),
-			'permission_callback' => Saddle_Capabilities::permission( 'admin', 'update_plugins', 'update-plugin' ),
+			'permission_callback' => Saddle_Capabilities::permission( 'admin', 'activate_plugins', 'update-plugin' ),
 			'meta'                => saddle_ability_meta( false, true, false, 'admin' ),
 		)
 	);
@@ -88,7 +94,7 @@ function saddle_register_update_abilities() {
 			'category'            => 'saddle',
 			'input_schema'        => $item_schema( 'themes', __( 'Theme directory names, from list-updates.', 'saddle' ) ),
 			'execute_callback'    => array( 'Saddle_Update_Abilities', 'update_theme' ),
-			'permission_callback' => Saddle_Capabilities::permission( 'admin', 'update_themes', 'update-theme' ),
+			'permission_callback' => Saddle_Capabilities::permission( 'admin', 'switch_themes', 'update-theme' ),
 			'meta'                => saddle_ability_meta( false, true, false, 'admin' ),
 		)
 	);
@@ -119,7 +125,7 @@ function saddle_register_update_abilities() {
 				),
 			),
 			'execute_callback'    => array( 'Saddle_Update_Abilities', 'set_auto_update' ),
-			'permission_callback' => Saddle_Capabilities::permission( 'admin', 'update_plugins', 'set-auto-update' ),
+			'permission_callback' => Saddle_Capabilities::permission( 'admin', 'activate_plugins', 'set-auto-update' ),
 			'meta'                => saddle_ability_meta( false, true, false, 'admin' ),
 		)
 	);

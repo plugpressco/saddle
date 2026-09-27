@@ -33,6 +33,7 @@ $saddle_options = array(
 	'saddle_oauth_dcr_enabled',       // Saddle_OAuth_Clients::DCR_OPTION.
 	'saddle_oauth_cimd_enabled',      // Saddle_OAuth_Clients::CIMD_OPTION.
 	'saddle_enabled_integrations',    // Saddle_Integrations::APPROVED_OPTION.
+	'saddle_update_runs',             // Saddle_Update_Runner::OPTION.
 );
 foreach ( $saddle_options as $saddle_option ) {
 	delete_option( $saddle_option );
@@ -44,11 +45,12 @@ delete_metadata( 'user', 0, 'saddle_admin_theme', '', true );
 delete_metadata( 'user', 0, 'saddle_client_hints', '', true );
 delete_metadata( 'user', 0, 'saddle_issued_credentials', '', true );
 
-// Clear scheduled GC.
+// Clear scheduled GC, and any update run still queued.
 $saddle_gc_timestamp = wp_next_scheduled( 'saddle_gc_tokens' );
 if ( $saddle_gc_timestamp ) {
 	wp_unschedule_event( $saddle_gc_timestamp, 'saddle_gc_tokens' );
 }
+wp_clear_scheduled_hook( 'saddle_apply_updates' ); // Saddle_Update_Runner::HOOK.
 
 // Remove the managed .htaccess block the connection self-check may have added.
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-saddle-connection.php';

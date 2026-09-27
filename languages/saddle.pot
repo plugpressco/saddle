@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-27T00:17:00+00:00\n"
+"POT-Creation-Date: 2026-09-27T21:24:18+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -2450,6 +2450,7 @@ msgid "New value (scalar only)."
 msgstr ""
 
 #: includes/abilities/site.php:221
+#: includes/abilities/updates.php:123
 msgid "Token from the preview step, required to apply the change."
 msgstr ""
 
@@ -2581,11 +2582,11 @@ msgstr ""
 msgid "That option is not on the list Saddle is allowed to touch. Use list-options to see the editable keys; sensitive keys (site URL, security keys, roles) are never editable."
 msgstr ""
 
-#: includes/abilities/site.php:889
+#: includes/abilities/site.php:892
 msgid "A \"plugin\" file or folder slug is required."
 msgstr ""
 
-#: includes/abilities/site.php:911
+#: includes/abilities/site.php:914
 msgid "No installed plugin matches that file or slug. Use list-plugins to see valid values."
 msgstr ""
 
@@ -2679,6 +2680,157 @@ msgstr ""
 #: includes/abilities/unsplash.php:345
 #, php-format
 msgid "Imported Unsplash photo %1$s as media #%2$d"
+msgstr ""
+
+#: includes/abilities/updates.php:43
+msgid "Update everything that has an update offered. Refused when that is more than 10 items; pass a subset instead."
+msgstr ""
+
+#: includes/abilities/updates.php:47
+msgid "Token from the preview step, required to queue the run."
+msgstr ""
+
+#: includes/abilities/updates.php:56
+msgid "List available updates"
+msgstr ""
+
+#: includes/abilities/updates.php:57
+msgid "Lists the plugin, theme, WordPress core and translation updates this site has been offered, each with the installed and new version, whether the item is active, whether WordPress auto-updates it, and a changelog link. Also reports anything that would stop updates from being applied here (a host that forbids file changes, a version-control checkout, missing filesystem access) and the results of recent runs queued by update-plugin or update-theme, including any rollback. Read-only. Pass \"refresh\": true to make WordPress check for updates again instead of using its cached answer."
+msgstr ""
+
+#: includes/abilities/updates.php:66
+msgid "Check for updates again now."
+msgstr ""
+
+#: includes/abilities/updates.php:79
+msgid "Update plugins"
+msgstr ""
+
+#: includes/abilities/updates.php:80
+msgid "Applies plugin updates that WordPress has already offered (see list-updates), at most 10 per call. The first call returns a preview of every item with its installed and new version plus a confirm_token; call again with the same \"plugins\" and that token to queue the run. The updates then run in the background through WordPress's own updater: it keeps a backup, and if an active plugin causes a fatal error after updating, WordPress restores the previous version on its own. Check list-updates a minute later for the result of each item (applied, rolled back, failed or skipped). Refuses items with no update offered, more than 10 items, and sites where WordPress cannot change files. Never installs or deletes a plugin."
+msgstr ""
+
+#: includes/abilities/updates.php:82
+msgid "Plugin files (\"dir/file.php\") or folder slugs, from list-updates."
+msgstr ""
+
+#: includes/abilities/updates.php:92
+msgid "Update themes"
+msgstr ""
+
+#: includes/abilities/updates.php:93
+msgid "Applies theme updates that WordPress has already offered (see list-updates), at most 10 per call. Same preview → confirm_token → background run as update-plugin. WordPress keeps a backup of the previous version; it does not check themes for fatal errors, so update the active theme with that in mind. Check list-updates a minute later for each item's result. Never installs or deletes a theme."
+msgstr ""
+
+#: includes/abilities/updates.php:95
+msgid "Theme directory names, from list-updates."
+msgstr ""
+
+#: includes/abilities/updates.php:105
+msgid "Turn auto-updates on or off for a plugin or theme"
+msgstr ""
+
+#: includes/abilities/updates.php:106
+msgid "Switches WordPress's own automatic updates on or off for one plugin or theme, the same switch as the \"Enable auto-updates\" link on the Plugins screen. WordPress then applies future updates on its own schedule. Previews first and needs a confirm_token. Reversible by calling again with the opposite value."
+msgstr ""
+
+#: includes/abilities/updates.php:118
+msgid "Plugin file or folder slug, or theme directory name."
+msgstr ""
+
+#: includes/abilities/updates.php:136
+msgid "Get Site Health"
+msgstr ""
+
+#: includes/abilities/updates.php:137
+msgid "Runs WordPress's own Site Health checks (Tools → Site Health) and returns each one with its status: good, recommended or critical. Covers the WordPress, PHP and database versions, HTTPS, scheduled events, auto-updates, disk space for updates, autoloaded options, and file uploads. Checks that need a live HTTP request (REST availability, loopback) are listed by name but not run here. Read-only."
+msgstr ""
+
+#. translators: 1: count, 2: comma-separated "Name old → new" list.
+#: includes/abilities/updates.php:262
+#, php-format
+msgid "Update %1$d item in the background: %2$s. WordPress keeps a backup and restores an active plugin that causes a fatal error."
+msgid_plural "Update %1$d items in the background: %2$s. WordPress keeps a backup and restores an active plugin that causes a fatal error."
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/abilities/updates.php:271
+msgid "An active plugin that causes a fatal error after updating is restored by WordPress."
+msgstr ""
+
+#: includes/abilities/updates.php:272
+msgid "WordPress keeps a backup of the previous version but does not check themes for fatal errors."
+msgstr ""
+
+#. translators: %s: comma-separated "Name old → new" list.
+#: includes/abilities/updates.php:282
+#, php-format
+msgid "Queued update of %s."
+msgstr ""
+
+#: includes/abilities/updates.php:292
+msgid "The run starts within about a minute and each item reports applied, rolled_back, failed or skipped under \"runs\" in list-updates."
+msgstr ""
+
+#: includes/abilities/updates.php:319
+msgid "A plugin or a host setting has turned automatic updates off for this site, so this switch has no effect until that changes."
+msgstr ""
+
+#. translators: 1: "on" or "off", 2: plugin file or theme name.
+#: includes/abilities/updates.php:328
+#, php-format
+msgid "Turn WordPress automatic updates %1$s for %2$s."
+msgstr ""
+
+#: includes/abilities/updates.php:329
+#: includes/abilities/updates.php:353
+#: admin/build/index.js:8
+#: admin/src/components/Permissions.jsx:411
+msgid "on"
+msgstr ""
+
+#: includes/abilities/updates.php:329
+#: includes/abilities/updates.php:353
+#: admin/build/index.js:8
+#: admin/src/components/Permissions.jsx:412
+#: admin/src/components/Permissions.jsx:479
+msgid "off"
+msgstr ""
+
+#. translators: 1: "on" or "off", 2: plugin file or theme name.
+#: includes/abilities/updates.php:352
+#, php-format
+msgid "Turned automatic updates %1$s for %2$s."
+msgstr ""
+
+#: includes/abilities/updates.php:525
+msgid "WordPress is not offering any updates of that kind right now."
+msgstr ""
+
+#. translators: %s: input key.
+#: includes/abilities/updates.php:540
+#, php-format
+msgid "Pass \"%s\" (a list from list-updates) or \"all\": true."
+msgstr ""
+
+#. translators: 1: requested count, 2: the cap.
+#: includes/abilities/updates.php:547
+#, php-format
+msgid "%1$d items requested; at most %2$d run per call. Pass a subset and call again for the rest."
+msgstr ""
+
+#. translators: %s: comma-separated ids.
+#: includes/abilities/updates.php:561
+#, php-format
+msgid "No update is offered for: %s. Use list-updates to see what WordPress is offering."
+msgstr ""
+
+#: includes/abilities/updates.php:593
+msgid "A theme directory name is required."
+msgstr ""
+
+#: includes/abilities/updates.php:596
+msgid "No installed theme has that directory name. Use list-themes to see valid values."
 msgstr ""
 
 #: includes/abilities/users.php:30
@@ -4771,6 +4923,62 @@ msgstr ""
 msgid "Unsplash · %s"
 msgstr ""
 
+#: includes/class-saddle-update-runner.php:109
+msgid "This site does not allow file changes (DISALLOW_FILE_MODS, or a host setting). Updates have to be applied by the host."
+msgstr ""
+
+#: includes/class-saddle-update-runner.php:112
+msgid "Background updates are switched off (AUTOMATIC_UPDATER_DISABLED). Saddle applies updates through the background updater, so it is off too."
+msgstr ""
+
+#: includes/class-saddle-update-runner.php:116
+msgid "A plugin or a host setting has disabled background updates on this site."
+msgstr ""
+
+#: includes/class-saddle-update-runner.php:121
+msgid "This site is a version-control checkout (git, svn or similar). WordPress refuses to update files that a repository owns."
+msgstr ""
+
+#: includes/class-saddle-update-runner.php:124
+msgid "WordPress cannot write to this site without FTP or SSH credentials, so it cannot apply updates on its own."
+msgstr ""
+
+#: includes/class-saddle-update-runner.php:187
+msgid "Background updates are disabled on this site."
+msgstr ""
+
+#: includes/class-saddle-update-runner.php:245
+msgid "No update was offered any more when the run started."
+msgstr ""
+
+#: includes/class-saddle-update-runner.php:288
+msgid "WordPress declined to update this item on its own (a version-control checkout, missing filesystem access, or a plugin telling it not to)."
+msgstr ""
+
+#. translators: 1: item name, 2: old version, 3: new version.
+#: includes/class-saddle-update-runner.php:306
+#, php-format
+msgid "Updated %1$s from %2$s to %3$s."
+msgstr ""
+
+#. translators: 1: item name, 2: new version, 3: old version.
+#: includes/class-saddle-update-runner.php:310
+#, php-format
+msgid "Update of %1$s to %2$s caused a fatal error; WordPress restored %3$s."
+msgstr ""
+
+#. translators: 1: item name, 2: new version.
+#: includes/class-saddle-update-runner.php:314
+#, php-format
+msgid "Update of %1$s to %2$s was skipped by WordPress."
+msgstr ""
+
+#. translators: 1: item name, 2: new version, 3: error message.
+#: includes/class-saddle-update-runner.php:318
+#, php-format
+msgid "Update of %1$s to %2$s failed: %3$s"
+msgstr ""
+
 #: includes/integrations/aioseo/class-saddle-aioseo-seo.php:77
 #: includes/integrations/aioseo/class-saddle-aioseo-seo.php:104
 msgid "AIOSEO's post model is unavailable."
@@ -5377,20 +5585,20 @@ msgstr ""
 msgid "The public page answered with HTTP %d."
 msgstr ""
 
-#: includes/verify/class-saddle-verify.php:295
+#: includes/verify/class-saddle-verify.php:298
 msgid "The content is not block markup — the editor cannot address or edit it."
 msgstr ""
 
-#: includes/verify/class-saddle-verify.php:296
+#: includes/verify/class-saddle-verify.php:299
 msgid "Rebuild the content as blocks (set-blocks) instead of raw HTML."
 msgstr ""
 
-#: includes/verify/class-saddle-verify.php:321
+#: includes/verify/class-saddle-verify.php:324
 msgid "This persisted attribute does nothing — rewrite it on a path the block actually supports, or remove it."
 msgstr ""
 
 #. translators: %s: minimum WordPress version.
-#: saddle.php:444
+#: saddle.php:452
 #, php-format
 msgid "Saddle requires WordPress %s or later (the core Abilities API). The MCP server is disabled until you upgrade."
 msgstr ""
@@ -5763,17 +5971,6 @@ msgstr ""
 #: admin/build/index.js:8
 #: admin/src/components/Permissions.jsx:43
 msgid "Other"
-msgstr ""
-
-#: admin/build/index.js:8
-#: admin/src/components/Permissions.jsx:411
-msgid "on"
-msgstr ""
-
-#: admin/build/index.js:8
-#: admin/src/components/Permissions.jsx:412
-#: admin/src/components/Permissions.jsx:479
-msgid "off"
 msgstr ""
 
 #: admin/build/index.js:8
