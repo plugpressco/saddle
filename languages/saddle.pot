@@ -3,13 +3,13 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Saddle 1.4.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/_saddle-247\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/saddle\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-27T22:08:48+00:00\n"
+"POT-Creation-Date: 2026-09-27T22:47:43+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -3846,7 +3846,7 @@ msgid "The site owner has paused all AI access — every tool is refused until t
 msgstr ""
 
 #: includes/class-saddle-capabilities.php:442
-msgid "The request is not authenticated. Reconnect the app from Saddle → Connections to issue a fresh sign-in key."
+msgid "The request is not authenticated. Reconnect the app from Saddle → Apps to issue a fresh sign-in key."
 msgstr ""
 
 #. translators: 1: WordPress capability name, 2: tool name.
@@ -4134,11 +4134,11 @@ msgid "A permission error on a tool call means one of the site owner's controls 
 msgstr ""
 
 #: includes/class-saddle-context.php:246
-msgid "A 401 saying the key was rejected means the sign-in key was revoked or rotated. Ask the user to reconnect this app from Saddle → Connections (or paste the fresh setup if they just rotated the key)."
+msgid "A 401 saying the key was rejected means the sign-in key was revoked or rotated. Ask the user to reconnect this app from Saddle → Apps (or paste the fresh setup if they just rotated the key)."
 msgstr ""
 
 #: includes/class-saddle-context.php:247
-msgid "A 401 saying no key arrived usually means the web server strips the Authorization header. Ask the user to open Saddle → Connections → \"Connection details & health\" and run the connection check — it can fix this automatically on most hosts."
+msgid "A 401 saying no key arrived usually means the web server strips the Authorization header. Ask the user to open Saddle → Apps → \"Connection details & health\" and run the connection check — it can fix this automatically on most hosts."
 msgstr ""
 
 #: includes/class-saddle-context.php:248
@@ -5384,7 +5384,7 @@ msgid "What it will be able to do"
 msgstr ""
 
 #: includes/oauth/class-saddle-oauth-consent.php:147
-msgid "You choose. This is the most this app will ever be able to do, and you can change it later from Saddle → Connections."
+msgid "You choose. This is the most this app will ever be able to do, and you can change it later from Saddle → Apps."
 msgstr ""
 
 #. translators: %s: WordPress user display name.
@@ -5394,7 +5394,7 @@ msgid "It will act as %s, and can never do more than that account is allowed to.
 msgstr ""
 
 #: includes/oauth/class-saddle-oauth-consent.php:169
-msgid "Deletions and overwrites will still show you a preview and ask for confirmation every time. You can disconnect this app at any point from Saddle → Connections."
+msgid "Deletions and overwrites will still show you a preview and ask for confirmation every time. You can disconnect this app at any point from Saddle → Apps."
 msgstr ""
 
 #. translators: %s: redirect address.
