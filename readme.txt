@@ -192,6 +192,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 == Changelog ==
 
 = Unreleased =
+* New: Saddle Analytics, PlugPress's analytics plugin, counts as a PlugPress integration. Its read-only traffic tools work as soon as it is active, with no switch to turn on.
 * Fixed: The live page check now compares each part of the page on its own, so it names exactly what a stale cache is still missing.
 * Fixed: The Connection check (Saddle > Settings, and the "Check the connection" tool) could not tell whether your server passes sign-in headers through, and always said "unknown". It now gives a real answer.
 
@@ -204,7 +205,6 @@ The WordPress.org version never checks for its own updates. The version from plu
 * Fixed: Page lists now include each page's slug, parent and menu order, as the tool description already said. Post lists include the slug.
 
 = 1.3.0 =
-* New: Saddle Analytics, PlugPress's analytics plugin, is recognised as a PlugPress integration, so its read-only traffic tools are available as soon as it is active.
 * New: Other plugins can add their own tools to Saddle. Tools from other developers stay off until you switch them on under Saddle > Integrations.
 * Improved: The Integrations screen shows each plugin's author, how many tools it adds, and whether it is built in, from PlugPress or from another developer.
 
