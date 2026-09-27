@@ -102,11 +102,20 @@ dry-run, no diff and no revert.
 - No WP-CLI passthrough, no shelling out, no arbitrary SQL.
 - **No filesystem writes.** The only `fwrite` in the tree is inside the vendored
   MCP adapter's stdio bridge. Saddle writes to the database, never to disk.
-- **Updates are reported, never run.** Saddle may report available plugin, theme
-  and core updates, and may switch WordPress's own auto-update setting for a
-  plugin (a database option at the admin tier; core performs the update on its
-  own schedule). It never calls the upgrader, never installs a plugin, and never
-  offers "update now". Decided 2026-09-27; applies to Pro too.
+- **Updates are applied only through WordPress's own updater, and only for
+  what WordPress already offers.** `saddle/update-plugin` and
+  `saddle/update-theme` (admin tier, gated, at most 10 items) queue a
+  background run; `Saddle_Update_Runner` hands each item to
+  `WP_Automatic_Updater::update()`, which downloads the package core listed,
+  keeps the temporary backup, and for an active plugin runs the loopback fatal
+  check and restores the backup on failure. Saddle never writes a file, never
+  chooses a package URL, never calls the upgrader inside a request (a test
+  pins this), never installs or deletes a plugin or theme, and never updates
+  core. It refuses, naming the reason, wherever core would (`DISALLOW_FILE_MODS`,
+  `AUTOMATIC_UPDATER_DISABLED`, a VCS checkout, a non-direct filesystem). The
+  auto-update switch is WordPress's own option. Decided 2026-09-27 evening on
+  Fahim's "research, then take the decision", replacing the same morning's
+  "reported, never run"; applies to Pro too.
 
 If a feature seems to need any of these, that is a signal to redesign the
 feature. Two reasons, both load-bearing: WordPress.org will not accept arbitrary

@@ -89,6 +89,8 @@ These tools stay off until you choose the Managing the site level.
 
 * Settings: Change the site title, permalinks and reading options.
 * Plugins and themes: Activate and deactivate plugins, and switch the active theme.
+* Updates: See which plugin, theme and WordPress updates are waiting, apply plugin and theme updates through WordPress's own updater, and turn automatic updates on or off per plugin. WordPress keeps a backup and restores a plugin that breaks the site.
+* Site Health: Read the results of WordPress's own Site Health checks.
 * Cache: Clear the site cache.
 
 = Safety =
@@ -192,6 +194,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 == Changelog ==
 
 = Unreleased =
+* New: Your AI app can apply plugin and theme updates that WordPress is already offering. It previews every item first and waits for your approval, then WordPress's own updater runs the update in the background, keeps a backup, and restores an active plugin that causes a fatal error. It can also turn WordPress's automatic updates on or off per plugin or theme, and read the Site Health checks. Saddle never installs or deletes a plugin and never updates WordPress itself.
 * New: Saddle Analytics, PlugPress's analytics plugin, counts as a PlugPress integration. Its read-only traffic tools work as soon as it is active, with no switch to turn on.
 * Fixed: The live page check now compares each part of the page on its own, so it names exactly what a stale cache is still missing.
 * Fixed: The Connection check (Saddle > Settings, and the "Check the connection" tool) could not tell whether your server passes sign-in headers through, and always said "unknown". It now gives a real answer.
