@@ -106,6 +106,7 @@ require_once SADDLE_DIR . 'includes/class-saddle-playbook.php';
 require_once SADDLE_DIR . 'includes/class-saddle-skills.php';
 require_once SADDLE_DIR . 'includes/class-saddle-memory.php';
 require_once SADDLE_DIR . 'includes/class-saddle-log.php';
+require_once SADDLE_DIR . 'includes/class-saddle-update-runner.php';
 require_once SADDLE_DIR . 'includes/class-saddle-unsplash.php';
 require_once SADDLE_DIR . 'includes/class-saddle-connection.php';
 require_once SADDLE_DIR . 'includes/class-saddle-http.php';
@@ -250,12 +251,18 @@ final class Saddle {
 		// exists alongside Application Passwords rather than replacing them.
 		Saddle_OAuth::register();
 
+		// The background update runner: hooks its one-shot cron event so a run
+		// queued by update-plugin / update-theme fires even when the abilities
+		// themselves are not loaded on that request.
+		Saddle_Update_Runner::init();
+
 		// The MCP surface and abilities require core's Abilities API (WP 6.9+).
 		if ( self::abilities_api_available() ) {
 			require_once SADDLE_DIR . 'includes/abilities/core-content.php';
 			require_once SADDLE_DIR . 'includes/abilities/blocks.php';
 			require_once SADDLE_DIR . 'includes/abilities/site-editor.php';
 			require_once SADDLE_DIR . 'includes/abilities/site.php';
+			require_once SADDLE_DIR . 'includes/abilities/updates.php';
 			require_once SADDLE_DIR . 'includes/abilities/users.php';
 			require_once SADDLE_DIR . 'includes/abilities/context.php';
 			require_once SADDLE_DIR . 'includes/abilities/lint.php';
@@ -276,6 +283,7 @@ final class Saddle {
 			add_action( 'wp_abilities_api_init', 'saddle_register_block_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_site_editor_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_site_abilities' );
+			add_action( 'wp_abilities_api_init', 'saddle_register_update_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_user_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_context_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_lint_abilities' );
@@ -473,6 +481,9 @@ final class Saddle {
 		if ( $timestamp ) {
 			wp_unschedule_event( $timestamp, Saddle_Approval::GC_HOOK );
 		}
+		// A queued update run must not fire while Saddle is inactive. The run
+		// records stay (uninstall removes them).
+		wp_clear_scheduled_hook( Saddle_Update_Runner::HOOK );
 	}
 }
 

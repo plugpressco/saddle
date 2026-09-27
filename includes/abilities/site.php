@@ -879,10 +879,13 @@ class Saddle_Site_Abilities {
 	 * file. Accepts "dir/file.php" as-is when installed, or a bare slug matched
 	 * against plugin directory names.
 	 *
+	 * Public so the update abilities resolve the same way (one resolver, one
+	 * set of error messages).
+	 *
 	 * @param mixed $input Ability input.
 	 * @return string|WP_Error Plugin file, or an error.
 	 */
-	private static function resolve_plugin( $input ) {
+	public static function resolve_plugin( $input ) {
 		$input = is_array( $input ) ? $input : array();
 		$id    = isset( $input['plugin'] ) ? trim( (string) $input['plugin'] ) : '';
 		if ( '' === $id ) {
