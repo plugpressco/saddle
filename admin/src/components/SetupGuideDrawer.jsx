@@ -1,9 +1,10 @@
 /**
  * Per-app setup guide, as a drawer — the three things that make a connection
- * work: where to paste, what to paste, and how to say hello. Opens in two
+ * work: where to paste, what to paste, and how to say hello. Opens in three
  * modes: with a fresh key (right after a rotation — real ready-to-paste
- * setup, shown once) or without one (reference mode with a placeholder,
- * since Saddle never stores a key it could re-show).
+ * setup, shown once), without one (reference mode with a placeholder, since
+ * Saddle never stores a key it could re-show), or for the address path,
+ * where there is no key at all and the setup is always the real thing.
  */
 import {
 	Drawer,
@@ -22,6 +23,7 @@ import {
 	buildGuideConfig,
 	MCP_URL,
 	HELLO_PROMPT,
+	howFor,
 } from '../connect-apps';
 
 export default function SetupGuideDrawer( {
@@ -30,13 +32,20 @@ export default function SetupGuideDrawer( {
 	app, // key from APPS ('claude-code', …); unknown keys fall back to 'other'
 	label, // the connection's display name
 	password, // fresh raw key (rotation) — omit for placeholder mode
+	mode = 'key', // 'key' or 'address'
 } ) {
 	const { copied, copy } = useCopy();
 	const meta = APPS.find( ( a ) => a.key === app ) || APPS[ APPS.length - 1 ];
-	const live = !! password;
-	const config = live
-		? buildConfig( meta.key, password )
-		: buildGuideConfig( meta.key );
+	const byAddress = 'address' === mode;
+	const live = byAddress || !! password;
+	let config;
+	if ( byAddress ) {
+		config = buildGuideConfig( meta.key, 'address' );
+	} else if ( password ) {
+		config = buildConfig( meta.key, password, 'key' );
+	} else {
+		config = buildGuideConfig( meta.key, 'key' );
+	}
 
 	return (
 		<Drawer
@@ -55,14 +64,24 @@ export default function SetupGuideDrawer( {
 					<span>{ meta.label }</span>
 				</div>
 
-				{ live ? (
+				{ byAddress && (
+					<CalloutCard
+						title={ __( 'Connects by address', 'saddle' ) }
+						description={ __(
+							'There is no key for this connection. The app registers itself and you approve it on screen; disconnecting it here ends its access.',
+							'saddle'
+						) }
+					/>
+				) }
+				{ ! byAddress && password && (
 					<Notice tone="warning">
 						{ __(
 							'This fresh key appears only this once — paste it into the app before closing. Saddle keeps just its last four characters.',
 							'saddle'
 						) }
 					</Notice>
-				) : (
+				) }
+				{ ! byAddress && ! password && (
 					<CalloutCard
 						title={ __( 'Keys are shown only once', 'saddle' ) }
 						description={ __(
@@ -74,7 +93,7 @@ export default function SetupGuideDrawer( {
 
 				<section className="saddle-setup-guide__step">
 					<h3>{ __( '1. Where it goes', 'saddle' ) }</h3>
-					<p>{ meta.how }</p>
+					<p>{ howFor( meta, mode ) }</p>
 				</section>
 
 				<section className="saddle-setup-guide__step">

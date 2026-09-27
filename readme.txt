@@ -27,7 +27,7 @@ Click **Live Preview** at the top of this page. A test WordPress opens in your b
 = How it works =
 
 1. Install Saddle and choose what your AI may do.
-2. Add your AI app under **Saddle → Apps** and paste the settings Saddle gives you.
+2. Add your AI app under **Saddle → Apps**. Paste the address Saddle shows into the app and approve the connection when your browser opens.
 3. Ask your AI to write, edit or check your content.
 
 Saddle works with Claude and Claude Code, ChatGPT, Cursor, VS Code, Codex, Gemini CLI and other apps that support MCP (Model Context Protocol). Step-by-step setup for each app is at [saddle.to/docs](https://saddle.to/docs).
@@ -105,9 +105,9 @@ Saddle never runs code from the AI. It has no shell access and does not write fi
 
 = Connecting an app =
 
-Saddle uses WordPress Application Passwords. Each key works only with Saddle, not with the rest of the REST API.
+Turn on sign-in for apps once, when the wizard offers it. After that every app needs only your site's address: it opens your browser, and an administrator approves it on your own site. Nothing is installed and no key is copied. Sign-in needs HTTPS and pretty permalinks.
 
-ChatGPT cannot use a pasted key. For ChatGPT, turn on OAuth sign-in under **Saddle → Settings**. An administrator must approve each app.
+Apps can also connect with a pasted key. Saddle uses WordPress Application Passwords for that. Each key works only with Saddle, not with the rest of the REST API. ChatGPT cannot use a pasted key.
 
 = Saddle Pro =
 
@@ -125,8 +125,8 @@ Every feature in this free plugin stays free.
 == Installation ==
 
 1. Install and activate Saddle from **Plugins → Add New**.
-2. Go to **Saddle → Apps** and add an app.
-3. Copy the connection settings into your AI app.
+2. Go to **Saddle → Apps**, turn on sign-in for apps, and pick your app.
+3. Paste the address into your AI app and approve the connection when your browser opens.
 4. To allow changes, go to **Saddle → Permissions** and choose Reading & writing or Managing the site.
 
 == Frequently Asked Questions ==
@@ -153,7 +153,7 @@ No. Every action uses standard WordPress functions.
 
 = Does it work with ChatGPT? =
 
-Yes. Turn on OAuth sign-in under **Saddle → Settings**. Then add your site as a connector in ChatGPT.
+Yes. Go to **Saddle → Apps**, pick ChatGPT, and turn on sign-in when the wizard offers it. Then add your site as a connector in ChatGPT and approve it when ChatGPT sends you to your site.
 
 = Does it work with page builders? =
 
@@ -192,6 +192,8 @@ The WordPress.org version never checks for its own updates. The version from plu
 == Changelog ==
 
 = Unreleased =
+* Improved: Connecting an app now takes one address. Turn on sign-in for apps once, paste the address into Claude, Claude Code, ChatGPT, Codex, Cursor, VS Code, Gemini CLI or Windsurf, and approve the connection when your browser opens. No key to copy and nothing to install. Pasted keys still work and stay the fallback for sites without HTTPS or pretty permalinks.
+* New: Claude on the web and in the desktop app connects as a custom connector, with no bridge to install. Windsurf joins the app list.
 * New: Saddle Analytics, PlugPress's analytics plugin, counts as a PlugPress integration. Its read-only traffic tools work as soon as it is active, with no switch to turn on.
 * Fixed: The live page check now compares each part of the page on its own, so it names exactly what a stale cache is still missing.
 * Fixed: The Connection check (Saddle > Settings, and the "Check the connection" tool) could not tell whether your server passes sign-in headers through, and always said "unknown". It now gives a real answer.
