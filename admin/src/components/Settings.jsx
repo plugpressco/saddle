@@ -156,9 +156,9 @@ export default function Settings( { paused, pausing, onTogglePause } ) {
 
 			<Card>
 				<CardHeader
-					title={ __( 'Sign-in for ChatGPT', 'saddle' ) }
+					title={ __( 'Sign-in for apps', 'saddle' ) }
 					description={ __(
-						'Most AI apps let you paste a sign-in key. ChatGPT does not — its connector screen has no field for one. Turn this on and ChatGPT can send you here to approve it instead, the same way “Sign in with Google” works. Off by default; everything else keeps working either way.',
+						'With this on, an app needs only this site’s address: it opens your browser and you approve it here, the same way “Sign in with Google” works. Claude, ChatGPT, Claude Code, Codex, Cursor, VS Code and Gemini CLI all connect this way, and ChatGPT can connect no other way. Off by default; pasted keys keep working either way.',
 						'saddle'
 					) }
 				/>
@@ -196,7 +196,7 @@ export default function Settings( { paused, pausing, onTogglePause } ) {
 						<span>
 							{ oauth?.enabled
 								? __(
-										'On — ChatGPT and other apps can ask to connect. You approve each one.',
+										'On — apps can ask to connect by address. You approve each one.',
 										'saddle'
 								  )
 								: __(
@@ -235,7 +235,7 @@ export default function Settings( { paused, pausing, onTogglePause } ) {
 									'saddle'
 								) }
 								description={ __(
-									'Needed by ChatGPT. An app that registers still cannot do anything until you approve it on screen.',
+									'Needed to connect by address. An app that registers still cannot do anything until you approve it on screen.',
 									'saddle'
 								) }
 								actions={
