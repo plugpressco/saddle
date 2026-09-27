@@ -191,6 +191,9 @@ The WordPress.org version never checks for its own updates. The version from plu
 
 == Changelog ==
 
+= Unreleased =
+* Fixed: The Connection check (Saddle > Settings, and the "Check the connection" tool) could not tell whether your server passes sign-in headers through, and always said "unknown". It now gives a real answer.
+
 = 1.4.0 =
 * New: Your AI app can check that a change is live. It loads the published page as a visitor would and says when a page cache is still serving the old version.
 * New: Your AI app can upload a file it has no public link for, such as an image it made. It sends the file itself, and WordPress checks it like any other upload.
