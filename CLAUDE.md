@@ -271,6 +271,16 @@ The server lives entirely inside the owner's WordPress. A granted scope only eve
 `min(site tier, granted scope)`. Use `get_site_tier()` when reporting or writing
 configuration, `get_tier()` when deciding whether a call is allowed.
 
+*Decided 2026-09-27 (#243): once the owner has turned sign-in on, the address
+path is the one the connect wizard leads with for every app*, and the
+Application Password is the fallback. Claude (custom connector), Claude Code,
+ChatGPT, Codex, Cursor, VS Code, Gemini CLI and Windsurf all take a bare MCP
+address, discover the authorization server, register themselves and send the
+owner to the consent screen. That is the whole of WPVibe's "paste one URL, one
+click in wp-admin" flow, self-hosted. The default is unchanged: the option
+starts `false`, the wizard offers the switch with a labelled button and never
+flips it on its own, and a plain-HTTP or plain-permalink site stays on keys.
+
 Constraints that must not be relaxed: PKCE **S256 only** (never `plain`),
 redirect URIs matched by **exact string comparison** (never prefix), refresh
 tokens rotate with reuse detection, authorization-code replay revokes the whole

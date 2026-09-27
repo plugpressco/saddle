@@ -10,33 +10,107 @@ Your site's address for AI apps is always the same:
 https://your-site.com/wp-json/saddle/v1/mcp
 ```
 
-You'll find it on **Saddle → Connections**, under "Connection details & health".
+You'll find it on **Saddle → Apps**, under "Connection details & health".
 
 ---
 
 ## Two ways to connect
 
-There are two, and which one you use is decided by the app, not by you.
+**By address.** You paste the address above into the app and nothing else. The
+app introduces itself to your site, opens your browser, and you approve it on
+your own site — the way "Sign in with Google" works, except the sign-in screen
+is yours. No key to copy, nothing to install. This is the way to connect once
+you have turned **sign-in for apps** on (it's off by default; the wizard offers
+the switch). Claude, Claude Code, ChatGPT, Codex, Cursor, VS Code, Gemini CLI
+and Windsurf all connect this way.
 
-**A sign-in key.** Most AI apps let you paste a line of configuration that
-includes a key. You create the key in Saddle, paste it into the app, done. This
-is the default and it's what Claude, Claude Code, Cursor, VS Code and Gemini CLI
-all use.
+**With a key.** Saddle creates a sign-in key, you paste a short block of
+configuration that contains it. This is the fallback: for a site that can't
+offer sign-in (no HTTPS, or plain permalinks), for scripts and CI, and for
+older Claude desktop builds. ChatGPT can't use a key at all.
 
-**A sign-in screen.** Some apps — ChatGPT most notably — have no place to paste a
-key. Instead they send you to your own site to approve the connection, the way
-"Sign in with Google" works. Saddle supports this too, but it's switched **off**
-until you turn it on.
-
-If you're not sure which an app needs: try the key first. If the app's setup
-screen has no field for one, it needs the sign-in screen.
+Go to **Saddle → Apps → Connect an app**, pick the app, and Saddle shows you
+exactly what to paste for whichever way applies. If sign-in is on, every card
+leads with the address and offers "Use a key instead"; if it's off, the wizard
+explains what's needed and hands out keys.
 
 ---
 
-## Connecting with a sign-in key
+## Connecting by address
 
-Go to **Saddle → Connections → Connect an app**, pick the app, and Saddle shows
-you exactly what to paste. Copy it into the app, and you're connected.
+### First, turn sign-in on
+
+The wizard offers a **Turn on sign-in** button above the app cards. The same
+switch lives under **Saddle → Settings → Sign-in for apps**. Two requirements,
+both checked for you:
+
+- **HTTPS.** A sign-in token sent over plain HTTP can be read in transit, so
+  Saddle won't enable this on an insecure site.
+- **Pretty permalinks.** Settings → Permalinks, anything other than "Plain".
+  Without them your site's addresses carry a `?` in the middle, and the sign-in
+  standard can't work with that.
+
+While this is off, nothing is published for any app to find. That's deliberate —
+off means genuinely invisible, not merely refused. Turning it off later
+disconnects every app that signed in this way.
+
+### Then, in the app
+
+Each card in the wizard says where the address goes. In short:
+
+**Claude (claude.ai and the desktop app)** — Settings → Connectors → Add custom
+connector. Name it, paste the address, leave the OAuth client ID and secret
+blank, click Add. Claude sends you to your site to approve it.
+
+**Claude Code** — one command in your terminal:
+`claude mcp add <name> --scope user --transport http <address>`. Then run
+`claude`, type `/mcp`, pick the server and choose **Authenticate**. Saddle uses
+`--scope user` deliberately: the default scope ties the server to the exact
+folder you ran the command in, so it silently fails to load anywhere else.
+
+**ChatGPT** — see the ChatGPT section below; it has a couple of quirks of its
+own.
+
+**Codex** — paste the block into `~/.codex/config.toml`, then run
+`codex mcp login <name>` in a terminal. Codex opens your browser.
+
+**Cursor** — Settings → MCP → Add new server, paste the block (or save it as
+`.cursor/mcp.json`). Cursor shows a **Needs login** button next to the server;
+click it.
+
+**VS Code (Copilot agent mode)** — save the block as `.vscode/mcp.json`, then
+start the server from the **MCP: List Servers** command. VS Code opens your
+browser.
+
+**Gemini CLI** — one command, same user-scope reasoning as Claude Code. The
+first time Gemini uses the server it opens your browser.
+
+**Windsurf** — Settings → MCP → Add custom server, paste the block, save.
+
+**Any other MCP app** — paste the standard block. If the app supports signing
+in, it opens your browser; if it only takes a key, use the key instead.
+
+### What the approval screen tells you
+
+- **Which app is asking**, and whether Saddle could verify it. Some apps identify
+  themselves with a web address that vouches for them — those show as verified.
+  Apps that simply registered themselves are marked as such, because nothing about
+  their identity was checked.
+- **What it will be able to do**, in plain language, never more than the site
+  allows.
+- **Which WordPress account it will act as** — yours. It can never do more than
+  that account is allowed to.
+- **Where you'll be sent afterwards.**
+
+Only administrators can approve a connection. A request is good for 15 minutes.
+
+---
+
+## Connecting with a key
+
+Pick the app in the wizard and choose **Use a key instead** (or, with sign-in
+off, the wizard hands out keys by default). Copy the block into the app, and
+you're connected.
 
 A few things worth knowing:
 
@@ -46,67 +120,27 @@ A few things worth knowing:
 - **Each app gets its own key.** Disconnecting one doesn't affect the others.
 - **Leaving the wizard early cancels the key.** If you back out before copying,
   Saddle revokes the key it just made rather than leaving an orphan.
-
-### What each app expects
-
-**Claude (desktop app)** — Settings → Developer → Edit Config. Paste the block
-Saddle gives you, save, restart Claude. It connects through a small bridge
-(`mcp-remote`), because the desktop app speaks the local flavour of MCP.
-
-**Claude Code** — one command in your terminal. Saddle uses `--scope user`
-deliberately: the default scope ties the server to the exact folder you ran the
-command in, so it silently fails to load anywhere else. User scope means "run
-`claude` in any folder and it's there."
-
-**Cursor** — Settings → MCP → Add new server, or save Saddle's block as
-`.cursor/mcp.json` in your project.
-
-**Gemini CLI** — one command, same user-scope reasoning as Claude Code.
-
-**VS Code (Copilot agent mode)** — save the block as `.vscode/mcp.json`, then
-start the server from the **MCP: List Servers** command.
-
-**Any other MCP app** — most accept the standard block Saddle shows under "Any
-MCP app". Look for "Add MCP server" in the app's settings.
+- **Older Claude desktop builds** connect through a small bridge
+  (`mcp-remote`), which needs Node installed. Current builds take a custom
+  connector by address instead.
 
 ---
 
 ## Connecting ChatGPT
 
-ChatGPT's connector screen has no field for a sign-in key, so it needs the
-sign-in screen instead.
+ChatGPT's connector screen has no field for a sign-in key, so it always
+connects by address. Turn sign-in on first (above).
 
-### First, turn it on
+### In ChatGPT
 
-**Saddle → Settings → "Sign-in for ChatGPT"**
-
-Two requirements, both checked for you right under the switch:
-
-- **HTTPS.** A sign-in token sent over plain HTTP can be read in transit, so
-  Saddle won't enable this on an insecure site.
-- **Pretty permalinks.** Settings → Permalinks, anything other than "Plain". Without
-  them your site's addresses carry a `?` in the middle, and the sign-in standard
-  can't work with that.
-
-If either is missing the switch stays disabled and tells you which one.
-
-While this is off, nothing is published for any app to find. That's deliberate —
-off means genuinely invisible, not merely refused.
-
-### Then, in ChatGPT
-
-The menu has been renamed at least once, so go by this path rather than older
+The menu has been renamed more than once, so go by this path rather than older
 guides:
 
 ```
-Settings → Plugins → Browse plugins → the "+" button (top right)
+Settings → Apps & Connectors → Advanced settings → Developer mode (on)
 ```
 
-Or go straight to **chatgpt.com/plugins** and click **+**. If the button isn't
-there, turn on **Settings → Plugins → Developer mode** first — that's what
-reveals it.
-
-Fill in:
+then create a connector. Fill in:
 
 | Field | Value |
 |---|---|
@@ -115,22 +149,8 @@ Fill in:
 | Authentication | **OAuth** |
 
 Leave client ID and secret **blank**. Saddle registers ChatGPT automatically.
-
 ChatGPT will send you to your own site to approve the connection. Read the
-screen, then choose Allow.
-
-### What the approval screen tells you
-
-- **Which app is asking**, and whether Saddle could verify it. Some apps identify
-  themselves with a web address that vouches for them — those show as verified.
-  Apps that simply registered themselves are marked as such, because nothing about
-  their identity was checked.
-- **What it will be able to do**, in plain language.
-- **Which WordPress account it will act as** — yours. It can never do more than
-  that account is allowed to.
-- **Where you'll be sent afterwards.**
-
-Only administrators can approve a connection.
+screen, then choose Allow. The connector then works in the desktop app too.
 
 ### What to expect
 
@@ -158,10 +178,10 @@ Workspace settings and refreshes its actions.
 **Agent mode never uses custom apps, and deep research only reads.** Ask in a
 normal chat, with the app selected, for anything that writes.
 
-**Uploading media needs a public URL.** A file you attach in the chat lives in
-ChatGPT's sandbox with no address Saddle can fetch, so `upload-media` can't reach
-it. Point it at a file that is already online (or use the Unsplash tools). Inline
-upload for write-capable clients is on the roadmap.
+**Uploading media from the chat.** A file you attach in the chat lives in
+ChatGPT's sandbox with no address Saddle can fetch. Since 1.4.0 the app can send
+the file itself (inline upload); older clients need a file that is already
+online, or the Unsplash tools.
 
 ---
 
@@ -190,7 +210,7 @@ destructive happens in one step, ever.
 and inherits that user's permissions. An editor's connection can't touch things
 an editor couldn't touch by hand.
 
-For sign-in-screen connections there's one extra limit: the app is granted a
+For connections made by address there's one extra limit: the app is granted a
 level when you approve it, and that acts as its own ceiling. If your site is set
 to Read & Write but you only granted an app read access, it gets read — the app
 can be given less than the site allows, never more.
@@ -199,7 +219,7 @@ can be given less than the site allows, never more.
 
 ## Managing connections
 
-Everything lives on **Saddle → Connections**.
+Everything lives on **Saddle → Apps**.
 
 **Rotate** replaces an app's key with a fresh one under the same name. The old
 key stops working immediately, so the app is disconnected until you paste the new
@@ -208,7 +228,7 @@ setup in.
 **Disconnect** takes a connection away for good. It stops working immediately —
 no waiting for anything to expire. You can always connect the app again later.
 
-Sign-in-screen connections are listed separately, since there's no key involved
+Connections made by address are listed separately, since there's no key involved
 and nothing to rotate — only to take away.
 
 Sign-in keys also appear under **Users → Profile → Application Passwords**. Same
@@ -224,7 +244,7 @@ it shouldn't.
 
 ### "Connection failed" or every request is refused
 
-Run **Saddle → Connections → Connection details & health → Test connection**.
+Run **Saddle → Apps → Connection details & health → Test connection**.
 
 The most common cause by far is your web server stripping the `Authorization`
 header before WordPress sees it, so your key never arrives. Saddle detects this
@@ -234,17 +254,18 @@ the one line to send your host.
 ### "Your sign-in key was rejected"
 
 The key was revoked, deleted, or mistyped. Reconnect the app from Saddle →
-Connections to issue a fresh one.
+Apps to issue a fresh one.
 
 ### "The request arrived without a sign-in key"
 
 The key never reached your site — that's the stripped-header problem above. Run
 the connection check.
 
-### "MCP server does not implement OAuth"
+### "MCP server does not implement OAuth" or "Needs login" never finishes
 
-Sign-in for ChatGPT is switched off. Saddle → Settings → turn it on, check the
-readiness line underneath, then try again in ChatGPT.
+Sign-in for apps is switched off. Turn it on from the wizard or under Saddle →
+Settings, check the readiness line underneath, then add the server again in the
+app.
 
 ### The approval screen says the request expired
 
@@ -258,7 +279,7 @@ Three things to check, in order:
 1. **Saddle → Settings** — is Saddle paused?
 2. **Saddle → Permissions** — is your access level high enough, and is that
    particular tool switched on?
-3. **For sign-in-screen connections** — was the app granted enough when you
+3. **For connections made by address** — was the app granted enough when you
    approved it? If not, disconnect and reconnect, approving the higher level.
 
 Saddle tells connected apps *why* they were refused, so a well-behaved app should
@@ -269,7 +290,7 @@ relay the reason rather than just failing.
 Different problem, and worth separating from the one above: the app signed in
 successfully, then reports it has no actions it can use.
 
-Open **Saddle → Connections → Client traffic**, press **Record the next hour**,
+Open **Saddle → Apps → Client traffic**, press **Record the next hour**,
 then ask the app to refresh its actions. Each attempt appears as a row, and the
 result column is what tells the two causes apart:
 

@@ -49,6 +49,16 @@ class Saddle_OAuth_Settings_Test extends WP_UnitTestCase {
 		return rest_get_server()->dispatch( new WP_REST_Request( 'GET', '/saddle/v1/oauth-settings' ) );
 	}
 
+	public function test_sign_in_is_off_on_a_fresh_install() {
+		// Non-negotiable #2: the connect wizard leads with the address path
+		// once sign-in is on, but nothing turns it on except the owner. With
+		// no option stored, GET must report off and the server must be off.
+		delete_option( 'saddle_oauth_enabled' );
+
+		$this->assertFalse( Saddle_OAuth::is_enabled() );
+		$this->assertFalse( $this->get_settings()->get_data()['enabled'] );
+	}
+
 	public function test_enabling_refuses_without_https_and_names_the_reason() {
 		// Pretty permalinks are set, so the blocker is SSL — the message must
 		// name it, because ChatGPT's side of the failure says nothing useful.

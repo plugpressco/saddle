@@ -46,6 +46,17 @@ when it is picked up; this file names direction, not tickets.
    **Pro** (decided 2026-09-27; this line said free until then). That matches the
    2026-09-26 split, where free edits and Pro operates the site. They can move to
    free later, but never back (R6).
+
+   **Added 2026-09-27 (evening), in this order, all free:** updates and health
+   (`list-updates`, `update-plugin`, `update-theme`, `set-auto-update`,
+   `get-site-health`; applied through core's own updater with its temporary
+   backup and fatal-check rollback, admin tier, gated, never an install or a
+   core update); `undo-changes` (#181) and rehearsal mode (#180); custom post
+   types (#137); menus (#244); template, part and pattern writes (#172). Ordered
+   by what people use and what saves time, then by what keeps "safe on a live
+   site" true as rivals ship undo and snapshots. The research is in the
+   2026-09-27 plan; the updates decision revises the morning's "reported, never
+   run" and is written into `CLAUDE.md`'s hard line with the code.
 3. **The agency workflow.** Divi 5 page editing moves to free (2026-09-26 split:
    free edits, Pro operates the site). Divi design-system export/import as JSON (Pro) —
    global colors, fonts, variables, presets, Theme Builder templates, library
@@ -59,6 +70,28 @@ when it is picked up; this file names direction, not tickets.
    token-per-task benchmark, because nobody measures it and address-based edits
    with compact reads are Saddle's answer to the "burns a five-hour window in an
    hour" complaint.
+
+   *Noted 2026-09-27:* the pages actually built on saddle.to compare WPVibe and
+   Novamira, not the three named above; the benchmark has not been run; and no
+   document states the family in one line. Proposed, for Fahim's copy review:
+   "One connection, your whole site: your AI reads your analytics, fixes your
+   SEO, writes and designs your pages, keeps your plugins updated, and asks
+   before anything it can't undo. Nothing leaves your site."
+
+**Decided 2026-09-27, later the same day:**
+
+- **Connect by address first.** Once the owner turns sign-in on (one labelled
+  button; the option still defaults to off), every app card leads with the
+  site's MCP address and the browser consent screen; the Application Password
+  is the fallback (#243). Claude, Claude Code, ChatGPT, Codex, Cursor, VS Code,
+  Gemini CLI and Windsurf all take a bare address. Deep links follow (#179).
+- **Saddle applies updates.** See pillar 2. No `run-wp-cli` tool, ever: WPVibe's
+  "WP-CLI" is allowlisted in-process PHP with a command string in front, and
+  Saddle's typed abilities are the same power with a per-tool tier and gate.
+- **Multi-site waits for Phase 3.** The per-site tools above are what any
+  router will route. The Phase 3 write-up records that routing's market price
+  is now $0 (WPVibe: unlimited sites free; MainWP: a local MCP server), so the
+  paywall is automations, approvals and agents.
 
 **Decided 2026-09-27, while starting Phase 1:**
 
@@ -92,8 +125,8 @@ the issue and the rule is revisited there.
 
 - **Custom post type support across the content abilities.** Real agency pull, but
   it touches the whole read-authorization funnel; size it after the pillar-2 work.
-- **Menu abilities.** Divi AI Agents covers menus on Divi; block themes have the
-  navigation block.
+- ~~**Menu abilities.**~~ Scheduled 2026-09-27 as #244: classic themes have no
+  navigation block, and WPVibe and Divi AI Agents both ship menus.
 - **Rate limiting on the MCP surface.** Do it after the positioning copy so it can
   be named there.
 
@@ -110,10 +143,13 @@ the issue and the rule is revisited there.
 
 ## Backlog from the 2026-09-07 brainstorm
 
-Direction, not tickets. Seven picks became issues the same day: MCP prompts from
-Skills (#178), one-click install links (#179), rehearsal mode (#180), undo-changes
-(#181), bulk-find-replace (#182), accessibility lint rules (#183), admin consolidation
-(#184). The rest is kept here so it is not lost and not re-litigated.
+Direction, not tickets. Seven picks became issues the same day (#178–#184), were
+closed in the 2026-09-23 backlog reset, and on 2026-09-27 the ones the research
+supported were reopened: one-click install links (#179), rehearsal mode (#180),
+undo-changes (#181), MCP prompts from Skills (#178) and accessibility lint rules
+(#183), plus custom post types (#137) and template writes (#172) from earlier.
+Bulk-find-replace (#182) is Pro scope under saddle-pro#87; admin consolidation
+(#184) stays closed. The rest is kept here so it is not lost and not re-litigated.
 
 **Safety (pillar 2).** A proposal inbox in admin — agent drafts and pending revisions
 listed as diffs with Approve / Reject, after #168. A unified text diff in every gate

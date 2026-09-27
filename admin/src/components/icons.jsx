@@ -15,6 +15,7 @@ import CodexLogo from '@lobehub/icons-static-svg/icons/codex.svg';
 import AntigravityLogo from '@lobehub/icons-static-svg/icons/antigravity-color.svg';
 import GeminiLogo from '@lobehub/icons-static-svg/icons/geminicli-color.svg';
 import McpLogo from '@lobehub/icons-static-svg/icons/mcp.svg';
+import WindsurfLogo from '@lobehub/icons-static-svg/icons/windsurf.svg';
 import { ReactComponent as Mark } from '../../../assets/brand/mark.svg';
 
 const base = {
@@ -121,6 +122,7 @@ const APP_LOGOS = {
 	cursor: CursorLogo,
 	'gemini-cli': GeminiLogo,
 	vscode: CopilotLogo,
+	windsurf: WindsurfLogo,
 	other: McpLogo,
 	// Legacy keys — connections made before the card lineup changed.
 	'claude-desktop': ClaudeLogo,
@@ -172,6 +174,12 @@ export function appKeyFromLabel( label ) {
 	}
 	if ( l.includes( 'codex' ) ) {
 		return 'codex';
+	}
+	if ( l.includes( 'gemini' ) ) {
+		return 'gemini-cli';
+	}
+	if ( l.includes( 'windsurf' ) ) {
+		return 'windsurf';
 	}
 	if ( l.includes( 'antigravity' ) ) {
 		return 'antigravity';

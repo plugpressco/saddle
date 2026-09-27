@@ -943,13 +943,7 @@ class Saddle_REST_Admin {
 		// The native integrations — each only while its plugin is detected:
 		// the panel says DETECTED, and a Yoast row on a site without Yoast
 		// would be a lie.
-		$natives = array(
-			'yoast-'     => array( 'Saddle_Yoast', 'is_active' ),
-			'rank-math-' => array( 'Saddle_Rank_Math', 'is_active' ),
-			'aioseo-'    => array( 'Saddle_Aioseo', 'is_active' ),
-			'wc-'        => array( 'Saddle_WC', 'is_active' ),
-		);
-		foreach ( $natives as $prefix => $probe ) {
+		foreach ( self::native_prefixes() as $prefix => $probe ) {
 			if ( is_callable( $probe ) && call_user_func( $probe ) ) {
 				$prefixes[] = $prefix;
 			}
@@ -964,6 +958,21 @@ class Saddle_REST_Admin {
 		 * @param string[] $prefixes Tool-name prefixes.
 		 */
 		return array_values( array_unique( (array) apply_filters( 'saddle_integration_ui_prefixes', $prefixes ) ) );
+	}
+
+	/**
+	 * Saddle's own integration tools, by name prefix, with the probe that says
+	 * whether the plugin behind them is active.
+	 *
+	 * @return array<string,callable>
+	 */
+	private static function native_prefixes() {
+		return array(
+			'yoast-'     => array( 'Saddle_Yoast', 'is_active' ),
+			'rank-math-' => array( 'Saddle_Rank_Math', 'is_active' ),
+			'aioseo-'    => array( 'Saddle_Aioseo', 'is_active' ),
+			'wc-'        => array( 'Saddle_WC', 'is_active' ),
+		);
 	}
 
 	/**
@@ -983,11 +992,20 @@ class Saddle_REST_Admin {
 		// Integrations match on the start of the name only, and before every
 		// other rule: as a substring rule further down, a partner tool such as
 		// acme-get-design-tokens was filed under "Design system".
-		foreach ( self::integration_prefixes() as $prefix ) {
-			if ( 0 === strpos( $short, $prefix ) ) {
-				$category = 'Integrations';
-				break;
+		//
+		// The longest matching prefix wins, native ones included whether or
+		// not their plugin is active: Saddle Rank's `rank-` is a prefix of
+		// Saddle's own `rank-math-`, and must not claim those tools — they are
+		// Integrations only while Rank Math is detected.
+		$listed  = self::integration_prefixes();
+		$claimed = '';
+		foreach ( array_merge( $listed, array_keys( self::native_prefixes() ) ) as $prefix ) {
+			if ( 0 === strpos( $short, $prefix ) && strlen( $prefix ) > strlen( $claimed ) ) {
+				$claimed = $prefix;
 			}
+		}
+		if ( '' !== $claimed && in_array( $claimed, $listed, true ) ) {
+			$category = 'Integrations';
 		}
 
 		$rules = array(
