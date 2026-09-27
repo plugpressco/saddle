@@ -258,7 +258,10 @@ class Saddle_Verify {
 		$text = str_replace( "\xC2\xA0", ' ', $text );
 
 		if ( "\n" === $separator ) {
-			return (string) preg_replace( array( '/[ \t\r\f\v]+/', '/\n\s*/' ), array( ' ', "\n" ), $text );
+			// Whitespace other than newlines. Not `\v`: in PCRE that is any
+			// vertical whitespace, newlines included, which collapsed a whole
+			// page into one passage (#238).
+			return (string) preg_replace( array( '/[^\S\n]+/u', '/\n\s*/u' ), array( ' ', "\n" ), $text );
 		}
 
 		return trim( (string) preg_replace( '/\s+/u', ' ', $text ) );

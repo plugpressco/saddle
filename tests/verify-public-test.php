@@ -167,6 +167,31 @@ class Saddle_Verify_Public_Test extends WP_UnitTestCase {
 		$this->assertTrue( is_user_logged_in(), 'The caller is signed back in afterwards.' );
 	}
 
+	/**
+	 * Each block is its own passage. The whitespace pattern once held `\v`,
+	 * which in PCRE is any vertical whitespace, newlines included, so a whole
+	 * page collapsed into one passage: its first 80 characters, spanning block
+	 * boundaries. Found on stage.saddle.to: a heading and two paragraphs came
+	 * back as looked_for 1.
+	 */
+	public function test_each_block_is_its_own_passage() {
+		$id = $this->page(
+			'<!-- wp:heading --><h2 class="wp-block-heading">Saddle live page check heading</h2><!-- /wp:heading -->'
+			. '<!-- wp:paragraph --><p>The first paragraph says the saved content really went live today.</p><!-- /wp:paragraph -->'
+			. '<!-- wp:paragraph --><p>The second paragraph is the one a stale page cache is still missing.</p><!-- /wp:paragraph -->'
+		);
+		$this->public_page_serves(
+			'<main><h2>Saddle live page check heading</h2><p>The first paragraph says the saved content really went live today.</p></main>'
+		);
+
+		$public = $this->verify( $id )['public'];
+
+		$this->assertSame( 3, $public['looked_for'] );
+		$this->assertSame( 'stale', $public['status'] );
+		$this->assertCount( 1, $public['missing'] );
+		$this->assertStringStartsWith( 'The second paragraph', $public['missing'][0], 'It names the passage that is missing, not a blend of the page.' );
+	}
+
 	public function test_the_fetch_refuses_any_host_but_this_site() {
 		$this->public_page_serves( '<p>anything</p>' );
 		$home = wp_parse_url( home_url() );
