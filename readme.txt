@@ -195,6 +195,8 @@ The WordPress.org version never checks for its own updates. The version from plu
 * Improved: Connecting an app now takes one address. Turn on sign-in for apps once, paste the address into Claude, Claude Code, ChatGPT, Codex, Cursor, VS Code, Gemini CLI or Windsurf, and approve the connection when your browser opens. No key to copy and nothing to install. Pasted keys still work and stay the fallback for sites without HTTPS or pretty permalinks.
 * New: Claude on the web and in the desktop app connects as a custom connector, with no bridge to install. Windsurf joins the app list.
 * New: Saddle Analytics, PlugPress's analytics plugin, counts as a PlugPress integration. Its read-only traffic tools work as soon as it is active, with no switch to turn on.
+* New: Saddle Rank, the new name for PlugPress's Waggle, is trusted like Waggle was: its tools reach your AI app as the saddle-rank tools with nothing to approve, and any Waggle tool you had switched off stays off after the rename.
+* Fixed: With Saddle Rank installed, Saddle could count its own Rank Math tools as Saddle Rank's when telling your AI app what is available, and list them under Integrations on sites without Rank Math.
 * Fixed: The live page check now compares each part of the page on its own, so it names exactly what a stale cache is still missing.
 * Fixed: The Connection check (Saddle > Settings, and the "Check the connection" tool) could not tell whether your server passes sign-in headers through, and always said "unknown". It now gives a real answer.
 
