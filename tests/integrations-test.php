@@ -740,6 +740,44 @@ class Saddle_Integrations_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Saddle Analytics enrols as `analytics` with its own `saddle-analytics/`
+	 * namespace (the slug and the prefix differ on purpose): PlugPress's, so
+	 * live with nothing approved, like Mailyard (#211).
+	 */
+	public function test_saddle_analytics_is_first_party() {
+		$this->assertTrue( Saddle_Integrations::is_first_party( 'analytics' ) );
+
+		$add = static function ( $integrations ) {
+			$integrations['analytics'] = array( 'prefix' => 'saddle-analytics/', 'title' => 'Saddle Analytics' );
+			return $integrations;
+		};
+		add_filter( 'saddle_integrations', $add );
+		$this->within_abilities_init(
+			static function () {
+				wp_register_ability(
+					'saddle-analytics/get-overview',
+					array(
+						'label'               => 'Traffic overview',
+						'description'         => 'x',
+						'category'            => 'saddle',
+						'input_schema'        => array( 'type' => 'object', 'default' => (object) array(), 'properties' => (object) array() ),
+						'execute_callback'    => '__return_empty_array',
+						'permission_callback' => '__return_true',
+						'meta'                => array( 'annotations' => array( 'readonly' => true ) ),
+					)
+				);
+				Saddle_Integrations::register_wrappers();
+			}
+		);
+		$rows = array_column( Saddle_Integrations::listing(), null, 'slug' );
+		remove_filter( 'saddle_integrations', $add );
+
+		$this->assertSame( array(), get_option( Saddle_Integrations::APPROVED_OPTION, array() ) );
+		$this->assertNotNull( wp_get_ability( 'saddle/analytics-get-overview' ), 'Saddle Analytics is live with nothing approved.' );
+		$this->assertSame( 'plugpress', $rows['analytics']['source'] );
+	}
+
+	/**
 	 * An empty prefix would wrap every ability on the site; `saddle/` and
 	 * `core/` would re-expose abilities that aren't the partner's to offer.
 	 */

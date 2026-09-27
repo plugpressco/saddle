@@ -192,6 +192,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 == Changelog ==
 
 = Unreleased =
+* New: Saddle Analytics, PlugPress's analytics plugin, counts as a PlugPress integration. Its read-only traffic tools work as soon as it is active, with no switch to turn on.
 * Fixed: The live page check now compares each part of the page on its own, so it names exactly what a stale cache is still missing.
 * Fixed: The Connection check (Saddle > Settings, and the "Check the connection" tool) could not tell whether your server passes sign-in headers through, and always said "unknown". It now gives a real answer.
 
