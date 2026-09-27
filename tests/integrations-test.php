@@ -854,4 +854,119 @@ class Saddle_Integrations_Test extends WP_UnitTestCase {
 		$this->assertSame( 'Integrations', $catalog['acme-get-design-tokens'] );
 		$this->assertSame( 'Design system', $catalog['get-design-tokens'], 'Saddle’s own tool must not move.' );
 	}
+
+	/* -------- Saddle Rank: Waggle renamed, slug `rank` (#241) -------- */
+
+	/**
+	 * Enrol Saddle Rank the way its 2.0 does — through the public filter —
+	 * and register one read and one write source ability.
+	 *
+	 * @return callable The catalog filter, for removal.
+	 */
+	private function enrol_saddle_rank() {
+		$add = static function ( $integrations ) {
+			$integrations['rank'] = array(
+				'prefix' => 'saddle-rank/',
+				'title'  => 'Saddle Rank',
+			);
+			return $integrations;
+		};
+		add_filter( 'saddle_integrations', $add );
+
+		$this->within_abilities_init(
+			static function () {
+				foreach ( array( 'get-aeo-score' => true, 'update-seo-meta' => false ) as $tool => $readonly ) {
+					if ( wp_has_ability( 'saddle-rank/' . $tool ) ) {
+						continue; // The registry outlives a test.
+					}
+					wp_register_ability(
+						'saddle-rank/' . $tool,
+						array(
+							'label'               => 'Saddle Rank ' . $tool,
+							'description'         => 'x',
+							'category'            => 'saddle',
+							'input_schema'        => array( 'type' => 'object', 'default' => (object) array(), 'properties' => (object) array() ),
+							'execute_callback'    => static function () {
+								return array( 'ok' => true );
+							},
+							'permission_callback' => '__return_true',
+							'meta'                => array( 'annotations' => array( 'readonly' => $readonly ) ),
+						)
+					);
+				}
+				Saddle_Integrations::register_wrappers();
+			}
+		);
+
+		return $add;
+	}
+
+	public function test_saddle_rank_is_first_party_so_a_waggle_site_keeps_its_tools() {
+		$add  = $this->enrol_saddle_rank();
+		$rows = array_column( Saddle_Integrations::listing(), null, 'slug' );
+		remove_filter( 'saddle_integrations', $add );
+
+		$this->assertNotNull( wp_get_ability( 'saddle/rank-get-aeo-score' ), 'No approval step: Waggle never needed one.' );
+		$this->assertNotNull( wp_get_ability( 'saddle/rank-update-seo-meta' ) );
+		$this->assertSame( 'plugpress', $rows['rank']['source'] );
+		$this->assertTrue( $rows['rank']['enabled'] );
+	}
+
+	/**
+	 * Saddle's own saddle/rank-math-* tools register on every site. Counting
+	 * by the `saddle/rank-` prefix would add them to Saddle Rank's number in
+	 * the agent's context.
+	 */
+	public function test_saddle_ranks_tool_count_leaves_out_saddles_rank_math_tools() {
+		$add = $this->enrol_saddle_rank();
+
+		$names = array_keys( wp_get_abilities() );
+		$this->assertNotEmpty( preg_grep( '#^saddle/rank-math-#', $names ), 'Precondition: the Rank Math tools exist, or this proves nothing.' );
+
+		$counts = Saddle_Integrations_Test::engine_counts();
+		$body   = implode( "\n", Saddle_Integrations::context_section( array() )[0]['lines'] );
+		remove_filter( 'saddle_integrations', $add );
+
+		$this->assertSame( 2, $counts['rank']['count'] );
+		$this->assertStringContainsString( 'Saddle Rank is installed: use the saddle/rank-* tools (2 available)', $body );
+	}
+
+	/**
+	 * The Permissions screen files a tool by the start of its name. `rank-`
+	 * must not claim `rank-math-*`: those are Integrations while Rank Math is
+	 * detected, and fall to their usual group while it is not.
+	 */
+	public function test_the_rank_prefix_never_claims_the_rank_math_tools() {
+		$add      = $this->enrol_saddle_rank();
+		$category = function () {
+			return wp_list_pluck(
+				rest_get_server()->dispatch( new WP_REST_Request( 'GET', '/saddle/v1/capabilities' ) )->get_data()['capabilities'],
+				'category',
+				'short'
+			);
+		};
+
+		// The suite's bootstrap stubs Rank Math as installed.
+		$active = $category();
+		add_filter( 'saddle_rankmath_active', '__return_false' );
+		$inactive = $category();
+		remove_filter( 'saddle_rankmath_active', '__return_false' );
+		remove_filter( 'saddle_integrations', $add );
+
+		$this->assertSame( 'Integrations', $inactive['rank-get-aeo-score'] );
+		$this->assertSame( 'Content', $inactive['rank-math-get-post-seo'], 'Rank Math inactive: its tools are not Saddle Rank\'s.' );
+		$this->assertSame( 'Integrations', $active['rank-math-get-post-seo'], 'Rank Math detected: its own integration row.' );
+		$this->assertSame( 'Integrations', $active['rank-get-aeo-score'] );
+	}
+
+	/**
+	 * Engine counts through the public seam the context line uses.
+	 *
+	 * @return array<string,array{title:string,count:int}>
+	 */
+	public static function engine_counts() {
+		$engine = new ReflectionMethod( 'Saddle_Integrations', 'engine' );
+		$engine->setAccessible( true );
+		return $engine->invoke( null )->active_counts();
+	}
 }

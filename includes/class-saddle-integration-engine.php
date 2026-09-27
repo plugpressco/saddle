@@ -89,11 +89,13 @@ class Saddle_Integration_Engine {
 	private $default_catalog;
 
 	/**
-	 * Wrapper ids this engine has registered, so an idempotent re-run (a
-	 * second abilities-init pass, tests) skips its own wrappers silently and
-	 * the collision notice fires only for genuinely foreign abilities.
+	 * Wrapper ids this engine has registered, mapped to their integration's
+	 * slug, so an idempotent re-run (a second abilities-init pass, tests)
+	 * skips its own wrappers silently, the collision notice fires only for
+	 * genuinely foreign abilities, and each integration's tools are counted
+	 * by what was registered for it rather than by name prefix.
 	 *
-	 * @var array<string,bool>
+	 * @var array<string,string>
 	 */
 	private $registered = array();
 
@@ -337,7 +339,7 @@ class Saddle_Integration_Engine {
 				'meta'                => saddle_ability_meta( $readonly, $destructive, $idempotent, $tier ),
 			)
 		);
-		$this->registered[ $wrapper ] = true;
+		$this->registered[ $wrapper ] = $slug;
 	}
 
 	/**
@@ -488,21 +490,26 @@ class Saddle_Integration_Engine {
 	 * Count of registered wrappers per active integration, for context lines:
 	 * slug => { title, count }. Only integrations with at least one wrapper.
 	 *
+	 * Counted from what this engine registered for each slug, not by name
+	 * prefix: the `rank` slug (Saddle Rank) would otherwise also count
+	 * Saddle's own saddle/rank-math-* tools, which exist on every site.
+	 *
 	 * @return array<string,array{title:string,count:int}>
 	 */
 	public function active_counts() {
 		if ( ! function_exists( 'wp_get_abilities' ) ) {
 			return array();
 		}
-		$names  = array_keys( wp_get_abilities() );
+		$live   = wp_get_abilities(); // Also runs the init pass that registers the wrappers.
+		$counts = array();
+		foreach ( $this->registered as $wrapper => $slug ) {
+			if ( isset( $live[ $wrapper ] ) ) {
+				$counts[ $slug ] = ( $counts[ $slug ] ?? 0 ) + 1;
+			}
+		}
 		$active = array();
 		foreach ( $this->integrations() as $slug => $def ) {
-			$count = 0;
-			foreach ( $names as $name ) {
-				if ( 0 === strpos( $name, 'saddle/' . $slug . '-' ) ) {
-					++$count;
-				}
-			}
+			$count = $counts[ $slug ] ?? 0;
 			if ( $count ) {
 				$active[ $slug ] = array(
 					'title' => $def['title'],

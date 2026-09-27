@@ -27,9 +27,12 @@ class Saddle_Integrations {
 	 * Slugs Saddle trusts without the owner's approval. Decided here, never by
 	 * the catalog entry, so a third-party plugin cannot label itself PlugPress.
 	 *
+	 * `rank` is Saddle Rank, Waggle renamed in its 2.0 (it enrols itself as
+	 * saddle-rank/*). `waggle` stays for the sites still running Waggle.
+	 *
 	 * @var string[]
 	 */
-	const FIRST_PARTY = array( 'waggle', 'mailyard' );
+	const FIRST_PARTY = array( 'waggle', 'mailyard', 'rank' );
 
 	/**
 	 * Option holding the third-party slugs the owner has switched on.
