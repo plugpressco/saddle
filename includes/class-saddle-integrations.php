@@ -32,7 +32,7 @@ class Saddle_Integrations {
 	 *
 	 * @var string[]
 	 */
-	const FIRST_PARTY = array( 'waggle', 'mailyard', 'rank' );
+	const FIRST_PARTY = array( 'waggle', 'mailyard', 'analytics', 'rank' );
 
 	/**
 	 * Option holding the third-party slugs the owner has switched on.

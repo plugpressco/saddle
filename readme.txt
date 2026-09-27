@@ -192,6 +192,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 == Changelog ==
 
 = Unreleased =
+* New: Saddle Analytics, PlugPress's analytics plugin, counts as a PlugPress integration. Its read-only traffic tools work as soon as it is active, with no switch to turn on.
 * New: Saddle Rank, the new name for PlugPress's Waggle, is trusted like Waggle was: its tools reach your AI app as the saddle-rank tools with nothing to approve, and any Waggle tool you had switched off stays off after the rename.
 * Fixed: With Saddle Rank installed, Saddle could count its own Rank Math tools as Saddle Rank's when telling your AI app what is available, and list them under Integrations on sites without Rank Math.
 * Fixed: The live page check now compares each part of the page on its own, so it names exactly what a stale cache is still missing.
