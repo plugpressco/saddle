@@ -586,7 +586,10 @@ class Saddle_MCP_Diagnostics {
 				'wp_version'     => get_bloginfo( 'version' ),
 			),
 			'tools'      => Saddle_Capabilities::hidden_tool_counts(),
-			'policies'   => array( 'drafts_only' => Saddle_Capabilities::is_drafts_only() ),
+			'policies'   => array(
+				'drafts_only' => Saddle_Capabilities::is_drafts_only(),
+				'rehearsal'   => Saddle_Capabilities::is_rehearsal(),
+			),
 			'headers'    => $headers,
 			'problems'   => $problems,
 		);

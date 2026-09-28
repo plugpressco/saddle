@@ -32,6 +32,7 @@ import {
 	AppNav,
 	AppContent,
 	StatusDot,
+	Badge,
 	DashboardIcon,
 	ShieldIcon,
 	BookOpenIcon,
@@ -151,7 +152,7 @@ const DOT_TONES = {
 // The slim sticky bar above the content column: the page title on the left,
 // the always-visible safety-status pill on the right. The pill is a real
 // button — it jumps to Settings, where the controls it reflects live.
-function TopBar( { tab, tier, paused, onNavigate, notices } ) {
+function TopBar( { tab, tier, paused, rehearsal, onNavigate, notices } ) {
 	const t = TABS.find( ( x ) => x.name === tab );
 	const level = levelFor( tier );
 	let tone = level.key === 'read' ? 'safe' : 'active';
@@ -180,6 +181,11 @@ function TopBar( { tab, tier, paused, onNavigate, notices } ) {
 						<span>
 							{ paused ? __( 'Paused', 'saddle' ) : level.title }
 						</span>
+						{ rehearsal && ! paused && (
+							<Badge tone="info">
+								{ __( 'Rehearsal', 'saddle' ) }
+							</Badge>
+						) }
 					</button>
 				</Tooltip>
 			</div>
@@ -275,6 +281,7 @@ export default function App() {
 	const [ clients, setClients ] = useState( [] );
 	const [ onboarded, setOnboarded ] = useState( true );
 	const [ paused, setPaused ] = useState( false );
+	const [ rehearsal, setRehearsal ] = useState( false );
 	const [ pausing, setPausing ] = useState( false );
 	const [ domainWarning, setDomainWarning ] = useState( false );
 	const [ loading, setLoading ] = useState( true );
@@ -417,6 +424,7 @@ export default function App() {
 			api( 'preferences' ).then( ( res ) => {
 				setOnboarded( !! res.onboarded );
 				setPaused( !! res.paused );
+				setRehearsal( !! res.rehearsal );
 				setDomainWarning( !! res.domain_warning );
 			} ),
 		] )
@@ -541,6 +549,7 @@ export default function App() {
 						tab={ tab }
 						tier={ tier }
 						paused={ paused }
+						rehearsal={ rehearsal }
 						onNavigate={ setTab }
 						notices={ ! wizardOpen }
 					/>
@@ -591,6 +600,7 @@ export default function App() {
 										savedTier={ tier }
 										onTierSaved={ handleTierSaved }
 										onCapsChanged={ loadCaps }
+										onRehearsalChanged={ setRehearsal }
 									/>
 								) }
 								{ tab === 'guidance' && <Guidance /> }

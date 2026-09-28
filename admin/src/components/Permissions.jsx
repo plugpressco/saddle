@@ -56,6 +56,7 @@ export default function Permissions( {
 	savedTier,
 	onTierSaved,
 	onCapsChanged,
+	onRehearsalChanged,
 } ) {
 	const [ choice, setChoice ] = useState( levelKey( savedTier ) );
 	const [ saving, setSaving ] = useState( false );
@@ -88,12 +89,35 @@ export default function Permissions( {
 	// switches — it isn't part of the level/tools ApplyBar below.
 	const [ draftsOnly, setDraftsOnly ] = useState( false );
 	const [ savingDraftsOnly, setSavingDraftsOnly ] = useState( false );
+	// Rehearsal: the same save-on-toggle switch. The top bar shows it too, so
+	// the new value is handed up as well.
+	const [ rehearsal, setRehearsal ] = useState( false );
+	const [ savingRehearsal, setSavingRehearsal ] = useState( false );
 
 	useEffect( () => {
 		api( 'preferences' )
-			.then( ( res ) => setDraftsOnly( !! res.drafts_only ) )
+			.then( ( res ) => {
+				setDraftsOnly( !! res.drafts_only );
+				setRehearsal( !! res.rehearsal );
+			} )
 			.catch( () => setDraftsOnly( false ) );
 	}, [] );
+
+	const toggleRehearsal = () => {
+		const next = ! rehearsal;
+		setSavingRehearsal( true );
+		api( 'preferences', { method: 'POST', data: { rehearsal: next } } )
+			.then( ( res ) => {
+				setRehearsal( !! res.rehearsal );
+				if ( onRehearsalChanged ) {
+					onRehearsalChanged( !! res.rehearsal );
+				}
+			} )
+			.catch( () =>
+				toast.error( __( 'Could not save that setting.', 'saddle' ) )
+			)
+			.finally( () => setSavingRehearsal( false ) );
+	};
 
 	const toggleDraftsOnly = () => {
 		const next = ! draftsOnly;
@@ -256,6 +280,44 @@ export default function Permissions( {
 					description: lvl.short,
 				} ) ) }
 			/>
+
+			<Card>
+				<CardHeader
+					title={ __( 'Rehearsal', 'saddle' ) }
+					description={ __(
+						'Apps can try anything their level allows, and nothing is saved. Each tool that would change the site answers with what it would have done instead, and the attempt shows in Activity as rehearsed. Reading works as usual.',
+						'saddle'
+					) }
+				/>
+				<CardContent>
+					<label
+						className="saddle-toggle-row"
+						htmlFor="saddle-rehearsal-switch"
+					>
+						<Switch
+							id="saddle-rehearsal-switch"
+							checked={ rehearsal }
+							disabled={ savingRehearsal }
+							onChange={ toggleRehearsal }
+							aria-label={ __(
+								'Rehearse changes without saving them',
+								'saddle'
+							) }
+						/>
+						<span>
+							{ rehearsal
+								? __(
+										'On — apps rehearse; nothing they do is saved.',
+										'saddle'
+								  )
+								: __(
+										'Off — changes an app makes are saved.',
+										'saddle'
+								  ) }
+						</span>
+					</label>
+				</CardContent>
+			</Card>
 
 			<Card>
 				<CardHeader

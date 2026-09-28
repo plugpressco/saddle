@@ -20,6 +20,13 @@ class Saddle_Log {
 	const CPT = 'saddle_log';
 
 	/**
+	 * Entry types that record an attempt, not a change: a refusal, or a write
+	 * answered in rehearsal mode. They share the smaller retention cap and
+	 * never appear as changes, to the owner or to the agent.
+	 */
+	const NOT_CHANGES = array( 'denied', 'rehearsed' );
+
+	/**
 	 * Register the log CPT. Hidden from every UI and export.
 	 */
 	public static function register_cpt() {
@@ -51,7 +58,9 @@ class Saddle_Log {
 	 *     @type string $action  Short action key, e.g. 'create-post', 'delete-post'.
 	 *     @type string $summary Human-readable one-line description.
 	 *     @type string $target  Target identifier (e.g. post id). Optional.
-	 *     @type string $type    'executed' (a mutation that happened) or 'denied'
+	 *     @type string $type    'executed' (a mutation that happened), 'rehearsed'
+	 *                           (a write answered in rehearsal mode, nothing
+	 *                           saved) or 'denied'
 	 *                           (an attempt that was refused). Default 'executed'.
 	 * }
 	 */
@@ -59,7 +68,7 @@ class Saddle_Log {
 		$summary = isset( $args['summary'] ) ? (string) $args['summary'] : '';
 		$action  = isset( $args['action'] ) ? (string) $args['action'] : '';
 		$target  = isset( $args['target'] ) ? (string) $args['target'] : '';
-		$type    = ( isset( $args['type'] ) && 'denied' === $args['type'] ) ? 'denied' : 'executed';
+		$type    = ( isset( $args['type'] ) && in_array( $args['type'], self::NOT_CHANGES, true ) ) ? $args['type'] : 'executed';
 
 		if ( '' === $summary && '' === $action ) {
 			return;
@@ -118,7 +127,7 @@ class Saddle_Log {
 	 *
 	 * @param int    $per_page Entries per page (1–100).
 	 * @param int    $page     Page number.
-	 * @param string $type     Optional filter: 'executed' | 'denied' | '' (all).
+	 * @param string $type     Optional filter: 'executed' | 'denied' | 'rehearsed' | '' (all).
 	 * @return array{entries:array[],total:int,total_pages:int,page:int}
 	 */
 	public static function query( $per_page = 20, $page = 1, $type = '' ) {
@@ -136,11 +145,11 @@ class Saddle_Log {
 
 		// Optional type filter. Entries predating the type meta are executed
 		// mutations, so "executed" must also match rows with no meta at all.
-		if ( 'denied' === $type ) {
+		if ( in_array( $type, self::NOT_CHANGES, true ) ) {
 			$args['meta_query'] = array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Bounded private CPT (GC'd at 1000 rows).
 				array(
 					'key'   => '_saddle_type',
-					'value' => 'denied',
+					'value' => $type,
 				),
 			);
 		} elseif ( 'executed' === $type ) {
@@ -152,8 +161,8 @@ class Saddle_Log {
 				),
 				array(
 					'key'     => '_saddle_type',
-					'value'   => 'denied',
-					'compare' => '!=',
+					'value'   => self::NOT_CHANGES,
+					'compare' => 'NOT IN',
 				),
 			);
 		}
@@ -171,7 +180,7 @@ class Saddle_Log {
 				'summary' => $post->post_title,
 				'user'    => $user ? $user->user_login : '',
 				// Entries predating the type field are executed mutations.
-				'type'    => ( 'denied' === $type ) ? 'denied' : 'executed',
+				'type'    => in_array( $type, self::NOT_CHANGES, true ) ? $type : 'executed',
 			);
 		}
 
@@ -219,8 +228,8 @@ class Saddle_Log {
 					),
 					array(
 						'key'     => '_saddle_type',
-						'value'   => 'denied',
-						'compare' => '!=',
+						'value'   => self::NOT_CHANGES,
+						'compare' => 'NOT IN',
 					),
 				),
 				'no_found_rows'  => true,
@@ -326,7 +335,8 @@ class Saddle_Log {
 	 * Delete one bucket's entries beyond its cap, oldest first.
 	 *
 	 * @param int  $max    Entries to retain; below 1 the bucket is left alone.
-	 * @param bool $denied True to trim denial entries, false for executed ones.
+	 * @param bool $denied True to trim attempts (denied and rehearsed entries),
+	 *                     false for executed ones.
 	 */
 	private static function trim( $max, $denied ) {
 		if ( $max < 1 ) {
@@ -346,8 +356,9 @@ class Saddle_Log {
 				'meta_query'     => $denied // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Bounded private CPT; the type filter is the point of the split caps.
 					? array(
 						array(
-							'key'   => '_saddle_type',
-							'value' => 'denied',
+							'key'     => '_saddle_type',
+							'value'   => self::NOT_CHANGES,
+							'compare' => 'IN',
 						),
 					)
 					: array(
@@ -358,8 +369,8 @@ class Saddle_Log {
 						),
 						array(
 							'key'     => '_saddle_type',
-							'value'   => 'denied',
-							'compare' => '!=',
+							'value'   => self::NOT_CHANGES,
+							'compare' => 'NOT IN',
 						),
 					),
 			)
