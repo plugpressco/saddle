@@ -68,7 +68,10 @@ class Saddle_Lint_Abilities {
 			return $accessor;
 		}
 
-		$violations = Saddle_Lint::run( Saddle_Tree::parse( $post->post_content ), $accessor );
+		$violations = array_merge(
+			Saddle_Lint::post_findings( $post ),
+			Saddle_Lint::run( Saddle_Tree::parse( $post->post_content ), $accessor )
+		);
 
 		$errors = 0;
 		foreach ( $violations as $violation ) {

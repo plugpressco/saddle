@@ -23,6 +23,9 @@ defined( 'ABSPATH' ) || exit;
  */
 class Saddle_Lint {
 
+	/** Characters of a title search results show before cutting it off. */
+	const TITLE_MAX = 60;
+
 	/**
 	 * Lint a block tree.
 	 *
@@ -68,6 +71,47 @@ class Saddle_Lint {
 	}
 
 	/**
+	 * Findings about the post itself rather than a block (#183): a search
+	 * title long enough to be cut off, and a published post with no excerpt.
+	 * Address '' — they belong to the page, not to a node. Warnings: an SEO
+	 * plugin's own title and description may already cover both.
+	 *
+	 * @param WP_Post $post The post being linted.
+	 * @return array[] Violations in run()'s shape.
+	 */
+	public static function post_findings( WP_Post $post ) {
+		$violations = array();
+		$title      = trim( wp_strip_all_tags( (string) $post->post_title ) );
+
+		if ( mb_strlen( $title ) > self::TITLE_MAX ) {
+			$violations[] = array(
+				'address'  => '',
+				'rule'     => 'long-title',
+				'severity' => Saddle_Lint_Rule::SEVERITY_WARN,
+				'message'  => sprintf(
+					/* translators: 1: title length, 2: limit. */
+					__( 'The title is %1$d characters; search results cut titles off at about %2$d.', 'saddle' ),
+					mb_strlen( $title ),
+					self::TITLE_MAX
+				),
+				'fix_hint' => __( 'Shorten the title, or set a shorter SEO title in the site\'s SEO plugin.', 'saddle' ),
+			);
+		}
+
+		if ( 'post' === $post->post_type && 'publish' === $post->post_status && '' === trim( (string) $post->post_excerpt ) ) {
+			$violations[] = array(
+				'address'  => '',
+				'rule'     => 'missing-excerpt',
+				'severity' => Saddle_Lint_Rule::SEVERITY_WARN,
+				'message'  => __( 'This published post has no excerpt, so archives and some social cards show its first words instead of a summary.', 'saddle' ),
+				'fix_hint' => __( 'Write a one- or two-sentence excerpt with update-post, or a meta description in the SEO plugin.', 'saddle' ),
+			);
+		}
+
+		return $violations;
+	}
+
+	/**
 	 * The built-in rule set.
 	 *
 	 * @param Saddle_Lint_Accessor|null $accessor The accessor about to be used.
@@ -89,6 +133,7 @@ class Saddle_Lint {
 			new Saddle_Lint_Rule_Text_Contrast(),
 			new Saddle_Lint_Rule_Missing_Alt(),
 			new Saddle_Lint_Rule_Heading_Order(),
+			new Saddle_Lint_Rule_Link_Text(),
 		);
 
 		// Divi 5 composition rules — only on pages linted through the Divi
