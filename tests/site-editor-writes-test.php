@@ -203,8 +203,11 @@ class Saddle_Site_Editor_Writes_Test extends WP_UnitTestCase {
 			)
 		);
 
+		// A known classic theme: a fresh WordPress (as in CI) ships only block
+		// themes, so "the previous theme" can't be trusted to be classic.
 		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
-		switch_theme( $this->previous_theme );
+		switch_theme( 'saddle-classic-fixture' );
+		$this->assertFalse( wp_is_block_theme() );
 		$classic = $this->run_ability( 'create-template-part', $input );
 		$this->assertWPError( $classic );
 		$this->assertSame( 'saddle_not_block_theme', $classic->get_error_code() );
