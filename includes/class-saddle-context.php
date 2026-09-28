@@ -120,6 +120,10 @@ class Saddle_Context {
 		$lines[] = '- ' . __( 'Saddle exposes core content only: posts, pages, media, and their block structure.', 'saddle' );
 		$lines[] = '- ' . __( 'Stay within the tools Saddle provides. Do not attempt actions outside this scope.', 'saddle' );
 
+		if ( 'read' !== $tier && Saddle_Capabilities::is_rehearsal() ) {
+			$lines[] = '- ' . __( 'REHEARSAL MODE IS ON. Every tool that would change the site answers with what it would have done and saves nothing; read tools work normally. Tell the user what you would change instead of retrying. The site owner turns rehearsal off in Saddle → Permissions when they want changes to land.', 'saddle' );
+		}
+
 		if ( 'read' !== $tier && Saddle_Capabilities::is_drafts_only() ) {
 			$lines[] = '- ' . __( 'This site is set to drafts-only: publishing or scheduling a new post or page saves a draft instead. Publishing or scheduling an existing item requires a preview and confirmation. Edits to already-published content remain live.', 'saddle' );
 		}

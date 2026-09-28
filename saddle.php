@@ -106,6 +106,7 @@ require_once SADDLE_DIR . 'includes/class-saddle-playbook.php';
 require_once SADDLE_DIR . 'includes/class-saddle-skills.php';
 require_once SADDLE_DIR . 'includes/class-saddle-memory.php';
 require_once SADDLE_DIR . 'includes/class-saddle-log.php';
+require_once SADDLE_DIR . 'includes/class-saddle-rehearsal.php';
 require_once SADDLE_DIR . 'includes/class-saddle-update-runner.php';
 require_once SADDLE_DIR . 'includes/class-saddle-unsplash.php';
 require_once SADDLE_DIR . 'includes/class-saddle-connection.php';
@@ -255,6 +256,10 @@ final class Saddle {
 		// queued by update-plugin / update-theme fires even when the abilities
 		// themselves are not loaded on that request.
 		Saddle_Update_Runner::init();
+
+		// Rehearsal mode wraps every write tool at registration, so it has to
+		// be hooked before wp_abilities_api_init fires.
+		Saddle_Rehearsal::init();
 
 		// The MCP surface and abilities require core's Abilities API (WP 6.9+).
 		if ( self::abilities_api_available() ) {
