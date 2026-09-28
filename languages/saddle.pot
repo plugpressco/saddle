@@ -3,13 +3,13 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Saddle 1.4.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/_saddle-247\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/saddle\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-27T22:08:48+00:00\n"
+"POT-Creation-Date: 2026-09-28T23:11:42+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -25,6 +25,7 @@ msgid "Saddle"
 msgstr ""
 
 #. Plugin URI of the plugin
+#. Author URI of the plugin
 #: saddle.php
 msgid "https://saddle.to"
 msgstr ""
@@ -39,11 +40,6 @@ msgstr ""
 #: admin/build/index.js:29
 #: admin/src/components/Integrations.jsx:30
 msgid "PlugPress"
-msgstr ""
-
-#. Author URI of the plugin
-#: saddle.php
-msgid "https://plugpress.io/"
 msgstr ""
 
 #: includes/abilities/aioseo.php:31
@@ -441,7 +437,7 @@ msgid "Seed a starter design system: 6 brand colors (one accent), a 6-step type 
 msgstr ""
 
 #: includes/abilities/blocks.php:672
-#: includes/abilities/site-editor.php:290
+#: includes/abilities/site-editor.php:291
 msgid "This WordPress does not expose theme.json data."
 msgstr ""
 
@@ -933,6 +929,7 @@ msgid "Filter by post status."
 msgstr ""
 
 #: includes/abilities/core-content.php:768
+#: includes/abilities/site-editor-writes.php:41
 msgid "The single-use token returned by the preview call. Omit on the first call to receive a preview."
 msgstr ""
 
@@ -2267,95 +2264,199 @@ msgstr ""
 msgid "Open and screenshot this in YOUR browser — it renders the current saved layout (drafts included) on the site's own front end, is noindex, opens only this post, and expires. Do not share it."
 msgstr ""
 
-#: includes/abilities/site-editor.php:32
-msgid "List templates and parts"
+#: includes/abilities/site-editor-writes.php:29
+msgid "The blocks, authored like saddle/set-blocks: each {\"type\",\"content\",\"attrs\",\"children\"}."
+msgstr ""
+
+#: includes/abilities/site-editor-writes.php:37
+msgid "Instead of \"nodes\": serialized block markup, for example an edited copy of what get-template returned."
+msgstr ""
+
+#: includes/abilities/site-editor-writes.php:47
+msgid "Set a template"
+msgstr ""
+
+#: includes/abilities/site-editor-writes.php:48
+msgid "Replaces the blocks of a template or template part (the header, the footer, the single-post template…) on a block theme. Pass the id from list-templates, its type, and \"nodes\" or \"content\". The change is saved in the database as the owner's customisation; the theme's file is never touched, and the Site Editor can reset to it. Overwriting an existing template changes every page that uses it, so the first call returns a preview with the lines that change and a confirm_token; call again with the token to save. A template id for this theme that doesn't exist yet is created without a preview."
+msgstr ""
+
+#: includes/abilities/site-editor-writes.php:56
+msgid "The template id, e.g. \"twentytwentyfive//header\"."
+msgstr ""
+
+#: includes/abilities/site-editor-writes.php:77
+msgid "Create a template part"
+msgstr ""
+
+#: includes/abilities/site-editor-writes.php:78
+msgid "Creates a new template part on a block theme, such as a second footer or a call-to-action strip, saved in the database. Give a slug, a title, its area (header, footer or uncategorized) and \"nodes\" or \"content\". Use it in a template with a core/template-part block whose \"slug\" is this slug. To change an existing part, use saddle/set-template."
+msgstr ""
+
+#: includes/abilities/site-editor-writes.php:104
+msgid "Save a pattern"
+msgstr ""
+
+#: includes/abilities/site-editor-writes.php:105
+msgid "Saves blocks as a pattern in the owner's pattern library, so the section can be inserted again from the block inserter or with saddle/insert-block-pattern. Take the blocks from a page (\"post_id\" and the \"address\" of the block to save, with everything inside it) or pass \"nodes\" or \"content\". Unsynced (the default) inserts a copy each time; synced means editing the pattern changes it everywhere it is used."
+msgstr ""
+
+#: includes/abilities/site-editor-writes.php:119
+msgid "A page or post to take the blocks from, with \"address\"."
+msgstr ""
+
+#: includes/abilities/site-editor-writes.php:123
+msgid "The address of the block to save, from get-blocks."
+msgstr ""
+
+#. translators: 1: template title, 2: template id.
+#: includes/abilities/site-editor-writes.php:180
+#, php-format
+msgid "Replace the blocks of “%1$s” (%2$s). Every page that uses it changes. The theme's file is not touched, and the Site Editor can reset to it."
+msgstr ""
+
+#: includes/abilities/site-editor-writes.php:213
+msgid "Pass a \"slug\" for the new part."
+msgstr ""
+
+#: includes/abilities/site-editor-writes.php:216
+msgid "A template part with that slug already exists. Change it with saddle/set-template (type \"part\") instead."
+msgstr ""
+
+#. translators: 1: part title, 2: part id.
+#: includes/abilities/site-editor-writes.php:241
+#, php-format
+msgid "Created the template part “%1$s” (%2$s)."
+msgstr ""
+
+#: includes/abilities/site-editor-writes.php:256
+msgid "Pass a \"title\" for the pattern."
+msgstr ""
+
+#: includes/abilities/site-editor-writes.php:259
+msgid "This WordPress account may not create patterns."
+msgstr ""
+
+#. translators: 1: pattern title, 2: pattern id.
+#: includes/abilities/site-editor-writes.php:288
+#, php-format
+msgid "Saved the pattern “%1$s” (#%2$d)."
+msgstr ""
+
+#: includes/abilities/site-editor-writes.php:294
+msgid "It is in the block inserter under Patterns → My patterns. Insert it with saddle/insert-block-pattern."
+msgstr ""
+
+#: includes/abilities/site-editor-writes.php:315
+msgid "No template with that id. Call list-templates for the ids this site has; a new one must be \"<active theme>//<slug>\"."
+msgstr ""
+
+#. translators: %s: template id.
+#: includes/abilities/site-editor-writes.php:332
+#, php-format
+msgid "Created the template %s."
+msgstr ""
+
+#: includes/abilities/site-editor-writes.php:355
+msgid "No block at that address. Read the page with get-blocks."
+msgstr ""
+
+#: includes/abilities/site-editor-writes.php:377
+msgid "Pass the blocks as \"nodes\" or as block markup in \"content\"."
+msgstr ""
+
+#: includes/abilities/site-editor-writes.php:451
+msgid "This site does not use a block theme, so it has no block templates or template parts to change. Its header and footer live in the theme's PHP files, which Saddle does not edit."
 msgstr ""
 
 #: includes/abilities/site-editor.php:33
+msgid "List templates and parts"
+msgstr ""
+
+#: includes/abilities/site-editor.php:34
 msgid "Lists this site's block templates (page, single, archive, 404, …) and template parts (header, footer, sidebar). Read-only. Each entry gives the id to pass to get-template, its title, and whether it is still the theme's original file or has been customised by the owner. Use this to find the header or footer before reading it — a page is not the whole site, and matching a site means looking at what wraps every page. Block themes only."
 msgstr ""
 
-#: includes/abilities/site-editor.php:43
+#: includes/abilities/site-editor.php:44
 msgid "Which to list: \"template\" for page templates, \"part\" for header/footer parts, \"both\" (default)."
 msgstr ""
 
-#: includes/abilities/site-editor.php:47
+#: includes/abilities/site-editor.php:48
 msgid "Optional keyword filter on slug and title."
 msgstr ""
 
-#: includes/abilities/site-editor.php:60
+#: includes/abilities/site-editor.php:61
 msgid "Get a template"
 msgstr ""
 
-#: includes/abilities/site-editor.php:61
+#: includes/abilities/site-editor.php:62
 msgid "Returns one template or template part as an addressable node list — the same shape get-blocks returns for a post, so addresses mean the same thing. Read-only. Read the header part before you design a page and you will know what sits above your content: the site title, the navigation, the spacing it already uses. Pass an id from list-templates (for example \"twentytwentyfive//header\")."
 msgstr ""
 
-#: includes/abilities/site-editor.php:69
+#: includes/abilities/site-editor.php:70
 msgid "The template id from list-templates, e.g. \"twentytwentyfive//header\"."
 msgstr ""
 
-#: includes/abilities/site-editor.php:75
+#: includes/abilities/site-editor.php:76
 msgid "Whether the id is a page template or a template part. Defaults to \"template\"."
 msgstr ""
 
-#: includes/abilities/site-editor.php:88
+#: includes/abilities/site-editor.php:89
 msgid "Get global styles"
 msgstr ""
 
-#: includes/abilities/site-editor.php:89
+#: includes/abilities/site-editor.php:90
 msgid "Returns the design choices the OWNER has made in Appearance → Editor → Styles: their palette, font sizes and spacing, separate from what the theme ships. Read-only. get-design-system shows you the merged result and is what you should build against; this shows you which parts of it are the owner's own decisions, which is what you need before changing any of them. Block themes only."
 msgstr ""
 
-#: includes/abilities/site-editor.php:105
+#: includes/abilities/site-editor.php:106
 msgid "List saved patterns"
 msgstr ""
 
-#: includes/abilities/site-editor.php:106
+#: includes/abilities/site-editor.php:107
 msgid "Lists the patterns the owner has saved on this site, with the id to read them and whether each is synced (edit once, changes everywhere) or unsynced (a starting point that is copied on insert). Read-only. These are the site's own building blocks — reuse one instead of composing a section from scratch. For the theme's bundled patterns, use list-block-patterns instead."
 msgstr ""
 
-#: includes/abilities/site-editor.php:114
+#: includes/abilities/site-editor.php:115
 msgid "Optional keyword filter on the pattern title."
 msgstr ""
 
-#: includes/abilities/site-editor.php:140
+#: includes/abilities/site-editor.php:141
 msgid "This site does not use a block theme, so it has no block templates or template parts. Its header and footer live in the theme's PHP files, which Saddle does not edit."
 msgstr ""
 
-#: includes/abilities/site-editor.php:203
+#: includes/abilities/site-editor.php:204
 msgid "type must be \"template\", \"part\", or \"both\"."
 msgstr ""
 
-#: includes/abilities/site-editor.php:222
+#: includes/abilities/site-editor.php:223
 msgid "Read one with get-template, passing its id and type. \"customized\": true means the owner has already changed it from the theme default."
 msgstr ""
 
-#: includes/abilities/site-editor.php:242
+#: includes/abilities/site-editor.php:243
 msgid "Pass the template id from list-templates."
 msgstr ""
 
-#: includes/abilities/site-editor.php:251
+#: includes/abilities/site-editor.php:252
 msgid "No template with that id. Call list-templates to see the ids this site actually has, and check whether it is a \"template\" or a \"part\"."
 msgstr ""
 
-#: includes/abilities/site-editor.php:270
+#: includes/abilities/site-editor.php:271
 msgid "Some blocks report placement violations. In a template that is often legitimate — template-only blocks declare constraints that only hold inside a template — so read the violations before treating this as broken."
 msgstr ""
 
-#: includes/abilities/site-editor.php:314
+#: includes/abilities/site-editor.php:315
 msgid "These are the owner's own choices, layered over the theme's defaults."
 msgstr ""
 
-#: includes/abilities/site-editor.php:315
+#: includes/abilities/site-editor.php:316
 msgid "The owner has not customised anything yet — this site is running the theme's own design as shipped."
 msgstr ""
 
-#: includes/abilities/site-editor.php:316
+#: includes/abilities/site-editor.php:317
 msgid "Build against get-design-system, which is the merged result of theme plus these. Read this one when you need to know which values the owner chose deliberately, for example before proposing a change to them."
 msgstr ""
 
-#: includes/abilities/site-editor.php:357
+#: includes/abilities/site-editor.php:358
 msgid "Synced patterns update everywhere when edited; unsynced ones are copied into the page and then live their own life. These are the owner's saved patterns — for the theme's bundled ones, use list-block-patterns."
 msgstr ""
 
@@ -5598,7 +5699,7 @@ msgid "This persisted attribute does nothing — rewrite it on a path the block 
 msgstr ""
 
 #. translators: %s: minimum WordPress version.
-#: saddle.php:452
+#: saddle.php:454
 #, php-format
 msgid "Saddle requires WordPress %s or later (the core Abilities API). The MCP server is disabled until you upgrade."
 msgstr ""

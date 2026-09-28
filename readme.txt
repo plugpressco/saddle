@@ -47,6 +47,7 @@ Saddle works with Claude and Claude Code, ChatGPT, Cursor, VS Code, Codex, Gemin
 * Theme styles: Use your theme's colors, fonts, spacing and patterns.
 * Templates: Read your theme's templates, template parts and global styles.
 * Design system: Add a color palette, type scale and spacing to a block theme.
+* Templates and patterns: On a block theme, change a template or the header and footer, add a template part, and save a section as a pattern. Changes are saved in the database and the theme's files are never edited.
 
 = Divi 5 pages =
 
@@ -197,6 +198,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 = Unreleased =
 * Improved: Connecting an app now takes one address. Turn on sign-in for apps once, paste the address into Claude, Claude Code, ChatGPT, Codex, Cursor, VS Code, Gemini CLI or Windsurf, and approve the connection when your browser opens. No key to copy and nothing to install. Pasted keys still work and stay the fallback for sites without HTTPS or pretty permalinks.
 * New: Claude on the web and in the desktop app connects as a custom connector, with no bridge to install. Windsurf joins the app list.
+* New: Templates, parts and patterns on block themes. Your AI app can replace a template or the header or footer after a preview of what changes, create a new template part, and save a section of a page as a pattern. Everything is saved in the database; the theme's files are never edited, and the Site Editor can reset a template to the theme's version.
 * New: Your AI app can apply plugin and theme updates that WordPress is already offering. It previews every item first and waits for your approval, then WordPress's own updater runs the update in the background, keeps a backup, and restores an active plugin that causes a fatal error. It can also turn WordPress's automatic updates on or off per plugin or theme, and read the Site Health checks. Saddle never installs or deletes a plugin and never updates WordPress itself.
 * New: Saddle Analytics, PlugPress's analytics plugin, counts as a PlugPress integration. Its read-only traffic tools work as soon as it is active, with no switch to turn on.
 * New: Saddle Rank, the new name for PlugPress's Waggle, is trusted like Waggle was: its tools reach your AI app as the saddle-rank tools with nothing to approve, and any Waggle tool you had switched off stays off after the rename.
