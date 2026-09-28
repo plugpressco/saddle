@@ -21,6 +21,7 @@ import {
 	APPS,
 	buildConfig,
 	buildGuideConfig,
+	installLinks,
 	MCP_URL,
 	HELLO_PROMPT,
 	howFor,
@@ -46,6 +47,10 @@ export default function SetupGuideDrawer( {
 	} else {
 		config = buildGuideConfig( meta.key, 'key' );
 	}
+	// Only a real setup gets install links; placeholder mode has no key.
+	const links = live
+		? installLinks( meta.key, password, byAddress ? 'address' : 'key' )
+		: [];
 
 	return (
 		<Drawer
@@ -121,6 +126,15 @@ export default function SetupGuideDrawer( {
 								: __( 'Copy setup', 'saddle' ) }
 						</Button>
 					) }
+					{ links.map( ( link ) => (
+						<Button
+							key={ link.key }
+							variant="secondary"
+							href={ link.href }
+						>
+							{ link.label }
+						</Button>
+					) ) }
 					<Snippet
 						label={ __( 'Endpoint', 'saddle' ) }
 						value={ MCP_URL }

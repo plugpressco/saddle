@@ -74,13 +74,20 @@ own.
 **Codex** — paste the block into `~/.codex/config.toml`, then run
 `codex mcp login <name>` in a terminal. Codex opens your browser.
 
-**Cursor** — Settings → MCP → Add new server, paste the block (or save it as
-`.cursor/mcp.json`). Cursor shows a **Needs login** button next to the server;
-click it.
+**Cursor** — click **Add to Cursor**: Cursor opens with the server filled in
+and asks you to confirm. Or paste the block in Settings → MCP → Add new server
+(or save it as `.cursor/mcp.json`). Cursor shows a **Needs login** button next
+to the server; click it.
 
-**VS Code (Copilot agent mode)** — save the block as `.vscode/mcp.json`, then
-start the server from the **MCP: List Servers** command. VS Code opens your
-browser.
+**VS Code (Copilot agent mode)** — click **Add to VS Code** (or **Add to VS Code
+Insiders**): VS Code opens with the server filled in and asks you to confirm.
+Or save the block as `.vscode/mcp.json` and start the server from the
+**MCP: List Servers** command. VS Code opens your browser.
+
+The install buttons are links the page builds itself from the same setup the
+copy block shows. Nothing is fetched and nothing goes through a server: the
+link only tells the app on your computer what to add. On the key path the
+button carries the fresh key, exactly as the copy block does.
 
 **Gemini CLI** — one command, same user-scope reasoning as Claude Code. The
 first time Gemini uses the server it opens your browser.
