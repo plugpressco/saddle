@@ -110,6 +110,7 @@ require_once SADDLE_DIR . 'includes/class-saddle-journal.php';
 require_once SADDLE_DIR . 'includes/class-saddle-undo.php';
 require_once SADDLE_DIR . 'includes/class-saddle-undo-steps.php';
 require_once SADDLE_DIR . 'includes/class-saddle-rehearsal.php';
+require_once SADDLE_DIR . 'includes/class-saddle-post-types.php';
 require_once SADDLE_DIR . 'includes/class-saddle-update-runner.php';
 require_once SADDLE_DIR . 'includes/class-saddle-unsplash.php';
 require_once SADDLE_DIR . 'includes/class-saddle-connection.php';
