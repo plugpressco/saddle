@@ -282,6 +282,7 @@ final class Saddle {
 			require_once SADDLE_DIR . 'includes/abilities/verify.php';
 			require_once SADDLE_DIR . 'includes/abilities/memory.php';
 			require_once SADDLE_DIR . 'includes/abilities/undo.php';
+			require_once SADDLE_DIR . 'includes/abilities/menus.php';
 			require_once SADDLE_DIR . 'includes/abilities/unsplash.php';
 			require_once SADDLE_DIR . 'includes/abilities/yoast.php';
 			require_once SADDLE_DIR . 'includes/abilities/rank-math.php';
@@ -304,6 +305,7 @@ final class Saddle {
 			add_action( 'wp_abilities_api_init', 'saddle_register_verify_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_memory_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_undo_abilities' );
+			add_action( 'wp_abilities_api_init', 'saddle_register_menu_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_unsplash_abilities' );
 			// Native SEO and WooCommerce integrations register at 30 behind
 			// saddle_register_ability_once(): an older add-on that still
