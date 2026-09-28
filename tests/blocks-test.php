@@ -286,6 +286,75 @@ class Saddle_Blocks_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( '"dropCap":true', $content );
 	}
 
+	/**
+	 * Issue #250: edit-block with a content array on a core/list left an empty
+	 * <ul></ul> followed by the OLD items as orphaned <li> siblings. For a
+	 * list the content is the children, so the new items replace the old
+	 * ones inside the wrapper.
+	 */
+	public function test_edit_block_list_content_replaces_the_items_inside_the_wrapper() {
+		$id = $this->page();
+		$this->run_ability(
+			'set-blocks',
+			array(
+				'post_id' => $id,
+				'nodes'   => array(
+					array(
+						'type'    => 'core/list',
+						'content' => array( 'Old one', 'Old two', 'Old three' ),
+					),
+				),
+			)
+		);
+
+		$result = $this->run_ability(
+			'edit-block',
+			array(
+				'post_id' => $id,
+				'address' => '0',
+				'content' => array( 'New one', 'New two' ),
+			)
+		);
+		$this->assertNotWPError( $result );
+
+		$content = get_post( $id )->post_content;
+		$this->assertStringNotContainsString( '<ul class="wp-block-list"></ul>', $content, 'The wrapper must not close before its items.' );
+		$this->assertStringNotContainsString( 'Old one', $content, 'The old items must be replaced, not orphaned.' );
+		$this->assertMatchesRegularExpression( '#<ul class="wp-block-list"><!-- wp:list-item --><li>New one</li>.*<li>New two</li><!-- /wp:list-item --></ul>#s', $content );
+
+		$blocks = parse_blocks( $content );
+		$this->assertCount( 2, $blocks[0]['innerBlocks'] );
+	}
+
+	public function test_edit_block_attrs_only_on_a_list_keeps_the_items_inside_the_wrapper() {
+		$id = $this->page();
+		$this->run_ability(
+			'set-blocks',
+			array(
+				'post_id' => $id,
+				'nodes'   => array(
+					array(
+						'type'    => 'core/list',
+						'content' => array( 'First', 'Second' ),
+					),
+				),
+			)
+		);
+
+		$result = $this->run_ability(
+			'edit-block',
+			array(
+				'post_id' => $id,
+				'address' => '0',
+				'attrs'   => array( 'ordered' => true ),
+			)
+		);
+		$this->assertNotWPError( $result );
+
+		$content = get_post( $id )->post_content;
+		$this->assertMatchesRegularExpression( '#<ol class="wp-block-list"><!-- wp:list-item --><li>First</li>.*<li>Second</li><!-- /wp:list-item --></ol>#s', $content );
+	}
+
 	public function test_move_block_reorders_and_refuses_own_subtree() {
 		$id = $this->page();
 		$this->run_ability(
