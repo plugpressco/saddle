@@ -77,7 +77,7 @@ function saddle_register_context_abilities() {
 		'saddle/recall-changes',
 		array(
 			'label'               => __( 'Recall changes', 'saddle' ),
-			'description'         => __( 'Returns Saddle\'s log of changes connected AI apps executed on this site (newest first), beyond the short list already in your instructions. Read-only. Useful to learn what happened in earlier sessions before editing something. This is the factual activity log of what was DONE; for what past sessions chose to remember about this site, call saddle/recall instead.', 'saddle' ),
+			'description'         => __( 'Returns Saddle\'s log of changes connected AI apps executed on this site (newest first), beyond the short list already in your instructions. Read-only. Useful to learn what happened in earlier sessions before editing something. This is the factual activity log of what was DONE; for what past sessions chose to remember about this site, call saddle/recall instead. Each entry has an "id" and an "undo" state: "available" (saddle/undo-changes can try to reverse it), "undone", or "not-recorded" (nothing was kept to reverse).', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',

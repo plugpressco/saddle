@@ -594,7 +594,7 @@ class Saddle_Site_Abilities {
 				// audit trail, not just "a setting changed".
 				'summary' => sprintf(
 					/* translators: 1: option name, 2: settings page, 3: old value, 4: new value. */
-					__( 'Change "%1$s" (Settings → %2$s) from "%3$s" to "%4$s". The previous value is not recoverable.', 'saddle' ),
+					__( 'Change "%1$s" (Settings → %2$s) from "%3$s" to "%4$s".', 'saddle' ),
 					$name,
 					ucfirst( $page ),
 					self::scalarize( $current ),

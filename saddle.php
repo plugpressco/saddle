@@ -106,6 +106,9 @@ require_once SADDLE_DIR . 'includes/class-saddle-playbook.php';
 require_once SADDLE_DIR . 'includes/class-saddle-skills.php';
 require_once SADDLE_DIR . 'includes/class-saddle-memory.php';
 require_once SADDLE_DIR . 'includes/class-saddle-log.php';
+require_once SADDLE_DIR . 'includes/class-saddle-journal.php';
+require_once SADDLE_DIR . 'includes/class-saddle-undo.php';
+require_once SADDLE_DIR . 'includes/class-saddle-undo-steps.php';
 require_once SADDLE_DIR . 'includes/class-saddle-update-runner.php';
 require_once SADDLE_DIR . 'includes/class-saddle-unsplash.php';
 require_once SADDLE_DIR . 'includes/class-saddle-connection.php';
@@ -256,6 +259,10 @@ final class Saddle {
 		// themselves are not loaded on that request.
 		Saddle_Update_Runner::init();
 
+		// The change journal: records what each saddle/* tool replaces, so the
+		// log entry for that call can be undone (saddle/undo-changes).
+		Saddle_Journal::init();
+
 		// The MCP surface and abilities require core's Abilities API (WP 6.9+).
 		if ( self::abilities_api_available() ) {
 			require_once SADDLE_DIR . 'includes/abilities/core-content.php';
@@ -269,6 +276,7 @@ final class Saddle {
 			require_once SADDLE_DIR . 'includes/abilities/render.php';
 			require_once SADDLE_DIR . 'includes/abilities/verify.php';
 			require_once SADDLE_DIR . 'includes/abilities/memory.php';
+			require_once SADDLE_DIR . 'includes/abilities/undo.php';
 			require_once SADDLE_DIR . 'includes/abilities/unsplash.php';
 			require_once SADDLE_DIR . 'includes/abilities/yoast.php';
 			require_once SADDLE_DIR . 'includes/abilities/rank-math.php';
@@ -290,6 +298,7 @@ final class Saddle {
 			add_action( 'wp_abilities_api_init', 'saddle_register_render_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_verify_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_memory_abilities' );
+			add_action( 'wp_abilities_api_init', 'saddle_register_undo_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_unsplash_abilities' );
 			// Native SEO and WooCommerce integrations register at 30 behind
 			// saddle_register_ability_once(): an older add-on that still

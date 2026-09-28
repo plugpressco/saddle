@@ -101,6 +101,7 @@ These tools stay off until you choose the Managing the site level.
 * Tool switches: Turn off any single tool.
 * Pause: Block all AI requests with one switch.
 * Activity log: See every change and every blocked request.
+* Undo: Ask your AI to undo a logged change. It restores a page's earlier version, untrashes what was trashed, and puts settings back. A change that someone edited again since is left alone. Permanent deletes and plugin updates cannot be undone.
 * Protected settings: The site URL, security keys, user roles and admin email cannot be changed.
 
 Saddle never runs code from the AI. It has no shell access and does not write files.
@@ -198,6 +199,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 * Improved: Connecting an app now takes one address. Turn on sign-in for apps once, paste the address into Claude, Claude Code, ChatGPT, Codex, Cursor, VS Code, Gemini CLI or Windsurf, and approve the connection when your browser opens. No key to copy and nothing to install. Pasted keys still work and stay the fallback for sites without HTTPS or pretty permalinks.
 * New: Claude on the web and in the desktop app connects as a custom connector, with no bridge to install. Windsurf joins the app list.
 * New: Cursor and VS Code connect in one click. The connect screen shows an Add to Cursor or Add to VS Code button that opens the app with the server filled in. The copy-and-paste setup stays as the fallback.
+* New: Undo. Your AI app can reverse changes from the activity log: a page's earlier content and settings, trashed posts, created posts and tags, settings, the theme and plugin activation. It previews what comes back and waits for your approval. A change that was edited again since is skipped with the reason, and the undo can itself be undone.
 * New: Your AI app can apply plugin and theme updates that WordPress is already offering. It previews every item first and waits for your approval, then WordPress's own updater runs the update in the background, keeps a backup, and restores an active plugin that causes a fatal error. It can also turn WordPress's automatic updates on or off per plugin or theme, and read the Site Health checks. Saddle never installs or deletes a plugin and never updates WordPress itself.
 * New: Saddle Analytics, PlugPress's analytics plugin, counts as a PlugPress integration. Its read-only traffic tools work as soon as it is active, with no switch to turn on.
 * New: Saddle Rank, the new name for PlugPress's Waggle, is trusted like Waggle was: its tools reach your AI app as the saddle-rank tools with nothing to approve, and any Waggle tool you had switched off stays off after the rename.

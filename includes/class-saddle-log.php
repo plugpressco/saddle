@@ -82,6 +82,16 @@ class Saddle_Log {
 		update_post_meta( $post_id, '_saddle_action', $action );
 		update_post_meta( $post_id, '_saddle_target', $target );
 		update_post_meta( $post_id, '_saddle_type', $type );
+
+		// What this change replaced, so saddle/undo-changes can put it back.
+		// Only an executed change carries a journal; a denial changed nothing.
+		$journal = 'executed' === $type && class_exists( 'Saddle_Journal' ) ? Saddle_Journal::take() : null;
+		if ( $journal ) {
+			$json = wp_json_encode( $journal );
+			if ( $json ) {
+				update_post_meta( $post_id, Saddle_Journal::META, wp_slash( $json ) );
+			}
+		}
 	}
 
 	/**
@@ -186,7 +196,7 @@ class Saddle_Log {
 	 *
 	 * @param int $limit Maximum entries (1–50).
 	 * @param int $days  Recency window in days.
-	 * @return array[] Entries: date, action, target, summary. Newest first.
+	 * @return array[] Entries: id, date, action, target, summary, undo. Newest first.
 	 */
 	public static function recent_executed( $limit = 15, $days = 30 ) {
 		$limit = max( 1, min( 50, (int) $limit ) );
@@ -222,10 +232,12 @@ class Saddle_Log {
 		foreach ( $q->posts as $post ) {
 			$target    = (string) get_post_meta( $post->ID, '_saddle_target', true );
 			$entries[] = array(
+				'id'      => $post->ID,
 				'date'    => $post->post_date_gmt,
 				'action'  => (string) get_post_meta( $post->ID, '_saddle_action', true ),
 				'target'  => $target,
 				'summary' => $post->post_title,
+				'undo'    => class_exists( 'Saddle_Undo' ) ? Saddle_Undo::availability( $post->ID ) : 'not-recorded',
 			);
 			if ( is_numeric( $target ) ) {
 				$targets[ (int) $target ] = true;
@@ -271,7 +283,7 @@ class Saddle_Log {
 	 * @param array $entry One entry assembled by recent_executed().
 	 * @return bool
 	 */
-	private static function entry_is_visible( array $entry ) {
+	public static function entry_is_visible( array $entry ) {
 		$target = isset( $entry['target'] ) ? $entry['target'] : '';
 		if ( ! is_numeric( $target ) ) {
 			return true;
