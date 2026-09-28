@@ -35,6 +35,7 @@ Saddle works with Claude and Claude Code, ChatGPT, Cursor, VS Code, Codex, Gemin
 = Content =
 
 * Posts and pages: Create, edit and delete posts and pages.
+* Custom content types: Work with the post types your plugins and theme add, such as products, events or docs.
 * Media: Upload images from a URL and edit their details.
 * Categories and tags: Create and list categories and tags.
 * Search: Find any post, page or media item.
@@ -197,6 +198,8 @@ The WordPress.org version never checks for its own updates. The version from plu
 = Unreleased =
 * Improved: Connecting an app now takes one address. Turn on sign-in for apps once, paste the address into Claude, Claude Code, ChatGPT, Codex, Cursor, VS Code, Gemini CLI or Windsurf, and approve the connection when your browser opens. No key to copy and nothing to install. Pasted keys still work and stay the fallback for sites without HTTPS or pretty permalinks.
 * New: Claude on the web and in the desktop app connects as a custom connector, with no bridge to install. Windsurf joins the app list.
+* New: Custom content types. Your AI app can list, read, create, edit and trash items of the custom post types your plugins and theme add, such as products, events or docs, and assign their own categories. Each type keeps its own permissions. Saddle manages the types that appear in wp-admin.
+* Fixed: On a site with the trash turned off, the delete preview no longer says a post or page can be restored.
 * New: Your AI app can apply plugin and theme updates that WordPress is already offering. It previews every item first and waits for your approval, then WordPress's own updater runs the update in the background, keeps a backup, and restores an active plugin that causes a fatal error. It can also turn WordPress's automatic updates on or off per plugin or theme, and read the Site Health checks. Saddle never installs or deletes a plugin and never updates WordPress itself.
 * New: Saddle Analytics, PlugPress's analytics plugin, counts as a PlugPress integration. Its read-only traffic tools work as soon as it is active, with no switch to turn on.
 * New: Saddle Rank, the new name for PlugPress's Waggle, is trusted like Waggle was: its tools reach your AI app as the saddle-rank tools with nothing to approve, and any Waggle tool you had switched off stays off after the rename.
