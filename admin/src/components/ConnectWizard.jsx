@@ -40,6 +40,7 @@ import { AppLogo, appKeyFromLabel } from './icons';
 import {
 	APPS,
 	buildConfig,
+	installLinks,
 	MCP_URL,
 	HELLO_PROMPT,
 	howFor,
@@ -373,10 +374,13 @@ export default function ConnectWizard( {
 	}, [ step ] );
 
 	let config = '';
+	let links = [];
 	if ( activeApp && byAddress ) {
 		config = buildConfig( app, null, 'address' );
+		links = installLinks( app, null, 'address' );
 	} else if ( activeApp && cred ) {
 		config = buildConfig( app, cred.password, 'key' );
+		links = installLinks( app, cred.password, 'key' );
 	}
 
 	// The sign-in switch, as step 1 shows it: on, off-but-ready, or blocked.
@@ -683,6 +687,36 @@ export default function ConnectWizard( {
 								: __( 'Copy setup', 'saddle' ) }
 						</Button>
 					</div>
+
+					{ /* One click instead of a paste, for apps that install a
+					     server from a link. Opening a link counts as copying:
+					     the setup has left this page either way. */ }
+					{ links.length > 0 && (
+						<div className="saddle-wizard__install">
+							<p className="saddle-wizard__hint">
+								{ sprintf(
+									/* translators: %s: the app name. */
+									__(
+										'Or skip the paste: %s opens with the server filled in, and you confirm it there.',
+										'saddle'
+									),
+									activeApp.label
+								) }
+							</p>
+							<div className="saddle-wizard__actions">
+								{ links.map( ( link ) => (
+									<Button
+										key={ link.key }
+										variant="secondary"
+										href={ link.href }
+										onClick={ () => setEverCopied( true ) }
+									>
+										{ link.label }
+									</Button>
+								) ) }
+							</div>
+						</div>
+					) }
 
 					{ byAddress && activeApp.viaKey && (
 						<p className="saddle-wizard__hint">

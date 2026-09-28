@@ -392,10 +392,90 @@ export function buildConfig( app, password, mode = 'key' ) {
 	if ( ! password ) {
 		return buildGuideConfig( app, 'key' );
 	}
-	return assemble(
-		app,
-		btoa( `${ USER }:${ password.replace( WHITESPACE, '' ) }` )
-	);
+	return assemble( app, credential( password ) );
+}
+
+/**
+ * The Basic-auth credential for an Application Password.
+ *
+ * @param {string} password The raw application password.
+ * @return {string} base64("user:password"), whitespace stripped.
+ */
+function credential( password ) {
+	return btoa( `${ USER }:${ password.replace( WHITESPACE, '' ) }` );
+}
+
+/**
+ * One-click install links for apps that register an MCP server from a URL.
+ * Assembled here in the browser from the same values as the copy-paste
+ * setup, so nothing is fetched and nothing leaves the site: the link goes
+ * from this page to the app on the owner's own computer.
+ *
+ * Formats, checked against each vendor's docs on 2026-09-29:
+ * - Cursor: cursor://anysphere.cursor-deeplink/mcp/install?name=…&config=…,
+ *   where config is the base64 of the server object alone (no mcpServers
+ *   wrapper).
+ * - VS Code: vscode:mcp/install?… with the URL-encoded JSON of the server
+ *   object plus its name; vscode-insiders: for the Insiders build.
+ *
+ * Never built from a placeholder: a link that installs "PASTE-YOUR-KEY-HERE"
+ * would add a server that can only fail, so the key path needs a real key.
+ *
+ * @param {string}      app      App key from APPS.
+ * @param {string|null} password The raw application password on the key path.
+ * @param {string}      mode     'address' or 'key'.
+ * @return {Array<{key: string, label: string, href: string}>} Zero or more links.
+ */
+export function installLinks( app, password, mode = 'key' ) {
+	const byAddress = 'address' === mode;
+	if ( ! MCP_URL || ( ! byAddress && ! password ) ) {
+		return [];
+	}
+	const headers = byAddress
+		? {}
+		: {
+				headers: {
+					Authorization: `Basic ${ credential( password ) }`,
+				},
+		  };
+
+	if ( 'cursor' === app ) {
+		const config = btoa( JSON.stringify( { url: MCP_URL, ...headers } ) );
+		return [
+			{
+				key: 'cursor',
+				label: __( 'Add to Cursor', 'saddle' ),
+				href: `cursor://anysphere.cursor-deeplink/mcp/install?name=${ encodeURIComponent(
+					SLUG
+				) }&config=${ encodeURIComponent( config ) }`,
+			},
+		];
+	}
+
+	if ( 'vscode' === app ) {
+		const server = encodeURIComponent(
+			JSON.stringify( {
+				name: SLUG,
+				type: 'http',
+				url: MCP_URL,
+				...headers,
+			} )
+		);
+		return [
+			{
+				key: 'vscode',
+				label: __( 'Add to VS Code', 'saddle' ),
+				href: `vscode:mcp/install?${ server }`,
+			},
+			{
+				key: 'vscode-insiders',
+				label: __( 'Add to VS Code Insiders', 'saddle' ),
+				href: `vscode-insiders:mcp/install?${ server }`,
+			},
+		];
+	}
+
+	return [];
 }
 
 /**
