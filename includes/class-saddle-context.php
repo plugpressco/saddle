@@ -124,6 +124,10 @@ class Saddle_Context {
 			$lines[] = '- ' . __( 'This site is set to drafts-only: publishing or scheduling a new post or page saves a draft instead. Publishing or scheduling an existing item requires a preview and confirmation. Edits to already-published content remain live.', 'saddle' );
 		}
 
+		if ( 'read' !== $tier ) {
+			$lines[] = '- ' . __( 'Every change you make is recorded. If one went wrong, saddle/recall-changes lists it with an id, and saddle/undo-changes puts back what it replaced (preview first, then confirm).', 'saddle' );
+		}
+
 		foreach ( self::withheld_tools_lines() as $line ) {
 			$lines[] = $line;
 		}

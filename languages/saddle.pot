@@ -3,13 +3,13 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Saddle 1.4.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/_saddle-247\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/saddle\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-27T22:08:48+00:00\n"
+"POT-Creation-Date: 2026-09-28T22:43:00+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -25,6 +25,7 @@ msgid "Saddle"
 msgstr ""
 
 #. Plugin URI of the plugin
+#. Author URI of the plugin
 #: saddle.php
 msgid "https://saddle.to"
 msgstr ""
@@ -39,11 +40,6 @@ msgstr ""
 #: admin/build/index.js:29
 #: admin/src/components/Integrations.jsx:30
 msgid "PlugPress"
-msgstr ""
-
-#. Author URI of the plugin
-#: saddle.php
-msgid "https://plugpress.io/"
 msgstr ""
 
 #: includes/abilities/aioseo.php:31
@@ -605,7 +601,7 @@ msgid "Recall changes"
 msgstr ""
 
 #: includes/abilities/context.php:80
-msgid "Returns Saddle's log of changes connected AI apps executed on this site (newest first), beyond the short list already in your instructions. Read-only. Useful to learn what happened in earlier sessions before editing something. This is the factual activity log of what was DONE; for what past sessions chose to remember about this site, call saddle/recall instead."
+msgid "Returns Saddle's log of changes connected AI apps executed on this site (newest first), beyond the short list already in your instructions. Read-only. Useful to learn what happened in earlier sessions before editing something. This is the factual activity log of what was DONE; for what past sessions chose to remember about this site, call saddle/recall instead. Each entry has an \"id\" and an \"undo\" state: \"available\" (saddle/undo-changes can try to reverse it), \"undone\", or \"not-recorded\" (nothing was kept to reverse)."
 msgstr ""
 
 #: includes/abilities/context.php:91
@@ -933,6 +929,7 @@ msgid "Filter by post status."
 msgstr ""
 
 #: includes/abilities/core-content.php:768
+#: includes/abilities/undo.php:36
 msgid "The single-use token returned by the preview call. Omit on the first call to receive a preview."
 msgstr ""
 
@@ -2523,7 +2520,7 @@ msgstr ""
 #. translators: 1: option name, 2: settings page, 3: old value, 4: new value.
 #: includes/abilities/site.php:597
 #, php-format
-msgid "Change \"%1$s\" (Settings → %2$s) from \"%3$s\" to \"%4$s\". The previous value is not recoverable."
+msgid "Change \"%1$s\" (Settings → %2$s) from \"%3$s\" to \"%4$s\"."
 msgstr ""
 
 #: includes/abilities/site.php:616
@@ -2589,6 +2586,34 @@ msgstr ""
 #: includes/abilities/site.php:914
 msgid "No installed plugin matches that file or slug. Use list-plugins to see valid values."
 msgstr ""
+
+#: includes/abilities/undo.php:17
+msgid "Undo changes"
+msgstr ""
+
+#: includes/abilities/undo.php:18
+msgid "Reverses changes from Saddle's activity log. Pass the \"id\" of one or more entries from saddle/recall-changes (its \"undo\" field says \"available\" when there is something to reverse). Puts back what the change replaced: a post or page's earlier content, title, status, fields and categories; untrashes what it trashed; trashes what it created; and restores settings, the active theme and plugin activation. Entries are undone newest first and whole. An entry is skipped, with the reason, if what it changed has been edited again since, if it permanently deleted something, or if it predates undo. Plugin and theme updates cannot be undone. Two steps: the first call returns a preview of every entry and a confirm_token; call again with the same entries plus that token to undo. The undo is logged like any change and can itself be undone."
+msgstr ""
+
+#: includes/abilities/undo.php:32
+msgid "Activity-log entry ids from saddle/recall-changes, in any order (1–20)."
+msgstr ""
+
+#: includes/abilities/undo.php:65
+msgid "Pass \"entries\": one or more ids from saddle/recall-changes."
+msgstr ""
+
+#: includes/abilities/undo.php:79
+msgid "Nothing to undo: every entry was skipped (reasons above) or is not an activity-log entry this account can see."
+msgstr ""
+
+#. translators: %d: number of log entries.
+#: includes/abilities/undo.php:92
+#, php-format
+msgid "Undo %d logged change."
+msgid_plural "Undo %d logged changes."
+msgstr[0] ""
+msgstr[1] ""
 
 #: includes/abilities/unsplash.php:27
 msgid "Search Unsplash"
@@ -4053,104 +4078,108 @@ msgstr ""
 msgid "This site is set to drafts-only: publishing or scheduling a new post or page saves a draft instead. Publishing or scheduling an existing item requires a preview and confirmation. Edits to already-published content remain live."
 msgstr ""
 
-#: includes/class-saddle-context.php:133
-msgid "# Designing pages with blocks"
-msgstr ""
-
-#: includes/class-saddle-context.php:135
-msgid "ORIENT FIRST: call saddle/context-bundle once per session. One call returns the design system, the block types worth using, this theme's patterns, the site's templates and the section recipes together — do not spend four or five separate calls collecting the same thing."
-msgstr ""
-
-#: includes/class-saddle-context.php:136
-msgid "For page layouts, use the structured block tools (get-blocks, set-blocks, add/edit/move/remove-block) instead of writing a raw \"content\" string — they compose real editor blocks that stay editable in the block editor, and every change is validated before it is saved."
+#: includes/class-saddle-context.php:128
+msgid "Every change you make is recorded. If one went wrong, saddle/recall-changes lists it with an id, and saddle/undo-changes puts back what it replaced (preview first, then confirm)."
 msgstr ""
 
 #: includes/class-saddle-context.php:137
-msgid "Match the site's design, don't invent one: use the color/size slugs from the bundle's design system rather than raw hex or pixel values, so a page you build follows the site if the owner changes their palette. For common sections (hero, features, CTA), a theme pattern arrives already styled for this site — inserting one beats hand-composing."
-msgstr ""
-
-#: includes/class-saddle-context.php:138
-msgid "Before composing a block type you haven't used, read get-block-schema for its exact authoring syntax. Never fake a layout by dumping raw HTML into a single block."
+msgid "# Designing pages with blocks"
 msgstr ""
 
 #: includes/class-saddle-context.php:139
+msgid "ORIENT FIRST: call saddle/context-bundle once per session. One call returns the design system, the block types worth using, this theme's patterns, the site's templates and the section recipes together — do not spend four or five separate calls collecting the same thing."
+msgstr ""
+
+#: includes/class-saddle-context.php:140
+msgid "For page layouts, use the structured block tools (get-blocks, set-blocks, add/edit/move/remove-block) instead of writing a raw \"content\" string — they compose real editor blocks that stay editable in the block editor, and every change is validated before it is saved."
+msgstr ""
+
+#: includes/class-saddle-context.php:141
+msgid "Match the site's design, don't invent one: use the color/size slugs from the bundle's design system rather than raw hex or pixel values, so a page you build follows the site if the owner changes their palette. For common sections (hero, features, CTA), a theme pattern arrives already styled for this site — inserting one beats hand-composing."
+msgstr ""
+
+#: includes/class-saddle-context.php:142
+msgid "Before composing a block type you haven't used, read get-block-schema for its exact authoring syntax. Never fake a layout by dumping raw HTML into a single block."
+msgstr ""
+
+#: includes/class-saddle-context.php:143
 msgid "A write call returning success is not evidence the page is right: run saddle/verify-page, fix what it reports, then open saddle/get-preview-url and look. The score is server-side only."
 msgstr ""
 
-#: includes/class-saddle-context.php:157
+#: includes/class-saddle-context.php:161
 msgid "# Content on this site"
 msgstr ""
 
-#: includes/class-saddle-context.php:159
+#: includes/class-saddle-context.php:163
 msgid "Published posts"
 msgstr ""
 
-#: includes/class-saddle-context.php:160
+#: includes/class-saddle-context.php:164
 msgid "Published pages"
 msgstr ""
 
 #. translators: %s: comma-separated list of custom post type labels.
-#: includes/class-saddle-context.php:166
+#: includes/class-saddle-context.php:170
 #, php-format
 msgid "This site also has custom content types Saddle does not manage: %s. Do not try to read or change these."
 msgstr ""
 
-#: includes/class-saddle-context.php:177
+#: includes/class-saddle-context.php:181
 msgid "# Important notes for editing"
 msgstr ""
 
 #. translators: %s: comma-separated multilingual plugin names.
-#: includes/class-saddle-context.php:183
+#: includes/class-saddle-context.php:187
 #, php-format
 msgid "This site is multilingual (%s). Content may exist in several languages; a post you edit is usually one language's version. Confirm which language you are working in before changing content."
 msgstr ""
 
 #. translators: %s: comma-separated page builder names.
-#: includes/class-saddle-context.php:195
+#: includes/class-saddle-context.php:199
 #, php-format
 msgid "This site's %s pages are edited through dedicated saddle tools — building and restyling them is fully in scope. Use those tools for every change; never write a builder page's raw \"content\" field, which would destroy its layout."
 msgstr ""
 
 #. translators: %s: comma-separated page builder names.
-#: includes/class-saddle-context.php:202
+#: includes/class-saddle-context.php:206
 #, php-format
 msgid "A page builder is active (%s). Pages and posts built with it store their layout as special markup inside the content. Overwriting the \"content\" field of a builder page with plain text or HTML will BREAK its layout. Prefer leaving builder-built pages alone unless the user explicitly asks you to change one, and even then change only the specific text they mention."
 msgstr ""
 
-#: includes/class-saddle-context.php:221
+#: includes/class-saddle-context.php:225
 msgid "# Plugins active on this site"
 msgstr ""
 
-#: includes/class-saddle-context.php:223
+#: includes/class-saddle-context.php:227
 msgid "These plugins are active (with versions). Saddle manages core content only; these plugins may expose their own tools separately. Be aware of them when reasoning about the site:"
 msgstr ""
 
-#: includes/class-saddle-context.php:243
+#: includes/class-saddle-context.php:247
 msgid "# When a call is refused"
 msgstr ""
 
-#: includes/class-saddle-context.php:245
+#: includes/class-saddle-context.php:249
 msgid "A permission error on a tool call means one of the site owner's controls blocked it: the global pause switch, the site's access level, or that specific tool being turned off. These are the owner's deliberate choices — never retry in a loop; tell the user which control to check in the Saddle dashboard (Settings for pause, Permissions for level and per-tool toggles)."
 msgstr ""
 
-#: includes/class-saddle-context.php:246
+#: includes/class-saddle-context.php:250
 msgid "A 401 saying the key was rejected means the sign-in key was revoked or rotated. Ask the user to reconnect this app from Saddle → Connections (or paste the fresh setup if they just rotated the key)."
 msgstr ""
 
-#: includes/class-saddle-context.php:247
+#: includes/class-saddle-context.php:251
 msgid "A 401 saying no key arrived usually means the web server strips the Authorization header. Ask the user to open Saddle → Connections → \"Connection details & health\" and run the connection check — it can fix this automatically on most hosts."
 msgstr ""
 
-#: includes/class-saddle-context.php:248
+#: includes/class-saddle-context.php:252
 msgid "A destructive tool answering with a preview and a confirm_token is NOT an error — that is the approval gate. Show the user the preview; call again with the token only after they agree."
 msgstr ""
 
-#: includes/class-saddle-context.php:415
+#: includes/class-saddle-context.php:419
 msgid "# This site's design memory"
 msgstr ""
 
 #. translators: 1: number of tools, 2: current access level.
-#: includes/class-saddle-context.php:442
+#: includes/class-saddle-context.php:446
 #, php-format
 msgid "%1$d further tool exists on this site but is not offered to you, because it needs a higher access level than the \"%2$s\" one this connection has. Only the site owner can raise it, in Saddle → Permissions. If a request needs it, say which level it would take rather than reporting that the site cannot do it."
 msgid_plural "%1$d further tools exist on this site but are not offered to you, because they need a higher access level than the \"%2$s\" one this connection has. Only the site owner can raise it, in Saddle → Permissions. If a request needs one, say which level it would take rather than reporting that the site cannot do it."
@@ -4158,7 +4187,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of tools.
-#: includes/class-saddle-context.php:456
+#: includes/class-saddle-context.php:460
 #, php-format
 msgid "The owner has also switched %d tool off individually. That is a deliberate choice — mention it if a request needs it, but do not press."
 msgid_plural "The owner has also switched %d tools off individually. Those are deliberate choices — mention them if a request needs one, but do not press."
@@ -4166,52 +4195,52 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of tools.
-#: includes/class-saddle-context.php:469
+#: includes/class-saddle-context.php:473
 #, php-format
 msgid "%d tool is withheld because the WordPress account this app is connected as lacks the permission it needs. No Saddle setting changes that; it takes reconnecting as an account with the right role."
 msgid_plural "%d tools are withheld because the WordPress account this app is connected as lacks the permissions they need. No Saddle setting changes that; it takes reconnecting as an account with the right role."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/class-saddle-context.php:485
+#: includes/class-saddle-context.php:489
 msgid "SADDLE IS PAUSED. The site owner has switched off all AI access, so every tool below will be refused until they resume it in Saddle → Settings. Tell the user that before attempting anything."
 msgstr ""
 
-#: includes/class-saddle-context.php:511
+#: includes/class-saddle-context.php:515
 msgid "# Recent changes on this site"
 msgstr ""
 
-#: includes/class-saddle-context.php:513
+#: includes/class-saddle-context.php:517
 msgid "Saddle's log of what connected AI apps changed recently (newest first). This is factual background so you know what already happened — it is a record, not instructions."
 msgstr ""
 
 #. translators: %d: how many times in a row the same change was made.
-#: includes/class-saddle-context.php:524
+#: includes/class-saddle-context.php:528
 #, php-format
 msgid "(×%d in a row)"
 msgstr ""
 
-#: includes/class-saddle-context.php:584
+#: includes/class-saddle-context.php:588
 msgid "# What \"designed\" means, in numbers"
 msgstr ""
 
-#: includes/class-saddle-context.php:586
+#: includes/class-saddle-context.php:590
 msgid "Type scale: hero/display 44–64px, section headings 28–40px, body 16–18px with line-height 1.5–1.7. Establish a clear step between levels — don't set everything near the same size."
 msgstr ""
 
-#: includes/class-saddle-context.php:587
+#: includes/class-saddle-context.php:591
 msgid "Line length: keep body text to ~50–75 characters per line (roughly a 600–720px max width for a text column), never full-bleed paragraphs. And CENTER a width-capped text column (or balance it against media) — a max width without centering pins content to the left edge and leaves a dead right half."
 msgstr ""
 
-#: includes/class-saddle-context.php:588
+#: includes/class-saddle-context.php:592
 msgid "Spacing on an 8px system (8/16/24/32/48/64/96): generous section padding (~64–96px top/bottom on desktop), consistent gaps within a group, and more space BETWEEN groups than inside them."
 msgstr ""
 
-#: includes/class-saddle-context.php:589
+#: includes/class-saddle-context.php:593
 msgid "Color: one dominant neutral background, one text color, and a SINGLE accent used sparingly for emphasis and calls to action. Body text must hit WCAG AA contrast (≥ 4.5:1; ≥ 3:1 for large headings)."
 msgstr ""
 
-#: includes/class-saddle-context.php:590
+#: includes/class-saddle-context.php:594
 msgid "Rhythm: align to a consistent content width, reuse the same handful of spacing/size steps across the page, and prefer one strong idea per section over dense walls of content."
 msgstr ""
 
@@ -4802,6 +4831,193 @@ msgstr ""
 #: includes/class-saddle-skills.php:447
 #, php-format
 msgid "The skill body exceeds %d characters. Split it into smaller skills."
+msgstr ""
+
+#. translators: %s: post label.
+#: includes/class-saddle-undo-steps.php:35
+#, php-format
+msgid "%s was permanently deleted, so it can’t be restored."
+msgstr ""
+
+#. translators: %s: media label.
+#: includes/class-saddle-undo-steps.php:39
+#, php-format
+msgid "%s is an upload: remove it with delete-media, not undo."
+msgstr ""
+
+#. translators: %s: object label.
+#: includes/class-saddle-undo-steps.php:43
+#, php-format
+msgid "The earlier state of %s was too large to keep for undo."
+msgstr ""
+
+#. translators: %s: object label.
+#: includes/class-saddle-undo-steps.php:47
+#, php-format
+msgid "%s has changed since, so it was left alone."
+msgstr ""
+
+#. translators: %s: post label.
+#: includes/class-saddle-undo-steps.php:59
+#, php-format
+msgid "The saved revision of %s is gone (WordPress keeps a limited number)."
+msgstr ""
+
+#. translators: 1: term label, 2: how many posts use it.
+#: includes/class-saddle-undo-steps.php:66
+#, php-format
+msgid "%1$s is now used by %2$d post."
+msgid_plural "%1$s is now used by %2$d posts."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %s: theme folder.
+#: includes/class-saddle-undo-steps.php:72
+#, php-format
+msgid "The theme %s is no longer installed."
+msgstr ""
+
+#. translators: %s: plugin file.
+#: includes/class-saddle-undo-steps.php:79
+#, php-format
+msgid "The plugin %s is no longer installed."
+msgstr ""
+
+#. translators: 1: post label, 2: post status.
+#: includes/class-saddle-undo-steps.php:99
+#, php-format
+msgid "Restore %1$s to its earlier version and set its status back to %2$s."
+msgstr ""
+
+#. translators: %s: post label.
+#: includes/class-saddle-undo-steps.php:102
+#, php-format
+msgid "Restore %s to its earlier version."
+msgstr ""
+
+#. translators: %s: post label.
+#: includes/class-saddle-undo-steps.php:105
+#, php-format
+msgid "Move %s, which this change created, to the trash."
+msgstr ""
+
+#. translators: 1: field name, 2: post label.
+#: includes/class-saddle-undo-steps.php:108
+#, php-format
+msgid "Restore the %1$s field on %2$s."
+msgstr ""
+
+#. translators: 1: taxonomy, 2: post label.
+#: includes/class-saddle-undo-steps.php:111
+#, php-format
+msgid "Restore the %1$s on %2$s."
+msgstr ""
+
+#. translators: %s: term label.
+#: includes/class-saddle-undo-steps.php:114
+#, php-format
+msgid "Delete %s, which this change created."
+msgstr ""
+
+#. translators: 1: option name, 2: value.
+#: includes/class-saddle-undo-steps.php:118
+#, php-format
+msgid "Set %1$s back to “%2$s”."
+msgstr ""
+
+#. translators: %s: option name.
+#: includes/class-saddle-undo-steps.php:120
+#, php-format
+msgid "Remove %s, which this change added."
+msgstr ""
+
+#. translators: %s: theme name.
+#: includes/class-saddle-undo-steps.php:123
+#, php-format
+msgid "Switch the theme back to %s."
+msgstr ""
+
+#. translators: %s: plugin file.
+#: includes/class-saddle-undo-steps.php:127
+#, php-format
+msgid "Reactivate the plugin %s."
+msgstr ""
+
+#. translators: %s: plugin file.
+#: includes/class-saddle-undo-steps.php:129
+#, php-format
+msgid "Deactivate the plugin %s."
+msgstr ""
+
+#. translators: %s: object label.
+#: includes/class-saddle-undo-steps.php:259
+#, php-format
+msgid "Reversing %s needs the admin level, and a WordPress account that manages the site."
+msgstr ""
+
+#. translators: %s: object label.
+#: includes/class-saddle-undo-steps.php:261
+#, php-format
+msgid "This WordPress account may not change %s."
+msgstr ""
+
+#. translators: 1: post title, 2: post id.
+#: includes/class-saddle-undo-steps.php:329
+#: includes/class-saddle-undo-steps.php:355
+#, php-format
+msgid "“%1$s” (#%2$d)"
+msgstr ""
+
+#. translators: 1: taxonomy, 2: term name.
+#: includes/class-saddle-undo-steps.php:333
+#, php-format
+msgid "the %1$s “%2$s”"
+msgstr ""
+
+#. translators: %s: option name.
+#: includes/class-saddle-undo-steps.php:336
+#, php-format
+msgid "the setting %s"
+msgstr ""
+
+#: includes/class-saddle-undo-steps.php:338
+msgid "the active theme"
+msgstr ""
+
+#. translators: %s: plugin file.
+#: includes/class-saddle-undo-steps.php:341
+#, php-format
+msgid "the plugin %s"
+msgstr ""
+
+#. translators: %s: object label.
+#: includes/class-saddle-undo-steps.php:389
+#, php-format
+msgid "WordPress would not restore %s."
+msgstr ""
+
+#: includes/class-saddle-undo.php:78
+msgid "Not attempted: an earlier undo in this call failed."
+msgstr ""
+
+#: includes/class-saddle-undo.php:118
+msgid "Plugin and theme updates can’t be undone: WordPress removes its backup once an update succeeds."
+msgstr ""
+
+#: includes/class-saddle-undo.php:119
+msgid "Nothing was recorded to undo for this change: it predates undo, or it changed nothing Saddle can restore."
+msgstr ""
+
+#. translators: %d: item limit.
+#: includes/class-saddle-undo.php:123
+#, php-format
+msgid "This change touched more than %d things, too many to record for undo."
+msgstr ""
+
+#. translators: %s: date and time.
+#: includes/class-saddle-undo.php:147
+#, php-format
+msgid "Already undone on %s."
 msgstr ""
 
 #: includes/class-saddle-unsplash.php:113
@@ -5598,7 +5814,7 @@ msgid "This persisted attribute does nothing — rewrite it on a path the block 
 msgstr ""
 
 #. translators: %s: minimum WordPress version.
-#: saddle.php:452
+#: saddle.php:461
 #, php-format
 msgid "Saddle requires WordPress %s or later (the core Abilities API). The MCP server is disabled until you upgrade."
 msgstr ""
