@@ -36,7 +36,7 @@ class Saddle_Bundled_Adapter {
 	 * Must be kept in step with McpAdapter::VERSION on a re-vendor; nothing
 	 * enforces it.
 	 */
-	const VERSION = '0.5.0';
+	const VERSION = '0.6.1';
 
 	/**
 	 * Load the bundle, unless something else already provided the library.
