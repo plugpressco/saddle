@@ -24,9 +24,10 @@ defined( 'ABSPATH' ) || exit;
  *   buttons, group, columns, column, separator, spacer, html
  *
  * Outside the curated set: dynamic blocks (server-rendered — anything with a
- * render callback) are attrs-only and need no markup, so every dynamic block
- * on the site is authorable; other static blocks require an explicit "html"
- * key (the agent supplies the exact inner markup and owns its validity).
+ * render callback) need no markup, so every dynamic block on the site is
+ * authorable from "attrs", plus "children" when it wraps inner blocks (a
+ * section block from a plugin, say); other static blocks require an explicit
+ * "html" key (the agent supplies the exact inner markup and owns its validity).
  * Unregistered block types are refused outright — the server can't know
  * their contract. Escape hatch: "html" also overrides the template on
  * curated blocks.
@@ -232,20 +233,24 @@ class Saddle_Blocks_Author {
 				return self::static_block( $type, $attrs, $text );
 		}
 
-		// Dynamic blocks render server-side from attrs; there is no markup to compose.
+		// Dynamic blocks render server-side from attrs, so there is no markup
+		// to compose. Their children are the inner blocks the editor saves for
+		// a block whose save() is <InnerBlocks.Content />: the block array
+		// carries them with no wrapper markup of its own (innerContent is one
+		// null per child), and the render callback wraps them at view time.
 		if ( $block_type->is_dynamic() ) {
-			if ( ( is_string( $content ) && '' !== trim( $content ) ) || $children ) {
+			if ( is_string( $content ) && '' !== trim( $content ) ) {
 				return new WP_Error(
 					'saddle_bad_node',
 					sprintf(
 						/* translators: 1: block type, 2: node address. */
-						__( '%1$s renders dynamically on the server — it takes "attrs" only, not "content" or "children" (node %2$s). See saddle/get-block-schema for its attributes.', 'saddle' ),
+						__( '%1$s renders dynamically on the server — it takes "attrs" (and "children" when it wraps inner blocks), never "content" (node %2$s). See saddle/get-block-schema for its attributes.', 'saddle' ),
 						$type,
 						$address
 					)
 				);
 			}
-			return self::static_block( $type, $attrs, '' );
+			return self::container_block( $type, $attrs, '', '', $children );
 		}
 
 		return new WP_Error(
@@ -478,9 +483,20 @@ class Saddle_Blocks_Author {
 	 * @return array
 	 */
 	private static function container_block( $type, array $attrs, $open, $close, array $children ) {
-		$inner_content = $children
-			? array_merge( array( $open ), array_fill( 0, count( $children ), null ), array( $close ) )
-			: array( $open . $close );
+		// Empty wrapper strings are left out: a dynamic block saves only its
+		// children, and the editor's parser produces exactly that shape.
+		$inner_content = $children ? array_fill( 0, count( $children ), null ) : array();
+		if ( '' !== $open ) {
+			array_unshift( $inner_content, $open );
+		}
+		if ( '' !== $close ) {
+			$inner_content[] = $close;
+		}
+		if ( ! $children && '' === $open . $close ) {
+			$inner_content = array();
+		} elseif ( ! $children ) {
+			$inner_content = array( $open . $close );
+		}
 
 		return array(
 			'blockName'    => $type,

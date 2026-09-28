@@ -149,14 +149,19 @@ class Saddle_Blocks_Schema {
 	 * @param string        $name    Block type name.
 	 * @param WP_Block_Type $type    Registered type.
 	 * @param string[]      $curated Curated type list.
-	 * @return string 'content' (templated), 'attrs-only' (dynamic), or 'raw-html'.
+	 * @return string 'content' (templated), 'container' (dynamic, wraps inner
+	 *                blocks), 'attrs-only' (dynamic), or 'raw-html'.
 	 */
 	private static function authoring_mode( $name, $type, array $curated ) {
 		if ( in_array( $name, $curated, true ) ) {
 			return 'content';
 		}
 		if ( $type->is_dynamic() ) {
-			return 'attrs-only';
+			// A dynamic block that declares which blocks it accepts inside is
+			// a container; one that declares nothing may still be given
+			// children, the author lets them through either way.
+			$allowed = isset( $type->allowed_blocks ) && is_array( $type->allowed_blocks ) && $type->allowed_blocks;
+			return $allowed ? 'container' : 'attrs-only';
 		}
 		return 'raw-html';
 	}
@@ -248,14 +253,21 @@ class Saddle_Blocks_Schema {
 	 * Authoring guidance per mode, with a concrete example for curated types.
 	 *
 	 * @param string $name Block type name.
-	 * @param string $mode 'content' | 'attrs-only' | 'raw-html'.
+	 * @param string $mode 'content' | 'container' | 'attrs-only' | 'raw-html'.
 	 * @return array{mode:string,how:string,example?:array}
 	 */
 	private static function authoring_guidance( $name, $mode ) {
+		if ( 'container' === $mode ) {
+			return array(
+				'mode' => $mode,
+				'how'  => __( 'Renders dynamically on the server and wraps inner blocks. Author it as {"type","attrs","children"} — no "content"; the wrapper is generated at view time from the attributes above, and "allowed_children" lists what may go inside.', 'saddle' ),
+			);
+		}
+
 		if ( 'attrs-only' === $mode ) {
 			return array(
 				'mode' => $mode,
-				'how'  => __( 'Renders dynamically on the server. Author it as {"type","attrs"} only — no "content", no "children"; the markup is generated at view time from the attributes above.', 'saddle' ),
+				'how'  => __( 'Renders dynamically on the server. Author it as {"type","attrs"} — no "content"; the markup is generated at view time from the attributes above. If the block wraps inner blocks, pass them as "children".', 'saddle' ),
 			);
 		}
 

@@ -200,6 +200,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 == Changelog ==
 
 = Unreleased =
+* New: Your AI app can build with blocks from other plugins that wrap other blocks and render on the server, such as a section block that holds a heading and a paragraph. It passes the inner blocks as children, and the block schema says which blocks each one accepts.
 * Improved: Connecting an app now takes one address. Turn on sign-in for apps once, paste the address into Claude, Claude Code, ChatGPT, Codex, Cursor, VS Code, Gemini CLI or Windsurf, and approve the connection when your browser opens. No key to copy and nothing to install. Pasted keys still work and stay the fallback for sites without HTTPS or pretty permalinks.
 * New: Claude on the web and in the desktop app connects as a custom connector, with no bridge to install. Windsurf joins the app list.
 * New: Cursor and VS Code connect in one click. The connect screen shows an Add to Cursor or Add to VS Code button that opens the app with the server filled in. The copy-and-paste setup stays as the fallback.
