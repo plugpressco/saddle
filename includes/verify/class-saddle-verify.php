@@ -96,7 +96,7 @@ class Saddle_Verify {
 
 		// Pass 3 — judgment, through the same rules lint-page runs.
 		if ( $accessor instanceof Saddle_Lint_Accessor ) {
-			foreach ( Saddle_Lint::run( $tree, $accessor ) as $violation ) {
+			foreach ( array_merge( Saddle_Lint::post_findings( $post ), Saddle_Lint::run( $tree, $accessor ) ) as $violation ) {
 				$findings[] = array(
 					'address'  => $violation['address'],
 					'source'   => 'lint',

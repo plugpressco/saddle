@@ -13,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
  * rules compare real colors; raw values in the style object are returned
  * as-is. Facts that don't exist on a block type return null and rules skip.
  */
-class Saddle_Lint_Gutenberg_Accessor implements Saddle_Lint_Accessor, Saddle_Lint_Style_Accessor {
+class Saddle_Lint_Gutenberg_Accessor implements Saddle_Lint_Accessor, Saddle_Lint_Style_Accessor, Saddle_Lint_Link_Accessor {
 
 	/**
 	 * theme.json color slug → value map, built once per instance.
@@ -395,5 +395,47 @@ class Saddle_Lint_Gutenberg_Accessor implements Saddle_Lint_Accessor, Saddle_Lin
 			}
 		}
 		return $map;
+	}
+
+	/*
+	---------------------------------------------------------------------
+	 * Saddle_Lint_Link_Accessor
+	 * -------------------------------------------------------------------
+	 */
+
+	/**
+	 * The <a> and <button> elements in the block's own markup. innerHTML never
+	 * holds the children's markup, so each link is judged once, at the block
+	 * that renders it.
+	 *
+	 * @param array $node Raw block array.
+	 * @return array[]
+	 */
+	public function links( array $node ) {
+		$html = (string) $node['innerHTML'];
+		if ( ! preg_match_all( '#<(a|button)\b([^>]*)>(.*?)</\1>#is', $html, $matches, PREG_SET_ORDER ) ) {
+			return array();
+		}
+
+		$links = array();
+		foreach ( $matches as $match ) {
+			$attrs = $match[2];
+			// A link with no href is a placeholder, not a link.
+			if ( 'a' === strtolower( $match[1] ) && ! preg_match( '/\shref=/i', $attrs ) ) {
+				continue;
+			}
+			$name = trim( html_entity_decode( wp_strip_all_tags( $match[3] ), ENT_QUOTES ) );
+			if ( '' === $name && preg_match( '/\saria-label=("|\')(.*?)\1/is', $attrs, $label ) ) {
+				$name = trim( html_entity_decode( $label[2], ENT_QUOTES ) );
+			}
+			if ( '' === $name && preg_match( '/<img[^>]*\salt=("|\')(.*?)\1/is', $match[3], $alt ) ) {
+				$name = trim( html_entity_decode( $alt[2], ENT_QUOTES ) );
+			}
+			$links[] = array(
+				'name'   => $name,
+				'button' => 'button' === strtolower( $match[1] ) || 'core/button' === (string) $node['blockName'],
+			);
+		}
+		return $links;
 	}
 }

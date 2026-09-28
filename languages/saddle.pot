@@ -3,13 +3,13 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Saddle 1.4.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/_saddle-247\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/saddle\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-27T22:08:48+00:00\n"
+"POT-Creation-Date: 2026-09-28T23:16:11+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -25,6 +25,7 @@ msgid "Saddle"
 msgstr ""
 
 #. Plugin URI of the plugin
+#. Author URI of the plugin
 #: saddle.php
 msgid "https://saddle.to"
 msgstr ""
@@ -39,11 +40,6 @@ msgstr ""
 #: admin/build/index.js:29
 #: admin/src/components/Integrations.jsx:30
 msgid "PlugPress"
-msgstr ""
-
-#. Author URI of the plugin
-#: saddle.php
-msgid "https://plugpress.io/"
 msgstr ""
 
 #: includes/abilities/aioseo.php:31
@@ -1982,11 +1978,11 @@ msgstr ""
 msgid "The post or page to lint."
 msgstr ""
 
-#: includes/abilities/lint.php:87
+#: includes/abilities/lint.php:90
 msgid "Fix \"error\" violations first (they are objective defects), weigh \"warn\" ones against the design intent, then re-run. Addresses match the page's current get-blocks/divi-get-page read."
 msgstr ""
 
-#: includes/abilities/lint.php:88
+#: includes/abilities/lint.php:91
 msgid "No design violations found."
 msgstr ""
 
@@ -5100,6 +5096,24 @@ msgstr ""
 msgid "Expected one of: %s."
 msgstr ""
 
+#. translators: 1: title length, 2: limit.
+#: includes/lint/class-saddle-lint.php:93
+#, php-format
+msgid "The title is %1$d characters; search results cut titles off at about %2$d."
+msgstr ""
+
+#: includes/lint/class-saddle-lint.php:97
+msgid "Shorten the title, or set a shorter SEO title in the site's SEO plugin."
+msgstr ""
+
+#: includes/lint/class-saddle-lint.php:106
+msgid "This published post has no excerpt, so archives and some social cards show its first words instead of a summary."
+msgstr ""
+
+#: includes/lint/class-saddle-lint.php:107
+msgid "Write a one- or two-sentence excerpt with update-post, or a meta description in the SEO plugin."
+msgstr ""
+
 #. translators: 1: text color, 2: background color, 3: contrast ratio.
 #: includes/lint/rules/class-rule-button-contrast.php:59
 #, php-format
@@ -5168,6 +5182,28 @@ msgstr ""
 #: includes/lint/rules/class-rule-heading-order.php:75
 #, php-format
 msgid "Use h%d here, or restructure so no level is skipped."
+msgstr ""
+
+#: includes/lint/rules/class-rule-link-text.php:53
+msgid "Button has no text — a screen reader announces it as just \"button\"."
+msgstr ""
+
+#: includes/lint/rules/class-rule-link-text.php:54
+msgid "Link has no text — a screen reader announces it as just \"link\"."
+msgstr ""
+
+#: includes/lint/rules/class-rule-link-text.php:55
+msgid "Give it visible text that says what it does, or an aria-label when it is an icon."
+msgstr ""
+
+#. translators: %s: the link text.
+#: includes/lint/rules/class-rule-link-text.php:63
+#, php-format
+msgid "Link text \"%s\" says nothing about where it goes when read out of context."
+msgstr ""
+
+#: includes/lint/rules/class-rule-link-text.php:66
+msgid "Name the destination, e.g. \"Read the pricing guide\" instead of \"Read more\"."
 msgstr ""
 
 #: includes/lint/rules/class-rule-missing-alt.php:48
@@ -5598,7 +5634,7 @@ msgid "This persisted attribute does nothing — rewrite it on a path the block 
 msgstr ""
 
 #. translators: %s: minimum WordPress version.
-#: saddle.php:452
+#: saddle.php:454
 #, php-format
 msgid "Saddle requires WordPress %s or later (the core Abilities API). The MCP server is disabled until you upgrade."
 msgstr ""
