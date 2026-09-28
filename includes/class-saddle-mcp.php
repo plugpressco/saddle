@@ -98,7 +98,9 @@ class Saddle_MCP {
 			'\\WP\\MCP\\Infrastructure\\Observability\\NullMcpObservabilityHandler',
 			$names,
 			array(),
-			array(),
+			// The site's enabled skills, as prompts (#178). Listed only to a
+			// caller who may use get-skill; see Saddle_Prompts.
+			self::adapter_prompts(),
 			// Transport permission callback. WITHOUT this the adapter falls back to
 			// a bare `current_user_can('read')` (HttpTransport::check_permission),
 			// which means Saddle's own gate — and the legible 401s it produces, and
@@ -129,6 +131,30 @@ class Saddle_MCP {
 		// one. Registration above stays complete on purpose; see
 		// adapter_tool_names().
 		add_filter( 'mcp_adapter_tools_list', array( __CLASS__, 'filter_adapter_tools_list' ), 10, 2 );
+		add_filter( 'mcp_adapter_prompts_list', array( 'Saddle_Prompts', 'filter_adapter_list' ) );
+	}
+
+	/**
+	 * The skill prompts as the adapter's McpPrompt objects. Its registry takes
+	 * instances (or builder classes), not raw arrays, so each configuration
+	 * goes through McpPrompt::fromArray(); one that fails is skipped rather
+	 * than taking the server down with it.
+	 *
+	 * @return object[]
+	 */
+	private static function adapter_prompts() {
+		$class = '\\WP\\MCP\\Domain\\Prompts\\McpPrompt';
+		if ( ! class_exists( 'Saddle_Prompts' ) || ! class_exists( $class ) ) {
+			return array();
+		}
+		$prompts = array();
+		foreach ( Saddle_Prompts::adapter_configs() as $config ) {
+			$prompt = $class::fromArray( $config );
+			if ( ! is_wp_error( $prompt ) ) {
+				$prompts[] = $prompt;
+			}
+		}
+		return $prompts;
 	}
 
 	/**
@@ -754,7 +780,12 @@ class Saddle_MCP {
 					$id,
 					array(
 						'protocolVersion' => $negotiated,
-						'capabilities'    => array( 'tools' => (object) array() ),
+						'capabilities'    => Saddle_Prompts::listing()
+							? array(
+								'tools'   => (object) array(),
+								'prompts' => (object) array(),
+							)
+							: array( 'tools' => (object) array() ),
 						'serverInfo'      => array(
 							'name'    => self::server_name(),
 							'version' => SADDLE_VERSION,
@@ -776,21 +807,28 @@ class Saddle_MCP {
 			case 'tools/call':
 				return self::call_tool( $id, $params );
 
-			// Saddle advertises only the `tools` capability, so a conformant
-			// client has no reason to ask for these — but ChatGPT probes all
-			// three during connector setup, and Method-not-found is a poor
-			// answer to hand a client mid-handshake. An empty list costs
-			// nothing and is the truth. The vendored adapter already answers
-			// two of the three this way, so this also stops Saddle's two
-			// transports behaving differently on the same call.
+			// Saddle advertises no `resources` capability, so a conformant
+			// client has no reason to ask for these — but ChatGPT probes them
+			// during connector setup, and Method-not-found is a poor answer to
+			// hand a client mid-handshake. An empty list costs nothing and is
+			// the truth. The vendored adapter answers the same way, so this
+			// also keeps Saddle's two transports consistent.
 			case 'resources/list':
 				return self::result_envelope( $id, array( 'resources' => array() ) );
 
 			case 'resources/templates/list':
 				return self::result_envelope( $id, array( 'resourceTemplates' => array() ) );
 
+			// The site's enabled skills (#178), to whoever may use get-skill.
 			case 'prompts/list':
-				return self::result_envelope( $id, array( 'prompts' => array() ) );
+				return self::result_envelope( $id, array( 'prompts' => Saddle_Prompts::allowed() ? Saddle_Prompts::listing() : array() ) );
+
+			case 'prompts/get':
+				$prompt = Saddle_Prompts::allowed() ? Saddle_Prompts::get( isset( $params['name'] ) ? (string) $params['name'] : '' ) : null;
+				if ( ! is_array( $prompt ) ) {
+					return self::error_envelope( $id, -32602, __( 'No prompt by that name for this connection.', 'saddle' ) );
+				}
+				return self::result_envelope( $id, $prompt );
 
 			default:
 				// Notifications (e.g. notifications/initialized) carry no id and
