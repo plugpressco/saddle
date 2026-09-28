@@ -6,9 +6,10 @@
  * footer, not the palette the owner actually set, not the patterns they saved.
  * An agent asked to "match this site" had no way to look at the site.
  *
- * These four abilities close that. They are READ-ONLY by design — templates are
- * shared surfaces, and overwriting one is destructive in a way editing a single
- * post is not, so writes are a separate decision.
+ * These four abilities close that, read-only. The writes live apart, in
+ * site-editor-writes.php: templates are shared surfaces, and overwriting one is
+ * destructive in a way editing a single post is not, so every overwrite there
+ * goes through the approval gate.
  *
  * Everything here goes through core's own readers (`get_block_templates()`,
  * `get_block_template()`, `WP_Theme_JSON_Resolver`) rather than querying the
