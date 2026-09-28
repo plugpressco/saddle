@@ -4,7 +4,7 @@ Tags: mcp, ai, claude, chatgpt, divi
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.4.0
+Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -199,33 +199,31 @@ The WordPress.org version never checks for its own updates. The version from plu
 
 == Changelog ==
 
-= Unreleased =
+= 1.5.0 =
 * New: Your AI app can build with blocks from other plugins that wrap other blocks and render on the server, such as a section block that holds a heading and a paragraph. It passes the inner blocks as children, and the block schema says which blocks each one accepts.
-* Improved: Connecting an app now takes one address. Turn on sign-in for apps once, paste the address into Claude, Claude Code, ChatGPT, Codex, Cursor, VS Code, Gemini CLI or Windsurf, and approve the connection when your browser opens. No key to copy and nothing to install. Pasted keys still work and stay the fallback for sites without HTTPS or pretty permalinks.
 * New: Claude on the web and in the desktop app connects as a custom connector, with no bridge to install. Windsurf joins the app list.
 * New: Cursor and VS Code connect in one click. The connect screen shows an Add to Cursor or Add to VS Code button that opens the app with the server filled in. The copy-and-paste setup stays as the fallback.
 * New: Undo. Your AI app can reverse changes from the activity log: a page's earlier content and settings, trashed posts, created posts and tags, settings, the theme and plugin activation. It previews what comes back and waits for your approval. A change that was edited again since is skipped with the reason, and the undo can itself be undone.
 * New: Rehearsal mode. Turn it on in Saddle > Permissions and every tool that would change your site answers with what it would have done, and saves nothing. Reading works as usual, and each attempt shows in Activity as rehearsed. It is off by default.
 * New: Custom content types. Your AI app can list, read, create, edit and trash items of the custom post types your plugins and theme add, such as products, events or docs, and assign their own categories. Each type keeps its own permissions. Saddle manages the types that appear in wp-admin.
-* Fixed: On a site with the trash turned off, the delete preview no longer says a post or page can be restored.
 * New: Menus. Your AI app can list menus and read their items, add links to pages, posts, categories or any URL, rename and reorder items, remove an item after a preview, and assign a menu to a theme location. This covers classic themes, which have no navigation block.
 * New: Templates, parts and patterns on block themes. Your AI app can replace a template or the header or footer after a preview of what changes, create a new template part, and save a section of a page as a pattern. Everything is saved in the database; the theme's files are never edited, and the Site Editor can reset a template to the theme's version.
 * New: The page check flags links and buttons a screen reader can't name, link text like "click here", titles long enough to be cut off in search results, and published posts without an excerpt.
 * New: Your Skills appear as prompts. Apps that show MCP prompts, such as Claude Desktop, Cursor and VS Code, list each enabled Skill as a slash command. They follow the same rules as reading a Skill: hidden while Saddle is paused, and gone when the Skill is turned off.
-* Changed: The Saddle screens use saddle.to's olive brand colour instead of magenta. Buttons and links are easier to read: 6.7:1 contrast on white, up from 5.2.
 * New: Your AI app can apply plugin and theme updates that WordPress is already offering. It previews every item first and waits for your approval, then WordPress's own updater runs the update in the background, keeps a backup, and restores an active plugin that causes a fatal error. It can also turn WordPress's automatic updates on or off per plugin or theme, and read the Site Health checks. Saddle never installs or deletes a plugin and never updates WordPress itself.
 * New: Saddle Analytics, PlugPress's analytics plugin, counts as a PlugPress integration. Its read-only traffic tools work as soon as it is active, with no switch to turn on.
 * New: Saddle Rank, the new name for PlugPress's Waggle, is trusted like Waggle was: its tools reach your AI app as the saddle-rank tools with nothing to approve, and any Waggle tool you had switched off stays off after the rename.
+* New: Your AI app can check that a change is live. It loads the published page as a visitor would and says when a page cache is still serving the old version.
+* New: Your AI app can upload a file it has no public link for, such as an image it made. It sends the file itself, and WordPress checks it like any other upload.
+* New: A "Check the connection" tool. Your AI app can find out why tools are missing or why another app cannot connect, and tell you how to fix it.
+* Improved: Connecting an app now takes one address. Turn on sign-in for apps once, paste the address into Claude, Claude Code, ChatGPT, Codex, Cursor, VS Code, Gemini CLI or Windsurf, and approve the connection when your browser opens. No key to copy and nothing to install. Pasted keys still work and stay the fallback for sites without HTTPS or pretty permalinks.
+* Changed: The Saddle screens use saddle.to's olive brand colour instead of magenta. Buttons and links are easier to read: 6.7:1 contrast on white, up from 5.2.
+* Fixed: On a site with the trash turned off, the delete preview no longer says a post or page can be restored.
 * Fixed: With Saddle Rank installed, Saddle could count its own Rank Math tools as Saddle Rank's when telling your AI app what is available, and list them under Integrations on sites without Rank Math.
 * Fixed: The live page check now compares each part of the page on its own, so it names exactly what a stale cache is still missing.
 * Fixed: Editing a list's items with a single block edit left an empty list followed by the old items. The new items now replace the old ones inside the list, and the page check flags any block whose inner blocks render outside it.
 * Fixed: With Saddle active, Gravity Forms' "Site MCP" mode and other plugins that share the MCP Adapter's default server lost their MCP connection. Saddle now leaves that server running when another plugin uses it, and keeps its own tools off it.
 * Fixed: The Connection check (Saddle > Settings, and the "Check the connection" tool) could not tell whether your server passes sign-in headers through, and always said "unknown". It now gives a real answer.
-
-= 1.4.0 =
-* New: Your AI app can check that a change is live. It loads the published page as a visitor would and says when a page cache is still serving the old version.
-* New: Your AI app can upload a file it has no public link for, such as an image it made. It sends the file itself, and WordPress checks it like any other upload.
-* New: A "Check the connection" tool. Your AI app can find out why tools are missing or why another app cannot connect, and tell you how to fix it.
 * Fixed: OAuth sign-in from Claude Code and other apps that run on your own computer no longer fails when the app uses a different port than last time. Only the port may change; every other part of the return address must still match.
 * Fixed: On Divi 5 sites, the design summary your AI app receives now includes the site's heading and body fonts. It was always empty.
 * Fixed: Page lists now include each page's slug, parent and menu order, as the tool description already said. Post lists include the slug.
