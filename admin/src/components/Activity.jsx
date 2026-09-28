@@ -25,6 +25,7 @@ const FILTERS = [
 	{ key: '', label: __( 'Everything', 'saddle' ) },
 	{ key: 'executed', label: __( 'Changes', 'saddle' ) },
 	{ key: 'denied', label: __( 'Blocked', 'saddle' ) },
+	{ key: 'rehearsed', label: __( 'Rehearsed', 'saddle' ) },
 ];
 
 export default function Activity() {
@@ -164,6 +165,14 @@ export default function Activity() {
 												<Badge tone="danger">
 													{ __(
 														'Blocked',
+														'saddle'
+													) }
+												</Badge>
+											) }
+											{ e.type === 'rehearsed' && (
+												<Badge tone="info">
+													{ __(
+														'Rehearsed',
 														'saddle'
 													) }
 												</Badge>
