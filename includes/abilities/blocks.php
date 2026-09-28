@@ -298,7 +298,7 @@ function saddle_register_block_abilities() {
 		'saddle/edit-block',
 		array(
 			'label'               => __( 'Edit block', 'saddle' ),
-			'description'         => __( 'Rewrites one addressed block on a post or page. Provide "content" and/or "attrs" — the block is recomposed from its existing values with yours applied (same authoring semantics as saddle/set-blocks), children are kept untouched. The result is validated before saving, and the previous state is kept as a revision. Response "warnings" flag attributes that will silently not render.', 'saddle' ),
+			'description'         => __( 'Rewrites one addressed block on a post or page. Provide "content" and/or "attrs" — the block is recomposed from its existing values with yours applied (same authoring semantics as saddle/set-blocks), children are kept untouched. The exception is a block whose content IS its children: a core/list "content" array replaces all of its items, and a core/quote "content" string replaces its paragraphs. The result is validated before saving, and the previous state is kept as a revision. Response "warnings" flag attributes that will silently not render.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -946,7 +946,9 @@ class Saddle_Blocks_Abilities {
 	 *
 	 * The block is recomposed through the authoring layer from its existing
 	 * attrs with the patch applied, so markup-sourced values stay consistent
-	 * with the attribute JSON; existing children are reattached untouched.
+	 * with the attribute JSON; existing children are reattached untouched,
+	 * unless the content itself built new ones (a list's items, a quote's
+	 * paragraph), which then replace them (#250).
 	 *
 	 * @param array $input Ability input.
 	 * @return array|WP_Error
@@ -987,8 +989,11 @@ class Saddle_Blocks_Abilities {
 			return $fresh;
 		}
 
-		// Reattach existing children (content/attrs edits never touch them).
-		if ( $node['innerBlocks'] ) {
+		// Reattach existing children, unless the content shorthand already
+		// composed the block's children: for a list or a quote the content IS
+		// the children, and reattaching the old ones would orphan them
+		// outside a wrapper built to hold the new ones (#250).
+		if ( $node['innerBlocks'] && ! $fresh['innerBlocks'] ) {
 			$open  = (string) $fresh['innerHTML'];
 			$close = '';
 			// Split the recomposed wrapper back into open/close halves.
