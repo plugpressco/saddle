@@ -41,8 +41,8 @@ class Saddle_Journal {
 	/** Meta keys never journaled: editor locks and core's bookkeeping. */
 	const SKIP_META = array( '_edit_lock', '_edit_last', '_encloseme', '_pingme', '_wp_old_slug', '_wp_old_date' );
 
-	/** Options journaled beyond the update-option allowlist. */
-	const EXTRA_OPTIONS = array( 'auto_update_plugins', 'auto_update_themes' );
+	/** Item types whose auto-update lists set-auto-update writes. */
+	const AUTO_UPDATE_TYPES = array( 'plugin', 'theme' );
 
 	/**
 	 * Whether a saddle/* ability has started in this request.
@@ -698,8 +698,11 @@ class Saddle_Journal {
 	 * @return bool
 	 */
 	private static function journals_option( $name ) {
-		if ( in_array( $name, self::EXTRA_OPTIONS, true ) ) {
-			return true;
+		// set-auto-update's options, named the way that tool names them.
+		foreach ( self::AUTO_UPDATE_TYPES as $type ) {
+			if ( "auto_update_{$type}s" === $name ) {
+				return true;
+			}
 		}
 		return class_exists( 'Saddle_Site_Abilities' ) && in_array( $name, Saddle_Site_Abilities::allowlist(), true );
 	}
