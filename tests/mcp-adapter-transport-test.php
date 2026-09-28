@@ -124,6 +124,26 @@ class Saddle_MCP_Adapter_Transport_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * #178: on the real transport, the site's enabled skills come back as
+	 * prompts, and prompts/get serves one skill body as a user message.
+	 */
+	public function test_skills_are_served_as_prompts_through_the_adapter() {
+		// The adapter builds its server once per process here (once per
+		// request in production), so this uses whichever bundled skill it
+		// registered then rather than one installed mid-test.
+		add_filter( 'mcp_adapter_prompts_list', array( 'Saddle_Prompts', 'filter_adapter_list' ) );
+		$headers = array( 'Mcp-Session-Id' => $this->initialize_and_get_session_id() );
+
+		$list = json_decode( wp_json_encode( $this->rpc( 'prompts/list', array(), $headers )->get_data() ), true );
+		$this->assertNotEmpty( $list['result']['prompts'], 'Saddle always bundles skills, so the list is never empty.' );
+		$name = $list['result']['prompts'][0]['name'];
+
+		$got = json_decode( wp_json_encode( $this->rpc( 'prompts/get', array( 'name' => $name ), $headers )->get_data() ), true );
+		$this->assertSame( 'user', $got['result']['messages'][0]['role'] );
+		$this->assertSame( Saddle_Skills::find( $name )['body'], $got['result']['messages'][0]['content']['text'], 'The body arrives byte-identical.' );
+	}
+
+	/**
 	 * The adapter — not the fallback — owns the route. If this ever fails, every
 	 * other test in this file is testing the wrong transport.
 	 */
@@ -314,10 +334,11 @@ class Saddle_MCP_Adapter_Transport_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * The adapter hard-codes prompts and resources into every handshake, but
-	 * Saddle registers neither — and the router has no resources/templates/list
-	 * to answer with, so a client that believes the advert gets a 404 on a
-	 * capability we claimed. Advertise only what we can serve.
+	 * The adapter hard-codes prompts and resources into every handshake.
+	 * Saddle registers no resources — and the router has no
+	 * resources/templates/list to answer with, so a client that believes the
+	 * advert gets a 404 on a capability we claimed. Advertise only what we can
+	 * serve: since #178 that includes prompts, one per enabled skill.
 	 */
 	public function test_initialize_does_not_advertise_capabilities_it_cannot_serve() {
 		$response = $this->rpc(
@@ -337,7 +358,7 @@ class Saddle_MCP_Adapter_Transport_Test extends WP_UnitTestCase {
 
 		$this->assertArrayHasKey( 'tools', $capabilities );
 		$this->assertArrayNotHasKey( 'resources', $capabilities );
-		$this->assertArrayNotHasKey( 'prompts', $capabilities );
+		$this->assertArrayHasKey( 'prompts', $capabilities, 'The bundled skills are served as prompts.' );
 	}
 
 	/**
