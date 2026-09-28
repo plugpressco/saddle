@@ -1,5 +1,15 @@
 # Saddle — agent guide
 
+> **Where this sits in the Saddle family.** Saddle (`saddle/`, free) is the
+> core: the self-hosted MCP server every other piece plugs into. Saddle Pro
+> (`saddle-pro/`) adds Divi site operations inside that server. Saddle
+> Analytics, Saddle Rank and Saddle CRM are sibling plugins that enrol through
+> `saddle_integrations` and surface as `saddle-analytics-*`, `saddle-rank-*`
+> and `saddle-crm-*` tools. Saddle Cloud is the future opt-in service (no repo
+> yet). **This repo is the core.** The map is the workspace `CLAUDE.md` one
+> level up (`planning/WORKSPACE.md`, private); this file wins on anything it
+> covers.
+
 A **self-hosted WordPress MCP server**. An AI agent connects to the owner's own
 WordPress and gets a tiered, approval-gated toolset: CRUD over posts, pages and
 media; builder-agnostic block authoring; and a closed design-quality loop
@@ -10,7 +20,7 @@ relay. The buyer is a developer or agency already driving WordPress from Claude
 Code or Codex; Saddle's job is to make the page *judgeable*, not to do the
 judging.
 
-Free Saddle is **1.3.0**, approved and live on WordPress.org. (1.1.0 is skipped on purpose: a different 1.1.0 was published on GitHub on 2026-08-02 and withdrawn, and two builds must never share a number.) **Saddle Pro** is a
+Free Saddle **1.3.0** is the build live on WordPress.org; `main` is numbered 1.4.0, but that build only ever reached staging, so the next release takes a new number. (1.1.0 is skipped on purpose: a different 1.1.0 was published on GitHub on 2026-08-02 and withdrawn, and two builds must never share a number.) **Saddle Pro** is a
 separate plugin, sold commercially. Free never contains license or upsell code.
 
 **The split (decided 2026-09-26, reversing "no builder code in free"):** free
@@ -219,7 +229,7 @@ is the dry-run + confirm-token gate. `Saddle_Log` records executed mutations onl
 and owner instructions; its `design_numbers()` is the **single** source of the
 shared design bar (Pro's skill embeds it verbatim — edit the numbers here only).
 `Saddle_Integrations` wraps first-party abilities from sibling plugins (e.g.
-`waggle/*` as `saddle/waggle-*`) with the full safety model applied on top.
+`saddle-rank/*` as `saddle/rank-*`, which agents see as `saddle-rank-*`) with the full safety model applied on top.
 `Saddle_Skills` and `Saddle_Memory` are owner-installed playbooks and agent
 memory, both CPT-backed.
 
@@ -335,7 +345,7 @@ in the managed block below; these are the Saddle-specific additions.
 
 ## Testing
 
-PHPUnit, SQLite-backed, running against a real WordPress — 37 test files in
+PHPUnit, SQLite-backed, running against a real WordPress — 68 test files in
 `tests/`. Setup is in `tests/README.md`.
 
 **What a new ability needs, every time:**
