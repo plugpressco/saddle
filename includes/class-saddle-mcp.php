@@ -158,6 +158,33 @@ class Saddle_MCP {
 	}
 
 	/**
+	 * Keep the MCP Adapter's shared default server only where another plugin
+	 * uses it (#219). Runs on mcp_adapter_init at priority 5, before the
+	 * adapter's own factory at 10: if no ability outside the adapter's three
+	 * meta-tools is marked `mcp.public`, the factory is unhooked and those
+	 * three abilities are unregistered, which leaves a Saddle-only site with
+	 * the single endpoint #86 decided on. When a plugin such as Gravity Forms
+	 * in "Site MCP" mode exposes its abilities there, the server stays.
+	 */
+	public static function limit_default_server() {
+		foreach ( wp_get_abilities() as $ability ) {
+			$meta = $ability->get_meta();
+			if ( ! empty( $meta['mcp']['public'] ) && 0 !== strpos( $ability->get_name(), 'mcp-adapter/' ) ) {
+				return;
+			}
+		}
+
+		// No leading backslash: remove_action() matches the callable exactly as
+		// the adapter registered it, DefaultServerFactory::class.
+		remove_action( 'mcp_adapter_init', array( 'WP\\MCP\\Servers\\DefaultServerFactory', 'create' ) );
+		foreach ( array( 'mcp-adapter/discover-abilities', 'mcp-adapter/get-ability-info', 'mcp-adapter/execute-ability' ) as $name ) {
+			if ( wp_has_ability( $name ) ) {
+				wp_unregister_ability( $name );
+			}
+		}
+	}
+
+	/**
 	 * Drop tools the current credential cannot call from the adapter's
 	 * tools/list response.
 	 *

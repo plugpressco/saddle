@@ -217,6 +217,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 * Fixed: With Saddle Rank installed, Saddle could count its own Rank Math tools as Saddle Rank's when telling your AI app what is available, and list them under Integrations on sites without Rank Math.
 * Fixed: The live page check now compares each part of the page on its own, so it names exactly what a stale cache is still missing.
 * Fixed: Editing a list's items with a single block edit left an empty list followed by the old items. The new items now replace the old ones inside the list, and the page check flags any block whose inner blocks render outside it.
+* Fixed: With Saddle active, Gravity Forms' "Site MCP" mode and other plugins that share the MCP Adapter's default server lost their MCP connection. Saddle now leaves that server running when another plugin uses it, and keeps its own tools off it.
 * Fixed: The Connection check (Saddle > Settings, and the "Check the connection" tool) could not tell whether your server passes sign-in headers through, and always said "unknown". It now gives a real answer.
 
 = 1.4.0 =
