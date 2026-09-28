@@ -596,7 +596,10 @@ function saddle_register_abilities() {
 function saddle_ability_meta( $is_readonly, $destructive, $idempotent, $tier = 'read' ) {
 	return array(
 		'show_in_rest' => true,
-		'mcp'          => array( 'public' => true ),
+		// Not public: `mcp.public` only means "serve this on the MCP Adapter's
+		// shared default server", which has no transport gate. Saddle's own
+		// server lists its tools by name (#86, #219).
+		'mcp'          => array( 'public' => false ),
 		'saddle'       => array( 'tier' => $tier ),
 		'annotations'  => array(
 			'readonly'    => (bool) $is_readonly,
