@@ -3,13 +3,13 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Saddle 1.4.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/_saddle-247\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/saddle\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-27T22:08:48+00:00\n"
+"POT-Creation-Date: 2026-09-28T23:05:59+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -25,6 +25,7 @@ msgid "Saddle"
 msgstr ""
 
 #. Plugin URI of the plugin
+#. Author URI of the plugin
 #: saddle.php
 msgid "https://saddle.to"
 msgstr ""
@@ -39,11 +40,6 @@ msgstr ""
 #: admin/build/index.js:29
 #: admin/src/components/Integrations.jsx:30
 msgid "PlugPress"
-msgstr ""
-
-#. Author URI of the plugin
-#: saddle.php
-msgid "https://plugpress.io/"
 msgstr ""
 
 #: includes/abilities/aioseo.php:31
@@ -933,6 +929,7 @@ msgid "Filter by post status."
 msgstr ""
 
 #: includes/abilities/core-content.php:768
+#: includes/abilities/menus.php:186
 msgid "The single-use token returned by the preview call. Omit on the first call to receive a preview."
 msgstr ""
 
@@ -2098,6 +2095,184 @@ msgstr ""
 #: includes/abilities/memory.php:228
 #, php-format
 msgid "Deleted memory \"%s\"."
+msgstr ""
+
+#: includes/abilities/menus.php:21
+msgid "The menu: its id, slug or name, from saddle/list-menus."
+msgstr ""
+
+#: includes/abilities/menus.php:26
+msgid "The menu item id, from saddle/get-menu."
+msgstr ""
+
+#: includes/abilities/menus.php:31
+msgid "Place among its siblings, 0 = first. Omit to add at the end."
+msgstr ""
+
+#: includes/abilities/menus.php:36
+msgid "Parent menu item id, or 0 for the top level."
+msgstr ""
+
+#: includes/abilities/menus.php:42
+msgid "List menus"
+msgstr ""
+
+#: includes/abilities/menus.php:43
+msgid "Lists the site's navigation menus (id, name, slug, item count, the theme locations each is assigned to) and the theme's menu locations with the menu in each. Read-only. Classic themes show these menus in their header and footer; block themes use the navigation block instead."
+msgstr ""
+
+#: includes/abilities/menus.php:59
+msgid "Get menu"
+msgstr ""
+
+#: includes/abilities/menus.php:60
+msgid "Returns one menu's items in display order: id, title, url, what it links to (type: custom, post_type or taxonomy; the object and its id), parent, position among its siblings, depth, and link target. Pass \"menu\", or \"location\" for the menu in a theme location. Read-only."
+msgstr ""
+
+#: includes/abilities/menus.php:68
+msgid "A theme location slug from saddle/list-menus, instead of \"menu\"."
+msgstr ""
+
+#: includes/abilities/menus.php:81
+msgid "Add menu item"
+msgstr ""
+
+#: includes/abilities/menus.php:82
+msgid "Adds an item to a menu. \"type\" is \"custom\" (give url and title), \"post\" (give object_id: a post, page or other content item; its title is used unless you give one) or \"term\" (give object_id: a category, tag or other term). Place it with parent and position. Returns the new item and the menu."
+msgstr ""
+
+#: includes/abilities/menus.php:96
+msgid "The post or term id, for type \"post\" or \"term\"."
+msgstr ""
+
+#: includes/abilities/menus.php:100
+msgid "The link, for type \"custom\"."
+msgstr ""
+
+#: includes/abilities/menus.php:104
+msgid "The label. Required for \"custom\"; optional otherwise."
+msgstr ""
+
+#: includes/abilities/menus.php:111
+msgid "\"_blank\" opens the link in a new tab."
+msgstr ""
+
+#: includes/abilities/menus.php:124
+msgid "Update menu item"
+msgstr ""
+
+#: includes/abilities/menus.php:125
+msgid "Changes a menu item's label, link (custom items only), target, CSS classes, title attribute or description. Only the fields you pass change. To move it, use saddle/move-menu-item."
+msgstr ""
+
+#: includes/abilities/menus.php:140
+msgid "Space-separated CSS classes."
+msgstr ""
+
+#: includes/abilities/menus.php:155
+msgid "Move menu item"
+msgstr ""
+
+#: includes/abilities/menus.php:156
+msgid "Moves a menu item, with the items nested under it, to a new parent and position within the same menu. An item can't move under itself or its own children."
+msgstr ""
+
+#: includes/abilities/menus.php:176
+msgid "Remove menu item"
+msgstr ""
+
+#: includes/abilities/menus.php:177
+msgid "Removes an item from a menu; items nested under it move up one level, as in wp-admin. The page or term it linked to is not touched. DESTRUCTIVE — two steps: the first call returns a preview and a confirm_token without changing anything; call again with confirm_token to remove."
+msgstr ""
+
+#: includes/abilities/menus.php:199
+msgid "Set menu location"
+msgstr ""
+
+#: includes/abilities/menus.php:200
+msgid "Shows a menu in one of the theme's menu locations (the header, the footer…), replacing whatever menu was there. Pass \"menu\": 0 to leave the location empty. The response names the menu that was there before."
+msgstr ""
+
+#: includes/abilities/menus.php:208
+msgid "A theme location slug from saddle/list-menus."
+msgstr ""
+
+#: includes/abilities/menus.php:275
+msgid "No menu is assigned to that location."
+msgstr ""
+
+#: includes/abilities/menus.php:305
+msgid "The parent must be an item of the same menu."
+msgstr ""
+
+#. translators: 1: menu item label, 2: menu name.
+#: includes/abilities/menus.php:320
+#, php-format
+msgid "Added “%1$s” to the menu “%2$s”."
+msgstr ""
+
+#: includes/abilities/menus.php:370
+msgid "Only a custom link has its own url; this item links to a post or term. Remove it and add a custom item instead."
+msgstr ""
+
+#. translators: 1: menu item label, 2: menu name.
+#: includes/abilities/menus.php:380
+#, php-format
+msgid "Updated “%1$s” in the menu “%2$s”."
+msgstr ""
+
+#: includes/abilities/menus.php:399
+msgid "The new parent must be another item of the same menu, not this item or one nested under it."
+msgstr ""
+
+#. translators: 1: menu item label, 2: menu name.
+#: includes/abilities/menus.php:404
+#, php-format
+msgid "Moved “%1$s” in the menu “%2$s”."
+msgstr ""
+
+#. translators: 1: item label, 2: menu name.
+#: includes/abilities/menus.php:429
+#, php-format
+msgid "Remove “%1$s” from the menu “%2$s”."
+msgstr ""
+
+#: includes/abilities/menus.php:445
+msgid "WordPress could not remove the item."
+msgstr ""
+
+#: includes/abilities/menus.php:465
+msgid "The theme has no menu location by that name. saddle/list-menus lists them."
+msgstr ""
+
+#. translators: 1: location label, 2: previous menu id, 3: new menu id.
+#: includes/abilities/menus.php:487
+#, php-format
+msgid "Set the menu location “%1$s” from menu #%2$d to menu #%3$d."
+msgstr ""
+
+#: includes/abilities/menus.php:514
+msgid "No menu by that id, slug or name. saddle/list-menus lists them."
+msgstr ""
+
+#: includes/abilities/menus.php:537
+msgid "No menu item with that id. saddle/get-menu lists them."
+msgstr ""
+
+#: includes/abilities/menus.php:568
+msgid "A custom item needs both \"url\" and \"title\"."
+msgstr ""
+
+#: includes/abilities/menus.php:579
+msgid "No post, page or other content item with that object_id."
+msgstr ""
+
+#: includes/abilities/menus.php:591
+msgid "No category, tag or other term with that object_id."
+msgstr ""
+
+#: includes/abilities/menus.php:600
+msgid "\"type\" must be custom, post or term."
 msgstr ""
 
 #: includes/abilities/rank-math.php:32
@@ -5598,7 +5773,7 @@ msgid "This persisted attribute does nothing — rewrite it on a path the block 
 msgstr ""
 
 #. translators: %s: minimum WordPress version.
-#: saddle.php:452
+#: saddle.php:454
 #, php-format
 msgid "Saddle requires WordPress %s or later (the core Abilities API). The MCP server is disabled until you upgrade."
 msgstr ""
