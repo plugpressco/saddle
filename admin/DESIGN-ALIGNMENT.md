@@ -1,7 +1,14 @@
 # Saddle — Design Alignment
 
+> **DECIDED (2026-09-26, Fahim; applied to the plugin in #198):** the brand
+> colour is **olive `#4D6410`**, matching saddle.to. Magenta read as pink on the
+> site; a saddle-brown was tried and rejected. Everything below about the
+> 85/15 split still holds; only the accent hexes changed. The olive is dark
+> enough to carry text (6.68:1 on white), so the fill/text split for the accent
+> no longer does work, but the seam stays.
+>
 > **DECIDED (2026-08-25, Fahim):** Saddle has a brand palette, built on
-> **`#DA5CC7`**. This **supersedes the 2026-07-04 monochrome
+> **`#DA5CC7`** (superseded by the olive above). This **supersedes the 2026-07-04 monochrome
 > decision** kept below for history. The register is unchanged — calm, restrained,
 > Vercel/Geist — but the one accent is now the brand colour instead of near-black.
 > **Roughly 85% of the interface stays black, white and gray; the accent is the
@@ -11,9 +18,10 @@
 
 | Role | Name | Hex |
 |---|---|---|
-| Primary brand | — | `#DA5CC7` |
-| Hover / active | — | `#A82595` |
-| Soft background | — | `#FDF4FC` |
+| Primary brand | Olive | `#4D6410` |
+| Hover / active | — | `#3D500C` |
+| Soft background | — | `#F1F5D8` |
+| Highlight (fill only, never text) | Lime | `#DBE77A` |
 | Main text | Near Black | `#111111` |
 | Page background | Warm White | `#FBFBFA` |
 | Success / read-only | Lime | `#84CC16` |
@@ -30,11 +38,11 @@ portaled overlays render outside `.pp-app` and would otherwise lose every token.
 ## The rule that governs every color
 
 **Every color has a bright value for FILLS and a darker same-hue value for TEXT.**
-This is not a preference. Measured on white the brand colour is **3.31:1** — enough
-to be seen, not enough to be read — and lime is 1.98, cyan 2.43, coral 3.67. None
-of them can carry a label, and none can be the ground under a white one. The
-readable step of the same hue does that: `#BD2BA7` for links and for the primary
-button, `#A82595` on hover. The DS mandates the
+This is not a preference. Lime is 1.98:1 on white, cyan 2.43, coral 3.67 (and the
+magenta this palette used until #198 was 3.31). None of them can carry a label,
+and none can be the ground under a white one. The olive brand colour is the
+exception: at 6.68:1 it is its own readable step, used for links and for the
+primary button, with `#3D500C` on hover. The DS mandates the
 same split for the accent (`--pp-accent` paints surfaces at 3:1;
 `--pp-accent-text` paints links and labels at 4.5:1, measured against the *tint*,
 not just white).
