@@ -8,7 +8,8 @@
 	"scripts": {
 		"build": "wp-scripts build admin/src/index.js --output-path=admin/build",
 		"start": "wp-scripts start admin/src/index.js --output-path=admin/build",
-		"lint:js": "wp-scripts lint-js admin/src",
+		"lint:js": "wp-scripts lint-js admin/src tests/js",
+		"test:js": "wp-scripts test-unit-js tests/js",
 		"format": "wp-scripts format admin/src",
 		"package": "npm run build && grunt release",
 		"package:patch": "npm run build && grunt release:patch",
