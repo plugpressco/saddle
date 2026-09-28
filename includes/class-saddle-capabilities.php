@@ -446,7 +446,7 @@ class Saddle_Capabilities {
 		if ( ! is_user_logged_in() ) {
 			return array(
 				'code'    => 'saddle_not_authenticated',
-				'message' => __( 'The request is not authenticated. Reconnect the app from Saddle → Connections to issue a fresh sign-in key.', 'saddle' ),
+				'message' => __( 'The request is not authenticated. Reconnect the app from Saddle → Apps to issue a fresh sign-in key.', 'saddle' ),
 			);
 		}
 
