@@ -116,7 +116,9 @@ the issue and the rule is revisited there.
   belongs, and CSS or code writing anywhere waits until that addon exists.
 - **Admin UI redesigns.** The re-brand landed 2026-08-25. One exception, approved
   2026-09-07: a *consolidation* pass (#184) — same components, same styling, fewer
-  places for the same fact. Still no re-styling.
+  places for the same fact. Still no re-styling. A second, on Fahim's request
+  2026-09-29: first run (#269), so a new owner sees Saddle read their site before
+  it asks for anything. Same kit and tokens; the rest of the admin is unchanged.
 - **Runtime license checks in Pro** (decided 2026-07-12, saddle-pro#23).
 - Per-connection access profiles, comment abilities, activity-log export and
   retention — closed as not planned on 2026-09-07.
