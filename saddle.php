@@ -151,6 +151,7 @@ require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-clients.php';
 require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-endpoints.php';
 require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-consent.php';
 require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-bearer.php';
+require_once SADDLE_DIR . 'includes/class-saddle-first-look.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-settings.php';
 
