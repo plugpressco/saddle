@@ -118,7 +118,7 @@ class Saddle_Context_Test extends WP_UnitTestCase {
 		$ctx = Saddle_Context::system_context();
 
 		$this->assertStringContainsString( 'READ content only', $ctx );
-		$this->assertStringContainsString( 'posts, pages, media, and their block structure', $ctx );
+		$this->assertStringContainsString( 'posts, pages, media, the site\'s custom content types, and their block structure', $ctx );
 	}
 
 	public function test_context_carries_the_refusal_playbook() {
@@ -165,15 +165,23 @@ class Saddle_Context_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'Published pages: 1', $ctx );
 	}
 
-	public function test_context_names_custom_post_types_it_does_not_manage() {
-		register_post_type( 'saddle_test_cpt', array( 'public' => true, 'label' => 'Test Widgets' ) );
+	public function test_context_names_the_custom_post_types_it_manages() {
+		register_post_type(
+			'test_widget',
+			array(
+				'public'  => true,
+				'show_ui' => true,
+				'label'   => 'Test Widgets',
+			)
+		);
 
 		$ctx = Saddle_Context::system_context();
 
-		$this->assertStringContainsString( 'custom content types Saddle does not manage', $ctx );
-		$this->assertStringContainsString( 'Test Widgets', $ctx );
+		$this->assertStringContainsString( 'Custom content types:', $ctx );
+		$this->assertStringContainsString( 'Test Widgets (test_widget)', $ctx );
+		$this->assertStringContainsString( 'saddle/list-post-types', $ctx );
 
-		_unregister_post_type( 'saddle_test_cpt' );
+		_unregister_post_type( 'test_widget' );
 	}
 
 	public function test_context_includes_timezone() {

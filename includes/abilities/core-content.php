@@ -122,7 +122,7 @@ function saddle_register_abilities() {
 		'saddle/search-content',
 		array(
 			'label'               => __( 'Search content', 'saddle' ),
-			'description'         => __( 'Full-text search across posts and pages by keyword. Returns matching items as summaries (id, type, title, slug, status, link, excerpt; pages also carry parent and menu order). Read-only. Use post_type to restrict to "post", "page", or "any".', 'saddle' ),
+			'description'         => __( 'Full-text search across posts, pages and the custom content types Saddle manages, by keyword. Returns matching items as summaries (id, type, title, slug, status, link, excerpt; pages also carry parent and menu order). Read-only. Use post_type to restrict to "post", "page", a type from saddle/list-post-types, or "any".', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -135,9 +135,8 @@ function saddle_register_abilities() {
 					),
 					'post_type' => array(
 						'type'        => 'string',
-						'enum'        => array( 'post', 'page', 'any' ),
 						'default'     => 'any',
-						'description' => __( 'Restrict results to this type.', 'saddle' ),
+						'description' => __( 'Restrict results to this type: "post", "page", a type from saddle/list-post-types, or "any".', 'saddle' ),
 					),
 					'per_page'  => saddle_per_page_schema(),
 					'page'      => saddle_page_schema(),
@@ -145,6 +144,23 @@ function saddle_register_abilities() {
 			),
 			'execute_callback'    => array( 'Saddle_Abilities', 'search_content' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'search-content' ),
+			'meta'                => saddle_ability_meta( true, false, true, 'read' ),
+		)
+	);
+
+	wp_register_ability(
+		'saddle/list-post-types',
+		array(
+			'label'               => __( 'List content types', 'saddle' ),
+			'description'         => __( 'Lists the content types Saddle can read and write on this site: posts, pages, and custom types such as products, events or docs. For each: its name, labels, whether it is hierarchical and uses the block editor, what it supports, its taxonomies, how many are published, and which tools reach it. Custom types are handled by the post tools with a post_type argument. Read-only.', 'saddle' ),
+			'category'            => 'saddle',
+			'input_schema'        => array(
+				'type'       => 'object',
+				'default'    => (object) array(),
+				'properties' => array(),
+			),
+			'execute_callback'    => array( 'Saddle_Abilities', 'list_post_types' ),
+			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'list-post-types' ),
 			'meta'                => saddle_ability_meta( true, false, true, 'read' ),
 		)
 	);
@@ -163,7 +179,7 @@ function saddle_register_abilities() {
 		'saddle/list-posts',
 		array(
 			'label'               => __( 'List posts', 'saddle' ),
-			'description'         => __( 'Lists posts as summaries (id, title, slug, status, author, date, link, excerpt). Read-only. Supports filtering by status, author, category, and search term, plus pagination via per_page/page.', 'saddle' ),
+			'description'         => __( 'Lists posts as summaries (id, title, slug, status, author, date, link, excerpt). Read-only. Supports filtering by status, author, category, and search term, plus pagination via per_page/page. Pass post_type to list a custom content type from saddle/list-post-types instead.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -182,6 +198,11 @@ function saddle_register_abilities() {
 						'type'        => 'integer',
 						'description' => __( 'Filter by category term ID.', 'saddle' ),
 					),
+					'parent'      => array(
+						'type'        => 'integer',
+						'description' => __( 'Filter by parent ID (hierarchical custom types only).', 'saddle' ),
+					),
+					'post_type'   => saddle_post_type_schema(),
 					'orderby'     => array(
 						'type'    => 'string',
 						'enum'    => array( 'date', 'modified', 'title', 'ID' ),
@@ -209,9 +230,9 @@ function saddle_register_abilities() {
 		'saddle/get-post',
 		array(
 			'label'               => __( 'Get post', 'saddle' ),
-			'description'         => __( 'Returns a single post in full: title, content, excerpt, status, slug, author, dates, categories, tags, featured image, discussion settings, and custom fields (meta). Read-only.', 'saddle' ),
+			'description'         => __( 'Returns a single post in full: title, content, excerpt, status, slug, author, dates, categories, tags, featured image, discussion settings, and custom fields (meta). Read-only. For an item of a custom content type, pass its post_type.', 'saddle' ),
 			'category'            => 'saddle',
-			'input_schema'        => saddle_id_schema( __( 'The post ID.', 'saddle' ) ),
+			'input_schema'        => saddle_with_post_type( saddle_id_schema( __( 'The post ID.', 'saddle' ) ) ),
 			'execute_callback'    => array( 'Saddle_Abilities', 'get_post' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'get-post' ),
 			'meta'                => saddle_ability_meta( true, false, true, 'read' ),
@@ -222,9 +243,9 @@ function saddle_register_abilities() {
 		'saddle/create-post',
 		array(
 			'label'               => __( 'Create post', 'saddle' ),
-			'description'         => __( 'Creates a new post and returns its id and summary. Additive (non-destructive). Accepts title, content, excerpt, status (draft/publish/pending/private), slug, author, date, category_ids, tags, featured_media, discussion settings, and custom fields via "meta". Defaults to draft status.', 'saddle' ),
+			'description'         => __( 'Creates a new post and returns its id and summary. Additive (non-destructive). Accepts title, content, excerpt, status (draft/publish/pending/private), slug, author, date, category_ids, tags, featured_media, discussion settings, and custom fields via "meta". Defaults to draft status. Pass post_type to create an item of a custom content type from saddle/list-post-types; its own taxonomies go in "terms".', 'saddle' ),
 			'category'            => 'saddle',
-			'input_schema'        => saddle_writable_schema( 'post', false ),
+			'input_schema'        => saddle_with_post_type( saddle_writable_schema( 'post', false ) ),
 			'execute_callback'    => array( 'Saddle_Abilities', 'create_post' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'write', 'edit_posts', 'create-post' ),
 			'meta'                => saddle_ability_meta( false, false, false, 'write' ),
@@ -235,9 +256,9 @@ function saddle_register_abilities() {
 		'saddle/update-post',
 		array(
 			'label'               => __( 'Update post', 'saddle' ),
-			'description'         => __( 'Updates an existing post by id. Only the fields you pass are changed; omitted fields are left untouched. Accepts the same fields as create-post, including slug, author, and custom fields via "meta" (null deletes a key). WordPress stores a revision, so changes are recoverable (non-destructive). Returns the updated summary.', 'saddle' ),
+			'description'         => __( 'Updates an existing post by id. Only the fields you pass are changed; omitted fields are left untouched. Accepts the same fields as create-post, including slug, author, and custom fields via "meta" (null deletes a key). WordPress stores a revision, so changes are recoverable (non-destructive). Returns the updated summary. For an item of a custom content type, pass its post_type.', 'saddle' ),
 			'category'            => 'saddle',
-			'input_schema'        => saddle_writable_schema( 'post', true ),
+			'input_schema'        => saddle_with_post_type( saddle_writable_schema( 'post', true ) ),
 			'execute_callback'    => array( 'Saddle_Abilities', 'update_post' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'write', 'edit_posts', 'update-post' ),
 			'meta'                => saddle_ability_meta( false, false, true, 'write' ),
@@ -248,9 +269,9 @@ function saddle_register_abilities() {
 		'saddle/delete-post',
 		array(
 			'label'               => __( 'Delete post', 'saddle' ),
-			'description'         => __( 'Deletes a post. DESTRUCTIVE — runs through a two-step confirmation: the first call returns a preview and a confirm_token without changing anything; call again with confirm_token to execute. Without "force" the post is trashed (recoverable); with force=true it is permanently deleted (not recoverable).', 'saddle' ),
+			'description'         => __( 'Deletes a post. DESTRUCTIVE — runs through a two-step confirmation: the first call returns a preview and a confirm_token without changing anything; call again with confirm_token to execute. Without "force" the post is trashed (recoverable); with force=true it is permanently deleted (not recoverable). For an item of a custom content type, pass its post_type.', 'saddle' ),
 			'category'            => 'saddle',
-			'input_schema'        => saddle_delete_schema( __( 'The post ID to delete.', 'saddle' ), true ),
+			'input_schema'        => saddle_with_post_type( saddle_delete_schema( __( 'The post ID to delete.', 'saddle' ), true ) ),
 			'execute_callback'    => array( 'Saddle_Abilities', 'delete_post' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'write', 'delete_posts', 'delete-post' ),
 			'meta'                => saddle_ability_meta( false, true, false, 'write' ),
@@ -596,7 +617,10 @@ function saddle_register_abilities() {
 function saddle_ability_meta( $is_readonly, $destructive, $idempotent, $tier = 'read' ) {
 	return array(
 		'show_in_rest' => true,
-		'mcp'          => array( 'public' => true ),
+		// Not public: `mcp.public` only means "serve this on the MCP Adapter's
+		// shared default server", which has no transport gate. Saddle's own
+		// server lists its tools by name (#86, #219).
+		'mcp'          => array( 'public' => false ),
 		'saddle'       => array( 'tier' => $tier ),
 		'annotations'  => array(
 			'readonly'    => (bool) $is_readonly,
@@ -730,6 +754,30 @@ function saddle_status_schema() {
 }
 
 /**
+ * The optional post_type property of the post tools (#137).
+ *
+ * @return array
+ */
+function saddle_post_type_schema() {
+	return array(
+		'type'        => 'string',
+		'default'     => 'post',
+		'description' => __( 'Optional. A custom content type from saddle/list-post-types (e.g. "product"). Omit for ordinary posts.', 'saddle' ),
+	);
+}
+
+/**
+ * Add the optional post_type property to a post tool's schema.
+ *
+ * @param array $schema Input schema.
+ * @return array
+ */
+function saddle_with_post_type( array $schema ) {
+	$schema['properties']['post_type'] = saddle_post_type_schema();
+	return $schema;
+}
+
+/**
  * Schema for an ability that needs only a required integer `id`.
  *
  * @param string $description Description for the id field.
@@ -833,6 +881,14 @@ function saddle_writable_schema( $type, $is_update ) {
 			'additionalProperties' => true,
 			'description'          => __( 'Custom fields (post meta) as key/value pairs. Values may be strings, numbers, booleans, or arrays; pass null as a value to delete that key. Keys starting with an underscore are protected — writable only when the owning plugin registered them as editable. Denied keys are skipped and reported back in "meta_denied"; the rest of the request still applies.', 'saddle' ),
 		),
+		'terms'          => array(
+			'type'                 => 'object',
+			'additionalProperties' => array(
+				'type'  => 'array',
+				'items' => array( 'type' => array( 'integer', 'string' ) ),
+			),
+			'description'          => __( 'Terms by taxonomy, for taxonomies other than categories and tags, e.g. {"product_cat": [12, 15]}. Each list replaces the item\'s terms in that taxonomy; term IDs, or names for non-hierarchical taxonomies (created if missing). saddle/list-post-types lists each type\'s taxonomies. Taxonomies the item\'s type doesn\'t use, or this account may not assign, are skipped and reported in "terms_denied".', 'saddle' ),
+		),
 	);
 
 	if ( 'post' === $type ) {
@@ -845,6 +901,14 @@ function saddle_writable_schema( $type, $is_update ) {
 			'type'        => 'array',
 			'items'       => array( 'type' => 'string' ),
 			'description' => __( 'Tag names to assign (created if missing).', 'saddle' ),
+		);
+		$props['parent']       = array(
+			'type'        => 'integer',
+			'description' => __( 'Parent item ID (hierarchical custom types only; ignored for posts).', 'saddle' ),
+		);
+		$props['menu_order']   = array(
+			'type'        => 'integer',
+			'description' => __( 'Ordering value among siblings (hierarchical custom types only).', 'saddle' ),
 		);
 	} else {
 		$props['template']   = array(
@@ -962,7 +1026,7 @@ class Saddle_Abilities {
 	 * content to another author. The tier + generic-cap check in the
 	 * permission_callback is necessary but not sufficient.
 	 *
-	 * @param string $type          'post'|'page'.
+	 * @param string $type          Post type (post, page or a managed custom type).
 	 * @param array  $input         Writable input.
 	 * @param int    $current_owner Author compared against (existing author on
 	 *                              update; current user on create).
@@ -970,22 +1034,27 @@ class Saddle_Abilities {
 	 * @return true|WP_Error
 	 */
 	private static function authorize_write( $type, array $input, $current_owner, $id ) {
-		$is_page = ( 'page' === $type );
+		// The type's own capabilities: publish_pages for pages, publish_posts
+		// for posts, and whatever a custom type maps them to (#137). The tool's
+		// permission_callback only proved the generic edit_posts.
+		$caps = get_post_type_object( $type )->cap;
 
 		if ( $id > 0 && ! current_user_can( 'edit_post', $id ) ) {
 			return self::forbidden( __( 'You do not have permission to edit this item.', 'saddle' ) );
 		}
 
+		if ( 0 === $id && ! current_user_can( $caps->create_posts ) ) {
+			return self::forbidden( __( 'You do not have permission to create this kind of content.', 'saddle' ) );
+		}
+
 		if ( isset( $input['status'] ) && in_array( sanitize_key( (string) $input['status'] ), array( 'publish', 'future' ), true ) ) {
-			$publish_cap = $is_page ? 'publish_pages' : 'publish_posts';
-			if ( ! current_user_can( $publish_cap ) ) {
+			if ( ! current_user_can( $caps->publish_posts ) ) {
 				return self::forbidden( __( 'You do not have permission to publish content.', 'saddle' ) );
 			}
 		}
 
 		if ( isset( $input['author'] ) && (int) $input['author'] !== (int) $current_owner ) {
-			$others_cap = $is_page ? 'edit_others_pages' : 'edit_others_posts';
-			if ( ! current_user_can( $others_cap ) ) {
+			if ( ! current_user_can( $caps->edit_others_posts ) ) {
 				return self::forbidden( __( 'You do not have permission to assign content to another user.', 'saddle' ) );
 			}
 		}
@@ -1188,14 +1257,22 @@ class Saddle_Abilities {
 			return new WP_Error( 'saddle_missing_query', __( 'A non-empty "query" is required.', 'saddle' ), array( 'status' => 400 ) );
 		}
 
-		$post_type = isset( $input['post_type'] ) && in_array( $input['post_type'], array( 'post', 'page' ), true )
+		$types     = Saddle_Post_Types::content_types();
+		$post_type = isset( $input['post_type'] ) && in_array( $input['post_type'], $types, true )
 			? $input['post_type']
-			: array( 'post', 'page' );
+			: $types;
 
 		// Same rule as list-posts, but there is no status input to refuse and
-		// both types are queried at once: `any` means any status this caller
-		// may see, which for someone who can edit neither is `publish`.
-		$status = ( self::can_see_unpublished( 'post' ) || self::can_see_unpublished( 'page' ) ) ? 'any' : 'publish';
+		// several types are queried at once: `any` means any status this caller
+		// may see, which for someone who can edit none of them is `publish`.
+		// collection() still drops every row the caller cannot read_post.
+		$status = 'publish';
+		foreach ( (array) $post_type as $type ) {
+			if ( self::can_see_unpublished( $type ) ) {
+				$status = 'any';
+				break;
+			}
+		}
 
 		$query = new WP_Query(
 			array(
@@ -1221,13 +1298,31 @@ class Saddle_Abilities {
 	/* --------------------------------------------------------------------- */
 
 	/**
+	 * saddle/list-post-types.
+	 *
+	 * @return array
+	 */
+	public static function list_post_types() {
+		$types = array_map( array( 'Saddle_Post_Types', 'describe' ), Saddle_Post_Types::content_types() );
+		return array(
+			'types' => $types,
+			'count' => count( $types ),
+		);
+	}
+
+	/**
 	 * List posts.
 	 *
 	 * @param mixed $input List filters.
 	 * @return array
 	 */
 	public static function list_posts( $input = null ) {
-		return self::list_of_type( 'post', self::args( $input ) );
+		$input = self::args( $input );
+		$type  = Saddle_Post_Types::resolve( $input, 'post' );
+		if ( is_wp_error( $type ) ) {
+			return $type;
+		}
+		return self::list_of_type( $type, $input );
 	}
 
 	/**
@@ -1237,7 +1332,12 @@ class Saddle_Abilities {
 	 * @return array|WP_Error
 	 */
 	public static function get_post( $input = null ) {
-		return self::get_single( 'post', self::args( $input ) );
+		$input = self::args( $input );
+		$type  = Saddle_Post_Types::resolve( $input, 'post' );
+		if ( is_wp_error( $type ) ) {
+			return $type;
+		}
+		return self::get_single( $type, $input );
 	}
 
 	/**
@@ -1247,7 +1347,12 @@ class Saddle_Abilities {
 	 * @return array|WP_Error
 	 */
 	public static function create_post( $input = null ) {
-		return self::create_of_type( 'post', self::args( $input ) );
+		$input = self::args( $input );
+		$type  = Saddle_Post_Types::resolve( $input, 'post' );
+		if ( is_wp_error( $type ) ) {
+			return $type;
+		}
+		return self::create_of_type( $type, $input );
 	}
 
 	/**
@@ -1257,7 +1362,12 @@ class Saddle_Abilities {
 	 * @return array|WP_Error
 	 */
 	public static function update_post( $input = null ) {
-		return self::update_of_type( 'post', self::args( $input ) );
+		$input = self::args( $input );
+		$type  = Saddle_Post_Types::resolve( $input, 'post' );
+		if ( is_wp_error( $type ) ) {
+			return $type;
+		}
+		return self::update_of_type( $type, $input );
 	}
 
 	/**
@@ -1267,7 +1377,12 @@ class Saddle_Abilities {
 	 * @return array|WP_Error
 	 */
 	public static function delete_post( $input = null ) {
-		return self::delete_of_type( 'post', 'delete_post', self::args( $input ) );
+		$input = self::args( $input );
+		$type  = Saddle_Post_Types::resolve( $input, 'post' );
+		if ( is_wp_error( $type ) ) {
+			return $type;
+		}
+		return self::delete_of_type( $type, 'delete_post', $input );
 	}
 
 	/**
@@ -1959,7 +2074,7 @@ class Saddle_Abilities {
 		if ( 'post' === $type && ! empty( $input['category_id'] ) ) {
 			$args['cat'] = (int) $input['category_id'];
 		}
-		if ( 'page' === $type && isset( $input['parent'] ) && '' !== $input['parent'] ) {
+		if ( is_post_type_hierarchical( $type ) && isset( $input['parent'] ) && '' !== $input['parent'] ) {
 			$args['post_parent'] = (int) $input['parent'];
 		}
 
@@ -2010,7 +2125,8 @@ class Saddle_Abilities {
 			return $id;
 		}
 
-		$meta_denied = self::apply_terms_and_meta( $type, $id, $input );
+		$meta_denied  = self::apply_terms_and_meta( $type, $id, $input );
+		$terms_denied = self::apply_custom_terms( $type, $id, $input );
 
 		$post = get_post( $id );
 		Saddle_Log::record_action(
@@ -2029,6 +2145,9 @@ class Saddle_Abilities {
 		if ( ! empty( $meta_denied ) ) {
 			$detail['meta_denied'] = $meta_denied;
 		}
+		if ( ! empty( $terms_denied ) ) {
+			$detail['terms_denied'] = $terms_denied;
+		}
 		if ( $drafts_only_override ) {
 			$detail['drafts_only_override'] = __( 'This site is set to drafts-only: the requested publication or schedule was not applied, and the item was saved as a draft instead.', 'saddle' );
 		}
@@ -2046,13 +2165,15 @@ class Saddle_Abilities {
 	 * disclosure. The single funnel for every id-taking read ability; anything
 	 * that reaches a specific post another way is a bug.
 	 *
-	 * @param array    $input Ability input.
-	 * @param string   $key   Input key holding the ID. Default `post_id`.
-	 * @param string[] $types Accepted post types. Default post + page.
+	 * @param array         $input Ability input.
+	 * @param string        $key   Input key holding the ID. Default `post_id`.
+	 * @param string[]|null $types Accepted post types. Default: every type
+	 *                             Saddle manages (Saddle_Post_Types).
 	 * @return WP_Post|WP_Error
 	 */
-	public static function require_readable_post( array $input, $key = 'post_id', array $types = array( 'post', 'page' ) ) {
-		$id = self::require_id( $input, $key );
+	public static function require_readable_post( array $input, $key = 'post_id', $types = null ) {
+		$types = null === $types ? Saddle_Post_Types::content_types() : (array) $types;
+		$id    = self::require_id( $input, $key );
 		if ( is_wp_error( $id ) ) {
 			return $id;
 		}
@@ -2100,6 +2221,8 @@ class Saddle_Abilities {
 			$message = __( 'No post with that ID.', 'saddle' );
 		} elseif ( array( 'page' ) === $types ) {
 			$message = __( 'No page with that ID.', 'saddle' );
+		} elseif ( count( $types ) > 2 ) {
+			$message = __( 'No post, page or other content item with that ID.', 'saddle' );
 		} else {
 			$message = __( 'No post or page with that ID.', 'saddle' );
 		}
@@ -2253,7 +2376,8 @@ class Saddle_Abilities {
 			return $result;
 		}
 
-		$meta_denied = self::apply_terms_and_meta( $type, $id, $input );
+		$meta_denied  = self::apply_terms_and_meta( $type, $id, $input );
+		$terms_denied = self::apply_custom_terms( $type, $id, $input );
 
 		$post = get_post( $id );
 		if ( $log ) {
@@ -2273,6 +2397,9 @@ class Saddle_Abilities {
 		$detail = self::post_detail( $post );
 		if ( ! empty( $meta_denied ) ) {
 			$detail['meta_denied'] = $meta_denied;
+		}
+		if ( ! empty( $terms_denied ) ) {
+			$detail['terms_denied'] = $terms_denied;
 		}
 		return $detail;
 	}
@@ -2309,8 +2436,11 @@ class Saddle_Abilities {
 		}
 
 		$force = ! empty( $input['force'] );
+		// With the trash turned off (EMPTY_TRASH_DAYS = 0) WordPress deletes
+		// outright, so the preview must not promise a recovery.
+		$permanent = $force || ! EMPTY_TRASH_DAYS;
 
-		$summary = $force
+		$summary = $permanent
 			? sprintf(
 				/* translators: 1: type, 2: id, 3: title. */
 				__( 'Permanently delete %1$s #%2$d "%3$s". This cannot be undone.', 'saddle' ),
@@ -2332,27 +2462,31 @@ class Saddle_Abilities {
 				'target'  => (string) $id,
 				// Bind permanence into the token: a "move to trash" preview must
 				// not be confirmable into a permanent, unrecoverable delete.
-				'bind'    => $force ? 'permanent' : 'trash',
+				'bind'    => $permanent ? 'permanent' : 'trash',
 				'summary' => $summary,
 				'preview' => array(
 					'id'                      => $id,
 					'type'                    => $type,
 					'title'                   => $post->post_title,
 					'current_status'          => $post->post_status,
-					'will_delete_permanently' => $force,
-					'recoverable'             => ! $force,
+					'will_delete_permanently' => $permanent,
+					'recoverable'             => ! $permanent,
 				),
 				'input'   => $input,
-				'execute' => function () use ( $id, $force ) {
-					$result = wp_delete_post( $id, $force );
+				'execute' => function () use ( $id, $permanent ) {
+					// wp_trash_post(), never wp_delete_post( $id, false ): core's
+					// delete only trashes posts and pages, and deletes every
+					// other type outright — a custom type's "move to trash"
+					// would destroy it (#137).
+					$result = $permanent ? wp_delete_post( $id, true ) : wp_trash_post( $id );
 					if ( ! $result ) {
 						return new WP_Error( 'saddle_delete_failed', __( 'WordPress could not delete the item.', 'saddle' ), array( 'status' => 500 ) );
 					}
 					return array(
 						'deleted'    => true,
 						'id'         => $id,
-						'permanent'  => $force,
-						'new_status' => $force ? 'deleted' : 'trash',
+						'permanent'  => $permanent,
+						'new_status' => $permanent ? 'deleted' : 'trash',
 					);
 				},
 			)
@@ -2400,7 +2534,7 @@ class Saddle_Abilities {
 			$postarr['ping_status'] = sanitize_key( $input['ping_status'] );
 		}
 
-		if ( 'page' === $type ) {
+		if ( is_post_type_hierarchical( $type ) ) {
 			if ( isset( $input['parent'] ) ) {
 				$postarr['post_parent'] = (int) $input['parent'];
 			}
@@ -2468,6 +2602,56 @@ class Saddle_Abilities {
 		}
 
 		return self::apply_custom_meta( $id, $input );
+	}
+
+	/**
+	 * Assign terms from the generic "terms" input: {taxonomy: [ids|names]}.
+	 * Each taxonomy must be one the item's type uses and shows in wp-admin, and
+	 * this account must hold its assign_terms capability. A name that isn't a
+	 * term yet is created only with the taxonomy's edit_terms capability, the
+	 * same line core draws; otherwise it is skipped.
+	 *
+	 * @param string $type  Post type.
+	 * @param int    $id    Post ID.
+	 * @param array  $input Input (reads the `terms` key).
+	 * @return string[] Taxonomies (or taxonomy:name) that were not applied.
+	 */
+	private static function apply_custom_terms( $type, $id, array $input ) {
+		if ( empty( $input['terms'] ) || ! is_array( $input['terms'] ) ) {
+			return array();
+		}
+
+		$denied = array();
+		foreach ( $input['terms'] as $taxonomy => $terms ) {
+			$taxonomy = sanitize_key( (string) $taxonomy );
+			$object   = get_taxonomy( $taxonomy );
+			if ( ! $object || ! $object->show_ui || ! is_object_in_taxonomy( $type, $taxonomy ) || ! is_array( $terms ) || ! current_user_can( $object->cap->assign_terms ) ) {
+				$denied[] = $taxonomy;
+				continue;
+			}
+
+			$values = array();
+			foreach ( $terms as $term ) {
+				if ( is_numeric( $term ) ) {
+					$values[] = (int) $term;
+					continue;
+				}
+				$name     = sanitize_text_field( (string) $term );
+				$existing = get_term_by( 'name', $name, $taxonomy );
+				if ( $existing ) {
+					$values[] = (int) $existing->term_id;
+				} elseif ( ! $object->hierarchical && current_user_can( $object->cap->edit_terms ) ) {
+					$values[] = $name;
+				} else {
+					$denied[] = $taxonomy . ':' . $name;
+				}
+			}
+
+			if ( is_wp_error( wp_set_object_terms( $id, $values, $taxonomy ) ) ) {
+				$denied[] = $taxonomy;
+			}
+		}
+		return $denied;
 	}
 
 	/**

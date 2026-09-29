@@ -286,6 +286,75 @@ class Saddle_Blocks_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( '"dropCap":true', $content );
 	}
 
+	/**
+	 * Issue #250: edit-block with a content array on a core/list left an empty
+	 * <ul></ul> followed by the OLD items as orphaned <li> siblings. For a
+	 * list the content is the children, so the new items replace the old
+	 * ones inside the wrapper.
+	 */
+	public function test_edit_block_list_content_replaces_the_items_inside_the_wrapper() {
+		$id = $this->page();
+		$this->run_ability(
+			'set-blocks',
+			array(
+				'post_id' => $id,
+				'nodes'   => array(
+					array(
+						'type'    => 'core/list',
+						'content' => array( 'Old one', 'Old two', 'Old three' ),
+					),
+				),
+			)
+		);
+
+		$result = $this->run_ability(
+			'edit-block',
+			array(
+				'post_id' => $id,
+				'address' => '0',
+				'content' => array( 'New one', 'New two' ),
+			)
+		);
+		$this->assertNotWPError( $result );
+
+		$content = get_post( $id )->post_content;
+		$this->assertStringNotContainsString( '<ul class="wp-block-list"></ul>', $content, 'The wrapper must not close before its items.' );
+		$this->assertStringNotContainsString( 'Old one', $content, 'The old items must be replaced, not orphaned.' );
+		$this->assertMatchesRegularExpression( '#<ul class="wp-block-list"><!-- wp:list-item --><li>New one</li>.*<li>New two</li><!-- /wp:list-item --></ul>#s', $content );
+
+		$blocks = parse_blocks( $content );
+		$this->assertCount( 2, $blocks[0]['innerBlocks'] );
+	}
+
+	public function test_edit_block_attrs_only_on_a_list_keeps_the_items_inside_the_wrapper() {
+		$id = $this->page();
+		$this->run_ability(
+			'set-blocks',
+			array(
+				'post_id' => $id,
+				'nodes'   => array(
+					array(
+						'type'    => 'core/list',
+						'content' => array( 'First', 'Second' ),
+					),
+				),
+			)
+		);
+
+		$result = $this->run_ability(
+			'edit-block',
+			array(
+				'post_id' => $id,
+				'address' => '0',
+				'attrs'   => array( 'ordered' => true ),
+			)
+		);
+		$this->assertNotWPError( $result );
+
+		$content = get_post( $id )->post_content;
+		$this->assertMatchesRegularExpression( '#<ol class="wp-block-list"><!-- wp:list-item --><li>First</li>.*<li>Second</li><!-- /wp:list-item --></ol>#s', $content );
+	}
+
 	public function test_move_block_reorders_and_refuses_own_subtree() {
 		$id = $this->page();
 		$this->run_ability(
@@ -473,6 +542,120 @@ class Saddle_Blocks_Test extends WP_UnitTestCase {
 			$this->assertWPError( $unknown, 'Non-curated unregistered types must still be refused.' );
 		} finally {
 			register_block_type( $saved );
+		}
+	}
+
+	public function test_dynamic_blocks_take_children_and_report_container_mode() {
+		// A plugin's section block: dynamic, saves only its inner blocks, and
+		// declares what may go inside (the Saddle Blocks shape).
+		register_block_type(
+			'saddle-test/wrap',
+			array(
+				'render_callback' => static function ( $attrs, $content ) {
+					return '<section class="wrap">' . $content . '</section>';
+				},
+				'allowed_blocks'  => array( 'core/heading', 'core/paragraph' ),
+			)
+		);
+		// And one that declares nothing about its insides.
+		register_block_type(
+			'saddle-test/plain',
+			array(
+				'render_callback' => static function ( $attrs, $content ) {
+					return '<div class="plain">' . $content . '</div>';
+				},
+			)
+		);
+
+		try {
+			$node = array(
+				'type'     => 'saddle-test/wrap',
+				'attrs'    => array( 'kind' => 'steps' ),
+				'children' => array(
+					array(
+						'type'    => 'core/heading',
+						'content' => 'Inside',
+						'attrs'   => array( 'level' => 2 ),
+					),
+					array(
+						'type'    => 'core/paragraph',
+						'content' => 'A line.',
+					),
+				),
+			);
+
+			$block = Saddle_Blocks_Author::expand_node( $node );
+			$this->assertNotWPError( $block );
+			$this->assertCount( 2, $block['innerBlocks'] );
+			$this->assertSame( array( null, null ), $block['innerContent'], 'A dynamic wrapper saves only its children: one null per child, no markup of its own.' );
+			$this->assertSame( '', $block['innerHTML'] );
+
+			// The editor's own parser sees the same two children, and the
+			// render callback wraps them at view time.
+			$parsed = parse_blocks( serialize_block( $block ) );
+			$this->assertSame( 'saddle-test/wrap', $parsed[0]['blockName'] );
+			$this->assertCount( 2, $parsed[0]['innerBlocks'] );
+			$rendered = render_block( $parsed[0] );
+			$this->assertStringContainsString( '<section class="wrap"><h2 class="wp-block-heading">Inside</h2>', $rendered );
+
+			// No children is still fine (attrs-only as before).
+			$empty = Saddle_Blocks_Author::expand_node( array( 'type' => 'saddle-test/wrap' ) );
+			$this->assertNotWPError( $empty );
+			$this->assertSame( array(), $empty['innerContent'] );
+
+			// "content" has nowhere to go on a dynamic block.
+			$bad = Saddle_Blocks_Author::expand_node(
+				array(
+					'type'    => 'saddle-test/wrap',
+					'content' => 'nope',
+				)
+			);
+			$this->assertWPError( $bad );
+			$this->assertSame( 'saddle_bad_node', $bad->get_error_code() );
+
+			// A dynamic block that declares nothing about its insides still takes children.
+			$plain = Saddle_Blocks_Author::expand_node(
+				array(
+					'type'     => 'saddle-test/plain',
+					'children' => array(
+						array(
+							'type'    => 'core/paragraph',
+							'content' => 'x',
+						),
+					),
+				)
+			);
+			$this->assertNotWPError( $plain );
+			$this->assertCount( 1, $plain['innerBlocks'] );
+
+			// The schema says which is which.
+			$wrap_schema = Saddle_Blocks_Schema::describe( 'saddle-test/wrap' );
+			$this->assertSame( 'container', $wrap_schema['authoring']['mode'] );
+			$this->assertSame( array( 'core/heading', 'core/paragraph' ), $wrap_schema['allowed_children'] );
+			$plain_schema = Saddle_Blocks_Schema::describe( 'saddle-test/plain' );
+			$this->assertSame( 'attrs-only', $plain_schema['authoring']['mode'] );
+
+			// End to end through the ability: saved, and readable back as a tree.
+			$id     = $this->page();
+			$result = $this->run_ability(
+				'set-blocks',
+				array(
+					'post_id' => $id,
+					'nodes'   => array( $node ),
+				)
+			);
+			$this->assertNotWPError( $result );
+			$this->assertSame( 3, $result['blocks'] );
+			$content = get_post( $id )->post_content;
+			$this->assertStringContainsString( '<!-- wp:saddle-test/wrap {"kind":"steps"} -->', $content );
+			$this->assertStringContainsString( '<!-- /wp:saddle-test/wrap -->', $content );
+			$tree = $this->run_ability( 'get-blocks', array( 'post_id' => $id ) );
+			$this->assertNotWPError( $tree );
+			$this->assertSame( 'saddle-test/wrap', $tree['nodes'][0]['type'] );
+			$this->assertSame( 2, $tree['nodes'][0]['children'] );
+		} finally {
+			unregister_block_type( 'saddle-test/wrap' );
+			unregister_block_type( 'saddle-test/plain' );
 		}
 	}
 

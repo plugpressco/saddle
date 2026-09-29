@@ -117,6 +117,36 @@ class Saddle_Verify_Test extends WP_UnitTestCase {
 		$this->assertSame( 75, $result['score'] ); // 100 - 25.
 	}
 
+	/**
+	 * Issue #250: a container whose wrapper closes before its inner blocks
+	 * renders an empty list followed by loose items. verify-page scored that
+	 * page 100/A; it is a structural break.
+	 */
+	public function test_wrapper_closed_before_its_children_is_a_structural_finding() {
+		$markup = '<!-- wp:list --><ul class="wp-block-list"></ul>'
+			. '<!-- wp:list-item --><li>Orphaned</li><!-- /wp:list-item -->'
+			. '<!-- /wp:list -->';
+
+		$result = $this->verify( $this->page( $markup ) );
+
+		$this->assertSame( 1, $result['counts']['structural'] );
+		$this->assertSame( '0', $result['findings'][0]['address'] );
+		$this->assertSame( 'structural', $result['findings'][0]['source'] );
+		$this->assertNotSame( 'A', $result['grade'] );
+	}
+
+	public function test_nested_closed_element_before_the_children_is_not_a_finding() {
+		// A wrapper may close an inner element (a figure, a background span)
+		// before its children begin; only the wrapper itself closing counts.
+		$markup = '<!-- wp:group --><div class="wp-block-group"><div class="decor"></div>'
+			. '<!-- wp:paragraph --><p>Inside.</p><!-- /wp:paragraph -->'
+			. '</div><!-- /wp:group -->';
+
+		$result = $this->verify( $this->page( $markup ) );
+
+		$this->assertSame( 0, $result['counts']['structural'] );
+	}
+
 	/* -------- grade honesty -------- */
 
 	public function test_one_echo_finding_caps_the_grade_at_b() {

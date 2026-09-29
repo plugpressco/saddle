@@ -293,23 +293,27 @@ class Saddle_MCP_Transport_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Saddle advertises only the tools capability, so a conformant client
-	 * should never ask — but Mark's ChatGPT demonstrably probes all three, and
+	 * Saddle advertises no resources capability, so a conformant client
+	 * should never ask — but Mark's ChatGPT demonstrably probes these, and
 	 * Method-not-found is a poor answer to give a client mid-handshake. The
-	 * vendored adapter already answers two of these with empty lists, so this
-	 * also closes a difference between Saddle's two transports.
+	 * vendored adapter answers the same way, so this also closes a difference
+	 * between Saddle's two transports. prompts/list answers too: since #178 it
+	 * lists the site's enabled skills (tests/prompts-test.php).
 	 */
 	public function test_resource_and_prompt_probes_get_empty_lists_not_method_not_found() {
 		foreach ( array(
 			'resources/list'           => 'resources',
 			'resources/templates/list' => 'resourceTemplates',
-			'prompts/list'             => 'prompts',
 		) as $method => $key ) {
 			$data = $this->post( array( 'jsonrpc' => '2.0', 'id' => 3, 'method' => $method ) )->get_data();
 
 			$this->assertArrayNotHasKey( 'error', $data, "{$method} must not answer Method not found." );
 			$this->assertSame( array(), $data['result'][ $key ], "{$method} must answer with an empty list." );
 		}
+
+		$prompts = $this->post( array( 'jsonrpc' => '2.0', 'id' => 3, 'method' => 'prompts/list' ) )->get_data();
+		$this->assertArrayNotHasKey( 'error', $prompts, 'prompts/list must not answer Method not found.' );
+		$this->assertIsArray( $prompts['result']['prompts'] );
 	}
 
 	/**

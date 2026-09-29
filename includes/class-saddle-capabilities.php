@@ -79,6 +79,13 @@ class Saddle_Capabilities {
 	const DRAFTS_ONLY_OPTION = 'saddle_drafts_only';
 
 	/**
+	 * Option key for rehearsal mode. Off by default. When on, every tool that
+	 * could change the site answers with what it would have done and saves
+	 * nothing. See Saddle_Rehearsal.
+	 */
+	const REHEARSAL_OPTION = 'saddle_rehearsal';
+
+	/**
 	 * Tier name => numeric rank. Higher rank = more power.
 	 *
 	 * @var array<string,int>
@@ -439,7 +446,7 @@ class Saddle_Capabilities {
 		if ( ! is_user_logged_in() ) {
 			return array(
 				'code'    => 'saddle_not_authenticated',
-				'message' => __( 'The request is not authenticated. Reconnect the app from Saddle → Connections to issue a fresh sign-in key.', 'saddle' ),
+				'message' => __( 'The request is not authenticated. Reconnect the app from Saddle → Apps to issue a fresh sign-in key.', 'saddle' ),
 			);
 		}
 
@@ -642,6 +649,26 @@ class Saddle_Capabilities {
 	 */
 	public static function set_drafts_only( $on ) {
 		return update_option( self::DRAFTS_ONLY_OPTION, (bool) $on );
+	}
+
+	/**
+	 * Whether rehearsal mode is on (see REHEARSAL_OPTION). Read fresh every
+	 * call: it decides whether a write lands.
+	 *
+	 * @return bool
+	 */
+	public static function is_rehearsal() {
+		return (bool) get_option( self::REHEARSAL_OPTION, false );
+	}
+
+	/**
+	 * Turn rehearsal mode on or off.
+	 *
+	 * @param bool $on Whether write tools should rehearse instead of saving.
+	 * @return bool
+	 */
+	public static function set_rehearsal( $on ) {
+		return update_option( self::REHEARSAL_OPTION, (bool) $on );
 	}
 
 	/**

@@ -3,7 +3,7 @@
  * Plugin Name:       Saddle
  * Plugin URI:        https://saddle.to
  * Description:       Connect AI agents to your WordPress site through MCP. Manage posts, pages, and media.
- * Version:           1.4.0
+ * Version:           1.5.0
  * Requires at least: 6.9
  * Requires PHP:      7.4
  * Author:            PlugPress
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SADDLE_VERSION', '1.4.0' );
+define( 'SADDLE_VERSION', '1.5.0' );
 define( 'SADDLE_FILE', __FILE__ );
 define( 'SADDLE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SADDLE_URL', plugin_dir_url( __FILE__ ) );
@@ -56,6 +56,7 @@ require_once SADDLE_DIR . 'includes/class-saddle-recipes.php';
 require_once SADDLE_DIR . 'includes/class-saddle-blocks-echo.php';
 require_once SADDLE_DIR . 'includes/lint/interface-saddle-lint-accessor.php';
 require_once SADDLE_DIR . 'includes/lint/interface-saddle-lint-style-accessor.php';
+require_once SADDLE_DIR . 'includes/lint/interface-saddle-lint-link-accessor.php';
 require_once SADDLE_DIR . 'includes/lint/class-saddle-lint.php';
 require_once SADDLE_DIR . 'includes/lint/class-saddle-lint-rule.php';
 require_once SADDLE_DIR . 'includes/lint/class-saddle-lint-color.php';
@@ -72,6 +73,7 @@ require_once SADDLE_DIR . 'includes/lint/rules/class-rule-featured-plan.php';
 require_once SADDLE_DIR . 'includes/lint/rules/class-rule-text-contrast.php';
 require_once SADDLE_DIR . 'includes/lint/rules/class-rule-missing-alt.php';
 require_once SADDLE_DIR . 'includes/lint/rules/class-rule-heading-order.php';
+require_once SADDLE_DIR . 'includes/lint/rules/class-rule-link-text.php';
 require_once SADDLE_DIR . 'includes/render/interface-saddle-render-accessor.php';
 require_once SADDLE_DIR . 'includes/render/class-saddle-render.php';
 require_once SADDLE_DIR . 'includes/render/class-saddle-render-gutenberg-accessor.php';
@@ -104,8 +106,14 @@ require_once SADDLE_DIR . 'includes/class-saddle-context.php';
 require_once SADDLE_DIR . 'includes/class-saddle-context-bundle.php';
 require_once SADDLE_DIR . 'includes/class-saddle-playbook.php';
 require_once SADDLE_DIR . 'includes/class-saddle-skills.php';
+require_once SADDLE_DIR . 'includes/class-saddle-prompts.php';
 require_once SADDLE_DIR . 'includes/class-saddle-memory.php';
 require_once SADDLE_DIR . 'includes/class-saddle-log.php';
+require_once SADDLE_DIR . 'includes/class-saddle-journal.php';
+require_once SADDLE_DIR . 'includes/class-saddle-undo.php';
+require_once SADDLE_DIR . 'includes/class-saddle-undo-steps.php';
+require_once SADDLE_DIR . 'includes/class-saddle-rehearsal.php';
+require_once SADDLE_DIR . 'includes/class-saddle-post-types.php';
 require_once SADDLE_DIR . 'includes/class-saddle-update-runner.php';
 require_once SADDLE_DIR . 'includes/class-saddle-unsplash.php';
 require_once SADDLE_DIR . 'includes/class-saddle-connection.php';
@@ -256,11 +264,20 @@ final class Saddle {
 		// themselves are not loaded on that request.
 		Saddle_Update_Runner::init();
 
+		// The change journal: records what each saddle/* tool replaces, so the
+		// log entry for that call can be undone (saddle/undo-changes).
+		Saddle_Journal::init();
+
+		// Rehearsal mode wraps every write tool at registration, so it has to
+		// be hooked before wp_abilities_api_init fires.
+		Saddle_Rehearsal::init();
+
 		// The MCP surface and abilities require core's Abilities API (WP 6.9+).
 		if ( self::abilities_api_available() ) {
 			require_once SADDLE_DIR . 'includes/abilities/core-content.php';
 			require_once SADDLE_DIR . 'includes/abilities/blocks.php';
 			require_once SADDLE_DIR . 'includes/abilities/site-editor.php';
+			require_once SADDLE_DIR . 'includes/abilities/site-editor-writes.php';
 			require_once SADDLE_DIR . 'includes/abilities/site.php';
 			require_once SADDLE_DIR . 'includes/abilities/updates.php';
 			require_once SADDLE_DIR . 'includes/abilities/users.php';
@@ -269,6 +286,8 @@ final class Saddle {
 			require_once SADDLE_DIR . 'includes/abilities/render.php';
 			require_once SADDLE_DIR . 'includes/abilities/verify.php';
 			require_once SADDLE_DIR . 'includes/abilities/memory.php';
+			require_once SADDLE_DIR . 'includes/abilities/undo.php';
+			require_once SADDLE_DIR . 'includes/abilities/menus.php';
 			require_once SADDLE_DIR . 'includes/abilities/unsplash.php';
 			require_once SADDLE_DIR . 'includes/abilities/yoast.php';
 			require_once SADDLE_DIR . 'includes/abilities/rank-math.php';
@@ -282,6 +301,7 @@ final class Saddle {
 			add_action( 'wp_abilities_api_init', 'saddle_register_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_block_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_site_editor_abilities' );
+			add_action( 'wp_abilities_api_init', 'saddle_register_site_editor_write_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_site_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_update_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_user_abilities' );
@@ -290,6 +310,8 @@ final class Saddle {
 			add_action( 'wp_abilities_api_init', 'saddle_register_render_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_verify_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_memory_abilities' );
+			add_action( 'wp_abilities_api_init', 'saddle_register_undo_abilities' );
+			add_action( 'wp_abilities_api_init', 'saddle_register_menu_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_unsplash_abilities' );
 			// Native SEO and WooCommerce integrations register at 30 behind
 			// saddle_register_ability_once(): an older add-on that still
@@ -337,26 +359,21 @@ final class Saddle {
 	 */
 	public static function setup_mcp_transport() {
 		// Saddle declares exactly one MCP endpoint: /saddle/v1/mcp. The adapter
-		// would otherwise stand up a second of its own at
-		// /wp-json/mcp/mcp-adapter-default-server, serving discover-abilities,
-		// get-ability-info and execute-ability — and Saddle's abilities are all
-		// `mcp.public`, so execute-ability can reach them.
+		// also stands up a shared one at /wp-json/mcp/mcp-adapter-default-server
+		// (discover-abilities, get-ability-info, execute-ability) for every
+		// ability marked `mcp.public` — with no transport permission callback,
+		// so none of the legible 401s, OAuth challenge or traffic trace Saddle's
+		// own endpoint has (issue #86). Saddle's tools are no longer marked
+		// public (saddle_ability_meta()), so they never appear there.
 		//
-		// Not a tier bypass: every Saddle ability gates itself, so the access
-		// levels and the approval gate hold whichever transport calls. But that
-		// server is registered with no transport permission callback, so it
-		// falls back to a bare current_user_can('read') and gets none of what
-		// Saddle's own endpoint has — the legible 401s, the OAuth challenge, or
-		// the traffic trace. It is a public surface we never declared,
-		// documented, or intended to ship (issue #86).
-		//
-		// Registered here, on plugins_loaded, because the adapter creates that
-		// server inside its own init — before it fires `mcp_adapter_init` — so
-		// anything later is too late. Third-party hook: the name is the
-		// adapter's, and this applies to a standalone copy of that plugin as
-		// much as to the bundled one, which is why it sits outside the
-		// class_exists() below.
-		add_filter( 'mcp_adapter_create_default_server', '__return_false' );
+		// That server is not Saddle's to switch off for everyone, though:
+		// Gravity Forms' "Site MCP" mode and any plugin like it serve their
+		// tools through it (issue #219). So it is dropped only on a site where
+		// nothing else exposes an ability to it — a Saddle-only site keeps the
+		// single endpoint #86 decided on. Third-party hook, the adapter's name;
+		// it fires on the bundled copy and on a standalone one alike, which is
+		// why it sits outside the class_exists() below.
+		add_action( 'mcp_adapter_init', array( 'Saddle_MCP', 'limit_default_server' ), 5 );
 
 		// Absent from the WordPress.org build, together with the library it
 		// loads. Guarded at the point of use, per the house rule — a guard that

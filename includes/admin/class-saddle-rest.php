@@ -71,6 +71,10 @@ class Saddle_REST_Admin {
 						'type'     => 'boolean',
 						'required' => false,
 					),
+					'rehearsal'   => array(
+						'type'     => 'boolean',
+						'required' => false,
+					),
 				),
 			),
 		);
@@ -635,6 +639,7 @@ class Saddle_REST_Admin {
 					'enforced' => Saddle_Capabilities::is_domain_enforced(),
 				),
 				'drafts_only'    => Saddle_Capabilities::is_drafts_only(),
+				'rehearsal'      => Saddle_Capabilities::is_rehearsal(),
 				// The key itself never leaves the server — only whether one is
 				// set, plus a last-4 hint so the owner can recognize it.
 				'unsplash'       => array(
@@ -699,6 +704,10 @@ class Saddle_REST_Admin {
 
 		if ( array_key_exists( 'drafts_only', $params ) ) {
 			Saddle_Capabilities::set_drafts_only( (bool) $request->get_param( 'drafts_only' ) );
+		}
+
+		if ( array_key_exists( 'rehearsal', $params ) ) {
+			Saddle_Capabilities::set_rehearsal( (bool) $request->get_param( 'rehearsal' ) );
 		}
 
 		// Key absent from the body ⇒ untouched; '' or null ⇒ cleared;
@@ -1500,7 +1509,7 @@ class Saddle_REST_Admin {
 		$page     = (int) $request->get_param( 'page' );
 		$page     = $page > 0 ? $page : 1;
 		$type     = (string) $request->get_param( 'type' );
-		$type     = in_array( $type, array( 'executed', 'denied' ), true ) ? $type : '';
+		$type     = in_array( $type, array( 'executed', 'denied', 'rehearsed' ), true ) ? $type : '';
 
 		$result = class_exists( 'Saddle_Log' )
 			? Saddle_Log::query( $per_page, $page, $type )

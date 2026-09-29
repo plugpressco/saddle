@@ -117,11 +117,19 @@ class Saddle_Context {
 		$lines[] = __( '# What you are allowed to do', 'saddle' );
 		$lines[] = '';
 		$lines[] = '- ' . $allowed;
-		$lines[] = '- ' . __( 'Saddle exposes core content only: posts, pages, media, and their block structure.', 'saddle' );
+		$lines[] = '- ' . __( 'Saddle exposes content: posts, pages, media, the site\'s custom content types, and their block structure.', 'saddle' );
 		$lines[] = '- ' . __( 'Stay within the tools Saddle provides. Do not attempt actions outside this scope.', 'saddle' );
+
+		if ( 'read' !== $tier && Saddle_Capabilities::is_rehearsal() ) {
+			$lines[] = '- ' . __( 'REHEARSAL MODE IS ON. Every tool that would change the site answers with what it would have done and saves nothing; read tools work normally. Tell the user what you would change instead of retrying. The site owner turns rehearsal off in Saddle → Permissions when they want changes to land.', 'saddle' );
+		}
 
 		if ( 'read' !== $tier && Saddle_Capabilities::is_drafts_only() ) {
 			$lines[] = '- ' . __( 'This site is set to drafts-only: publishing or scheduling a new post or page saves a draft instead. Publishing or scheduling an existing item requires a preview and confirmation. Edits to already-published content remain live.', 'saddle' );
+		}
+
+		if ( 'read' !== $tier ) {
+			$lines[] = '- ' . __( 'Every change you make is recorded. If one went wrong, saddle/recall-changes lists it with an id, and saddle/undo-changes puts back what it replaced (preview first, then confirm).', 'saddle' );
 		}
 
 		foreach ( self::withheld_tools_lines() as $line ) {
@@ -151,20 +159,19 @@ class Saddle_Context {
 			$lines[] = $line;
 		}
 
-		// Content landscape — orient the agent to what exists, and name public
-		// custom post types so it understands Saddle deliberately does NOT manage
-		// them (only post/page/media).
+		// Content landscape — orient the agent to what exists, and name the
+		// custom post types it can reach through the post tools (#137).
 		$lines[] = __( '# Content on this site', 'saddle' );
 		$lines[] = '';
 		$lines[] = sprintf( '- %s: %d', __( 'Published posts', 'saddle' ), self::published_count( 'post' ) );
 		$lines[] = sprintf( '- %s: %d', __( 'Published pages', 'saddle' ), self::published_count( 'page' ) );
 
-		$other_types = self::other_public_post_types();
-		if ( ! empty( $other_types ) ) {
+		$custom_types = self::custom_type_labels();
+		if ( ! empty( $custom_types ) ) {
 			$lines[] = sprintf(
 				/* translators: %s: comma-separated list of custom post type labels. */
-				'- ' . __( 'This site also has custom content types Saddle does not manage: %s. Do not try to read or change these.', 'saddle' ),
-				implode( ', ', $other_types )
+				'- ' . __( 'Custom content types: %s. Call saddle/list-post-types, then use the post tools with its post_type.', 'saddle' ),
+				implode( ', ', $custom_types )
 			);
 		}
 		$lines[] = '';
@@ -220,7 +227,7 @@ class Saddle_Context {
 		if ( ! empty( $plugins ) ) {
 			$lines[] = __( '# Plugins active on this site', 'saddle' );
 			$lines[] = '';
-			$lines[] = __( 'These plugins are active (with versions). Saddle manages core content only; these plugins may expose their own tools separately. Be aware of them when reasoning about the site:', 'saddle' );
+			$lines[] = __( 'These plugins are active (with versions). Saddle manages site content; these plugins may expose their own tools separately. Be aware of them when reasoning about the site:', 'saddle' );
 			$lines[] = '';
 			foreach ( $plugins as $name ) {
 				$lines[] = '- ' . $name;
@@ -243,8 +250,8 @@ class Saddle_Context {
 		$lines[] = __( '# When a call is refused', 'saddle' );
 		$lines[] = '';
 		$lines[] = '- ' . __( 'A permission error on a tool call means one of the site owner\'s controls blocked it: the global pause switch, the site\'s access level, or that specific tool being turned off. These are the owner\'s deliberate choices — never retry in a loop; tell the user which control to check in the Saddle dashboard (Settings for pause, Permissions for level and per-tool toggles).', 'saddle' );
-		$lines[] = '- ' . __( 'A 401 saying the key was rejected means the sign-in key was revoked or rotated. Ask the user to reconnect this app from Saddle → Connections (or paste the fresh setup if they just rotated the key).', 'saddle' );
-		$lines[] = '- ' . __( 'A 401 saying no key arrived usually means the web server strips the Authorization header. Ask the user to open Saddle → Connections → "Connection details & health" and run the connection check — it can fix this automatically on most hosts.', 'saddle' );
+		$lines[] = '- ' . __( 'A 401 saying the key was rejected means the sign-in key was revoked or rotated. Ask the user to reconnect this app from Saddle → Apps (or paste the fresh setup if they just rotated the key).', 'saddle' );
+		$lines[] = '- ' . __( 'A 401 saying no key arrived usually means the web server strips the Authorization header. Ask the user to open Saddle → Apps → "Connection details & health" and run the connection check — it can fix this automatically on most hosts.', 'saddle' );
 		$lines[] = '- ' . __( 'A destructive tool answering with a preview and a confirm_token is NOT an error — that is the approval gate. Show the user the preview; call again with the token only after they agree.', 'saddle' );
 		$lines[] = '';
 
@@ -603,22 +610,18 @@ class Saddle_Context {
 	}
 
 	/**
-	 * Labels of public custom post types Saddle does not manage (everything
-	 * public and non-built-in — i.e. not post/page/attachment).
+	 * Labels of the custom post types Saddle manages (Saddle_Post_Types).
 	 *
 	 * @return string[]
 	 */
-	private static function other_public_post_types() {
-		$types  = get_post_types(
-			array(
-				'public'   => true,
-				'_builtin' => false,
-			),
-			'objects'
-		);
+	private static function custom_type_labels() {
 		$labels = array();
-		foreach ( $types as $type ) {
-			$labels[] = isset( $type->labels->name ) && $type->labels->name ? $type->labels->name : $type->name;
+		foreach ( Saddle_Post_Types::custom_types() as $name ) {
+			// "Label (name)": the name is what post_type takes, and a type
+			// registered without a label would otherwise read as "Posts".
+			$type     = get_post_type_object( $name );
+			$label    = isset( $type->labels->name ) && $type->labels->name ? $type->labels->name : $name;
+			$labels[] = sprintf( '%s (%s)', $label, $name );
 		}
 		sort( $labels );
 		return $labels;

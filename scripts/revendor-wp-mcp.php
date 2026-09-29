@@ -6,9 +6,10 @@
  * `includes/lib/wp-mcp/` is vendored and must not be hand-edited — CLAUDE.md
  * says so twice. Exactly one deviation is nevertheless carried, deliberately:
  * every i18n text domain inside it is rewritten from `mcp-adapter` to `saddle`,
- * so the self-hosted build (the only build that ships the library at all — the
- * WordPress.org zip excludes it) exposes one text domain to translators rather
- * than two.
+ * so that any build shipping the library exposes one text domain to
+ * translators rather than two. (Today no build ships it: the Gruntfile excludes
+ * includes/lib/ on both channels, #113. The copy serves the development tree
+ * and the test suite.)
  *
  * That deviation was applied by hand, and a hand-applied change to a vendored
  * tree is lost the moment someone drops in a fresh upstream copy — silently,

@@ -96,7 +96,7 @@ class Saddle_Verify {
 
 		// Pass 3 — judgment, through the same rules lint-page runs.
 		if ( $accessor instanceof Saddle_Lint_Accessor ) {
-			foreach ( Saddle_Lint::run( $tree, $accessor ) as $violation ) {
+			foreach ( array_merge( Saddle_Lint::post_findings( $post ), Saddle_Lint::run( $tree, $accessor ) ) as $violation ) {
 				$findings[] = array(
 					'address'  => $violation['address'],
 					'source'   => 'lint',
@@ -285,9 +285,10 @@ class Saddle_Verify {
 		if ( '' === trim( (string) $post->post_content ) ) {
 			return array();
 		}
-		foreach ( Saddle_Lint::nodes( $tree ) as $node ) {
+		$nodes = Saddle_Lint::nodes( $tree );
+		foreach ( $nodes as $node ) {
 			if ( '' !== trim( (string) $node['type'] ) ) {
-				return array();
+				return self::unwrapped_children( $nodes );
 			}
 		}
 		return array(
@@ -299,6 +300,49 @@ class Saddle_Verify {
 				'fix_hint' => __( 'Rebuild the content as blocks (set-blocks) instead of raw HTML.', 'saddle' ),
 			),
 		);
+	}
+
+	/**
+	 * Container blocks whose wrapper element closes before their inner
+	 * blocks. The children still parse as inner blocks, so every read looks
+	 * fine, but they render after the wrapper: an empty <ul></ul> followed
+	 * by loose <li> items (#250). Detected by the wrapper's own tag depth in
+	 * the markup before the first child placeholder; an inner element that
+	 * opens and closes there (a figure, a background span) doesn't count.
+	 *
+	 * @param array[] $nodes Flat node list from Saddle_Lint::nodes().
+	 * @return array[]
+	 */
+	private static function unwrapped_children( array $nodes ) {
+		$findings = array();
+		foreach ( $nodes as $node ) {
+			$block = $node['block'];
+			if ( empty( $block['innerBlocks'] ) || empty( $block['innerContent'] ) ) {
+				continue;
+			}
+			$before = $block['innerContent'][0];
+			if ( ! is_string( $before ) || ! preg_match( '/^\s*<([a-z][a-z0-9-]*)[\s>\/]/i', $before, $match ) ) {
+				continue;
+			}
+			$tag   = preg_quote( $match[1], '/' );
+			$depth = preg_match_all( '/<' . $tag . '[\s>\/]/i', $before ) - preg_match_all( '/<\/' . $tag . '\s*>/i', $before );
+			if ( $depth > 0 ) {
+				continue;
+			}
+			$findings[] = array(
+				'address'  => $node['address'],
+				'source'   => 'structural',
+				'severity' => 'error',
+				'message'  => sprintf(
+					/* translators: 1: block type, 2: HTML tag name. */
+					__( 'The %1$s block closes its <%2$s> before its inner blocks, so they render outside it (for a list: an empty list followed by loose items).', 'saddle' ),
+					$node['type'],
+					$match[1]
+				),
+				'fix_hint' => __( 'Rebuild this block: remove-block, then add-block with its content, or set-blocks for the whole page.', 'saddle' ),
+			);
+		}
+		return $findings;
 	}
 
 	/**

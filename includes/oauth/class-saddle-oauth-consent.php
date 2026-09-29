@@ -144,7 +144,7 @@ class Saddle_OAuth_Consent {
 		// to read forever as a result. Either way this screen decides, and it can
 		// never offer more than the site's own level.
 		echo '<h2>' . esc_html__( 'What it will be able to do', 'saddle' ) . '</h2>';
-		echo '<p>' . esc_html__( 'You choose. This is the most this app will ever be able to do, and you can change it later from Saddle → Connections.', 'saddle' ) . '</p>';
+		echo '<p>' . esc_html__( 'You choose. This is the most this app will ever be able to do, and you can change it later from Saddle → Apps.', 'saddle' ) . '</p>';
 
 		echo '<ul style="list-style:none;margin:0 0 1.5em">';
 		foreach ( self::level_choices( $site_tier ) as $tier => $choice ) {
@@ -166,7 +166,7 @@ class Saddle_OAuth_Consent {
 			)
 		) . '</p>';
 
-		echo '<p>' . esc_html__( 'Deletions and overwrites will still show you a preview and ask for confirmation every time. You can disconnect this app at any point from Saddle → Connections.', 'saddle' ) . '</p>';
+		echo '<p>' . esc_html__( 'Deletions and overwrites will still show you a preview and ask for confirmation every time. You can disconnect this app at any point from Saddle → Apps.', 'saddle' ) . '</p>';
 
 		echo '<p>' . esc_html(
 			sprintf(
