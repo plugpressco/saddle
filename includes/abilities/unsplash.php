@@ -62,7 +62,7 @@ function saddle_register_unsplash_abilities() {
 			),
 			'execute_callback'    => array( 'Saddle_Unsplash_Abilities', 'search' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'unsplash-search' ),
-			'meta'                => saddle_ability_meta( true, false, true, 'read' ),
+			'meta'                => saddle_ability_meta( true, false, true, 'read', true ),
 		)
 	);
 
@@ -111,7 +111,7 @@ function saddle_register_unsplash_abilities() {
 			),
 			'execute_callback'    => array( 'Saddle_Unsplash_Abilities', 'import' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'write', 'upload_files', 'unsplash-import' ),
-			'meta'                => saddle_ability_meta( false, false, false, 'write' ),
+			'meta'                => saddle_ability_meta( false, false, false, 'write', true ),
 		)
 	);
 }

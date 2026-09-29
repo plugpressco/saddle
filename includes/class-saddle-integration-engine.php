@@ -293,7 +293,10 @@ class Saddle_Integration_Engine {
 		$readonly    = ! empty( $annotations['readonly'] );
 		$destructive = ! empty( $annotations['destructive'] );
 		$idempotent  = ! empty( $annotations['idempotent'] );
-		$tier        = $readonly ? 'read' : 'write';
+		// Pass through what the plugin declares; if it declares nothing, say
+		// open-world: Saddle can't vouch for another plugin's outbound calls.
+		$open_world = isset( $annotations['openWorldHint'] ) ? (bool) $annotations['openWorldHint'] : true;
+		$tier       = $readonly ? 'read' : 'write';
 
 		// The catalog can force the gate onto a source the partner forgot to
 		// annotate as destructive — a missing annotation must fail toward
@@ -336,7 +339,7 @@ class Saddle_Integration_Engine {
 				'input_schema'        => $schema,
 				'execute_callback'    => $this->executor( $short, $name, $title, $destructive, $readonly ),
 				'permission_callback' => Saddle_Capabilities::permission( $tier, $readonly ? 'read' : 'edit_posts', $short ),
-				'meta'                => saddle_ability_meta( $readonly, $destructive, $idempotent, $tier ),
+				'meta'                => saddle_ability_meta( $readonly, $destructive, $idempotent, $tier, $open_world ),
 			)
 		);
 		$this->registered[ $wrapper ] = $slug;

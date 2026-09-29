@@ -1080,6 +1080,9 @@ class Saddle_MCP {
 		if ( isset( $declared['idempotent'] ) ) {
 			$annotations['idempotentHint'] = (bool) $declared['idempotent'];
 		}
+		if ( isset( $declared['openWorldHint'] ) ) {
+			$annotations['openWorldHint'] = (bool) $declared['openWorldHint'];
+		}
 
 		return $annotations;
 	}

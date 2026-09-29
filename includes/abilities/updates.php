@@ -82,7 +82,7 @@ function saddle_register_update_abilities() {
 			'input_schema'        => $item_schema( 'plugins', __( 'Plugin files ("dir/file.php") or folder slugs, from list-updates.', 'saddle' ) ),
 			'execute_callback'    => array( 'Saddle_Update_Abilities', 'update_plugin' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'admin', 'activate_plugins', 'update-plugin' ),
-			'meta'                => saddle_ability_meta( false, true, false, 'admin' ),
+			'meta'                => saddle_ability_meta( false, true, false, 'admin', true ),
 		)
 	);
 
@@ -95,7 +95,7 @@ function saddle_register_update_abilities() {
 			'input_schema'        => $item_schema( 'themes', __( 'Theme directory names, from list-updates.', 'saddle' ) ),
 			'execute_callback'    => array( 'Saddle_Update_Abilities', 'update_theme' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'admin', 'switch_themes', 'update-theme' ),
-			'meta'                => saddle_ability_meta( false, true, false, 'admin' ),
+			'meta'                => saddle_ability_meta( false, true, false, 'admin', true ),
 		)
 	);
 

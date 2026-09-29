@@ -492,7 +492,7 @@ function saddle_register_abilities() {
 			),
 			'execute_callback'    => array( 'Saddle_Abilities', 'upload_media' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'write', 'upload_files', 'upload-media' ),
-			'meta'                => saddle_ability_meta( false, false, false, 'write' ),
+			'meta'                => saddle_ability_meta( false, false, false, 'write', true ),
 		)
 	);
 
@@ -612,9 +612,11 @@ function saddle_register_abilities() {
  * @param bool   $destructive Whether the ability may destroy data.
  * @param bool   $idempotent  Whether repeated identical calls are no-ops.
  * @param string $tier        Minimum access tier ('read'|'write'|'admin').
+ * @param bool   $open_world  Whether the ability reaches outside the site
+ *                            (an external API, a remote URL). Default false.
  * @return array
  */
-function saddle_ability_meta( $is_readonly, $destructive, $idempotent, $tier = 'read' ) {
+function saddle_ability_meta( $is_readonly, $destructive, $idempotent, $tier = 'read', $open_world = false ) {
 	return array(
 		'show_in_rest' => true,
 		// Not public: `mcp.public` only means "serve this on the MCP Adapter's
@@ -623,9 +625,14 @@ function saddle_ability_meta( $is_readonly, $destructive, $idempotent, $tier = '
 		'mcp'          => array( 'public' => false ),
 		'saddle'       => array( 'tier' => $tier ),
 		'annotations'  => array(
-			'readonly'    => (bool) $is_readonly,
-			'destructive' => (bool) $destructive,
-			'idempotent'  => (bool) $idempotent,
+			'readonly'      => (bool) $is_readonly,
+			'destructive'   => (bool) $destructive,
+			'idempotent'    => (bool) $idempotent,
+			// MCP's openWorldHint, under its MCP name (core has no equivalent
+			// key; the adapter passes this one through as-is). False for tools
+			// that act on the owner's own site only; true for the few that
+			// reach outside it (#267).
+			'openWorldHint' => (bool) $open_world,
 		),
 	);
 }
