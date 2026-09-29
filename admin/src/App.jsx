@@ -1,8 +1,8 @@
 /**
  * Saddle admin — a guided, person-first workspace on the DS sidebar shell.
  *
- * First run shows a short setup that flows straight into connecting the first
- * app. After that, the grouped rail (AppShell/AppNav — the same shell Waggle
+ * First run reads the site, connects the first app and asks for edit rights
+ * only once that app is connected (#269). After that, the grouped rail (AppShell/AppNav — the same shell Waggle
  * ships): Dashboard, then Your AI (Permissions, Guidance, Memory), Connect
  * (Connections, Integrations), Monitor (Activity), and Settings pinned in the
  * rail footer. A slim sticky top bar above the content carries the page
@@ -45,7 +45,7 @@ import {
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { api, levelFor } from './api';
 import { BrandMark, IconBell } from './components/icons';
-import Onboarding from './components/Onboarding';
+import FirstRun from './components/FirstRun';
 import Dashboard from './components/Dashboard';
 import Permissions from './components/Permissions';
 import Guidance from './components/Guidance';
@@ -512,9 +512,11 @@ export default function App() {
 	} else if ( ! onboarded ) {
 		view = (
 			<div className="pp-app saddle-app saddle-app--setup">
-				<Onboarding
+				<FirstRun
 					tier={ tier }
+					clients={ clients }
 					onTierSaved={ setTier }
+					onClientsChanged={ refreshClients }
 					onFinish={ finishOnboarding }
 				/>
 			</div>
