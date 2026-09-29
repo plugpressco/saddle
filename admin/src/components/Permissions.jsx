@@ -16,7 +16,6 @@ import {
 	Notice,
 	Switch,
 	toast,
-	PageHeader,
 	Tooltip,
 } from '@plugpress/ui';
 import { __, sprintf, _n } from '@wordpress/i18n';
@@ -261,14 +260,6 @@ export default function Permissions( {
 
 	return (
 		<div className="saddle-perm">
-			<PageHeader
-				title={ __( 'Permissions', 'saddle' ) }
-				description={ __(
-					'Pick how much your connected apps are allowed to do. You can change this whenever you like.',
-					'saddle'
-				) }
-			/>
-
 			<CardRadioGroup
 				aria-label={ __( 'What your AI can do', 'saddle' ) }
 				value={ choice }

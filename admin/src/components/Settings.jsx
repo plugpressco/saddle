@@ -17,7 +17,6 @@ import {
 	Row,
 	Badge,
 	Button,
-	PageHeader,
 	ExternalLinkIcon,
 	StarIcon,
 } from '@plugpress/ui';
@@ -108,14 +107,6 @@ export default function Settings( { paused, pausing, onTogglePause } ) {
 
 	return (
 		<div className="saddle-settings">
-			<PageHeader
-				title={ __( 'Settings', 'saddle' ) }
-				description={ __(
-					'Site-wide switches and connection facts. Access levels live on Permissions; integration keys on Integrations.',
-					'saddle'
-				) }
-			/>
-
 			<Card>
 				<CardHeader
 					title={ __( 'AI access', 'saddle' ) }

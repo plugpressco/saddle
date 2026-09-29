@@ -26,7 +26,6 @@ import {
 	Drawer,
 	useConfirm,
 	toast,
-	PageHeader,
 	HelpTip,
 } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
@@ -203,14 +202,6 @@ export default function Guidance() {
 	return (
 		<div className="saddle-guide">
 			{ loadError && <Notice tone="danger">{ loadError }</Notice> }
-
-			<PageHeader
-				title={ __( 'Guidance', 'saddle' ) }
-				description={ __(
-					'Every connected AI is told the same things about your site and follows the same instructions from you.',
-					'saddle'
-				) }
-			/>
 
 			{ /* Read-only, auto-generated — kept collapsed so it never crowds
 			     the page; the detail lives one click away. */ }

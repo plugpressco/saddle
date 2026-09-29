@@ -8,22 +8,28 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Registers the top-level "Saddle" admin page (admin.php?page=saddle) and
- * enqueues the built React assets onto it.
+ * Registers the Saddle menu and its pages, and enqueues the built React assets
+ * onto them.
+ *
+ * Saddle is one top-level menu. Every page is a submenu under it: Home, the
+ * installed modules, Connections and Settings (see Saddle_Modules). WordPress's
+ * own left menu is the only navigation; inside the page there is a header and,
+ * where a page has them, one row of tabs.
  */
 class Saddle_Settings {
 
 	/**
-	 * Admin page slug. The connect flow redirects to admin.php?page=saddle, so
-	 * this must be a top-level menu page.
+	 * Home's slug, and the menu's. The connect flow and every old link point at
+	 * admin.php?page=saddle, so it stays the top-level page.
 	 */
 	const PAGE_SLUG = 'saddle';
 
 	/**
-	 * Register the admin menu page.
+	 * Register the menu and one submenu page per area. Hooked at priority 9 so
+	 * the menu exists before a sibling plugin adds to it at the default 10.
 	 */
 	public static function register_menu() {
-		$hook = add_menu_page(
+		add_menu_page(
 			__( 'Saddle', 'saddle' ),
 			__( 'Saddle', 'saddle' ),
 			'manage_options',
@@ -34,10 +40,84 @@ class Saddle_Settings {
 			'58.20'
 		);
 
-		// Remember the hook suffix so enqueue only fires on our page.
-		self::$hook_suffix = $hook;
+		self::$hooks = array();
+		foreach ( Saddle_Modules::areas() as $key => $area ) {
+			if ( ! $area['nav'] ) {
+				continue;
+			}
+
+			// The first submenu shares the menu's slug, which is what renames
+			// WordPress's automatic "Saddle" item to "Home".
+			$hook = add_submenu_page(
+				self::PAGE_SLUG,
+				/* translators: %s: page name, such as Home or Connections. */
+				sprintf( __( '%s ‹ Saddle', 'saddle' ), $area['title'] ),
+				$area['title'],
+				$area['capability'],
+				$area['slug'],
+				array( __CLASS__, 'render_page' )
+			);
+
+			if ( $hook ) {
+				self::$hooks[ $hook ] = $key;
+			}
+		}
 
 		add_action( 'in_admin_header', array( __CLASS__, 'setup_notice_quarantine' ) );
+	}
+
+	/**
+	 * Keep Connections and Settings last in the Saddle menu.
+	 *
+	 * A sibling that adds its own submenu (Saddle Rank does, at priority 20)
+	 * lands after whatever is already there. The modules belong between Home
+	 * and the two configuration pages, so those two move to the end once every
+	 * plugin has had its turn.
+	 */
+	public static function order_submenu() {
+		global $submenu;
+
+		if ( empty( $submenu[ self::PAGE_SLUG ] ) || ! is_array( $submenu[ self::PAGE_SLUG ] ) ) {
+			return;
+		}
+
+		$areas = Saddle_Modules::areas();
+		$last  = array( $areas['connections']['slug'], $areas['settings']['slug'] );
+		$head  = array();
+		$tail  = array();
+
+		foreach ( $submenu[ self::PAGE_SLUG ] as $item ) {
+			$position = isset( $item[2] ) ? array_search( $item[2], $last, true ) : false;
+			if ( false === $position ) {
+				$head[] = $item;
+			} else {
+				$tail[ $position ] = $item;
+			}
+		}
+
+		ksort( $tail );
+		$submenu[ self::PAGE_SLUG ] = array_merge( $head, array_values( $tail ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Reordering our own menu's items, after every plugin has added to it.
+	}
+
+	/**
+	 * The Plugins screen row: "Get started" until first run is done, then
+	 * "Settings".
+	 *
+	 * @param string[] $links The plugin's row action links.
+	 * @return string[]
+	 */
+	public static function action_links( $links ) {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return $links;
+		}
+
+		$link = get_option( 'saddle_onboarded' )
+			? '<a href="' . esc_url( Saddle_Modules::url( 'settings' ) ) . '">' . esc_html__( 'Settings', 'saddle' ) . '</a>'
+			: '<a href="' . esc_url( Saddle_Modules::url( 'home' ) ) . '">' . esc_html__( 'Get started', 'saddle' ) . '</a>';
+
+		array_unshift( $links, $link );
+
+		return $links;
 	}
 
 	/**
@@ -67,11 +147,11 @@ class Saddle_Settings {
 	}
 
 	/**
-	 * Stored hook suffix for the admin page.
+	 * Hook suffixes of the Saddle pages, mapped to their area keys.
 	 *
-	 * @var string
+	 * @var array<string,string>
 	 */
-	private static $hook_suffix = '';
+	private static $hooks = array();
 
 	/**
 	 * Output-buffer level when the notice capture opened (0 = not capturing).
@@ -92,7 +172,7 @@ class Saddle_Settings {
 	 */
 	public static function setup_notice_quarantine() {
 		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
-		if ( ! $screen || $screen->id !== self::$hook_suffix ) {
+		if ( ! $screen || ! isset( self::$hooks[ $screen->id ] ) ) {
 			return;
 		}
 		add_action( 'admin_notices', array( __CLASS__, 'begin_notice_capture' ), 1 );
@@ -135,10 +215,70 @@ class Saddle_Settings {
 	}
 
 	/**
-	 * Render the mount point for the React app.
+	 * The area and tab of the current request: which page this is, and which
+	 * of its tabs. An unknown tab falls back to the page's first one.
+	 *
+	 * @return array{0:string,1:string}
+	 */
+	private static function current_route() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Reading which page to draw; nothing is changed.
+		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( (string) $_GET['page'] ) ) : self::PAGE_SLUG;
+		$tab  = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( (string) $_GET['tab'] ) ) : '';
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		$area = Saddle_Modules::area_for_page( $page );
+		if ( '' === $area ) {
+			$area = 'home';
+		}
+
+		return array( $area, Saddle_Modules::resolve_tab( $area, $tab ) );
+	}
+
+	/**
+	 * Render the mount point for the React app, naming the page and tab.
 	 */
 	public static function render_page() {
-		echo '<div class="wrap"><div id="saddle-root"></div></div>';
+		list( $area, $tab ) = self::current_route();
+
+		printf(
+			'<div class="wrap"><div id="saddle-root" data-area="%s" data-tab="%s"></div></div>',
+			esc_attr( $area ),
+			esc_attr( $tab )
+		);
+	}
+
+	/**
+	 * The pages, as the admin app needs them: labels, URLs and tabs.
+	 *
+	 * @return array[]
+	 */
+	private static function areas_for_app() {
+		$out = array();
+		foreach ( Saddle_Modules::areas() as $key => $area ) {
+			$tabs = array();
+			foreach ( $area['tabs'] as $tab => $label ) {
+				$tabs[] = array(
+					'key'   => $tab,
+					'label' => $label,
+					'url'   => esc_url_raw( Saddle_Modules::url( $key, $tab ) ),
+				);
+			}
+
+			$out[] = array(
+				'key'     => $key,
+				'title'   => $area['title'],
+				'url'     => esc_url_raw( Saddle_Modules::url( $key ) ),
+				'nav'     => (bool) $area['nav'],
+				'module'  => (bool) $area['module'],
+				'product' => isset( $area['product'] ) ? $area['product'] : '',
+				'version' => isset( $area['version'] ) ? $area['version'] : '',
+				'summary' => isset( $area['summary'] ) ? $area['summary'] : '',
+				'content' => isset( $area['content'] ) ? $area['content'] : '',
+				'tabs'    => $tabs,
+			);
+		}
+
+		return $out;
 	}
 
 	/**
@@ -147,9 +287,11 @@ class Saddle_Settings {
 	 * @param string $hook_suffix Current admin page hook.
 	 */
 	public static function enqueue_assets( $hook_suffix ) {
-		if ( $hook_suffix !== self::$hook_suffix ) {
+		if ( ! isset( self::$hooks[ $hook_suffix ] ) ) {
 			return;
 		}
+
+		list( $area, $tab ) = self::current_route();
 
 		$build_dir = SADDLE_DIR . 'admin/build/';
 		$build_url = SADDLE_URL . 'admin/build/';
@@ -223,10 +365,12 @@ class Saddle_Settings {
 
 		// The design system (light-only) reads its --pp-* tokens from a .pp-scope
 		// ancestor, so the page body carries it (portaled overlays inherit too).
+		// `saddle-admin-page` marks every Saddle page alike, whatever WordPress
+		// names its screen (toplevel_page_saddle, saddle_page_saddle-settings…).
 		add_filter(
 			'admin_body_class',
 			static function ( $classes ) {
-				return $classes . ' pp-scope';
+				return $classes . ' pp-scope saddle-admin-page';
 			}
 		);
 
@@ -262,7 +406,7 @@ class Saddle_Settings {
 					// Offered when the dashboard's own REST calls come back 401 —
 					// one cause is simply an expired session, and signing in again
 					// is the whole fix. Returns to this screen afterwards.
-					'loginUrl'     => esc_url_raw( wp_login_url( admin_url( 'admin.php?page=' . self::PAGE_SLUG ) ) ),
+					'loginUrl'     => esc_url_raw( wp_login_url( Saddle_Modules::url( $area, $tab ) ) ),
 					// Header chrome: plugin version + outbound links. Both point at
 					// the plugin's WordPress.org listing rather than a vendor site:
 					// that is where a free .org-hosted plugin's docs and reviews
@@ -274,10 +418,24 @@ class Saddle_Settings {
 					// The admin app's extension-contract version — addon bundles
 					// gate on it before registering (admin/src/extensions.js).
 					'shellVersion' => SADDLE_SHELL_VERSION,
+					// Which page this is, and every page the menu has. The
+					// frame draws its header and tabs from these, so the menu
+					// and the page can never disagree.
+					'area'         => $area,
+					'tab'          => $tab,
+					'areas'        => self::areas_for_app(),
 				)
 			) . ';',
 			'before'
 		);
+
+		// A module's own bundle, which registers its screens (shell v2). It
+		// loads after Saddle's, so its filters are in place before the app
+		// mounts.
+		$areas = Saddle_Modules::areas();
+		if ( ! empty( $areas[ $area ]['script'] ) && wp_script_is( $areas[ $area ]['script'], 'registered' ) ) {
+			wp_enqueue_script( $areas[ $area ]['script'] );
+		}
 
 		/**
 		 * Fires after Saddle's admin bundle is enqueued on its page.

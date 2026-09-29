@@ -23,7 +23,6 @@ import {
 	RowList,
 	Row,
 	StatusDot,
-	PageHeader,
 } from '@plugpress/ui';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { api, levelFor } from '../api';
@@ -154,8 +153,6 @@ export default function Dashboard( { tier, clients, onNavigate, onConnect } ) {
 
 	return (
 		<div className="saddle-home">
-			<PageHeader title={ __( 'Dashboard', 'saddle' ) } />
-
 			{ /* The lead. Everything below it is quieter on purpose: the counts
 			     are a supporting line, not tiles, and when there are no apps the
 			     count is dropped entirely — the callout underneath already says
