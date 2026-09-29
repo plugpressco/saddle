@@ -83,6 +83,16 @@ class Saddle_REST_Admin {
 
 		register_rest_route(
 			self::REST_NAMESPACE,
+			'/first-look',
+			array(
+				'methods'             => 'GET',
+				'callback'            => array( __CLASS__, 'get_first_look' ),
+				'permission_callback' => array( __CLASS__, 'can_manage' ),
+			)
+		);
+
+		register_rest_route(
+			self::REST_NAMESPACE,
 			'/capabilities',
 			array(
 				'methods'             => 'GET',
@@ -720,6 +730,15 @@ class Saddle_REST_Admin {
 		}
 
 		return self::get_settings();
+	}
+
+	/**
+	 * GET /first-look — what the first-run screen says about this site.
+	 *
+	 * @return WP_REST_Response
+	 */
+	public static function get_first_look() {
+		return new WP_REST_Response( Saddle_First_Look::summary(), 200 );
 	}
 
 	/**

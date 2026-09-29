@@ -199,6 +199,11 @@ The WordPress.org version never checks for its own updates. The version from plu
 
 == Changelog ==
 
+= Unreleased =
+* Changed: First run reads your site before it asks you anything. It counts your pages, posts, media and waiting updates. It also lists work your AI app could do, such as images with no alt text. Then it helps you connect your app on the same screen.
+* Changed: Saddle asks whether your AI app may edit content after the app connects, not before. A new install still starts read-only.
+* Fixed: Closing the connect screen no longer removes a key the app has already used. This happened when the key was copied by hand instead of with Copy setup.
+
 = 1.5.0 =
 * New: Your AI app can build with blocks from other plugins that wrap other blocks and render on the server, such as a section block that holds a heading and a paragraph. It passes the inner blocks as children, and the block schema says which blocks each one accepts.
 * New: Claude on the web and in the desktop app connects as a custom connector, with no bridge to install. Windsurf joins the app list.
