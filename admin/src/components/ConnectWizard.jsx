@@ -59,14 +59,32 @@ const STEPS = [
 	{ label: __( 'Say hello', 'saddle' ) },
 ];
 
+// The apps first run shows before "More apps" (#269).
+const COMMON_APPS = [ 'claude', 'chatgpt', 'claude-code', 'cursor' ];
+
+/**
+ * @param {Object}   props
+ * @param {string}   props.tier
+ * @param {Array}    props.clients
+ * @param {Function} props.onExit
+ * @param {Function} props.onClientsChanged
+ * @param {boolean}  props.embedded         First run (#269): no step bar or Cancel,
+ *                                          the common apps first, setup and live
+ *                                          listening on one screen, and no done
+ *                                          screen — `onConnected` takes over.
+ * @param {Function} props.onConnected      Called with the app once it connects.
+ */
 export default function ConnectWizard( {
 	tier,
 	clients = [],
 	onExit,
 	onClientsChanged,
+	embedded = false,
+	onConnected,
 } ) {
 	const [ step, setStep ] = useState( 0 ); // 0 pick, 1 setup, 2 hello, 3 done
 	const [ app, setApp ] = useState( null );
+	const [ allApps, setAllApps ] = useState( ! embedded );
 	const [ creating, setCreating ] = useState( null ); // app key mid-create
 	const [ cred, setCred ] = useState( null ); // { uuid, password, label }
 	const [ error, setError ] = useState( null );
@@ -349,6 +367,12 @@ export default function ConnectWizard( {
 						( c ) => c.uuid === cred.uuid
 					);
 					if ( me && me.last_used ) {
+						// The key is in use now, however it left the page (a
+						// hand-copied key never pressed Copy). Leaving must
+						// not discard it; first run unmounts the wizard at
+						// once, before another render would set the ref.
+						everCopiedRef.current = true;
+						setEverCopied( true );
 						setStep( 3 );
 						if ( onClientsChanged ) {
 							onClientsChanged();
@@ -360,9 +384,19 @@ export default function ConnectWizard( {
 		return () => window.clearInterval( pollRef.current );
 	}, [ cred, step, onClientsChanged, byAddress ] );
 
-	// Offer troubleshooting once the wait step has been up a while.
+	// Embedded, the caller carries on from here instead of the done screen.
 	useEffect( () => {
-		if ( step !== 2 ) {
+		if ( embedded && 3 === step && onConnected ) {
+			onConnected( activeApp );
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- once, on arrival.
+	}, [ embedded, step ] );
+
+	// Offer troubleshooting once the wait step has been up a while. Embedded,
+	// the setup step is the wait step.
+	const waiting = 2 === step || ( embedded && 1 === step );
+	useEffect( () => {
+		if ( ! waiting ) {
 			return undefined;
 		}
 		setPatienceUp( false );
@@ -371,7 +405,7 @@ export default function ConnectWizard( {
 			PATIENCE * 1000
 		);
 		return () => window.clearTimeout( t );
-	}, [ step ] );
+	}, [ step, waiting ] );
 
 	let config = '';
 	let links = [];
@@ -442,24 +476,99 @@ export default function ConnectWizard( {
 		);
 	};
 
-	return (
-		<div className="saddle-wizard">
-			<div className="saddle-wizard__top">
-				<Steps
-					aria-label={ __( 'Setup progress', 'saddle' ) }
-					steps={ STEPS }
-					current={ step }
-				/>
-				{ step < 3 && (
-					<Button
-						variant="ghost"
-						className="saddle-wizard__cancel"
-						onClick={ () => exit( false ) }
-					>
-						{ __( 'Cancel', 'saddle' ) }
+	// Troubleshooting, offered once the wait has run a while.
+	const renderTrouble = () =>
+		patienceUp && (
+			<CalloutCard
+				className="saddle-wizard__trouble"
+				tone="warning"
+				title={ __( 'Taking longer than expected?', 'saddle' ) }
+			>
+				<ul>
+					<li>
+						{ sprintf(
+							/* translators: %s: the app name. */
+							__(
+								'Make sure you saved the setup and %s was restarted or reloaded after pasting.',
+								'saddle'
+							),
+							activeApp.label
+						) }
+					</li>
+					<li>
+						{ __(
+							'The app only connects when it’s actually used — ask it something about your site.',
+							'saddle'
+						) }
+					</li>
+					{ byAddress && (
+						<li>
+							{ sprintf(
+								/* translators: %s: the app name. */
+								__(
+									'If %s says it can’t fetch the sign-in details, a page cache may be serving old pages — clear your site’s cache and add the server again.',
+									'saddle'
+								),
+								activeApp.label
+							) }
+						</li>
+					) }
+					{ byAddress && 'slow' === oauthState?.discovery && (
+						<li>
+							{ __(
+								'This site is answering too slowly for some apps to finish connecting — they wait only a few seconds, then report that the site doesn’t support signing in. Turn on page caching or move to a faster host, then add the server again.',
+								'saddle'
+							) }
+						</li>
+					) }
+					{ IS_LOCAL && (
+						<li>
+							{ __(
+								'This is a local site — the app must run on this same computer.',
+								'saddle'
+							) }
+						</li>
+					) }
+				</ul>
+				<ConnectionHealth />
+				{ 2 === step && (
+					<Button variant="ghost" onClick={ () => setStep( 1 ) }>
+						{ __( 'Show the setup again', 'saddle' ) }
 					</Button>
 				) }
-			</div>
+			</CalloutCard>
+		);
+
+	const shownApps = allApps
+		? APPS
+		: APPS.filter( ( a ) => COMMON_APPS.includes( a.key ) );
+
+	return (
+		<div
+			className={
+				embedded
+					? 'saddle-wizard saddle-wizard--embedded'
+					: 'saddle-wizard'
+			}
+		>
+			{ ! embedded && (
+				<div className="saddle-wizard__top">
+					<Steps
+						aria-label={ __( 'Setup progress', 'saddle' ) }
+						steps={ STEPS }
+						current={ step }
+					/>
+					{ step < 3 && (
+						<Button
+							variant="ghost"
+							className="saddle-wizard__cancel"
+							onClick={ () => exit( false ) }
+						>
+							{ __( 'Cancel', 'saddle' ) }
+						</Button>
+					) }
+				</div>
+			) }
 
 			{ error && (
 				<Notice tone="danger" onDismiss={ () => setError( null ) }>
@@ -471,7 +580,9 @@ export default function ConnectWizard( {
 			{ step === 0 && (
 				<div className="saddle-wizard__step" key="pick">
 					<h2 className="saddle-wizard__title">
-						{ __( 'Which app are you connecting?', 'saddle' ) }
+						{ embedded
+							? __( 'Which AI do you use?', 'saddle' )
+							: __( 'Which app are you connecting?', 'saddle' ) }
 					</h2>
 					<p className="saddle-wizard__lead">
 						{ wantsAddress
@@ -562,7 +673,7 @@ export default function ConnectWizard( {
 							'saddle'
 						) }
 						onChange={ pick }
-						options={ APPS.map( ( a ) => ( {
+						options={ shownApps.map( ( a ) => ( {
 							value: a.key,
 							icon:
 								creating === a.key ? (
@@ -575,6 +686,19 @@ export default function ConnectWizard( {
 							disabled: !! creating,
 						} ) ) }
 					/>
+					{ ! allApps && (
+						<Button
+							variant="link"
+							className="saddle-wizard__more"
+							onClick={ () => setAllApps( true ) }
+						>
+							{ sprintf(
+								/* translators: %d: how many more apps are listed. */
+								__( 'More apps (%d)', 'saddle' ),
+								APPS.length - shownApps.length
+							) }
+						</Button>
+					) }
 				</div>
 			) }
 
@@ -792,20 +916,44 @@ export default function ConnectWizard( {
 						</p>
 					) }
 
+					{ /* Embedded, the poll is already running on this step:
+					     say so here and skip the separate hello screen. */ }
+					{ embedded && ( ! byAddress || oauthState?.enabled ) && (
+						<div
+							className="saddle-wizard__listening"
+							role="status"
+							aria-live="polite"
+						>
+							<LiveIndicator>
+								{ sprintf(
+									/* translators: %s: the app name. */
+									__(
+										'Waiting for %s. This moves on by itself the moment it connects.',
+										'saddle'
+									),
+									activeApp.label
+								) }
+							</LiveIndicator>
+						</div>
+					) }
+					{ embedded && renderTrouble() }
+
 					<div className="saddle-wizard__actions">
 						<Button variant="ghost" onClick={ backToPick }>
 							{ __( 'Back', 'saddle' ) }
 						</Button>
-						<Button
-							variant="primary"
-							onClick={ () => setStep( 2 ) }
-							disabled={
-								! everCopied ||
-								( byAddress && ! oauthState?.enabled )
-							}
-						>
-							{ __( 'I’ve pasted it', 'saddle' ) }
-						</Button>
+						{ ! embedded && (
+							<Button
+								variant="primary"
+								onClick={ () => setStep( 2 ) }
+								disabled={
+									! everCopied ||
+									( byAddress && ! oauthState?.enabled )
+								}
+							>
+								{ __( 'I’ve pasted it', 'saddle' ) }
+							</Button>
+						) }
 					</div>
 				</div>
 			) }
@@ -844,71 +992,7 @@ export default function ConnectWizard( {
 						</LiveIndicator>
 					</div>
 
-					{ patienceUp && (
-						<CalloutCard
-							className="saddle-wizard__trouble"
-							tone="warning"
-							title={ __(
-								'Taking longer than expected?',
-								'saddle'
-							) }
-						>
-							<ul>
-								<li>
-									{ sprintf(
-										/* translators: %s: the app name. */
-										__(
-											'Make sure you saved the setup and %s was restarted or reloaded after pasting.',
-											'saddle'
-										),
-										activeApp.label
-									) }
-								</li>
-								<li>
-									{ __(
-										'The app only connects when it’s actually used — ask it something about your site.',
-										'saddle'
-									) }
-								</li>
-								{ byAddress && (
-									<li>
-										{ sprintf(
-											/* translators: %s: the app name. */
-											__(
-												'If %s says it can’t fetch the sign-in details, a page cache may be serving old pages — clear your site’s cache and add the server again.',
-												'saddle'
-											),
-											activeApp.label
-										) }
-									</li>
-								) }
-								{ byAddress &&
-									'slow' === oauthState?.discovery && (
-										<li>
-											{ __(
-												'This site is answering too slowly for some apps to finish connecting — they wait only a few seconds, then report that the site doesn’t support signing in. Turn on page caching or move to a faster host, then add the server again.',
-												'saddle'
-											) }
-										</li>
-									) }
-								{ IS_LOCAL && (
-									<li>
-										{ __(
-											'This is a local site — the app must run on this same computer.',
-											'saddle'
-										) }
-									</li>
-								) }
-							</ul>
-							<ConnectionHealth />
-							<Button
-								variant="ghost"
-								onClick={ () => setStep( 1 ) }
-							>
-								{ __( 'Show the setup again', 'saddle' ) }
-							</Button>
-						</CalloutCard>
-					) }
+					{ renderTrouble() }
 
 					<div className="saddle-wizard__actions">
 						<Button variant="ghost" onClick={ () => setStep( 1 ) }>
@@ -934,7 +1018,7 @@ export default function ConnectWizard( {
 			) }
 
 			{ /* ---------- Done ---------- */ }
-			{ step === 3 && activeApp && (
+			{ step === 3 && activeApp && ! embedded && (
 				<div
 					className="saddle-wizard__step saddle-wizard__step--done"
 					key="done"
