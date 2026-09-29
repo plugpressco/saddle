@@ -58,9 +58,11 @@ disconnects every app that signed in this way.
 
 Each card in the wizard says where the address goes. In short:
 
-**Claude (claude.ai and the desktop app)** — Settings → Connectors → Add custom
-connector. Name it, paste the address, leave the OAuth client ID and secret
-blank, click Add. Claude sends you to your site to approve it.
+**Claude (claude.ai and the desktop app)** — click **Add to Claude**: claude.ai
+opens its Add custom connector dialog with the name and address filled in;
+click Add. Or do it by hand: Settings → Connectors → Add custom connector. Name
+it, paste the address, leave the OAuth client ID and secret blank, click Add.
+Either way Claude sends you to your site to approve it.
 
 **Claude Code** — one command in your terminal:
 `claude mcp add <name> --scope user --transport http <address>`. Then run
@@ -93,6 +95,16 @@ button carries the fresh key, exactly as the copy block does.
 first time Gemini uses the server it opens your browser.
 
 **Windsurf** — Settings → MCP → Add custom server, paste the block, save.
+
+**OpenClaw** — run the two lines the wizard shows in a terminal on the computer
+running OpenClaw: `openclaw mcp add … --transport streamable-http --auth oauth`,
+then `openclaw mcp login …`, which opens your browser. The transport has to be
+named; left out, OpenClaw uses SSE.
+
+**Grok** (grok.com and the apps) — Connectors → New Connector → Custom, paste
+the address, continue. Grok signs in through your browser. On a Grok Business
+team an admin adds the connector first. Grok takes no header, so it needs
+sign-in for apps turned on.
 
 **Any other MCP app** — paste the standard block. If the app supports signing
 in, it opens your browser; if it only takes a key, use the key instead.

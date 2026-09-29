@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-28T23:43:46+00:00\n"
+"POT-Creation-Date: 2026-09-29T00:42:48+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -3816,7 +3816,7 @@ msgstr ""
 #: includes/builders/divi/class-saddle-divi-recipes.php:345
 #: includes/class-saddle-context.php:80
 #: admin/build/index.js:19
-#: admin/src/connect-apps.js:229
+#: admin/src/connect-apps.js:267
 msgid "Name"
 msgstr ""
 
@@ -4353,7 +4353,7 @@ msgstr ""
 
 #: includes/class-saddle-context.php:87
 #: admin/build/index.js:19
-#: admin/src/connect-apps.js:230
+#: admin/src/connect-apps.js:268
 msgid "Address"
 msgstr ""
 
@@ -7481,57 +7481,107 @@ msgid "Open Cascade and ask it about your site."
 msgstr ""
 
 #: admin/build/index.js:19
-#: admin/src/connect-apps.js:205
-msgid "Any MCP app"
-msgstr ""
-
-#: admin/build/index.js:19
-#: admin/src/connect-apps.js:206
-msgid "Everything else"
-msgstr ""
-
-#: admin/build/index.js:19
 #: admin/src/connect-apps.js:209
-msgid "Most AI apps accept this standard setup — look for “Add MCP server” in their settings and paste it there. If the app supports signing in, it opens your browser and sends you here to approve it; if it only takes a key, use the key instead."
+msgid "OpenClaw"
+msgstr ""
+
+#: admin/build/index.js:19
+#: admin/src/connect-apps.js:210
+msgid "Personal AI agent"
 msgstr ""
 
 #: admin/build/index.js:19
 #: admin/src/connect-apps.js:213
-msgid "Most AI apps accept this standard setup — look for “Add MCP server” in their settings and paste it there."
+msgid "Paste these two lines into a terminal on the computer running OpenClaw. The second one opens your browser and sends you here to approve it."
 msgstr ""
 
 #: admin/build/index.js:19
 #: admin/src/connect-apps.js:217
+msgid "Paste this into a terminal on the computer running OpenClaw. That’s the whole setup."
+msgstr ""
+
+#: admin/build/index.js:19
+#: admin/src/connect-apps.js:221
+msgid "Ask OpenClaw about your site."
+msgstr ""
+
+#: admin/build/index.js:19
+#: admin/src/connect-apps.js:228
+msgid "Grok"
+msgstr ""
+
+#: admin/build/index.js:19
+#: admin/src/connect-apps.js:229
+msgid "Web & mobile app"
+msgstr ""
+
+#: admin/build/index.js:19
+#: admin/src/connect-apps.js:232
+msgid "In Grok (grok.com or the app): Connectors → New Connector → Custom. Paste the address and continue. Grok sends you here to approve it. On a Grok Business team, an admin adds the connector first."
+msgstr ""
+
+#: admin/build/index.js:19
+#: admin/src/connect-apps.js:236
+msgid "Turn the connector on in a Grok chat and ask it about your site."
+msgstr ""
+
+#: admin/build/index.js:19
+#: admin/src/connect-apps.js:243
+msgid "Any MCP app"
+msgstr ""
+
+#: admin/build/index.js:19
+#: admin/src/connect-apps.js:244
+msgid "Everything else"
+msgstr ""
+
+#: admin/build/index.js:19
+#: admin/src/connect-apps.js:247
+msgid "Most AI apps accept this standard setup — look for “Add MCP server” in their settings and paste it there. If the app supports signing in, it opens your browser and sends you here to approve it; if it only takes a key, use the key instead."
+msgstr ""
+
+#: admin/build/index.js:19
+#: admin/src/connect-apps.js:251
+msgid "Most AI apps accept this standard setup — look for “Add MCP server” in their settings and paste it there."
+msgstr ""
+
+#: admin/build/index.js:19
+#: admin/src/connect-apps.js:255
 msgid "Open your app and ask it about your site."
 msgstr ""
 
 #: admin/build/index.js:19
-#: admin/src/connect-apps.js:231
+#: admin/src/connect-apps.js:269
 msgid "Authentication"
 msgstr ""
 
 #: admin/build/index.js:19
-#: admin/src/connect-apps.js:231
+#: admin/src/connect-apps.js:269
 msgid "OAuth (leave client ID and secret blank)"
 msgstr ""
 
 #: admin/build/index.js:19
-#: admin/src/connect-apps.js:315
+#: admin/src/connect-apps.js:360
 msgid "Then, in a terminal:"
 msgstr ""
 
 #: admin/build/index.js:19
-#: admin/src/connect-apps.js:447
+#: admin/src/connect-apps.js:500
+msgid "Add to Claude"
+msgstr ""
+
+#: admin/build/index.js:19
+#: admin/src/connect-apps.js:513
 msgid "Add to Cursor"
 msgstr ""
 
 #: admin/build/index.js:19
-#: admin/src/connect-apps.js:467
+#: admin/src/connect-apps.js:533
 msgid "Add to VS Code"
 msgstr ""
 
 #: admin/build/index.js:19
-#: admin/src/connect-apps.js:472
+#: admin/src/connect-apps.js:538
 msgid "Add to VS Code Insiders"
 msgstr ""
 

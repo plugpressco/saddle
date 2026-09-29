@@ -99,21 +99,74 @@ describe( 'installLinks', () => {
 		const { installLinks } = load( site );
 
 		for ( const app of [
-			'claude',
 			'claude-code',
 			'chatgpt',
 			'codex',
 			'gemini-cli',
 			'windsurf',
+			'openclaw',
+			'grok',
 			'other',
 		] ) {
 			expect( installLinks( app, null, 'address' ) ).toEqual( [] );
 		}
 	} );
 
+	it( 'builds the Add to Claude link on the address path only', () => {
+		const { installLinks } = load( site );
+		const links = installLinks( 'claude', null, 'address' );
+
+		expect( links ).toHaveLength( 1 );
+		const url = new URL( links[ 0 ].href );
+		expect( url.origin + url.pathname ).toBe(
+			'https://claude.ai/customize/connectors'
+		);
+		expect( url.searchParams.get( 'modal' ) ).toBe(
+			'add-custom-connector'
+		);
+		expect( url.searchParams.get( 'connectorName' ) ).toBe(
+			'saddle-example'
+		);
+		expect( url.searchParams.get( 'connectorUrl' ) ).toBe( MCP_URL );
+
+		// A key can't ride in claude.ai's link, so the key path has none.
+		expect( installLinks( 'claude', 'abcd EFGH', 'key' ) ).toEqual( [] );
+	} );
+
 	it( 'offers no link when the site has no MCP address', () => {
 		const { installLinks } = load( { ...site, mcpUrl: '' } );
 
 		expect( installLinks( 'cursor', null, 'address' ) ).toEqual( [] );
+	} );
+} );
+
+describe( 'buildConfig', () => {
+	it( 'gives OpenClaw an OAuth add and a login on the address path', () => {
+		const { buildConfig } = load( site );
+		const lines = buildConfig( 'openclaw', null, 'address' ).split( '\n' );
+
+		expect( lines ).toEqual( [
+			`openclaw mcp add saddle-example --url ${ MCP_URL } --transport streamable-http --auth oauth`,
+			'openclaw mcp login saddle-example',
+		] );
+	} );
+
+	it( 'gives OpenClaw a Basic header, and no OAuth, on the key path', () => {
+		const { buildConfig } = load( site );
+		const setup = buildConfig( 'openclaw', 'abcd EFGH', 'key' );
+
+		expect( setup ).toContain( '--transport streamable-http' );
+		expect( setup ).toContain(
+			`--header "Authorization=Basic ${ btoa( 'admin:abcdEFGH' ) }"`
+		);
+		expect( setup ).not.toContain( '--auth oauth' );
+	} );
+
+	it( 'gives Grok the connector form lines', () => {
+		const { buildConfig } = load( site );
+		const setup = buildConfig( 'grok', null, 'address' );
+
+		expect( setup ).toContain( MCP_URL );
+		expect( setup ).toContain( 'OAuth' );
 	} );
 } );
