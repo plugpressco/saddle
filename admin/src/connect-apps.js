@@ -412,6 +412,9 @@ function credential( password ) {
  * from this page to the app on the owner's own computer.
  *
  * Formats, checked against each vendor's docs on 2026-09-29:
+ * - Claude: https://claude.ai/customize/connectors?modal=add-custom-connector
+ *   &connectorName=…&connectorUrl=… (a prefilled custom connector; the
+ *   user still clicks Add, then approves on this site).
  * - Cursor: cursor://anysphere.cursor-deeplink/mcp/install?name=…&config=…,
  *   where config is the base64 of the server object alone (no mcpServers
  *   wrapper).
@@ -438,6 +441,24 @@ export function installLinks( app, password, mode = 'key' ) {
 					Authorization: `Basic ${ credential( password ) }`,
 				},
 		  };
+
+	// Claude (claude.ai and the desktop app) takes a custom connector by
+	// address only, so its link exists on the address path alone: a key
+	// can't ride in it (claude.ai's header field is a limited beta).
+	if ( 'claude' === app ) {
+		if ( ! byAddress ) {
+			return [];
+		}
+		return [
+			{
+				key: 'claude',
+				label: __( 'Add to Claude', 'saddle' ),
+				href: `https://claude.ai/customize/connectors?modal=add-custom-connector&connectorName=${ encodeURIComponent(
+					SLUG
+				) }&connectorUrl=${ encodeURIComponent( MCP_URL ) }`,
+			},
+		];
+	}
 
 	if ( 'cursor' === app ) {
 		const config = btoa( JSON.stringify( { url: MCP_URL, ...headers } ) );
