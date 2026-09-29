@@ -201,6 +201,44 @@ export const APPS = [
 		next: __( 'Open Cascade and ask it about your site.', 'saddle' ),
 	},
 	{
+		// OpenClaw, the open-source personal agent. It registers itself with
+		// the site's sign-in server (dynamic client registration) on a fixed
+		// loopback address, so the address path needs no client id. Its
+		// --transport must be named: left out, OpenClaw speaks SSE.
+		key: 'openclaw',
+		label: __( 'OpenClaw', 'saddle' ),
+		kind: __( 'Personal AI agent', 'saddle' ),
+		viaAddress: true,
+		viaKey: true,
+		howAddress: __(
+			'Paste these two lines into a terminal on the computer running OpenClaw. The second one opens your browser and sends you here to approve it.',
+			'saddle'
+		),
+		how: __(
+			'Paste this into a terminal on the computer running OpenClaw. That’s the whole setup.',
+			'saddle'
+		),
+		next: __( 'Ask OpenClaw about your site.', 'saddle' ),
+	},
+	{
+		// Grok on the web and in its apps. Its connector form takes an address
+		// and signs in with OAuth; there is no field for a header, so, like
+		// ChatGPT, it takes the address path only.
+		key: 'grok',
+		label: __( 'Grok', 'saddle' ),
+		kind: __( 'Web & mobile app', 'saddle' ),
+		viaAddress: true,
+		viaKey: false,
+		howAddress: __(
+			'In Grok (grok.com or the app): Connectors → New Connector → Custom. Paste the address and continue. Grok sends you here to approve it. On a Grok Business team, an admin adds the connector first.',
+			'saddle'
+		),
+		next: __(
+			'Turn the connector on in a Grok chat and ask it about your site.',
+			'saddle'
+		),
+	},
+	{
 		key: 'other',
 		label: __( 'Any MCP app', 'saddle' ),
 		kind: __( 'Everything else', 'saddle' ),
@@ -290,7 +328,14 @@ function assemble( app, auth ) {
 		// path is the only shape shown for them here; Claude's key fallback is
 		// the mcp-remote bridge in the default branch below.
 		case 'chatgpt':
+		case 'grok':
 			return formLines();
+
+		// OpenClaw — the server is added, then signed in, from its CLI.
+		case 'openclaw':
+			return byAddress
+				? `openclaw mcp add ${ SLUG } --url ${ MCP_URL } --transport streamable-http --auth oauth\nopenclaw mcp login ${ SLUG }`
+				: `openclaw mcp add ${ SLUG } --url ${ MCP_URL } --transport streamable-http \\\n  --header "Authorization=Basic ${ auth }"`;
 
 		case 'claude':
 			if ( byAddress ) {
