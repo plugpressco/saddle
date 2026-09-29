@@ -136,7 +136,14 @@ class Saddle_MCP_Adapter_Transport_Test extends WP_UnitTestCase {
 
 		$list = json_decode( wp_json_encode( $this->rpc( 'prompts/list', array(), $headers )->get_data() ), true );
 		$this->assertNotEmpty( $list['result']['prompts'], 'Saddle always bundles skills, so the list is never empty.' );
-		$name = $list['result']['prompts'][0]['name'];
+
+		// The first listed skill that is still enabled. The list was built
+		// with the server, possibly many tests ago; a skill withdrawn since
+		// (build-page, once another suite leaves a foreign builder class
+		// loaded) is correctly refused by prompts/get, and is not this test.
+		$names = array_column( $list['result']['prompts'], 'name' );
+		$name  = current( array_filter( $names, array( 'Saddle_Skills', 'find' ) ) );
+		$this->assertNotFalse( $name, 'At least one listed skill is still enabled.' );
 
 		$got = json_decode( wp_json_encode( $this->rpc( 'prompts/get', array( 'name' => $name ), $headers )->get_data() ), true );
 		$this->assertSame( 'user', $got['result']['messages'][0]['role'] );

@@ -644,12 +644,13 @@ class Saddle_MCP_Diagnostics {
 	 * matched: the panel below recorded its own 5-second poll as MCP traffic and
 	 * pushed the real rows out of the ring buffer within about two minutes. A
 	 * customer's capture of a failing connection came back twenty-three parts
-	 * panel to two parts evidence.
+	 * panel to two parts evidence. Public so Saddle_Connections observes the
+	 * same route by the same test.
 	 *
 	 * @param WP_REST_Request $request The request.
 	 * @return bool
 	 */
-	private static function targets_mcp( $request ) {
+	public static function targets_mcp( $request ) {
 		$mcp   = '/' . Saddle_MCP::REST_NAMESPACE . Saddle_MCP::ROUTE;
 		$route = (string) $request->get_route();
 

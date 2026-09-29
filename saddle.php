@@ -134,6 +134,8 @@ require_once SADDLE_DIR . 'includes/integrations/woocommerce/class-saddle-wc.php
 require_once SADDLE_DIR . 'includes/integrations/class-saddle-seo-skills.php';
 require_once SADDLE_DIR . 'includes/class-saddle-mcp.php';
 require_once SADDLE_DIR . 'includes/class-saddle-mcp-diagnostics.php';
+require_once SADDLE_DIR . 'includes/class-saddle-connections.php';
+require_once SADDLE_DIR . 'includes/class-saddle-connection-apps.php';
 
 // Adapter-only, and absent from the WordPress.org build along with the library
 // itself — file_exists() is what makes that build .org-safe, exactly as it is
@@ -153,6 +155,7 @@ require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-consent.php';
 require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-bearer.php';
 require_once SADDLE_DIR . 'includes/class-saddle-first-look.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-rest.php';
+require_once SADDLE_DIR . 'includes/admin/class-saddle-connections-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-settings.php';
 
 /*
@@ -259,6 +262,12 @@ final class Saddle {
 		// OAuth surface. See includes/oauth/class-saddle-oauth.php for why this
 		// exists alongside Application Passwords rather than replacing them.
 		Saddle_OAuth::register();
+
+		// The connection registry: which app each credential is, and whether it
+		// has made its first tool call. Observes the MCP route on either
+		// transport, and forgets a credential when it is revoked.
+		Saddle_Connections::register();
+		add_action( 'rest_api_init', array( 'Saddle_Connections_REST', 'register_routes' ) );
 
 		// The background update runner: hooks its one-shot cron event so a run
 		// queued by update-plugin / update-theme fires even when the abilities

@@ -446,6 +446,10 @@ class Saddle_OAuth_Store {
 			wp_delete_post( $post_id, true );
 		}
 
+		if ( class_exists( 'Saddle_Connections' ) ) {
+			Saddle_Connections::forget( 'oauth:' . $grant_id );
+		}
+
 		return $existed;
 	}
 
@@ -742,6 +746,11 @@ class Saddle_OAuth_Store {
 
 		foreach ( $query->posts as $post_id ) {
 			wp_delete_post( (int) $post_id, true );
+		}
+
+		// Every grant is gone, so every address connection's record goes too.
+		if ( class_exists( 'Saddle_Connections' ) ) {
+			Saddle_Connections::sweep();
 		}
 	}
 }

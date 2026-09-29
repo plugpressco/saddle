@@ -1026,12 +1026,13 @@ class Saddle_MCP {
 	 * Resolve a client-supplied tool name back to an ability name.
 	 *
 	 * Accepts both the hyphenated MCP form and the raw ability name, so a client
-	 * that cached either one keeps working.
+	 * that cached either one keeps working. Public for Saddle_Connections,
+	 * which records the tools a connection called by their ability names.
 	 *
 	 * @param string $tool_name Name as sent by the client.
 	 * @return string Ability name, or '' when it isn't one of ours.
 	 */
-	private static function ability_name_for_tool( $tool_name ) {
+	public static function ability_name_for_tool( $tool_name ) {
 		$tool_name = (string) $tool_name;
 
 		if ( 0 === strpos( $tool_name, self::ABILITY_PREFIX ) ) {
