@@ -27,7 +27,7 @@ Click **Live Preview** at the top of this page. A test WordPress opens in your b
 = How it works =
 
 1. Install Saddle and choose what your AI may do.
-2. Add your AI app under **Saddle → Apps**. Paste the address Saddle shows into the app and approve the connection when your browser opens.
+2. Add your AI app under **Saddle → AI apps**. Paste the address Saddle shows into the app and approve the connection when your browser opens.
 3. Ask your AI to write, edit or check your content.
 
 Saddle works with Claude and Claude Code, ChatGPT, Cursor, VS Code, Codex, Gemini CLI and other apps that support MCP (Model Context Protocol). Step-by-step setup for each app is at [saddle.to/docs](https://saddle.to/docs).
@@ -77,7 +77,7 @@ The SEO and WooCommerce tools work when that plugin is active.
 * All in One SEO: Read and edit the SEO title, meta description, robots and social fields of posts and pages.
 * WooCommerce: List and read products, variations and orders.
 * Unsplash: Find and import free stock photos. This needs your own Unsplash API key.
-* Other plugins: Any plugin can add its own tools to Saddle. Tools from other developers stay off until you switch them on under Saddle > Integrations.
+* Other plugins: Any plugin can add its own tools to Saddle. Tools from other developers stay off until you switch them on under Saddle > Settings > Services.
 
 = Skills and memory =
 
@@ -88,7 +88,7 @@ The SEO and WooCommerce tools work when that plugin is active.
 
 = Site management =
 
-These tools stay off until you choose the Managing the site level.
+These tools stay off until you give an app Manage the site.
 
 * Settings: Change the site title, permalinks and reading options.
 * Plugins and themes: Activate and deactivate plugins, and switch the active theme.
@@ -98,7 +98,7 @@ These tools stay off until you choose the Managing the site level.
 
 = Safety =
 
-* Access levels: Choose Just reading, Reading & writing, or Managing the site. New installs start at Just reading.
+* Access for each app: Choose Read only, Edit content or Manage the site for each connected app. New apps start at Read only.
 * Delete confirmation: Review a preview before anything is deleted or overwritten.
 * Drafts only: Save new posts as drafts until you publish them.
 * Rehearsal: Let an app try anything its level allows while nothing is saved. Each change it would have made shows in the activity log as rehearsed.
@@ -132,9 +132,9 @@ Every feature in this free plugin stays free.
 == Installation ==
 
 1. Install and activate Saddle from **Plugins → Add New**.
-2. Go to **Saddle → Apps**, turn on sign-in for apps, and pick your app.
+2. Go to **Saddle → AI apps**, click Connect an app, and pick your app.
 3. Paste the address into your AI app and approve the connection when your browser opens.
-4. To allow changes, go to **Saddle → Permissions** and choose Reading & writing or Managing the site.
+4. To allow changes, choose Edit content or Manage the site next to the app on **Saddle → AI apps**.
 
 == Frequently Asked Questions ==
 
@@ -152,7 +152,7 @@ Yes. Click Live Preview on this page. You can explore every screen. To connect a
 
 = Can the AI delete my content? =
 
-Only at the Reading & writing level or higher. Each delete shows a preview first. It runs only after a second confirmation. By default, deleted posts go to the trash.
+Only for an app with Edit content or higher. Each delete shows a preview first. It runs only after a second confirmation. By default, deleted posts go to the trash.
 
 = Can the AI run code on my server? =
 
@@ -160,7 +160,7 @@ No. Every action uses standard WordPress functions.
 
 = Does it work with ChatGPT? =
 
-Yes. Go to **Saddle → Apps**, pick ChatGPT, and turn on sign-in when the wizard offers it. Then add your site as a connector in ChatGPT and approve it when ChatGPT sends you to your site.
+Yes. Go to **Saddle → AI apps**, click Connect an app, pick ChatGPT, and turn on sign-in when Saddle offers it. Then add your site as a connector in ChatGPT and approve it when ChatGPT sends you to your site.
 
 = Does it work with page builders? =
 
@@ -177,7 +177,7 @@ Saddle sends no tracking or usage data. It connects to another site only in thes
 1. Upload from URL: WordPress downloads the one file you asked for.
 2. Connection check: Saddle sends a test request to your own site.
 3. Live page check (optional): This runs only when your AI app asks for it after editing a published page. Saddle loads that page from your own site, as a visitor would, to confirm the change is live.
-4. Unsplash (optional): This runs only after you add your own API key under **Saddle → Integrations**. Saddle sends your search words or a photo ID to `api.unsplash.com`. It downloads photos from `images.unsplash.com`. Each imported photo gets a caption that credits the photographer, as Unsplash requires. You can edit or remove it. See the [API Guidelines](https://help.unsplash.com/en/articles/2511245-unsplash-api-guidelines), [API Terms](https://unsplash.com/api-terms) and [Privacy Policy](https://unsplash.com/privacy).
+4. Unsplash (optional): This runs only after you add your own API key under **Saddle → Settings → Services**. Saddle sends your search words or a photo ID to `api.unsplash.com`. It downloads photos from `images.unsplash.com`. Each imported photo gets a caption that credits the photographer, as Unsplash requires. You can edit or remove it. See the [API Guidelines](https://help.unsplash.com/en/articles/2511245-unsplash-api-guidelines), [API Terms](https://unsplash.com/api-terms) and [Privacy Policy](https://unsplash.com/privacy).
 5. OAuth app check (optional): This runs only when OAuth sign-in is on. Saddle reads a public web address the app provides to confirm who the app is. It sends nothing about your site.
 6. Updates (optional): When your AI app lists or applies updates, WordPress runs its own update check and downloads the update packages it already offers, from WordPress.org or a plugin's own update server, exactly as the Updates screen does. After updating an active plugin, WordPress loads your own home page once to check for a fatal error.
 
@@ -201,22 +201,22 @@ The WordPress.org version never checks for its own updates. The version from plu
 == Changelog ==
 
 = Unreleased =
-* Changed: Saddle is one menu in wp-admin with four pages: Home, Connections, Context and Settings. Each page has its own address and tabs, and the sidebar inside the Saddle screen is gone. Old links still open the right page.
-* Changed: The Saddle screens look like the rest of WordPress. They use its greys, link color and form controls, one small set of text sizes, and a white header across the top of every Saddle page with the page's tabs inside it. Saddle's own color, a deep teal, appears only on its logo, buttons and switches.
-* Changed: Home is shorter. It shows what your AI app may do, whether it is paused and which apps are connected, then setup while it is unfinished, your connected apps, recent activity and any modules. Activity names each action in plain words, such as "Blocked · Update option · needs Admin".
-* Changed: Settings is one page, grouped into Memory, Recent changes and Security, with Run setup again. The Advanced tab is gone; an old link to it still opens Settings.
-* Changed: Connections, Context and Activity show less text. Connections → Apps has four sections: connect an app, connected apps, sign-in for apps, and connection details (folded away). Permissions keeps pause, rehearsal and drafts-only together in one Safety block. Longer explanations sit behind a help icon.
-* New: The Context page. Tell every connected app about your site in five fields: about this site, current goal, voice and style, rules, and other instructions. Skills, memory and what Saddle tells every app automatically are on the same page.
-* Changed: Each setting has one place. The pause switch is on Connections > Permissions, and sign-in for apps is on Connections > Apps.
-* New: Settings > Advanced holds the memory limits and the site address check, which had no screen before.
-* New: Your AI app can list Saddle's pages and read any module's settings, then give you a link to the right screen instead of describing clicks. It can ask to change a setting a module allows, shows you the change first, and the change can be undone. It can never change what it is allowed to do: the access level, pause, rehearsal, drafts-only and sign-in stay yours.
+* Changed: Saddle is one menu in wp-admin with four pages: Dashboard, AI apps, Context and Settings. Each page has its own address, and the sidebar inside the Saddle screen is gone. Old links, including the old Permissions page, still open the right page.
+* New: Each connected app has its own access. On AI apps, choose Read only, Edit content (posts, pages, media, menus and SEO) or Manage the site (also plugins, themes, updates and settings) for each app. A new app starts at Read only. Updating Saddle keeps what each existing app could already do and never widens it.
+* New: Needs your OK. When an app asks to make a big change, such as publishing or deleting, you can approve or reject it on the Dashboard as well as in the chat. The request shows what would change. The bell on every other Saddle page counts what is waiting. A preview can only be confirmed by the app that asked for it.
+* Changed: The Saddle screens look like WordPress's own pages. They use one white surface, its greys and form controls, links in your admin color scheme, one small set of text sizes, and a header across the top of every Saddle page. Saddle's own color, a deep teal, appears only on its logo, buttons and switches.
+* Changed: The Dashboard is short. It shows whether AI access is on, which apps are connected, anything waiting for your OK, setup while it is unfinished, recent activity and any modules. Activity names each action in plain words, such as "Blocked · Update option · needs Admin".
+* Changed: AI apps lists your connected apps, each with its access and a menu to rotate its key or disconnect it. Connect an app opens a panel with the apps grouped as chat apps, agents and code editors.
+* Changed: Settings is one page: Safety (publishing needs your OK, practice mode, stop writes if the site moves), Services (Unsplash and detected SEO plugins) and Advanced (turn off single tools, sign-in for apps, memory limits, recent changes and the connection check). Old links to its tabs still open it.
+* New: The Context page. Tell every connected app about your site in five fields: about this site, current goal, voice and style, rules, and other instructions. Skills, memory and what Saddle tells every app automatically are on the same page, each as a short row you open to edit.
+* New: Your AI app can list Saddle's pages and read any module's settings, then give you a link to the right screen instead of describing clicks. It can ask to change a setting a module allows, shows you the change first, and the change can be undone. It can never change what it is allowed to do: each app's access, pause, practice mode, publishing approval and sign-in stay yours.
 * New: Saddle shows at most one notice at the top of its pages and keeps the rest behind the bell. You can dismiss most notices. The Plugins screen shows one "Get started" notice until setup is finished.
 * New: For plugin developers: a plugin can add its own page under the Saddle menu with the saddle_modules filter, and describe its settings once. Saddle draws the form, serves it over the REST API and offers it to agents.
 * Removed: The unused dark and light theme setting. The Saddle screens have one light theme.
 * Changed: First run reads your site before it asks you anything. It counts your pages, posts, media and waiting updates. It also lists work your AI app could do, such as images with no alt text. Then it helps you connect your app on the same screen.
 * Changed: Saddle asks whether your AI app may edit content after the app connects, not before. A new install still starts read-only.
-* New: First run proves the connection. Pick your AI app from six, connect it, then paste a read-only prompt and watch each tool call arrive. Saddle then explains what your app can do and asks whether it may edit content. Skipping any step keeps the app read-only.
-* New: Home shows a short Setup list until an app is connected, has tried a prompt, and you have chosen what it can do. A three-stop tour shows where things are, once per person. Settings > Run setup again opens first run at any time.
+* New: First run proves the connection. Pick your AI app, connect it, then paste a read-only prompt and watch each tool call arrive. Saddle then explains what your app can do and asks whether it may edit content. Skipping any step keeps the app at Read only.
+* New: The Dashboard shows a short Setup list until an app is connected, has tried a prompt, and you have chosen what it can do. A three-stop tour shows where things are, once per person. Settings > Run setup again opens first run at any time.
 * Improved: While you wait for an app to connect, Saddle says when it has asked to connect and is waiting for your approval. After three minutes it checks HTTPS, permalinks and the sign-in header, and offers a key instead.
 * Fixed: Closing the connect screen no longer removes a key the app has already used. This happened when the key was copied by hand instead of with Copy setup.
 * Fixed: The Dashboard now counts apps that connect by address. A site connected only that way was told to connect its first app.
@@ -228,7 +228,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 * New: Claude, Cursor and VS Code connect in one click. The connect screen shows an Add to Claude, Add to Cursor or Add to VS Code button that opens the app with your site filled in. The copy-and-paste setup stays as the fallback.
 * New: OpenClaw and Grok join the app list. OpenClaw connects with two commands and signs in through your browser; Grok takes your site's address in its Connectors screen.
 * New: Undo. Your AI app can reverse changes from the activity log: a page's earlier content and settings, trashed posts, created posts and tags, settings, the theme and plugin activation. It previews what comes back and waits for your approval. A change that was edited again since is skipped with the reason, and the undo can itself be undone.
-* New: Rehearsal mode. Turn it on in Saddle > Permissions and every tool that would change your site answers with what it would have done, and saves nothing. Reading works as usual, and each attempt shows in Activity as rehearsed. It is off by default.
+* New: Rehearsal mode. Turn it on in Saddle > Settings (Practice mode) and every tool that would change your site answers with what it would have done, and saves nothing. Reading works as usual, and each attempt shows in Activity as rehearsed. It is off by default.
 * New: Custom content types. Your AI app can list, read, create, edit and trash items of the custom post types your plugins and theme add, such as products, events or docs, and assign their own categories. Each type keeps its own permissions. Saddle manages the types that appear in wp-admin.
 * New: Menus. Your AI app can list menus and read their items, add links to pages, posts, categories or any URL, rename and reorder items, remove an item after a preview, and assign a menu to a theme location. This covers classic themes, which have no navigation block.
 * New: Templates, parts and patterns on block themes. Your AI app can replace a template or the header or footer after a preview of what changes, create a new template part, and save a section of a page as a pattern. Everything is saved in the database; the theme's files are never edited, and the Site Editor can reset a template to the theme's version.

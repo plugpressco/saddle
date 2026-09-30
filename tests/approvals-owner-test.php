@@ -242,4 +242,27 @@ class Saddle_Approvals_Owner_Test extends WP_UnitTestCase {
 		$this->assertSame( 200, $this->decide( $id, 'approve' )->get_status() );
 		$this->assertSame( 409, $this->decide( $id, 'reject' )->get_status() );
 	}
+
+	public function test_the_bell_counts_pending_requests_everywhere_but_the_dashboard_list() {
+		$ids = static function ( $screen ) {
+			return wp_list_pluck( Saddle_Notices::for_screen( 'saddle', $screen ), 'id' );
+		};
+		$this->assertNotContains( 'saddle-needs-ok', $ids( 'settings/general' ), 'Nothing pending, no notice.' );
+
+		$this->as_key( $this->key( 'Claude' ) );
+		Saddle_Approval::gate( $this->args( $calls ) );
+		Saddle_Approval::gate( array_merge( $this->args( $calls ), array( 'target' => '8' ) ) );
+		unset( $GLOBALS['wp_rest_application_password_uuid'] );
+
+		$notices = Saddle_Notices::for_screen( 'saddle', 'settings/general' );
+		$needs   = wp_list_filter( $notices, array( 'id' => 'saddle-needs-ok' ) );
+		$this->assertCount( 1, $needs );
+		$this->assertSame( '2 changes are waiting for your OK.', reset( $needs )['message'] );
+		$this->assertNotContains( 'saddle-needs-ok', $ids( 'home/overview' ), 'The Dashboard shows the list itself.' );
+
+		foreach ( $this->pending() as $row ) {
+			$this->decide( $row['id'], 'reject' );
+		}
+		$this->assertNotContains( 'saddle-needs-ok', $ids( 'settings/general' ), 'Decided requests stop counting.' );
+	}
 }
