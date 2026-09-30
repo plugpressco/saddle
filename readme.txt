@@ -201,6 +201,8 @@ The WordPress.org version never checks for its own updates. The version from plu
 == Changelog ==
 
 = Unreleased =
+* Changed: Saddle is one menu in wp-admin with four pages: Home, Connections, Context and Settings. Each page has its own address and tabs, and the sidebar inside the Saddle screen is gone. Old links still open the right page.
+* New: The Context page. Tell every connected app about your site in five fields: about this site, current goal, voice and style, rules, and other instructions. Skills, memory and what Saddle tells every app automatically are on the same page.
 * Changed: First run reads your site before it asks you anything. It counts your pages, posts, media and waiting updates. It also lists work your AI app could do, such as images with no alt text. Then it helps you connect your app on the same screen.
 * Changed: Saddle asks whether your AI app may edit content after the app connects, not before. A new install still starts read-only.
 * Fixed: Closing the connect screen no longer removes a key the app has already used. This happened when the key was copied by hand instead of with Copy setup.
