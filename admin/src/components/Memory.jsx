@@ -25,8 +25,8 @@ import {
 	Row,
 	useConfirm,
 	toast,
-	PageHeader,
 } from '@plugpress/ui';
+import SectionHeader from './SectionHeader';
 import { __, sprintf } from '@wordpress/i18n';
 import { api } from '../api';
 
@@ -120,7 +120,8 @@ export default function Memory( { onChanged } ) {
 
 	return (
 		<div className="saddle-memory">
-			<PageHeader
+			<SectionHeader
+				id="memory"
 				title={ __( 'Memory', 'saddle' ) }
 				description={ __(
 					'Things worth knowing between sessions — saved by you here, or noted by your AI as it works.',

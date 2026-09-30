@@ -12,7 +12,6 @@ import {
 	Button,
 	Spinner,
 	Collapsible,
-	PageHeader,
 	EmptyState,
 	RowList,
 	Row,
@@ -26,6 +25,7 @@ import {
 	useConfirm,
 	toast,
 } from '@plugpress/ui';
+import SectionHeader from './SectionHeader';
 import { __, sprintf } from '@wordpress/i18n';
 import { saddleData, api, LEVELS, tierUnlocks } from '../api';
 import ConnectionHealth from './ConnectionHealth';
@@ -296,7 +296,7 @@ export default function Apps( {
 
 	return (
 		<div className="saddle-apps">
-			<PageHeader
+			<SectionHeader
 				title={
 					<Titled
 						help={ __(
@@ -307,10 +307,6 @@ export default function Apps( {
 						{ __( 'Connected apps', 'saddle' ) }
 					</Titled>
 				}
-				description={ __(
-					'Apps you’ve let talk to this site.',
-					'saddle'
-				) }
 				actions={
 					<Button variant="primary" onClick={ onConnect }>
 						{ __( 'Connect an app', 'saddle' ) }

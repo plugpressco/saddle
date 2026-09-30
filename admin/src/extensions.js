@@ -25,75 +25,133 @@
  * not add primitives the app doesn't otherwise use without accepting the
  * bundle-size cost.
  *
- * Two seams so far, both collected at mount:
+ * The seams, all collected at mount:
  *
- * - `saddle.admin.settingsCards` — a Card rendered inside the Settings page.
- * - `saddle.admin.tabs` — a whole page of its own, with a nav entry:
+ * - `saddle.admin.settingsCards` — a Card on Settings → General.
+ * - `saddle.admin.tabs` (v1) — was a whole page with a nav entry. Shell v2
+ *   has no in-page nav (WordPress's Saddle submenu is the nav, #274), so each
+ *   entry renders as a section on Settings → General, under its label:
  *
  *   addFilter( 'saddle.admin.tabs', 'my-addon/page', ( tabs ) => [
  *       ...tabs,
- *       { id: 'my-page', label: 'My page', icon: 'key', group: 'footer',
- *         order: 10, requiresShell: 1, Component: MyPage },
+ *       { id: 'my-page', label: 'My page', order: 10, requiresShell: 1,
+ *         Component: MyPage },
  *   ] );
  *
- *   `icon` is a string key from ICONS below (icons can't cross the bundle
- *   boundary unresolved); `group` is a NAV_GROUPS key from App.jsx
- *   ('top' | 'ai' | 'connect' | 'monitor') or 'footer' (the default —
- *   next to Settings). The page routes at `#<id>`.
+ * Shell v2 adds, for modules registered with the `saddle_modules` PHP filter
+ * (Saddle_Modules):
+ *
+ * - `saddle.admin.screens` — a module's content for one of its tabs:
+ *   `{ module: 'analytics', tab: 'overview', Component }`. The Component gets
+ *   `{ ui, kit, module, tab, navigate, api, shellVersion }`.
+ * - `saddle.admin.homeCards` — a card on Home → Overview: `{ id, order,
+ *   Component }`.
+ * - `saddle.admin.connectionCards` — a card on Connections → Apps.
+ * - The `saddle.admin.mount` ACTION, for a module that mounts its own app
+ *   (`content => 'mount'` in its descriptor). It fires with an element React
+ *   never touches, and `{ module, tab }`.
+ *
+ * Feature-detect, never compare versions: `window.saddleShell.has( 'screens' )`.
  */
 import { applyFilters } from '@wordpress/hooks';
 import {
 	Badge,
 	Button,
+	CalloutCard,
 	Card,
 	CardContent,
+	CardGrid,
 	CardHeader,
+	ChecklistItem,
+	CodeBlock,
+	Collapsible,
+	EmptyState,
 	Field,
+	HelpTip,
 	Input,
-	KeyIcon,
+	LiveIndicator,
+	NativeSelect,
 	Notice,
 	PageHeader,
-	PlugIcon,
 	Row,
 	RowList,
-	SettingsIcon,
-	ShieldIcon,
 	Snippet,
 	Spinner,
+	StatCard,
+	StatGrid,
+	StatusDot,
 	Switch,
+	Tabs,
+	Textarea,
+	Tooltip,
 	toast,
 	useConfirm,
 } from '@plugpress/ui';
+import SectionHeader from './components/SectionHeader';
 
-export const SHELL_VERSION = 1;
+export const SHELL_VERSION = 2;
 
+// The design-system primitives an addon may use. Every symbol here is one
+// this bundle already imports for itself, so exposing it costs nothing. The
+// plan hands over the whole @plugpress/ui namespace instead; that waits until
+// the library tree-shakes LicensePanel and UpgradeCard, because importing the
+// namespace would put licence and upsell UI into free's bundle.
 export const ui = {
 	Badge,
 	Button,
+	CalloutCard,
 	Card,
 	CardContent,
+	CardGrid,
 	CardHeader,
+	ChecklistItem,
+	CodeBlock,
+	Collapsible,
+	EmptyState,
 	Field,
+	HelpTip,
 	Input,
+	LiveIndicator,
+	NativeSelect,
 	Notice,
 	PageHeader,
 	Row,
 	RowList,
 	Snippet,
 	Spinner,
+	StatCard,
+	StatGrid,
+	StatusDot,
 	Switch,
+	Tabs,
+	Textarea,
+	Tooltip,
 	toast,
 	useConfirm,
 };
 
-// Nav icons an extension tab may pick by key. A tiny, deliberate set — every
-// entry costs bundle bytes, so it grows only when a real tab needs one.
-export const ICONS = {
-	key: KeyIcon,
-	plug: PlugIcon,
-	settings: SettingsIcon,
-	shield: ShieldIcon,
+// Saddle's own pieces, shared so a module's page looks like Core's.
+export const kit = {
+	SectionHeader,
 };
+
+const FEATURES = [
+	'settingsCards',
+	'tabs',
+	'screens',
+	'homeCards',
+	'connectionCards',
+	'mount',
+];
+
+// What this shell supports, for addons that feature-detect. Set when the
+// bundle evaluates, which is before any addon bundle that depends on it.
+if ( typeof window !== 'undefined' ) {
+	window.saddleShell = {
+		version: SHELL_VERSION,
+		has: ( feature ) => FEATURES.includes( feature ),
+	};
+}
 
 // Shared validation: entries an addon's bundle handed through a filter.
 const usable = ( kind, requiredKeys ) => ( entry ) => {
@@ -129,25 +187,63 @@ export function collectSettingsCards() {
 }
 
 /**
- * Contributed whole-page tabs, validated and ordered.
+ * Contributed v1 tabs, validated and ordered. Rendered as sections on
+ * Settings → General now that there is no in-page nav.
  *
- * @return {Array} Entries of shape { id, label, icon, group, order,
- *                 requiresShell, Component } — icon resolved to a component,
- *                 group defaulted to 'footer'.
+ * @return {Array} Entries of shape { id, label, order, requiresShell,
+ *                 Component }.
  */
 export function collectTabs() {
 	const tabs = applyFilters( 'saddle.admin.tabs', [], {
 		shellVersion: SHELL_VERSION,
 		ui,
-		icons: Object.keys( ICONS ),
+		icons: [],
 	} );
 
 	return ( Array.isArray( tabs ) ? tabs : [] )
 		.filter( usable( 'tab', [ 'id', 'label', 'Component' ] ) )
-		.map( ( tab ) => ( {
-			...tab,
-			group: tab.group || 'footer',
-			Icon: ICONS[ tab.icon ] || ICONS.plug,
-		} ) )
+		.sort( byOrder );
+}
+
+/**
+ * A module's screens: `{ module, tab, Component }`.
+ *
+ * @return {Array} Validated entries.
+ */
+export function collectScreens() {
+	const screens = applyFilters( 'saddle.admin.screens', [], {
+		shellVersion: SHELL_VERSION,
+		ui,
+		kit,
+	} );
+
+	return ( Array.isArray( screens ) ? screens : [] ).filter(
+		( entry ) =>
+			entry &&
+			typeof entry.module === 'string' &&
+			typeof entry.tab === 'string' &&
+			entry.Component
+	);
+}
+
+/**
+ * Cards contributed to Home → Overview or Connections → Apps.
+ *
+ * @param {string} where `home` or `connections`.
+ * @return {Array} Entries of shape { id, order, Component }.
+ */
+export function collectCards( where ) {
+	const hook =
+		where === 'home'
+			? 'saddle.admin.homeCards'
+			: 'saddle.admin.connectionCards';
+	const cards = applyFilters( hook, [], {
+		shellVersion: SHELL_VERSION,
+		ui,
+		kit,
+	} );
+
+	return ( Array.isArray( cards ) ? cards : [] )
+		.filter( usable( 'card', [ 'id', 'Component' ] ) )
 		.sort( byOrder );
 }

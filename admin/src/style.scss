@@ -26,7 +26,7 @@
 // style choice. The DS mandates this same split for the accent
 // (--pp-accent = surfaces, 3:1; --pp-accent-text = links and labels, 4.5:1).
 // ---------------------------------------------------------------------------
-body.toplevel_page_saddle,
+body.saddle-admin-page,
 body.pp-scope,
 .saddle-app,
 .pp-app {
@@ -152,7 +152,7 @@ body.pp-scope,
 //
 // Requires the page body to carry .pp-scope and .saddle-app to carry .pp-app
 // (both are applied) so the --pp-* tokens resolve here.
-body.toplevel_page_saddle,
+body.saddle-admin-page,
 .saddle-app {
 	// Neutrals + status — resolve straight to the shared tokens.
 	--s-canvas: var( --pp-canvas );
@@ -201,7 +201,7 @@ body.toplevel_page_saddle,
 
 // ---------- App shell: Saddle owns its canvas on this screen ----------
 // Scoped to the page body class, so nothing leaks to the rest of wp-admin.
-body.toplevel_page_saddle {
+body.saddle-admin-page {
 	#wpcontent {
 		padding-inline-start: 0;
 		background: var(--s-canvas);
@@ -341,117 +341,421 @@ body.toplevel_page_saddle {
 	}
 }
 
-// Right cluster of the top bar: notices sit beside the safety pill.
-.saddle-topbar__right {
+/* ---------- The frame (#274) ---------- */
+// WordPress's own left menu is the navigation, so the page has no rail of its
+// own: the frame is the content column with a header on top. It keeps the
+// padding the old shell's main area had, so the column sits where it did.
+.saddle-frame {
+	padding: var(--pp-space-6) var(--pp-space-6) var(--pp-space-8);
+}
+
+// Above the page title: which product this page belongs to.
+.saddle-frame__source {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+
+	// The brand mark is a single `currentColor` path shared with the wp-admin
+	// menu icon, so it is recolored HERE rather than in the SVG: editing the
+	// file would break class-saddle-settings.php's `black` sentinel, which
+	// core's svg-painter needs to repaint the menu icon per admin color scheme.
+	svg {
+		width: 14px;
+		height: 14px;
+		color: var(--s-accent);
+	}
+}
+
+// Header actions: notices beside the safety pill.
+.saddle-frame__actions {
 	display: flex;
 	align-items: center;
 	gap: 10px;
 }
 
-/* ---------- Shell: DS AppShell sidebar variant ---------- */
-// The rail, groups, footer pinning, and the <782px icon-rail collapse are all
-// design-system behavior (.pp-shell / .pp-nav / .pp-content). Saddle only adds
-// its accent-tinted active row, the safety pill, and the content rhythm.
-
-// Refined active state: the DS already tints the icon accent; add a calm
-// saddle-tinted chip so the active row reads at a glance (Waggle parity).
-// The brand mark is a single `currentColor` path shared with the wp-admin menu
-// icon, so it is recolored HERE rather than in the SVG — editing the file would
-// break class-saddle-settings.php's `black` sentinel, which core's svg-painter
-// needs to repaint the menu icon per the user's admin color scheme.
-.pp-nav__brand svg {
-	color: var(--s-accent);
-}
-
-.saddle-app .pp-nav__item[aria-current='page'] {
-	background: color-mix(in srgb, var(--pp-accent) 12%, var(--pp-surface));
-}
-
-// Slim sticky context bar above the content column. pp-shell__main is not a
-// scroll container (the document scrolls), so the bar sticks to the viewport
-// below the wp-admin bar — the same offset the DS rail uses. Negative margins
-// cancel pp-shell__main's padding so the bar runs edge-to-edge with a
-// full-width hairline.
-.saddle-topbar {
-	position: sticky;
-	top: var(--wp-admin--admin-bar--height, 32px);
-	z-index: var(--pp-z-sticky);
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 16px;
-	height: 48px;
-	margin: calc(-1 * var(--pp-space-6)) calc(-1 * var(--pp-space-6))
-		var(--pp-space-5);
-	padding: 0 var(--pp-space-6);
-	background: var(--pp-surface-glass);
-	-webkit-backdrop-filter: saturate(180%) blur(8px);
-	backdrop-filter: saturate(180%) blur(8px);
-	border-bottom: 1px solid var(--s-border);
-
-	&__context {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		min-width: 0;
-		font-size: 13px;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-	&__group,
-	&__sep {
-		color: var(--s-fg-subtle);
-	}
-	&__title {
-		font-weight: 600;
-		color: var(--s-fg);
-	}
-}
-
-// The safety-status pill on the topbar's right — the tone signal the old
-// rail pill carried, now a button that jumps to Settings.
+// The safety-status pill: what connected apps may do right now. A link to
+// Connections → Permissions, where it is changed.
 .saddle-status-pill {
-	appearance: none;
-	border: none;
-	cursor: pointer;
 	display: flex;
 	align-items: center;
 	flex: 0 0 auto;
 	gap: 7px;
 	padding: 5px 12px;
 	border-radius: var(--s-radius-pill);
-	font: inherit;
 	font-size: 12px;
 	font-weight: 550;
+	line-height: 1.4;
+	text-decoration: none;
 	background: var(--s-surface-3);
 	color: var(--s-fg-muted);
 
-	&--safe {
+	&:hover,
+	&:focus {
+		text-decoration: none;
+	}
+
+	&--safe,
+	&--safe:hover,
+	&--safe:focus {
 		background: var(--s-safe-bg);
 		color: var(--s-safe-text);
 	}
-	&--active {
+	&--active,
+	&--active:hover,
+	&--active:focus {
 		background: var(--s-active-bg);
 		color: var(--s-active-text);
 	}
-	&--paused {
+	&--paused,
+	&--paused:hover,
+	&--paused:focus {
 		background: var(--s-surface-3);
 		color: var(--s-fg-subtle);
 	}
 }
 
 @media (max-width: 782px) {
-	.saddle-topbar {
-		padding: 0 var(--pp-space-4);
+	.saddle-frame {
+		padding: var(--pp-space-4) var(--pp-space-4) var(--pp-space-6);
 	}
 }
 
-@media (max-width: 600px) {
-	.saddle-topbar__group,
-	.saddle-topbar__sep {
+// A section inside a page: smaller than the page title, which lives in the
+// frame. Used where one tab holds two things (Permissions and Integrations,
+// Guidance and Memory) or where a section carries its own button.
+.saddle-section-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--pp-space-4);
+
+	&__title {
+		margin: 0;
+		font-size: 15px;
+		font-weight: 600;
+		line-height: 1.4;
+	}
+
+	&__desc {
+		margin: 2px 0 0;
+		color: var(--s-fg-muted);
+		font-size: 13px;
+	}
+
+	&__actions {
+		display: flex;
+		flex: 0 0 auto;
+		gap: 8px;
+	}
+}
+
+/* ---------- Connections → Apps (#274) ---------- */
+// One calm column: what this is, this site's address, then the apps down the
+// side and the steps for the one picked. The site's own way of connecting,
+// laid out like the hosted MCP pages people already know.
+.saddle-connect {
+	display: grid;
+	gap: var(--pp-space-5);
+
+	&__intro {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--pp-space-5);
+		padding: var(--pp-space-5);
+		border-radius: var(--s-radius-lg);
+		background: var(--s-surface-2);
+	}
+
+	&__title {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin: 0;
+		font-size: 15px;
+		font-weight: 600;
+		line-height: 1.4;
+	}
+
+	&__lede {
+		max-width: 60ch;
+		margin: 4px 0 0;
+		color: var(--s-fg-muted);
+	}
+
+	&__logos {
+		display: flex;
+		flex: 0 0 auto;
+	}
+
+	&__logo {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 40px;
+		height: 40px;
+		margin-inline-start: -8px;
+		border: 1px solid var(--s-border);
+		border-radius: 50%;
+		background: var(--s-bg);
+
+		img {
+			width: 20px;
+			height: 20px;
+		}
+	}
+
+	&__address {
+		display: grid;
+		gap: 6px;
+	}
+
+	&__label {
+		color: var(--s-fg-muted);
+		font-size: 12px;
+	}
+
+	&__url {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		flex-wrap: wrap;
+
+		code {
+			padding: 6px 10px;
+			border: 1px solid var(--s-border);
+			border-radius: var(--s-radius);
+			background: var(--s-surface-2);
+			font-size: 13px;
+			word-break: break-all;
+		}
+	}
+
+	&__picker {
+		display: grid;
+		grid-template-columns: minmax(170px, 220px) 1fr;
+		gap: var(--pp-space-4);
+		align-items: start;
+	}
+
+	&__apps {
+		display: grid;
+		gap: 2px;
+	}
+
+	&__app {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		width: 100%;
+		padding: 8px 10px;
+		border: 0;
+		border-radius: var(--s-radius);
+		background: transparent;
+		color: var(--s-fg);
+		font: inherit;
+		text-align: start;
+		cursor: pointer;
+
+		img {
+			width: 18px;
+			height: 18px;
+		}
+
+		&:hover {
+			background: var(--s-surface-3);
+		}
+
+		&[aria-selected='true'] {
+			background: var(--s-surface-3);
+			font-weight: 600;
+		}
+	}
+
+	&__app-label {
+		flex: 1;
+	}
+
+	&__steps {
+		display: grid;
+		gap: var(--pp-space-3);
+		padding: var(--pp-space-5);
+		border: 1px solid var(--s-border);
+		border-radius: var(--s-radius-lg);
+		background: var(--s-bg);
+		min-width: 0;
+	}
+
+	&__steps-title {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		margin: 0;
+		font-size: 15px;
+		font-weight: 600;
+
+		img {
+			width: 20px;
+			height: 20px;
+		}
+	}
+
+	&__list {
+		display: grid;
+		gap: var(--pp-space-4);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		counter-reset: saddle-step;
+
+		> li {
+			position: relative;
+			display: grid;
+			gap: 10px;
+			margin: 0;
+			padding-inline-start: 34px;
+			counter-increment: saddle-step;
+
+			&::before {
+				content: counter(saddle-step);
+				position: absolute;
+				inset-inline-start: 0;
+				top: 0;
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				width: 22px;
+				height: 22px;
+				border: 1px solid var(--s-border);
+				border-radius: 50%;
+				color: var(--s-fg-muted);
+				font-size: 12px;
+			}
+		}
+
+		p {
+			margin: 0;
+		}
+	}
+
+	&__links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+
+	&__config {
+		min-width: 0;
+	}
+
+	&__key {
+		display: grid;
+		gap: var(--pp-space-3);
+		justify-items: start;
+
+		p {
+			margin: 0;
+		}
+	}
+
+	&__steps > .pp-btn--link {
+		justify-self: start;
+	}
+
+	&__waiting {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		margin: 0;
+		color: var(--s-fg-muted);
+		font-size: 13px;
+	}
+
+	&__spinner {
+		width: 10px;
+		height: 10px;
+		border: 2px solid var(--s-border-strong);
+		border-top-color: var(--s-accent);
+		border-radius: 50%;
+		animation: saddle-spin 0.9s linear infinite;
+	}
+}
+
+@keyframes saddle-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@media (max-width: 782px) {
+	.saddle-connect__picker {
+		grid-template-columns: 1fr;
+	}
+
+	.saddle-connect__apps {
+		grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+	}
+
+	.saddle-connect__logos {
 		display: none;
 	}
+}
+
+/* ---------- Context (#274) ---------- */
+// A sheet the owner fills in and corrects: named fields, each saying whether
+// anything is written, with an example as the placeholder.
+.saddle-context {
+	display: grid;
+	gap: var(--pp-space-6);
+	max-width: 760px;
+
+	&__empty {
+		margin: 0;
+		padding: var(--pp-space-4);
+		border: 1px dashed var(--s-border-strong);
+		border-radius: var(--s-radius-lg);
+		color: var(--s-fg-muted);
+	}
+
+	&__fields {
+		display: grid;
+		gap: var(--pp-space-5);
+	}
+}
+
+.saddle-context-field {
+	display: grid;
+	gap: 4px;
+
+	&__head {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 12px;
+	}
+
+	&__label {
+		font-weight: 600;
+	}
+
+	&__state {
+		color: var(--s-fg-subtle);
+		font-size: 12px;
+	}
+
+	&__hint {
+		margin: 0 0 4px;
+		color: var(--s-fg-muted);
+		font-size: 12px;
+	}
+}
+
+// A section that stacks its heading and its content on one rhythm.
+.saddle-stack {
+	display: grid;
+	gap: var(--pp-space-4);
+	align-content: start;
 }
 
 // The content column stacks its direct children (notices, the page pane) with
@@ -471,8 +775,13 @@ body.toplevel_page_saddle {
 	align-content: start;
 }
 
-/* Section switches ease in rather than snapping. */
+/* Section switches ease in rather than snapping. A tab can hold more than one
+   section (Permissions and Integrations; Guidance and Memory), so the pane
+   stacks them with a section-sized gap. */
 .saddle-tabpane {
+	display: grid;
+	gap: var(--pp-space-6);
+	align-content: start;
 	animation: saddle-step-in 0.24s var(--s-ease) both;
 }
 

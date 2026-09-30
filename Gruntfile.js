@@ -235,9 +235,14 @@ module.exports = function ( grunt ) {
 
 			// Main file: the plugin header Version and the SADDLE_VERSION constant.
 			let php = grunt.file.read( MAIN_FILE );
-			php = php.replace( new RegExp( '(Version:\\s*)' + VER ), '$1' + to );
 			php = php.replace(
-				new RegExp( "(define\\(\\s*'SADDLE_VERSION',\\s*')" + VER + "('\\s*\\))" ),
+				new RegExp( '(Version:\\s*)' + VER ),
+				'$1' + to
+			);
+			php = php.replace(
+				new RegExp(
+					"(define\\(\\s*'SADDLE_VERSION',\\s*')" + VER + "('\\s*\\))"
+				),
 				'$1' + to + '$2'
 			);
 			grunt.file.write( MAIN_FILE, php );

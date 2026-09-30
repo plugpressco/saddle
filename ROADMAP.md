@@ -119,6 +119,11 @@ the issue and the rule is revisited there.
   places for the same fact. Still no re-styling. A second, on Fahim's request
   2026-09-29: first run (#269), so a new owner sees Saddle read their site before
   it asks for anything. Same kit and tokens; the rest of the admin is unchanged.
+  A third, decided by Fahim 2026-09-30: the unified admin (#272, #274 and the
+  phases after them). It changes structure, not style. Saddle's WordPress
+  submenu becomes the nav, with one page per area and no sidebar inside the
+  page, and each sibling plugin adds its page through `saddle_modules`. Same
+  kit and tokens.
 - **Runtime license checks in Pro** (decided 2026-07-12, saddle-pro#23).
 - Per-connection access profiles, comment abilities, activity-log export and
   retention — closed as not planned on 2026-09-07.

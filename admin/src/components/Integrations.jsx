@@ -20,8 +20,8 @@ import {
 	Badge,
 	Switch,
 	toast,
-	PageHeader,
 } from '@plugpress/ui';
+import SectionHeader from './SectionHeader';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { api } from '../api';
 import UnsplashKeyCard from './UnsplashKeyCard';
@@ -132,7 +132,7 @@ export default function Integrations( { caps, onChanged } ) {
 
 	return (
 		<div className="saddle-integrations">
-			<PageHeader
+			<SectionHeader
 				title={ __( 'Integrations', 'saddle' ) }
 				description={ __(
 					'Extra services your AI can use through Saddle — every tool still follows your access level and approval rules.',

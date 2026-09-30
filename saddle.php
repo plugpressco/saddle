@@ -27,7 +27,12 @@ define( 'SADDLE_MIN_WP', '6.9' );
 // Deliberately decoupled from SADDLE_VERSION: addons feature-detect this
 // constant (never a plugin-version floor), and it bumps ONLY on breaking
 // changes to the wp.hooks seams or the ui context object.
-define( 'SADDLE_SHELL_VERSION', 1 );
+//
+// 2 (the unified admin, #274): the in-page nav is gone, so a
+// `saddle.admin.tabs` entry renders as a section on Settings instead of a
+// page of its own; `screens`, `homeCards`, `connectionCards` and the `mount`
+// action are new. Everything a v1 addon registers still renders.
+define( 'SADDLE_SHELL_VERSION', 2 );
 
 // The saddle/wc-* tools use only WooCommerce's CRUD API (wc_get_products,
 // wc_get_orders), never raw post/postmeta queries, so they are safe with
@@ -154,6 +159,7 @@ require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-endpoints.php';
 require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-consent.php';
 require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-bearer.php';
 require_once SADDLE_DIR . 'includes/class-saddle-first-look.php';
+require_once SADDLE_DIR . 'includes/class-saddle-modules.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-connections-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-settings.php';
@@ -237,7 +243,12 @@ final class Saddle {
 		add_action( 'rest_api_init', array( 'Saddle_MCP_Diagnostics', 'register_routes' ) );
 		add_action( 'init', array( 'Saddle_Unsplash', 'register_taxonomy' ) );
 		Saddle_Unsplash::register_admin_hooks();
-		add_action( 'admin_menu', array( 'Saddle_Settings', 'register_menu' ) );
+		// Priority 9: the Saddle menu exists before a sibling plugin adds to it
+		// at the default 10. Its order is settled once every plugin has added
+		// its items (see Saddle_Settings::order_submenu()).
+		add_action( 'admin_menu', array( 'Saddle_Settings', 'register_menu' ), 9 );
+		add_action( 'admin_menu', array( 'Saddle_Settings', 'order_submenu' ), 999 );
+		add_filter( 'plugin_action_links_' . plugin_basename( SADDLE_FILE ), array( 'Saddle_Settings', 'action_links' ) );
 		add_action( 'admin_enqueue_scripts', array( 'Saddle_Settings', 'enqueue_assets' ) );
 		add_action( Saddle_Approval::GC_HOOK, array( 'Saddle_Approval', 'gc' ) );
 		add_action( Saddle_Approval::GC_HOOK, array( 'Saddle_Log', 'gc' ) );
