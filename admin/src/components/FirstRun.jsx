@@ -13,7 +13,6 @@ import { useState, useEffect, useRef } from '@wordpress/element';
 import {
 	Button,
 	CalloutCard,
-	CardRadioGroup,
 	ChecklistItem,
 	EyeIcon,
 	Kbd,
@@ -29,10 +28,10 @@ import {
 } from '@plugpress/ui';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { api, saddleData } from '../api';
-import { AppLogo } from './icons';
 import ConnectWizard from './ConnectWizard';
 import WaitingLine from './WaitingLine';
 import { APPS } from '../connect-apps';
+import { AppGrid } from './ConnectApps';
 import { createPulse } from '../pulse';
 import {
 	connectStatus,
@@ -144,17 +143,6 @@ function findingLines( { findings } ) {
 	}
 	return found;
 }
-
-// The six tiles. "Other" opens the rest of the catalog.
-const TILES = [ 'claude', 'claude-code', 'chatgpt', 'codex', 'cursor' ];
-const OTHER_APPS = [
-	'vscode',
-	'gemini-cli',
-	'windsurf',
-	'openclaw',
-	'grok',
-	'other',
-];
 
 // How long the try-it step waits for a tool call before it offers a tip.
 const TRY_PATIENCE = 120000;
@@ -472,50 +460,18 @@ function Choose( {
 }
 
 /**
- * The six tiles. "Other" swaps them for the rest of the catalog.
+ * Which AI: the same grouped tiles as AI apps → Connect an app.
  *
  * @param {Object}   props
  * @param {Function} props.onPick Called with an app key.
  */
 function AppTiles( { onPick } ) {
-	const [ other, setOther ] = useState( false );
-	const keys = other ? OTHER_APPS : TILES;
-	const options = keys.map( ( key ) => ( {
-		value: key,
-		icon: <AppLogo app={ key } />,
-		title: appMeta( key ).label,
-		description: appMeta( key ).kind,
-	} ) );
-	if ( ! other ) {
-		options.push( {
-			value: '__other',
-			icon: <AppLogo app="other" />,
-			title: __( 'Other', 'saddle' ),
-			description: __(
-				'VS Code, Gemini CLI, Windsurf and more',
-				'saddle'
-			),
-		} );
-	}
-
 	return (
 		<div className="saddle-first-run__ask">
 			<h2 className="saddle-first-run__question">
 				{ __( 'Which AI do you use?', 'saddle' ) }
 			</h2>
-			<CardRadioGroup
-				className="saddle-wizard__apps"
-				aria-label={ __( 'Which AI do you use?', 'saddle' ) }
-				options={ options }
-				onChange={ ( value ) =>
-					'__other' === value ? setOther( true ) : onPick( value )
-				}
-			/>
-			{ other && (
-				<Button variant="link" onClick={ () => setOther( false ) }>
-					{ __( 'Back to the main apps', 'saddle' ) }
-				</Button>
-			) }
+			<AppGrid onPick={ onPick } />
 		</div>
 	);
 }

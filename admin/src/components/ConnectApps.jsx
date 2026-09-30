@@ -1,7 +1,8 @@
 /**
  * AI apps → "Connect an app": the picker, in a drawer (#285).
  *
- * The tiles, then the short steps for the one you pick, then a line that
+ * The tiles, grouped by where you use the AI; then, in their place, the
+ * short steps for the one you pick; then a line that
  * says the moment it connects. It is the site's own way: the address is this
  * site's, and the app is approved on this site's own screen. Nothing goes
  * through anyone else's server. The address is one quiet line on the page
@@ -18,7 +19,13 @@ import { useState, useEffect, useRef } from '@wordpress/element';
 import { Button, CodeBlock, Notice, StatusDot } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { api, saddleData } from '../api';
-import { APPS, MCP_URL, buildConfig, installLinks } from '../connect-apps';
+import {
+	APPS,
+	APP_GROUPS,
+	MCP_URL,
+	buildConfig,
+	installLinks,
+} from '../connect-apps';
 import { AppLogo } from './icons';
 import { areaUrl } from '../routes';
 
@@ -110,6 +117,65 @@ function usePulse( active, onConnected ) {
 }
 
 /**
+ * The app tiles, in three groups (chat apps, agents, code editors), and
+ * "Any MCP app" as a quiet link under them. First run shows the same grid.
+ *
+ * @param {Object}   props
+ * @param {Function} props.onPick    Called with an app key.
+ * @param {Set}      props.connected App keys that already have a connection.
+ */
+export function AppGrid( { onPick, connected = new Set() } ) {
+	return (
+		<div id="saddle-connect-apps" className="saddle-connect__groups">
+			{ APP_GROUPS.map( ( g ) => (
+				<div key={ g.key } className="saddle-connect__group">
+					<h3
+						className="saddle-connect__group-title"
+						id={ `saddle-apps-${ g.key }` }
+					>
+						{ g.label }
+					</h3>
+					<div
+						className="saddle-connect__apps"
+						role="group"
+						aria-labelledby={ `saddle-apps-${ g.key }` }
+					>
+						{ g.apps.map( ( key ) => (
+							<button
+								key={ key }
+								type="button"
+								className="saddle-connect__app"
+								onClick={ () => onPick( key ) }
+							>
+								<AppLogo app={ key } />
+								<span className="saddle-connect__app-label">
+									{ labelFor( key ) }
+								</span>
+								{ connected.has( key ) && (
+									<StatusDot
+										tone="success"
+										aria-label={ __(
+											'Connected',
+											'saddle'
+										) }
+									/>
+								) }
+							</button>
+						) ) }
+					</div>
+				</div>
+			) ) }
+			<p className="saddle-connect__other">
+				{ __( 'Not listed?', 'saddle' ) }{ ' ' }
+				<Button variant="link" onClick={ () => onPick( 'other' ) }>
+					{ __( 'Connect any MCP app', 'saddle' ) }
+				</Button>
+			</p>
+		</div>
+	);
+}
+
+/**
  * @param {Object}   props
  * @param {Object}   props.oauth       The sign-in settings (SignInCard's hook),
  *                                     or null while they load. The switch
@@ -159,37 +225,11 @@ export default function ConnectApps( {
 	const config = byAddress ? buildConfig( app.key, null, 'address' ) : '';
 	const links = byAddress ? installLinks( app.key, null, 'address' ) : [];
 
-	const pick = ( key ) => setSelected( key === selected ? null : key );
+	const pick = ( key ) => setSelected( key );
 
 	return (
 		<div className="saddle-connect" id="saddle-connect">
-			<div
-				id="saddle-connect-apps"
-				className="saddle-connect__apps"
-				role="group"
-				aria-label={ __( 'AI apps', 'saddle' ) }
-			>
-				{ APPS.map( ( a ) => (
-					<button
-						key={ a.key }
-						type="button"
-						aria-pressed={ !! app && a.key === app.key }
-						className="saddle-connect__app"
-						onClick={ () => pick( a.key ) }
-					>
-						<AppLogo app={ a.key } />
-						<span className="saddle-connect__app-label">
-							{ a.label }
-						</span>
-						{ connectedApps.has( a.key ) && (
-							<StatusDot
-								tone="success"
-								aria-label={ __( 'Connected', 'saddle' ) }
-							/>
-						) }
-					</button>
-				) ) }
-			</div>
+			{ ! app && <AppGrid onPick={ pick } connected={ connectedApps } /> }
 
 			{ app && (
 				<div className="saddle-connect__steps">

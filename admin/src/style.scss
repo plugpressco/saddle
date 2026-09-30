@@ -630,12 +630,36 @@ body.saddle-admin-page {
 }
 
 /* ---------- AI apps: Connect an app drawer (#274, #285) ---------- */
-// A compact grid of app tiles, and the steps for the one picked beneath the
-// grid. Nothing below the grid until an app is picked.
+// The app tiles in three small groups; picking one swaps the grid for that
+// app's steps ("All apps" brings the grid back). First run shows the same grid.
 .saddle-connect {
 	display: grid;
 	gap: var(--pp-space-3);
 	min-width: 0;
+
+	&__groups {
+		display: grid;
+		gap: var(--pp-space-4);
+		min-width: 0;
+	}
+
+	&__group {
+		display: grid;
+		gap: 8px;
+	}
+
+	&__group-title {
+		margin: 0;
+		font-size: 12px;
+		font-weight: 600;
+		color: var(--s-fg-muted);
+	}
+
+	&__other {
+		margin: 0;
+		font-size: 12px;
+		color: var(--s-fg-subtle);
+	}
 
 	&__apps {
 		display: grid;
@@ -1241,26 +1265,38 @@ body.saddle-admin-page {
 // The access dropdown sits at its natural width beside the ⋯ menu.
 .saddle-apps__access {
 	width: auto;
-	min-width: 140px;
+	min-width: 148px;
 }
 
-// "What each access means", under the list: three short lines.
-.saddle-apps__levels-list {
+// The access list explains itself: each role's name, and under it one line
+// on what it adds. The closed box shows the name only. The list is portaled,
+// so these rules can't sit under `.saddle-apps`.
+.saddle-role {
 	display: grid;
-	gap: 6px;
-	margin: 0;
-	padding: 0 0 var(--pp-space-2);
-	list-style: none;
+	gap: 2px;
+}
+
+.saddle-role__name {
+	font-weight: 500;
+}
+
+.saddle-role__hint {
 	font-size: 12px;
 	color: var(--s-fg-muted);
-
-	strong {
-		color: var(--s-fg);
-	}
 }
 
-.saddle-apps__levels-note {
-	color: var(--s-fg-subtle);
+.pp-select__trigger .saddle-role__hint {
+	display: none;
+}
+
+.saddle-role__list {
+	--pp-accent: var(--saddle-brand);
+	--pp-accent-tint: var(--saddle-brand-tint);
+	min-width: 264px;
+
+	.pp-select__item {
+		padding-block: 8px;
+	}
 }
 
 // The one quiet line: the site's address for AI apps, and Copy.

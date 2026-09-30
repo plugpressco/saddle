@@ -20,7 +20,7 @@ import {
 	Badge,
 	Snippet,
 	HelpTip,
-	NativeSelect,
+	Select,
 	DropdownMenu,
 	DropdownItem,
 	DropdownSeparator,
@@ -44,13 +44,38 @@ const MCP_URL = saddleData.mcpUrl || '';
 
 /**
  * The three roles, in the order the dropdown lists them. The words match
- * `Saddle_Access::labels()`.
+ * `Saddle_Access::labels()`; each `hint` is what that role adds, shown under
+ * its name in the open list, so the choice explains itself where it is made.
  */
 export const ROLES = [
-	{ key: 'read', label: __( 'Read only', 'saddle' ) },
-	{ key: 'write', label: __( 'Edit content', 'saddle' ) },
-	{ key: 'admin', label: __( 'Manage the site', 'saddle' ) },
+	{
+		key: 'read',
+		label: __( 'Read only', 'saddle' ),
+		hint: __( 'Looks at everything, changes nothing', 'saddle' ),
+	},
+	{
+		key: 'write',
+		label: __( 'Edit content', 'saddle' ),
+		hint: __( 'Posts, pages, media, menus and SEO', 'saddle' ),
+	},
+	{
+		key: 'admin',
+		label: __( 'Manage the site', 'saddle' ),
+		hint: __( 'Also plugins, themes, updates and settings', 'saddle' ),
+	},
 ];
+
+// The open list shows each role's hint under its name; the closed box shows
+// the name only (the hint is hidden there in CSS).
+const ROLE_OPTIONS = ROLES.map( ( r ) => ( {
+	value: r.key,
+	label: (
+		<span className="saddle-role">
+			<span className="saddle-role__name">{ r.label }</span>
+			<span className="saddle-role__hint">{ r.hint }</span>
+		</span>
+	),
+} ) );
 
 const roleLabel = ( key ) =>
 	( ROLES.find( ( r ) => r.key === key ) || {} ).label || key;
@@ -309,27 +334,20 @@ export default function Apps( {
 							description={ metaOf( c ) }
 							actions={
 								<>
-									<NativeSelect
+									<Select
 										className="saddle-apps__access"
+										contentClassName="saddle-role__list"
+										options={ ROLE_OPTIONS }
 										value={ roleOf( c, siteTier ) }
 										aria-label={ sprintf(
 											/* translators: %s: the app name. */
 											__( 'What %s can do', 'saddle' ),
 											nameOf( c )
 										) }
-										onChange={ ( e ) =>
-											changeRole( c, e.target.value )
+										onChange={ ( role ) =>
+											changeRole( c, role )
 										}
-									>
-										{ ROLES.map( ( r ) => (
-											<option
-												key={ r.key }
-												value={ r.key }
-											>
-												{ r.label }
-											</option>
-										) ) }
-									</NativeSelect>
+									/>
 									<DropdownMenu
 										trigger={
 											<IconButton
@@ -390,43 +408,6 @@ export default function Apps( {
 						/>
 					) ) }
 				</RowList>
-
-				<Collapsible
-					className="saddle-apps__levels"
-					trigger={ __( 'What each access means', 'saddle' ) }
-				>
-					<ul className="saddle-apps__levels-list">
-						<li>
-							<strong>{ __( 'Read only', 'saddle' ) }</strong>
-							{ ' · ' }
-							{ __(
-								'looks at everything, changes nothing.',
-								'saddle'
-							) }
-						</li>
-						<li>
-							<strong>{ __( 'Edit content', 'saddle' ) }</strong>
-							{ ' · ' }
-							{ __(
-								'writes and edits posts, pages, media and SEO. Asks you before it publishes or deletes.',
-								'saddle'
-							) }
-						</li>
-						<li>
-							<strong>
-								{ __( 'Manage the site', 'saddle' ) }
-							</strong>
-							{ ' · ' }
-							{ __(
-								'also menus, settings, plugins and themes. Asks you before anything big.',
-								'saddle'
-							) }
-						</li>
-						<li className="saddle-apps__levels-note">
-							{ __( 'New apps start at Read only.', 'saddle' ) }
-						</li>
-					</ul>
-				</Collapsible>
 			</section>
 
 			<p className="saddle-apps__address">
