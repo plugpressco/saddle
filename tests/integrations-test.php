@@ -613,7 +613,7 @@ class Saddle_Integrations_Test extends WP_UnitTestCase {
 
 		$this->assertContains( 'mailyard-', $list, 'A self-enrolled integration must reach the UI grouping.' );
 		$this->assertContains( 'waggle-', $list );
-		$this->assertContains( 'knovia-', $list, 'The literal floor keeps Pro’s grouping from regressing.' );
+		$this->assertContains( 'bridle-kb-', $list, 'The literal floor keeps Pro’s grouping from regressing.' );
 	}
 
 	/* -------- third-party integrations: owner-approved -------- */
