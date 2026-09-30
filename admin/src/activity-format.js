@@ -155,6 +155,12 @@ export const actionLabel = ( entry, caps ) => {
 		( c ) => c.short === short
 	);
 	let name = cap && cap.label ? cap.label : '';
+	const called = 'denied' === entry.type || 'rehearsed' === entry.type;
+	// Not a tool Saddle knows (an event such as "oauth-authorized"): its
+	// stored summary already says it in words.
+	if ( ! name && ! called && entry.summary ) {
+		return entry.summary;
+	}
 	if ( ! name && short ) {
 		const plain = short.replace( /[-_]+/g, ' ' );
 		name = plain.charAt( 0 ).toUpperCase() + plain.slice( 1 );

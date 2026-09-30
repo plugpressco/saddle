@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-30T22:02:21+00:00\n"
+"POT-Creation-Date: 2026-09-30T22:05:04+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -8341,21 +8341,21 @@ msgstr ""
 
 #. translators: 1: a tool's name, 2: the access level it needs.
 #: admin/build/index.js:64
-#: admin/src/activity-format.js:171
+#: admin/src/activity-format.js:177
 #, js-format
 msgid "Blocked · %1$s · needs %2$s"
 msgstr ""
 
 #. translators: %s: a tool's name.
 #: admin/build/index.js:65
-#: admin/src/activity-format.js:177
+#: admin/src/activity-format.js:183
 #, js-format
 msgid "Blocked · %s"
 msgstr ""
 
 #. translators: %s: a tool's name.
 #: admin/build/index.js:66
-#: admin/src/activity-format.js:184
+#: admin/src/activity-format.js:190
 #, js-format
 msgid "Rehearsed · %s"
 msgstr ""
@@ -9666,7 +9666,7 @@ msgid "Yesterday"
 msgstr ""
 
 #: admin/build/index.js:107
-#: admin/src/activity-format.js:202
+#: admin/src/activity-format.js:208
 msgid "Earlier"
 msgstr ""
 

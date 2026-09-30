@@ -59,6 +59,18 @@ describe( 'actionLabel', () => {
 		);
 	} );
 
+	it( 'uses the summary for an event that is not a tool', () => {
+		expect(
+			actionLabel(
+				{
+					action: 'oauth-authorized',
+					summary: 'Connected an app with OAuth — Claude',
+				},
+				caps
+			)
+		).toBe( 'Connected an app with OAuth — Claude' );
+	} );
+
 	it( 'falls back to the summary when there is no action', () => {
 		expect(
 			actionLabel( { action: '', summary: 'Something' }, caps )
