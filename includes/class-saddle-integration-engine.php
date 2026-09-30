@@ -31,7 +31,7 @@ defined( 'ABSPATH' ) || exit;
  * it IS a `saddle/` ability: `waggle/get-aeo-score` → `saddle/waggle-get-aeo-score`.
  *
  * One engine, many catalogs: free Saddle instantiates it for the free
- * first-party catalog (Waggle), Saddle Pro for its own (Knovia). Each
+ * first-party catalog (Waggle), Saddle Pro for its own (Bridle KB). Each
  * caller supplies only its catalog and filter names — the wrap/executor
  * safety logic exists exactly once, here.
  *
@@ -257,14 +257,14 @@ class Saddle_Integration_Engine {
 	 *
 	 * @param string $slug    Integration slug.
 	 * @param array  $def     Catalog definition (title, force_destructive, …).
-	 * @param string $name    Source ability name, e.g. 'knovia/create-doc'.
+	 * @param string $name    Source ability name, e.g. 'bridle-kb/create-doc'.
 	 * @param object $ability Source WP_Ability.
 	 * @param array  $all     The ability registry snapshot from this pass.
 	 */
 	private function wrap( $slug, array $def, $name, $ability, array $all ) {
 		$title        = $def['title'];
 		$source_short = substr( $name, strpos( $name, '/' ) + 1 );
-		$short        = $slug . '-' . $source_short; // knovia-create-doc.
+		$short        = $slug . '-' . $source_short; // bridle-kb-create-doc.
 		$wrapper      = 'saddle/' . $short;
 
 		// Collision — never overwrite an existing saddle ability. (Checked
@@ -388,8 +388,8 @@ class Saddle_Integration_Engine {
 	 * (whose own permission_callback core re-checks inside execute()), gate
 	 * destructive calls, and log every mutation.
 	 *
-	 * @param string $short       Wrapper short name (knovia-create-doc).
-	 * @param string $name        Source ability name (knovia/create-doc).
+	 * @param string $short       Wrapper short name (bridle-kb-create-doc).
+	 * @param string $name        Source ability name (bridle-kb/create-doc).
 	 * @param string $title       Integration title.
 	 * @param bool   $destructive Whether the wrapper treats the source as destructive.
 	 * @param bool   $is_readonly Whether the source is read-only.
