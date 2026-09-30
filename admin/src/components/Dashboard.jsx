@@ -73,6 +73,16 @@ export default function Dashboard( {
 			  } ) )
 			: connections;
 	const hasApps = !! apps && apps.length > 0;
+	// The Setup block shows unless the owner hid it (or the onboarding record
+	// hasn't arrived, when the block draws nothing either).
+	const setupShown = !! (
+		onboarding &&
+		! (
+			onboarding.modules &&
+			onboarding.modules.home &&
+			onboarding.modules.home.setup_hidden_at > 0
+		)
+	);
 
 	const [ activity, setActivity ] = useState( null );
 	const [ health, setHealth ] = useState( healthCache );
@@ -210,8 +220,9 @@ export default function Dashboard( {
 
 			{ /* When no apps yet, make connecting the clear next step. Not
 			     while the list is still loading: that would flash the callout
-			     at every owner who has connected. */ }
-			{ apps && ! hasApps && (
+			     at every owner who has connected. Not while the Setup block is
+			     up either: its first row already says "Connect an app". */ }
+			{ apps && ! hasApps && ! setupShown && (
 				<CalloutCard
 					title={ __( 'Connect your first app', 'saddle' ) }
 					description={ __(
