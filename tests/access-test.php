@@ -475,6 +475,8 @@ class Saddle_Access_Test extends WP_UnitTestCase {
 			}
 			$this->assertStringNotContainsString( 'Saddle → Permissions', (string) file_get_contents( $file ), $file );
 			$this->assertStringNotContainsString( 'Saddle → Apps', (string) file_get_contents( $file ), $file );
+			// Every other way #285's removed screens were named (#296).
+			$this->assertDoesNotMatchRegularExpression( '/Permissions screen|Integrations screen|Saddle Permissions/', (string) file_get_contents( $file ), $file );
 		}
 	}
 }

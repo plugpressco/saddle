@@ -884,7 +884,7 @@ class Saddle_REST_Admin {
 	}
 
 	/**
-	 * Tool-name prefixes the Permissions screen files under "Integrations".
+	 * Tool-name prefixes the single-tools list files under "Integrations".
 	 *
 	 * Derived from the live catalog rather than listed by hand. The hand-kept
 	 * list silently dropped Mailyard's wrapped tools into "Other" the moment it
@@ -1134,7 +1134,7 @@ class Saddle_REST_Admin {
 	}
 
 	/**
-	 * The Integrations screen's rows: enrolled integrations, then the
+	 * The Services section's rows: enrolled integrations, then the
 	 * built-in ones whose plugin is detected.
 	 *
 	 * @return array[]
@@ -1179,7 +1179,7 @@ class Saddle_REST_Admin {
 		}
 
 		/**
-		 * Filter the Integrations screen's rows.
+		 * Filter the Services section's rows.
 		 *
 		 * For an add-on that wraps tools through its own engine rather than
 		 * free's catalog, so its integrations can appear here too.

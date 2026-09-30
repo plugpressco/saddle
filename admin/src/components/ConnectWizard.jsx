@@ -76,7 +76,7 @@ const COMMON_APPS = [ 'claude', 'chatgpt', 'claude-code', 'cursor' ];
  *                                          screen — `onConnected` takes over.
  * @param {Function} props.onConnected      Called with the app once it connects.
  * @param {string}   props.initialApp       Start on the key setup for this app
- *                                          (Connections → Apps, "Use a key").
+ *                                          (AI apps → Connect an app, "Make a key").
  * @param {string}   props.presetApp        First run: the app already chosen on
  *                                          its own tiles. Skips the picker and
  *                                          opens that app's setup.
@@ -229,7 +229,7 @@ export default function ConnectWizard( {
 		pickByKey( key );
 	};
 
-	// Connections → Apps sends the owner here to make a key for one app: skip
+	// AI apps → Connect an app sends the owner here to make a key for one app: skip
 	// the picker and go straight to that app's key setup.
 	useEffect( () => {
 		if ( initialApp && APPS.some( ( a ) => a.key === initialApp ) ) {

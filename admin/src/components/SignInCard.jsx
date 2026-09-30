@@ -1,6 +1,6 @@
 /**
  * Sign-in for apps: the one control for OAuth on this site. It lives on
- * Connections → Apps, beside the apps it lets in. On or off, whether the site
+ * Settings → Advanced → Sign-in for apps. On or off, whether the site
  * can do it yet, whether apps can discover it, and the two registration
  * switches all sit here; nothing else on the page flips them.
  */
