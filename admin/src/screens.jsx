@@ -278,7 +278,7 @@ export default function Screen( props ) {
 			);
 
 		case 'home/activity':
-			return <Activity />;
+			return <Activity caps={ caps } />;
 
 		case 'connections/apps':
 			return wizardOpen ? (

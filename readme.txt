@@ -203,6 +203,9 @@ The WordPress.org version never checks for its own updates. The version from plu
 = Unreleased =
 * Changed: Saddle is one menu in wp-admin with four pages: Home, Connections, Context and Settings. Each page has its own address and tabs, and the sidebar inside the Saddle screen is gone. Old links still open the right page.
 * Changed: The Saddle screens look like the rest of WordPress. They use its greys, link color and form controls, one small set of text sizes, and a white header across the top of every Saddle page with the page's tabs inside it. Saddle's own color, a deep teal, appears only on its logo, buttons and switches.
+* Changed: Home is shorter. It shows what your AI app may do, whether it is paused and which apps are connected, then setup while it is unfinished, your connected apps, recent activity and any modules. Activity names each action in plain words, such as "Blocked · Update option · needs Admin".
+* Changed: Settings is one page, grouped into Memory, Recent changes and Security, with Run setup again. The Advanced tab is gone; an old link to it still opens Settings.
+* Changed: Connections, Context and Activity show less text. Connections → Apps has four sections: connect an app, connected apps, sign-in for apps, and connection details (folded away). Permissions keeps pause, rehearsal and drafts-only together in one Safety block. Longer explanations sit behind a help icon.
 * New: The Context page. Tell every connected app about your site in five fields: about this site, current goal, voice and style, rules, and other instructions. Skills, memory and what Saddle tells every app automatically are on the same page.
 * Changed: Each setting has one place. The pause switch is on Connections > Permissions, and sign-in for apps is on Connections > Apps.
 * New: Settings > Advanced holds the memory limits and the site address check, which had no screen before.

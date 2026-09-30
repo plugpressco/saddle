@@ -13,12 +13,11 @@ import {
 	Notice,
 	FilterTabs,
 	EmptyState,
-	Badge,
 	HelpTip,
 } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { api } from '../api';
-import { clock, groupByDay } from '../activity-format';
+import { actionLabel, clock, groupByDay } from '../activity-format';
 
 const PER_PAGE = 25;
 
@@ -29,7 +28,11 @@ const FILTERS = [
 	{ key: 'rehearsed', label: __( 'Rehearsed', 'saddle' ) },
 ];
 
-export default function Activity() {
+/**
+ * @param {Object}   props
+ * @param {Object[]} props.caps The capabilities list, for tool names.
+ */
+export default function Activity( { caps = [] } ) {
 	const [ entries, setEntries ] = useState( [] );
 	const [ total, setTotal ] = useState( 0 );
 	const [ page, setPage ] = useState( 1 );
@@ -156,31 +159,20 @@ export default function Activity() {
 										aria-hidden="true"
 									/>
 									<div className="saddle-activity__body">
-										<span className="saddle-activity__summary">
-											{ e.summary }
+										{ /* A blocked or rehearsed call reads as the tool's
+										     own name ("Blocked · Update option · needs
+										     Admin"); the raw tool name stays in the title
+										     for anyone who wants it. */ }
+										<span
+											className="saddle-activity__summary"
+											title={ e.action || undefined }
+										>
+											{ 'denied' === e.type ||
+											'rehearsed' === e.type
+												? actionLabel( e, caps )
+												: e.summary }
 										</span>
 										<span className="saddle-activity__meta">
-											{ e.type === 'denied' && (
-												<Badge tone="danger">
-													{ __(
-														'Blocked',
-														'saddle'
-													) }
-												</Badge>
-											) }
-											{ e.type === 'rehearsed' && (
-												<Badge tone="info">
-													{ __(
-														'Rehearsed',
-														'saddle'
-													) }
-												</Badge>
-											) }
-											{ e.action && (
-												<code className="saddle-activity__action">
-													{ e.action }
-												</code>
-											) }
 											{ e.user &&
 												sprintf(
 													/* translators: %s: user login. */
