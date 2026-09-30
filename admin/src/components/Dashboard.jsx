@@ -27,6 +27,7 @@ import {
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { api, levelFor } from '../api';
 import { APPS } from '../connect-apps';
+import SetupBlock from './SetupBlock';
 import { parseEntryDate, relativeWhen, shortLabel } from '../activity-format';
 
 // How many recent entries the Dashboard preview shows; the full record lives on
@@ -50,7 +51,15 @@ function connectionLabel( c ) {
 	return ( app && app.label ) || c.name || c.client;
 }
 
-export default function Dashboard( { tier, clients, onNavigate, onConnect } ) {
+export default function Dashboard( {
+	tier,
+	clients,
+	onNavigate,
+	onConnect,
+	onboarding,
+	onHideSetup,
+	homeUrl,
+} ) {
 	// Keys and address (OAuth) connections, from the connection registry. It
 	// used to be the keys alone, so a site connected by address alone was told
 	// to connect its first app. `false` means the route failed: fall back to
@@ -165,6 +174,18 @@ export default function Dashboard( { tier, clients, onNavigate, onConnect } ) {
 					</p>
 				) }
 			</section>
+
+			<SetupBlock
+				tier={ tier }
+				connections={
+					Array.isArray( connections ) ? connections : null
+				}
+				onboarding={ onboarding }
+				homeUrl={ homeUrl }
+				onConnect={ onConnect }
+				onNavigate={ onNavigate }
+				onHide={ onHideSetup }
+			/>
 
 			{ /* A stripped Authorization header (or app passwords off) breaks
 			     every connection — surface it here with a path to the fix. */ }

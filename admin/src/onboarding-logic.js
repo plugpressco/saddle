@@ -109,11 +109,11 @@ export function nextDelay( previous, changed ) {
  * screen made counts.
  *
  * @param {Object}      args
- * @param {Object[]}    args.rows      `connections` from the pulse, merged.
- * @param {Object[]}    args.pending   `pending` from the pulse.
- * @param {string}      args.app       The app key the owner chose.
- * @param {string}      args.appLabel  Its name, for the sentence.
- * @param {string|null} args.keyId     `key:<uuid>` when a key was made.
+ * @param {Object[]}    args.rows     `connections` from the pulse, merged.
+ * @param {Object[]}    args.pending  `pending` from the pulse.
+ * @param {string}      args.app      The app key the owner chose.
+ * @param {string}      args.appLabel Its name, for the sentence.
+ * @param {string|null} args.keyId    `key:<uuid>` when a key was made.
  * @return {{phase: string, text: string, connection: (Object|null)}} Phase is
  *         `waiting`, `asked` or `done`.
  */
@@ -292,7 +292,8 @@ export function tryStatus( { rows, app, appLabel } ) {
 	const used = ( rows || [] )
 		.filter(
 			( row ) =>
-				row.first_tool_at > 0 && ( ! row.app || ! app || row.app === app )
+				row.first_tool_at > 0 &&
+				( ! row.app || ! app || row.app === app )
 		)
 		.sort( ( a, b ) => b.last_tool_at - a.last_tool_at )[ 0 ];
 
@@ -394,11 +395,11 @@ export function tryPrompt( look ) {
  * `ok` is true (fine), false (a likely cause) or null (nothing to say).
  *
  * @param {Object}  args
- * @param {boolean} args.ssl         The site is served over HTTPS.
- * @param {boolean} args.permalinks  Pretty permalinks are on.
- * @param {boolean} args.local       The address looks like a local site.
- * @param {string}  args.app         The app key.
- * @param {string}  args.authHeader  `ok`, or a stripped-header status.
+ * @param {boolean} args.ssl        The site is served over HTTPS.
+ * @param {boolean} args.permalinks Pretty permalinks are on.
+ * @param {boolean} args.local      The address looks like a local site.
+ * @param {string}  args.app        The app key.
+ * @param {string}  args.authHeader `ok`, or a stripped-header status.
  * @return {Object[]} `{ key, ok, label, hint }` rows, in reading order.
  */
 export function selfCheckFindings( {
@@ -434,7 +435,8 @@ export function selfCheckFindings( {
 	];
 
 	if ( authHeader && 'unknown' !== authHeader ) {
-		const fine = 'ok' === authHeader || 'nonce_header_stripped' === authHeader;
+		const fine =
+			'ok' === authHeader || 'nonce_header_stripped' === authHeader;
 		rows.push( {
 			key: 'header',
 			ok: fine,
@@ -595,7 +597,10 @@ export function setupBlock( { connections, onboarding, tier, areas } ) {
 	const modulesLeft = modules.length;
 	const withSetup = ( areas || [] ).filter( ( a ) => a.setup );
 	const modulesDone = withSetup.reduce( ( sum, a ) => sum + a.setup.done, 0 );
-	const modulesTotal = withSetup.reduce( ( sum, a ) => sum + a.setup.total, 0 );
+	const modulesTotal = withSetup.reduce(
+		( sum, a ) => sum + a.setup.total,
+		0
+	);
 
 	const hidden =
 		onboarding &&

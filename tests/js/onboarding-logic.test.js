@@ -73,7 +73,10 @@ describe( 'the step machine', () => {
 		);
 		// Migrated (no choice on record) and skipped runs get no tour.
 		expect(
-			tourDue( { ...done, first_run: { state: 'done', tier_choice: '' } } )
+			tourDue( {
+				...done,
+				first_run: { state: 'done', tier_choice: '' },
+			} )
 		).toBe( false );
 		expect(
 			tourDue( {
@@ -121,7 +124,9 @@ describe( 'connect status: the finest true thing to say', () => {
 			pending: [ { client_id: 'x', app: 'claude' } ],
 		} );
 		expect( s.phase ).toBe( 'asked' );
-		expect( s.text ).toMatch( /asked to connect\. Approve it on the screen/ );
+		expect( s.text ).toMatch(
+			/asked to connect\. Approve it on the screen/
+		);
 	} );
 
 	it( 'ignores another app that registered', () => {
@@ -143,7 +148,12 @@ describe( 'connect status: the finest true thing to say', () => {
 	} );
 
 	it( 'is done when an address connection for this app reaches the site', () => {
-		const row = { id: 'oauth:1', kind: 'oauth', app: 'claude', client: 'claude-ai 0.1.0' };
+		const row = {
+			id: 'oauth:1',
+			kind: 'oauth',
+			app: 'claude',
+			client: 'claude-ai 0.1.0',
+		};
 		const s = connectStatus( { ...base, rows: [ row ], pending: [] } );
 		expect( s.phase ).toBe( 'done' );
 		expect( s.connection ).toBe( row );
@@ -166,9 +176,9 @@ describe( 'connect status: the finest true thing to say', () => {
 		expect( connectStatus( { ...args, rows: [ other ] } ).phase ).toBe(
 			'waiting'
 		);
-		expect( connectStatus( { ...args, rows: [ other, mine ] } ).phase ).toBe(
-			'done'
-		);
+		expect(
+			connectStatus( { ...args, rows: [ other, mine ] } ).phase
+		).toBe( 'done' );
 	} );
 
 	it( 'never says asked on the key path', () => {
@@ -207,7 +217,10 @@ describe( 'try-it status', () => {
 				row( {
 					first_tool_at: 10,
 					last_tool_at: 12,
-					recent_tools: [ 'saddle/list-media', 'saddle/get-site-info' ],
+					recent_tools: [
+						'saddle/list-media',
+						'saddle/get-site-info',
+					],
 				} ),
 			],
 			app: 'claude',
@@ -223,7 +236,9 @@ describe( 'try-it status', () => {
 
 	it( 'ignores another app’s tool calls', () => {
 		const s = tryStatus( {
-			rows: [ row( { app: 'cursor', first_tool_at: 10, last_tool_at: 10 } ) ],
+			rows: [
+				row( { app: 'cursor', first_tool_at: 10, last_tool_at: 10 } ),
+			],
 			app: 'claude',
 			appLabel: 'Claude',
 		} );
@@ -275,7 +290,9 @@ describe( 'timeout tips and the first prompt', () => {
 			/alt text\. Don’t change anything\.$/
 		);
 		expect(
-			tryPrompt( { findings: { missing_alt: 0, missing_description: 3 } } )
+			tryPrompt( {
+				findings: { missing_alt: 0, missing_description: 3 },
+			} )
 		).toMatch( /search description/ );
 		[ null, {}, { findings: {} } ].forEach( ( look ) =>
 			expect( tryPrompt( look ) ).toMatch( /Don’t change anything\.$/ )
@@ -356,7 +373,11 @@ const MODULES = {
 						title: 'First visit recorded',
 						done: false,
 						waiting: true,
-						action: { label: 'Open site', url: 'https://x.test/', external: true },
+						action: {
+							label: 'Open site',
+							url: 'https://x.test/',
+							external: true,
+						},
 					},
 					{
 						id: 'insight',
@@ -388,7 +409,9 @@ describe( 'K2 fixture parsing', () => {
 		expect( parseModules( null ) ).toEqual( [] );
 		expect( parseModules( {} ) ).toEqual( [] );
 		expect( parseModules( { areas: 'x' } ) ).toEqual( [] );
-		expect( parseModules( { areas: [ null, { nokey: 1 } ] } ) ).toEqual( [] );
+		expect( parseModules( { areas: [ null, { nokey: 1 } ] } ) ).toEqual(
+			[]
+		);
 	} );
 
 	it( 'lists unfinished tasks, holding back one that waits on another', () => {
@@ -408,8 +431,8 @@ describe( 'K2 fixture parsing', () => {
 } );
 
 describe( 'Home’s Setup block', () => {
-	const onboarding = ( first_run = {}, modules = {} ) => ( {
-		first_run: { state: 'skipped', tier_choice: '', ...first_run },
+	const onboarding = ( run = {}, modules = {} ) => ( {
+		first_run: { state: 'skipped', tier_choice: '', ...run },
 		modules,
 	} );
 	const used = { id: 'oauth:1', first_tool_at: 5 };
@@ -433,7 +456,11 @@ describe( 'Home’s Setup block', () => {
 			firstRun: { state: 'skipped' },
 			tier: 'read',
 		} );
-		expect( connected.map( ( t ) => t.done ) ).toEqual( [ true, false, false ] );
+		expect( connected.map( ( t ) => t.done ) ).toEqual( [
+			true,
+			false,
+			false,
+		] );
 
 		const tried = coreTasks( {
 			connections: [ used ],
@@ -446,11 +473,19 @@ describe( 'Home’s Setup block', () => {
 	it( 'counts the level as chosen once it is on record or above read', () => {
 		const choose = ( firstRun, tier ) =>
 			coreTasks( { connections: [], firstRun, tier } )[ 2 ].done;
-		expect( choose( { state: 'done', tier_choice: 'read' }, 'read' ) ).toBe( true );
-		expect( choose( { state: 'skipped', tier_choice: '' }, 'write' ) ).toBe( true );
+		expect( choose( { state: 'done', tier_choice: 'read' }, 'read' ) ).toBe(
+			true
+		);
+		expect( choose( { state: 'skipped', tier_choice: '' }, 'write' ) ).toBe(
+			true
+		);
 		// A site migrated to done has no choice on record, and is not nagged.
-		expect( choose( { state: 'done', tier_choice: '' }, 'read' ) ).toBe( true );
-		expect( choose( { state: 'skipped', tier_choice: '' }, 'read' ) ).toBe( false );
+		expect( choose( { state: 'done', tier_choice: '' }, 'read' ) ).toBe(
+			true
+		);
+		expect( choose( { state: 'skipped', tier_choice: '' }, 'read' ) ).toBe(
+			false
+		);
 	} );
 
 	it( 'shows the block with counts across Core and modules', () => {
@@ -468,7 +503,9 @@ describe( 'Home’s Setup block', () => {
 	} );
 
 	it( 'disappears when everything is done', () => {
-		const areas = parseModules( MODULES ).filter( ( a ) => a.key !== 'analytics' );
+		const areas = parseModules( MODULES ).filter(
+			( a ) => a.key !== 'analytics'
+		);
 		const block = setupBlock( {
 			connections: [ used ],
 			onboarding: onboarding( { state: 'done', tier_choice: 'write' } ),
@@ -481,7 +518,10 @@ describe( 'Home’s Setup block', () => {
 	it( 'disappears when the owner hid it', () => {
 		const block = setupBlock( {
 			connections: [],
-			onboarding: onboarding( {}, { home: { setup_hidden_at: 1700000000 } } ),
+			onboarding: onboarding(
+				{},
+				{ home: { setup_hidden_at: 1700000000 } }
+			),
 			tier: 'read',
 			areas: [],
 		} );

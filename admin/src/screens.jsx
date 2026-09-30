@@ -187,6 +187,8 @@ export default function Screen( props ) {
 		onTierSaved,
 		onRehearsalChanged,
 		onTogglePause,
+		onboarding,
+		onHideSetup,
 	} = props;
 	const extTabs = useMemo( collectTabs, [] );
 
@@ -203,6 +205,9 @@ export default function Screen( props ) {
 						clients={ clients }
 						onNavigate={ navigate }
 						onConnect={ () => openWizard() }
+						onboarding={ onboarding }
+						onHideSetup={ onHideSetup }
+						homeUrl={ area.url }
 					/>
 					<Cards where="home" navigate={ navigate } />
 				</>
