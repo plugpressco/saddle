@@ -144,11 +144,13 @@ class Saddle_Capabilities {
 	}
 
 	/**
-	 * The tier the owner configured, ignoring anything about the current caller.
+	 * The legacy site-wide tier (`saddle_access_tier`).
 	 *
-	 * This is the site's setting. Use it when reporting or writing configuration
-	 * — the Permissions screen, the settings endpoint, the clone-domain warning —
-	 * and never for deciding whether a call is allowed.
+	 * Access is per app now ({@see Saddle_Access}). This value is only the
+	 * fallback for a request with no connection (a browser session), the source
+	 * the access migration reads, and what the clone-domain check and the old
+	 * settings endpoint still report. It never decides a connected app's access:
+	 * enforcement and what an agent is told use {@see self::get_tier()}.
 	 *
 	 * @return string
 	 */
@@ -158,23 +160,18 @@ class Saddle_Capabilities {
 	}
 
 	/**
-	 * The tier actually in force for this request.
-	 *
-	 * The site's configured tier, lowered by any ceiling the current credential
-	 * carries. An OAuth access token carries the scope its owner approved on the
-	 * consent screen, so a `saddle:read` token on a `write` site gets read — the
-	 * token can narrow what the site allows, never widen it.
+	 * The tier actually in force for this request: the calling connection's
+	 * role, lowered by any ceiling the credential carries.
 	 *
 	 * The clamp lives here rather than inside {@see self::tier_allows()} on
 	 * purpose. `get_tier()` is also what Saddle reports to the agent through
 	 * `get-site-info` and the system context, and an agent that is told it has
-	 * admin access and then refused tool by tool has been lied to. It should be
-	 * told read, and behave accordingly.
+	 * admin access and then refused tool by tool has been lied to.
 	 *
 	 * @return string
 	 */
 	public static function get_tier() {
-		$tier = self::get_site_tier();
+		$tier = Saddle_Access::role_for( Saddle_Access::current_connection() );
 
 		/**
 		 * Filter a per-request ceiling on the effective access tier.
@@ -439,14 +436,14 @@ class Saddle_Capabilities {
 		if ( self::is_paused() ) {
 			return array(
 				'code'    => 'saddle_paused',
-				'message' => __( 'The site owner has paused all AI access — every tool is refused until they resume it from Saddle → Settings. Do not retry; tell the user Saddle is paused.', 'saddle' ),
+				'message' => __( 'The site owner has paused all AI access — every tool is refused until they resume it from Saddle → Dashboard. Do not retry; tell the user Saddle is paused.', 'saddle' ),
 			);
 		}
 
 		if ( ! is_user_logged_in() ) {
 			return array(
 				'code'    => 'saddle_not_authenticated',
-				'message' => __( 'The request is not authenticated. Reconnect the app from Saddle → Apps to issue a fresh sign-in key.', 'saddle' ),
+				'message' => __( 'The request is not authenticated. Reconnect the app from Saddle → AI apps to issue a fresh sign-in key.', 'saddle' ),
 			);
 		}
 
@@ -472,7 +469,7 @@ class Saddle_Capabilities {
 				'code'    => 'saddle_tool_disabled',
 				'message' => sprintf(
 					/* translators: %s: tool name. */
-					__( 'The site owner turned the "%s" tool off individually (Saddle → Permissions). Other tools still work — do not retry this one; tell the user it is disabled.', 'saddle' ),
+					__( 'The site owner turned the "%s" tool off individually (Saddle → Settings). Other tools still work — do not retry this one; tell the user it is disabled.', 'saddle' ),
 					$short
 				),
 			);
@@ -494,33 +491,16 @@ class Saddle_Capabilities {
 		if ( 'read' !== $required && '' !== $required && self::is_domain_enforced() && ! self::domain_matches_recorded() ) {
 			return array(
 				'code'    => 'saddle_domain_drift',
-				'message' => __( 'This site\'s domain changed since write access was granted, and the owner has domain enforcement on — write tools are refused until they re-confirm the access level (Saddle → Permissions). Do not retry; tell the user.', 'saddle' ),
+				'message' => __( 'This site\'s domain changed since write access was granted, and the owner has domain enforcement on — write tools are refused until they re-confirm this app\'s access on Saddle → AI apps (or turn the domain check off in Saddle → Settings). Do not retry; tell the user.', 'saddle' ),
 			);
 		}
 
 		if ( '' !== $required && ! self::tier_allows( $required ) ) {
-			// The site allows this, but the credential in hand doesn't — the
-			// app was granted a narrower scope when it was authorized. That is
-			// a different problem with a different fix, and an agent told
-			// "raise the site's access level" would be sending the user to the
-			// wrong screen entirely.
-			if ( self::rank( $required ) <= self::rank( self::get_site_tier() ) ) {
-				return array(
-					'code'    => 'saddle_insufficient_scope',
-					'message' => sprintf(
-						/* translators: 1: required access level, 2: level granted to this connection. */
-						__( 'This site allows the "%1$s" access level, but the app you are connected through was only granted "%2$s" when it was authorized. Do not retry — ask the user to reconnect the app and approve the higher level.', 'saddle' ),
-						$required,
-						self::get_tier()
-					),
-				);
-			}
-
 			return array(
 				'code'    => 'saddle_tier_denied',
 				'message' => sprintf(
 					/* translators: 1: required access level, 2: current access level. */
-					__( 'This tool needs the "%1$s" access level, but this site allows "%2$s". Only the site owner can raise it (Saddle → Permissions). Do not retry — ask the user to change the level if they want this done.', 'saddle' ),
+					__( 'This tool needs the "%1$s" access level, but this app only has "%2$s" access. Only the site owner can change it, on Saddle → AI apps. Do not retry — ask the user to change this app\'s access if they want this done.', 'saddle' ),
 					$required,
 					self::get_tier()
 				),
@@ -706,7 +686,10 @@ class Saddle_Capabilities {
 	 * @return bool
 	 */
 	public static function domain_matches_recorded() {
-		if ( ! in_array( self::get_site_tier(), array( 'write', 'admin' ), true ) ) {
+		$elevated = '' === Saddle_Access::current_connection()
+			? Saddle_Access::elevated_anywhere()
+			: 'read' !== self::get_tier();
+		if ( ! $elevated ) {
 			return true;
 		}
 		$recorded = self::recorded_tier_domain();

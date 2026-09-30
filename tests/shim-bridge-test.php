@@ -6,6 +6,15 @@
  */
 class Saddle_Shim_Bridge_Test extends WP_UnitTestCase {
 
+	/**
+	 * Core remembers which key authenticated in a global. Left set, every later
+	 * test would run as that key, and per-app access reads it.
+	 */
+	public function tear_down() {
+		unset( $GLOBALS['wp_rest_application_password_uuid'], $_SERVER['HTTP_AUTHORIZATION'], $_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'] );
+		parent::tear_down();
+	}
+
 	public function test_shim_makes_core_authenticate_a_real_app_password() {
 		$uid   = self::factory()->user->create( array( 'role' => 'administrator' ) );
 		$login = get_userdata( $uid )->user_login;

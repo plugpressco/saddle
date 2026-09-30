@@ -541,26 +541,10 @@ class Saddle_REST_Admin {
 			);
 		}
 
-		$site_tier = Saddle_Capabilities::get_site_tier();
-		if ( Saddle_Capabilities::rank( $level ) > Saddle_Capabilities::rank( $site_tier ) ) {
-			return new WP_Error(
-				'saddle_oauth_above_site_tier',
-				sprintf(
-					/* translators: %s: the site's current access level. */
-					__( 'This site is set to “%s”, so a connected app cannot be given more than that. Raise the site\'s access level first.', 'saddle' ),
-					$site_tier
-				),
-				array( 'status' => 400 )
-			);
-		}
-
 		$scope = Saddle_OAuth::tier_to_scope( $level );
-		if ( ! Saddle_OAuth_Store::set_grant_scope( $id, $scope ) ) {
-			return new WP_Error(
-				'saddle_oauth_unknown_connection',
-				__( 'That connection no longer exists — it may already have been disconnected.', 'saddle' ),
-				array( 'status' => 404 )
-			);
+		$done  = Saddle_Access::set_role( 'oauth:' . $id, $level );
+		if ( is_wp_error( $done ) ) {
+			return $done;
 		}
 
 		if ( class_exists( 'Saddle_Log' ) ) {
@@ -1299,6 +1283,9 @@ class Saddle_REST_Admin {
 		// display name alone is user-editable and can't be trusted for it.
 		Saddle_Connection::mark_issued( $user->ID, $item['uuid'] );
 
+		// A new app starts read-only; the owner raises it per app.
+		Saddle_Access::set_role( 'key:' . $item['uuid'], 'read' );
+
 		return new WP_REST_Response(
 			array(
 				'uuid'       => $item['uuid'],
@@ -1426,6 +1413,7 @@ class Saddle_REST_Admin {
 		}
 
 		$app_name = (string) $item['name'];
+		$role     = Saddle_Access::role_for( 'key:' . $uuid );
 
 		// Old key first — its name must be free so the replacement can keep it,
 		// and a rotation must never leave two live keys.
@@ -1457,6 +1445,9 @@ class Saddle_REST_Admin {
 		update_user_meta( $user->ID, 'saddle_client_hints', $hints );
 		Saddle_Connection::unmark_issued( $user->ID, $uuid );
 		Saddle_Connection::mark_issued( $user->ID, $new_item['uuid'] );
+
+		// Rotating a key replaces the secret, not what the app may do.
+		Saddle_Access::set_role( 'key:' . $new_item['uuid'], $role );
 
 		return new WP_REST_Response(
 			array(

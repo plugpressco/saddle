@@ -494,7 +494,7 @@ class Saddle_MCP_Transport_Test extends WP_UnitTestCase {
 		$instructions = $this->initialize( '2025-11-25' )['instructions'];
 
 		$this->assertStringContainsString( 'not offered to you', $instructions );
-		$this->assertStringContainsString( 'Saddle → Permissions', $instructions );
+		$this->assertStringContainsString( 'Saddle → AI apps', $instructions );
 	}
 
 	public function test_nothing_is_claimed_to_be_withheld_when_nothing_is() {

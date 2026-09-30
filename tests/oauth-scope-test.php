@@ -180,7 +180,7 @@ class Saddle_OAuth_Scope_Test extends WP_UnitTestCase {
 	 * @return string
 	 */
 	private function tier_now() {
-		Saddle_OAuth_Bearer::resolve( false );
+		wp_set_current_user( Saddle_OAuth_Bearer::resolve( false ) ?: $this->admin );
 
 		return Saddle_Capabilities::get_tier();
 	}
@@ -309,24 +309,17 @@ class Saddle_OAuth_Scope_Test extends WP_UnitTestCase {
 	 * What the consent screen grants
 	 * --------------------------------------------------------------- */
 
-	public function test_the_consent_screen_offers_nothing_above_the_site_tier() {
-		Saddle_Capabilities::set_tier( 'write' );
+	public function test_the_consent_screen_offers_every_level_whatever_the_site_tier() {
+		Saddle_Capabilities::set_tier( 'read' );
 
 		$choices = new ReflectionMethod( 'Saddle_OAuth_Consent', 'level_choices' );
 		$choices->setAccessible( true );
 
 		$this->assertSame(
-			array( 'read', 'write' ),
-			array_keys( $choices->invoke( null, 'write' ) ),
-			'Offering a level the tier system would then refuse is worse than offering no choice at all.'
+			array( 'read', 'write', 'admin' ),
+			array_keys( $choices->invoke( null ) ),
+			'Access is per app; no site-wide level caps what the owner may give one.'
 		);
-	}
-
-	public function test_the_consent_screen_offers_every_level_on_an_admin_site() {
-		$choices = new ReflectionMethod( 'Saddle_OAuth_Consent', 'level_choices' );
-		$choices->setAccessible( true );
-
-		$this->assertSame( array( 'read', 'write', 'admin' ), array_keys( $choices->invoke( null, 'admin' ) ) );
 	}
 
 	/* ------------------------------------------------------------------
@@ -363,18 +356,14 @@ class Saddle_OAuth_Scope_Test extends WP_UnitTestCase {
 		$this->assertSame( 'read', $this->tier_now() );
 	}
 
-	public function test_a_scope_still_cannot_exceed_the_site_tier() {
+	public function test_a_grant_is_not_clamped_to_the_site_tier() {
 		Saddle_Capabilities::set_tier( 'read' );
 		$this->connect( 'saddle:read saddle:write saddle:admin' );
 
-		$this->assertSame(
-			'read',
-			$this->tier_now(),
-			'A scope narrows what the site allows. It has never been able to widen it, and must not start now.'
-		);
+		$this->assertSame( 'admin', $this->tier_now(), 'The grant holds what the owner gave this app.' );
 	}
 
-	public function test_the_rest_route_refuses_a_level_above_the_site_tier() {
+	public function test_the_rest_route_can_raise_a_grant_above_the_site_tier() {
 		Saddle_Capabilities::set_tier( 'write' );
 		$grant_id = $this->connect( 'saddle:read' );
 
@@ -383,9 +372,8 @@ class Saddle_OAuth_Scope_Test extends WP_UnitTestCase {
 
 		$response = rest_get_server()->dispatch( $request );
 
-		$this->assertSame( 400, $response->get_status() );
-		$this->assertSame( 'saddle_oauth_above_site_tier', $response->get_data()['code'] );
-		$this->assertSame( 'saddle:read', Saddle_OAuth_Store::get_grant( $grant_id )['scope'] );
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( 'admin', Saddle_OAuth::scope_to_tier( Saddle_OAuth_Store::get_grant( $grant_id )['scope'] ) );
 	}
 
 	public function test_the_rest_route_changes_the_level_and_every_token_with_it() {
