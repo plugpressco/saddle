@@ -164,11 +164,13 @@ class Saddle_Connections {
 	/**
 	 * The credential behind the current request, when it is one an app holds.
 	 *
-	 * A browser session is not a connection, so it returns null for one.
+	 * A browser session is not a connection, so it returns null for one. Public
+	 * because per-app access (planning/SIMPLE-ADMIN-ACCESS.md) decides a
+	 * request's role from the same answer: `key:<uuid>` or `oauth:<grant>`.
 	 *
 	 * @return array|null `id`, `kind` and `user`.
 	 */
-	private static function credential() {
+	public static function credential() {
 		$user = get_current_user_id();
 		if ( ! $user ) {
 			return null;
