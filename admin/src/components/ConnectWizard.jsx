@@ -67,7 +67,6 @@ const COMMON_APPS = [ 'claude', 'chatgpt', 'claude-code', 'cursor' ];
 
 /**
  * @param {Object}   props
- * @param {string}   props.tier
  * @param {Array}    props.clients
  * @param {Function} props.onExit
  * @param {Function} props.onClientsChanged
@@ -89,7 +88,6 @@ const COMMON_APPS = [ 'claude', 'chatgpt', 'claude-code', 'cursor' ];
  * @param {Function} props.onBack           First run: back to the tiles.
  */
 export default function ConnectWizard( {
-	tier,
 	clients = [],
 	onExit,
 	onClientsChanged,
@@ -114,7 +112,8 @@ export default function ConnectWizard( {
 	const [ everCopied, setEverCopied ] = useState( false );
 	const { copied: configCopied, copy: copyConfig } = useCopy();
 	const [ patienceUp, setPatienceUp ] = useState( false );
-	const level = levelFor( tier );
+	// A new app starts at Read only; what it may do is chosen per app (#285).
+	const level = levelFor( 'read' );
 
 	// Live sign-in server state — fetched fresh on mount (saddleData.oauth is
 	// a page-load snapshot and the whole point here is flipping it on).
@@ -1122,42 +1121,18 @@ export default function ConnectWizard( {
 					</h2>
 					<p className="saddle-wizard__lead">
 						{ byAddress
-							? sprintf(
-									/* translators: %s: the human-readable access level. */
-									__(
-										'You approved it, and it’s connected. Right now it can %s — change that anytime in Permissions.',
-										'saddle'
-									),
-									level.key === 'read'
-										? __(
-												'only read your content',
-												'saddle'
-										  )
-										: __(
-												'read and edit your content',
-												'saddle'
-										  )
+							? __(
+									'You approved it, and it’s connected. It starts at Read only — change that anytime on the AI apps page.',
+									'saddle'
 							  )
-							: sprintf(
-									/* translators: %s: the human-readable access level. */
-									__(
-										'It just made its first request. Right now it can %s — change that anytime in Permissions.',
-										'saddle'
-									),
-									level.key === 'read'
-										? __(
-												'only read your content',
-												'saddle'
-										  )
-										: __(
-												'read and edit your content',
-												'saddle'
-										  )
+							: __(
+									'It just made its first request. It starts at Read only — change that anytime on the AI apps page.',
+									'saddle'
 							  ) }
 					</p>
 					<p className="saddle-wizard__lead saddle-wizard__lead--muted">
 						{ __(
-							'Manage or disconnect it anytime from the Apps tab.',
+							'Manage or disconnect it anytime on the AI apps page.',
 							'saddle'
 						) }
 					</p>

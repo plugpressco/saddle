@@ -1,10 +1,11 @@
 /**
- * Connections → Apps: connect an AI app to this site (#274).
+ * AI apps → "Connect an app": the picker, in a drawer (#285).
  *
- * Laid out like the hosted MCP pages people already know (one address, the
- * apps down the side, the steps for the one you pick), but it is the site's
- * own way: the address is this site's, and the app is approved on this
- * site's own screen. Nothing goes through anyone else's server.
+ * The tiles, then the short steps for the one you pick, then a line that
+ * says the moment it connects. It is the site's own way: the address is this
+ * site's, and the app is approved on this site's own screen. Nothing goes
+ * through anyone else's server. The address is one quiet line on the page
+ * itself.
  *
  * The address path needs "sign-in for apps" (off by default, one labelled
  * click to turn on). Without it, or for an app that only takes a key, the
@@ -14,21 +15,12 @@
  * `/connections/pulse` and says the moment that app connects.
  */
 import { useState, useEffect, useRef } from '@wordpress/element';
-import {
-	Button,
-	CodeBlock,
-	CopyButton,
-	HelpTip,
-	Notice,
-	Row,
-	RowList,
-	StatusDot,
-} from '@plugpress/ui';
+import { Button, CodeBlock, Notice, StatusDot } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
-import { api } from '../api';
+import { api, saddleData } from '../api';
 import { APPS, MCP_URL, buildConfig, installLinks } from '../connect-apps';
 import { AppLogo } from './icons';
-import SectionHeader from './SectionHeader';
+import { areaUrl } from '../routes';
 
 // A site on this computer: web apps (their servers) cannot reach it.
 const IS_LOCAL = /(?:localhost|127\.0\.0\.1|\.test|\.local)(?::|\/|$)/i.test(
@@ -124,10 +116,18 @@ function usePulse( active, onConnected ) {
  *                                     itself is the card further down.
  * @param {Function} props.onKey       Open the key setup for an app key.
  * @param {Function} props.onConnected Called when a new app connects.
+ * @param {string}   props.initialApp  An app to start on (`&add=<app>`).
  */
-export default function ConnectApps( { oauth, onKey, onConnected } ) {
+export default function ConnectApps( {
+	oauth,
+	onKey,
+	onConnected,
+	initialApp = null,
+} ) {
 	// Nothing is picked until the owner picks: no steps, warnings or code yet.
-	const [ selected, setSelected ] = useState( null );
+	const [ selected, setSelected ] = useState(
+		APPS.some( ( a ) => a.key === initialApp ) ? initialApp : null
+	);
 	const [ connections, setConnections ] = useState( [] );
 
 	const loadConnections = () =>
@@ -151,18 +151,8 @@ export default function ConnectApps( { oauth, onKey, onConnected } ) {
 		}
 	} );
 
-	// There is one sign-in switch on this page, in the section below the apps.
-	// This hint points the owner at it rather than repeating it.
-	const showSignIn = () => {
-		const card = document.getElementById( 'saddle-signin' );
-		const control = document.getElementById( 'saddle-oauth-switch' );
-		if ( card ) {
-			card.scrollIntoView( { block: 'center' } );
-		}
-		if ( control ) {
-			control.focus();
-		}
-	};
+	// The sign-in switch lives in Settings → Advanced.
+	const settingsUrl = areaUrl( saddleData.areas || [], 'settings' );
 
 	const connectedApps = new Set( connections.map( ( c ) => c.app ) );
 
@@ -172,37 +162,7 @@ export default function ConnectApps( { oauth, onKey, onConnected } ) {
 	const pick = ( key ) => setSelected( key === selected ? null : key );
 
 	return (
-		<section className="saddle-section saddle-connect" id="saddle-connect">
-			<SectionHeader
-				title={
-					<span className="saddle-connect__title">
-						{ __( 'Connect an app', 'saddle' ) }
-						<HelpTip>
-							{ __(
-								'Claude, ChatGPT, Cursor and other AI apps connect with this site’s own address, and you approve each one here. Nothing goes through anyone else’s server.',
-								'saddle'
-							) }
-						</HelpTip>
-					</span>
-				}
-			/>
-
-			<RowList>
-				<Row
-					title={ __( 'Site address', 'saddle' ) }
-					actions={
-						<span className="saddle-connect__url">
-							<code>{ MCP_URL }</code>
-							<CopyButton
-								value={ MCP_URL }
-								size="sm"
-								variant="secondary"
-							/>
-						</span>
-					}
-				/>
-			</RowList>
-
+		<div className="saddle-connect" id="saddle-connect">
 			<div
 				id="saddle-connect-apps"
 				className="saddle-connect__apps"
@@ -247,7 +207,7 @@ export default function ConnectApps( { oauth, onKey, onConnected } ) {
 							size="sm"
 							onClick={ () => setSelected( null ) }
 						>
-							{ __( 'Close', 'saddle' ) }
+							{ __( 'All apps', 'saddle' ) }
 						</Button>
 					</div>
 
@@ -267,7 +227,7 @@ export default function ConnectApps( { oauth, onKey, onConnected } ) {
 									<Button
 										variant="secondary"
 										size="sm"
-										onClick={ showSignIn }
+										href={ settingsUrl }
 									>
 										{ __(
 											'Go to the sign-in setting',
@@ -412,6 +372,12 @@ export default function ConnectApps( { oauth, onKey, onConnected } ) {
 					) }
 				</div>
 			) }
-		</section>
+			<p className="saddle-connect__note">
+				{ __(
+					'It starts at Read only. You can change that in the list.',
+					'saddle'
+				) }
+			</p>
+		</div>
 	);
 }

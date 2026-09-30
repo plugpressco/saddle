@@ -26,13 +26,7 @@ const AREAS = [
 	{
 		key: 'connections',
 		url: `${ BASE }?page=saddle-connections`,
-		tabs: [
-			{ key: 'apps', url: `${ BASE }?page=saddle-connections` },
-			{
-				key: 'permissions',
-				url: `${ BASE }?page=saddle-connections&tab=permissions`,
-			},
-		],
+		tabs: [ { key: 'apps', url: `${ BASE }?page=saddle-connections` } ],
 	},
 	{
 		key: 'context',
@@ -52,11 +46,9 @@ describe( 'legacy hash addresses', () => {
 		[ '#home', `${ BASE }?page=saddle` ],
 		[ '#activity', `${ BASE }?page=saddle&tab=activity` ],
 		[ '#connect', `${ BASE }?page=saddle-connections` ],
-		[ '#permissions', `${ BASE }?page=saddle-connections&tab=permissions` ],
-		[
-			'#integrations',
-			`${ BASE }?page=saddle-connections&tab=permissions`,
-		],
+		// Permissions was a tab of Connections until #285: both land on AI apps.
+		[ '#permissions', `${ BASE }?page=saddle-connections` ],
+		[ '#integrations', `${ BASE }?page=saddle-connections` ],
 		[ '#guidance', `${ BASE }?page=saddle-context` ],
 		[ '#memory', `${ BASE }?page=saddle-context#memory` ],
 		// Saddle Pro's licence link is page=saddle#settings.
@@ -81,15 +73,18 @@ describe( 'legacy hash addresses', () => {
 
 describe( 'tabs and places', () => {
 	it( 'falls back to the first tab for an unknown one', () => {
-		expect( resolveTab( AREAS[ 1 ], 'permissions' ) ).toBe( 'permissions' );
+		expect( resolveTab( AREAS[ 1 ], 'permissions' ) ).toBe( 'apps' );
 		expect( resolveTab( AREAS[ 1 ], 'nope' ) ).toBe( 'apps' );
 		expect( resolveTab( AREAS[ 1 ], '' ) ).toBe( 'apps' );
 		expect( resolveTab( undefined, 'x' ) ).toBe( '' );
 	} );
 
 	it( 'builds a tab URL, and the page URL for an unknown tab', () => {
+		expect( areaUrl( AREAS, 'home', 'activity' ) ).toBe(
+			`${ BASE }?page=saddle&tab=activity`
+		);
 		expect( areaUrl( AREAS, 'connections', 'permissions' ) ).toBe(
-			`${ BASE }?page=saddle-connections&tab=permissions`
+			`${ BASE }?page=saddle-connections`
 		);
 		expect( areaUrl( AREAS, 'connections', 'nope' ) ).toBe(
 			`${ BASE }?page=saddle-connections`
@@ -105,6 +100,10 @@ describe( 'tabs and places', () => {
 		expect( placeFor( 'activity' ) ).toEqual( {
 			area: 'home',
 			tab: 'activity',
+		} );
+		expect( placeFor( 'permissions' ) ).toEqual( {
+			area: 'connections',
+			tab: 'apps',
 		} );
 		expect( placeFor( 'memory' ) ).toEqual( {
 			area: 'context',

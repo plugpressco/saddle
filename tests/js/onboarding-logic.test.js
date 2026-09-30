@@ -470,6 +470,17 @@ describe( 'Home’s Setup block', () => {
 		expect( tried.map( ( t ) => t.done ) ).toEqual( [ true, true, false ] );
 	} );
 
+	it( 'counts access as chosen once any app is above read only', () => {
+		const choose = ( role ) =>
+			coreTasks( {
+				connections: [ { id: 'key:1', role } ],
+				firstRun: { state: 'skipped', tier_choice: '' },
+				tier: 'read',
+			} )[ 2 ].done;
+		expect( choose( 'write' ) ).toBe( true );
+		expect( choose( 'read' ) ).toBe( false );
+	} );
+
 	it( 'counts the level as chosen once it is on record or above read', () => {
 		const choose = ( firstRun, tier ) =>
 			coreTasks( { connections: [], firstRun, tier } )[ 2 ].done;

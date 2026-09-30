@@ -1,15 +1,15 @@
 /**
  * Saddle admin: one app, mounted on each Saddle page (#274).
  *
- * Every page is a real wp-admin submenu page under the Saddle menu: Home, the
- * installed modules, Connections and Settings. The server says which page and
+ * Every page is a real wp-admin submenu page under the Saddle menu: Dashboard,
+ * the installed modules, AI apps, Context and Settings. The server says which page and
  * tab this is (`saddleData.area`, `saddleData.tab`) and lists every page
- * (`saddleData.areas`). Frame draws the header, the safety pill and the tabs;
+ * (`saddleData.areas`). Frame draws the header, the AI on / Paused pill and the tabs;
  * screens.jsx draws the content. Switching tabs updates `&tab=` in place, so a
  * reload or a shared link lands on the same tab and Back steps between tabs.
  * Switching pages is an ordinary WordPress page load.
  *
- * First run (#269, #277) replaces Home until the owner finishes or skips it,
+ * First run (#269, #277) replaces the Dashboard until the owner finishes or skips it,
  * and `&setup=1` opens it again from Settings. Its state is the onboarding
  * record (`GET /onboarding`), not a flag.
  */
@@ -48,16 +48,16 @@ import {
 const AREAS = saddleData.areas || [];
 
 // The page this request is for. A build that predates the page list (or a
-// broken one) still gets a working Home rather than a blank screen.
+// broken one) still gets a working Dashboard rather than a blank screen.
 const CURRENT = findArea( AREAS, saddleData.area ) ||
 	findArea( AREAS, 'home' ) || {
 		key: 'home',
-		title: __( 'Home', 'saddle' ),
+		title: __( 'Dashboard', 'saddle' ),
 		url: window.location.href,
 		tabs: [ { key: 'overview', label: __( 'Overview', 'saddle' ) } ],
 	};
 
-// `&setup=1` (Settings → Run setup again, and Home's Setup block) opens first
+// `&setup=1` (Settings → Run setup again, and the Dashboard's Setup block) opens first
 // run even when it is finished. `&step=try&app=claude` opens it on that step.
 const setupParams = () => new URLSearchParams( window.location.search );
 
@@ -67,9 +67,19 @@ const SERVER_NOTICES = Array.isArray( saddleData.notices )
 	? saddleData.notices
 	: [];
 
-const wantsWizard = () =>
-	CURRENT.key === 'connections' &&
-	new URLSearchParams( window.location.search ).has( 'add' );
+// AI apps: `&add=1` opens the Connect drawer, `&add=claude` opens it on that
+// app, and `&key=cursor` opens the key setup for an app.
+const addParam = () =>
+	CURRENT.key === 'connections'
+		? new URLSearchParams( window.location.search ).get( 'add' )
+		: null;
+const keyParam = () =>
+	CURRENT.key === 'connections'
+		? new URLSearchParams( window.location.search ).get( 'key' )
+		: null;
+const wantsConnect = () => null !== addParam();
+const wantsWizard = () => null !== keyParam();
+const appParam = ( value ) => ( value && '1' !== value ? value : null );
 
 export default function App() {
 	const area = CURRENT;
@@ -107,7 +117,6 @@ export default function App() {
 	// never put it back on screen.
 	const finishedHere = useRef( false );
 	const [ paused, setPaused ] = useState( false );
-	const [ rehearsal, setRehearsal ] = useState( false );
 	const [ pausing, setPausing ] = useState( false );
 	const [ domainWarning, setDomainWarning ] = useState( false );
 	const [ loading, setLoading ] = useState( true );
@@ -118,9 +127,16 @@ export default function App() {
 	// so it gets its own view instead of an error strip over an empty frame.
 	const [ authError, setAuthError ] = useState( false );
 	const [ wizardOpen, setWizardOpen ] = useState( wantsWizard );
-	// The app a key is being made for, when Connections → Apps sent the
-	// owner to the key setup for one app.
-	const [ wizardApp, setWizardApp ] = useState( null );
+	// The app a key is being made for, when AI apps sent the owner to the key
+	// setup for one app.
+	const [ wizardApp, setWizardApp ] = useState( () =>
+		appParam( keyParam() )
+	);
+	// The Connect an app drawer on AI apps, and the app it opens on.
+	const [ connectOpen, setConnectOpen ] = useState( wantsConnect );
+	const [ connectApp, setConnectApp ] = useState( () =>
+		appParam( addParam() )
+	);
 
 	const setTab = useCallback(
 		( next ) => {
@@ -141,6 +157,8 @@ export default function App() {
 			const params = new URLSearchParams( window.location.search );
 			setTabState( resolveTab( area, params.get( 'tab' ) || '' ) );
 			setWizardOpen( wantsWizard() );
+			setConnectOpen( wantsConnect() );
+			setConnectApp( appParam( addParam() ) );
 		};
 		window.addEventListener( 'popstate', onPop );
 		return () => window.removeEventListener( 'popstate', onPop );
@@ -259,7 +277,6 @@ export default function App() {
 			api( 'preferences' ).then( ( res ) => {
 				setOnboarded( !! res.onboarded );
 				setPaused( !! res.paused );
-				setRehearsal( !! res.rehearsal );
 				setDomainWarning( !! res.domain_warning );
 			} ),
 		] )
@@ -307,39 +324,60 @@ export default function App() {
 			''
 		) || __( 'Activity', 'saddle' );
 
-	const connectUrl = withArg(
-		areaUrl( AREAS, 'connections', 'apps' ) || window.location.href,
-		'add',
-		'1'
-	);
+	const connectBase =
+		areaUrl( AREAS, 'connections', 'apps' ) || window.location.href;
 
-	const openWizard = ( appKey = null ) => {
+	// The Connect an app drawer, from any page: on AI apps it opens at once,
+	// anywhere else it goes there and opens.
+	const openConnect = ( appKey = null ) => {
+		const url = withArg( connectBase, 'add', appKey || '1' );
 		if ( area.key !== 'connections' ) {
-			window.location.assign( connectUrl );
+			window.location.assign( url );
 			return;
 		}
 		setTabState( 'apps' );
+		setConnectApp( appKey );
+		setConnectOpen( true );
+		if ( window.history && window.history.pushState ) {
+			window.history.pushState( {}, '', url );
+		}
+	};
+
+	const closeConnect = () => {
+		setConnectOpen( false );
+		setConnectApp( null );
+		if ( window.history && window.history.replaceState ) {
+			window.history.replaceState( {}, '', connectBase );
+		}
+		refreshClients();
+	};
+
+	// The key setup for one app, a page of its own.
+	const openWizard = ( appKey = null ) => {
+		const url = withArg( connectBase, 'key', appKey || '1' );
+		if ( area.key !== 'connections' ) {
+			window.location.assign( url );
+			return;
+		}
+		setTabState( 'apps' );
+		setConnectOpen( false );
 		setWizardApp( appKey );
 		setWizardOpen( true );
 		if ( window.history && window.history.pushState ) {
-			window.history.pushState( {}, '', connectUrl );
+			window.history.pushState( {}, '', url );
 		}
 	};
 
 	const closeWizard = () => {
 		setWizardOpen( false );
 		if ( window.history && window.history.replaceState ) {
-			window.history.replaceState(
-				{},
-				'',
-				withArg( connectUrl, 'add', null )
-			);
+			window.history.replaceState( {}, '', connectBase );
 		}
 		refreshClients();
 	};
 
 	// First run is over (finished or skipped): the events were already sent.
-	// Show Home at once, and drop `&setup=1` so a reload does not reopen it.
+	// Show the Dashboard at once, and drop `&setup=1` so a reload does not reopen it.
 	const finishOnboarding = () => {
 		finishedHere.current = true;
 		setOnboarded( true );
@@ -380,7 +418,7 @@ export default function App() {
 	};
 
 	// Re-saving the current tier re-confirms it on this domain, clearing the
-	// warning — the same effect as visiting Permissions and pressing Save.
+	// warning — the same effect as saving the level.
 	const clearDomainWarning = () => {
 		api( 'preferences', { method: 'POST', data: { tier } } )
 			.then( ( res ) => setDomainWarning( !! res.domain_warning ) )
@@ -430,15 +468,6 @@ export default function App() {
 		...serverNotices,
 	] );
 
-	// A tier save from Permissions also re-confirms the domain — carry that
-	// through instead of leaving a stale warning up after the user just fixed it.
-	const handleTierSaved = ( newTier, warning ) => {
-		setTier( newTier );
-		if ( typeof warning === 'boolean' ) {
-			setDomainWarning( warning );
-		}
-	};
-
 	// One provider mount for every state (loading / setup / main): tooltips,
 	// the useConfirm dialog, and toasts are available everywhere, and portaled
 	// overlays pick up tokens from the pp-scope body class.
@@ -450,7 +479,7 @@ export default function App() {
 		? showFirstRun( onboarding.first_run, setupForced )
 		: ! onboarded || setupForced;
 	// Asked for again on a finished site, it starts from the top unless the
-	// address names a step (Home's Setup block sends `step=try&app=…`).
+	// address names a step (the Dashboard's Setup block sends `step=try&app=…`).
 	const firstRunStart = ( () => {
 		const base = onboarding
 			? onboarding.first_run
@@ -486,10 +515,8 @@ export default function App() {
 				showTabs={ false }
 				crumb={ __( 'Setup', 'saddle' ) }
 				status={ {
-					tier,
 					paused,
-					rehearsal,
-					href: areaUrl( AREAS, 'connections', 'permissions' ),
+					href: areaUrl( AREAS, 'home' ),
 				} }
 				moreNotices={ [ slotNotice, ...bellNotices ].filter( Boolean ) }
 				onDismissNotice={ dismissNotice }
@@ -514,10 +541,8 @@ export default function App() {
 				tab={ tab }
 				onTab={ setTab }
 				status={ {
-					tier,
 					paused,
-					rehearsal,
-					href: areaUrl( AREAS, 'connections', 'permissions' ),
+					href: areaUrl( AREAS, 'home' ),
 				} }
 				notices={ ! wizardOpen }
 				notice={ slotNotice }
@@ -543,11 +568,12 @@ export default function App() {
 						wizardApp={ wizardApp }
 						openWizard={ openWizard }
 						closeWizard={ closeWizard }
+						connectOpen={ connectOpen }
+						connectApp={ connectApp }
+						openConnect={ openConnect }
+						closeConnect={ closeConnect }
 						refreshClients={ refreshClients }
 						removeClient={ removeClient }
-						loadCaps={ loadCaps }
-						onTierSaved={ handleTierSaved }
-						onRehearsalChanged={ setRehearsal }
 						onTogglePause={ togglePause }
 						onboarding={ onboarding }
 						onHideSetup={ hideSetup }

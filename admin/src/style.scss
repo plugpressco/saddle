@@ -536,8 +536,8 @@ body.saddle-admin-page {
 	--pp-accent-muted: var( --saddle-brand-tint );
 }
 
-// The safety-status pill: what connected apps may do right now. A link to
-// Connections → Permissions, where it is changed.
+// The status pill: "AI on" or "Paused". A link to the Dashboard, where the
+// switch is.
 .saddle-status-pill {
 	display: flex;
 	align-items: center;
@@ -559,15 +559,10 @@ body.saddle-admin-page {
 
 	// The pill is a link, and the kit colors links from --pp-accent-text
 	// through an ID-strength selector, so each tone sets that token.
-	&--safe {
+	&--on {
 		--pp-accent-text: var(--s-safe-text);
 		--pp-accent-hover: var(--s-safe-text);
 		background: var(--s-safe-bg);
-	}
-	&--active {
-		--pp-accent-text: var(--s-active-text);
-		--pp-accent-hover: var(--s-active-text);
-		background: var(--s-active-bg);
 	}
 	&--paused {
 		--pp-accent-text: var(--s-fg-muted);
@@ -632,8 +627,7 @@ body.saddle-admin-page {
 	min-width: 0;
 }
 
-// A heading that carries a "?" (and, on Connect, a badge) beside it.
-.saddle-connect__title,
+// A heading that carries a "?" beside it.
 .saddle-perm__label,
 .saddle-signin__label,
 .saddle-integrations__title,
@@ -644,27 +638,13 @@ body.saddle-admin-page {
 	gap: 6px;
 }
 
-/* ---------- Connections → Apps (#274) ---------- */
-// The site address as one row, a compact grid of app tiles, and the steps for
-// the one picked beneath the grid. Nothing below the grid until an app is
-// picked.
+/* ---------- AI apps: Connect an app drawer (#274, #285) ---------- */
+// A compact grid of app tiles, and the steps for the one picked beneath the
+// grid. Nothing below the grid until an app is picked.
 .saddle-connect {
-
-	&__url {
-		display: inline-flex;
-		align-items: center;
-		gap: 8px;
-		min-width: 0;
-
-		code {
-			padding: 4px 8px;
-			border: 1px solid var(--s-border);
-			border-radius: var(--s-radius);
-			background: var(--s-surface-2);
-			font-size: 12px;
-			overflow-wrap: anywhere;
-		}
-	}
+	display: grid;
+	gap: var(--pp-space-3);
+	min-width: 0;
 
 	&__apps {
 		display: grid;
@@ -720,6 +700,12 @@ body.saddle-admin-page {
 		border-radius: var(--s-radius);
 		background: var(--s-bg);
 		min-width: 0;
+	}
+
+	&__note {
+		margin: var(--pp-space-3) 0 0;
+		font-size: 12px;
+		color: var(--s-fg-subtle);
 	}
 
 	&__steps-head {
@@ -1441,71 +1427,59 @@ body.saddle-admin-page {
 	}
 }
 
-/* ---------- Connect tab (apps management) ---------- */
-// Header, empty state, app rows, the disconnect confirm, and the endpoint
-// snippet all come from the design system now.
+/* ---------- AI apps: the connected list (#285) ---------- */
+// Rows, the ⋯ menu, the disconnect confirm and the endpoint snippet all come
+// from the design system.
 
-// A title and its "?" sit on one baseline wherever Titled is used.
-.saddle-apps__titled {
-	display: inline-flex;
-	align-items: center;
+// The access dropdown sits at its natural width beside the ⋯ menu.
+.saddle-apps__access {
+	width: auto;
+	min-width: 140px;
+}
+
+// "What each access means", under the list: three short lines.
+.saddle-apps__levels-list {
+	display: grid;
 	gap: 6px;
+	margin: 0;
+	padding: 0 0 var(--pp-space-2);
+	list-style: none;
+	font-size: 12px;
+	color: var(--s-fg-muted);
+
+	strong {
+		color: var(--s-fg);
+	}
+}
+
+.saddle-apps__levels-note {
+	color: var(--s-fg-subtle);
+}
+
+// The one quiet line: the site's address for AI apps, and Copy.
+.saddle-apps__address {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	margin: 0;
+	font-size: 12px;
+	color: var(--s-fg-subtle);
+
+	code {
+		padding: 4px 8px;
+		border: 1px solid var(--s-border);
+		border-radius: var(--s-radius);
+		background: var(--s-surface-2);
+		font-size: 12px;
+		overflow-wrap: anywhere;
+	}
 }
 
 // The one line a list shows when nothing is connected.
 .saddle-apps__empty {
 	margin: 0;
 	color: var(--s-fg-subtle);
-}
-
-// Both connection kinds share one card, so the card body owns the rhythm
-// between them rather than each list carrying its own margins.
-.saddle-apps__cardbody {
-	display: grid;
-	gap: var(--pp-space-4);
-
-	// The card IS the container now. Left alone, the DS RowList draws its own
-	// 1px/12px box inside the card's identical one — the same border twice,
-	// 25px apart, which reads as a mistake rather than as structure.
-	.pp-rowlist {
-		border: 0;
-		border-radius: 0;
-		background: transparent;
-	}
-}
-
-// The labelled rule introducing the sign-in group. This replaces the old
-// .saddle-apps__subhead, which was referenced in JSX but styled NOWHERE — so
-// wp-admin's reset left it at margin:0 and it collided with the list above.
-.saddle-apps__divider {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	margin-top: var(--pp-space-2);
-	color: var( --s-fg-muted );
-	font-size: 12px;
-	font-weight: 600;
-	letter-spacing: 0.01em;
-
-	&::after {
-		content: '';
-		flex: 1;
-		height: 1px;
-		background: var(--s-border);
-	}
-}
-
-// Quiet closing line inside the card: a real link plus its "?".
-.saddle-apps__cardfoot {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	margin: 0;
-	font-size: 12px;
-
-	a {
-		color: var( --s-fg-muted );
-	}
 }
 
 /* Advanced: endpoint details + health, behind the disclosure. */

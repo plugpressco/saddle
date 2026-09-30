@@ -18,8 +18,10 @@ export const LEGACY = {
 	home: { area: 'home', tab: 'overview' },
 	activity: { area: 'home', tab: 'activity' },
 	connect: { area: 'connections', tab: 'apps' },
-	permissions: { area: 'connections', tab: 'permissions' },
-	integrations: { area: 'connections', tab: 'permissions' },
+	// Permissions was a tab of Connections until #285; access is now chosen
+	// per app on AI apps.
+	permissions: { area: 'connections', tab: 'apps' },
+	integrations: { area: 'connections', tab: 'apps' },
 	guidance: { area: 'context', tab: 'overview' },
 	memory: { area: 'context', tab: 'overview', anchor: 'memory' },
 	settings: { area: 'settings', tab: 'general' },

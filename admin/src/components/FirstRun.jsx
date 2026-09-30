@@ -5,8 +5,9 @@
  *
  * Steps: the site read (0), which AI (app), connect, try it, and what Saddle
  * can do (choose). The step is stored with each change, so a reload resumes
- * where the owner was. "Skip setup" is on every step and leaves the tier at
- * read: only the "Let it draft and edit content" button ever raises it.
+ * where the owner was. "Skip setup" is on every step and leaves the app at
+ * Read only: only the "Let it draft and edit content" button ever raises it,
+ * and only for the app that was just connected (#285).
  */
 import { useState, useEffect, useRef } from '@wordpress/element';
 import {
@@ -27,7 +28,7 @@ import {
 	useReducedMotion,
 } from '@plugpress/ui';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import { api, levelFor, saddleData } from '../api';
+import { api, saddleData } from '../api';
 import { AppLogo } from './icons';
 import ConnectWizard from './ConnectWizard';
 import WaitingLine from './WaitingLine';
@@ -179,13 +180,15 @@ const errorText = ( e ) =>
  * @param {Object}   props
  * @param {string}   props.app    App key.
  * @param {Object}   props.look   GET /first-look, or null.
- * @param {Function} props.onDone The owner carries on.
+ * @param {Function} props.onDone The owner carries on; called with the id of
+ *                                the connection that made the call, if known.
  */
 function TryIt( { app, look, onDone } ) {
 	const label = appMeta( app ).label;
 	const pulse = useRef( null );
 	const [ tried, setTried ] = useState( false );
 	const [ slow, setSlow ] = useState( false );
+	const connection = useRef( '' );
 
 	if ( ! pulse.current ) {
 		pulse.current = createPulse();
@@ -198,7 +201,7 @@ function TryIt( { app, look, onDone } ) {
 		}
 		const onKey = ( e ) => {
 			if ( 'Enter' === e.key && document.body === e.target ) {
-				onDone();
+				onDone( connection.current );
 			}
 		};
 		document.addEventListener( 'keydown', onKey );
@@ -234,7 +237,10 @@ function TryIt( { app, look, onDone } ) {
 				settleMs={ TRY_SETTLE }
 				timeoutMs={ TRY_PATIENCE }
 				onTimeout={ () => setSlow( true ) }
-				onDone={ () => setTried( true ) }
+				onDone={ ( status ) => {
+					connection.current = ( status && status.connection ) || '';
+					setTried( true );
+				} }
 			/>
 
 			{ slow && ! tried && (
@@ -247,12 +253,15 @@ function TryIt( { app, look, onDone } ) {
 
 			<div className="saddle-first-run__actions">
 				{ tried ? (
-					<Button variant="primary" onClick={ onDone }>
+					<Button
+						variant="primary"
+						onClick={ () => onDone( connection.current ) }
+					>
 						{ __( 'Continue', 'saddle' ) }
 						<Kbd>↵</Kbd>
 					</Button>
 				) : (
-					<Button variant="ghost" onClick={ onDone }>
+					<Button variant="ghost" onClick={ () => onDone( '' ) }>
 						{ __( 'Skip this step', 'saddle' ) }
 					</Button>
 				) }
@@ -262,32 +271,85 @@ function TryIt( { app, look, onDone } ) {
 }
 
 /**
- * The last step: what Saddle can do, and the one real choice.
+ * The last step: what the connected app can do, and the one real choice.
+ *
+ * The choice is about this app only: "Let it draft and edit content" sets the
+ * role of the connection that just made its first call to Edit content. The
+ * connection is the one the try step saw; when that is not known (a resume,
+ * or the step was skipped) it is the app's newest connection.
  *
  * @param {Object}   props
- * @param {string}   props.app         App key.
- * @param {string}   props.tier        The site's tier now.
- * @param {string}   props.siteName    For the heading.
- * @param {Function} props.onTierSaved Called with the tier after a save.
- * @param {Function} props.onFinish    Called with the choice, `read` or `write`.
+ * @param {string}   props.app          App key.
+ * @param {string}   props.connectionId The connection the try step saw, or ''.
+ * @param {string}   props.tier         The site's tier now (older Core only).
+ * @param {string}   props.siteName     For the heading.
+ * @param {Function} props.onTierSaved  Called with the tier after a site-wide save.
+ * @param {Function} props.onFinish     Called with the choice, `read` or `write`.
  */
-function Choose( { app, tier, siteName, onTierSaved, onFinish } ) {
+function Choose( {
+	app,
+	connectionId,
+	tier,
+	siteName,
+	onTierSaved,
+	onFinish,
+} ) {
 	const label = appMeta( app ).label;
 	const [ saving, setSaving ] = useState( false );
 	const [ error, setError ] = useState( null );
-	const canEdit = 'read' !== tier;
+	// The connection whose access this step sets; undefined until looked up,
+	// null when there is none to find.
+	const [ connection, setConnection ] = useState( undefined );
 	const modules = ( saddleData.areas || [] )
 		.filter( ( a ) => a.module )
 		.map( ( a ) => a.title );
 
+	useEffect( () => {
+		let alive = true;
+		api( 'connections' )
+			.then( ( res ) => {
+				const rows = res.connections || [];
+				const newest = ( row ) =>
+					Math.max( row.last_seen_at || 0, row.created_at || 0 );
+				const found =
+					rows.find( ( row ) => row.id === connectionId ) ||
+					rows
+						.filter( ( row ) => row.app === app )
+						.sort( ( x, y ) => newest( y ) - newest( x ) )[ 0 ];
+				if ( alive ) {
+					setConnection( found || null );
+				}
+			} )
+			.catch( () => alive && setConnection( null ) );
+		return () => {
+			alive = false;
+		};
+	}, [ app, connectionId ] );
+
+	// Per-app access when the server reports a role for the connection; the
+	// site's tier otherwise (no connection known, or a Core without roles).
+	const perApp = !! connection && !! connection.role;
+	const canEdit = perApp ? 'read' !== connection.role : 'read' !== tier;
+
 	const allowEditing = () => {
 		setSaving( true );
 		setError( null );
-		api( 'preferences', { method: 'POST', data: { tier: 'write' } } )
-			.then( ( res ) => {
-				onTierSaved( res.tier );
-				onFinish( 'write' );
-			} )
+		const saved = perApp
+			? api(
+					`connections/${ encodeURIComponent( connection.id ) }/role`,
+					{
+						method: 'POST',
+						data: { role: 'write' },
+					}
+			  )
+			: // No connection is known: fall back to the site-wide tier, as
+			  // before roles were per app. Remove once every Core has roles.
+			  api( 'preferences', {
+					method: 'POST',
+					data: { tier: 'write' },
+			  } ).then( ( res ) => onTierSaved( res.tier ) );
+		saved
+			.then( () => onFinish( 'write' ) )
 			.catch( ( e ) => {
 				setError( errorText( e ) );
 				setSaving( false );
@@ -337,7 +399,7 @@ function Choose( { app, tier, siteName, onTierSaved, onFinish } ) {
 						icon={ <RefreshIcon size={ 18 } /> }
 						title={ __( 'You can undo', 'saddle' ) }
 						description={ __(
-							'Every change is listed on Home, in the Activity tab, with undo.',
+							'Every change is listed on the Dashboard, in the Activity tab, and can be undone.',
 							'saddle'
 						) }
 					/>
@@ -353,11 +415,19 @@ function Choose( { app, tier, siteName, onTierSaved, onFinish } ) {
 			<div className="saddle-first-run__ask">
 				<h2 className="saddle-first-run__question">
 					{ canEdit
-						? __(
-								'Right now it can draft and edit content.',
-								'saddle'
+						? sprintf(
+								/* translators: %s: the app name. */
+								__(
+									'Right now %s can draft and edit content.',
+									'saddle'
+								),
+								label
 						  )
-						: __( 'Right now it’s read-only.', 'saddle' ) }
+						: sprintf(
+								/* translators: %s: the app name. */
+								__( 'Right now %s is read-only.', 'saddle' ),
+								label
+						  ) }
 				</h2>
 				<div className="saddle-first-run__actions">
 					{ canEdit ? (
@@ -373,7 +443,7 @@ function Choose( { app, tier, siteName, onTierSaved, onFinish } ) {
 								variant="primary"
 								onClick={ allowEditing }
 								loading={ saving }
-								disabled={ saving }
+								disabled={ saving || undefined === connection }
 							>
 								{ __(
 									'Let it draft and edit content',
@@ -392,7 +462,7 @@ function Choose( { app, tier, siteName, onTierSaved, onFinish } ) {
 				</div>
 				<p className="saddle-first-run__foot">
 					{ __(
-						'Skills and instructions live in Context. Each module has its own page in the Saddle menu.',
+						'Skills and instructions live on the Context page, and you can change what each app may do on AI apps. Each module has its own page in the Saddle menu.',
 						'saddle'
 					) }
 				</p>
@@ -452,13 +522,13 @@ function AppTiles( { onPick } ) {
 
 /**
  * @param {Object}   props
- * @param {string}   props.tier             The site's tier.
+ * @param {string}   props.tier             The site's tier (older Core only).
  * @param {Array}    props.clients          Keys, for the wizard's duplicate check.
  * @param {Object}   props.firstRun         `first_run` from GET /onboarding.
  * @param {Function} props.send             Posts one onboarding event.
  * @param {Function} props.onTierSaved      Called with the tier after a save.
  * @param {Function} props.onClientsChanged Reload the keys list.
- * @param {Function} props.onFinish         First run is over; go to Home.
+ * @param {Function} props.onFinish         First run is over; go to the Dashboard.
  */
 export default function FirstRun( {
 	tier,
@@ -481,6 +551,8 @@ export default function FirstRun( {
 	const [ app, setApp ] = useState(
 		'read' === resumed.current ? null : storedApp
 	);
+	// The connection the try step saw make its first call.
+	const [ connectionId, setConnectionId ] = useState( '' );
 	// The newest block on screen, kept in view the way a chat thread is.
 	const newest = useRef( null );
 	const pulseForConnect = useRef( null );
@@ -528,7 +600,10 @@ export default function FirstRun( {
 		lines.push( {
 			key: 'safe',
 			label: __( 'Safe to start', 'saddle' ),
-			hint: levelFor( tier ).one,
+			hint: __(
+				'Every app starts at Read only, and asks you before anything risky.',
+				'saddle'
+			),
 		} );
 	}
 
@@ -756,13 +831,17 @@ export default function FirstRun( {
 						<TryIt
 							app={ app }
 							look={ look }
-							onDone={ () => goTo( stepAfter( 'try' ) ) }
+							onDone={ ( id ) => {
+								setConnectionId( id || '' );
+								goTo( stepAfter( 'try' ) );
+							} }
 						/>
 					) }
 
 					{ 'choose' === step && app && (
 						<Choose
 							app={ app }
+							connectionId={ connectionId }
 							tier={ tier }
 							siteName={ siteName }
 							onTierSaved={ onTierSaved }

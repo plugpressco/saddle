@@ -1,32 +1,40 @@
 /**
- * Connect tab — the steady state.
+ * AI apps → Connected (#285): one row per app that can reach the site.
  *
- * A list of connected apps you can trust at a glance (what's connected, when it
- * last talked to the site, from where). The endpoint test and server health
- * checks are their own collapsed section at the bottom of the page
- * (ConnectionDetails) — they're for troubleshooting, not for every visit.
+ * Each row is an app with its own access: a dropdown of Read only, Edit
+ * content, Manage the site, changed on the spot (`POST
+ * /connections/{id}/role`), and a ⋯ menu for the setup guide, a new key and
+ * disconnecting. Keys and apps that signed in themselves are one list, from
+ * the connection registry. The connect flow sits in a drawer opened by the
+ * header button (ConnectApps). The endpoint test and server health checks
+ * are their own collapsed section (ConnectionDetails), which Settings →
+ * Advanced shows.
  */
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useCallback } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import {
 	Button,
-	Spinner,
 	Collapsible,
 	RowList,
 	Row,
-	StatusDot,
 	Badge,
 	Snippet,
-	Card,
-	CardContent,
 	HelpTip,
 	NativeSelect,
+	DropdownMenu,
+	DropdownItem,
+	DropdownSeparator,
+	IconButton,
+	MoreHorizontalIcon,
+	CopyButton,
 	useConfirm,
 	toast,
 } from '@plugpress/ui';
 import SectionHeader from './SectionHeader';
 import { __, sprintf } from '@wordpress/i18n';
-import { saddleData, api, LEVELS, tierUnlocks } from '../api';
+import { saddleData, api } from '../api';
+import { APPS } from '../connect-apps';
+import { relativeWhen } from '../activity-format';
 import ConnectionHealth from './ConnectionHealth';
 import McpDiagnostics from './McpDiagnostics';
 import SetupGuideDrawer from './SetupGuideDrawer';
@@ -34,38 +42,87 @@ import { AppLogo, appKeyFromLabel } from './icons';
 
 const MCP_URL = saddleData.mcpUrl || '';
 
-// A title with an optional "?" beside it — the long explanation rides a tooltip
-// so the page stays scannable instead of carrying a paragraph under every
-// heading. Same idiom as Guidance's Heading and Dashboard's StatLabel.
-const Titled = ( { children, help } ) => (
-	<span className="saddle-apps__titled">
-		{ children }
-		{ help && <HelpTip>{ help }</HelpTip> }
-	</span>
-);
+/**
+ * The three roles, in the order the dropdown lists them. The words match
+ * `Saddle_Access::labels()`.
+ */
+export const ROLES = [
+	{ key: 'read', label: __( 'Read only', 'saddle' ) },
+	{ key: 'write', label: __( 'Edit content', 'saddle' ) },
+	{ key: 'admin', label: __( 'Manage the site', 'saddle' ) },
+];
 
-const DATE_FMT = new Intl.DateTimeFormat( undefined, {
-	dateStyle: 'medium',
-	timeStyle: 'short',
-} );
+const roleLabel = ( key ) =>
+	( ROLES.find( ( r ) => r.key === key ) || {} ).label || key;
 
-const when = ( ts ) => ( ts ? DATE_FMT.format( new Date( ts * 1000 ) ) : null );
+/**
+ * What an app's role is. Until the server sends one (an older Core), a
+ * grant's own level stands in, and a key falls back to the site's tier.
+ *
+ * @param {Object} c        A row from GET /connections.
+ * @param {string} siteTier The site's tier.
+ * @return {string} read, write or admin.
+ */
+const roleOf = ( c, siteTier ) =>
+	c.role || ( 'oauth' === c.kind ? c.level : siteTier ) || 'read';
 
-// A connection this old that has never made a request almost certainly never
-// finished setup — the list says so, so stale keys don't linger unnoticed.
-const NEVER_USED_STALE_SECONDS = 48 * 3600;
+/**
+ * The app as the owner knows it: what they named it, else the app Saddle
+ * recognised, else what the app calls itself.
+ *
+ * @param {Object} c A row from GET /connections.
+ * @return {string} Label.
+ */
+function nameOf( c ) {
+	const app = APPS.find( ( a ) => a.key === c.app );
+	return c.name || ( app && app.label ) || c.client || __( 'App', 'saddle' );
+}
 
-const isStaleNeverUsed = ( c ) =>
-	! c.last_used &&
-	c.created &&
-	Date.now() / 1000 - c.created > NEVER_USED_STALE_SECONDS;
+/**
+ * "Key ····4f2a · used 2 minutes ago" or "Signed in as fahim · used …".
+ *
+ * @param {Object} c A row from GET /connections.
+ * @return {string} One line.
+ */
+function metaOf( c ) {
+	let how = __( 'Key', 'saddle' );
+	if ( 'oauth' === c.kind ) {
+		how = sprintf(
+			/* translators: %s: WordPress username. */
+			__( 'Signed in as %s', 'saddle' ),
+			c.user_login
+		);
+	} else if ( c.hint ) {
+		how = sprintf(
+			/* translators: %s: the last four characters of a key. */
+			__( 'Key ····%s', 'saddle' ),
+			c.hint
+		);
+	}
+	const last = c.last_tool_at || c.last_seen_at;
+	return [
+		how,
+		last
+			? sprintf(
+					/* translators: %s: how long ago, such as "2 minutes ago". */
+					__( 'used %s', 'saddle' ),
+					relativeWhen( new Date( last * 1000 ) )
+			  )
+			: __( 'not used yet', 'saddle' ),
+	].join( ' · ' );
+}
 
-const levelTitle = ( key ) =>
-	( LEVELS.find( ( l ) => l.key === key ) || {} ).title || key;
-
+/**
+ * @param {Object}   props
+ * @param {Array}    props.clients          The keys (GET /clients); a change
+ *                                          here reloads the list.
+ * @param {Function} props.onClientsChanged Reloads the keys.
+ * @param {Function} props.onClientRemoved  Drops a revoked key from the list.
+ * @param {string}   props.siteTier         The site's level (older Core).
+ * @param {Function} props.onConnect        Opens the connect drawer.
+ */
 export default function Apps( {
 	clients,
-	loading,
 	onClientsChanged,
 	onClientRemoved,
 	siteTier,
@@ -75,88 +132,51 @@ export default function Apps( {
 	// The setup-guide drawer: { app, label, password? } — password only right
 	// after a rotation (shown once), otherwise placeholder mode.
 	const [ guide, setGuide ] = useState( null );
-	// Apps that connected through the sign-in screen rather than a pasted key.
-	// Listed separately because they behave differently: nothing was ever
-	// copied, and there is no key to rotate — only to take away.
-	const [ oauthConnections, setOauthConnections ] = useState( [] );
+	// null until the list arrives.
+	const [ rows, setRows ] = useState( null );
 
-	const refreshOauth = () =>
-		api( 'oauth-connections' )
-			.then( ( res ) => setOauthConnections( res || [] ) )
-			.catch( () => setOauthConnections( [] ) );
+	const refresh = useCallback(
+		() =>
+			api( 'connections' )
+				.then( ( res ) => setRows( res.connections || [] ) )
+				.catch( () => setRows( ( prev ) => prev || [] ) ),
+		[]
+	);
 
+	// A new key, a removed key, or the wizard closing changes `clients`.
 	useEffect( () => {
-		refreshOauth();
-	}, [] );
+		refresh();
+	}, [ refresh, clients ] );
 
-	const revokeOauth = async ( c ) => {
-		const ok = await confirm( {
-			title: sprintf(
-				/* translators: %s: the app name. */
-				__( 'Disconnect “%s”?', 'saddle' ),
-				c.name
-			),
-			description: __(
-				'It loses access the moment you confirm — no waiting for anything to expire. To use it again you’ll approve it once more.',
-				'saddle'
-			),
-			danger: true,
-			confirmLabel: __( 'Disconnect', 'saddle' ),
-			cancelLabel: __( 'Keep it connected', 'saddle' ),
-		} );
-		if ( ! ok ) {
+	const changeRole = ( c, role ) => {
+		if ( role === roleOf( c, siteTier ) ) {
 			return;
 		}
-
-		// Optimistic, then reconcile — the same pattern the key list uses, so a
-		// failed refetch surfaces as a toast rather than a silently stale row.
-		setOauthConnections( ( list ) =>
-			list.filter( ( x ) => x.id !== c.id )
+		// Optimistic, then reconcile.
+		setRows( ( list ) =>
+			list.map( ( x ) => ( x.id === c.id ? { ...x, role } : x ) )
 		);
-
-		api( `oauth-connections/${ c.id }`, { method: 'DELETE' } )
-			.then( refreshOauth )
-			.catch( ( e ) => {
-				toast.error( e.message );
-				refreshOauth();
-			} );
-	};
-
-	// Apps that sign in themselves are granted a level once, at the consent
-	// screen, and used to be stuck with it — an app that requests no scope
-	// (ChatGPT does not request one) landed on read and no screen anywhere could
-	// raise it. This is that screen.
-	const changeOauthLevel = ( c, level ) => {
-		if ( level === c.level ) {
-			return;
-		}
-
-		// Optimistic, then reconcile — the same pattern revoke uses above.
-		setOauthConnections( ( list ) =>
-			list.map( ( x ) => ( x.id === c.id ? { ...x, level } : x ) )
-		);
-
-		api( `oauth-connections/${ c.id }`, {
+		api( `connections/${ encodeURIComponent( c.id ) }/role`, {
 			method: 'POST',
-			data: { level },
+			data: { role },
 		} )
 			.then( () => {
 				toast.success(
 					sprintf(
-						/* translators: 1: the app name, 2: its new access level. */
+						/* translators: 1: the app name, 2: its access, such as "Edit content". */
 						__(
-							'“%1$s” is now set to “%2$s”. Refresh or reopen the app to pick up its new tools — apps don’t notice on their own.',
+							'%1$s is now set to “%2$s”. Reopen the app to pick up its new tools.',
 							'saddle'
 						),
-						c.name,
-						levelTitle( level )
+						nameOf( c ),
+						roleLabel( role )
 					)
 				);
-				refreshOauth();
+				refresh();
 			} )
 			.catch( ( e ) => {
 				toast.error( e.message );
-				refreshOauth();
+				refresh();
 			} );
 	};
 
@@ -165,7 +185,7 @@ export default function Apps( {
 			title: sprintf(
 				/* translators: %s: the app name. */
 				__( 'Rotate “%s”’s key?', 'saddle' ),
-				c.label || c.name
+				nameOf( c )
 			),
 			description: __(
 				'The current key stops working the moment you confirm, and a fresh one is issued under the same name. You’ll paste the new setup into the app right after — until then it can’t connect.',
@@ -178,7 +198,8 @@ export default function Apps( {
 		if ( ! ok ) {
 			return;
 		}
-		api( `clients/${ c.uuid }/rotate`, { method: 'POST' } )
+		const uuid = c.id.replace( /^key:/, '' );
+		api( `clients/${ uuid }/rotate`, { method: 'POST' } )
 			.then( ( res ) => {
 				setGuide( {
 					app: appKeyFromLabel( res.label || res.name ),
@@ -193,16 +214,22 @@ export default function Apps( {
 	};
 
 	const askRevoke = async ( c ) => {
+		const isKey = 'key' === c.kind;
 		const ok = await confirm( {
 			title: sprintf(
 				/* translators: %s: the app name. */
 				__( 'Disconnect “%s”?', 'saddle' ),
-				c.label || c.name
+				nameOf( c )
 			),
-			description: __(
-				'Its sign-in key stops working the moment you confirm — the app loses access to this site immediately. This can’t be undone, but you can always connect the app again with a fresh key.',
-				'saddle'
-			),
+			description: isKey
+				? __(
+						'Its sign-in key stops working the moment you confirm — the app loses access to this site immediately. You can always connect the app again with a fresh key.',
+						'saddle'
+				  )
+				: __(
+						'It loses access the moment you confirm — no waiting for anything to expire. To use it again you’ll approve it once more.',
+						'saddle'
+				  ),
 			danger: true,
 			confirmLabel: __( 'Disconnect', 'saddle' ),
 			cancelLabel: __( 'Keep it connected', 'saddle' ),
@@ -210,12 +237,17 @@ export default function Apps( {
 		if ( ! ok ) {
 			return;
 		}
-		api( `clients/${ c.uuid }`, { method: 'DELETE' } )
+		const path = isKey
+			? `clients/${ c.id.replace( /^key:/, '' ) }`
+			: `oauth-connections/${ c.id.replace( /^oauth:/, '' ) }`;
+
+		// Optimistic, then reconcile: a failed refetch surfaces as a toast
+		// rather than a silently stale row.
+		setRows( ( list ) => list.filter( ( x ) => x.id !== c.id ) );
+		api( path, { method: 'DELETE' } )
 			.then( () => {
-				// Optimistic: the row disappears immediately on DELETE
-				// success; the refetch below only reconciles with the server.
-				if ( onClientRemoved ) {
-					onClientRemoved( c.uuid );
+				if ( isKey && onClientRemoved ) {
+					onClientRemoved( c.id.replace( /^key:/, '' ) );
 				}
 				toast.success(
 					__(
@@ -223,47 +255,37 @@ export default function Apps( {
 						'saddle'
 					)
 				);
-				if ( onClientsChanged ) {
+				if ( isKey && onClientsChanged ) {
 					onClientsChanged();
 				}
+				refresh();
 			} )
-			.catch( ( e ) => toast.error( e.message ) );
+			.catch( ( e ) => {
+				toast.error( e.message );
+				refresh();
+			} );
 	};
 
 	return (
-		<section className="saddle-section saddle-apps">
-			<SectionHeader
-				title={
-					<Titled
-						help={ __(
-							'Every app here has its own sign-in you can take away at any moment, and they all follow the same rules you set on Permissions.',
-							'saddle'
-						) }
-					>
-						{ __( 'Connected apps', 'saddle' ) }
-					</Titled>
-				}
-				actions={
-					onConnect && (
-						<Button
-							variant="primary"
-							size="sm"
-							onClick={ onConnect }
-						>
-							{ __( 'Connect an app', 'saddle' ) }
-						</Button>
-					)
-				}
-			/>
+		<>
+			<section className="saddle-stack saddle-apps">
+				<SectionHeader
+					title={ __( 'Connected', 'saddle' ) }
+					actions={
+						onConnect && (
+							<Button
+								variant="primary"
+								size="sm"
+								onClick={ onConnect }
+							>
+								{ __( 'Connect an app', 'saddle' ) }
+							</Button>
+						)
+					}
+				/>
 
-			{ loading && <Spinner /> }
-
-			{ /* Empty only when BOTH kinds are absent — an OAuth-only site is
-			     connected, whatever the key list says. */ }
-			{ ! loading &&
-				clients.length === 0 &&
-				oauthConnections.length === 0 && (
-					<RowList>
+				<RowList>
+					{ null !== rows && 0 === rows.length && (
 						<Row
 							title={
 								<span className="saddle-apps__empty">
@@ -271,274 +293,149 @@ export default function Apps( {
 								</span>
 							}
 						/>
-					</RowList>
-				) }
-
-			{ /* Both kinds live in ONE card: they are one mental list ("what can
-			     reach my site"), and two boxes for what is often two rows was
-			     the clutter. The divider below carries the distinction. */ }
-			{ ! loading &&
-				( clients.length > 0 || oauthConnections.length > 0 ) && (
-					<Card className="saddle-apps__card">
-						<CardContent className="saddle-apps__cardbody">
-							{ clients.length > 0 && (
-								<RowList>
-									{ clients.map( ( c ) => (
-										<Row
-											key={ c.uuid }
-											icon={
-												<AppLogo
-													app={ appKeyFromLabel(
-														c.label || c.name
-													) }
-												/>
-											}
-											title={
-												<>
-													<StatusDot
-														tone={
-															c.last_used
-																? 'success'
-																: 'neutral'
-														}
-													/>{ ' ' }
-													{ c.label || c.name }
-												</>
-											}
-											description={
-												( c.last_used
-													? sprintf(
-															/* translators: %s: date and time. */
-															__(
-																'Last active %s',
-																'saddle'
-															),
-															when( c.last_used )
-													  )
-													: __(
-															'Hasn’t connected yet — it will on first use',
-															'saddle'
-													  ) ) +
-												( isStaleNeverUsed( c )
-													? ` · ${ __(
-															'never connected — safe to disconnect',
-															'saddle'
-													  ) }`
-													: '' ) +
-												( c.last_ip
-													? ` · ${ c.last_ip }`
-													: '' ) +
-												( c.hint
-													? ` · ${ __(
-															'key',
-															'saddle'
-													  ) } ····${ c.hint }`
-													: '' )
-											}
-											actions={
-												<>
-													<Button
-														variant="link"
-														onClick={ () =>
-															setGuide( {
-																app: appKeyFromLabel(
-																	c.label ||
-																		c.name
-																),
-																label:
-																	c.label ||
-																	c.name,
-															} )
-														}
-													>
-														{ __(
-															'Setup guide',
-															'saddle'
-														) }
-													</Button>
-													<Button
-														variant="link"
-														onClick={ () =>
-															askRotate( c )
-														}
-													>
-														{ __(
-															'Rotate key',
-															'saddle'
-														) }
-													</Button>
-													<Button
-														variant="link"
-														className="saddle-link-danger"
-														onClick={ () =>
-															askRevoke( c )
-														}
-													>
-														{ __(
-															'Disconnect',
-															'saddle'
-														) }
-													</Button>
-												</>
-											}
-										/>
-									) ) }
-								</RowList>
-							) }
-
-							{ oauthConnections.length > 0 && (
+					) }
+					{ ( rows || [] ).map( ( c ) => (
+						<Row
+							key={ c.id }
+							icon={
+								<AppLogo
+									app={
+										c.app ||
+										appKeyFromLabel( c.name || c.client )
+									}
+								/>
+							}
+							title={ nameOf( c ) }
+							description={ metaOf( c ) }
+							actions={
 								<>
-									<div className="saddle-apps__divider">
-										<Titled
-											help={ __(
-												'These connected through the sign-in screen instead of a pasted key — ChatGPT works this way. Disconnecting one takes effect immediately.',
-												'saddle'
-											) }
-										>
-											{ __(
-												'Signed in themselves',
-												'saddle'
-											) }
-										</Titled>
-									</div>
-									<RowList>
-										{ oauthConnections.map( ( c ) => (
-											<Row
-												key={ c.id }
-												icon={
-													<AppLogo
-														app={ appKeyFromLabel(
-															c.name
-														) }
-													/>
-												}
-												title={
-													<>
-														<StatusDot
-															tone={
-																c.last_used
-																	? 'success'
-																	: 'neutral'
-															}
-														/>{ ' ' }
-														{ c.name }
-													</>
-												}
-												description={
-													<>
-														<NativeSelect
-															value={ c.level }
-															aria-label={ sprintf(
-																/* translators: %s: the app name. */
-																__(
-																	'Access level for %s',
-																	'saddle'
-																),
-																c.name
-															) }
-															onChange={ ( e ) =>
-																changeOauthLevel(
-																	c,
-																	e.target
-																		.value
-																)
-															}
-														>
-															{ LEVELS.filter(
-																( l ) =>
-																	tierUnlocks(
-																		siteTier ||
-																			c.level,
-																		l.key
-																	)
-															).map( ( l ) => (
-																<option
-																	key={
-																		l.key
-																	}
-																	value={
-																		l.key
-																	}
-																>
-																	{ l.title }
-																</option>
-															) ) }
-														</NativeSelect>{ ' ' }
-														{ sprintf(
-															/* translators: %s: WordPress username. */
-															__(
-																'acting as %s',
-																'saddle'
-															),
-															c.user_login
-														) }
-													</>
-												}
-												actions={
-													<>
-														<Badge
-															tone={
-																c.verified
-																	? undefined
-																	: 'warning'
-															}
-														>
-															{ c.verified
-																? __(
-																		'Verified',
-																		'saddle'
-																  )
-																: __(
-																		'Unverified',
-																		'saddle'
-																  ) }
-														</Badge>
-														<Button
-															variant="ghost"
-															size="sm"
-															onClick={ () =>
-																revokeOauth( c )
-															}
-														>
-															{ __(
-																'Disconnect',
-																'saddle'
-															) }
-														</Button>
-													</>
-												}
-											/>
+									<NativeSelect
+										className="saddle-apps__access"
+										value={ roleOf( c, siteTier ) }
+										aria-label={ sprintf(
+											/* translators: %s: the app name. */
+											__( 'What %s can do', 'saddle' ),
+											nameOf( c )
+										) }
+										onChange={ ( e ) =>
+											changeRole( c, e.target.value )
+										}
+									>
+										{ ROLES.map( ( r ) => (
+											<option
+												key={ r.key }
+												value={ r.key }
+											>
+												{ r.label }
+											</option>
 										) ) }
-									</RowList>
-								</>
-							) }
-
-							{ /* The link stays a real link — a tooltip can hold
-							     the explanation, but not something clickable. */ }
-							{ clients.length > 0 &&
-								window.saddleData?.profileUrl && (
-									<p className="saddle-apps__cardfoot">
-										<a
-											href={
-												window.saddleData.profileUrl
-											}
+									</NativeSelect>
+									<DropdownMenu
+										trigger={
+											<IconButton
+												aria-label={ sprintf(
+													/* translators: %s: the app name. */
+													__(
+														'More for %s',
+														'saddle'
+													),
+													nameOf( c )
+												) }
+											>
+												<MoreHorizontalIcon
+													size={ 16 }
+												/>
+											</IconButton>
+										}
+									>
+										{ 'key' === c.kind && (
+											<>
+												<DropdownItem
+													onSelect={ () =>
+														setGuide( {
+															app: appKeyFromLabel(
+																c.name
+															),
+															label: nameOf( c ),
+														} )
+													}
+												>
+													{ __(
+														'Setup guide',
+														'saddle'
+													) }
+												</DropdownItem>
+												<DropdownItem
+													onSelect={ () =>
+														askRotate( c )
+													}
+												>
+													{ __(
+														'Rotate key',
+														'saddle'
+													) }
+												</DropdownItem>
+												<DropdownSeparator />
+											</>
+										) }
+										<DropdownItem
+											danger
+											onSelect={ () => askRevoke( c ) }
 										>
-											{ __(
-												'Manage these keys in WordPress',
-												'saddle'
-											) }
-										</a>
-										<HelpTip>
-											{ __(
-												'These keys also appear under Users → Profile → Application Passwords — the same keys, and either place works for revoking.',
-												'saddle'
-											) }
-										</HelpTip>
-									</p>
-								) }
-						</CardContent>
-					</Card>
-				) }
+											{ __( 'Disconnect', 'saddle' ) }
+										</DropdownItem>
+									</DropdownMenu>
+								</>
+							}
+						/>
+					) ) }
+				</RowList>
+
+				<Collapsible
+					className="saddle-apps__levels"
+					trigger={ __( 'What each access means', 'saddle' ) }
+				>
+					<ul className="saddle-apps__levels-list">
+						<li>
+							<strong>{ __( 'Read only', 'saddle' ) }</strong>
+							{ ' · ' }
+							{ __(
+								'looks at everything, changes nothing.',
+								'saddle'
+							) }
+						</li>
+						<li>
+							<strong>{ __( 'Edit content', 'saddle' ) }</strong>
+							{ ' · ' }
+							{ __(
+								'writes and edits posts, pages, media and SEO. Asks you before it publishes or deletes.',
+								'saddle'
+							) }
+						</li>
+						<li>
+							<strong>
+								{ __( 'Manage the site', 'saddle' ) }
+							</strong>
+							{ ' · ' }
+							{ __(
+								'also menus, settings, plugins and themes. Asks you before anything big.',
+								'saddle'
+							) }
+						</li>
+						<li className="saddle-apps__levels-note">
+							{ __( 'New apps start at Read only.', 'saddle' ) }
+						</li>
+					</ul>
+				</Collapsible>
+			</section>
+
+			<p className="saddle-apps__address">
+				<span>
+					{ __( 'This site’s address for AI apps:', 'saddle' ) }
+				</span>
+				<code>{ MCP_URL }</code>
+				<CopyButton value={ MCP_URL } size="sm" variant="link" />
+			</p>
 
 			{ guide && (
 				<SetupGuideDrawer
@@ -549,7 +446,7 @@ export default function Apps( {
 					password={ guide.password }
 				/>
 			) }
-		</section>
+		</>
 	);
 }
 
