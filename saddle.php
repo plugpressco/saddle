@@ -170,6 +170,7 @@ require_once SADDLE_DIR . 'includes/class-saddle-notices.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-notices-admin.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-connections-rest.php';
+require_once SADDLE_DIR . 'includes/admin/class-saddle-approvals-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-onboarding-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-modules-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-settings.php';
@@ -291,6 +292,7 @@ final class Saddle {
 		// transport, and forgets a credential when it is revoked.
 		Saddle_Connections::register();
 		add_action( 'rest_api_init', array( 'Saddle_Connections_REST', 'register_routes' ) );
+		add_action( 'rest_api_init', array( 'Saddle_Approvals_REST', 'register_routes' ) );
 		add_action( 'rest_api_init', array( 'Saddle_Modules_REST', 'register_routes' ) );
 
 		// First-run and module onboarding state (#277).

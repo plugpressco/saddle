@@ -1893,3 +1893,21 @@ body.saddle-admin-page {
 		}
 	}
 }
+
+/* Needs your OK (#287) */
+.saddle-needs-ok pre {
+	margin: 0 0 12px;
+	padding: 10px 12px;
+	max-height: 240px;
+	overflow: auto;
+	white-space: pre-wrap;
+	background: #f6f7f7;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+}
+
+.saddle-needs-ok__actions {
+	display: flex;
+	gap: 8px;
+	margin-top: 16px;
+}
