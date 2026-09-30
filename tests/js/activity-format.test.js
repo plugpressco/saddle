@@ -28,7 +28,7 @@ describe( 'actionLabel', () => {
 				},
 				caps
 			)
-		).toBe( 'Blocked · Update option · needs Admin' );
+		).toBe( 'Blocked · Update option · needs Manage the site' );
 	} );
 
 	it( 'blocks without a level when the reason was something else', () => {

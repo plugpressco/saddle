@@ -6,7 +6,14 @@
  * the server; the app's own confirm then goes through or is refused.
  */
 import { useState, useEffect, useCallback } from '@wordpress/element';
-import { Button, Drawer, Notice, Row, RowList } from '@plugpress/ui';
+import {
+	Button,
+	Drawer,
+	KeyValueList,
+	Notice,
+	Row,
+	RowList,
+} from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { api } from '../api';
 import SectionHeader from './SectionHeader';
@@ -14,8 +21,7 @@ import {
 	askedAgo,
 	sortApprovals,
 	requestTitle,
-	beforeAfter,
-	showValue,
+	previewRows,
 } from '../approvals-logic';
 
 /**
@@ -65,7 +71,7 @@ export default function NeedsYourOk( { onChange } ) {
 		return null;
 	}
 
-	const pair = review ? beforeAfter( review.preview ) : null;
+	const rows = review ? previewRows( review.preview ) : [];
 
 	const buttons = ( item ) => (
 		<>
@@ -128,22 +134,36 @@ export default function NeedsYourOk( { onChange } ) {
 			>
 				{ review && (
 					<div className="saddle-doc saddle-doc--bare">
-						<p className="saddle-doc__p">{ review.summary }</p>
-						{ pair ? (
-							<>
-								<h3 className="saddle-doc__h">
-									{ __( 'Before', 'saddle' ) }
-								</h3>
-								<pre>{ showValue( pair.before ) }</pre>
-								<h3 className="saddle-doc__h">
-									{ __( 'After', 'saddle' ) }
-								</h3>
-								<pre>{ showValue( pair.after ) }</pre>
-							</>
-						) : (
-							review.preview && (
-								<pre>{ showValue( review.preview ) }</pre>
-							)
+						{ /* The title already says what the app asks; the
+						     details are the preview as plain rows, with
+						     "was → becomes" for a change. */ }
+						{ rows.length > 0 && (
+							<KeyValueList
+								className="saddle-needs-ok__details"
+								items={ rows.map( ( r ) => ( {
+									label: r.label,
+									value:
+										'before' in r
+											? sprintf(
+													/* translators: 1: the value now, 2: the value after the change. */
+													__(
+														'%1$s → %2$s',
+														'saddle'
+													),
+													r.before ||
+														__(
+															'(empty)',
+															'saddle'
+														),
+													r.value ||
+														__(
+															'(empty)',
+															'saddle'
+														)
+											  )
+											: r.value,
+								} ) ) }
+							/>
 						) }
 						<div className="saddle-needs-ok__actions">
 							{ buttons( review ) }

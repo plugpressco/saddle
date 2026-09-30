@@ -83,7 +83,8 @@ export default function Dashboard( {
 		};
 	}, [] );
 
-	useEffect( () => {
+	// Also re-run after an approve or reject, so the decision shows at once.
+	const loadActivity = () =>
 		api( `audit-log?per_page=${ ACTIVITY_ROWS }` )
 			.then( ( res ) =>
 				setActivity( {
@@ -92,6 +93,9 @@ export default function Dashboard( {
 				} )
 			)
 			.catch( () => setActivity( { enabled: false, entries: [] } ) );
+
+	useEffect( () => {
+		loadActivity();
 	}, [] );
 
 	useEffect( () => {
@@ -222,7 +226,7 @@ export default function Dashboard( {
 
 			{ /* Big changes an app asked for, waiting for the owner (#287). Draws
 			     nothing when there are none. */ }
-			<NeedsYourOk />
+			<NeedsYourOk onChange={ loadActivity } />
 
 			<SetupBlock
 				tier={ tier }

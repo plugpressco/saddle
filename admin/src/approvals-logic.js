@@ -92,14 +92,79 @@ export function beforeAfter( preview ) {
 }
 
 /**
- * A preview value as readable text.
+ * "current_status" → "Current status".
+ *
+ * @param {string} key A preview field name.
+ * @return {string} A label.
+ */
+function labelFor( key ) {
+	const words = String( key ).replace( /[_-]+/g, ' ' ).trim();
+	return words.charAt( 0 ).toUpperCase() + words.slice( 1 );
+}
+
+/**
+ * One preview value as short text: Yes/No for booleans, a list joined with
+ * commas, anything deeper as compact JSON.
  *
  * @param {*} value Any JSON value.
  * @return {string} Text.
  */
-export function showValue( value ) {
-	if ( value === null || value === undefined ) {
-		return '';
+function shortValue( value ) {
+	if ( typeof value === 'boolean' ) {
+		return value ? __( 'Yes', 'saddle' ) : __( 'No', 'saddle' );
 	}
-	return typeof value === 'string' ? value : JSON.stringify( value, null, 2 );
+	if (
+		Array.isArray( value ) &&
+		value.every( ( v ) => typeof v !== 'object' || v === null )
+	) {
+		return value.join( ', ' );
+	}
+	if ( value !== null && typeof value === 'object' ) {
+		return JSON.stringify( value );
+	}
+	return String( value );
+}
+
+/**
+ * A stored preview as label/value rows the owner can read, instead of JSON.
+ * A before/after preview gives one row per field that changes, with both
+ * values. Empty values are left out.
+ *
+ * @param {*} preview The stored preview.
+ * @return {Array<{label: string, value: string, before?: string}>} Rows.
+ */
+export function previewRows( preview ) {
+	const pair = beforeAfter( preview );
+	if ( pair && isPlain( pair.before ) && isPlain( pair.after ) ) {
+		const keys = [
+			...new Set( [
+				...Object.keys( pair.before ),
+				...Object.keys( pair.after ),
+			] ),
+		];
+		return keys
+			.filter(
+				( k ) =>
+					JSON.stringify( pair.before[ k ] ) !==
+					JSON.stringify( pair.after[ k ] )
+			)
+			.map( ( k ) => ( {
+				label: labelFor( k ),
+				before: shortValue( pair.before[ k ] ?? '' ),
+				value: shortValue( pair.after[ k ] ?? '' ),
+			} ) );
+	}
+	if ( ! isPlain( preview ) ) {
+		return [];
+	}
+	return Object.keys( preview )
+		.filter( ( k ) => preview[ k ] !== null && preview[ k ] !== '' )
+		.map( ( k ) => ( {
+			label: labelFor( k ),
+			value: shortValue( preview[ k ] ),
+		} ) );
+}
+
+function isPlain( value ) {
+	return !! value && typeof value === 'object' && ! Array.isArray( value );
 }

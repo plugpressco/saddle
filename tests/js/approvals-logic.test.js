@@ -3,7 +3,7 @@ import {
 	sortApprovals,
 	requestTitle,
 	beforeAfter,
-	showValue,
+	previewRows,
 } from '../../admin/src/approvals-logic';
 
 describe( 'askedAgo', () => {
@@ -49,7 +49,7 @@ describe( 'requestTitle', () => {
 	} );
 } );
 
-describe( 'beforeAfter / showValue', () => {
+describe( 'beforeAfter', () => {
 	it( 'finds a before/after pair', () => {
 		expect( beforeAfter( { before: 'a', after: 'b' } ) ).toEqual( {
 			before: 'a',
@@ -58,9 +58,35 @@ describe( 'beforeAfter / showValue', () => {
 		expect( beforeAfter( { id: 4 } ) ).toBeNull();
 		expect( beforeAfter( null ) ).toBeNull();
 	} );
-	it( 'prints values', () => {
-		expect( showValue( 'x' ) ).toBe( 'x' );
-		expect( showValue( null ) ).toBe( '' );
-		expect( showValue( { a: 1 } ) ).toBe( '{\n  "a": 1\n}' );
+} );
+
+describe( 'previewRows', () => {
+	it( 'turns a flat preview into labelled rows, Yes/No for booleans', () => {
+		expect(
+			previewRows( {
+				title: 'Spring sale',
+				current_status: 'draft',
+				recoverable: true,
+				note: '',
+				tags: [ 'a', 'b' ],
+			} )
+		).toEqual( [
+			{ label: 'Title', value: 'Spring sale' },
+			{ label: 'Current status', value: 'draft' },
+			{ label: 'Recoverable', value: 'Yes' },
+			{ label: 'Tags', value: 'a, b' },
+		] );
+	} );
+	it( 'keeps only the fields a before/after preview changes', () => {
+		expect(
+			previewRows( {
+				before: { status: 'draft', title: 'Sale' },
+				after: { status: 'publish', title: 'Sale' },
+			} )
+		).toEqual( [ { label: 'Status', before: 'draft', value: 'publish' } ] );
+	} );
+	it( 'gives nothing for a preview that is not an object', () => {
+		expect( previewRows( null ) ).toEqual( [] );
+		expect( previewRows( 'text' ) ).toEqual( [] );
 	} );
 } );
