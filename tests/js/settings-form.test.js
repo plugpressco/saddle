@@ -2,7 +2,6 @@
  * Which settings show, what changed, what is wrong with a draft (#276).
  */
 import {
-	agentWritableLabels,
 	changedValues,
 	draftProblems,
 	fieldForHash,
@@ -214,16 +213,5 @@ describe( 'the deep link', () => {
 	it( 'opens the disclosure only for an advanced field', () => {
 		expect( needsDisclosure( split, fields[ 1 ] ) ).toBe( true );
 		expect( needsDisclosure( split, fields[ 0 ] ) ).toBe( false );
-	} );
-} );
-
-describe( 'agentWritableLabels', () => {
-	it( 'names the fields an agent may ask to change', () => {
-		expect(
-			agentWritableLabels( [
-				f( 'a', { label: 'Count admin visits', agent: 'write' } ),
-				f( 'b' ),
-			] )
-		).toEqual( [ 'Count admin visits' ] );
 	} );
 } );

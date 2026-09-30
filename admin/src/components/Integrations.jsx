@@ -1,14 +1,14 @@
 /**
- * Integrations — services and plugins Saddle can hand to the AI beyond core
- * WordPress.
+ * Services (Settings) — what Saddle can hand to the AI beyond core WordPress,
+ * as one block of rows.
  *
  * Three kinds of row, all served by GET /integrations: tools built into
  * Saddle (Unsplash, whose row holds the Access Key form, and the SEO/store
  * plugins it edits natively), PlugPress plugins whose tools Saddle wraps as
  * soon as they are active, and third-party plugins that enrolled through the
  * public `saddle_integrations` filter. Third-party rows start switched off;
- * the owner turns them on here. Per-tool on/off switches stay on the
- * Permissions screen.
+ * the owner turns them on here. Per-tool switches are under Settings →
+ * Advanced.
  */
 import { useState, useEffect } from '@wordpress/element';
 import { RowList, Row, Badge, Switch, HelpTip, toast } from '@plugpress/ui';
@@ -16,12 +16,6 @@ import SectionHeader from './SectionHeader';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { api } from '../api';
 import UnsplashKeyRow from './UnsplashKeyCard';
-
-const SOURCE_LABELS = {
-	plugpress: __( 'PlugPress', 'saddle' ),
-	'third-party': __( 'Third-party', 'saddle' ),
-	'built-in': __( 'Built in', 'saddle' ),
-};
 
 // Integrations-category tools no listed row accounts for — an add-on that
 // wraps tools through its own engine and doesn't add a row — grouped by the
@@ -54,22 +48,37 @@ const unlistedRows = ( caps, rows ) => {
 	} ) );
 };
 
+// One meta line: what it is, who made it (third-party only), how many tools.
 const describe = ( row ) => {
-	if ( ! row.author ) {
-		return row.description;
-	}
-	/* translators: %s: plugin author. */
-	const byline = sprintf( __( 'By %s', 'saddle' ), row.author );
+	const tools = sprintf(
+		/* translators: %d: number of tools. */
+		_n( '%d tool', '%d tools', row.tools, 'saddle' ),
+		row.tools
+	);
+	const byline = row.author
+		? sprintf(
+				/* translators: %s: plugin author. */
+				__( 'By %s', 'saddle' ),
+				row.author
+		  )
+		: '';
 	return (
 		<>
 			{ row.description && <>{ row.description } · </> }
-			{ row.url ? (
-				<a href={ row.url } target="_blank" rel="noopener noreferrer">
-					{ byline }
-				</a>
-			) : (
-				byline
-			) }
+			{ byline &&
+				( row.url ? (
+					<a
+						href={ row.url }
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						{ byline }
+					</a>
+				) : (
+					byline
+				) ) }
+			{ byline && ' · ' }
+			{ tools }
 		</>
 	);
 };
@@ -100,7 +109,7 @@ export default function Integrations( { caps, onChanged } ) {
 						? sprintf(
 								/* translators: %s: plugin name. */
 								__(
-									'%s is on. Its tools follow your access level and approval rules.',
+									'%s is on. Its tools follow each app’s access and approval rules.',
 									'saddle'
 								),
 								row.title
@@ -126,10 +135,10 @@ export default function Integrations( { caps, onChanged } ) {
 			<SectionHeader
 				title={
 					<span className="saddle-integrations__title">
-						{ __( 'Integrations', 'saddle' ) }
+						{ __( 'Services', 'saddle' ) }
 						<HelpTip>
 							{ __(
-								'Extra services and plugins your AI can use through Saddle. Every tool still follows your access level and approval rules. Plugins that support Saddle appear here once they are active; third-party plugins stay off until you switch them on.',
+								'Extra services and plugins your AI can use through Saddle. Every tool still follows its app’s access and approval rules. Plugins that support Saddle appear here once they are active; third-party plugins stay off until you switch them on.',
 								'saddle'
 							) }
 						</HelpTip>
@@ -147,42 +156,27 @@ export default function Integrations( { caps, onChanged } ) {
 							title={ row.title }
 							description={ describe( row ) }
 							actions={
-								<>
-									{ SOURCE_LABELS[ row.source ] && (
-										<Badge>
-											{ SOURCE_LABELS[ row.source ] }
-										</Badge>
-									) }
-									<Badge>
-										{ sprintf(
-											/* translators: %d: number of tools. */
-											_n(
-												'%d tool',
-												'%d tools',
-												row.tools,
+								'third-party' === row.source ? (
+									<Switch
+										checked={ row.enabled }
+										disabled={ saving === row.slug }
+										onChange={ ( next ) =>
+											toggle( row, next )
+										}
+										aria-label={ sprintf(
+											/* translators: %s: plugin name. */
+											__(
+												'Let your AI use %s tools',
 												'saddle'
 											),
-											row.tools
+											row.title
 										) }
+									/>
+								) : (
+									<Badge tone="success">
+										{ __( 'Active', 'saddle' ) }
 									</Badge>
-									{ 'third-party' === row.source && (
-										<Switch
-											checked={ row.enabled }
-											disabled={ saving === row.slug }
-											onChange={ ( next ) =>
-												toggle( row, next )
-											}
-											aria-label={ sprintf(
-												/* translators: %s: plugin name. */
-												__(
-													'Let your AI use %s tools',
-													'saddle'
-												),
-												row.title
-											) }
-										/>
-									) }
-								</>
+								)
 							}
 						/>
 					)

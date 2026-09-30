@@ -29,11 +29,9 @@ import {
 	toast,
 } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
-import { api, saddleData } from '../api';
-import { areaUrl } from '../routes';
+import { api } from '../api';
 import SectionHeader from './SectionHeader';
 import {
-	agentWritableLabels,
 	changedValues,
 	draftProblems,
 	fieldForHash,
@@ -213,11 +211,15 @@ function FieldRow( { scope, field, value, error, busy, onChange } ) {
 }
 
 /**
- * @param {Object} props
- * @param {string} props.scope  `saddle` or a module key.
- * @param {string} props.screen Optional `area/tab`: only fields for it.
+ * @param {Object}   props
+ * @param {string}   props.scope  `saddle` or a module key.
+ * @param {string}   props.screen Optional `area/tab`: only fields for it.
+ * @param {string[]} props.keys   Optional field keys: only these, when a page
+ *                                draws the rest itself.
+ * @param {boolean}  props.bare   Leave out the section headings, for a form
+ *                                that sits inside a disclosure of its own.
  */
-export default function SettingsForm( { scope, screen } ) {
+export default function SettingsForm( { scope, screen, keys, bare } ) {
 	const [ fields, setFields ] = useState( null );
 	const [ loadError, setLoadError ] = useState( '' );
 	const [ draft, setDraft ] = useState( {} );
@@ -227,8 +229,11 @@ export default function SettingsForm( { scope, screen } ) {
 	const [ more, setMore ] = useState( {} );
 
 	const shown = useMemo(
-		() => renderableFields( fields, screen ),
-		[ fields, screen ]
+		() =>
+			renderableFields( fields, screen ).filter(
+				( f ) => ! keys || keys.includes( f.key )
+			),
+		[ fields, screen, keys ]
 	);
 	const groups = useMemo(
 		() =>
@@ -401,18 +406,11 @@ export default function SettingsForm( { scope, screen } ) {
 		/>
 	);
 
-	const writable = agentWritableLabels( shown );
-	const permissionsUrl = areaUrl(
-		saddleData.areas || [],
-		'connections',
-		'permissions'
-	);
-
 	return (
 		<div className="saddle-settings-form" data-scope={ scope }>
 			{ groups.map( ( { section, split } ) => (
 				<section key={ section || 'general' } className="saddle-stack">
-					{ section && <SectionHeader title={ section } /> }
+					{ section && ! bare && <SectionHeader title={ section } /> }
 					<RowList>{ split.basic.map( row ) }</RowList>
 					{ split.disclosure && (
 						<Collapsible
@@ -432,28 +430,6 @@ export default function SettingsForm( { scope, screen } ) {
 					) }
 				</section>
 			) ) }
-
-			{ writable.length > 0 && (
-				<p className="saddle-settings-form__agent">
-					{ __( 'Your AI can read these settings.', 'saddle' ) }{ ' ' }
-					{ sprintf(
-						/* translators: %s: a list of setting names. */
-						__(
-							'It can ask to change %s, and you confirm each change.',
-							'saddle'
-						),
-						writable.join( ', ' )
-					) }
-					{ permissionsUrl && (
-						<>
-							{ ' ' }
-							<a href={ permissionsUrl }>
-								{ __( 'Connections → Permissions', 'saddle' ) }
-							</a>
-						</>
-					) }
-				</p>
-			) }
 
 			<ApplyBar
 				open={ isDirty( shown, draft ) }
