@@ -47,6 +47,9 @@
  * - `saddle.admin.homeCards` — a card on Home → Overview: `{ id, order,
  *   Component }`.
  * - `saddle.admin.connectionCards` — a card on Connections → Apps.
+ * - `kit.SettingsForm` (feature `settings-form`): `<SettingsForm scope="key" />`
+ *   draws a module's settings from its schema. Core mounts it on a module's
+ *   Settings tab on its own; a module only needs it inside its own screen.
  * - The `saddle.admin.mount` ACTION, for a module that mounts its own app
  *   (`content => 'mount'` in its descriptor). It fires with an element React
  *   never touches, and `{ module, tab }`.
@@ -88,6 +91,7 @@ import {
 	useConfirm,
 } from '@plugpress/ui';
 import SectionHeader from './components/SectionHeader';
+import SettingsForm from './components/SettingsForm';
 
 export const SHELL_VERSION = 2;
 
@@ -133,6 +137,7 @@ export const ui = {
 // Saddle's own pieces, shared so a module's page looks like Core's.
 export const kit = {
 	SectionHeader,
+	SettingsForm,
 };
 
 const FEATURES = [
@@ -142,6 +147,7 @@ const FEATURES = [
 	'homeCards',
 	'connectionCards',
 	'mount',
+	'settings-form',
 ];
 
 // What this shell supports, for addons that feature-detect. Set when the

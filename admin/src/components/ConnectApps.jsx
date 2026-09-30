@@ -116,14 +116,14 @@ function usePulse( active, onConnected ) {
 
 /**
  * @param {Object}   props
+ * @param {Object}   props.oauth       The sign-in settings (SignInCard's hook),
+ *                                     or null while they load. The switch
+ *                                     itself is the card further down.
  * @param {Function} props.onKey       Open the key setup for an app key.
  * @param {Function} props.onConnected Called when a new app connects.
  */
-export default function ConnectApps( { onKey, onConnected } ) {
+export default function ConnectApps( { oauth, onKey, onConnected } ) {
 	const [ selected, setSelected ] = useState( 'claude' );
-	const [ oauth, setOauth ] = useState( null );
-	const [ enabling, setEnabling ] = useState( false );
-	const [ oauthError, setOauthError ] = useState( null );
 	const [ connections, setConnections ] = useState( [] );
 
 	const loadConnections = () =>
@@ -132,9 +132,6 @@ export default function ConnectApps( { onKey, onConnected } ) {
 			.catch( () => {} );
 
 	useEffect( () => {
-		api( 'oauth-settings' )
-			.then( setOauth )
-			.catch( () => setOauth( { enabled: false, ready: false } ) );
 		loadConnections();
 	}, [] );
 
@@ -150,13 +147,17 @@ export default function ConnectApps( { onKey, onConnected } ) {
 		}
 	} );
 
-	const enableSignIn = () => {
-		setEnabling( true );
-		setOauthError( null );
-		api( 'oauth-settings', { method: 'POST', data: { enabled: true } } )
-			.then( setOauth )
-			.catch( ( e ) => setOauthError( e.message ) )
-			.finally( () => setEnabling( false ) );
+	// There is one sign-in switch on this page, in the card below the apps.
+	// This hint points the owner at it rather than repeating it.
+	const showSignIn = () => {
+		const card = document.getElementById( 'saddle-signin' );
+		const control = document.getElementById( 'saddle-oauth-switch' );
+		if ( card ) {
+			card.scrollIntoView( { block: 'center' } );
+		}
+		if ( control ) {
+			control.focus();
+		}
 	};
 
 	const connectedApps = new Set( connections.map( ( c ) => c.app ) );
@@ -217,7 +218,7 @@ export default function ConnectApps( { onKey, onConnected } ) {
 				<Notice tone="info">
 					{ oauth.ready
 						? __(
-								'To connect with the address alone, turn on sign-in for apps. Each app then opens a screen here where you approve it. Until then, apps connect with a key.',
+								'To connect with the address alone, turn on sign-in for apps (below, under your connected apps). Each app then opens a screen here where you approve it. Until then, apps connect with a key.',
 								'saddle'
 						  )
 						: __(
@@ -229,16 +230,14 @@ export default function ConnectApps( { onKey, onConnected } ) {
 							<Button
 								variant="secondary"
 								size="sm"
-								onClick={ enableSignIn }
-								loading={ enabling }
+								onClick={ showSignIn }
 							>
-								{ __( 'Turn on sign-in for apps', 'saddle' ) }
+								{ __( 'Go to the sign-in setting', 'saddle' ) }
 							</Button>
 						</span>
 					) }
 				</Notice>
 			) }
-			{ oauthError && <Notice tone="danger">{ oauthError }</Notice> }
 
 			<div className="saddle-connect__picker">
 				<div
