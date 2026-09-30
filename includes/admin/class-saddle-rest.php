@@ -909,7 +909,7 @@ class Saddle_REST_Admin {
 	 * would think to look for in a REST controller.
 	 *
 	 * The literals stay as a floor so nothing regroups on sites where a
-	 * contributor enrols later than this runs (Saddle Pro's `knovia-`), and
+	 * contributor enrols later than this runs (Saddle Pro's `bridle-kb-`), and
 	 * `unsplash-` is here despite not being a wrapper at all: it is an external
 	 * service from the owner's point of view, which is what this grouping is
 	 * about.
@@ -917,7 +917,7 @@ class Saddle_REST_Admin {
 	 * @return string[]
 	 */
 	private static function integration_prefixes() {
-		$prefixes = array( 'waggle-', 'knovia-', 'unsplash-' );
+		$prefixes = array( 'waggle-', 'bridle-kb-', 'unsplash-' );
 
 		if ( class_exists( 'Saddle_Integrations' ) ) {
 			foreach ( array_keys( Saddle_Integrations::integrations() ) as $slug ) {

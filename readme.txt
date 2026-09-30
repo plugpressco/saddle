@@ -221,6 +221,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 * Fixed: Closing the connect screen no longer removes a key the app has already used. This happened when the key was copied by hand instead of with Copy setup.
 * Fixed: The Dashboard now counts apps that connect by address. A site connected only that way was told to connect its first app.
 * Improved: The Dashboard names each connected app, such as Claude or Cursor, from what the app reports about itself. Saddle also notes when each app first used a tool. Reads still add nothing to the activity log.
+* Changed: The Permissions screen files Saddle Pro's Bridle KB tools (`bridle-kb-*`) under Integrations.
 
 = 1.5.0 =
 * New: Your AI app can build with blocks from other plugins that wrap other blocks and render on the server, such as a section block that holds a heading and a paragraph. It passes the inner blocks as children, and the block schema says which blocks each one accepts.
