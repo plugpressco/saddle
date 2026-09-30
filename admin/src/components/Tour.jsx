@@ -7,8 +7,18 @@
  * fixed anchor is drawn over it for `Coachmark` to attach to. A stop whose
  * element is missing (a collapsed menu on a phone, a tab renamed) is dropped
  * rather than pointing at nothing.
+ *
+ * The tour renders into <body>, not inside the page: the page's content
+ * column is a containing block for fixed elements, so an anchor drawn inside
+ * it would sit offset from what it covers. <body> carries `pp-scope`, so the
+ * kit's tokens still apply.
  */
-import { useState, useEffect, useLayoutEffect } from '@wordpress/element';
+import {
+	useState,
+	useEffect,
+	useLayoutEffect,
+	createPortal,
+} from '@wordpress/element';
 import { Coachmark } from '@plugpress/ui';
 import { __ } from '@wordpress/i18n';
 
@@ -142,7 +152,7 @@ export default function Tour( { activityLabel, onFinish } ) {
 	const stop = stops[ index ];
 	const last = index === stops.length - 1;
 
-	return (
+	return createPortal(
 		<Anchored key={ stop.id } find={ stop.find }>
 			{ ( box ) => (
 				<Coachmark
@@ -169,6 +179,7 @@ export default function Tour( { activityLabel, onFinish } ) {
 					/>
 				</Coachmark>
 			) }
-		</Anchored>
+		</Anchored>,
+		document.body
 	);
 }
