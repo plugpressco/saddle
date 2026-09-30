@@ -40,6 +40,7 @@ $saddle_options = array(
 	'saddle_mcp_trace',               // Saddle_MCP_Diagnostics::TRACE_OPTION.
 	'saddle_mcp_trace_until',         // Saddle_MCP_Diagnostics::RECORDING_OPTION.
 	'saddle_dismissed_notices',       // Saddle_Notices::STORE (site-wide dismissals).
+	'saddle_onboarding',              // Saddle_Onboarding::OPTION.
 );
 foreach ( $saddle_options as $saddle_option ) {
 	delete_option( $saddle_option );
@@ -50,6 +51,7 @@ foreach ( $saddle_options as $saddle_option ) {
 // keys on.
 delete_metadata( 'user', 0, 'saddle_admin_theme', '', true );
 delete_metadata( 'user', 0, 'saddle_dismissed_notices', '', true ); // Saddle_Notices::STORE.
+delete_metadata( 'user', 0, 'saddle_ui', '', true ); // Saddle_Onboarding: the tour, once per user.
 delete_metadata( 'user', 0, 'saddle_client_hints', '', true );
 delete_metadata( 'user', 0, 'saddle_issued_credentials', '', true );
 
