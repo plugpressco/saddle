@@ -1,10 +1,10 @@
 /**
- * Home's Setup block (#277): what is left to do, in one list.
+ * The Dashboard's Setup block (#277): what is left to do, in one list.
  *
  * Three Core tasks (connect an app, try a first prompt, choose what it can
  * do) are worked out from the connection registry and the onboarding state,
- * never stored. Each installed module adds its own unfinished tasks (Home
- * fetches `GET /modules` once and passes `areas`). One compact row each; the
+ * never stored. Each installed module adds its own unfinished tasks (the
+ * Dashboard fetches `GET /modules` once and passes `areas`). One compact row each; the
  * section says how many are done, can be hidden, and is gone once everything
  * is done.
  */
@@ -22,7 +22,7 @@ import { withArg } from '../routes';
  * @param {?Array}   props.connections From GET /connections, or null while
  *                                     loading (nothing is drawn yet).
  * @param {Object}   props.onboarding  GET /onboarding.
- * @param {string}   props.homeUrl     Home's address, for re-opening setup.
+ * @param {string}   props.homeUrl     The Dashboard's address, for re-opening setup.
  * @param {Function} props.onConnect   Open the connect wizard.
  * @param {Function} props.onNavigate  Go to another place (old section names).
  * @param {Function} props.onHide      Hide the block.
@@ -75,7 +75,7 @@ export default function SetupBlock( {
 					<Button
 						variant="link"
 						size="sm"
-						onClick={ () => onNavigate( 'permissions' ) }
+						onClick={ () => onNavigate( 'connect' ) }
 					>
 						{ __( 'Choose', 'saddle' ) }
 					</Button>

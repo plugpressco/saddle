@@ -41,6 +41,8 @@ $saddle_options = array(
 	'saddle_mcp_trace_until',         // Saddle_MCP_Diagnostics::RECORDING_OPTION.
 	'saddle_dismissed_notices',       // Saddle_Notices::STORE (site-wide dismissals).
 	'saddle_onboarding',              // Saddle_Onboarding::OPTION.
+	'saddle_key_roles',               // Saddle_Access::KEY_ROLES_OPTION.
+	'saddle_access_version',          // Saddle_Access::VERSION_OPTION.
 );
 foreach ( $saddle_options as $saddle_option ) {
 	delete_option( $saddle_option );

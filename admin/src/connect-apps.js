@@ -257,6 +257,29 @@ export const APPS = [
 ];
 
 /**
+ * How the picker groups the apps: by where you use the AI. Every key in
+ * `APPS` except `other` appears once; `other` ("Any MCP app") sits under the
+ * groups as a quiet link.
+ */
+export const APP_GROUPS = [
+	{
+		key: 'chat',
+		label: __( 'Chat apps', 'saddle' ),
+		apps: [ 'claude', 'chatgpt', 'grok' ],
+	},
+	{
+		key: 'agents',
+		label: __( 'Agents', 'saddle' ),
+		apps: [ 'claude-code', 'codex', 'gemini-cli', 'openclaw' ],
+	},
+	{
+		key: 'editors',
+		label: __( 'Code editors', 'saddle' ),
+		apps: [ 'cursor', 'vscode', 'windsurf' ],
+	},
+];
+
+/**
  * The Name / Address / Authentication lines for apps that connect from a
  * form rather than a config file.
  *

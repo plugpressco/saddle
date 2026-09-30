@@ -170,3 +170,17 @@ describe( 'buildConfig', () => {
 		expect( setup ).toContain( 'OAuth' );
 	} );
 } );
+
+describe( 'APP_GROUPS', () => {
+	it( 'puts every app in exactly one group, and leaves "other" for the link', () => {
+		const { APPS, APP_GROUPS } = load( site );
+		const grouped = APP_GROUPS.flatMap( ( g ) => g.apps );
+
+		expect( new Set( grouped ).size ).toBe( grouped.length );
+		expect( grouped.sort() ).toEqual(
+			APPS.map( ( a ) => a.key )
+				.filter( ( k ) => 'other' !== k )
+				.sort()
+		);
+	} );
+} );

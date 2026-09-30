@@ -106,6 +106,7 @@ require_once SADDLE_DIR . 'includes/lint/rules/class-rule-unknown-module.php';
 require_once SADDLE_DIR . 'includes/preview/class-saddle-preview.php';
 require_once SADDLE_DIR . 'includes/verify/class-saddle-verify.php';
 require_once SADDLE_DIR . 'includes/class-saddle-capabilities.php';
+require_once SADDLE_DIR . 'includes/class-saddle-access.php';
 require_once SADDLE_DIR . 'includes/class-saddle-approval.php';
 require_once SADDLE_DIR . 'includes/class-saddle-context.php';
 require_once SADDLE_DIR . 'includes/class-saddle-context-bundle.php';
@@ -170,6 +171,7 @@ require_once SADDLE_DIR . 'includes/class-saddle-notices.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-notices-admin.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-connections-rest.php';
+require_once SADDLE_DIR . 'includes/admin/class-saddle-approvals-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-onboarding-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-modules-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-settings.php';
@@ -259,6 +261,7 @@ final class Saddle {
 		// its items (see Saddle_Settings::order_submenu()).
 		add_action( 'admin_menu', array( 'Saddle_Settings', 'register_menu' ), 9 );
 		add_action( 'admin_menu', array( 'Saddle_Settings', 'order_submenu' ), 999 );
+		add_action( 'admin_init', array( 'Saddle_Settings', 'redirect_legacy' ) );
 		add_filter( 'plugin_action_links_' . plugin_basename( SADDLE_FILE ), array( 'Saddle_Settings', 'action_links' ) );
 		add_action( 'admin_enqueue_scripts', array( 'Saddle_Settings', 'enqueue_assets' ) );
 		add_action( Saddle_Approval::GC_HOOK, array( 'Saddle_Approval', 'gc' ) );
@@ -289,7 +292,10 @@ final class Saddle {
 		// has made its first tool call. Observes the MCP route on either
 		// transport, and forgets a credential when it is revoked.
 		Saddle_Connections::register();
+		// Per-app access roles: the migration and the key clean-up.
+		Saddle_Access::register();
 		add_action( 'rest_api_init', array( 'Saddle_Connections_REST', 'register_routes' ) );
+		add_action( 'rest_api_init', array( 'Saddle_Approvals_REST', 'register_routes' ) );
 		add_action( 'rest_api_init', array( 'Saddle_Modules_REST', 'register_routes' ) );
 
 		// First-run and module onboarding state (#277).

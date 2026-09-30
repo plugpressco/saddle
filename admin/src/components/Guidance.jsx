@@ -1,11 +1,11 @@
 /**
  * Context — what every connected app knows about this site (#274).
  *
- * Was Settings → Guidance. Laid out like a context sheet an owner fills in
- * and corrects, top to bottom:
- *  - Named fields for the owner's instructions: about the site, the current
- *    goal, voice, rules. Stored as sections of the one instructions text
- *    (see context-fields.js), which every agent reads.
+ * Was Settings → Guidance. Laid out like a context sheet an owner reads and
+ * corrects, top to bottom:
+ *  - About your site: the owner's instructions as named rows showing their
+ *    text; Edit opens one field at a time (see context-fields.js — stored as
+ *    sections of the one instructions text every agent reads).
  *  - Skills — playbook files (.md) you install; every app sees the list and
  *    reads one when a task matches.
  *  - Memory — what the apps noted as they worked, and what you pinned.
@@ -17,8 +17,6 @@ import {
 	Button,
 	Notice,
 	Spinner,
-	Card,
-	CardContent,
 	Badge,
 	Textarea,
 	Switch,
@@ -104,38 +102,104 @@ function renderContext( text ) {
 }
 
 /**
- * One field of the context sheet: its name, a line on what belongs there, and
- * an example as the placeholder. "Not saved" shows only while it is true.
+ * One field of the context sheet as a row: its name, its text cut to one line
+ * (or "Not written yet"), and Edit / Add. Edit opens the textarea under the
+ * row; Save keeps it, Cancel drops it.
  *
  * @param {Object}   props
  * @param {Object}   props.field    From FIELDS.
- * @param {string}   props.value    Current text.
  * @param {string}   props.saved    Saved text.
+ * @param {boolean}  props.open     Whether the textarea is open.
+ * @param {string}   props.draft    Text in the textarea.
+ * @param {boolean}  props.saving   Whether a save is running.
+ * @param {Function} props.onOpen   Opens this field.
  * @param {Function} props.onChange Called with the new text.
+ * @param {Function} props.onSave   Saves the draft.
+ * @param {Function} props.onCancel Closes without saving.
  */
-function ContextField( { field, value, saved, onChange } ) {
+function ContextField( {
+	field,
+	saved,
+	open,
+	draft,
+	saving,
+	onOpen,
+	onChange,
+	onSave,
+	onCancel,
+} ) {
 	const id = `saddle-field-context-${ field.key }`;
-	const unsaved = value !== saved;
+	// Opening a field puts the cursor in it.
+	useEffect( () => {
+		if ( open ) {
+			document.getElementById( id )?.focus();
+		}
+	}, [ open, id ] );
+	const text = saved.replace( /\s+/g, ' ' ).trim();
 	return (
 		<div className="saddle-context-field">
-			<div className="saddle-context-field__head">
-				<label htmlFor={ id } className="saddle-context-field__label">
-					{ field.label }
-				</label>
-				{ unsaved && (
-					<span className="saddle-context-field__state">
-						{ __( 'Not saved', 'saddle' ) }
+			<Row
+				title={
+					<span className="saddle-context-field__label">
+						{ field.label }
+						<HelpTip>{ field.hint }</HelpTip>
 					</span>
-				) }
-			</div>
-			<p className="saddle-context-field__hint">{ field.hint }</p>
-			<Textarea
-				id={ id }
-				value={ value }
-				onChange={ ( e ) => onChange( e.target.value ) }
-				rows={ 3 }
-				placeholder={ field.placeholder }
+				}
+				description={
+					text ? (
+						<span
+							className="saddle-context-field__text"
+							title={ saved }
+						>
+							{ text }
+						</span>
+					) : (
+						<span className="saddle-context-field__empty">
+							{ __( 'Not written yet', 'saddle' ) }
+						</span>
+					)
+				}
+				actions={
+					! open && (
+						<Button variant="link" size="sm" onClick={ onOpen }>
+							{ text
+								? __( 'Edit', 'saddle' )
+								: __( 'Add', 'saddle' ) }
+						</Button>
+					)
+				}
 			/>
+			{ open && (
+				<div className="saddle-context-field__edit">
+					<Textarea
+						id={ id }
+						value={ draft }
+						onChange={ ( e ) => onChange( e.target.value ) }
+						rows={ 4 }
+						placeholder={ field.placeholder }
+						aria-label={ field.label }
+					/>
+					<div className="saddle-context-field__actions">
+						<Button
+							variant="secondary"
+							size="sm"
+							onClick={ onSave }
+							loading={ saving }
+							disabled={ saving || draft === saved }
+						>
+							{ __( 'Save', 'saddle' ) }
+						</Button>
+						<Button
+							variant="ghost"
+							size="sm"
+							onClick={ onCancel }
+							disabled={ saving }
+						>
+							{ __( 'Cancel', 'saddle' ) }
+						</Button>
+					</div>
+				</div>
+			) }
 		</div>
 	);
 }
@@ -143,8 +207,10 @@ function ContextField( { field, value, saved, onChange } ) {
 export default function Guidance() {
 	const confirm = useConfirm();
 	const [ system, setSystem ] = useState( '' );
-	const [ fields, setFields ] = useState( () => parseFields( '' ) );
 	const [ savedFields, setSavedFields ] = useState( () => parseFields( '' ) );
+	// The one field being edited, and what is typed into it so far.
+	const [ editing, setEditing ] = useState( null );
+	const [ draft, setDraft ] = useState( '' );
 	const [ loading, setLoading ] = useState( true );
 	const [ saving, setSaving ] = useState( false );
 	const [ loadError, setLoadError ] = useState( null );
@@ -157,7 +223,6 @@ export default function Guidance() {
 		api( 'context' )
 			.then( ( res ) => {
 				setSystem( res.system || '' );
-				setFields( parseFields( res.user ) );
 				setSavedFields( parseFields( res.user ) );
 			} )
 			.catch( ( e ) => setLoadError( e.message ) )
@@ -218,22 +283,30 @@ export default function Guidance() {
 		}
 		api( `skills/${ skill.name }`, { method: 'DELETE' } )
 			.then( ( res ) => {
+				setDrawerSkill( null );
 				setSkills( res.skills || [] );
 				refreshContext();
 			} )
 			.catch( ( e ) => toast.error( e.message ) );
 	};
 
+	const openField = ( key ) => {
+		setEditing( key );
+		setDraft( savedFields[ key ] );
+	};
+
 	const save = () => {
 		setSaving( true );
 		api( 'context', {
 			method: 'POST',
-			data: { user: serializeFields( fields ) },
+			data: {
+				user: serializeFields( { ...savedFields, [ editing ]: draft } ),
+			},
 		} )
 			.then( ( res ) => {
-				setFields( parseFields( res.user ) );
 				setSavedFields( parseFields( res.user ) );
-				toast.success( __( 'Context saved.', 'saddle' ) );
+				setEditing( null );
+				toast.success( __( 'Saved.', 'saddle' ) );
 				refreshContext();
 			} )
 			.catch( ( e ) => toast.error( e.message ) )
@@ -244,44 +317,28 @@ export default function Guidance() {
 		return <Spinner />;
 	}
 
-	const dirty = FIELDS.some(
-		( f ) => fields[ f.key ] !== savedFields[ f.key ]
-	);
-
 	return (
 		<div className="saddle-guide saddle-context">
 			{ loadError && <Notice tone="danger">{ loadError }</Notice> }
 
 			<section className="saddle-section">
-				<SectionHeader title={ __( 'Instructions', 'saddle' ) } />
-				<Card>
-					<CardContent className="saddle-context__fields">
-						{ FIELDS.map( ( field ) => (
-							<ContextField
-								key={ field.key }
-								field={ field }
-								value={ fields[ field.key ] }
-								saved={ savedFields[ field.key ] }
-								onChange={ ( text ) =>
-									setFields( ( prev ) => ( {
-										...prev,
-										[ field.key ]: text,
-									} ) )
-								}
-							/>
-						) ) }
-						<div className="saddle-guide__actions">
-							<Button
-								variant="primary"
-								onClick={ save }
-								loading={ saving }
-								disabled={ saving || ! dirty }
-							>
-								{ __( 'Save changes', 'saddle' ) }
-							</Button>
-						</div>
-					</CardContent>
-				</Card>
+				<SectionHeader title={ __( 'About your site', 'saddle' ) } />
+				<RowList>
+					{ FIELDS.map( ( field ) => (
+						<ContextField
+							key={ field.key }
+							field={ field }
+							saved={ savedFields[ field.key ] }
+							open={ editing === field.key }
+							draft={ draft }
+							saving={ saving }
+							onOpen={ () => openField( field.key ) }
+							onChange={ setDraft }
+							onSave={ save }
+							onCancel={ () => setEditing( null ) }
+						/>
+					) ) }
+				</RowList>
 			</section>
 
 			{ /* Skills — named playbooks agents load on demand */ }
@@ -290,7 +347,7 @@ export default function Guidance() {
 					title={
 						<Heading
 							help={ __(
-								'Playbook files (.md) that teach your AI specific jobs on this site — “how we publish a post”, “our SEO checklist.” Every connected AI sees the list and reads one when a task matches. Only you can add them, and a skill can never grant more access than the level you chose.',
+								'Playbook files (.md) that teach your AI specific jobs on this site — “how we publish a post”, “our SEO checklist.” Every connected AI sees the list and reads one when a task matches. Only you can add them, and a skill can never give an app more access than you set for it.',
 								'saddle'
 							) }
 						>
@@ -323,8 +380,16 @@ export default function Guidance() {
 							{ skills.map( ( skill ) => (
 								<Row
 									key={ skill.name }
+									className="saddle-skill-row"
 									title={ skill.name }
-									description={ skill.description }
+									description={
+										<span
+											className="saddle-skill-row__desc"
+											title={ skill.description }
+										>
+											{ skill.description }
+										</span>
+									}
 									actions={
 										<>
 											{ /* A bundled skill is provided by a
@@ -335,7 +400,7 @@ export default function Guidance() {
 											{ skill.builtin ? (
 												<Badge>
 													{ __(
-														'Bundled',
+														'Built in',
 														'saddle'
 													) }
 												</Badge>
@@ -357,32 +422,28 @@ export default function Guidance() {
 											) }
 											<Button
 												variant="link"
+												size="sm"
 												onClick={ () =>
 													setDrawerSkill( skill )
 												}
 											>
 												{ __( 'View', 'saddle' ) }
 											</Button>
-											{ ! skill.builtin && (
-												<Button
-													variant="link"
-													className="saddle-link-danger"
-													onClick={ () =>
-														removeSkill( skill )
-													}
-												>
-													{ __( 'Delete', 'saddle' ) }
-												</Button>
-											) }
 										</>
 									}
 								/>
 							) ) }
 						</RowList>
 					) : (
-						<p className="saddle-context__empty">
-							{ __( 'No skills yet.', 'saddle' ) }
-						</p>
+						<RowList>
+							<Row
+								title={
+									<span className="saddle-apps__empty">
+										{ __( 'No skills yet.', 'saddle' ) }
+									</span>
+								}
+							/>
+						</RowList>
 					) }
 				</div>
 			</section>
@@ -441,7 +502,18 @@ export default function Guidance() {
 				size="lg"
 			>
 				{ drawerSkill && (
-					<CodeBlock code={ drawerSkill.body } copy={ false } />
+					<>
+						<CodeBlock code={ drawerSkill.body } copy={ false } />
+						{ ! drawerSkill.builtin && (
+							<Button
+								variant="link"
+								className="saddle-link-danger saddle-guide__delete"
+								onClick={ () => removeSkill( drawerSkill ) }
+							>
+								{ __( 'Delete this skill', 'saddle' ) }
+							</Button>
+						) }
+					</>
 				) }
 			</Drawer>
 		</div>

@@ -253,7 +253,7 @@ class Saddle_Integrations {
 			}
 			$lines[] = sprintf(
 				/* translators: %s: plugin name. */
-				__( '- %s is installed, but the site owner has not switched on its tools. If they are needed, tell the user they can turn it on under Saddle → Integrations.', 'saddle' ),
+				__( '- %s is installed, but the site owner has not switched on its tools. If they are needed, tell the user they can turn it on under Saddle → Settings.', 'saddle' ),
 				$row['title']
 			);
 		}

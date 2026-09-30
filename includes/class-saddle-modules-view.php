@@ -91,10 +91,10 @@ class Saddle_Modules_View {
 		}
 
 		$core = array(
-			'home'        => __( 'What your connected apps have been doing, and what is left to set up.', 'saddle' ),
-			'connections' => __( 'Connect apps, and choose what they are allowed to do.', 'saddle' ),
+			'home'        => __( 'Whether AI access is on, what your connected apps have been doing, and what is left to set up.', 'saddle' ),
+			'connections' => __( 'The AI apps connected to this site: connect another, and choose what each may do.', 'saddle' ),
 			'context'     => __( 'What every connected app knows about this site: your instructions, skills and memory.', 'saddle' ),
-			'settings'    => __( 'Memory limits, recent changes and the site address check.', 'saddle' ),
+			'settings'    => __( 'Safety switches, services, single tools, sign-in and the connection check.', 'saddle' ),
 		);
 
 		return isset( $core[ $key ] )
@@ -119,7 +119,7 @@ class Saddle_Modules_View {
 
 	/**
 	 * How many tools an area owns, and how many of them this user can call
-	 * now. A module owns `saddle/{key}-*`; Home owns the rest of Saddle's own.
+	 * now. A module owns `saddle/{key}-*`; Dashboard owns the rest of Saddle's own.
 	 *
 	 * @param string $key    Area key.
 	 * @param bool   $module Whether it is a module.

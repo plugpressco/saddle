@@ -133,9 +133,9 @@ export const shortLabel = ( entry ) => {
 };
 
 const TIER_NAMES = {
-	read: __( 'Reading', 'saddle' ),
-	write: __( 'Writing', 'saddle' ),
-	admin: __( 'Admin', 'saddle' ),
+	read: __( 'Read only', 'saddle' ),
+	write: __( 'Edit content', 'saddle' ),
+	admin: __( 'Manage the site', 'saddle' ),
 };
 
 /**

@@ -508,24 +508,11 @@ class Saddle_MCP_Diagnostics {
 		$tier      = Saddle_Capabilities::get_tier();
 		$problems  = array();
 
-		if ( $tier !== $site_tier ) {
-			$problems[] = array(
-				'code'    => 'scope_below_site_tier',
-				'message' => sprintf(
-					/* translators: 1: this connection's access level, 2: the site's access level. */
-					__( 'This app signed in with "%1$s" access, below the "%2$s" access the site allows, so some tools are withheld from it.', 'saddle' ),
-					$tier,
-					$site_tier
-				),
-				'fix'     => __( 'Reconnect the app and approve the wider access on the consent screen.', 'saddle' ),
-			);
-		}
-
 		if ( Saddle_Capabilities::is_domain_enforced() && ! Saddle_Capabilities::domain_matches_recorded() ) {
 			$problems[] = array(
 				'code'    => 'site_address_changed',
 				'message' => __( 'The site\'s address changed since write access was granted, and the owner turned on domain enforcement, so every write tool is refused.', 'saddle' ),
-				'fix'     => __( 'The owner re-confirms the access level in Saddle → Permissions.', 'saddle' ),
+				'fix'     => __( 'The owner re-confirms this app\'s access in Saddle → AI apps, or turns the domain check off in Saddle → Settings.', 'saddle' ),
 			);
 		}
 

@@ -1,7 +1,7 @@
 <?php
 /**
  * The Saddle admin as WordPress pages (#274): one menu, a submenu per page,
- * modules between Home and the two configuration pages, the page and tab
+ * modules between Dashboard and the two configuration pages, the page and tab
  * handed to the app, and assets only on Saddle's own screens.
  *
  * @package Saddle
@@ -91,8 +91,8 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 
 		$this->assertSame(
 			array(
-				'saddle'             => 'Home',
-				'saddle-connections' => 'Connections',
+				'saddle'             => 'Dashboard',
+				'saddle-connections' => 'AI apps',
 				'saddle-context'     => 'Context',
 				'saddle-settings'    => 'Settings',
 			),
@@ -113,7 +113,7 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 
 	/**
 	 * Saddle Rank adds its own submenu at priority 20, after Core's items. It
-	 * still lands between Home and Connections.
+	 * still lands between Dashboard and AI apps.
 	 */
 	public function test_a_sibling_that_adds_its_own_item_still_lands_before_connections() {
 		Saddle_Settings::register_menu();
@@ -196,10 +196,10 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 
 	public static function routes() {
 		return array(
-			'Home'                       => array( 'saddle', null, 'home', 'overview' ),
-			'Home, Activity'             => array( 'saddle', 'activity', 'home', 'activity' ),
-			'Connections'                => array( 'saddle-connections', null, 'connections', 'apps' ),
-			'Connections, Permissions'   => array( 'saddle-connections', 'permissions', 'connections', 'permissions' ),
+			'Dashboard'                  => array( 'saddle', null, 'home', 'overview' ),
+			'Dashboard, Activity'        => array( 'saddle', 'activity', 'home', 'activity' ),
+			'AI apps'                    => array( 'saddle-connections', null, 'connections', 'apps' ),
+			'AI apps, an old Permissions link' => array( 'saddle-connections', 'permissions', 'connections', 'apps' ),
 			'Context'                    => array( 'saddle-context', null, 'context', 'overview' ),
 			'Settings'                   => array( 'saddle-settings', null, 'settings', 'general' ),
 			'an old Advanced link'       => array( 'saddle-settings', 'advanced', 'settings', 'general' ),
@@ -211,8 +211,15 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 	public function test_urls_leave_the_first_tab_out() {
 		$this->assertSame( admin_url( 'admin.php?page=saddle' ), Saddle_Modules::url( 'home' ) );
 		$this->assertSame( admin_url( 'admin.php?page=saddle' ), Saddle_Modules::url( 'home', 'overview' ) );
-		$this->assertSame( admin_url( 'admin.php?page=saddle-connections&tab=permissions' ), Saddle_Modules::url( 'connections', 'permissions' ) );
+		$this->assertSame( admin_url( 'admin.php?page=saddle&tab=activity' ), Saddle_Modules::url( 'home', 'activity' ) );
+		$this->assertSame( admin_url( 'admin.php?page=saddle-connections' ), Saddle_Modules::url( 'connections', 'permissions' ) );
 		$this->assertSame( admin_url( 'admin.php?page=saddle-context' ), Saddle_Modules::url( 'context', 'nope' ) );
+	}
+
+	public function test_an_old_permissions_link_goes_to_ai_apps() {
+		$this->assertSame( Saddle_Modules::url( 'connections' ), Saddle_Settings::legacy_target( 'saddle-connections', 'permissions' ) );
+		$this->assertSame( '', Saddle_Settings::legacy_target( 'saddle-connections', '' ) );
+		$this->assertSame( '', Saddle_Settings::legacy_target( 'saddle', 'permissions' ) );
 	}
 
 	/* --------------------------------------------------------------- assets */
@@ -224,7 +231,7 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		$this->assertFalse( wp_script_is( 'saddle-admin', 'enqueued' ) );
 
 		$_GET['page'] = 'saddle-connections';
-		$_GET['tab']  = 'permissions';
+		$_GET['tab']  = 'activity';
 		Saddle_Settings::enqueue_assets( get_plugin_page_hookname( 'saddle-connections', 'saddle' ) );
 		$this->assertTrue( wp_script_is( 'saddle-admin', 'enqueued' ) );
 
@@ -235,13 +242,15 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		$saddle = json_decode( $match[1], true );
 
 		$this->assertSame( 'connections', $saddle['area'] );
-		$this->assertSame( 'permissions', $saddle['tab'] );
+		$this->assertSame( 'apps', $saddle['tab'] );
 		$this->assertSame( array( 'home', 'connections', 'context', 'settings' ), array_column( $saddle['areas'], 'key' ) );
 		$this->assertSame( 2, $saddle['shellVersion'] );
 
 		$connections = $saddle['areas'][1];
-		$this->assertSame( array( 'apps', 'permissions' ), array_column( $connections['tabs'], 'key' ) );
-		$this->assertSame( admin_url( 'admin.php?page=saddle-connections&tab=permissions' ), $connections['tabs'][1]['url'] );
+		$this->assertSame( array( 'apps' ), array_column( $connections['tabs'], 'key' ) );
+		$this->assertSame( 'AI apps', $connections['title'] );
+		$this->assertSame( array( 'overview', 'activity' ), array_column( $saddle['areas'][0]['tabs'], 'key' ) );
+		$this->assertSame( 'Dashboard', $saddle['areas'][0]['title'] );
 	}
 
 	public function test_a_modules_own_script_loads_on_its_page() {

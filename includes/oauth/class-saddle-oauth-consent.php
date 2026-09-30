@@ -119,20 +119,9 @@ class Saddle_OAuth_Consent {
 		}
 		echo '</p>';
 
-		// The clamp, shown before the decision rather than discovered later as a
-		// string of refusals. The site tier always wins.
-		$site_tier  = Saddle_Capabilities::get_site_tier();
-		$asked_tier = Saddle_OAuth::scope_to_tier( (string) $pending['scope'] );
-		if ( Saddle_Capabilities::rank( $asked_tier ) > Saddle_Capabilities::rank( $site_tier ) ) {
-			$asked_tier = $site_tier;
-			echo '<p><strong>' . esc_html(
-				sprintf(
-					/* translators: %s: the site's current access level. */
-					__( 'This site is set to “%s”, so the app will only get that much no matter what it asked for.', 'saddle' ),
-					$site_tier
-				)
-			) . '</strong></p>';
-		}
+		// A new app starts read-only. The owner raises it here, per app; no
+		// site-wide level caps the choice any more.
+		$asked_tier = 'read';
 
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
 		wp_nonce_field( self::ACTION . '_' . $request_id );
@@ -140,14 +129,13 @@ class Saddle_OAuth_Consent {
 		echo '<input type="hidden" name="saddle_req" value="' . esc_attr( $request_id ) . '">';
 
 		// The choice is the owner's, not the app's. Most apps ask for a level;
-		// some — ChatGPT among them — ask for nothing at all and used to be pinned
-		// to read forever as a result. Either way this screen decides, and it can
-		// never offer more than the site's own level.
+		// some — ChatGPT among them — ask for nothing at all. Either way this
+		// screen decides, and read is the pre-selected answer.
 		echo '<h2>' . esc_html__( 'What it will be able to do', 'saddle' ) . '</h2>';
-		echo '<p>' . esc_html__( 'You choose. This is the most this app will ever be able to do, and you can change it later from Saddle → Apps.', 'saddle' ) . '</p>';
+		echo '<p>' . esc_html__( 'You choose. This is the most this app will ever be able to do, and you can change it later from Saddle → AI apps.', 'saddle' ) . '</p>';
 
 		echo '<ul style="list-style:none;margin:0 0 1.5em">';
-		foreach ( self::level_choices( $site_tier ) as $tier => $choice ) {
+		foreach ( self::level_choices() as $tier => $choice ) {
 			printf(
 				'<li style="margin-bottom:.75em"><label><input type="radio" name="saddle_level" value="%1$s"%2$s> <strong>%3$s</strong><br><span style="margin-left:1.9em">%4$s</span></label></li>',
 				esc_attr( $tier ),
@@ -166,7 +154,7 @@ class Saddle_OAuth_Consent {
 			)
 		) . '</p>';
 
-		echo '<p>' . esc_html__( 'Deletions and overwrites will still show you a preview and ask for confirmation every time. You can disconnect this app at any point from Saddle → Apps.', 'saddle' ) . '</p>';
+		echo '<p>' . esc_html__( 'Deletions and overwrites will still show you a preview and ask for confirmation every time. You can disconnect this app at any point from Saddle → AI apps.', 'saddle' ) . '</p>';
 
 		echo '<p>' . esc_html(
 			sprintf(
@@ -186,18 +174,16 @@ class Saddle_OAuth_Consent {
 	}
 
 	/**
-	 * The access levels this site can offer an app, most limited first.
+	 * The access levels an app can be given, most limited first.
 	 *
-	 * Capped at the site's own level, because the consent screen must not offer
-	 * something the tier system would then refuse — a choice that silently does
-	 * nothing is worse than no choice at all. The wording matches the Permissions
-	 * screen (`admin/src/api.js`) deliberately: the same three levels described
-	 * two different ways is how an owner ends up unsure which one they picked.
+	 * All three are offered: access is per app now, so no site-wide level caps
+	 * the choice. The wording matches the AI apps page on purpose: the same
+	 * three levels described two different ways is how an owner ends up unsure
+	 * which one they picked.
 	 *
-	 * @param string $site_tier The site's configured tier.
 	 * @return array<string,array{title:string,summary:string}>
 	 */
-	private static function level_choices( $site_tier ) {
+	private static function level_choices() {
 		$all = array(
 			'read'  => array(
 				'title'   => __( 'Just reading', 'saddle' ),
@@ -213,14 +199,7 @@ class Saddle_OAuth_Consent {
 			),
 		);
 
-		$offered = array();
-		foreach ( $all as $tier => $choice ) {
-			if ( Saddle_Capabilities::rank( $tier ) <= Saddle_Capabilities::rank( $site_tier ) ) {
-				$offered[ $tier ] = $choice;
-			}
-		}
-
-		return $offered;
+		return $all;
 	}
 
 	/**
@@ -255,20 +234,12 @@ class Saddle_OAuth_Consent {
 			);
 		}
 
-		// The level the owner picked, never trusted as it arrives. An unknown name
-		// falls back to what the client asked for, and anything above the site's
-		// own level is clamped down to it — the same ceiling that applies at call
-		// time, applied here so the grant can never encode a promise the tier
-		// system will refuse to keep.
-		$site_tier = Saddle_Capabilities::get_site_tier();
-		$level     = isset( $_POST['saddle_level'] ) ? sanitize_key( wp_unslash( (string) $_POST['saddle_level'] ) ) : '';
+		// The level the owner picked, never trusted as it arrives. An unknown
+		// name means read: the safe answer, not what the client asked for.
+		$level = isset( $_POST['saddle_level'] ) ? sanitize_key( wp_unslash( (string) $_POST['saddle_level'] ) ) : '';
 
-		if ( ! in_array( $level, Saddle_Capabilities::tiers(), true ) ) {
-			$level = Saddle_OAuth::scope_to_tier( (string) $pending['scope'] );
-		}
-
-		if ( Saddle_Capabilities::rank( $level ) > Saddle_Capabilities::rank( $site_tier ) ) {
-			$level = $site_tier;
+		if ( ! in_array( $level, Saddle_Access::ROLES, true ) ) {
+			$level = 'read';
 		}
 
 		$scope = Saddle_OAuth::tier_to_scope( $level );

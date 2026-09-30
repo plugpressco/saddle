@@ -86,7 +86,7 @@ class Saddle_Rehearsal {
 			'rehearsal' => true,
 			'tool'      => $name,
 			'would'     => $input,
-			'note'      => __( 'Rehearsal mode is on, so nothing was saved and nothing changed. "would" is the call as received. Tell the user what this would have changed. Don’t retry: the site owner turns rehearsal off in Saddle → Permissions when they want changes to land.', 'saddle' ),
+			'note'      => __( 'Rehearsal mode is on, so nothing was saved and nothing changed. "would" is the call as received. Tell the user what this would have changed. Don’t retry: the site owner turns rehearsal off in Saddle → Settings when they want changes to land.', 'saddle' ),
 		);
 		$current = self::current( $input );
 		if ( $current ) {

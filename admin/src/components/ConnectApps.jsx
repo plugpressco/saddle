@@ -1,10 +1,12 @@
 /**
- * Connections → Apps: connect an AI app to this site (#274).
+ * AI apps → "Connect an app": the picker, in a drawer (#285).
  *
- * Laid out like the hosted MCP pages people already know (one address, the
- * apps down the side, the steps for the one you pick), but it is the site's
- * own way: the address is this site's, and the app is approved on this
- * site's own screen. Nothing goes through anyone else's server.
+ * The tiles, grouped by where you use the AI; then, in their place, the
+ * short steps for the one you pick; then a line that
+ * says the moment it connects. It is the site's own way: the address is this
+ * site's, and the app is approved on this site's own screen. Nothing goes
+ * through anyone else's server. The address is one quiet line on the page
+ * itself.
  *
  * The address path needs "sign-in for apps" (off by default, one labelled
  * click to turn on). Without it, or for an app that only takes a key, the
@@ -14,22 +16,18 @@
  * `/connections/pulse` and says the moment that app connects.
  */
 import { useState, useEffect, useRef } from '@wordpress/element';
-import {
-	Badge,
-	Button,
-	Card,
-	CardContent,
-	CodeBlock,
-	CopyButton,
-	HelpTip,
-	Notice,
-	StatusDot,
-} from '@plugpress/ui';
+import { Button, CodeBlock, Notice, StatusDot } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
-import { api } from '../api';
-import { APPS, MCP_URL, buildConfig, installLinks } from '../connect-apps';
+import { api, saddleData } from '../api';
+import {
+	APPS,
+	APP_GROUPS,
+	MCP_URL,
+	buildConfig,
+	installLinks,
+} from '../connect-apps';
 import { AppLogo } from './icons';
-import SectionHeader from './SectionHeader';
+import { areaUrl } from '../routes';
 
 // A site on this computer: web apps (their servers) cannot reach it.
 const IS_LOCAL = /(?:localhost|127\.0\.0\.1|\.test|\.local)(?::|\/|$)/i.test(
@@ -119,15 +117,83 @@ function usePulse( active, onConnected ) {
 }
 
 /**
+ * The app tiles, in three groups (chat apps, agents, code editors), and
+ * "Any MCP app" as a quiet link under them. First run shows the same grid.
+ *
+ * @param {Object}   props
+ * @param {Function} props.onPick    Called with an app key.
+ * @param {Set}      props.connected App keys that already have a connection.
+ */
+export function AppGrid( { onPick, connected = new Set() } ) {
+	return (
+		<div id="saddle-connect-apps" className="saddle-connect__groups">
+			{ APP_GROUPS.map( ( g ) => (
+				<div key={ g.key } className="saddle-connect__group">
+					<h3
+						className="saddle-connect__group-title"
+						id={ `saddle-apps-${ g.key }` }
+					>
+						{ g.label }
+					</h3>
+					<div
+						className="saddle-connect__apps"
+						role="group"
+						aria-labelledby={ `saddle-apps-${ g.key }` }
+					>
+						{ g.apps.map( ( key ) => (
+							<button
+								key={ key }
+								type="button"
+								className="saddle-connect__app"
+								onClick={ () => onPick( key ) }
+							>
+								<AppLogo app={ key } />
+								<span className="saddle-connect__app-label">
+									{ labelFor( key ) }
+								</span>
+								{ connected.has( key ) && (
+									<StatusDot
+										tone="success"
+										aria-label={ __(
+											'Connected',
+											'saddle'
+										) }
+									/>
+								) }
+							</button>
+						) ) }
+					</div>
+				</div>
+			) ) }
+			<p className="saddle-connect__other">
+				{ __( 'Not listed?', 'saddle' ) }{ ' ' }
+				<Button variant="link" onClick={ () => onPick( 'other' ) }>
+					{ __( 'Connect any MCP app', 'saddle' ) }
+				</Button>
+			</p>
+		</div>
+	);
+}
+
+/**
  * @param {Object}   props
  * @param {Object}   props.oauth       The sign-in settings (SignInCard's hook),
  *                                     or null while they load. The switch
  *                                     itself is the card further down.
  * @param {Function} props.onKey       Open the key setup for an app key.
  * @param {Function} props.onConnected Called when a new app connects.
+ * @param {string}   props.initialApp  An app to start on (`&add=<app>`).
  */
-export default function ConnectApps( { oauth, onKey, onConnected } ) {
-	const [ selected, setSelected ] = useState( 'claude' );
+export default function ConnectApps( {
+	oauth,
+	onKey,
+	onConnected,
+	initialApp = null,
+} ) {
+	// Nothing is picked until the owner picks: no steps, warnings or code yet.
+	const [ selected, setSelected ] = useState(
+		APPS.some( ( a ) => a.key === initialApp ) ? initialApp : null
+	);
 	const [ connections, setConnections ] = useState( [] );
 
 	const loadConnections = () =>
@@ -139,10 +205,10 @@ export default function ConnectApps( { oauth, onKey, onConnected } ) {
 		loadConnections();
 	}, [] );
 
-	const app = APPS.find( ( a ) => a.key === selected ) || APPS[ 0 ];
+	const app = APPS.find( ( a ) => a.key === selected ) || null;
 	const signInOn = !! ( oauth && oauth.enabled );
-	const byAddress = signInOn && app.viaAddress;
-	const unreachable = IS_LOCAL && WEB_APPS.includes( app.key );
+	const byAddress = !! app && signInOn && app.viaAddress;
+	const unreachable = !! app && IS_LOCAL && WEB_APPS.includes( app.key );
 
 	const arrived = usePulse( byAddress && ! unreachable, () => {
 		loadConnections();
@@ -151,131 +217,67 @@ export default function ConnectApps( { oauth, onKey, onConnected } ) {
 		}
 	} );
 
-	// There is one sign-in switch on this page, in the card below the apps.
-	// This hint points the owner at it rather than repeating it.
-	const showSignIn = () => {
-		const card = document.getElementById( 'saddle-signin' );
-		const control = document.getElementById( 'saddle-oauth-switch' );
-		if ( card ) {
-			card.scrollIntoView( { block: 'center' } );
-		}
-		if ( control ) {
-			control.focus();
-		}
-	};
+	// The sign-in switch lives in Settings → Advanced.
+	const settingsUrl = areaUrl( saddleData.areas || [], 'settings' );
 
 	const connectedApps = new Set( connections.map( ( c ) => c.app ) );
-	const count = connections.filter( ( c ) => c.first_seen_at ).length;
 
 	const config = byAddress ? buildConfig( app.key, null, 'address' ) : '';
 	const links = byAddress ? installLinks( app.key, null, 'address' ) : [];
 
+	const pick = ( key ) => setSelected( key );
+
 	return (
-		<section className="saddle-section saddle-connect" id="saddle-connect">
-			<SectionHeader
-				title={
-					<span className="saddle-connect__title">
-						{ __( 'Connect an app', 'saddle' ) }
-						<HelpTip>
-							{ __(
-								'Claude, ChatGPT, Cursor and other AI apps connect with this site’s own address, and you approve each one here. Nothing goes through anyone else’s server.',
-								'saddle'
-							) }
-						</HelpTip>
-						{ count > 0 ? (
-							<Badge tone="success">
-								{ sprintf(
-									/* translators: %d: number of connected apps. */
-									__( '%d connected', 'saddle' ),
-									count
-								) }
-							</Badge>
-						) : (
-							<Badge>{ __( 'Not connected', 'saddle' ) }</Badge>
-						) }
-					</span>
-				}
-			/>
+		<div className="saddle-connect" id="saddle-connect">
+			{ ! app && <AppGrid onPick={ pick } connected={ connectedApps } /> }
 
-			<Card>
-				<CardContent className="saddle-connect__address">
-					<span className="saddle-connect__label">
-						{ __( 'This site’s MCP address', 'saddle' ) }
-					</span>
-					<div className="saddle-connect__url">
-						<code>{ MCP_URL }</code>
-						<CopyButton
-							value={ MCP_URL }
-							size="sm"
-							variant="secondary"
-						/>
-					</div>
-				</CardContent>
-			</Card>
-
-			{ oauth && ! signInOn && (
-				<Notice tone="info">
-					{ oauth.ready
-						? __(
-								'Sign-in for apps is off, so apps connect with a key. Turn it on to connect with the address alone.',
-								'saddle'
-						  )
-						: __(
-								'This site can’t use sign-in for apps yet: it needs HTTPS and a permalink setting other than Plain. Apps connect with a key instead.',
-								'saddle'
-						  ) }
-					{ oauth.ready && (
-						<span className="saddle-notice__actions">
-							<Button
-								variant="secondary"
-								size="sm"
-								onClick={ showSignIn }
-							>
-								{ __( 'Go to the sign-in setting', 'saddle' ) }
-							</Button>
-						</span>
-					) }
-				</Notice>
-			) }
-
-			<div className="saddle-connect__picker">
-				<div
-					className="saddle-connect__apps"
-					role="listbox"
-					aria-label={ __( 'AI apps', 'saddle' ) }
-				>
-					{ APPS.map( ( a ) => (
-						<button
-							key={ a.key }
-							type="button"
-							role="option"
-							aria-selected={ a.key === app.key }
-							className="saddle-connect__app"
-							onClick={ () => setSelected( a.key ) }
-						>
-							<AppLogo app={ a.key } />
-							<span className="saddle-connect__app-label">
-								{ a.label }
-							</span>
-							{ connectedApps.has( a.key ) && (
-								<StatusDot
-									tone="success"
-									aria-label={ __( 'Connected', 'saddle' ) }
-								/>
-							) }
-						</button>
-					) ) }
-				</div>
-
+			{ app && (
 				<div className="saddle-connect__steps">
-					<h3 className="saddle-connect__steps-title">
-						<AppLogo app={ app.key } />
-						{ sprintf(
-							/* translators: %s: app name, such as Claude. */
-							__( 'Connect %s', 'saddle' ),
-							app.label
-						) }
-					</h3>
+					<div className="saddle-connect__steps-head">
+						<h3 className="saddle-connect__steps-title">
+							<AppLogo app={ app.key } />
+							{ sprintf(
+								/* translators: %s: app name, such as Claude. */
+								__( 'Connect %s', 'saddle' ),
+								app.label
+							) }
+						</h3>
+						<Button
+							variant="link"
+							size="sm"
+							onClick={ () => setSelected( null ) }
+						>
+							{ __( 'All apps', 'saddle' ) }
+						</Button>
+					</div>
+
+					{ oauth && ! signInOn && app.viaAddress && (
+						<Notice tone="info">
+							{ oauth.ready
+								? __(
+										'Sign-in for apps is off, so apps connect with a key. Turn it on to connect with the address alone.',
+										'saddle'
+								  )
+								: __(
+										'This site can’t use sign-in for apps yet: it needs HTTPS and a permalink setting other than Plain. Apps connect with a key instead.',
+										'saddle'
+								  ) }
+							{ oauth.ready && (
+								<span className="saddle-notice__actions">
+									<Button
+										variant="secondary"
+										size="sm"
+										href={ settingsUrl }
+									>
+										{ __(
+											'Go to the sign-in setting',
+											'saddle'
+										) }
+									</Button>
+								</span>
+							) }
+						</Notice>
+					) }
 
 					{ unreachable && (
 						<Notice tone="warning">
@@ -409,7 +411,13 @@ export default function ConnectApps( { oauth, onKey, onConnected } ) {
 						</Button>
 					) }
 				</div>
-			</div>
-		</section>
+			) }
+			<p className="saddle-connect__note">
+				{ __(
+					'It starts at Read only. You can change that in the list.',
+					'saddle'
+				) }
+			</p>
+		</div>
 	);
 }

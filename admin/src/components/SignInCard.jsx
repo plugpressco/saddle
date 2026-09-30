@@ -5,7 +5,14 @@
  * switches all sit here; nothing else on the page flips them.
  */
 import { useState, useEffect, useCallback } from '@wordpress/element';
-import { Switch, RowList, Row, Badge, HelpTip } from '@plugpress/ui';
+import {
+	Switch,
+	RowList,
+	Row,
+	Badge,
+	HelpTip,
+	Collapsible,
+} from '@plugpress/ui';
 import { __ } from '@wordpress/i18n';
 import { api } from '../api';
 import SectionHeader from './SectionHeader';
@@ -156,8 +163,14 @@ export default function SignInCard( { oauth, saving, error, save } ) {
 						/>
 					}
 				/>
-				{ oauth?.enabled && (
-					<>
+			</RowList>
+
+			{ oauth?.enabled && (
+				<Collapsible
+					className="saddle-signin__advanced"
+					trigger={ __( 'Advanced sign-in options', 'saddle' ) }
+				>
+					<RowList>
 						<Row
 							title={
 								<Labelled
@@ -231,9 +244,9 @@ export default function SignInCard( { oauth, saving, error, save } ) {
 								/>
 							}
 						/>
-					</>
-				) }
-			</RowList>
+					</RowList>
+				</Collapsible>
+			) }
 
 			{ error && <p className="saddle-settings__note">{ error }</p> }
 		</section>

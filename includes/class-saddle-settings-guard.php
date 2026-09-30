@@ -21,6 +21,8 @@ class Saddle_Settings_Guard {
 	 */
 	const PROTECTED_OPTIONS = array(
 		'saddle_access_tier',
+		'saddle_key_roles',
+		'saddle_access_version',
 		'saddle_paused',
 		'saddle_rehearsal',
 		'saddle_drafts_only',

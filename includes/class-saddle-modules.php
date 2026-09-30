@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * One list of every Saddle admin page, so one code path draws them all.
  *
- * Core has four pages: Home, Connections, Context and Settings. A sibling plugin
+ * Core has four pages: Dashboard, AI apps, Context and Settings. A sibling plugin
  * (Analytics, SEO, CRM) joins through the `saddle_modules` filter under the
  * same key it uses for `saddle_integrations`, and gets a submenu page at
  * `admin.php?page=saddle-{key}` with Core's frame around its content. A
@@ -32,9 +32,11 @@ class Saddle_Modules {
 	/**
 	 * Core's pages, in menu order around the modules.
 	 *
-	 * Context was Settings → Guidance until Fahim's 2026-09-30 review ("guidance
-	 * page make it context page"): what every connected app knows about the
-	 * site is a page of its own, not a tab of the rarely-used Settings.
+	 * Named by Fahim on 2026-10-01 (#285): Dashboard, AI apps, Context and
+	 * Settings, one job each; only Dashboard has tabs. The area keys and slugs
+	 * are older than the names (`home`, `connections`) and stay, because agent
+	 * tools and browser hooks carry them. Access is chosen per app on the AI
+	 * apps page, so there is no Permissions page or tab any more.
 	 *
 	 * @return array<string,array>
 	 */
@@ -42,7 +44,7 @@ class Saddle_Modules {
 		return array(
 			'home'        => array(
 				'slug'  => 'saddle',
-				'title' => __( 'Home', 'saddle' ),
+				'title' => __( 'Dashboard', 'saddle' ),
 				'tabs'  => array(
 					'overview' => __( 'Overview', 'saddle' ),
 					'activity' => __( 'Activity', 'saddle' ),
@@ -50,10 +52,9 @@ class Saddle_Modules {
 			),
 			'connections' => array(
 				'slug'  => 'saddle-connections',
-				'title' => __( 'Connections', 'saddle' ),
+				'title' => __( 'AI apps', 'saddle' ),
 				'tabs'  => array(
-					'apps'        => __( 'Apps', 'saddle' ),
-					'permissions' => __( 'Permissions', 'saddle' ),
+					'apps' => __( 'AI apps', 'saddle' ),
 				),
 			),
 			'context'     => array(
@@ -144,7 +145,7 @@ class Saddle_Modules {
 	}
 
 	/**
-	 * Every page, in menu order: Home, the modules, Connections, Context,
+	 * Every page, in menu order: Dashboard, the modules, AI apps, Context,
 	 * Settings.
 	 *
 	 * @return array<string,array> Keyed by area; each has `slug`, `title`,

@@ -1,27 +1,27 @@
 /**
- * Home → Overview: what your AI can do right now, and nothing more.
+ * Dashboard → Overview: is AI on, and what has it been doing.
  *
- * Top to bottom: a Status block (access level, AI access, connected apps, and
- * a fourth row only when connections are broken), the Setup section while it
- * is unfinished, the connected apps, the latest activity, and the modules.
- * Each block is a short list of rows with one link to where the thing is
- * changed; the full record lives on Connections and Activity.
+ * Top to bottom: a Status block (the AI access switch, the connected apps
+ * and a third row only when connections are broken), the slot where "Needs
+ * your OK" sits, the Setup section while it is unfinished, the five latest
+ * things the apps did, and the modules when any are installed. What each app
+ * may do is chosen on AI apps, not here.
  */
 import { useState, useEffect } from '@wordpress/element';
-import { Button, Row, RowList, StatusDot } from '@plugpress/ui';
-import { __, sprintf } from '@wordpress/i18n';
-import { api, levelFor } from '../api';
+import { Badge, Button, Row, RowList, StatusDot, Switch } from '@plugpress/ui';
+import { __ } from '@wordpress/i18n';
+import { api } from '../api';
 import { APPS } from '../connect-apps';
-import { parseModules } from '../onboarding-logic';
+import { parseModules, setupBlock } from '../onboarding-logic';
 import SetupBlock from './SetupBlock';
+import NeedsYourOk from './NeedsYourOk';
 import SectionHeader from './SectionHeader';
 import { actionLabel, parseEntryDate, relativeWhen } from '../activity-format';
 
 // Rows each list shows; the full record lives on its own screen.
-const APP_ROWS = 4;
 const ACTIVITY_ROWS = 5;
 
-// Session cache for the connection self-check so re-opening Home doesn't
+// Session cache for the connection self-check so re-opening the Dashboard doesn't
 // re-run the loopback probe. Reset on full reload, which is the right
 // granularity.
 let healthCache = null;
@@ -38,25 +38,6 @@ function connectionLabel( c ) {
 	return ( app && app.label ) || c.name || c.client;
 }
 
-/**
- * "Address · 2 hours ago": how the app signs in, and when it last did
- * anything.
- *
- * @param {Object} c A row from GET /connections.
- * @return {string} One line.
- */
-function connectionMeta( c ) {
-	const how =
-		'oauth' === c.kind ? __( 'Address', 'saddle' ) : __( 'Key', 'saddle' );
-	const last = c.last_tool_at || c.last_seen_at;
-	return [
-		how,
-		last
-			? relativeWhen( new Date( last * 1000 ) )
-			: __( 'Not used yet', 'saddle' ),
-	].join( ' · ' );
-}
-
 const STATE_TONE = {
 	ready: 'success',
 	'needs-setup': 'warning',
@@ -64,35 +45,12 @@ const STATE_TONE = {
 	off: 'neutral',
 };
 
-/**
- * A row whose right side is a value and the link that changes it.
- *
- * @param {Object}   props
- * @param {*}        props.title   Label.
- * @param {*}        props.value   Current value.
- * @param {string}   props.link    Link text.
- * @param {Function} props.onClick Called when the link is used.
- */
-function StatusRow( { title, value, link, onClick } ) {
-	return (
-		<Row
-			title={ title }
-			actions={
-				<>
-					<span className="saddle-home__value">{ value }</span>
-					<Button variant="link" size="sm" onClick={ onClick }>
-						{ link }
-					</Button>
-				</>
-			}
-		/>
-	);
-}
-
 export default function Dashboard( {
 	tier,
 	clients,
 	paused,
+	pausing,
+	onTogglePause,
 	caps,
 	onNavigate,
 	onConnect,
@@ -125,7 +83,8 @@ export default function Dashboard( {
 		};
 	}, [] );
 
-	useEffect( () => {
+	// Also re-run after an approve or reject, so the decision shows at once.
+	const loadActivity = () =>
 		api( `audit-log?per_page=${ ACTIVITY_ROWS }` )
 			.then( ( res ) =>
 				setActivity( {
@@ -134,13 +93,16 @@ export default function Dashboard( {
 				} )
 			)
 			.catch( () => setActivity( { enabled: false, entries: [] } ) );
+
+	useEffect( () => {
+		loadActivity();
 	}, [] );
 
 	useEffect( () => {
 		if ( healthCache ) {
 			return; // Already probed this session.
 		}
-		// Runs the loopback header probe once; Home never waits on it.
+		// Runs the loopback header probe once; the Dashboard never waits on it.
 		api( 'self-check' )
 			.then( ( res ) => {
 				healthCache = { status: res.status || 'unknown' };
@@ -176,48 +138,68 @@ export default function Dashboard( {
 			? activity.entries.slice( 0, ACTIVITY_ROWS )
 			: [];
 
-	const toPermissions = () => onNavigate( 'permissions' );
+	// Setup's first row already offers "Connect" while it shows and nothing is
+	// connected, so the status row stays quiet then.
+	const setupShowing =
+		Array.isArray( connections ) &&
+		!! areas &&
+		!! onboarding &&
+		setupBlock( { connections, onboarding, tier, areas } ).visible;
+	const hideConnect = setupShowing && 0 === names.length;
+
 	const toApps = () => onNavigate( 'connect' );
+	const toSettings = () => onNavigate( { area: 'settings', tab: 'general' } );
 
 	return (
 		<>
 			<section className="saddle-stack">
 				<RowList>
-					<StatusRow
-						title={ __( 'Access level', 'saddle' ) }
-						value={ levelFor( tier ).title }
-						link={ __( 'Change', 'saddle' ) }
-						onClick={ toPermissions }
-					/>
-					<StatusRow
+					<Row
 						title={ __( 'AI access', 'saddle' ) }
-						value={
+						description={
 							paused
-								? __( 'Paused', 'saddle' )
-								: __( 'Active', 'saddle' )
+								? __(
+										'Paused. Every app is stopped until you turn it back on.',
+										'saddle'
+								  )
+								: __(
+										'On. Your apps can work within their access.',
+										'saddle'
+								  )
 						}
-						link={ __( 'Change', 'saddle' ) }
-						onClick={ toPermissions }
+						actions={
+							<Switch
+								id="saddle-ai-switch"
+								checked={ ! paused }
+								disabled={ pausing }
+								onChange={ onTogglePause }
+								aria-label={ __( 'AI access', 'saddle' ) }
+							/>
+						}
 					/>
 					{ apps && (
-						<StatusRow
+						<Row
 							title={ __( 'Connected apps', 'saddle' ) }
-							value={
+							description={
 								names.length
-									? sprintf(
-											/* translators: 1: number of apps, 2: their names. */
-											__( '%1$d · %2$s', 'saddle' ),
-											names.length,
-											names.join( ', ' )
-									  )
+									? names.join( ', ' )
 									: __( 'None yet', 'saddle' )
 							}
-							link={
-								names.length
-									? __( 'Manage', 'saddle' )
-									: __( 'Connect', 'saddle' )
+							actions={
+								hideConnect ? null : (
+									<Button
+										variant="link"
+										size="sm"
+										onClick={
+											names.length ? toApps : onConnect
+										}
+									>
+										{ names.length
+											? __( 'Manage', 'saddle' )
+											: __( 'Connect', 'saddle' ) }
+									</Button>
+								)
 							}
-							onClick={ names.length ? toApps : onConnect }
 						/>
 					) }
 					{ healthProblem && (
@@ -232,7 +214,7 @@ export default function Dashboard( {
 								<Button
 									variant="link"
 									size="sm"
-									onClick={ toApps }
+									onClick={ toSettings }
 								>
 									{ __( 'Check', 'saddle' ) }
 								</Button>
@@ -241,6 +223,10 @@ export default function Dashboard( {
 					) }
 				</RowList>
 			</section>
+
+			{ /* Big changes an app asked for, waiting for the owner (#287). Draws
+			     nothing when there are none. */ }
+			<NeedsYourOk onChange={ loadActivity } />
 
 			<SetupBlock
 				tier={ tier }
@@ -254,37 +240,6 @@ export default function Dashboard( {
 				onNavigate={ onNavigate }
 				onHide={ onHideSetup }
 			/>
-
-			{ Array.isArray( connections ) && connections.length > 0 && (
-				<section className="saddle-stack">
-					<SectionHeader
-						title={ __( 'Connected apps', 'saddle' ) }
-						actions={
-							<Button variant="link" size="sm" onClick={ toApps }>
-								{ __( 'Manage', 'saddle' ) }
-							</Button>
-						}
-					/>
-					<RowList>
-						{ connections.slice( 0, APP_ROWS ).map( ( c ) => (
-							<Row
-								key={ c.id }
-								icon={
-									<StatusDot
-										tone={
-											c.last_tool_at || c.last_seen_at
-												? 'success'
-												: 'neutral'
-										}
-									/>
-								}
-								title={ connectionLabel( c ) }
-								description={ connectionMeta( c ) }
-							/>
-						) ) }
-					</RowList>
-				</section>
-			) }
 
 			<section className="saddle-stack">
 				<SectionHeader
@@ -304,7 +259,19 @@ export default function Dashboard( {
 						entries.map( ( e, i ) => (
 							<Row
 								key={ i }
-								title={ actionLabel( e, caps ) }
+								title={
+									<>
+										{ 'denied' === e.type && (
+											<Badge tone="danger">
+												{ __( 'Blocked', 'saddle' ) }
+											</Badge>
+										) }{ ' ' }
+										{ actionLabel( e, caps ).replace(
+											/^Blocked · /,
+											''
+										) }
+									</>
+								}
 								actions={
 									<span className="saddle-home__value">
 										{ relativeWhen(

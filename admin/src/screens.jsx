@@ -1,11 +1,10 @@
 /**
  * What each Saddle page shows, tab by tab (#274).
  *
- * Eight in-app screens became four pages:
+ * Four pages (#285):
  *
- * - Home: Overview (the old Dashboard) · Activity
- * - Connections: Apps (connect an app, and the connected ones) · Permissions
- *   (with Integrations as its section for third-party tools)
+ * - Dashboard: Overview · Activity
+ * - AI apps: the connected apps, each with its own access, and Connect an app
  * - Context: what every app knows — instructions as named fields, skills,
  *   memory, and what Saddle tells every app automatically
  * - Settings: one page, in sections
@@ -16,19 +15,18 @@
  */
 import { useMemo, useEffect, useRef } from '@wordpress/element';
 import { doAction } from '@wordpress/hooks';
-import { Button, Notice, Row, RowList } from '@plugpress/ui';
+import { Button, Drawer, Notice } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { api, saddleData } from './api';
 import { findArea, withArg } from './routes';
 import Dashboard from './components/Dashboard';
-import Permissions from './components/Permissions';
 import Context from './components/Guidance';
 import ConnectApps from './components/ConnectApps';
-import Apps, { ConnectionDetails } from './components/ConnectedClients';
-import Integrations from './components/Integrations';
+import Apps from './components/ConnectedClients';
 import Activity from './components/Activity';
 import SettingsForm from './components/SettingsForm';
-import SignInCard, { useOauthSettings } from './components/SignInCard';
+import SettingsPage from './components/SettingsPage';
+import { useOauthSettings } from './components/SignInCard';
 import ConnectWizard from './components/ConnectWizard';
 import SectionHeader from './components/SectionHeader';
 import {
@@ -131,18 +129,26 @@ function ModuleScreen( { area, tab, navigate } ) {
 }
 
 /**
- * Connections → Apps: the app picker, the connected apps, the one sign-in
- * control they share, and the troubleshooting details, collapsed, last.
+ * AI apps: the connected apps, each with its own access, and the Connect an
+ * app drawer that the header button opens.
  *
  * @param {Object}   props
+ * @param {Function} props.openConnect    Opens the Connect drawer.
+ * @param {Function} props.closeConnect   Closes it.
+ * @param {boolean}  props.connectOpen    Whether it is open.
+ * @param {?string}  props.connectApp     The app it opens on.
  * @param {Function} props.openWizard     Opens the key setup.
  * @param {Function} props.refreshClients Reloads the connected apps.
  * @param {Function} props.removeClient   Drops a revoked app from the list.
- * @param {Array}    props.clients        Connected apps.
+ * @param {Array}    props.clients        Connected apps (keys).
  * @param {string}   props.tier           The site's level.
  * @param {*}        props.navigate       Navigation helper.
  */
 function AppsTab( {
+	openConnect,
+	closeConnect,
+	connectOpen,
+	connectApp,
 	openWizard,
 	refreshClients,
 	removeClient,
@@ -151,75 +157,89 @@ function AppsTab( {
 	navigate,
 } ) {
 	const signIn = useOauthSettings();
+
 	return (
 		<>
-			<ConnectApps
-				oauth={ signIn.oauth }
-				onKey={ openWizard }
-				onConnected={ refreshClients }
-			/>
 			<Apps
 				clients={ clients }
-				loading={ false }
 				onClientsChanged={ refreshClients }
 				onClientRemoved={ removeClient }
 				siteTier={ tier }
+				onConnect={ () => openConnect() }
 			/>
-			<SignInCard { ...signIn } />
 			<Cards where="connections" navigate={ navigate } />
-			<ConnectionDetails />
+			<Drawer
+				open={ connectOpen }
+				onOpenChange={ ( open ) => ! open && closeConnect() }
+				title={ __( 'Connect an app', 'saddle' ) }
+				size="md"
+			>
+				<ConnectApps
+					oauth={ signIn.oauth }
+					onKey={ ( app ) => {
+						closeConnect();
+						openWizard( app );
+					} }
+					onConnected={ refreshClients }
+					initialApp={ connectApp }
+				/>
+			</Drawer>
 		</>
 	);
 }
 
 /**
- * Settings: Saddle's own settings by section, a Setup section, then whatever
- * other plugins add (a licence, say), each as a section of its own.
+ * Settings: Safety, Services and Advanced (SettingsPage), then whatever other
+ * plugins add (a licence, say), each as a section of its own, and a plain link
+ * to run setup again at the end.
  *
- * @param {Object} props
- * @param {Array}  props.extTabs Sections contributed as v1 tabs.
+ * @param {Object}   props
+ * @param {Array}    props.extTabs            Sections contributed as v1 tabs.
+ * @param {Array}    props.caps               The tools.
+ * @param {Function} props.loadCaps           Reloads the tools.
+ * @param {Function} props.onRehearsalChanged Tells the frame about practice mode.
  */
-function SettingsScreen( { extTabs } ) {
+function SettingsScreen( { extTabs, caps, loadCaps, onRehearsalChanged } ) {
 	// Collected at mount: addon bundles registered before the app mounted.
 	const cards = useMemo( collectSettingsCards, [] );
 	const home = findArea( saddleData.areas, 'home' );
 
 	return (
 		<>
-			<SettingsForm scope="saddle" screen="settings/general" />
-			{ home && (
-				<section className="saddle-stack">
-					<SectionHeader title={ __( 'Setup', 'saddle' ) } />
-					<RowList>
-						<Row
-							title={ __( 'Run setup again', 'saddle' ) }
-							actions={
-								<Button
-									href={ withArg( home.url, 'setup', '1' ) }
-									variant="link"
-									size="sm"
-								>
-									{ __( 'Start', 'saddle' ) }
-								</Button>
-							}
+			<SettingsPage
+				caps={ caps }
+				loadCaps={ loadCaps }
+				onRehearsalChanged={ onRehearsalChanged }
+			>
+				{ cards.map( ( card ) => (
+					<section key={ card.id } className="saddle-stack">
+						{ ( card.title || card.label ) && (
+							<SectionHeader title={ card.title || card.label } />
+						) }
+						<card.Component
+							ui={ ui }
+							shellVersion={ SHELL_VERSION }
 						/>
-					</RowList>
-				</section>
+					</section>
+				) ) }
+				{ extTabs.map( ( t ) => (
+					<section key={ t.id } className="saddle-stack">
+						<SectionHeader title={ t.label } />
+						<t.Component ui={ ui } shellVersion={ SHELL_VERSION } />
+					</section>
+				) ) }
+			</SettingsPage>
+			{ home && (
+				<div>
+					<Button
+						href={ withArg( home.url, 'setup', '1' ) }
+						variant="link"
+						size="sm"
+					>
+						{ __( 'Run setup again', 'saddle' ) }
+					</Button>
+				</div>
 			) }
-			{ cards.map( ( card ) => (
-				<section key={ card.id } className="saddle-stack">
-					{ ( card.title || card.label ) && (
-						<SectionHeader title={ card.title || card.label } />
-					) }
-					<card.Component ui={ ui } shellVersion={ SHELL_VERSION } />
-				</section>
-			) ) }
-			{ extTabs.map( ( t ) => (
-				<section key={ t.id } className="saddle-stack">
-					<SectionHeader title={ t.label } />
-					<t.Component ui={ ui } shellVersion={ SHELL_VERSION } />
-				</section>
-			) ) }
 		</>
 	);
 }
@@ -238,17 +258,20 @@ export default function Screen( props ) {
 		caps,
 		clients,
 		paused,
-		pausing,
 		wizardOpen,
 		wizardApp,
 		openWizard,
 		closeWizard,
 		refreshClients,
 		removeClient,
-		loadCaps,
-		onTierSaved,
-		onRehearsalChanged,
+		connectOpen,
+		connectApp,
+		openConnect,
+		closeConnect,
+		pausing,
 		onTogglePause,
+		loadCaps,
+		onRehearsalChanged,
 		onboarding,
 		onHideSetup,
 	} = props;
@@ -266,9 +289,11 @@ export default function Screen( props ) {
 						tier={ tier }
 						clients={ clients }
 						paused={ paused }
+						pausing={ pausing }
+						onTogglePause={ onTogglePause }
 						caps={ caps }
 						onNavigate={ navigate }
-						onConnect={ () => openWizard() }
+						onConnect={ () => openConnect() }
 						onboarding={ onboarding }
 						onHideSetup={ onHideSetup }
 						homeUrl={ area.url }
@@ -291,6 +316,10 @@ export default function Screen( props ) {
 				/>
 			) : (
 				<AppsTab
+					openConnect={ openConnect }
+					closeConnect={ closeConnect }
+					connectOpen={ connectOpen }
+					connectApp={ connectApp }
 					openWizard={ openWizard }
 					refreshClients={ refreshClients }
 					removeClient={ removeClient }
@@ -300,25 +329,15 @@ export default function Screen( props ) {
 				/>
 			);
 
-		case 'connections/permissions':
-			return (
-				<>
-					<Permissions
-						caps={ caps }
-						savedTier={ tier }
-						onTierSaved={ onTierSaved }
-						onCapsChanged={ loadCaps }
-						onRehearsalChanged={ onRehearsalChanged }
-						paused={ paused }
-						pausing={ pausing }
-						onTogglePause={ onTogglePause }
-					/>
-					<Integrations caps={ caps } onChanged={ loadCaps } />
-				</>
-			);
-
 		case 'settings/general':
-			return <SettingsScreen extTabs={ extTabs } />;
+			return (
+				<SettingsScreen
+					extTabs={ extTabs }
+					caps={ caps }
+					loadCaps={ loadCaps }
+					onRehearsalChanged={ onRehearsalChanged }
+				/>
+			);
 
 		case 'context/overview':
 			return <Context />;

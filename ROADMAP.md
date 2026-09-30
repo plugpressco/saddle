@@ -127,10 +127,17 @@ the issue and the rule is revisited there.
   Jetpack's admin: a visual redesign (#280–#282). The admin becomes
   WordPress-native (its greys, links and focus) with one brand color, Petrol
   teal, a full-width header band with the tabs inside it, one small type scale,
-  and less text on every page. Still one kit.
+  and less text on every page. Still one kit. A fifth, the same day, after
+  Fahim saw it: four pages (Dashboard, AI apps, Context, Settings) and no
+  Permissions page (#285).
 - **Runtime license checks in Pro** (decided 2026-07-12, saddle-pro#23).
-- Per-connection access profiles, comment abilities, activity-log export and
-  retention — closed as not planned on 2026-09-07.
+- Comment abilities, activity-log export and retention — closed as not
+  planned on 2026-09-07. *Per-connection access*, closed with them, was
+  reopened by Fahim on 2026-10-01 (#286): each connected app has its own
+  role (Read only, Edit content, Manage the site, which are the read, write
+  and admin tiers), new apps start at Read only, and an update never widens
+  what an existing app could do. Big changes can also be approved on the
+  Dashboard (#287). Per-tool custom profiles stay out.
 
 ## Kept, not scheduled (label `later`)
 

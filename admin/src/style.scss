@@ -21,12 +21,20 @@
 // This is a consumer-side override, not a library edit. Never change anything
 // under node_modules/@plugpress/ui (see the consumer agent guide).
 //
-// Contrast, measured (WCAG 2.x): text #1d2327 13.95 on the page, #50575e
-// 6.43, #646970 4.86; links #2271b1 5.17 on white and 4.54 on the page;
-// white on the brand 6.84; every status text on its tint 5.6 or more.
+// The surfaces are WordPress 7's own (core's Connectors screen, measured
+// 2026-10-01): one white canvas, white blocks on a #ddd hairline with 8px
+// corners, neutral greys, and links in the admin color scheme's own blue.
+//
+// Contrast, measured (WCAG 2.x) on white: text #1e1e1e 16.67, #5e5e5e 6.58,
+// #717171 4.84; field edges #949494 3.03; white on the brand 6.84; every
+// status text on its tint 5.6 or more. Links follow --wp-admin-theme-color
+// (fresh #2271b1 5.17, modern #3858e9 5.36).
 // ---------------------------------------------------------------------------
+// `.pp-scope` is on every portaled layer (drawers, lists, menus, tooltips)
+// and the DS re-declares its own tokens there, so it is named here too:
+// without it those layers fall back to the DS's greys.
 body.saddle-admin-page,
-body.pp-scope,
+.pp-scope,
 .saddle-app,
 .pp-app {
 	// The brand. Nothing reads these directly except the few places listed in
@@ -37,29 +45,30 @@ body.pp-scope,
 	--saddle-brand-tint: #e2f1f2;
 	--saddle-brand-soft: #c5e4e7;
 
-	// WordPress's admin greys (wp-admin's own #f0f0f1 page, #dcdcde and
-	// #c3c4c7 hairlines, #8c8f94 field edges, #1d2327 / #50575e / #646970 text).
-	--pp-n-50: #f6f7f7;
-	--pp-n-100: #f0f0f1; // -> --pp-canvas, the page
-	--pp-n-200: #f6f7f7; // -> --pp-surface-alt
-	--pp-n-300: #dcdcde; // -> --pp-border, --pp-surface-hover
-	--pp-n-400: #c3c4c7; // -> --pp-border-strong
-	--pp-n-500: #a7aaad;
-	--pp-n-600: #646970; // -> --pp-text-muted, 4.86 on the page
-	--pp-n-700: #50575e; // -> --pp-text-secondary, 6.43 on the page
-	--pp-n-800: #3c434a;
-	--pp-n-900: #2c3338;
-	--pp-n-950: #1d2327; // -> --pp-text, 13.95 on the page
+	// WordPress 7's neutral greys (the @wordpress/components gray scale).
+	--pp-n-50: #f5f5f5;
+	--pp-n-100: #f0f0f0;
+	--pp-n-200: #f5f5f5; // -> --pp-surface-alt (code chips, sub-panels)
+	--pp-n-300: #dddddd; // -> --pp-border
+	--pp-n-400: #cccccc; // -> --pp-border-strong
+	--pp-n-500: #a0a0a0;
+	--pp-n-600: #717171; // -> --pp-text-muted, 4.84
+	--pp-n-700: #5e5e5e; // -> --pp-text-secondary, 6.58
+	--pp-n-800: #2f2f2f;
+	--pp-n-900: #232323;
+	--pp-n-950: #1e1e1e; // -> --pp-text, 16.67
+	--pp-canvas: #ffffff; // one surface: page, header band and blocks
 	--pp-surface: #ffffff;
-	--pp-surface-hover: #f6f7f7;
+	--pp-surface-hover: #f5f5f5;
 
-	// Links, focus, badges and spinners: WordPress blue, so the pages feel
-	// native. The brand is not a link color.
-	--pp-accent: #2271b1;
-	--pp-accent-hover: #135e96;
-	--pp-accent-text: #2271b1;
-	--pp-accent-tint: #f0f6fc;
-	--pp-accent-muted: rgba( 34, 113, 177, 0.12 );
+	// Links, focus, badges and spinners: the admin color scheme's own blue
+	// (WordPress sets it per scheme), so Saddle's links match the rest of
+	// wp-admin. The brand is not a link color.
+	--pp-accent: var( --wp-admin-theme-color, #2271b1 );
+	--pp-accent-hover: var( --wp-admin-theme-color-darker-10, #135e96 );
+	--pp-accent-text: var( --wp-admin-theme-color, #2271b1 );
+	--pp-accent-tint: color-mix( in srgb, var( --pp-accent ) 7%, #ffffff );
+	--pp-accent-muted: color-mix( in srgb, var( --pp-accent ) 12%, transparent );
 	--pp-on-accent: #ffffff;
 	--pp-focus: var( --wp-admin-theme-color, #2271b1 );
 
@@ -80,11 +89,12 @@ body.pp-scope,
 	--pp-danger-hover: #8a2424;
 	--pp-danger-bg: #fcf0f1;
 
-	// Geometry: WordPress's square register. The pill stays for dots, badges
-	// and switches.
+	// Geometry: blocks (cards, row lists, stat tiles) round at 8px like
+	// WordPress 7's cards; controls, buttons and notices stay at 4px. The pill
+	// stays for dots, badges and switches.
 	--pp-r-sm: 4px;
 	--pp-r: 4px;
-	--pp-r-lg: 4px;
+	--pp-r-lg: 8px;
 
 	// Hairlines, not elevation. Overlays keep the DS's own md/lg shadows.
 	--pp-shadow-xs: none;
@@ -132,7 +142,7 @@ body.pp-scope,
 .pp-coachmark,
 .pp-applybar,
 .pp-bulkbar {
-	--pp-action: #1d2327;
+	--pp-action: #1e1e1e;
 	--pp-action-hover: #000000;
 }
 
@@ -175,14 +185,20 @@ body.saddle-admin-page {
 		font-weight: 600;
 	}
 
-	// Field edges and the off switch need 3:1 against white; WordPress's own
-	// #8c8f94 is 3.24.
+	// Field edges and the off switch need 3:1 against white; WordPress 7's
+	// #949494 is 3.03.
 	.pp-control {
-		--pp-border: #8c8f94;
+		--pp-border: #949494;
 	}
 
 	.pp-switch {
-		--pp-border-strong: #8c8f94;
+		--pp-border-strong: #949494;
+	}
+
+	// A row's icon or status dot sits on the block itself, like the logos on
+	// WordPress's Connectors screen, not in a grey square.
+	.pp-rowlist__icon {
+		background: transparent;
 	}
 }
 
@@ -223,7 +239,7 @@ body.saddle-admin-page,
 
 	--s-focus: var( --pp-focus );
 
-	--s-code-bg: #1d2327;
+	--s-code-bg: #1e1e1e;
 
 	--s-shadow-sm: var( --pp-shadow-sm );
 	--s-shadow-md: var( --pp-shadow-md );
@@ -258,13 +274,18 @@ body.saddle-admin-page {
 // clipping rather than by a percentage transform, which is what made it show
 // up over wp-admin's admin bar. Fixed at source — see saddle#74.
 
+// Geometry and motion ride the body too, so portaled layers (the Connect
+// drawer, lists) get them.
+body.saddle-admin-page,
 .saddle-app {
 	--s-radius: var( --pp-r );
 	--s-radius-lg: var( --pp-r-lg );
 	--s-radius-pill: var( --pp-r-pill );
 	--s-ease: cubic-bezier( 0.4, 0, 0.2, 1 );
 	--s-dur: 160ms;
+}
 
+.saddle-app {
 	box-sizing: border-box;
 	// The DS AppShell owns the layout: sticky rail + centered AppContent
 	// column. This wrapper only carries tokens and typography.
@@ -527,17 +548,8 @@ body.saddle-admin-page {
 	}
 }
 
-// The selected access level carries the brand (the one card choice that
-// decides what an AI may do).
-.saddle-perm .pp-selcard-group {
-	--pp-accent: var( --saddle-brand );
-	--pp-accent-text: var( --saddle-brand );
-	--pp-accent-tint: var( --saddle-brand-tint );
-	--pp-accent-muted: var( --saddle-brand-tint );
-}
-
-// The safety-status pill: what connected apps may do right now. A link to
-// Connections → Permissions, where it is changed.
+// The status pill: "AI on" or "Paused". A link to the Dashboard, where the
+// switch is.
 .saddle-status-pill {
 	display: flex;
 	align-items: center;
@@ -559,15 +571,10 @@ body.saddle-admin-page {
 
 	// The pill is a link, and the kit colors links from --pp-accent-text
 	// through an ID-strength selector, so each tone sets that token.
-	&--safe {
+	&--on {
 		--pp-accent-text: var(--s-safe-text);
 		--pp-accent-hover: var(--s-safe-text);
 		background: var(--s-safe-bg);
-	}
-	&--active {
-		--pp-accent-text: var(--s-active-text);
-		--pp-accent-hover: var(--s-active-text);
-		background: var(--s-active-bg);
 	}
 	&--paused {
 		--pp-accent-text: var(--s-fg-muted);
@@ -627,14 +634,17 @@ body.saddle-admin-page {
 // sit 24px apart on the page (the content column's gap).
 .saddle-section {
 	display: grid;
+	// One column that may shrink: a long one-line description (a skill's)
+	// ellipsizes instead of widening the block past the page.
+	grid-template-columns: minmax( 0, 1fr );
 	gap: var(--pp-space-3);
 	align-content: start;
 	min-width: 0;
 }
 
-// A heading that carries a "?" (and, on Connect, a badge) beside it.
-.saddle-connect__title,
-.saddle-perm__label,
+// A heading that carries a "?" beside it.
+.saddle-guide__heading,
+.saddle-settings__label,
 .saddle-signin__label,
 .saddle-integrations__title,
 .saddle-memory__title {
@@ -644,78 +654,71 @@ body.saddle-admin-page {
 	gap: 6px;
 }
 
-/* ---------- Connections → Apps (#274) ---------- */
-// This site's address, then the apps down the side and the steps for the one
-// picked in one block. The site's own way of connecting, laid out like the
-// hosted MCP pages people already know.
+/* ---------- AI apps: Connect an app drawer (#274, #285) ---------- */
+// The app tiles in three small groups; picking one swaps the grid for that
+// app's steps ("All apps" brings the grid back). First run shows the same grid.
 .saddle-connect {
+	display: grid;
+	gap: var(--pp-space-3);
+	min-width: 0;
 
-	&__address {
+	&__groups {
 		display: grid;
-		gap: 6px;
+		gap: var(--pp-space-4);
+		min-width: 0;
 	}
 
-	&__label {
-		color: var(--s-fg-muted);
-		font-size: 12px;
-	}
-
-	&__url {
-		display: flex;
-		align-items: center;
+	&__group {
+		display: grid;
 		gap: 8px;
-		flex-wrap: wrap;
-
-		code {
-			padding: 6px 10px;
-			border: 1px solid var(--s-border);
-			border-radius: var(--s-radius);
-			background: var(--s-surface-2);
-			font-size: 13px;
-			word-break: break-all;
-		}
 	}
 
-	&__picker {
-		display: grid;
-		grid-template-columns: minmax(170px, 220px) 1fr;
-		align-items: start;
-		border: 1px solid var(--s-border);
-		border-radius: var(--s-radius-lg);
-		background: var(--s-bg);
-		overflow: hidden;
+	&__group-title {
+		margin: 0;
+		font-size: 12px;
+		font-weight: 600;
+		color: var(--s-fg-muted);
+	}
+
+	&__other {
+		margin: 0;
+		font-size: 12px;
+		color: var(--s-fg-subtle);
 	}
 
 	&__apps {
 		display: grid;
-		gap: 2px;
-		padding: var(--pp-space-2);
+		grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+		gap: 8px;
 	}
 
 	&__app {
 		display: flex;
 		align-items: center;
-		gap: 10px;
-		width: 100%;
+		gap: 8px;
+		min-width: 0;
 		padding: 8px 10px;
-		border: 0;
+		border: 1px solid var(--s-border);
 		border-radius: var(--s-radius);
-		background: transparent;
+		background: var(--s-bg);
 		color: var(--s-fg);
 		font: inherit;
+		font-size: 13px;
 		text-align: start;
 		cursor: pointer;
 
 		img {
+			flex: 0 0 auto;
 			width: 18px;
 			height: 18px;
 		}
 
 		&:hover {
-			background: var(--s-surface-3);
+			background: var(--s-surface-2);
 		}
 
-		&[aria-selected='true'] {
+		&[aria-pressed='true'] {
+			border-color: var(--s-border-strong);
 			background: var(--s-surface-3);
 			font-weight: 600;
 		}
@@ -723,14 +726,33 @@ body.saddle-admin-page {
 
 	&__app-label {
 		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	&__steps {
 		display: grid;
 		gap: var(--pp-space-3);
 		padding: var(--pp-space-4);
-		border-inline-start: 1px solid var(--s-border);
+		border: 1px solid var(--s-border);
+		border-radius: var(--s-radius-lg);
+		background: var(--s-bg);
 		min-width: 0;
+	}
+
+	&__note {
+		margin: var(--pp-space-3) 0 0;
+		font-size: 12px;
+		color: var(--s-fg-subtle);
+	}
+
+	&__steps-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
 	}
 
 	&__steps-title {
@@ -834,64 +856,49 @@ body.saddle-admin-page {
 	}
 }
 
-@media (max-width: 782px) {
-	.saddle-connect__picker {
-		grid-template-columns: 1fr;
-	}
-
-	.saddle-connect__apps {
-		grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-	}
-
-	.saddle-connect__steps {
-		border-inline-start: 0;
-		border-block-start: 1px solid var(--s-border);
-	}
-}
-
 /* ---------- Context (#274) ---------- */
-// A sheet the owner fills in and corrects: named fields, each saying whether
-// anything is written, with an example as the placeholder.
+// The owner's instructions as rows: the text cut to one line, or a quiet
+// "Not written yet"; Edit opens the textarea under the row.
 .saddle-context {
 	display: grid;
 	gap: var(--pp-space-5);
 	align-content: start;
-
-	&__empty {
-		margin: 0;
-		color: var(--s-fg-subtle);
-	}
-
-	&__fields {
-		display: grid;
-		gap: var(--pp-space-4);
-	}
 }
 
 .saddle-context-field {
-	display: grid;
-	gap: 4px;
-
-	&__head {
-		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: 12px;
+	.pp-rowlist__body {
+		min-width: 0;
 	}
 
 	&__label {
-		font-weight: 600;
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
 	}
 
-	&__state {
+	&__text {
+		display: block;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	&__empty {
 		color: var(--s-fg-subtle);
-		font-size: 12px;
 	}
 
-	&__hint {
-		margin: 0 0 4px;
-		color: var(--s-fg-muted);
-		font-size: 12px;
+	&__edit {
+		display: grid;
+		gap: var(--pp-space-3);
+		padding: var(--pp-space-3) var(--pp-space-4);
+		border-block-start: 1px solid var(--s-border);
+		background: var(--s-surface-2);
+	}
+
+	&__actions {
+		display: flex;
+		align-items: center;
+		gap: 8px;
 	}
 }
 
@@ -1063,15 +1070,6 @@ body.saddle-admin-page {
 	color: var(--s-fg-muted);
 }
 
-/* ---------- Permissions ---------- */
-
-// The three sections (access level, Safety, Tools) sit 24px apart.
-.saddle-perm {
-	display: grid;
-	gap: var(--pp-space-5);
-	align-content: start;
-}
-
 // Per-app setup guide drawer: three numbered sections with one rhythm.
 .saddle-setup-guide {
 	display: grid;
@@ -1131,19 +1129,10 @@ body.saddle-admin-page {
 
 /* ---------- Guidance ---------- */
 
-// Each guidance section is a DS Card; only the rhythm between them is ours.
-.saddle-guide__block {
-	margin-bottom: 16px;
-
-	&:last-child {
-		margin-bottom: 0;
-	}
-}
-
 /* Readable rendering of the auto-context (vs the raw monospace view). */
 .saddle-doc {
 	border: 1px solid var(--s-border);
-	border-radius: var(--s-radius);
+	border-radius: var(--s-radius-lg);
 	background: var(--s-surface-2);
 	padding: 16px 18px;
 	max-height: 340px;
@@ -1213,14 +1202,77 @@ body.saddle-admin-page {
 	}
 }
 
-.saddle-memory__empty {
-	margin: 0;
-	font-size: 13px;
-	color: var(--s-fg-subtle);
+.saddle-memory__compose-actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.saddle-memory .pp-rowlist__body {
+	min-width: 0;
+}
+
+// A memory entry is one line: the text cut to one line; View opens it in full
+// with Pin and Delete under it.
+.saddle-memory__text {
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.saddle-memory__open {
+	display: grid;
+	gap: var(--pp-space-2);
+	padding: var(--pp-space-2) var(--pp-space-4) var(--pp-space-3);
+	border-block-start: 1px solid var(--s-border);
+
+	&-actions {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+	}
+}
+
+.saddle-memory__pin {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 12px;
+	color: var(--s-fg-muted);
+}
+
+// The auto-include switch is the last row of the memory block: its label
+// carries the "?" beside it.
+.saddle-memory__setting-label {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-weight: 600;
+}
+
+// A skill is one line: name, then its description cut to one line with the
+// full text in the title.
+.saddle-skill-row {
+	.pp-rowlist__body {
+		min-width: 0;
+	}
+
+	&__desc {
+		display: block;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
 }
 
 .saddle-guide__rawtoggle {
 	margin-top: 10px;
+}
+
+.saddle-guide__delete {
+	margin-top: var(--pp-space-3);
 }
 
 .saddle-guide__system {
@@ -1231,288 +1283,77 @@ body.saddle-admin-page {
 	color: var(--s-fg-muted);
 }
 
-.saddle-guide__actions {
-	margin-top: 12px;
+/* ---------- AI apps: the connected list (#285) ---------- */
+// Rows, the ⋯ menu, the disconnect confirm and the endpoint snippet all come
+// from the design system.
+
+// The access dropdown sits at its natural width beside the ⋯ menu.
+.saddle-apps__access {
+	width: auto;
+	min-width: 148px;
 }
 
-.saddle-guide__actions--stack {
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
-	align-items: flex-start;
-}
-
-/* ---------- Lanes + chips (Permissions detail) ---------- */
-
-.saddle-lanes__hint {
-	margin: 10px 0 0;
-	font-size: 12px;
-	color: var(--s-fg-subtle);
-}
-
-.saddle-lanes__filter {
-	appearance: none;
-	margin-top: 12px;
-	width: 100%;
-	max-width: 320px;
-	padding: 7px 12px;
-	font: inherit;
-	font-size: 13px;
-	color: var(--s-fg);
-	background: var(--s-bg);
-	border: 1px solid var(--s-border);
-	border-radius: var(--s-radius-pill);
-
-	&:focus-visible {
-		outline: 2px solid var(--s-focus);
-		outline-offset: 2px;
-	}
-}
-
-.saddle-lanes {
-	margin-top: 16px;
+// The access list explains itself: each role's name, and under it one line
+// on what it adds. The closed box shows the name only. The list is portaled,
+// so these rules can't sit under `.saddle-apps`.
+.saddle-role {
 	display: grid;
-	grid-template-columns: repeat( 3, 1fr );
-	gap: 14px;
+	gap: 2px;
+}
 
-	@media ( max-width: 900px ) {
-		grid-template-columns: 1fr;
+.saddle-role__name {
+	font-weight: 500;
+}
+
+.saddle-role__hint {
+	font-size: 12px;
+	color: var(--s-fg-muted);
+}
+
+.pp-select__trigger .saddle-role__hint {
+	display: none;
+}
+
+.saddle-role__list {
+	--pp-accent: var(--saddle-brand);
+	--pp-accent-tint: var(--saddle-brand-tint);
+	min-width: 264px;
+
+	.pp-select__item {
+		padding-block: 8px;
+	}
+
+	// In a list the highlight is the position; a focus ring on top of it is
+	// noise. Arrow keys still move the highlight.
+	.pp-select__item:focus-visible {
+		outline: none;
 	}
 }
 
-.saddle-lane {
-	border: 1px solid var(--s-border);
-	border-radius: var(--s-radius-lg);
-	padding: 18px;
-	background: var(--s-bg);
-	transition: opacity var(--s-dur) var(--s-ease);
-
-	&.is-off {
-		opacity: 0.6;
-		background: var(--s-surface-2);
-	}
-
-	&__head {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-	}
-
-	&__title {
-		margin: 0;
-		font-size: 14px;
-		font-weight: 620;
-	}
-
-	&__count {
-		font-size: 11px;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-		color: var(--s-fg-subtle);
-	}
-
-	&__rail {
-		height: 2px;
-		border-radius: 2px;
-		margin: 12px 0;
-		background: var(--s-border);
-	}
-	// A 2px rail is a thin element: the bright status values sit at ~1.9:1 on
-	// white and would simply not be there. These take the readable step, which
-	// is what makes the three lanes scannable at a glance.
-	&--look.is-on &__rail {
-		background: var(--s-rail-safe);
-	}
-	&--change.is-on &__rail {
-		background: var(--s-rail-change);
-	}
-	&--remove.is-on &__rail {
-		background: var(--s-rail-remove);
-	}
-}
-
-.saddle-catgroup {
-	margin-top: 12px;
-
-	&__title {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		margin: 0 0 6px;
-		font-size: 11px;
-		font-weight: 620;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-		color: var(--s-fg-subtle);
-	}
-
-	&__count {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		min-width: 18px;
-		height: 16px;
-		padding: 0 5px;
-		font-size: 10px;
-		font-weight: 600;
-		letter-spacing: 0;
-		color: var(--s-fg-subtle);
-		background: var(--s-surface-2);
-		border-radius: var(--s-radius-pill);
-	}
-}
-
-.saddle-lane__empty {
-	margin: 8px 0 0;
+// The one quiet line: the site's address for AI apps, and Copy.
+.saddle-apps__address {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	margin: 0;
 	font-size: 12px;
 	color: var(--s-fg-subtle);
-}
 
-.saddle-chips {
-	margin: 0;
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-}
-
-.saddle-chip {
-	appearance: none;
-	font: inherit;
-	color: inherit;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 8px;
-	width: 100%;
-	min-width: 0;
-	padding: 8px 10px;
-	border: 1px solid var(--s-border);
-	border-radius: 7px;
-	background: var(--s-bg);
-	cursor: pointer;
-	text-align: left;
-	transition: opacity var(--s-dur) var(--s-ease),
-		background var(--s-dur) var(--s-ease);
-
-	&:hover {
+	code {
+		padding: 4px 8px;
+		border: 1px solid var(--s-border);
+		border-radius: var(--s-radius);
 		background: var(--s-surface-2);
+		font-size: 12px;
+		overflow-wrap: anywhere;
 	}
-
-	&.is-off {
-		opacity: 0.5;
-	}
-	&.is-on {
-		border-color: var(--s-border-strong);
-	}
-
-	&.is-disabled {
-		opacity: 0.55;
-		background: var(--s-surface-2);
-
-		.saddle-chip__label {
-			text-decoration: line-through;
-			text-decoration-color: var(--s-fg-subtle);
-		}
-	}
-
-	&__label {
-		font-size: 13px;
-		min-width: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	&__shield {
-		flex: 0 0 auto;
-		font-size: 10px;
-		font-weight: 500;
-		letter-spacing: 0.02em;
-		color: var(--s-active-text);
-		background: var(--s-active-bg);
-		border-radius: var(--s-radius-pill);
-		padding: 2px 8px;
-		white-space: nowrap;
-	}
-
-	&__off {
-		flex: 0 0 auto;
-		font-size: 10px;
-		font-weight: 500;
-		letter-spacing: 0.02em;
-		color: var(--s-fg-subtle);
-		background: var(--s-surface-3);
-		border-radius: var(--s-radius-pill);
-		padding: 2px 8px;
-		white-space: nowrap;
-	}
-}
-
-/* ---------- Connect tab (apps management) ---------- */
-// Header, empty state, app rows, the disconnect confirm, and the endpoint
-// snippet all come from the design system now.
-
-// A title and its "?" sit on one baseline wherever Titled is used.
-.saddle-apps__titled {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
 }
 
 // The one line a list shows when nothing is connected.
 .saddle-apps__empty {
 	margin: 0;
 	color: var(--s-fg-subtle);
-}
-
-// Both connection kinds share one card, so the card body owns the rhythm
-// between them rather than each list carrying its own margins.
-.saddle-apps__cardbody {
-	display: grid;
-	gap: var(--pp-space-4);
-
-	// The card IS the container now. Left alone, the DS RowList draws its own
-	// 1px/12px box inside the card's identical one — the same border twice,
-	// 25px apart, which reads as a mistake rather than as structure.
-	.pp-rowlist {
-		border: 0;
-		border-radius: 0;
-		background: transparent;
-	}
-}
-
-// The labelled rule introducing the sign-in group. This replaces the old
-// .saddle-apps__subhead, which was referenced in JSX but styled NOWHERE — so
-// wp-admin's reset left it at margin:0 and it collided with the list above.
-.saddle-apps__divider {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	margin-top: var(--pp-space-2);
-	color: var( --s-fg-muted );
-	font-size: 12px;
-	font-weight: 600;
-	letter-spacing: 0.01em;
-
-	&::after {
-		content: '';
-		flex: 1;
-		height: 1px;
-		background: var(--s-border);
-	}
-}
-
-// Quiet closing line inside the card: a real link plus its "?".
-.saddle-apps__cardfoot {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	margin: 0;
-	font-size: 12px;
-
-	a {
-		color: var( --s-fg-muted );
-	}
 }
 
 /* Advanced: endpoint details + health, behind the disclosure. */
@@ -1907,18 +1748,6 @@ body.saddle-admin-page {
 	overflow: auto;
 }
 
-// A Switch with its visible label beside it.
-.saddle-toggle-row {
-	display: flex;
-	align-items: flex-start;
-	gap: 10px;
-
-	span {
-		font-size: 13px;
-		color: var(--s-fg);
-	}
-}
-
 // Settings rendered from a schema (SettingsForm): a heading and one block of
 // rows per section. The control sits on the right of its label.
 .saddle-settings-form {
@@ -1968,13 +1797,19 @@ body.saddle-admin-page {
 	margin-top: 8px;
 }
 
-/* Unsplash key card (Integrations tab) — entry form or masked status row.
-   Spacing comes from the page's grid rhythm. */
+/* Unsplash row (Integrations): the key form opens under the row. */
 .saddle-unsplash {
-	&__hint {
-		margin: 8px 0 12px;
-		font-size: 12px;
+	&__key {
 		color: var(--s-fg-muted);
+		font-size: 12px;
+	}
+
+	&__form {
+		display: grid;
+		gap: var(--pp-space-3);
+		padding: var(--pp-space-3) var(--pp-space-4);
+		border-block-start: 1px solid var(--s-border);
+		background: var(--s-surface-2);
 	}
 
 	&__actions {
@@ -1982,18 +1817,96 @@ body.saddle-admin-page {
 		align-items: center;
 		gap: 8px;
 	}
+}
 
-	&__configured {
-		display: flex;
-		align-items: center;
+/* ---------- Settings (#285) ---------- */
+// Advanced is one block of disclosures, hairlines between them.
+.saddle-adv {
+	background: var(--s-bg);
+	border: 1px solid var(--s-border);
+	border-radius: var(--s-radius-lg);
+	overflow: hidden;
+
+	> .pp-collapsible + .pp-collapsible {
+		border-block-start: 1px solid var(--s-border);
+	}
+
+	// Label on the left, chevron on the right (the kit draws the chevron
+	// first), like WordPress's own panels.
+	.pp-collapsible__trigger {
+		inline-size: 100%;
+		flex-direction: row-reverse;
 		justify-content: space-between;
-		flex-wrap: wrap;
-		gap: 8px;
+		text-align: start;
+		padding: var(--pp-space-3) var(--pp-space-4);
+		font-size: 13px;
+		font-weight: 600;
+	}
 
-		span {
-			font-size: 13px;
-			color: var(--s-fg);
+	.pp-collapsible__panel {
+		padding: 0 0 var(--pp-space-3);
+	}
+
+	// Sign-in for apps: the disclosure already names it.
+	&__signin .saddle-section-head {
+		display: none;
+	}
+
+	&__signin,
+	&__check,
+	.saddle-settings-form {
+		padding-inline: var(--pp-space-4);
+	}
+
+	// The rows inside a disclosure sit in the block, not in boxes of their own.
+	.pp-rowlist {
+		border: 0;
+		border-radius: 0;
+		background: transparent;
+	}
+
+	&__signin .pp-rowlist,
+	.saddle-settings-form .pp-rowlist {
+		border: 1px solid var(--s-border);
+		border-radius: var(--s-radius-lg);
+	}
+}
+
+// The tools: a search, then every area as a small heading over its rows.
+.saddle-tools {
+	display: grid;
+	gap: var(--pp-space-3);
+
+	&__search {
+		appearance: none;
+		margin-inline: var(--pp-space-4);
+		padding: 6px 10px;
+		font: inherit;
+		font-size: 13px;
+		color: var(--s-fg);
+		background: var(--s-bg);
+		border: 1px solid var(--s-border);
+		border-radius: var(--s-radius);
+
+		&:focus-visible {
+			outline: 2px solid var(--s-focus);
+			outline-offset: 1px;
 		}
+	}
+
+	&__area {
+		margin: 0;
+		padding: var(--pp-space-1) var(--pp-space-4);
+		font-size: 12px;
+		font-weight: 600;
+		color: var(--s-fg-subtle);
+	}
+
+	&__empty {
+		margin: 0;
+		padding-inline: var(--pp-space-4);
+		font-size: 12px;
+		color: var(--s-fg-subtle);
 	}
 }
 
@@ -2050,4 +1963,22 @@ body.saddle-admin-page {
 			color: var(--s-fg-subtle);
 		}
 	}
+}
+
+/* Needs your OK (#287) */
+.saddle-needs-ok pre {
+	margin: 0 0 12px;
+	padding: 10px 12px;
+	max-height: 240px;
+	overflow: auto;
+	white-space: pre-wrap;
+	background: var(--s-surface-2);
+	border: 1px solid var(--s-border);
+	border-radius: var(--s-radius);
+}
+
+.saddle-needs-ok__actions {
+	display: flex;
+	gap: 8px;
+	margin-top: 16px;
 }

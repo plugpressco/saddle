@@ -69,8 +69,9 @@ and finding each fails at least one. Check every change against all three.
    this rule. A site talks to Cloud only after its owner connects it from
    wp-admin — never by default, by update or by migration. Once connected:
 
-   - Cloud holds a grant the owner approved. It can only lower the site's tier,
-     never raise it, and revoking it in wp-admin cuts Cloud off on the next call.
+   - Cloud holds a grant the owner approved. It can only lower what an app may
+     do (the `saddle_tier_ceiling` filter), never raise it, and revoking it in
+     wp-admin cuts Cloud off on the next call.
    - The site still enforces everything: `Saddle_Capabilities` decides every
      call, `Saddle_Approval` issues and checks every confirm token. Cloud routes
      and records; it never bypasses a gate.
@@ -252,8 +253,8 @@ Two things worth knowing before you go looking:
   the `require` in `saddle.php` degrades to a no-op, so its *absence* is what
   makes a build .org-safe.
 
-For the live ability list, trust the **Permissions screen in wp-admin** over any
-count written down.
+For the live ability list, trust **Settings → Advanced → Turn off single tools**
+in wp-admin over any count written down.
 
 ---
 
@@ -276,10 +277,19 @@ VS Code, Gemini CLI.
 custom-connector screen has no field for a custom HTTP header.** It offers no
 auth, an API key, or OAuth — none of which carries `Authorization: Basic`.
 
-The server lives entirely inside the owner's WordPress. A granted scope only ever
-*lowers* the site tier, never raises it: `get_tier()` returns
-`min(site tier, granted scope)`. Use `get_site_tier()` when reporting or writing
-configuration, `get_tier()` when deciding whether a call is allowed.
+The server lives entirely inside the owner's WordPress.
+
+**Access is per app (decided 2026-10-01, #286).** `Saddle_Access` gives each
+connection a role: `read` (Read only), `write` (Edit content) or `admin`
+(Manage the site), which are exactly the tiers. A key's role is in
+`saddle_key_roles`; a grant's is its scope, chosen on the consent screen
+(Read only preselected). `get_tier()` is the calling connection's role,
+lowered by `saddle_tier_ceiling`; a new key or an unknown connection is
+`read`, and a caller with no connection (the owner's browser) falls back to
+the legacy site tier. The one-time migration gave existing keys the old site
+tier and lowered each grant to `min(site tier, scope)`, so an update never
+widened anything (R3, pinned by a test). Only the owner sets a role, in
+wp-admin; no tool can (`Saddle_Settings_Guard`).
 
 *Decided 2026-09-27 (#243): once the owner has turned sign-in on, the address
 path is the one the connect wizard leads with for every app*, and the
@@ -330,8 +340,8 @@ in the managed block below; these are the Saddle-specific additions.
   before and shipped missing an entire feature's worth of msgids.
 - React UI: **`@plugpress/ui`** is the kit, installed **from the npm registry**
   (`^0.12.0`), not from a GitHub tag. No `@wordpress/components`, no Tailwind,
-  no second kit. Product-specific pieces (BrandMark, LevelIcon, the Permissions
-  lanes, the activity timeline) stay in-plugin, styled on `--pp-*` tokens.
+  no second kit. Product-specific pieces (BrandMark, the app logos, the
+  activity timeline) stay in-plugin, styled on `--pp-*` tokens.
   Light-only. The brand mark is single-sourced from `assets/brand/mark.svg`.
   Read `admin/DESIGN-ALIGNMENT.md` before writing admin CSS.
   - The old npm trap is gone with the git pin — `npm install` re-resolves a
@@ -432,8 +442,8 @@ change. `Tested up to:` moves only when Fahim has verified against a newer WP.
 - Don't remove the Application Password path now that OAuth exists. Every
   header-capable client uses it, it needs no consent round-trip, and it is the
   only path that works while the OAuth toggle is off — which is the default.
-- Don't turn OAuth on by default, and don't let a scope grant more than the site
-  tier. Both are load-bearing for non-negotiable #2.
+- Don't turn OAuth on by default, and don't start a new app above `read` or let a
+  tool change a role. All three are load-bearing for non-negotiable #2.
 - Don't wire up `Saddle_Ecosystem`.
 - Don't put licensing or upsell code in free, and never let a free tool mention
   Pro or leave a visible gap for a Pro tool (wp.org guidelines 5 and 11). Builder

@@ -1,6 +1,6 @@
 /**
  * The pure parts of onboarding (#277): which first-run step a reload resumes
- * at, what the waiting line says, which tasks Home's Setup block lists, how
+ * at, what the waiting line says, which tasks the Dashboard's Setup block lists, how
  * the modules route (K2) is read, and the plain-words names for tool calls.
  *
  * No React and no network here, so each rule has a unit test. The components
@@ -50,7 +50,7 @@ export function stepAfter( step ) {
  *
  * @param {Object}  firstRun `first_run` from GET /onboarding.
  * @param {boolean} forced   `?setup=1` is in the address.
- * @return {boolean} Whether to draw first run instead of Home.
+ * @return {boolean} Whether to draw first run instead of the Dashboard.
  */
 export function showFirstRun( firstRun, forced ) {
 	if ( forced ) {
@@ -314,6 +314,8 @@ export function tryStatus( { rows, app, appLabel } ) {
 		phase: 'done',
 		items: tools.map( ( tool ) => toolPhrase( tool, appLabel ) ),
 		text: __( 'It works.', 'saddle' ),
+		// The connection that made the call: first run sets its access.
+		connection: used.id || '',
 	};
 }
 
@@ -556,6 +558,8 @@ export function coreTasks( { connections, firstRun, tier } ) {
 	const chose =
 		'' !== ( run.tier_choice || '' ) ||
 		'read' !== tier ||
+		// Access is per app now (#285): any app above Read only is a choice.
+		list.some( ( c ) => c.role && 'read' !== c.role ) ||
 		( 'done' === run.state && '' === ( run.tier_choice || '' ) );
 
 	return [
@@ -578,7 +582,7 @@ export function coreTasks( { connections, firstRun, tier } ) {
 }
 
 /**
- * Everything Home's Setup block lists, and whether it should show at all.
+ * Everything the Dashboard's Setup block lists, and whether it should show at all.
  *
  * @param {Object}   args
  * @param {Object[]} args.connections From GET /connections.

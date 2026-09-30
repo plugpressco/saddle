@@ -50,7 +50,7 @@ class Saddle_Notices {
 	 * @return array[]
 	 */
 	private static function core() {
-		return array(
+		$notices = array(
 			array(
 				'id'       => self::INSTALLED_ID,
 				'module'   => 'saddle',
@@ -65,6 +65,32 @@ class Saddle_Notices {
 				'resolved' => array( __CLASS__, 'first_run_finished' ),
 			),
 		);
+
+		// Changes an app asked for that wait on the owner (#287). The list is
+		// on the Dashboard; every other Saddle page says how many and links
+		// there. It clears itself: nothing pending, no notice.
+		$pending = class_exists( 'Saddle_Approval' ) ? count( Saddle_Approval::pending() ) : 0;
+		if ( $pending > 0 ) {
+			$notices[] = array(
+				'id'       => 'saddle-needs-ok',
+				'module'   => 'saddle',
+				'severity' => 'warning',
+				'message'  => sprintf(
+					/* translators: %d: how many changes wait for the owner's OK. */
+					_n( '%d change is waiting for your OK.', '%d changes are waiting for your OK.', $pending, 'saddle' ),
+					$pending
+				),
+				'action'   => array(
+					'label' => __( 'Review', 'saddle' ),
+					'url'   => Saddle_Modules::url( 'home' ),
+				),
+				'where'    => 'saddle',
+				'screens'  => array( 'home/activity', 'connections', 'context', 'settings' ),
+				'dismiss'  => false,
+			);
+		}
+
+		return $notices;
 	}
 
 	/**

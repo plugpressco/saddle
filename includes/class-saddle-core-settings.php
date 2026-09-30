@@ -52,8 +52,12 @@ class Saddle_Core_Settings {
 	 * @return array<string,array>
 	 */
 	public static function fields() {
-		$permissions = 'connections/permissions';
-		$apps        = 'connections/apps';
+		// Permissions was a tab of Connections until #285. Access is chosen per
+		// app on AI apps; the safety switches, sign-in and services live in
+		// Settings; pausing is the Dashboard's switch.
+		$apps     = 'connections/apps';
+		$settings = 'settings/general';
+		$home     = 'home/overview';
 
 		return array(
 			'tier'                    => array(
@@ -62,7 +66,7 @@ class Saddle_Core_Settings {
 				'default' => Saddle_Capabilities::DEFAULT_TIER,
 				'label'   => __( 'Access level', 'saddle' ),
 				'help'    => __( 'What connected apps may do: read only, write content, or administer the site.', 'saddle' ),
-				'screen'  => $permissions,
+				'screen'  => $apps,
 				'control' => 'custom',
 			),
 			'drafts_only'             => array(
@@ -70,7 +74,7 @@ class Saddle_Core_Settings {
 				'default' => false,
 				'label'   => __( 'Drafts only', 'saddle' ),
 				'help'    => __( 'Apps can write, but nothing they make goes live until you publish it.', 'saddle' ),
-				'screen'  => $permissions,
+				'screen'  => $settings,
 				'control' => 'custom',
 			),
 			'rehearsal'               => array(
@@ -78,7 +82,7 @@ class Saddle_Core_Settings {
 				'default' => false,
 				'label'   => __( 'Rehearsal mode', 'saddle' ),
 				'help'    => __( 'Apps see what each change would do, and nothing is saved.', 'saddle' ),
-				'screen'  => $permissions,
+				'screen'  => $settings,
 				'control' => 'custom',
 			),
 			'paused'                  => array(
@@ -86,7 +90,7 @@ class Saddle_Core_Settings {
 				'default' => false,
 				'label'   => __( 'Pause Saddle', 'saddle' ),
 				'help'    => __( 'Every app is refused until you turn this off. Nothing else changes.', 'saddle' ),
-				'screen'  => $permissions,
+				'screen'  => $home,
 				'control' => 'custom',
 			),
 			'oauth_enabled'           => array(
@@ -94,7 +98,7 @@ class Saddle_Core_Settings {
 				'default' => false,
 				'label'   => __( 'Sign in with your address', 'saddle' ),
 				'help'    => __( 'Apps connect from the site address and you approve them on a consent screen.', 'saddle' ),
-				'screen'  => $apps,
+				'screen'  => $settings,
 				'control' => 'custom',
 			),
 			'oauth_dcr'               => array(
@@ -102,7 +106,7 @@ class Saddle_Core_Settings {
 				'default' => true,
 				'label'   => __( 'Let apps register themselves', 'saddle' ),
 				'help'    => __( 'Apps that support it can ask to connect. They get no access until you approve.', 'saddle' ),
-				'screen'  => $apps,
+				'screen'  => $settings,
 				'control' => 'custom',
 			),
 			'oauth_cimd'              => array(
@@ -110,7 +114,7 @@ class Saddle_Core_Settings {
 				'default' => true,
 				'label'   => __( 'Let apps identify themselves by address', 'saddle' ),
 				'help'    => __( 'Apps that publish a client document can ask to connect. They get no access until you approve.', 'saddle' ),
-				'screen'  => $apps,
+				'screen'  => $settings,
 				'control' => 'custom',
 			),
 			'unsplash_key'            => array(
@@ -118,7 +122,7 @@ class Saddle_Core_Settings {
 				'default' => '',
 				'label'   => __( 'Unsplash Access Key', 'saddle' ),
 				'help'    => __( 'Lets apps search and import Unsplash photos.', 'saddle' ),
-				'screen'  => $permissions,
+				'screen'  => $settings,
 				'control' => 'custom',
 			),
 			'memory_autoinject_agent' => array(

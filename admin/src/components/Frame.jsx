@@ -2,7 +2,7 @@
  * The frame Core draws on every Saddle page (#274, #280).
  *
  * A white header band across the full width: the mark and "Saddle / Page",
- * the safety pill and the notices bell, and the page's tabs inside the band.
+ * the AI on / Paused pill and the notices bell, and the page's tabs inside the band.
  * Then the page, and a quiet footer. WordPress's own left menu is the
  * navigation: there is no sidebar inside the page. A module's content sits in
  * the same frame, so every Saddle page reads as one product.
@@ -18,59 +18,47 @@ import {
 	Tabs,
 	Tooltip,
 	StatusDot,
-	Badge,
 	Popover,
 	SkipLink,
 } from '@plugpress/ui';
 import { __, sprintf, _n } from '@wordpress/i18n';
-import { levelFor, saddleData } from '../api';
+import { saddleData } from '../api';
 import { BrandMark, IconBell } from './icons';
 import NoticeItem from './NoticeItem';
 
-// One content width for every page: sparse pages don't feel empty, the
-// Permissions lanes still fit, and the column never resizes between tabs.
+// One content width for every page: sparse pages don't feel empty and the
+// column never resizes between tabs.
 const PAGE_WIDTH = 960;
 
-// Safety tone → design-system dot tone. Read-only is the calm state; any
-// write power shows as "attention", paused as switched-off.
-const DOT_TONES = {
-	safe: 'success',
-	active: 'warning',
-	paused: 'neutral',
-};
-
 /**
- * What connected apps may do right now, always in view. A real link to the
- * place where it is changed.
+ * Whether AI access is on, always in view: "AI on" or "Paused". A real link
+ * to the Dashboard, where the switch is. What each app may do is chosen per
+ * app on AI apps, so the pill no longer names a level.
  *
  * @param {Object}  props
- * @param {string}  props.tier
  * @param {boolean} props.paused
- * @param {boolean} props.rehearsal
- * @param {string}  props.href      Connections → Permissions.
+ * @param {string}  props.href   The Dashboard.
  */
-function StatusPill( { tier, paused, rehearsal, href } ) {
-	const level = levelFor( tier );
-	let tone = level.key === 'read' ? 'safe' : 'active';
-	if ( paused ) {
-		tone = 'paused';
-	}
+function StatusPill( { paused, href } ) {
 	return (
 		<Tooltip
 			content={ __(
-				'Change this in Connections → Permissions',
+				'Turn AI access on or off on the Dashboard',
 				'saddle'
 			) }
 		>
 			<a
 				href={ href }
-				className={ `saddle-status-pill saddle-status-pill--${ tone }` }
+				className={ `saddle-status-pill saddle-status-pill--${
+					paused ? 'paused' : 'on'
+				}` }
 			>
-				<StatusDot tone={ DOT_TONES[ tone ] } />
-				<span>{ paused ? __( 'Paused', 'saddle' ) : level.title }</span>
-				{ rehearsal && ! paused && (
-					<Badge tone="info">{ __( 'Rehearsal', 'saddle' ) }</Badge>
-				) }
+				<StatusDot tone={ paused ? 'neutral' : 'success' } />
+				<span>
+					{ paused
+						? __( 'Paused', 'saddle' )
+						: __( 'AI on', 'saddle' ) }
+				</span>
 			</a>
 		</Tooltip>
 	);
@@ -237,7 +225,7 @@ function Footer( { area } ) {
  * @param {Object}   props.area            The page, from saddleData.areas.
  * @param {string}   props.tab             The active tab.
  * @param {Function} props.onTab           Called with a tab key.
- * @param {Object}   props.status          { tier, paused, rehearsal, href }.
+ * @param {Object}   props.status          { paused, href }.
  * @param {boolean}  props.notices         Show the notices bell.
  * @param {boolean}  props.showTabs        Draw the page's tabs (first run doesn't).
  * @param {string=}  props.crumb           The page name after "Saddle /", when it
@@ -294,9 +282,7 @@ export default function Frame( {
 								onDismiss={ onDismissNotice }
 							/>
 						) }
-						{ status && status.tier && (
-							<StatusPill { ...status } />
-						) }
+						{ status && <StatusPill { ...status } /> }
 					</div>
 				</div>
 				{ tabs && (

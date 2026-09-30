@@ -40,9 +40,9 @@ function stopsFor( activityLabel ) {
 			id: 'status',
 			find: () =>
 				visible( document.querySelector( '.saddle-status-pill' ) ),
-			title: __( 'This line says what your AI can do', 'saddle' ),
+			title: __( 'This says whether your AI is on', 'saddle' ),
 			description: __(
-				'It always shows the level your apps have right now. Click it to change it.',
+				'It shows AI on, or Paused. Click it to go to the Dashboard, where you can pause.',
 				'saddle'
 			),
 			side: 'bottom',
@@ -54,7 +54,7 @@ function stopsFor( activityLabel ) {
 				visible( document.getElementById( 'toplevel_page_saddle' ) ),
 			title: __( 'Everything else is in the Saddle menu', 'saddle' ),
 			description: __(
-				'Your modules, Connections, Context and Settings are all here.',
+				'Your modules, AI apps, Context and Settings are all here.',
 				'saddle'
 			),
 			side: 'right',

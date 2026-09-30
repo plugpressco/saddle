@@ -49,38 +49,6 @@ export function BrandMark( props ) {
 	);
 }
 
-// Eye — the "read" / just-looking level.
-export function IconRead( props ) {
-	return (
-		<svg { ...base } { ...props }>
-			<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
-			<circle cx="12" cy="12" r="3" />
-		</svg>
-	);
-}
-
-// Pencil — the "read & write" / editing level.
-export function IconWrite( props ) {
-	return (
-		<svg { ...base } { ...props }>
-			<path d="M12 20h9" />
-			<path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z" />
-		</svg>
-	);
-}
-
-// Sliders — the "manage the site" / admin level.
-export function IconAdmin( props ) {
-	return (
-		<svg { ...base } { ...props }>
-			<path d="M4 6h11M19 6h1M4 12h1M9 12h11M4 18h7M15 18h5" />
-			<circle cx="17" cy="6" r="2" />
-			<circle cx="7" cy="12" r="2" />
-			<circle cx="13" cy="18" r="2" />
-		</svg>
-	);
-}
-
 // Bell — other plugins' notices, parked in the top bar.
 export function IconBell( props ) {
 	return (
@@ -100,14 +68,6 @@ export function IconConnect( props ) {
 			<path d="M12 16v6" />
 		</svg>
 	);
-}
-
-// Map a level key to its icon component.
-const LEVEL_ICONS = { read: IconRead, write: IconWrite, admin: IconAdmin };
-
-export function LevelIcon( { name, ...props } ) {
-	const Cmp = LEVEL_ICONS[ name ] || IconRead;
-	return <Cmp { ...props } />;
 }
 
 /* ---------- AI app brand logos ----------

@@ -1,20 +1,19 @@
 /**
  * Memory — what Saddle remembers between AI sessions.
  *
- * The owner's governance surface for the memory store: see the exact block
- * served to every new session, review every entry with its provenance
- * (yours vs written by an AI), pin what should always be known, and clear
- * agent-written memory in one click. Agent-written entries are never served
+ * The owner's governance surface for the memory store: one row per entry
+ * (yours, or saved by an app), View opens the full text with Pin and Delete,
+ * and the last row is the auto-include switch with a one-click clear of
+ * agent-written memory. Agent-written entries are never served
  * automatically unless you pin them or turn the auto-include toggle on.
  */
 import { useState, useEffect } from '@wordpress/element';
 import {
 	Button,
 	Spinner,
+	Badge,
 	Card,
 	CardContent,
-	Collapsible,
-	Drawer,
 	Field,
 	Input,
 	Textarea,
@@ -34,17 +33,16 @@ export default function Memory( { onChanged } ) {
 	const confirm = useConfirm();
 	const [ entries, setEntries ] = useState( [] );
 	const [ settings, setSettings ] = useState( null );
-	const [ preview, setPreview ] = useState( '' );
 	const [ loading, setLoading ] = useState( true );
 	const [ openKey, setOpenKey ] = useState( null );
-	const [ howOpen, setHowOpen ] = useState( false );
 	const [ draft, setDraft ] = useState( { key: '', text: '' } );
 	const [ adding, setAdding ] = useState( false );
+	// The add form opens from the header's button and closes on Cancel.
+	const [ composing, setComposing ] = useState( false );
 
 	const apply = ( res ) => {
 		setEntries( res.entries || [] );
 		setSettings( res.settings || null );
-		setPreview( res.preview || '' );
 		onChanged?.();
 	};
 
@@ -72,6 +70,7 @@ export default function Memory( { onChanged } ) {
 		} ).finally( () => {
 			setAdding( false );
 			setDraft( { key: '', text: '' } );
+			setComposing( false );
 		} );
 	};
 
@@ -127,7 +126,7 @@ export default function Memory( { onChanged } ) {
 						{ __( 'Memory', 'saddle' ) }
 						<HelpTip>
 							{ __(
-								'Things worth knowing between sessions, saved by you here or noted by your AI as it works. Pin an entry so every session is told it; your own notes are told to every session automatically.',
+								'Things worth knowing between sessions, saved by you here or noted by your AI as it works. Pin an entry so every session is told it.',
 								'saddle'
 							) }
 						</HelpTip>
@@ -137,46 +136,144 @@ export default function Memory( { onChanged } ) {
 					<Button
 						variant="secondary"
 						size="sm"
-						onClick={ () => setHowOpen( true ) }
+						onClick={ () => setComposing( true ) }
+						disabled={ composing }
 					>
-						{ __( 'How memory works', 'saddle' ) }
+						{ __( 'Add memory', 'saddle' ) }
 					</Button>
 				}
 			/>
 
-			{ entries.length === 0 && (
+			{ composing && (
 				<Card>
 					<CardContent>
-						<p className="saddle-memory__empty">
-							{ __( 'Nothing remembered yet.', 'saddle' ) }
-						</p>
+						<div className="saddle-memory__compose">
+							<Field
+								label={ __(
+									'Add something to remember',
+									'saddle'
+								) }
+							>
+								{ ( a11y ) => (
+									<Textarea
+										{ ...a11y }
+										value={ draft.text }
+										onChange={ ( e ) =>
+											setDraft( ( d ) => ( {
+												...d,
+												text: e.target.value,
+											} ) )
+										}
+										rows={ 3 }
+										placeholder={ __(
+											'e.g. The pricing page is “Plans” (page 42) — update it, never create a new one.',
+											'saddle'
+										) }
+									/>
+								) }
+							</Field>
+							<Field label={ __( 'Name (optional)', 'saddle' ) }>
+								{ ( a11y ) => (
+									<Input
+										{ ...a11y }
+										value={ draft.key }
+										onChange={ ( e ) =>
+											setDraft( ( d ) => ( {
+												...d,
+												key: e.target.value,
+											} ) )
+										}
+										placeholder={ __(
+											'e.g. pricing-page',
+											'saddle'
+										) }
+									/>
+								) }
+							</Field>
+							<div className="saddle-memory__compose-actions">
+								<Button
+									variant="secondary"
+									onClick={ addEntry }
+									loading={ adding }
+									disabled={ adding || ! draft.text.trim() }
+								>
+									{ __( 'Remember this', 'saddle' ) }
+								</Button>
+								<Button
+									variant="ghost"
+									onClick={ () => {
+										setComposing( false );
+										setDraft( { key: '', text: '' } );
+									} }
+									disabled={ adding }
+								>
+									{ __( 'Cancel', 'saddle' ) }
+								</Button>
+							</div>
+						</div>
 					</CardContent>
 				</Card>
 			) }
 
-			{ entries.length > 0 && (
-				<RowList>
-					{ entries.map( ( entry ) => (
-						<div key={ entry.key }>
-							<Row
-								title={ entry.key }
-								description={
-									( entry.source === 'owner'
-										? __( 'You', 'saddle' )
-										: sprintf(
-												/* translators: %s: client name. */
-												__( 'AI · %s', 'saddle' ),
-												entry.client ||
-													__( 'unknown', 'saddle' )
-										  ) ) +
-									' · ' +
-									entry.type +
-									( entry.pinned
-										? ' · ' + __( 'pinned', 'saddle' )
-										: '' )
-								}
-								actions={
-									<>
+			<RowList>
+				{ entries.length === 0 && (
+					<Row
+						title={
+							<span className="saddle-apps__empty">
+								{ __( 'Nothing remembered yet.', 'saddle' ) }
+							</span>
+						}
+					/>
+				) }
+				{ entries.map( ( entry ) => (
+					<div key={ entry.key }>
+						<Row
+							title={ entry.key }
+							description={
+								<span
+									className="saddle-memory__text"
+									title={ entry.text }
+								>
+									{ 'owner' !== entry.source &&
+										sprintf(
+											/* translators: %s: app name. */
+											__( 'Saved by %s · ', 'saddle' ),
+											entry.client ||
+												__( 'an app', 'saddle' )
+										) }
+									{ entry.text }
+								</span>
+							}
+							actions={
+								<>
+									{ entry.pinned && (
+										<Badge>
+											{ __( 'Pinned', 'saddle' ) }
+										</Badge>
+									) }
+									<Button
+										variant="link"
+										size="sm"
+										onClick={ () =>
+											setOpenKey(
+												openKey === entry.key
+													? null
+													: entry.key
+											)
+										}
+									>
+										{ openKey === entry.key
+											? __( 'Hide', 'saddle' )
+											: __( 'View', 'saddle' ) }
+									</Button>
+								</>
+							}
+						/>
+						{ openKey === entry.key && (
+							<div className="saddle-memory__open">
+								<CodeBlock code={ entry.text } copy={ false } />
+								<div className="saddle-memory__open-actions">
+									<span className="saddle-memory__pin">
 										<Switch
 											checked={ entry.pinned }
 											onChange={ () =>
@@ -196,109 +293,58 @@ export default function Memory( { onChanged } ) {
 												entry.key
 											) }
 										/>
-										<Button
-											variant="link"
-											onClick={ () =>
-												setOpenKey(
-													openKey === entry.key
-														? null
-														: entry.key
-												)
-											}
-										>
-											{ openKey === entry.key
-												? __( 'Hide', 'saddle' )
-												: __( 'View', 'saddle' ) }
-										</Button>
-										<Button
-											variant="link"
-											className="saddle-link-danger"
-											onClick={ () =>
-												forgetEntry( entry )
-											}
-										>
-											{ __( 'Delete', 'saddle' ) }
-										</Button>
-									</>
-								}
-							/>
-							{ openKey === entry.key && (
-								<CodeBlock
-									className="saddle-rows__body"
-									code={ entry.text }
-									copy={ false }
-								/>
-							) }
-						</div>
-					) ) }
-				</RowList>
-			) }
-
-			<Card>
-				<CardContent>
-					<div className="saddle-memory__compose">
-						<Field
-							label={ __(
-								'Add something to remember',
-								'saddle'
-							) }
-						>
-							{ ( a11y ) => (
-								<Textarea
-									{ ...a11y }
-									value={ draft.text }
-									onChange={ ( e ) =>
-										setDraft( ( d ) => ( {
-											...d,
-											text: e.target.value,
-										} ) )
-									}
-									rows={ 3 }
-									placeholder={ __(
-										'e.g. The pricing page is “Plans” (page 42) — update it, never create a new one.',
-										'saddle'
-									) }
-								/>
-							) }
-						</Field>
-						<Field label={ __( 'Name (optional)', 'saddle' ) }>
-							{ ( a11y ) => (
-								<Input
-									{ ...a11y }
-									value={ draft.key }
-									onChange={ ( e ) =>
-										setDraft( ( d ) => ( {
-											...d,
-											key: e.target.value,
-										} ) )
-									}
-									placeholder={ __(
-										'e.g. pricing-page',
-										'saddle'
-									) }
-								/>
-							) }
-						</Field>
-						<Button
-							variant="secondary"
-							onClick={ addEntry }
-							loading={ adding }
-							disabled={ adding || ! draft.text.trim() }
-						>
-							{ __( 'Remember this', 'saddle' ) }
-						</Button>
+										{ __( 'Pinned', 'saddle' ) }
+									</span>
+									<Button
+										variant="link"
+										size="sm"
+										className="saddle-link-danger"
+										onClick={ () => forgetEntry( entry ) }
+									>
+										{ __( 'Delete', 'saddle' ) }
+									</Button>
+								</div>
+							</div>
+						) }
 					</div>
-				</CardContent>
-			</Card>
-
-			{ settings && (
-				<Card>
-					<CardContent>
-						<div className="saddle-guide__actions saddle-guide__actions--stack">
+				) ) }
+				{ settings && (
+					<Row
+						className="saddle-memory__setting"
+						title={
 							<label
-								className="saddle-toggle-row"
+								className="saddle-memory__setting-label"
 								htmlFor="saddle-memory-autoinject"
 							>
+								{ __(
+									'Auto-include AI-written memory',
+									'saddle'
+								) }
+								<HelpTip>
+									{ __(
+										'Your own and pinned entries are told to every new session. Entries an AI saved on its own are only found when it searches, unless you pin them or turn this on; off is safest, so pin the ones worth keeping. Memory never changes what an app is allowed to do.',
+										'saddle'
+									) }
+								</HelpTip>
+							</label>
+						}
+						actions={
+							<>
+								{ agentCount > 0 && (
+									<Button
+										variant="link"
+										size="sm"
+										className="saddle-link-danger"
+										onClick={ () =>
+											clearAgentMemory( agentCount )
+										}
+									>
+										{ __(
+											'Clear AI-written memory',
+											'saddle'
+										) }
+									</Button>
+								) }
 								<Switch
 									id="saddle-memory-autoinject"
 									checked={ settings.autoinject_agent }
@@ -313,109 +359,11 @@ export default function Memory( { onChanged } ) {
 										'saddle'
 									) }
 								/>
-								<span>
-									{ __(
-										'Auto-include AI-written memory',
-										'saddle'
-									) }
-								</span>
-								<HelpTip>
-									{ __(
-										'Entries an AI saved on its own are only found when it searches, unless you pin them or turn this on. Off is safest: pin entries instead.',
-										'saddle'
-									) }
-								</HelpTip>
-							</label>
-							{ agentCount > 0 && (
-								<Button
-									variant="secondary"
-									className="saddle-link-danger"
-									onClick={ () =>
-										clearAgentMemory( agentCount )
-									}
-								>
-									{ __(
-										'Clear AI-written memory',
-										'saddle'
-									) }
-								</Button>
-							) }
-						</div>
-					</CardContent>
-				</Card>
-			) }
-
-			{ preview !== '' && (
-				<Collapsible
-					trigger={ __(
-						'Show what every session is told about memory',
-						'saddle'
-					) }
-				>
-					<CodeBlock
-						className="saddle-guide__system"
-						code={ preview }
-						copy={ false }
+							</>
+						}
 					/>
-				</Collapsible>
-			) }
-
-			<Drawer
-				open={ howOpen }
-				onOpenChange={ setHowOpen }
-				title={ __( 'How memory works', 'saddle' ) }
-				size="md"
-			>
-				<div className="saddle-doc saddle-doc--bare">
-					<p className="saddle-doc__p">
-						{ __(
-							'Memory is background information your AI carries between sessions — saved by you on this page, or noted by an AI with its memory tools while it works. It saves you re-explaining your site every time.',
-							'saddle'
-						) }
-					</p>
-					<h3 className="saddle-doc__h">
-						{ __( 'What every session is told', 'saddle' ) }
-					</h3>
-					<ul className="saddle-doc__list">
-						<li>
-							{ __(
-								'Your own entries — always included.',
-								'saddle'
-							) }
-						</li>
-						<li>
-							{ __(
-								'Pinned entries — always included, whoever wrote them.',
-								'saddle'
-							) }
-						</li>
-						<li>
-							{ __(
-								'Everything else — only found when an AI searches its memory.',
-								'saddle'
-							) }
-						</li>
-					</ul>
-					<h3 className="saddle-doc__h">
-						{ __( 'AI-written entries', 'saddle' ) }
-					</h3>
-					<p className="saddle-doc__p">
-						{ __(
-							'Entries an AI saved on its own are never served to future sessions automatically — you stay in control of what becomes standing knowledge. Pin the ones worth keeping, or turn on auto-include if you trust the whole set (off is safest). “Clear AI-written memory” removes them all at once; your own entries are kept.',
-							'saddle'
-						) }
-					</p>
-					<h3 className="saddle-doc__h">
-						{ __( 'Safety', 'saddle' ) }
-					</h3>
-					<p className="saddle-doc__p">
-						{ __(
-							'Memory is background information only. It can never change what your AI is allowed to do — the access level and per-tool permissions always win.',
-							'saddle'
-						) }
-					</p>
-				</div>
-			</Drawer>
+				) }
+			</RowList>
 		</section>
 	);
 }
