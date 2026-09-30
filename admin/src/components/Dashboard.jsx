@@ -14,6 +14,7 @@ import { api } from '../api';
 import { APPS } from '../connect-apps';
 import { parseModules, setupBlock } from '../onboarding-logic';
 import SetupBlock from './SetupBlock';
+import NeedsYourOk from './NeedsYourOk';
 import SectionHeader from './SectionHeader';
 import { actionLabel, parseEntryDate, relativeWhen } from '../activity-format';
 
@@ -219,7 +220,9 @@ export default function Dashboard( {
 				</RowList>
 			</section>
 
-			{ /* NeedsYourOk (#287) is placed here at integration */ }
+			{ /* Big changes an app asked for, waiting for the owner (#287). Draws
+			     nothing when there are none. */ }
+			<NeedsYourOk />
 
 			<SetupBlock
 				tier={ tier }
