@@ -203,6 +203,12 @@ The WordPress.org version never checks for its own updates. The version from plu
 = Unreleased =
 * Changed: Saddle is one menu in wp-admin with four pages: Home, Connections, Context and Settings. Each page has its own address and tabs, and the sidebar inside the Saddle screen is gone. Old links still open the right page.
 * New: The Context page. Tell every connected app about your site in five fields: about this site, current goal, voice and style, rules, and other instructions. Skills, memory and what Saddle tells every app automatically are on the same page.
+* Changed: Each setting has one place. The pause switch is on Connections > Permissions, and sign-in for apps is on Connections > Apps.
+* New: Settings > Advanced holds the memory limits and the site address check, which had no screen before.
+* New: Your AI app can list Saddle's pages and read any module's settings, then give you a link to the right screen instead of describing clicks. It can ask to change a setting a module allows, shows you the change first, and the change can be undone. It can never change what it is allowed to do: the access level, pause, rehearsal, drafts-only and sign-in stay yours.
+* New: Saddle shows at most one notice at the top of its pages and keeps the rest behind the bell. You can dismiss most notices. The Plugins screen shows one "Get started" notice until setup is finished.
+* New: For plugin developers: a plugin can add its own page under the Saddle menu with the saddle_modules filter, and describe its settings once. Saddle draws the form, serves it over the REST API and offers it to agents.
+* Removed: The unused dark and light theme setting. The Saddle screens have one light theme.
 * Changed: First run reads your site before it asks you anything. It counts your pages, posts, media and waiting updates. It also lists work your AI app could do, such as images with no alt text. Then it helps you connect your app on the same screen.
 * Changed: Saddle asks whether your AI app may edit content after the app connects, not before. A new install still starts read-only.
 * Fixed: Closing the connect screen no longer removes a key the app has already used. This happened when the key was copied by hand instead of with Copy setup.

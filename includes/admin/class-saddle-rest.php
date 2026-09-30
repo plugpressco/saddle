@@ -62,11 +62,6 @@ class Saddle_REST_Admin {
 						'type'     => 'boolean',
 						'required' => false,
 					),
-					'theme'       => array(
-						'type'     => 'string',
-						'required' => false,
-						'enum'     => array( 'system', 'light', 'dark' ),
-					),
 					'drafts_only' => array(
 						'type'     => 'boolean',
 						'required' => false,
@@ -453,26 +448,10 @@ class Saddle_REST_Admin {
 	 */
 	public static function update_oauth_settings( WP_REST_Request $request ) {
 		if ( null !== $request->get_param( 'enabled' ) ) {
-			$enabled = (bool) $request->get_param( 'enabled' );
-
-			$readiness = Saddle_OAuth::readiness();
-			if ( $enabled && ! $readiness['ready'] ) {
-				return new WP_Error(
-					'saddle_oauth_not_ready',
-					$readiness['permalinks']
-						? __( 'Sign-in with OAuth needs your site to be served over HTTPS — an access token sent over plain HTTP can be read in transit.', 'saddle' )
-						: __( 'Sign-in with OAuth needs pretty permalinks. Go to Settings → Permalinks and choose any option other than Plain, then try again.', 'saddle' ),
-					array( 'status' => 409 )
-				);
+			$done = Saddle_Core_Settings::set_oauth_enabled( (bool) $request->get_param( 'enabled' ) );
+			if ( is_wp_error( $done ) ) {
+				return $done;
 			}
-
-			// Turning it off disconnects the apps rather than leaving live tokens
-			// waiting for it to come back on. "Off" should mean off.
-			if ( ! $enabled && Saddle_OAuth::is_enabled() ) {
-				Saddle_OAuth_Store::purge();
-			}
-
-			Saddle_OAuth::set_enabled( $enabled );
 		}
 
 		if ( null !== $request->get_param( 'dcr' ) ) {
@@ -619,16 +598,6 @@ class Saddle_REST_Admin {
 	}
 
 	/**
-	 * The current admin's saved dashboard theme preference.
-	 *
-	 * @return string One of: system, light, dark.
-	 */
-	private static function admin_theme() {
-		$theme = (string) get_user_meta( get_current_user_id(), 'saddle_admin_theme', true );
-		return '' !== $theme ? $theme : 'system';
-	}
-
-	/**
 	 * GET /settings.
 	 *
 	 * @return WP_REST_Response
@@ -641,7 +610,6 @@ class Saddle_REST_Admin {
 				'default'        => Saddle_Capabilities::DEFAULT_TIER,
 				'onboarded'      => (bool) get_option( 'saddle_onboarded', false ),
 				'paused'         => Saddle_Capabilities::is_paused(),
-				'theme'          => self::admin_theme(),
 				'domain_warning' => ! Saddle_Capabilities::domain_matches_recorded(),
 				'domain'         => array(
 					'current'  => Saddle_Capabilities::current_domain(),
@@ -691,17 +659,6 @@ class Saddle_REST_Admin {
 
 		if ( array_key_exists( 'onboarded', $params ) ) {
 			update_option( 'saddle_onboarded', (bool) $request->get_param( 'onboarded' ) );
-		}
-
-		// Theme is a personal preference, not site state — user meta, and
-		// "system" (the default) simply clears it.
-		if ( array_key_exists( 'theme', $params ) ) {
-			$theme = (string) $request->get_param( 'theme' );
-			if ( 'system' === $theme ) {
-				delete_user_meta( get_current_user_id(), 'saddle_admin_theme' );
-			} else {
-				update_user_meta( get_current_user_id(), 'saddle_admin_theme', $theme );
-			}
 		}
 
 		if ( array_key_exists( 'paused', $params ) ) {

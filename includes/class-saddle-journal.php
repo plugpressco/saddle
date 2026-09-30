@@ -66,6 +66,14 @@ class Saddle_Journal {
 	private static $seen = array();
 
 	/**
+	 * Option names the running tool declared it will write, beyond the
+	 * allowlist. See expect_options().
+	 *
+	 * @var string[]
+	 */
+	private static $expected = array();
+
+	/**
 	 * Whether more than MAX_ITEMS changes happened.
 	 *
 	 * @var bool
@@ -111,6 +119,22 @@ class Saddle_Journal {
 		self::$items    = array();
 		self::$seen     = array();
 		self::$overflow = false;
+		self::$expected = array();
+	}
+
+	/**
+	 * Let the running tool name the options it is about to write, so their
+	 * before-state is journaled and the change can be undone. Lasts until the
+	 * tool returns. Only the tool knows: the journal's allowlist is the
+	 * options Saddle's own tools write, and a module's settings are not among
+	 * them. Does nothing outside a saddle/* ability.
+	 *
+	 * @param string[] $names Option names.
+	 */
+	public static function expect_options( array $names ) {
+		if ( self::$active ) {
+			self::$expected = array_values( array_unique( array_merge( self::$expected, array_map( 'strval', $names ) ) ) );
+		}
 	}
 
 	/**
@@ -125,6 +149,7 @@ class Saddle_Journal {
 			self::$items    = array();
 			self::$seen     = array();
 			self::$overflow = false;
+			self::$expected = array();
 		}
 	}
 
@@ -698,6 +723,9 @@ class Saddle_Journal {
 	 * @return bool
 	 */
 	private static function journals_option( $name ) {
+		if ( in_array( $name, self::$expected, true ) ) {
+			return true;
+		}
 		// set-auto-update's options, named the way that tool names them.
 		foreach ( self::AUTO_UPDATE_TYPES as $type ) {
 			if ( "auto_update_{$type}s" === $name ) {

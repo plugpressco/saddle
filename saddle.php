@@ -160,8 +160,16 @@ require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-consent.php';
 require_once SADDLE_DIR . 'includes/oauth/class-saddle-oauth-bearer.php';
 require_once SADDLE_DIR . 'includes/class-saddle-first-look.php';
 require_once SADDLE_DIR . 'includes/class-saddle-modules.php';
+require_once SADDLE_DIR . 'includes/class-saddle-settings-registry.php';
+require_once SADDLE_DIR . 'includes/class-saddle-settings-guard.php';
+require_once SADDLE_DIR . 'includes/class-saddle-settings-view.php';
+require_once SADDLE_DIR . 'includes/class-saddle-core-settings.php';
+require_once SADDLE_DIR . 'includes/class-saddle-modules-view.php';
+require_once SADDLE_DIR . 'includes/class-saddle-notices.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-rest.php';
+require_once SADDLE_DIR . 'includes/admin/class-saddle-notices-admin.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-connections-rest.php';
+require_once SADDLE_DIR . 'includes/admin/class-saddle-modules-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-settings.php';
 
 /*
@@ -239,6 +247,7 @@ final class Saddle {
 		add_action( 'saddle_flush_cache', array( 'Saddle_Context_Bundle', 'flush' ) );
 		add_filter( 'saddle_context_sections', array( 'Saddle_Memory', 'context_section' ) );
 		add_action( 'rest_api_init', array( 'Saddle_REST_Admin', 'register_routes' ) );
+		Saddle_Notices_Admin::register();
 		add_action( 'rest_api_init', array( 'Saddle_Connection', 'register_routes' ) );
 		add_action( 'rest_api_init', array( 'Saddle_MCP_Diagnostics', 'register_routes' ) );
 		add_action( 'init', array( 'Saddle_Unsplash', 'register_taxonomy' ) );
@@ -279,6 +288,7 @@ final class Saddle {
 		// transport, and forgets a credential when it is revoked.
 		Saddle_Connections::register();
 		add_action( 'rest_api_init', array( 'Saddle_Connections_REST', 'register_routes' ) );
+		add_action( 'rest_api_init', array( 'Saddle_Modules_REST', 'register_routes' ) );
 
 		// The background update runner: hooks its one-shot cron event so a run
 		// queued by update-plugin / update-theme fires even when the abilities
@@ -308,6 +318,7 @@ final class Saddle {
 			require_once SADDLE_DIR . 'includes/abilities/verify.php';
 			require_once SADDLE_DIR . 'includes/abilities/memory.php';
 			require_once SADDLE_DIR . 'includes/abilities/undo.php';
+			require_once SADDLE_DIR . 'includes/abilities/modules.php';
 			require_once SADDLE_DIR . 'includes/abilities/menus.php';
 			require_once SADDLE_DIR . 'includes/abilities/unsplash.php';
 			require_once SADDLE_DIR . 'includes/abilities/yoast.php';
@@ -332,6 +343,8 @@ final class Saddle {
 			add_action( 'wp_abilities_api_init', 'saddle_register_verify_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_memory_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_undo_abilities' );
+			add_action( 'wp_abilities_api_init', 'saddle_register_module_abilities' );
+			add_filter( 'saddle_context_sections', array( 'Saddle_Module_Abilities', 'context_section' ) );
 			add_action( 'wp_abilities_api_init', 'saddle_register_menu_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_unsplash_abilities' );
 			// Native SEO and WooCommerce integrations register at 30 behind
