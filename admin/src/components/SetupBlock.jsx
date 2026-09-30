@@ -3,26 +3,22 @@
  *
  * Three Core tasks (connect an app, try a first prompt, choose what it can
  * do) are worked out from the connection registry and the onboarding state,
- * never stored. Each installed module adds its own unfinished tasks from
- * `GET /modules`. The block says how many are done, can be hidden, and is
- * gone once everything is done.
+ * never stored. Each installed module adds its own unfinished tasks (Home
+ * fetches `GET /modules` once and passes `areas`). One compact row each; the
+ * section says how many are done, can be hidden, and is gone once everything
+ * is done.
  */
-import { useState, useEffect } from '@wordpress/element';
-import {
-	Button,
-	Card,
-	CardContent,
-	CardHeader,
-	ChecklistItem,
-} from '@plugpress/ui';
+import { Button, Row, RowList, StatusDot } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
-import { api } from '../api';
-import { setupBlock, parseModules } from '../onboarding-logic';
+import { setupBlock } from '../onboarding-logic';
+import SectionHeader from './SectionHeader';
 import { withArg } from '../routes';
 
 /**
  * @param {Object}   props
  * @param {string}   props.tier        The site's tier.
+ * @param {?Array}   props.areas       From parseModules(), or null while
+ *                                     loading (nothing is drawn yet).
  * @param {?Array}   props.connections From GET /connections, or null while
  *                                     loading (nothing is drawn yet).
  * @param {Object}   props.onboarding  GET /onboarding.
@@ -34,26 +30,13 @@ import { withArg } from '../routes';
 export default function SetupBlock( {
 	tier,
 	connections,
+	areas,
 	onboarding,
 	homeUrl,
 	onConnect,
 	onNavigate,
 	onHide,
 } ) {
-	// `null` until the modules route has answered; a 404 (no modules) or any
-	// failure means there are none.
-	const [ areas, setAreas ] = useState( null );
-
-	useEffect( () => {
-		let alive = true;
-		api( 'modules' )
-			.then( ( res ) => alive && setAreas( parseModules( res ) ) )
-			.catch( () => alive && setAreas( [] ) );
-		return () => {
-			alive = false;
-		};
-	}, [] );
-
 	if ( null === connections || null === areas || ! onboarding ) {
 		return null;
 	}
@@ -101,8 +84,8 @@ export default function SetupBlock( {
 	};
 
 	return (
-		<Card className="saddle-setup">
-			<CardHeader
+		<section className="saddle-stack saddle-setup">
+			<SectionHeader
 				title={ __( 'Setup', 'saddle' ) }
 				description={ sprintf(
 					/* translators: 1: steps done, 2: steps in all. */
@@ -116,50 +99,50 @@ export default function SetupBlock( {
 					</Button>
 				}
 			/>
-			<CardContent>
-				<div className="saddle-setup__rows">
-					{ block.core.map( ( task ) => (
-						<ChecklistItem
-							key={ task.id }
-							status={ task.done ? 'done' : 'todo' }
-							label={ task.title }
-							trailing={
-								task.done ? null : coreAction( task.id )
-							}
-						/>
-					) ) }
-					{ block.modules.map( ( { module, product, task } ) => (
-						<ChecklistItem
-							key={ `${ module }/${ task.id }` }
-							status="todo"
-							label={ sprintf(
-								/* translators: 1: module name, 2: what to do. */
-								__( '%1$s: %2$s', 'saddle' ),
-								product,
-								task.title
-							) }
-							hint={ task.line || undefined }
-							trailing={
-								task.action && task.action.url ? (
-									<Button
-										variant="link"
-										size="sm"
-										href={ task.action.url }
-										{ ...( task.action.external
-											? {
-													target: '_blank',
-													rel: 'noreferrer',
-											  }
-											: {} ) }
-									>
-										{ task.action.label }
-									</Button>
-								) : null
-							}
-						/>
-					) ) }
-				</div>
-			</CardContent>
-		</Card>
+			<RowList>
+				{ block.core.map( ( task ) => (
+					<Row
+						key={ task.id }
+						icon={
+							<StatusDot
+								tone={ task.done ? 'success' : 'neutral' }
+							/>
+						}
+						title={ task.title }
+						actions={ task.done ? null : coreAction( task.id ) }
+					/>
+				) ) }
+				{ block.modules.map( ( { module, product, task } ) => (
+					<Row
+						key={ `${ module }/${ task.id }` }
+						icon={ <StatusDot tone="neutral" /> }
+						title={ sprintf(
+							/* translators: 1: module name, 2: what to do. */
+							__( '%1$s: %2$s', 'saddle' ),
+							product,
+							task.title
+						) }
+						description={ task.line || undefined }
+						actions={
+							task.action && task.action.url ? (
+								<Button
+									variant="link"
+									size="sm"
+									href={ task.action.url }
+									{ ...( task.action.external
+										? {
+												target: '_blank',
+												rel: 'noreferrer',
+										  }
+										: {} ) }
+								>
+									{ task.action.label }
+								</Button>
+							) : null
+						}
+					/>
+				) ) }
+			</RowList>
+		</section>
 	);
 }

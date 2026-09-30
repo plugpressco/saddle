@@ -94,7 +94,7 @@ class Saddle_Modules_View {
 			'home'        => __( 'What your connected apps have been doing, and what is left to set up.', 'saddle' ),
 			'connections' => __( 'Connect apps, and choose what they are allowed to do.', 'saddle' ),
 			'context'     => __( 'What every connected app knows about this site: your instructions, skills and memory.', 'saddle' ),
-			'settings'    => __( 'Advanced options for Saddle.', 'saddle' ),
+			'settings'    => __( 'Memory limits, recent changes and the site address check.', 'saddle' ),
 		);
 
 		return isset( $core[ $key ] )

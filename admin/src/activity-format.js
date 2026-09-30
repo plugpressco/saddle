@@ -4,7 +4,8 @@
  * they share one set of pure helpers here — same timestamp parsing, same
  * labels — instead of each re-deriving (and drifting on) them. No JSX.
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
+import { bareToolName } from './onboarding-logic';
 
 const WHEN_FMT = new Intl.DateTimeFormat( undefined, {
 	dateStyle: 'medium',
@@ -129,6 +130,68 @@ export const shortLabel = ( entry ) => {
 		return `${ VERBS[ m[ 1 ] ] } ${ m[ 2 ] }${ at }`;
 	}
 	return entry.summary || entry.action || '—';
+};
+
+const TIER_NAMES = {
+	read: __( 'Reading', 'saddle' ),
+	write: __( 'Writing', 'saddle' ),
+	admin: __( 'Admin', 'saddle' ),
+};
+
+/**
+ * An entry's action in words the owner knows: the tool's own label ("Update
+ * module settings"), not its name. A blocked call says why when it was the
+ * access level: "Blocked · Update module settings · needs Admin".
+ *
+ * @param {Object}   entry Audit-log entry.
+ * @param {Object[]} caps  The capabilities list (`GET /capabilities`).
+ * @return {string} Label.
+ */
+export const actionLabel = ( entry, caps ) => {
+	const short = bareToolName(
+		String( entry.action || '' ).replace( /^denied-/, '' )
+	);
+	const cap = ( Array.isArray( caps ) ? caps : [] ).find(
+		( c ) => c.short === short
+	);
+	let name = cap && cap.label ? cap.label : '';
+	const called = 'denied' === entry.type || 'rehearsed' === entry.type;
+	// Not a tool Saddle knows (an event such as "oauth-authorized"): its
+	// stored summary already says it in words.
+	if ( ! name && ! called && entry.summary ) {
+		return entry.summary;
+	}
+	if ( ! name && short ) {
+		const plain = short.replace( /[-_]+/g, ' ' );
+		name = plain.charAt( 0 ).toUpperCase() + plain.slice( 1 );
+	}
+	if ( ! name ) {
+		return entry.summary || '—';
+	}
+
+	if ( entry.type === 'denied' ) {
+		const need = 'tier' === entry.target && cap && TIER_NAMES[ cap.tier ];
+		return need
+			? sprintf(
+					/* translators: 1: a tool's name, 2: the access level it needs. */
+					__( 'Blocked · %1$s · needs %2$s', 'saddle' ),
+					name,
+					need
+			  )
+			: sprintf(
+					/* translators: %s: a tool's name. */
+					__( 'Blocked · %s', 'saddle' ),
+					name
+			  );
+	}
+	if ( entry.type === 'rehearsed' ) {
+		return sprintf(
+			/* translators: %s: a tool's name. */
+			__( 'Rehearsed · %s', 'saddle' ),
+			name
+		);
+	}
+	return name;
 };
 
 /**

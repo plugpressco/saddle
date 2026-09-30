@@ -7,6 +7,7 @@ import {
 	draftProblems,
 	fieldForHash,
 	fieldId,
+	groupBySection,
 	isDirty,
 	needsDisclosure,
 	renderableFields,
@@ -32,7 +33,7 @@ describe( 'renderableFields', () => {
 	const fields = [
 		f( 'a' ),
 		f( 'b', { control: 'custom' } ),
-		f( 'c', { screen: 'settings/advanced' } ),
+		f( 'c', { screen: 'settings/general' } ),
 	];
 
 	it( 'skips fields a bespoke component owns', () => {
@@ -44,14 +45,59 @@ describe( 'renderableFields', () => {
 
 	it( 'limits to one screen when asked', () => {
 		expect(
-			renderableFields( fields, 'settings/advanced' ).map(
-				( x ) => x.key
-			)
+			renderableFields( fields, 'settings/general' ).map( ( x ) => x.key )
 		).toEqual( [ 'c' ] );
 	} );
 
 	it( 'copes with nothing', () => {
 		expect( renderableFields( undefined ) ).toEqual( [] );
+	} );
+} );
+
+describe( 'groupBySection', () => {
+	it( 'groups in order of first appearance', () => {
+		const groups = groupBySection( [
+			f( 'a', { section: 'Memory' } ),
+			f( 'b', { section: 'Security' } ),
+			f( 'c', { section: 'Memory' } ),
+		] );
+		expect( groups.map( ( g ) => g.section ) ).toEqual( [
+			'Memory',
+			'Security',
+		] );
+		expect( groups[ 0 ].fields.map( ( x ) => x.key ) ).toEqual( [
+			'a',
+			'c',
+		] );
+	} );
+
+	it( 'puts fields with no section first, in one unnamed group', () => {
+		const groups = groupBySection( [
+			f( 'a', { section: 'Memory' } ),
+			f( 'b' ),
+			f( 'c', { section: '' } ),
+		] );
+		expect( groups.map( ( g ) => g.section ) ).toEqual( [ '', 'Memory' ] );
+		expect( groups[ 0 ].fields.map( ( x ) => x.key ) ).toEqual( [
+			'b',
+			'c',
+		] );
+	} );
+
+	it( 'splits each group on its own', () => {
+		const groups = groupBySection( [
+			f( 'a', { section: 'One' } ),
+			f( 'b', { section: 'One', level: 'advanced' } ),
+			f( 'c', { section: 'Two', level: 'advanced' } ),
+		] );
+		const [ one, two ] = groups.map( ( g ) => splitFields( g.fields ) );
+		expect( one.disclosure ).toBe( true );
+		expect( two.disclosure ).toBe( false );
+		expect( two.basic.map( ( x ) => x.key ) ).toEqual( [ 'c' ] );
+	} );
+
+	it( 'copes with nothing', () => {
+		expect( groupBySection( undefined ) ).toEqual( [] );
 	} );
 } );
 

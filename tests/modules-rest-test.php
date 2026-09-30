@@ -107,7 +107,7 @@ class Saddle_Modules_REST_Test extends WP_UnitTestCase {
 			$this->assertNull( $areas[ $key ]['setup'], $key );
 			$this->assertNotSame( '', $areas[ $key ]['summary'], $key );
 		}
-		$this->assertSame( array( 'general', 'advanced' ), wp_list_pluck( $areas['settings']['tabs'], 'key' ) );
+		$this->assertSame( array( 'general' ), wp_list_pluck( $areas['settings']['tabs'], 'key' ) );
 		$this->assertGreaterThan( 50, $areas['home']['tools']['total'], "Home counts Saddle's own tools" );
 		$this->assertSame( 0, $areas['connections']['tools']['total'] );
 	}
@@ -139,7 +139,7 @@ class Saddle_Modules_REST_Test extends WP_UnitTestCase {
 		$this->assertSame( 'Demo', $body['title'] );
 		$limit = array_column( $body['fields'], null, 'key' )['limit'];
 		$this->assertSame(
-			array( 'key', 'type', 'minimum', 'maximum', 'default', 'label', 'help', 'level', 'agent', 'destructive', 'screen', 'control', 'admin_url', 'value' ),
+			array( 'key', 'type', 'minimum', 'maximum', 'default', 'label', 'help', 'level', 'agent', 'destructive', 'screen', 'section', 'control', 'admin_url', 'value' ),
 			array_keys( $limit )
 		);
 		$this->assertSame( 9, $limit['value'] );

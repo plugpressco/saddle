@@ -1,41 +1,28 @@
 /**
- * Dashboard — the calm status screen.
+ * Home → Overview: what your AI can do right now, and nothing more.
  *
- * One idea, stated in a sentence: what your AI can do right now. Everything
- * else is quieter than that — the counts are a single supporting line, and the
- * only things allowed to interrupt are the ones that need a decision.
- *
- * It used to open with four equal tiles of three different kinds (two counts, a
- * setting and a health state), which read as a metrics dashboard for a question
- * that is not a metric. The health tile in particular said "—" on most installs
- * while a real problem already had its own callout with an explanation and a
- * fix, so it cost a quarter of the page to say nothing.
+ * Top to bottom: a Status block (access level, AI access, connected apps, and
+ * a fourth row only when connections are broken), the Setup section while it
+ * is unfinished, the connected apps, the latest activity, and the modules.
+ * Each block is a short list of rows with one link to where the thing is
+ * changed; the full record lives on Connections and Activity.
  */
 import { useState, useEffect } from '@wordpress/element';
-import {
-	Button,
-	CalloutCard,
-	CardGrid,
-	Card,
-	CardHeader,
-	CardContent,
-	Badge,
-	RowList,
-	Row,
-	StatusDot,
-} from '@plugpress/ui';
-import { __, _n, sprintf } from '@wordpress/i18n';
+import { Button, Row, RowList, StatusDot } from '@plugpress/ui';
+import { __, sprintf } from '@wordpress/i18n';
 import { api, levelFor } from '../api';
 import { APPS } from '../connect-apps';
+import { parseModules } from '../onboarding-logic';
 import SetupBlock from './SetupBlock';
-import { parseEntryDate, relativeWhen, shortLabel } from '../activity-format';
+import SectionHeader from './SectionHeader';
+import { actionLabel, parseEntryDate, relativeWhen } from '../activity-format';
 
-// How many recent entries the Dashboard preview shows; the full record lives on
-// the Activity screen. Kept small so the fetch stays light.
-const PREVIEW_COUNT = 6;
+// Rows each list shows; the full record lives on its own screen.
+const APP_ROWS = 4;
+const ACTIVITY_ROWS = 5;
 
-// Session cache for the connection self-check so re-opening the Dashboard
-// doesn't re-run the loopback probe. Reset on full reload, which is the right
+// Session cache for the connection self-check so re-opening Home doesn't
+// re-run the loopback probe. Reset on full reload, which is the right
 // granularity.
 let healthCache = null;
 
@@ -51,39 +38,74 @@ function connectionLabel( c ) {
 	return ( app && app.label ) || c.name || c.client;
 }
 
+/**
+ * "Address · 2 hours ago": how the app signs in, and when it last did
+ * anything.
+ *
+ * @param {Object} c A row from GET /connections.
+ * @return {string} One line.
+ */
+function connectionMeta( c ) {
+	const how =
+		'oauth' === c.kind ? __( 'Address', 'saddle' ) : __( 'Key', 'saddle' );
+	const last = c.last_tool_at || c.last_seen_at;
+	return [
+		how,
+		last
+			? relativeWhen( new Date( last * 1000 ) )
+			: __( 'Not used yet', 'saddle' ),
+	].join( ' · ' );
+}
+
+const STATE_TONE = {
+	ready: 'success',
+	'needs-setup': 'warning',
+	attention: 'warning',
+	off: 'neutral',
+};
+
+/**
+ * A row whose right side is a value and the link that changes it.
+ *
+ * @param {Object}   props
+ * @param {*}        props.title   Label.
+ * @param {*}        props.value   Current value.
+ * @param {string}   props.link    Link text.
+ * @param {Function} props.onClick Called when the link is used.
+ */
+function StatusRow( { title, value, link, onClick } ) {
+	return (
+		<Row
+			title={ title }
+			actions={
+				<>
+					<span className="saddle-home__value">{ value }</span>
+					<Button variant="link" size="sm" onClick={ onClick }>
+						{ link }
+					</Button>
+				</>
+			}
+		/>
+	);
+}
+
 export default function Dashboard( {
 	tier,
 	clients,
+	paused,
+	caps,
 	onNavigate,
 	onConnect,
 	onboarding,
 	onHideSetup,
 	homeUrl,
 } ) {
-	// Keys and address (OAuth) connections, from the connection registry. It
-	// used to be the keys alone, so a site connected by address alone was told
-	// to connect its first app. `false` means the route failed: fall back to
-	// the keys the app already loaded rather than claim there are none.
+	// Keys and address (OAuth) connections, from the connection registry.
+	// `false` means the route failed: fall back to the keys the app already
+	// loaded rather than claim there are none.
 	const [ connections, setConnections ] = useState( null );
-	const apps =
-		connections === false
-			? clients.map( ( c ) => ( {
-					id: c.uuid,
-					name: c.label || c.name,
-			  } ) )
-			: connections;
-	const hasApps = !! apps && apps.length > 0;
-	// The Setup block shows unless the owner hid it (or the onboarding record
-	// hasn't arrived, when the block draws nothing either).
-	const setupShown = !! (
-		onboarding &&
-		! (
-			onboarding.modules &&
-			onboarding.modules.home &&
-			onboarding.modules.home.setup_hidden_at > 0
-		)
-	);
-
+	// Every page and module, fetched once for Setup and the Modules block.
+	const [ areas, setAreas ] = useState( null );
 	const [ activity, setActivity ] = useState( null );
 	const [ health, setHealth ] = useState( healthCache );
 
@@ -94,27 +116,31 @@ export default function Dashboard( {
 	}, [] );
 
 	useEffect( () => {
-		// Only the preview page is needed here; `total` is the full count for
-		// the "Actions logged" tile regardless of page size.
-		api( `audit-log?per_page=${ PREVIEW_COUNT }` )
+		let alive = true;
+		api( 'modules' )
+			.then( ( res ) => alive && setAreas( parseModules( res ) ) )
+			.catch( () => alive && setAreas( [] ) );
+		return () => {
+			alive = false;
+		};
+	}, [] );
+
+	useEffect( () => {
+		api( `audit-log?per_page=${ ACTIVITY_ROWS }` )
 			.then( ( res ) =>
 				setActivity( {
 					enabled: !! res.enabled,
 					entries: res.entries || [],
-					total: res.total || 0,
 				} )
 			)
-			.catch( () =>
-				setActivity( { enabled: false, entries: [], total: 0 } )
-			);
+			.catch( () => setActivity( { enabled: false, entries: [] } ) );
 	}, [] );
 
 	useEffect( () => {
 		if ( healthCache ) {
 			return; // Already probed this session.
 		}
-		// Runs the loopback header probe once; the tile shows a skeleton until
-		// it lands, so Home never blocks on it.
+		// Runs the loopback header probe once; Home never waits on it.
 		api( 'self-check' )
 			.then( ( res ) => {
 				healthCache = { status: res.status || 'unknown' };
@@ -126,63 +152,94 @@ export default function Dashboard( {
 			} );
 	}, [] );
 
-	const level = levelFor( tier );
-	// This tile is about whether connected apps can reach the site. A stripped
-	// X-WP-Nonce header only affects this dashboard's own requests, which Saddle
-	// already works around — so it counts as healthy here, and the note about
-	// telling the host lives on the Connect tab where the detail belongs.
+	const apps =
+		false === connections
+			? clients.map( ( c ) => ( {
+					id: c.uuid,
+					name: c.label || c.name,
+			  } ) )
+			: connections;
+	const names = ( apps || [] ).map( connectionLabel );
+
+	// Whether connected apps can reach the site. A stripped X-WP-Nonce header
+	// only affects this screen's own requests, which Saddle already works
+	// around — so it counts as healthy here.
 	const healthProblem =
 		health &&
 		health.status !== 'ok' &&
 		health.status !== 'unknown' &&
 		health.status !== 'nonce_header_stripped';
 
-	// The one thing the page is for, said in a sentence. `level.one` is already
-	// written for exactly this ("Your AI can create and edit content. Deleting
-	// always asks you first.") — the tiles were paraphrasing it into one word.
-	const facts = [];
-	if ( hasApps ) {
-		facts.push(
-			sprintf(
-				/* translators: %d: number of connected apps. */
-				_n(
-					'%d app connected',
-					'%d apps connected',
-					apps.length,
-					'saddle'
-				),
-				apps.length
-			)
-		);
-	}
-	if ( activity && activity.total > 0 ) {
-		facts.push(
-			sprintf(
-				/* translators: %d: number of actions recorded in the activity log. */
-				_n(
-					'%d action logged',
-					'%d actions logged',
-					activity.total,
-					'saddle'
-				),
-				activity.total
-			)
-		);
-	}
+	const modules = ( areas || [] ).filter( ( a ) => 'module' === a.kind );
+	const entries =
+		activity && activity.enabled
+			? activity.entries.slice( 0, ACTIVITY_ROWS )
+			: [];
+
+	const toPermissions = () => onNavigate( 'permissions' );
+	const toApps = () => onNavigate( 'connect' );
 
 	return (
-		<div className="saddle-home">
-			{ /* The lead. Everything below it is quieter on purpose: the counts
-			     are a supporting line, not tiles, and when there are no apps the
-			     count is dropped entirely — the callout underneath already says
-			     it, and saying it twice is the opposite of clean. */ }
-			<section className="saddle-lede">
-				<p className="saddle-lede__headline">{ level.one }</p>
-				{ facts.length > 0 && (
-					<p className="saddle-lede__facts">
-						{ facts.join( ' · ' ) }
-					</p>
-				) }
+		<>
+			<section className="saddle-stack">
+				<RowList>
+					<StatusRow
+						title={ __( 'Access level', 'saddle' ) }
+						value={ levelFor( tier ).title }
+						link={ __( 'Change', 'saddle' ) }
+						onClick={ toPermissions }
+					/>
+					<StatusRow
+						title={ __( 'AI access', 'saddle' ) }
+						value={
+							paused
+								? __( 'Paused', 'saddle' )
+								: __( 'Active', 'saddle' )
+						}
+						link={ __( 'Change', 'saddle' ) }
+						onClick={ toPermissions }
+					/>
+					{ apps && (
+						<StatusRow
+							title={ __( 'Connected apps', 'saddle' ) }
+							value={
+								names.length
+									? sprintf(
+											/* translators: 1: number of apps, 2: their names. */
+											__( '%1$d · %2$s', 'saddle' ),
+											names.length,
+											names.join( ', ' )
+									  )
+									: __( 'None yet', 'saddle' )
+							}
+							link={
+								names.length
+									? __( 'Manage', 'saddle' )
+									: __( 'Connect', 'saddle' )
+							}
+							onClick={ names.length ? toApps : onConnect }
+						/>
+					) }
+					{ healthProblem && (
+						<Row
+							icon={ <StatusDot tone="warning" /> }
+							title={ __( 'Connections may not work', 'saddle' ) }
+							description={ __(
+								'Your server may block the sign-in header apps need, or Application Passwords are off.',
+								'saddle'
+							) }
+							actions={
+								<Button
+									variant="link"
+									size="sm"
+									onClick={ toApps }
+								>
+									{ __( 'Check', 'saddle' ) }
+								</Button>
+							}
+						/>
+					) }
+				</RowList>
 			</section>
 
 			<SetupBlock
@@ -190,6 +247,7 @@ export default function Dashboard( {
 				connections={
 					Array.isArray( connections ) ? connections : null
 				}
+				areas={ areas }
 				onboarding={ onboarding }
 				homeUrl={ homeUrl }
 				onConnect={ onConnect }
@@ -197,137 +255,109 @@ export default function Dashboard( {
 				onHide={ onHideSetup }
 			/>
 
-			{ /* A stripped Authorization header (or app passwords off) breaks
-			     every connection — surface it here with a path to the fix. */ }
-			{ healthProblem && (
-				<CalloutCard
-					tone="warning"
-					title={ __( 'Connections may not work', 'saddle' ) }
-					description={ __(
-						'Your server looks like it blocks the sign-in header apps need, or Application Passwords are turned off. Open Connect to check and fix it.',
-						'saddle'
-					) }
-					action={
-						<Button
-							variant="primary"
-							onClick={ () => onNavigate( 'connect' ) }
-						>
-							{ __( 'Check connection', 'saddle' ) }
-						</Button>
-					}
-				/>
-			) }
-
-			{ /* When no apps yet, make connecting the clear next step. Not
-			     while the list is still loading: that would flash the callout
-			     at every owner who has connected. Not while the Setup block is
-			     up either: its first row already says "Connect an app". */ }
-			{ apps && ! hasApps && ! setupShown && (
-				<CalloutCard
-					title={ __( 'Connect your first app', 'saddle' ) }
-					description={ __(
-						'Add an AI app like Claude, Cursor, or VS Code so it can work with your site.',
-						'saddle'
-					) }
-					action={
-						<Button variant="primary" onClick={ onConnect }>
-							{ __( 'Connect an app', 'saddle' ) }
-						</Button>
-					}
-				/>
-			) }
-
-			<CardGrid className="saddle-cards" min={ 300 }>
-				{ /* Connected apps — only once there's something to show; the
-				     next-step section above owns the empty state. */ }
-				{ hasApps && (
-					<Card>
-						<CardHeader
-							title={ __( 'Connected apps', 'saddle' ) }
-						/>
-						<CardContent>
-							<RowList>
-								{ apps.slice( 0, 4 ).map( ( c ) => (
-									<Row
-										key={ c.id }
-										icon={ <StatusDot tone="success" /> }
-										title={ connectionLabel( c ) }
-									/>
-								) ) }
-							</RowList>
-							<Button
-								variant="link"
-								onClick={ () => onNavigate( 'connect' ) }
-							>
-								{ __( 'Manage connections', 'saddle' ) }
-							</Button>
-						</CardContent>
-					</Card>
-				) }
-
-				{ /* Recent activity */ }
-				<Card>
-					<CardHeader
-						title={ __( 'Recent activity', 'saddle' ) }
+			{ Array.isArray( connections ) && connections.length > 0 && (
+				<section className="saddle-stack">
+					<SectionHeader
+						title={ __( 'Connected apps', 'saddle' ) }
 						actions={
-							<Button
-								variant="link"
-								size="sm"
-								onClick={ () => onNavigate( 'activity' ) }
-							>
-								{ __( 'View all', 'saddle' ) }
+							<Button variant="link" size="sm" onClick={ toApps }>
+								{ __( 'Manage', 'saddle' ) }
 							</Button>
 						}
 					/>
-					<CardContent>
-						{ activity &&
-						activity.enabled &&
-						activity.entries.length > 0 ? (
-							<ul className="saddle-activitylist">
-								{ activity.entries
-									.slice( 0, PREVIEW_COUNT )
-									.map( ( e, i ) => (
-										<li
-											key={ i }
-											className={
-												e.type === 'denied'
-													? 'is-denied'
-													: undefined
+					<RowList>
+						{ connections.slice( 0, APP_ROWS ).map( ( c ) => (
+							<Row
+								key={ c.id }
+								icon={
+									<StatusDot
+										tone={
+											c.last_tool_at || c.last_seen_at
+												? 'success'
+												: 'neutral'
+										}
+									/>
+								}
+								title={ connectionLabel( c ) }
+								description={ connectionMeta( c ) }
+							/>
+						) ) }
+					</RowList>
+				</section>
+			) }
+
+			<section className="saddle-stack">
+				<SectionHeader
+					title={ __( 'Recent activity', 'saddle' ) }
+					actions={
+						<Button
+							variant="link"
+							size="sm"
+							onClick={ () => onNavigate( 'activity' ) }
+						>
+							{ __( 'View all', 'saddle' ) }
+						</Button>
+					}
+				/>
+				<RowList>
+					{ entries.length > 0 ? (
+						entries.map( ( e, i ) => (
+							<Row
+								key={ i }
+								title={ actionLabel( e, caps ) }
+								actions={
+									<span className="saddle-home__value">
+										{ relativeWhen(
+											parseEntryDate( e.date )
+										) }
+									</span>
+								}
+							/>
+						) )
+					) : (
+						<Row
+							title={ __(
+								'Nothing yet. Changes your AI makes will show up here.',
+								'saddle'
+							) }
+						/>
+					) }
+				</RowList>
+			</section>
+
+			{ modules.length > 0 && (
+				<section className="saddle-stack">
+					<SectionHeader title={ __( 'Modules', 'saddle' ) } />
+					<RowList>
+						{ modules.map( ( m ) => (
+							<Row
+								key={ m.key }
+								icon={
+									m.state ? (
+										<StatusDot
+											tone={
+												STATE_TONE[ m.state ] ||
+												'neutral'
 											}
-										>
-											<span
-												className="saddle-activitylist__summary"
-												title={ e.summary || undefined }
-											>
-												{ e.type === 'denied' && (
-													<Badge tone="danger">
-														{ __(
-															'Blocked',
-															'saddle'
-														) }
-													</Badge>
-												) }
-												{ shortLabel( e ) }
-											</span>
-											<span className="saddle-activitylist__target">
-												{ relativeWhen(
-													parseEntryDate( e.date )
-												) }
-											</span>
-										</li>
-									) ) }
-							</ul>
-						) : (
-							<p className="saddle-card__empty">
-								{ __(
-									'Nothing yet. Changes your AI makes will show up here.',
-									'saddle'
-								) }
-							</p>
-						) }
-					</CardContent>
-				</Card>
-			</CardGrid>
-		</div>
+										/>
+									) : undefined
+								}
+								title={ m.product || m.title }
+								description={ m.line || undefined }
+								actions={
+									<Button
+										variant="link"
+										size="sm"
+										href={ m.admin_url }
+									>
+										{ __( 'Open', 'saddle' ) }
+									</Button>
+								}
+							/>
+						) ) }
+					</RowList>
+				</section>
+			) }
+		</>
 	);
 }

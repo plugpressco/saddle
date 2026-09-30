@@ -86,7 +86,7 @@ export default function UnsplashKeyCard() {
 			<CardHeader
 				title={ __( 'Unsplash stock photos', 'saddle' ) }
 				description={ __(
-					'Lets your AI search Unsplash and import photos into the media library, with photographer credit added automatically.',
+					'Lets your AI search Unsplash and import photos, with credit added.',
 					'saddle'
 				) }
 			/>
@@ -112,7 +112,7 @@ export default function UnsplashKeyCard() {
 						</Field>
 						<p className="saddle-unsplash__hint">
 							{ __(
-								'Free from unsplash.com/developers (the Access Key, not the Secret Key). It is stored only on this site and sent only to Unsplash — never anywhere else.',
+								'Free from unsplash.com/developers: the Access Key, not the Secret Key. Stored only on this site.',
 								'saddle'
 							) }
 						</p>

@@ -529,7 +529,7 @@ body.saddle-admin-page {
 
 // The selected access level carries the brand (the one card choice that
 // decides what an AI may do).
-.saddle-perm > .pp-selcard-group {
+.saddle-perm .pp-selcard-group {
 	--pp-accent: var( --saddle-brand );
 	--pp-accent-text: var( --saddle-brand );
 	--pp-accent-tint: var( --saddle-brand-tint );
@@ -623,62 +623,32 @@ body.saddle-admin-page {
 	}
 }
 
-/* ---------- Connections → Apps (#274) ---------- */
-// One calm column: what this is, this site's address, then the apps down the
-// side and the steps for the one picked. The site's own way of connecting,
-// laid out like the hosted MCP pages people already know.
-.saddle-connect {
+// A section's own rhythm: its heading, then its blocks 12px apart. Sections
+// sit 24px apart on the page (the content column's gap).
+.saddle-section {
 	display: grid;
-	gap: var(--pp-space-5);
+	gap: var(--pp-space-3);
+	align-content: start;
+	min-width: 0;
+}
 
-	&__intro {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: var(--pp-space-5);
-		padding: var(--pp-space-5);
-		border-radius: var(--s-radius-lg);
-		background: var(--s-surface-2);
-	}
+// A heading that carries a "?" (and, on Connect, a badge) beside it.
+.saddle-connect__title,
+.saddle-perm__label,
+.saddle-signin__label,
+.saddle-integrations__title,
+.saddle-memory__title {
+	display: inline-flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 6px;
+}
 
-	&__title {
-		display: flex;
-		align-items: center;
-		flex-wrap: wrap;
-		gap: 8px;
-		margin: 0;
-		font-size: 15px;
-		font-weight: 600;
-		line-height: 1.4;
-	}
-
-	&__lede {
-		max-width: 60ch;
-		margin: 4px 0 0;
-		color: var(--s-fg-muted);
-	}
-
-	&__logos {
-		display: flex;
-		flex: 0 0 auto;
-	}
-
-	&__logo {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 40px;
-		height: 40px;
-		margin-inline-start: -8px;
-		border: 1px solid var(--s-border);
-		border-radius: 50%;
-		background: var(--s-bg);
-
-		img {
-			width: 20px;
-			height: 20px;
-		}
-	}
+/* ---------- Connections → Apps (#274) ---------- */
+// This site's address, then the apps down the side and the steps for the one
+// picked in one block. The site's own way of connecting, laid out like the
+// hosted MCP pages people already know.
+.saddle-connect {
 
 	&__address {
 		display: grid;
@@ -709,13 +679,17 @@ body.saddle-admin-page {
 	&__picker {
 		display: grid;
 		grid-template-columns: minmax(170px, 220px) 1fr;
-		gap: var(--pp-space-4);
 		align-items: start;
+		border: 1px solid var(--s-border);
+		border-radius: var(--s-radius-lg);
+		background: var(--s-bg);
+		overflow: hidden;
 	}
 
 	&__apps {
 		display: grid;
 		gap: 2px;
+		padding: var(--pp-space-2);
 	}
 
 	&__app {
@@ -754,10 +728,8 @@ body.saddle-admin-page {
 	&__steps {
 		display: grid;
 		gap: var(--pp-space-3);
-		padding: var(--pp-space-5);
-		border: 1px solid var(--s-border);
-		border-radius: var(--s-radius-lg);
-		background: var(--s-bg);
+		padding: var(--pp-space-4);
+		border-inline-start: 1px solid var(--s-border);
 		min-width: 0;
 	}
 
@@ -766,7 +738,7 @@ body.saddle-admin-page {
 		align-items: center;
 		gap: 10px;
 		margin: 0;
-		font-size: 15px;
+		font-size: 13px;
 		font-weight: 600;
 
 		img {
@@ -871,8 +843,9 @@ body.saddle-admin-page {
 		grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
 	}
 
-	.saddle-connect__logos {
-		display: none;
+	.saddle-connect__steps {
+		border-inline-start: 0;
+		border-block-start: 1px solid var(--s-border);
 	}
 }
 
@@ -881,20 +854,17 @@ body.saddle-admin-page {
 // anything is written, with an example as the placeholder.
 .saddle-context {
 	display: grid;
-	gap: var(--pp-space-6);
-	max-width: 760px;
+	gap: var(--pp-space-5);
+	align-content: start;
 
 	&__empty {
 		margin: 0;
-		padding: var(--pp-space-4);
-		border: 1px dashed var(--s-border-strong);
-		border-radius: var(--s-radius-lg);
-		color: var(--s-fg-muted);
+		color: var(--s-fg-subtle);
 	}
 
 	&__fields {
 		display: grid;
-		gap: var(--pp-space-5);
+		gap: var(--pp-space-4);
 	}
 }
 
@@ -935,15 +905,6 @@ body.saddle-admin-page {
 // The content column stacks its direct children (notices, the page pane) with
 // one rhythm. Pages keep their own internal spacing — they predate the shell.
 .saddle-app .pp-content {
-	display: grid;
-	gap: var(--pp-space-5);
-	align-content: start;
-}
-
-// New pages built for the shell stack their cards on the same rhythm.
-.saddle-integrations,
-.saddle-settings,
-.saddle-memory {
 	display: grid;
 	gap: var(--pp-space-5);
 	align-content: start;
@@ -1070,14 +1031,6 @@ body.saddle-admin-page {
 	z-index: 0;
 }
 
-.saddle-setup {
-	&__rows {
-		display: flex;
-		flex-direction: column;
-		gap: 12px;
-	}
-}
-
 // The connect wizard inside first run: same steps, none of the card chrome.
 // Doubled class: .saddle-wizard is declared further down and would win.
 .saddle-wizard.saddle-wizard--embedded {
@@ -1093,38 +1046,16 @@ body.saddle-admin-page {
 }
 
 /* ---------- Home ---------- */
-// Hero, next-step callout, cards, and app rows come from the design system;
-// only the compact activity list (no DS timeline primitive) stays ours.
 
-// The Dashboard's lead. One sentence carrying the whole answer, so it gets the
-// size and the room a heading would get — and the supporting counts get as
-// little as they can while staying legible. No box: the statement is the
-// content, and a card around it would be chrome competing with it.
-.saddle-lede {
-	margin: 0 0 28px;
-
-	&__headline {
-		max-width: 34ch;
-		margin: 0;
-		font-size: 15px;
-		font-weight: 600;
-		line-height: 1.4;
-		color: var(--s-fg);
-	}
-
-	&__facts {
-		margin: 8px 0 0;
-		font-size: 13px;
-		line-height: 1.55;
-		color: var(--s-fg-subtle);
-		font-variant-numeric: tabular-nums;
-	}
+// The value on the right of a Home row ("Active", "2 minutes ago"), set apart
+// from the link beside it.
+.saddle-home__value {
+	color: var(--s-fg-subtle);
+	font-size: 13px;
+	font-variant-numeric: tabular-nums;
 }
 
-.saddle-cards {
-	margin-top: 16px;
-}
-
+// Still used by Context (Guidance).
 .saddle-card__empty {
 	margin: 0 0 12px;
 	font-size: 13px;
@@ -1132,49 +1063,13 @@ body.saddle-admin-page {
 	color: var(--s-fg-muted);
 }
 
-.saddle-activitylist {
-	list-style: none;
-	margin: 0 0 12px;
-	padding: 0;
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-
-	li {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 12px;
-		font-size: 14px;
-	}
-
-	&__summary {
-		min-width: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-
-		.pp-badge {
-			margin-right: 8px;
-			vertical-align: middle;
-		}
-	}
-
-	&__target {
-		flex: 0 0 auto;
-		color: var(--s-fg-subtle);
-		font-size: 12px;
-		font-variant-numeric: tabular-nums;
-	}
-}
-
 /* ---------- Permissions ---------- */
 
-// Disclosures ("See everything…", "Connection details & health") ride the
-// design system's Collapsible; give them breathing room above.
-.saddle-perm__all,
-.saddle-apps__more {
-	margin-top: 24px;
+// The three sections (access level, Safety, Tools) sit 24px apart.
+.saddle-perm {
+	display: grid;
+	gap: var(--pp-space-5);
+	align-content: start;
 }
 
 // Per-app setup guide drawer: three numbered sections with one rhythm.
@@ -1564,6 +1459,12 @@ body.saddle-admin-page {
 	gap: 6px;
 }
 
+// The one line a list shows when nothing is connected.
+.saddle-apps__empty {
+	margin: 0;
+	color: var(--s-fg-subtle);
+}
+
 // Both connection kinds share one card, so the card body owns the rhythm
 // between them rather than each list carrying its own margins.
 .saddle-apps__cardbody {
@@ -1894,13 +1795,6 @@ body.saddle-admin-page {
 		font-weight: 600;
 	}
 
-	&__lead {
-		margin: 0 0 18px;
-		font-size: 13.5px;
-		color: var(--s-fg-muted);
-		max-width: 64ch;
-	}
-
 	// The pills themselves are the design system's FilterTabs.
 	&__filters {
 		display: flex;
@@ -1990,13 +1884,6 @@ body.saddle-admin-page {
 		color: var(--s-fg-subtle);
 	}
 
-	&__action {
-		padding: 1px 6px;
-		background: var(--s-surface-3);
-		border-radius: 5px;
-		font-size: 11px;
-		color: var(--s-fg-muted);
-	}
 
 	&__time {
 		flex: 0 0 auto;
@@ -2013,15 +1900,11 @@ body.saddle-admin-page {
 	}
 }
 
-/* Skills + memory rows (Guidance tab) — DS RowList with an expandable body. */
-.saddle-rows {
-	margin: 12px 0;
-
-	&__body {
-		margin: 8px 0 12px;
-		max-height: 320px;
-		overflow: auto;
-	}
+/* Memory rows (Context tab) — the entry's full text opens under its row. */
+.saddle-rows__body {
+	margin: 8px 12px 12px;
+	max-height: 320px;
+	overflow: auto;
 }
 
 // A Switch with its visible label beside it.
@@ -2036,65 +1919,44 @@ body.saddle-admin-page {
 	}
 }
 
-// Settings rendered from a schema (SettingsForm). A switch sits beside its
-// label; any other control sits under it. Spacing comes from the tokens.
+// Settings rendered from a schema (SettingsForm): a heading and one block of
+// rows per section. The control sits on the right of its label.
 .saddle-settings-form {
 	display: grid;
-	gap: var(--pp-space-4);
+	gap: var(--pp-space-5);
 	align-content: start;
 
 	&__agent {
 		margin: 0;
-		font-size: 13px;
-		color: var(--s-fg-muted);
+		font-size: 12px;
+		color: var(--s-fg-subtle);
 	}
 }
 
-.saddle-fields {
-	display: grid;
-	gap: var(--pp-space-5);
+.saddle-fields__more {
+	margin-top: var(--pp-space-3);
 
-	&__more {
-		margin-top: var(--pp-space-5);
-	}
-
-	&__more > div {
-		margin-top: var(--pp-space-5);
+	> div {
+		margin-top: var(--pp-space-3);
 	}
 }
 
 .saddle-field {
-	display: grid;
-	gap: var(--pp-space-2);
-
-	&--switch {
-		grid-template-columns: auto 1fr;
-		align-items: start;
-		column-gap: 10px;
-	}
-
-	&--switch .saddle-field__text {
+	&__control {
 		display: grid;
 		gap: var(--pp-space-1);
-	}
+		justify-items: end;
 
-	&--stacked .saddle-field__text {
-		display: grid;
-		gap: var(--pp-space-1);
-	}
-
-	&--stacked .pp-control {
-		max-width: 360px;
-	}
-
-	&--switch > .pp-error-text {
-		grid-column: 2;
+		.pp-control:not(.pp-switch) {
+			inline-size: 240px;
+			max-inline-size: 100%;
+		}
 	}
 
 	&__status {
 		margin: 0;
-		font-size: 13px;
-		color: var(--s-fg-muted);
+		font-size: 12px;
+		color: var(--s-fg-subtle);
 	}
 }
 
@@ -2133,21 +1995,6 @@ body.saddle-admin-page {
 			color: var(--s-fg);
 		}
 	}
-}
-
-/* Integrations page — partner-detection hint under the rows. */
-.saddle-integrations__hint {
-	margin: 12px 0 0;
-	font-size: 12px;
-	color: var(--s-fg-muted);
-}
-
-/* Settings page — About card's link row. */
-.saddle-settings__links {
-	display: flex;
-	align-items: center;
-	flex-wrap: wrap;
-	gap: 8px;
 }
 
 /* Client traffic — the MCP request record. Deliberately plain: this is a

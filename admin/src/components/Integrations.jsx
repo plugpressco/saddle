@@ -11,16 +11,7 @@
  * Permissions screen.
  */
 import { useState, useEffect } from '@wordpress/element';
-import {
-	Card,
-	CardHeader,
-	CardContent,
-	RowList,
-	Row,
-	Badge,
-	Switch,
-	toast,
-} from '@plugpress/ui';
+import { RowList, Row, Badge, Switch, HelpTip, toast } from '@plugpress/ui';
 import SectionHeader from './SectionHeader';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { api } from '../api';
@@ -131,81 +122,70 @@ export default function Integrations( { caps, onChanged } ) {
 	const all = rows ? [ ...rows, ...unlistedRows( caps || [], rows ) ] : [];
 
 	return (
-		<div className="saddle-integrations">
+		<section className="saddle-section saddle-integrations">
 			<SectionHeader
-				title={ __( 'Integrations', 'saddle' ) }
-				description={ __(
-					'Extra services your AI can use through Saddle — every tool still follows your access level and approval rules.',
-					'saddle'
-				) }
+				title={
+					<span className="saddle-integrations__title">
+						{ __( 'Integrations', 'saddle' ) }
+						<HelpTip>
+							{ __(
+								'Extra services and plugins your AI can use through Saddle. Every tool still follows your access level and approval rules. Plugins that support Saddle appear here once they are active; third-party plugins stay off until you switch them on.',
+								'saddle'
+							) }
+						</HelpTip>
+					</span>
+				}
 			/>
 
 			<UnsplashKeyCard />
 
-			<Card>
-				<CardHeader
-					title={ __( 'Connected plugins', 'saddle' ) }
-					description={ __(
-						'Plugins whose tools your AI can use through Saddle. Turn individual tools off on the Permissions screen.',
-						'saddle'
-					) }
-				/>
-				<CardContent>
-					<RowList loading={ null === rows }>
-						{ all.map( ( row ) => (
-							<Row
-								key={ row.slug }
-								title={ row.title }
-								description={ describe( row ) }
-								actions={
-									<>
-										{ SOURCE_LABELS[ row.source ] && (
-											<Badge>
-												{ SOURCE_LABELS[ row.source ] }
-											</Badge>
+			<RowList loading={ null === rows }>
+				{ all.map( ( row ) => (
+					<Row
+						key={ row.slug }
+						title={ row.title }
+						description={ describe( row ) }
+						actions={
+							<>
+								{ SOURCE_LABELS[ row.source ] && (
+									<Badge>
+										{ SOURCE_LABELS[ row.source ] }
+									</Badge>
+								) }
+								<Badge>
+									{ sprintf(
+										/* translators: %d: number of tools. */
+										_n(
+											'%d tool',
+											'%d tools',
+											row.tools,
+											'saddle'
+										),
+										row.tools
+									) }
+								</Badge>
+								{ 'third-party' === row.source && (
+									<Switch
+										checked={ row.enabled }
+										disabled={ saving === row.slug }
+										onChange={ ( next ) =>
+											toggle( row, next )
+										}
+										aria-label={ sprintf(
+											/* translators: %s: plugin name. */
+											__(
+												'Let your AI use %s tools',
+												'saddle'
+											),
+											row.title
 										) }
-										<Badge>
-											{ sprintf(
-												/* translators: %d: number of tools. */
-												_n(
-													'%d tool',
-													'%d tools',
-													row.tools,
-													'saddle'
-												),
-												row.tools
-											) }
-										</Badge>
-										{ 'third-party' === row.source && (
-											<Switch
-												checked={ row.enabled }
-												disabled={ saving === row.slug }
-												onChange={ ( next ) =>
-													toggle( row, next )
-												}
-												aria-label={ sprintf(
-													/* translators: %s: plugin name. */
-													__(
-														'Let your AI use %s tools',
-														'saddle'
-													),
-													row.title
-												) }
-											/>
-										) }
-									</>
-								}
-							/>
-						) ) }
-					</RowList>
-					<p className="saddle-integrations__hint">
-						{ __(
-							'Plugins that support Saddle appear here once they are active. Third-party plugins stay off until you switch them on.',
-							'saddle'
-						) }
-					</p>
-				</CardContent>
-			</Card>
-		</div>
+									/>
+								) }
+							</>
+						}
+					/>
+				) ) }
+			</RowList>
+		</section>
 	);
 }

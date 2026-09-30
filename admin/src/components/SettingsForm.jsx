@@ -4,8 +4,10 @@
  *
  * Changes stay on this screen until Save; Discard puts back what is saved.
  * Only fields a bespoke screen does not own are drawn (`control: auto`).
- * Basic fields show; advanced ones sit behind "More settings", which
- * remembers open or closed per browser.
+ * Fields are grouped by their `section`: each group is a heading and one block
+ * of rows (label left, control right, the help as one line under the label).
+ * Within a group, basic fields show; advanced ones sit behind "More settings",
+ * which remembers open or closed per browser.
  *
  * Shared with modules through `kit.SettingsForm` (feature `settings-form`).
  */
@@ -13,14 +15,14 @@ import { useState, useEffect, useMemo, useCallback } from '@wordpress/element';
 import {
 	ApplyBar,
 	Button,
-	Card,
-	CardContent,
 	Collapsible,
 	ErrorText,
 	Hint,
 	Input,
 	Label,
 	Notice,
+	Row,
+	RowList,
 	Select,
 	Spinner,
 	Switch,
@@ -29,12 +31,14 @@ import {
 import { __, sprintf } from '@wordpress/i18n';
 import { api, saddleData } from '../api';
 import { areaUrl } from '../routes';
+import SectionHeader from './SectionHeader';
 import {
 	agentWritableLabels,
 	changedValues,
 	draftProblems,
 	fieldForHash,
 	fieldId,
+	groupBySection,
 	isDirty,
 	isNumeric,
 	needsDisclosure,
@@ -43,19 +47,25 @@ import {
 	startDraft,
 } from '../settings-form';
 
-const storeKey = ( scope ) => `saddle.settings.more.${ scope }`;
+const storeKey = ( scope, section ) =>
+	`saddle.settings.more.${ scope }${ section ? `.${ section }` : '' }`;
 
 // A per-browser convenience: never required, and storage can be blocked.
-const readOpen = ( scope ) => {
+const readOpen = ( scope, section ) => {
 	try {
-		return window.localStorage.getItem( storeKey( scope ) ) === '1';
+		return (
+			window.localStorage.getItem( storeKey( scope, section ) ) === '1'
+		);
 	} catch ( e ) {
 		return false;
 	}
 };
-const writeOpen = ( scope, open ) => {
+const writeOpen = ( scope, section, open ) => {
 	try {
-		window.localStorage.setItem( storeKey( scope ), open ? '1' : '0' );
+		window.localStorage.setItem(
+			storeKey( scope, section ),
+			open ? '1' : '0'
+		);
 	} catch ( e ) {
 		// Not remembered; the disclosure still works.
 	}
@@ -80,7 +90,7 @@ const problemText = ( field, code ) => {
 };
 
 /**
- * One field: its control, its label and its help.
+ * One field as a row: its label and help on the left, its control on the right.
  *
  * @param {Object}   props
  * @param {string}   props.scope    Scope of the form.
@@ -179,32 +189,26 @@ function FieldRow( { scope, field, value, error, busy, onChange } ) {
 		);
 	}
 
-	const text = (
-		<>
-			<Label htmlFor={ id }>{ field.label }</Label>
-			{ field.help && <Hint id={ helpId }>{ field.help }</Hint> }
-		</>
-	);
-
 	return (
-		<div
+		<Row
 			className={ `saddle-field saddle-field--${
 				'boolean' === field.type ? 'switch' : 'stacked'
 			}` }
-		>
-			{ 'boolean' === field.type ? (
-				<>
-					{ control }
-					<div className="saddle-field__text">{ text }</div>
-				</>
-			) : (
-				<>
-					<div className="saddle-field__text">{ text }</div>
-					{ control }
-				</>
-			) }
-			{ error && <ErrorText id={ errorId }>{ error }</ErrorText> }
-		</div>
+			title={ <Label htmlFor={ id }>{ field.label }</Label> }
+			description={
+				field.help || error ? (
+					<>
+						{ field.help && (
+							<Hint id={ helpId }>{ field.help }</Hint>
+						) }
+						{ error && (
+							<ErrorText id={ errorId }>{ error }</ErrorText>
+						) }
+					</>
+				) : undefined
+			}
+			actions={ <div className="saddle-field__control">{ control }</div> }
+		/>
 	);
 }
 
@@ -219,13 +223,23 @@ export default function SettingsForm( { scope, screen } ) {
 	const [ draft, setDraft ] = useState( {} );
 	const [ errors, setErrors ] = useState( {} );
 	const [ saving, setSaving ] = useState( false );
-	const [ more, setMore ] = useState( () => readOpen( scope ) );
+	// Which groups have "More settings" open, by section name.
+	const [ more, setMore ] = useState( {} );
 
 	const shown = useMemo(
 		() => renderableFields( fields, screen ),
 		[ fields, screen ]
 	);
-	const split = useMemo( () => splitFields( shown ), [ shown ] );
+	const groups = useMemo(
+		() =>
+			groupBySection( shown ).map( ( g ) => ( {
+				...g,
+				split: splitFields( g.fields ),
+			} ) ),
+		[ shown ]
+	);
+	const isOpen = ( section ) =>
+		section in more ? more[ section ] : readOpen( scope, section );
 
 	const load = useCallback( () => {
 		setLoadError( '' );
@@ -257,8 +271,11 @@ export default function SettingsForm( { scope, screen } ) {
 			if ( ! field ) {
 				return;
 			}
-			if ( needsDisclosure( split, field ) ) {
-				setMore( true );
+			const group = groups.find( ( g ) =>
+				g.fields.some( ( f ) => f.key === field.key )
+			);
+			if ( group && needsDisclosure( group.split, field ) ) {
+				setMore( ( m ) => ( { ...m, [ group.section ]: true } ) );
 			}
 			window.setTimeout( () => {
 				const el = document.getElementById(
@@ -273,11 +290,11 @@ export default function SettingsForm( { scope, screen } ) {
 		go();
 		window.addEventListener( 'hashchange', go );
 		return () => window.removeEventListener( 'hashchange', go );
-	}, [ fields, scope, shown, split ] );
+	}, [ fields, scope, shown, groups ] );
 
-	const toggleMore = ( open ) => {
-		setMore( open );
-		writeOpen( scope, open );
+	const toggleMore = ( section, open ) => {
+		setMore( ( m ) => ( { ...m, [ section ]: open } ) );
+		writeOpen( scope, section, open );
 	};
 
 	const setValue = ( key, value ) => {
@@ -333,8 +350,14 @@ export default function SettingsForm( { scope, screen } ) {
 					__( 'Could not save that setting.', 'saddle' );
 				if ( key && shown.some( ( f ) => f.key === key ) ) {
 					setErrors( { [ key ]: message } );
-					if ( split.advanced.some( ( f ) => f.key === key ) ) {
-						setMore( true );
+					const group = groups.find( ( g ) =>
+						g.split.advanced.some( ( f ) => f.key === key )
+					);
+					if ( group ) {
+						setMore( ( m ) => ( {
+							...m,
+							[ group.section ]: true,
+						} ) );
 					}
 				} else {
 					toast.error( message );
@@ -387,54 +410,50 @@ export default function SettingsForm( { scope, screen } ) {
 
 	return (
 		<div className="saddle-settings-form" data-scope={ scope }>
-			<Card>
-				<CardContent>
-					<div className="saddle-fields">
-						{ split.basic.map( row ) }
-					</div>
+			{ groups.map( ( { section, split } ) => (
+				<section key={ section || 'general' } className="saddle-stack">
+					{ section && <SectionHeader title={ section } /> }
+					<RowList>{ split.basic.map( row ) }</RowList>
 					{ split.disclosure && (
 						<Collapsible
 							className="saddle-fields__more"
-							open={ more }
-							onOpenChange={ toggleMore }
+							open={ isOpen( section ) }
+							onOpenChange={ ( open ) =>
+								toggleMore( section, open )
+							}
 							trigger={ sprintf(
 								/* translators: %d: number of advanced settings. */
 								__( 'More settings (%d)', 'saddle' ),
 								split.advanced.length
 							) }
 						>
-							<div className="saddle-fields">
-								{ split.advanced.map( row ) }
-							</div>
+							<RowList>{ split.advanced.map( row ) }</RowList>
 						</Collapsible>
 					) }
-				</CardContent>
-			</Card>
+				</section>
+			) ) }
 
-			<p className="saddle-settings-form__agent">
-				{ __( 'Your AI can read these settings.', 'saddle' ) }
-				{ writable.length > 0 && (
-					<>
-						{ ' ' }
-						{ sprintf(
-							/* translators: %s: a list of setting names. */
-							__(
-								'It can ask to change %s, and you confirm each change.',
-								'saddle'
-							),
-							writable.join( ', ' )
-						) }
-					</>
-				) }
-				{ writable.length > 0 && permissionsUrl && (
-					<>
-						{ ' ' }
-						<a href={ permissionsUrl }>
-							{ __( 'Connections → Permissions', 'saddle' ) }
-						</a>
-					</>
-				) }
-			</p>
+			{ writable.length > 0 && (
+				<p className="saddle-settings-form__agent">
+					{ __( 'Your AI can read these settings.', 'saddle' ) }{ ' ' }
+					{ sprintf(
+						/* translators: %s: a list of setting names. */
+						__(
+							'It can ask to change %s, and you confirm each change.',
+							'saddle'
+						),
+						writable.join( ', ' )
+					) }
+					{ permissionsUrl && (
+						<>
+							{ ' ' }
+							<a href={ permissionsUrl }>
+								{ __( 'Connections → Permissions', 'saddle' ) }
+							</a>
+						</>
+					) }
+				</p>
+			) }
 
 			<ApplyBar
 				open={ isDirty( shown, draft ) }

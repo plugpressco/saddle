@@ -67,8 +67,7 @@ class Saddle_Modules {
 				'slug'  => 'saddle-settings',
 				'title' => __( 'Settings', 'saddle' ),
 				'tabs'  => array(
-					'general'  => __( 'General', 'saddle' ),
-					'advanced' => __( 'Advanced', 'saddle' ),
+					'general' => __( 'General', 'saddle' ),
 				),
 			),
 		);

@@ -37,9 +37,35 @@ export function renderableFields( fields, screen ) {
 }
 
 /**
- * Split fields into the ones always shown and the ones behind "More
- * settings". When nothing is basic, the whole set is already the advanced
- * tab, so it shows directly with no disclosure.
+ * Group fields by their `section`, in the order each section first appears.
+ * Fields with no section form one unnamed group that comes first: general
+ * settings lead, named sections follow.
+ *
+ * @param {Array} fields Renderable fields.
+ * @return {Array<{section: string, fields: Array}>} Groups; `section` is ''
+ *                                                    for the unnamed one.
+ */
+export function groupBySection( fields ) {
+	const groups = [];
+	( fields || [] ).forEach( ( f ) => {
+		const section = 'string' === typeof f.section ? f.section : '';
+		let group = groups.find( ( g ) => g.section === section );
+		if ( ! group ) {
+			group = { section, fields: [] };
+			groups.push( group );
+		}
+		group.fields.push( f );
+	} );
+	return [
+		...groups.filter( ( g ) => '' === g.section ),
+		...groups.filter( ( g ) => '' !== g.section ),
+	];
+}
+
+/**
+ * Split fields (one group's, or all) into the ones always shown and the ones
+ * behind "More settings". When nothing is basic, the set is all advanced, so
+ * it shows directly with no disclosure.
  *
  * @param {Array} fields Renderable fields.
  * @return {{basic: Array, advanced: Array, disclosure: boolean}} The split.
