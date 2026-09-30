@@ -90,14 +90,18 @@ doesn't belong.
    own square register, a hair softer.
 3. **Say nothing rather than say nothing.** A tile reading `—` is worse than no
    tile. The Dashboard's old "Connection" tile is why this rule is written down.
-4. **Plain, task-first names.** Labels say what you do there. The sidebar is one
-   flat list with no group headings — seven items is not a wall.
+4. **Plain, task-first names.** Labels say what you do there. WordPress's Saddle
+   submenu is the nav: one flat list with no group headings — Home, each
+   installed module, then Connections, Context and Settings. There is no
+   sidebar inside the page.
 
 ## Constraints that still apply
 
 - UI primitives come from `@plugpress/ui` only — no `@wordpress/components`, no
   Tailwind, no styled-components, no second UI kit.
-- The Settings page must remain a single mounted React root (`#saddle-root`).
+- One Core React root per Saddle page: `#saddle-root`, carrying `data-area` and
+  `data-tab`. No second root on a page and no hash routing; tabs are `&tab=`
+  URLs.
 - Don't regress accessibility: labels, focus rings, `role`/`aria-*` semantics and
   `prefers-reduced-motion` must survive any restyling. Every text pair in the
   palette clears AA; muted text actually improved (4.40 → 4.50).
