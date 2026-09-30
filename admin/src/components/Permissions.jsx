@@ -1,19 +1,18 @@
 /**
- * Permissions — "What your AI can do", in two plain choices.
- *
- * Reading vs. reading & writing, each described in a sentence. The full list of
- * 18 tools lives behind a disclosure for anyone who wants to verify exactly
- * what's included — invisible for everyone else. Nothing saves until you apply.
+ * Permissions — three sections: the access level (three cards), Safety (pause,
+ * rehearsal and drafts-only as one block of rows), and Tools (the full list
+ * behind a disclosure). The level and tool changes save with the bar; the
+ * three safety switches save the moment they are flipped.
  */
 import { useState, useMemo, useEffect } from '@wordpress/element';
 import {
-	Card,
-	CardHeader,
-	CardContent,
 	CardRadioGroup,
 	Collapsible,
 	ApplyBar,
+	HelpTip,
 	Notice,
+	RowList,
+	Row,
 	Switch,
 	toast,
 	Tooltip,
@@ -21,6 +20,7 @@ import {
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { api, LEVELS, levelKey, tierUnlocks } from '../api';
 import { LevelIcon } from './icons';
+import SectionHeader from './SectionHeader';
 
 // The saved (server-side) set of individually-disabled ability short names.
 const savedDisabledSet = ( caps ) =>
@@ -49,6 +49,14 @@ const groupByCategory = ( items ) => {
 		.map( ( [ category, list ] ) => ( { category, list } ) )
 		.sort( ( a, b ) => a.category.localeCompare( b.category ) );
 };
+
+// A row label with its long explanation behind a "?".
+const Labelled = ( { children, help } ) => (
+	<span className="saddle-perm__label">
+		{ children }
+		<HelpTip>{ help }</HelpTip>
+	</span>
+);
 
 export default function Permissions( {
 	caps,
@@ -263,342 +271,343 @@ export default function Permissions( {
 
 	return (
 		<div className="saddle-perm">
-			<CardRadioGroup
-				aria-label={ __( 'What your AI can do', 'saddle' ) }
-				value={ choice }
-				onChange={ setChoice }
-				options={ LEVELS.map( ( lvl ) => ( {
-					value: lvl.key,
-					icon: <LevelIcon name={ lvl.icon } />,
-					title: lvl.title,
-					description: lvl.short,
-				} ) ) }
-			/>
-
-			<Card>
-				<CardHeader
-					title={ __( 'AI access', 'saddle' ) }
-					description={ __(
-						'The master switch. Pausing blocks every tool call from every connected app until you resume — nothing is disconnected or forgotten.',
-						'saddle'
-					) }
+			<section className="saddle-section">
+				<SectionHeader title={ __( 'Access level', 'saddle' ) } />
+				<CardRadioGroup
+					aria-label={ __( 'What your AI can do', 'saddle' ) }
+					value={ choice }
+					onChange={ setChoice }
+					options={ LEVELS.map( ( lvl ) => ( {
+						value: lvl.key,
+						icon: <LevelIcon name={ lvl.icon } />,
+						title: lvl.title,
+						description: lvl.short,
+					} ) ) }
 				/>
-				<CardContent>
-					<label
-						className="saddle-toggle-row"
-						htmlFor="saddle-pause-switch"
-					>
-						<Switch
-							id="saddle-pause-switch"
-							checked={ ! paused }
-							disabled={ pausing }
-							onChange={ onTogglePause }
-							aria-label={ __(
-								'Saddle is answering connected apps',
+				{ underLevelled.length > 0 && (
+					<Notice tone="warning">
+						{ sprintf(
+							/* translators: 1: comma-separated app names, 2: the level each app is stuck at, 3: the site's level. */
+							_n(
+								'%1$s is connected at “%2$s”, so it is not offered the tools this “%3$s” level unlocks. Change it on the Connect tab — apps that sign in themselves keep the level they were approved with.',
+								'%1$s are connected at “%2$s” or lower, so they are not offered the tools this “%3$s” level unlocks. Change them on the Connect tab — apps that sign in themselves keep the level they were approved with.',
+								underLevelled.length,
 								'saddle'
-							) }
-						/>
-						<span>
-							{ paused
-								? __(
-										'Paused — every request is refused until you resume.',
-										'saddle'
-								  )
-								: __(
-										'Active — connected apps can use their allowed tools.',
-										'saddle'
-								  ) }
-						</span>
-					</label>
-				</CardContent>
-			</Card>
-
-			<Card>
-				<CardHeader
-					title={ __( 'Rehearsal', 'saddle' ) }
-					description={ __(
-						'Apps can try anything their level allows, and nothing is saved. Each tool that would change the site answers with what it would have done instead, and the attempt shows in Activity as rehearsed. Reading works as usual.',
-						'saddle'
-					) }
-				/>
-				<CardContent>
-					<label
-						className="saddle-toggle-row"
-						htmlFor="saddle-rehearsal-switch"
-					>
-						<Switch
-							id="saddle-rehearsal-switch"
-							checked={ rehearsal }
-							disabled={ savingRehearsal }
-							onChange={ toggleRehearsal }
-							aria-label={ __(
-								'Rehearse changes without saving them',
-								'saddle'
-							) }
-						/>
-						<span>
-							{ rehearsal
-								? __(
-										'On — apps rehearse; nothing they do is saved.',
-										'saddle'
-								  )
-								: __(
-										'Off — changes an app makes are saved.',
-										'saddle'
-								  ) }
-						</span>
-					</label>
-				</CardContent>
-			</Card>
-
-			<Card>
-				<CardHeader
-					title={ __( 'Drafts-only', 'saddle' ) }
-					description={ __(
-						'New posts and pages requested for publication or scheduling are saved as drafts. Publishing or scheduling an existing item requires confirmation. Edits to already-published content remain live.',
-						'saddle'
-					) }
-				/>
-				<CardContent>
-					<label
-						className="saddle-toggle-row"
-						htmlFor="saddle-drafts-only-switch"
-					>
-						<Switch
-							id="saddle-drafts-only-switch"
-							checked={ draftsOnly }
-							disabled={ savingDraftsOnly }
-							onChange={ toggleDraftsOnly }
-							aria-label={ __(
-								'Save new publications as drafts; confirm publishing existing content',
-								'saddle'
-							) }
-						/>
-						<span>
-							{ draftsOnly
-								? __(
-										'On — new publications stay in draft; publishing existing items asks first.',
-										'saddle'
-								  )
-								: __(
-										'Off — the level above already decides who can publish.',
-										'saddle'
-								  ) }
-						</span>
-					</label>
-				</CardContent>
-			</Card>
-
-			{ underLevelled.length > 0 && (
-				<Notice tone="warning">
-					{ sprintf(
-						/* translators: 1: comma-separated app names, 2: the level each app is stuck at, 3: the site's level. */
-						_n(
-							'%1$s is connected at “%2$s”, so it is not offered the tools this “%3$s” level unlocks. Change it on the Connect tab — apps that sign in themselves keep the level they were approved with.',
-							'%1$s are connected at “%2$s” or lower, so they are not offered the tools this “%3$s” level unlocks. Change them on the Connect tab — apps that sign in themselves keep the level they were approved with.',
-							underLevelled.length,
-							'saddle'
-						),
-						underLevelled.map( ( c ) => c.name ).join( ', ' ),
-						(
-							LEVELS.find(
-								( l ) => l.key === underLevelled[ 0 ].level
-							) || {}
-						).title || underLevelled[ 0 ].level,
-						(
-							LEVELS.find(
-								( l ) => l.key === levelKey( savedTier )
-							) || {}
-						).title || savedTier
-					) }
-				</Notice>
-			) }
-
-			<Collapsible
-				className="saddle-perm__all"
-				open={ showAll }
-				onOpenChange={ setShowAll }
-				trigger={ sprintf(
-					/* translators: %d: number of tools active at the chosen level. */
-					_n(
-						'See everything it can do (%d tool)',
-						'See everything it can do (%d tools)',
-						enabledCount,
-						'saddle'
-					),
-					enabledCount
+							),
+							underLevelled.map( ( c ) => c.name ).join( ', ' ),
+							(
+								LEVELS.find(
+									( l ) => l.key === underLevelled[ 0 ].level
+								) || {}
+							).title || underLevelled[ 0 ].level,
+							(
+								LEVELS.find(
+									( l ) => l.key === levelKey( savedTier )
+								) || {}
+							).title || savedTier
+						) }
+					</Notice>
 				) }
-			>
-				<p className="saddle-lanes__hint">
-					{ __(
-						'Click any tool below to turn it off individually — that stays off no matter which level above is chosen.',
-						'saddle'
-					) }
-				</p>
+			</section>
 
-				<p className="saddle-lanes__hint">
-					{ sprintf(
-						/* translators: 1: tools offered, 2: tools installed in total. */
-						__(
-							'Connected apps are offered %1$d of the %2$d tools installed here.',
+			<section className="saddle-section">
+				<SectionHeader title={ __( 'Safety', 'saddle' ) } />
+				<RowList>
+					<Row
+						title={
+							<Labelled
+								help={ __(
+									'The master switch. Pausing blocks every tool call from every connected app until you resume — nothing is disconnected or forgotten.',
+									'saddle'
+								) }
+							>
+								{ __( 'Pause AI access', 'saddle' ) }
+							</Labelled>
+						}
+						description={
+							paused
+								? __(
+										'Paused. Every request is refused.',
+										'saddle'
+								  )
+								: __(
+										'Off. Apps use their allowed tools.',
+										'saddle'
+								  )
+						}
+						actions={
+							<Switch
+								id="saddle-pause-switch"
+								checked={ !! paused }
+								disabled={ pausing }
+								onChange={ onTogglePause }
+								aria-label={ __(
+									'Pause every connected app',
+									'saddle'
+								) }
+							/>
+						}
+					/>
+					<Row
+						title={
+							<Labelled
+								help={ __(
+									'Apps can try anything their level allows, and nothing is saved. Each tool that would change the site answers with what it would have done instead, and the attempt shows in Activity as rehearsed. Reading works as usual.',
+									'saddle'
+								) }
+							>
+								{ __( 'Rehearsal', 'saddle' ) }
+							</Labelled>
+						}
+						description={
+							rehearsal
+								? __(
+										'On. Nothing apps do is saved.',
+										'saddle'
+								  )
+								: __(
+										'Off. Changes apps make are saved.',
+										'saddle'
+								  )
+						}
+						actions={
+							<Switch
+								id="saddle-rehearsal-switch"
+								checked={ rehearsal }
+								disabled={ savingRehearsal }
+								onChange={ toggleRehearsal }
+								aria-label={ __(
+									'Rehearse changes without saving them',
+									'saddle'
+								) }
+							/>
+						}
+					/>
+					<Row
+						title={
+							<Labelled
+								help={ __(
+									'New posts and pages requested for publication or scheduling are saved as drafts. Publishing or scheduling an existing item requires confirmation. Edits to already-published content remain live.',
+									'saddle'
+								) }
+							>
+								{ __( 'Drafts-only', 'saddle' ) }
+							</Labelled>
+						}
+						description={
+							draftsOnly
+								? __(
+										'On. New publications stay drafts.',
+										'saddle'
+								  )
+								: __(
+										'Off. The access level decides who can publish.',
+										'saddle'
+								  )
+						}
+						actions={
+							<Switch
+								id="saddle-drafts-only-switch"
+								checked={ draftsOnly }
+								disabled={ savingDraftsOnly }
+								onChange={ toggleDraftsOnly }
+								aria-label={ __(
+									'Save new publications as drafts; confirm publishing existing content',
+									'saddle'
+								) }
+							/>
+						}
+					/>
+				</RowList>
+			</section>
+
+			<section className="saddle-section">
+				<SectionHeader title={ __( 'Tools', 'saddle' ) } />
+				<Collapsible
+					open={ showAll }
+					onOpenChange={ setShowAll }
+					trigger={ sprintf(
+						/* translators: %d: number of tools active at the chosen level. */
+						_n(
+							'See everything it can do (%d tool)',
+							'See everything it can do (%d tools)',
+							enabledCount,
 							'saddle'
 						),
-						enabledCount,
-						caps.length
+						enabledCount
 					) }
-					{ hiddenByTier > 0 &&
-						' ' +
-							sprintf(
-								/* translators: %d: number of tools above the chosen level. */
-								_n(
-									'%d needs a higher level, and is not shown to them at all — they cannot ask for it, so tell them if you want it used.',
-									'%d need a higher level, and are not shown to them at all — they cannot ask for those, so tell them if you want any used.',
-									hiddenByTier,
-									'saddle'
-								),
-								hiddenByTier
-							) }
-					{ switchedOff > 0 &&
-						' ' +
-							sprintf(
-								/* translators: %d: number of individually switched-off tools. */
-								_n(
-									'%d more is switched off below.',
-									'%d more are switched off below.',
-									switchedOff,
-									'saddle'
-								),
-								switchedOff
-							) }
-				</p>
+				>
+					<p className="saddle-lanes__hint">
+						{ __(
+							'Click a tool to turn it off. It stays off at every level.',
+							'saddle'
+						) }
+					</p>
 
-				<input
-					type="search"
-					className="saddle-lanes__filter"
-					value={ query }
-					onChange={ ( e ) => setQuery( e.target.value ) }
-					placeholder={ __( 'Filter tools…', 'saddle' ) }
-					aria-label={ __( 'Filter tools by name', 'saddle' ) }
-				/>
+					<p className="saddle-lanes__hint">
+						{ sprintf(
+							/* translators: 1: tools offered, 2: tools installed in total. */
+							__(
+								'Connected apps are offered %1$d of the %2$d tools installed here.',
+								'saddle'
+							),
+							enabledCount,
+							caps.length
+						) }
+						{ hiddenByTier > 0 &&
+							' ' +
+								sprintf(
+									/* translators: %d: number of tools above the chosen level. */
+									_n(
+										'%d needs a higher level, and is not shown to them at all — they cannot ask for it, so tell them if you want it used.',
+										'%d need a higher level, and are not shown to them at all — they cannot ask for those, so tell them if you want any used.',
+										hiddenByTier,
+										'saddle'
+									),
+									hiddenByTier
+								) }
+						{ switchedOff > 0 &&
+							' ' +
+								sprintf(
+									/* translators: %d: number of individually switched-off tools. */
+									_n(
+										'%d more is switched off below.',
+										'%d more are switched off below.',
+										switchedOff,
+										'saddle'
+									),
+									switchedOff
+								) }
+					</p>
 
-				<div className="saddle-lanes">
-					{ LANES.map( ( lane ) => {
-						const all = byLane[ lane.key ] || [];
-						const items = all.filter( matchesQuery );
-						const laneOn = all.some( ( c ) =>
-							tierUnlocks( choice, c.tier )
-						);
-						const groups = groupByCategory( items );
-						return (
-							<section
-								key={ lane.key }
-								className={ `saddle-lane saddle-lane--${
-									lane.key
-								}${ laneOn ? ' is-on' : ' is-off' }` }
-							>
-								<header className="saddle-lane__head">
-									<h3 className="saddle-lane__title">
-										{ lane.title }
-									</h3>
-									<span className="saddle-lane__count">
-										{ laneOn
-											? __( 'on', 'saddle' )
-											: __( 'off', 'saddle' ) }
-									</span>
-								</header>
-								<div
-									className="saddle-lane__rail"
-									aria-hidden="true"
-								/>
-								{ groups.length === 0 && q ? (
-									<p className="saddle-lane__empty">
-										{ __( 'No matches', 'saddle' ) }
-									</p>
-								) : (
-									groups.map( ( { category, list } ) => (
-										<div
-											key={ category }
-											className="saddle-catgroup"
-										>
-											<h4 className="saddle-catgroup__title">
-												{ category }
-												<span className="saddle-catgroup__count">
-													{ list.length }
-												</span>
-											</h4>
-											<ul className="saddle-chips">
-												{ list.map( ( c ) => {
-													const on = tierUnlocks(
-														choice,
-														c.tier
-													);
-													const disabled =
-														localDisabled.has(
-															c.short
+					<input
+						type="search"
+						className="saddle-lanes__filter"
+						value={ query }
+						onChange={ ( e ) => setQuery( e.target.value ) }
+						placeholder={ __( 'Filter tools…', 'saddle' ) }
+						aria-label={ __( 'Filter tools by name', 'saddle' ) }
+					/>
+
+					<div className="saddle-lanes">
+						{ LANES.map( ( lane ) => {
+							const all = byLane[ lane.key ] || [];
+							const items = all.filter( matchesQuery );
+							const laneOn = all.some( ( c ) =>
+								tierUnlocks( choice, c.tier )
+							);
+							const groups = groupByCategory( items );
+							return (
+								<section
+									key={ lane.key }
+									className={ `saddle-lane saddle-lane--${
+										lane.key
+									}${ laneOn ? ' is-on' : ' is-off' }` }
+								>
+									<header className="saddle-lane__head">
+										<h3 className="saddle-lane__title">
+											{ lane.title }
+										</h3>
+										<span className="saddle-lane__count">
+											{ laneOn
+												? __( 'on', 'saddle' )
+												: __( 'off', 'saddle' ) }
+										</span>
+									</header>
+									<div
+										className="saddle-lane__rail"
+										aria-hidden="true"
+									/>
+									{ groups.length === 0 && q ? (
+										<p className="saddle-lane__empty">
+											{ __( 'No matches', 'saddle' ) }
+										</p>
+									) : (
+										groups.map( ( { category, list } ) => (
+											<div
+												key={ category }
+												className="saddle-catgroup"
+											>
+												<h4 className="saddle-catgroup__title">
+													{ category }
+													<span className="saddle-catgroup__count">
+														{ list.length }
+													</span>
+												</h4>
+												<ul className="saddle-chips">
+													{ list.map( ( c ) => {
+														const on = tierUnlocks(
+															choice,
+															c.tier
 														);
-													return (
-														<li key={ c.name }>
-															<Tooltip
-																content={
-																	c.description
-																}
-															>
-																<button
-																	type="button"
-																	className={ `saddle-chip${
-																		on
-																			? ' is-on'
-																			: ' is-off'
-																	}${
-																		disabled
-																			? ' is-disabled'
-																			: ''
-																	}` }
-																	aria-pressed={
-																		! disabled
-																	}
-																	onClick={ () =>
-																		toggleAbility(
-																			c.short
-																		)
+														const disabled =
+															localDisabled.has(
+																c.short
+															);
+														return (
+															<li key={ c.name }>
+																<Tooltip
+																	content={
+																		c.description
 																	}
 																>
-																	<span className="saddle-chip__label">
-																		{
-																			c.label
+																	<button
+																		type="button"
+																		className={ `saddle-chip${
+																			on
+																				? ' is-on'
+																				: ' is-off'
+																		}${
+																			disabled
+																				? ' is-disabled'
+																				: ''
+																		}` }
+																		aria-pressed={
+																			! disabled
 																		}
-																	</span>
-																	{ disabled ? (
-																		<span className="saddle-chip__off">
-																			{ __(
-																				'off',
-																				'saddle'
-																			) }
+																		onClick={ () =>
+																			toggleAbility(
+																				c.short
+																			)
+																		}
+																	>
+																		<span className="saddle-chip__label">
+																			{
+																				c.label
+																			}
 																		</span>
-																	) : (
-																		c.destructive && (
-																			<span className="saddle-chip__shield">
+																		{ disabled ? (
+																			<span className="saddle-chip__off">
 																				{ __(
-																					'asks first',
+																					'off',
 																					'saddle'
 																				) }
 																			</span>
-																		)
-																	) }
-																</button>
-															</Tooltip>
-														</li>
-													);
-												} ) }
-											</ul>
-										</div>
-									) )
-								) }
-							</section>
-						);
-					} ) }
-				</div>
-			</Collapsible>
+																		) : (
+																			c.destructive && (
+																				<span className="saddle-chip__shield">
+																					{ __(
+																						'asks first',
+																						'saddle'
+																					) }
+																				</span>
+																			)
+																		) }
+																	</button>
+																</Tooltip>
+															</li>
+														);
+													} ) }
+												</ul>
+											</div>
+										) )
+									) }
+								</section>
+							);
+						} ) }
+					</div>
+				</Collapsible>
+			</section>
 
 			{ pending && (
 				<ApplyBar

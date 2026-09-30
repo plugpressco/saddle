@@ -23,7 +23,7 @@ import Dashboard from './components/Dashboard';
 import Permissions from './components/Permissions';
 import Context from './components/Guidance';
 import ConnectApps from './components/ConnectApps';
-import Apps from './components/ConnectedClients';
+import Apps, { ConnectionDetails } from './components/ConnectedClients';
 import Integrations from './components/Integrations';
 import Activity from './components/Activity';
 import Settings from './components/Settings';
@@ -130,8 +130,8 @@ function ModuleScreen( { area, tab, navigate } ) {
 }
 
 /**
- * Connections → Apps: the app picker, the connected apps, and the one
- * sign-in control they share.
+ * Connections → Apps: the app picker, the connected apps, the one sign-in
+ * control they share, and the troubleshooting details, collapsed, last.
  *
  * @param {Object}   props
  * @param {Function} props.openWizard     Opens the key setup.
@@ -160,19 +160,13 @@ function AppsTab( {
 			<Apps
 				clients={ clients }
 				loading={ false }
-				// The app picker is right above the list on this page.
-				onConnect={ () => {
-					const picker = document.getElementById( 'saddle-connect' );
-					if ( picker ) {
-						picker.scrollIntoView();
-					}
-				} }
 				onClientsChanged={ refreshClients }
 				onClientRemoved={ removeClient }
 				siteTier={ tier }
 			/>
 			<SignInCard { ...signIn } />
 			<Cards where="connections" navigate={ navigate } />
+			<ConnectionDetails />
 		</>
 	);
 }
