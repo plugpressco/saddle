@@ -105,13 +105,14 @@ class Saddle_First_Look_Test extends WP_UnitTestCase {
 
 	public function test_finishing_first_run_leaves_a_new_install_at_read() {
 		delete_option( 'saddle_access_tier' );
-		delete_option( 'saddle_onboarded' );
+		delete_option( Saddle_Onboarding::OPTION );
 
 		$req = new WP_REST_Request( 'POST', '/saddle/v1/preferences' );
 		$req->set_body_params( array( 'onboarded' => true ) );
 		$this->assertSame( 200, rest_get_server()->dispatch( $req )->get_status() );
 
-		$this->assertTrue( (bool) get_option( 'saddle_onboarded' ) );
+		$this->assertTrue( Saddle_Onboarding::is_finished() );
+		$this->assertFalse( get_option( 'saddle_onboarded', false ) );
 		$this->assertSame( 'read', Saddle_Capabilities::get_site_tier() );
 	}
 }

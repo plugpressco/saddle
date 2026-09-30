@@ -17,7 +17,8 @@ defined( 'ABSPATH' ) || exit;
  * said "Connect your first app".
  *
  * The second is what a waiting screen polls: only the connections with
- * something new since the time it passes back.
+ * something new since the time it passes back, and the apps that have asked
+ * to connect but not been approved yet (`pending`).
  */
 class Saddle_Connections_REST {
 
@@ -146,9 +147,63 @@ class Saddle_Connections_REST {
 			array(
 				'now'         => time(),
 				'connections' => $rows,
+				'pending'     => self::pending( $since ),
 			),
 			200
 		);
+	}
+
+	/**
+	 * Apps that have registered themselves but not been approved yet.
+	 *
+	 * A registered client (dynamic registration) with no grant is an app
+	 * that asked to connect and is waiting for the owner on the consent
+	 * screen. First run says so, instead of "waiting" while the owner has
+	 * a screen open they have not noticed.
+	 *
+	 * @param int $since Only clients registered after this time.
+	 * @return array[] `client_id`, `client_name`, `app`, `registered_at`.
+	 */
+	private static function pending( $since ) {
+		if ( ! class_exists( 'Saddle_OAuth_Store' ) ) {
+			return array();
+		}
+
+		$granted = array();
+		foreach ( Saddle_OAuth_Store::list_grants() as $grant ) {
+			$granted[ (string) $grant['client_id'] ] = true;
+		}
+
+		$pending = array();
+		foreach ( Saddle_OAuth_Store::list_clients() as $client ) {
+			$id = isset( $client['client_id'] ) ? (string) $client['client_id'] : '';
+			if ( '' === $id || isset( $granted[ $id ] ) ) {
+				continue;
+			}
+			if ( 'dcr' !== ( isset( $client['client_source'] ) ? $client['client_source'] : 'dcr' ) ) {
+				continue;
+			}
+			$registered = isset( $client['client_created'] ) ? (int) $client['client_created'] : 0;
+			if ( $registered <= $since ) {
+				continue;
+			}
+
+			$name      = isset( $client['client_name'] ) ? (string) $client['client_name'] : '';
+			$pending[] = array(
+				'client_id'     => $id,
+				'client_name'   => $name,
+				'app'           => Saddle_Connection_Apps::detect(
+					array(
+						'urls'        => isset( $client['redirect_uris'] ) ? (array) $client['redirect_uris'] : array(),
+						'client_name' => $name,
+						'name'        => $name,
+					)
+				),
+				'registered_at' => $registered,
+			);
+		}
+
+		return $pending;
 	}
 
 	/**
