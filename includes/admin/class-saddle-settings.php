@@ -424,6 +424,8 @@ class Saddle_Settings {
 					'area'         => $area,
 					'tab'          => $tab,
 					'areas'        => self::areas_for_app(),
+					// The notices for this page and tab, most severe first.
+					'notices'      => Saddle_Notices::for_screen( 'saddle', $area . '/' . $tab ),
 				)
 			) . ';',
 			'before'

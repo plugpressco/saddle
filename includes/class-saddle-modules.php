@@ -17,9 +17,10 @@ defined( 'ABSPATH' ) || exit;
  * sibling detects Core with `class_exists( 'Saddle_Modules' )`, never with a
  * version number, and keeps its own top-level menu when Core is absent.
  *
- * The descriptor is data only here. The callables the plan adds later
- * (status, setup, settings) are resolved server-side when they arrive, so the
- * browser never receives one.
+ * A descriptor may carry three callables: `status`, `setup` and `settings`.
+ * They are resolved here, server-side, and the browser never receives one. A
+ * callable that throws, or returns the wrong shape, is treated as absent, so
+ * a sibling's bug never breaks a page or a tool.
  */
 class Saddle_Modules {
 
@@ -66,7 +67,8 @@ class Saddle_Modules {
 				'slug'  => 'saddle-settings',
 				'title' => __( 'Settings', 'saddle' ),
 				'tabs'  => array(
-					'general' => __( 'General', 'saddle' ),
+					'general'  => __( 'General', 'saddle' ),
+					'advanced' => __( 'Advanced', 'saddle' ),
 				),
 			),
 		);
@@ -100,7 +102,24 @@ class Saddle_Modules {
 				}
 			}
 
-			$modules[ $key ] = array(
+			$tabs      = $tabs ? $tabs : array( 'overview' => __( 'Overview', 'saddle' ) );
+			$callables = array();
+			foreach ( array( 'status', 'setup', 'settings' ) as $name ) {
+				if ( isset( $module[ $name ] ) && is_callable( $module[ $name ] ) ) {
+					$callables[ $name ] = $module[ $name ];
+				}
+			}
+
+			// A module whose schema has fields gets a Settings tab, unless it
+			// draws one of its own.
+			if ( isset( $callables['settings'] ) && ! isset( $tabs['settings'] ) ) {
+				$called = Saddle_Settings_Registry::safely( $callables['settings'] );
+				if ( $called['ok'] && Saddle_Settings_Registry::normalize( $called['value'] ) ) {
+					$tabs['settings'] = __( 'Settings', 'saddle' );
+				}
+			}
+
+			$modules[ $key ] = $callables + array(
 				'slug'       => 'saddle-' . $key,
 				'title'      => (string) $module['title'],
 				'product'    => isset( $module['product'] ) ? (string) $module['product'] : '',
@@ -109,7 +128,7 @@ class Saddle_Modules {
 				'order'      => isset( $module['order'] ) ? (int) $module['order'] : 50,
 				'nav'        => ! isset( $module['nav'] ) || (bool) $module['nav'],
 				'capability' => isset( $module['capability'] ) && is_string( $module['capability'] ) && '' !== $module['capability'] ? $module['capability'] : 'manage_options',
-				'tabs'       => $tabs ? $tabs : array( 'overview' => __( 'Overview', 'saddle' ) ),
+				'tabs'       => $tabs,
 				'script'     => isset( $module['script'] ) ? sanitize_key( (string) $module['script'] ) : '',
 				'content'    => isset( $module['content'] ) && 'mount' === $module['content'] ? 'mount' : 'screens',
 			);
@@ -213,5 +232,87 @@ class Saddle_Modules {
 		}
 
 		return add_query_arg( $args, admin_url( 'admin.php' ) );
+	}
+
+	/**
+	 * A module's status: its state and one line, or null when it has none or
+	 * the callable misbehaves.
+	 *
+	 * @param string $key Module key.
+	 * @return array{state:string,line:string}|null
+	 */
+	public static function status( $key ) {
+		$modules = self::modules();
+		if ( ! isset( $modules[ $key ]['status'] ) ) {
+			return null;
+		}
+
+		$called = Saddle_Settings_Registry::safely( $modules[ $key ]['status'] );
+		$raw    = $called['value'];
+		$states = array( 'ready', 'needs-setup', 'attention', 'off' );
+		if ( ! $called['ok'] || ! is_array( $raw ) || ! isset( $raw['state'] ) || ! in_array( $raw['state'], $states, true ) ) {
+			return null;
+		}
+
+		return array(
+			'state' => $raw['state'],
+			'line'  => isset( $raw['line'] ) && is_string( $raw['line'] ) ? wp_strip_all_tags( $raw['line'] ) : '',
+		);
+	}
+
+	/**
+	 * A module's setup tasks, each cleaned and its `tab` resolved to a URL.
+	 * Null when there are none or the callable misbehaves.
+	 *
+	 * @param string $key Module key.
+	 * @return array[]|null
+	 */
+	public static function setup( $key ) {
+		$modules = self::modules();
+		if ( ! isset( $modules[ $key ]['setup'] ) ) {
+			return null;
+		}
+
+		$called = Saddle_Settings_Registry::safely( $modules[ $key ]['setup'] );
+		if ( ! $called['ok'] || ! is_array( $called['value'] ) ) {
+			return null;
+		}
+
+		$tasks = array();
+		foreach ( $called['value'] as $task ) {
+			if ( ! is_array( $task ) || empty( $task['id'] ) || ! is_scalar( $task['id'] ) || empty( $task['title'] ) || ! is_string( $task['title'] ) ) {
+				continue;
+			}
+
+			$action = null;
+			$raw    = isset( $task['action'] ) && is_array( $task['action'] ) ? $task['action'] : array();
+			if ( ! empty( $raw['label'] ) && is_string( $raw['label'] ) ) {
+				$url = '';
+				if ( ! empty( $raw['url'] ) && is_string( $raw['url'] ) ) {
+					$url = esc_url_raw( $raw['url'] );
+				} elseif ( ! empty( $raw['tab'] ) && is_string( $raw['tab'] ) ) {
+					$url = esc_url_raw( self::url( $key, sanitize_key( $raw['tab'] ) ) );
+				}
+				if ( '' !== $url ) {
+					$action = array(
+						'label'    => wp_strip_all_tags( $raw['label'] ),
+						'url'      => $url,
+						'external' => ! empty( $raw['external'] ),
+					);
+				}
+			}
+
+			$tasks[] = array(
+				'id'      => sanitize_key( (string) $task['id'] ),
+				'title'   => wp_strip_all_tags( $task['title'] ),
+				'done'    => ! empty( $task['done'] ),
+				'line'    => isset( $task['line'] ) && is_string( $task['line'] ) ? wp_strip_all_tags( $task['line'] ) : '',
+				'waiting' => ! empty( $task['waiting'] ),
+				'after'   => isset( $task['after'] ) && is_scalar( $task['after'] ) ? sanitize_key( (string) $task['after'] ) : '',
+				'action'  => $action,
+			);
+		}
+
+		return $tasks ? $tasks : null;
 	}
 }

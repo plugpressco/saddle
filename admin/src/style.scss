@@ -321,6 +321,14 @@ body.saddle-admin-page {
 		font-size: 12px;
 	}
 
+	// Saddle's own notices that lost the frame's one slot. Drawn in the
+	// design system's Notice, so they are not parked on the light island.
+	&__saddle {
+		display: grid;
+		gap: 8px;
+		margin-bottom: 12px;
+	}
+
 	// Foreign notices were written for a light admin — keep them on a light
 	// island rather than restyling markup we don't own.
 	&__list {
