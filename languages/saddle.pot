@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-30T18:38:16+00:00\n"
+"POT-Creation-Date: 2026-09-30T18:46:01+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -2320,7 +2320,7 @@ msgid "List Saddle pages and modules"
 msgstr ""
 
 #: includes/abilities/modules.php:20
-msgid "Lists every page of the owner's Saddle admin (Home, Connections, Context, Settings) and every installed Saddle module (for example Analytics), in menu order. Each entry has a one-sentence \"summary\" you can repeat to the owner, its \"state\" and status \"line\" where a module reports one, setup progress with each unfinished task, the \"admin_url\" of the page and of each tab, how many tools it owns and how many of those you can call now, and which of its settings you may change (\"agent_writable\"). Use it first when the owner asks what is installed, what is left to set up, or where something lives. When you point the owner somewhere, give them the \"admin_url\" instead of describing clicks. Read-only."
+msgid "Lists every page of the owner's Saddle admin (Home, Connections, Context, Settings) and every installed Saddle module (for example Analytics), in menu order. Each entry has a one-sentence \"summary\" you can repeat to the owner, its \"state\" and status \"line\" where a module reports one, setup progress with each unfinished task, the \"admin_url\" of the page and of each tab, how many tools it owns and how many of those you can call now, and which of its settings you may change (\"agent_writable\"). Use it first when the owner asks what is installed, what is left to set up, or where something lives. When you point the owner somewhere, give them the \"admin_url\" instead of describing clicks. Read-only. A Saddle module is an add-on plugin with its own page in the Saddle menu, such as Analytics; it is not a Divi module or a block on a page, which the saddle-divi-* and block tools handle."
 msgstr ""
 
 #: includes/abilities/modules.php:36
@@ -2328,7 +2328,7 @@ msgid "Get a module's settings"
 msgstr ""
 
 #: includes/abilities/modules.php:37
-msgid "Returns the settings of one Saddle module, or of Saddle itself, with what each one means and its current value. Pass \"module\": \"saddle\" for Saddle's own settings (access level, sign-in, memory limits), or a module key from saddle/list-modules, such as \"analytics\". Each field has a label, a one-line \"help\", its \"type\" and allowed values, its \"default\", its current \"value\", and \"admin_url\": the exact page and field where the owner changes it. \"agent\" says who may change it: \"write\" means you can, through saddle/update-module-settings; \"read\" means only the owner can, so give them the admin_url. A secret such as an API key is never returned, only whether one is set and its last characters. Use this to explain a setting or to send the owner to it. Read-only."
+msgid "Returns the settings of one Saddle module, or of Saddle itself, with what each one means and its current value. Pass \"module\": \"saddle\" for Saddle's own settings (access level, sign-in, memory limits), or a module key from saddle/list-modules, such as \"analytics\". Each field has a label, a one-line \"help\", its \"type\" and allowed values, its \"default\", its current \"value\", and \"admin_url\": the exact page and field where the owner changes it. \"agent\" says who may change it: \"write\" means you can, through saddle/update-module-settings; \"read\" means only the owner can, so give them the admin_url. A secret such as an API key is never returned, only whether one is set and its last characters. Use this to explain a setting or to send the owner to it. Read-only. A Saddle module is an add-on plugin with its own page in the Saddle menu, such as Analytics; it is not a Divi module or a block on a page, which the saddle-divi-* and block tools handle."
 msgstr ""
 
 #: includes/abilities/modules.php:45
@@ -2340,7 +2340,7 @@ msgid "Change a module's settings"
 msgstr ""
 
 #: includes/abilities/modules.php:59
-msgid "Changes settings of an installed Saddle module. Only settings whose \"agent\" is \"write\" in saddle/get-module-settings can be changed; every other setting, and all of Saddle's own (access level, pause, sign-in, keys), belongs to the owner and is refused with the admin_url to give them. Nothing you change here can alter what connected apps are allowed to do. Pass \"module\" and \"values\", an object of setting keys and new values, which are validated the same way the admin screen validates them. Because it overwrites settings, it previews first: the first call returns each setting from its current value to the new one, in plain words, and a confirm_token. Show the owner that and call again with the same \"module\", \"values\" and the token to apply it. The change is logged and can be reversed with saddle/undo-changes."
+msgid "Changes settings of an installed Saddle module. Only settings whose \"agent\" is \"write\" in saddle/get-module-settings can be changed; every other setting, and all of Saddle's own (access level, pause, sign-in, keys), belongs to the owner and is refused with the admin_url to give them. Nothing you change here can alter what connected apps are allowed to do. Pass \"module\" and \"values\", an object of setting keys and new values, which are validated the same way the admin screen validates them. Because it overwrites settings, it previews first: the first call returns each setting from its current value to the new one, in plain words, and a confirm_token. Show the owner that and call again with the same \"module\", \"values\" and the token to apply it. The change is logged and can be reversed with saddle/undo-changes. A Saddle module is an add-on plugin with its own page in the Saddle menu, such as Analytics; it is not a Divi module or a block on a page, which the saddle-divi-* and block tools handle."
 msgstr ""
 
 #: includes/abilities/modules.php:67
