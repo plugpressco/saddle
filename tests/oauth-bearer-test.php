@@ -317,15 +317,15 @@ class Saddle_OAuth_Bearer_Test extends WP_UnitTestCase {
 		$this->assertFalse( Saddle_Capabilities::tier_allows( 'write' ) );
 	}
 
-	public function test_a_scope_can_never_exceed_the_site_tier() {
+	public function test_a_grants_level_is_no_longer_clamped_to_the_site_tier() {
 		Saddle_Capabilities::set_tier( 'read' );
 		$this->issue_token( 'saddle:admin' );
-		Saddle_OAuth_Bearer::resolve( false );
+		wp_set_current_user( Saddle_OAuth_Bearer::resolve( false ) );
 
 		$this->assertSame(
-			'read',
+			'admin',
 			Saddle_Capabilities::get_tier(),
-			'A token asking for more than the site allows still only gets what the site allows.'
+			'Access is per app: the grant holds what the owner gave it, whatever the legacy site tier says.'
 		);
 	}
 
@@ -395,7 +395,7 @@ class Saddle_OAuth_Bearer_Test extends WP_UnitTestCase {
 		$this->assertContains( 'saddle-list-plugins', $names );
 	}
 
-	public function test_the_denial_reason_sends_the_user_to_reconnect_not_to_permissions() {
+	public function test_the_denial_reason_names_the_ai_apps_screen_for_a_narrow_grant() {
 		Saddle_Capabilities::set_tier( 'admin' );
 		$this->issue_token( 'saddle:read' );
 		// Core sets the current user from what determine_current_user returns;
@@ -405,10 +405,10 @@ class Saddle_OAuth_Bearer_Test extends WP_UnitTestCase {
 
 		$reason = Saddle_Capabilities::denial_reason( 'saddle/create-post' );
 
-		// The site allows this; the app was not granted it. Telling the agent to
-		// raise the site's access level would send the user to the wrong screen.
-		$this->assertSame( 'saddle_insufficient_scope', $reason['code'] );
-		$this->assertStringContainsString( 'reconnect', strtolower( $reason['message'] ) );
+		// The app was not granted it; the owner changes that per app.
+		$this->assertSame( 'saddle_tier_denied', $reason['code'] );
+		$this->assertStringContainsString( 'Saddle → AI apps', $reason['message'] );
+		$this->assertStringNotContainsString( 'Permissions', $reason['message'] );
 	}
 
 	/* ------------------------------------------------------------------

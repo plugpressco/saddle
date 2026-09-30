@@ -38,6 +38,22 @@ class Saddle_Connections_REST {
 
 		register_rest_route(
 			Saddle_REST_Admin::REST_NAMESPACE,
+			'/connections/(?P<id>(key|oauth):[A-Za-z0-9-]+)/role',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( __CLASS__, 'set_role' ),
+				'permission_callback' => array( 'Saddle_REST_Admin', 'can_manage' ),
+				'args'                => array(
+					'role' => array(
+						'type'     => 'string',
+						'required' => true,
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			Saddle_REST_Admin::REST_NAMESPACE,
 			'/connections/pulse',
 			array(
 				'methods'             => WP_REST_Server::READABLE,
@@ -114,6 +130,57 @@ class Saddle_Connections_REST {
 		);
 
 		return new WP_REST_Response( array( 'connections' => $rows ), 200 );
+	}
+
+	/**
+	 * POST /connections/{id}/role `{ role }` — choose what one app can do.
+	 *
+	 * 400 for a role Saddle does not have, 404 for a connection that does not
+	 * exist. Returns the updated row, the same shape GET /connections lists.
+	 *
+	 * @param WP_REST_Request $request The request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function set_role( WP_REST_Request $request ) {
+		$id   = (string) $request->get_param( 'id' );
+		$role = sanitize_key( (string) $request->get_param( 'role' ) );
+
+		if ( ! in_array( $role, Saddle_Access::ROLES, true ) ) {
+			return new WP_Error( 'saddle_unknown_role', __( 'That is not an access role Saddle knows.', 'saddle' ), array( 'status' => 400 ) );
+		}
+
+		$found = null;
+		foreach ( self::get_connections()->get_data()['connections'] as $row ) {
+			if ( $row['id'] === $id ) {
+				$found = $row;
+			}
+		}
+		if ( ! $found ) {
+			return new WP_Error( 'saddle_unknown_connection', __( 'That connection no longer exists — it may already have been disconnected.', 'saddle' ), array( 'status' => 404 ) );
+		}
+
+		$done = Saddle_Access::set_role( $id, $role );
+		if ( is_wp_error( $done ) ) {
+			return $done;
+		}
+
+		Saddle_Log::record(
+			array(
+				'action'  => 'access-changed',
+				'target'  => $id,
+				'summary' => sprintf(
+					/* translators: 1: app name, 2: its new access, e.g. "Edit content". */
+					__( 'Set %1$s to “%2$s”', 'saddle' ),
+					'' !== (string) $found['name'] ? $found['name'] : $id,
+					Saddle_Access::labels()[ $role ]
+				),
+			)
+		);
+
+		$found['role']       = $role;
+		$found['role_label'] = Saddle_Access::labels()[ $role ];
+
+		return new WP_REST_Response( $found, 200 );
 	}
 
 	/**
@@ -229,9 +296,14 @@ class Saddle_Connections_REST {
 			)
 		);
 
+		$role = Saddle_Access::role_for( $id );
+
 		return array(
 			'id'            => $id,
 			'kind'          => $credential['kind'],
+			// What this app may do: read, write or admin, and its plain name.
+			'role'          => $role,
+			'role_label'    => Saddle_Access::labels()[ $role ],
 			'app'           => $app,
 			'name'          => $credential['name'],
 			// What the app calls itself, e.g. "claude-ai 0.1.0". The admin shows

@@ -446,13 +446,11 @@ class Saddle_OAuth {
 	}
 
 	/**
-	 * The scope matching what the owner has actually enabled on this site.
+	 * The scope to advertise, and to propose when a client asks for none.
 	 *
-	 * Deliberately the *site* tier and not {@see Saddle_Capabilities::get_tier()}:
-	 * this answers "what could a new connection be granted here", which is a
-	 * question about configuration, not about whoever is holding a credential
-	 * right now. It is a ceiling on what may be granted, never a grant in itself
-	 * — the consent screen still has to be clicked.
+	 * Deliberately the legacy *site* tier, not {@see Saddle_Capabilities::get_tier()}:
+	 * it is a hint about what to ask for. Access is per app and chosen on the
+	 * consent screen, where read is pre-selected, so this grants nothing.
 	 *
 	 * @return string Space-delimited scope string.
 	 */

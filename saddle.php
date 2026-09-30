@@ -106,6 +106,7 @@ require_once SADDLE_DIR . 'includes/lint/rules/class-rule-unknown-module.php';
 require_once SADDLE_DIR . 'includes/preview/class-saddle-preview.php';
 require_once SADDLE_DIR . 'includes/verify/class-saddle-verify.php';
 require_once SADDLE_DIR . 'includes/class-saddle-capabilities.php';
+require_once SADDLE_DIR . 'includes/class-saddle-access.php';
 require_once SADDLE_DIR . 'includes/class-saddle-approval.php';
 require_once SADDLE_DIR . 'includes/class-saddle-context.php';
 require_once SADDLE_DIR . 'includes/class-saddle-context-bundle.php';
@@ -291,6 +292,8 @@ final class Saddle {
 		// has made its first tool call. Observes the MCP route on either
 		// transport, and forgets a credential when it is revoked.
 		Saddle_Connections::register();
+		// Per-app access roles: the migration and the key clean-up.
+		Saddle_Access::register();
 		add_action( 'rest_api_init', array( 'Saddle_Connections_REST', 'register_routes' ) );
 		add_action( 'rest_api_init', array( 'Saddle_Approvals_REST', 'register_routes' ) );
 		add_action( 'rest_api_init', array( 'Saddle_Modules_REST', 'register_routes' ) );

@@ -136,7 +136,7 @@ class Saddle_Self_Check_Test extends WP_UnitTestCase {
 		$this->assertSame( 'read', $result['connection']['effective_tier'] );
 	}
 
-	public function test_an_oauth_scope_below_the_site_tier_is_explained() {
+	public function test_an_app_below_the_legacy_site_tier_is_not_a_problem() {
 		Saddle_Capabilities::set_tier( 'write' );
 		$this->as_role( 'editor' );
 		add_filter(
@@ -150,7 +150,7 @@ class Saddle_Self_Check_Test extends WP_UnitTestCase {
 
 		$this->assertSame( 'read', $result['connection']['effective_tier'] );
 		$this->assertSame( 'write', $result['connection']['site_tier'] );
-		$this->assertContains( 'scope_below_site_tier', $this->codes( $result ) );
+		$this->assertNotContains( 'scope_below_site_tier', $this->codes( $result ), 'Access is per app; differing from the legacy site tier is normal.' );
 	}
 
 	public function test_plain_permalinks_are_reported_with_the_fix() {
