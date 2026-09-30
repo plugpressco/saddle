@@ -28,7 +28,7 @@ import {
 } from '@plugpress/ui';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { api, levelFor, saddleData } from '../api';
-import { AppLogo, BrandMark } from './icons';
+import { AppLogo } from './icons';
 import ConnectWizard from './ConnectWizard';
 import WaitingLine from './WaitingLine';
 import { APPS } from '../connect-apps';
@@ -634,18 +634,15 @@ export default function FirstRun( {
 	return (
 		<div className="saddle-first-run">
 			<div className="saddle-first-run__bar">
-				<span className="saddle-first-run__mark" aria-hidden="true">
-					<BrandMark />
-				</span>
 				<Button variant="link" onClick={ skip }>
 					{ __( 'Skip setup', 'saddle' ) }
 				</Button>
 			</div>
 
 			<div className="saddle-first-run__column">
-				<h1 className="saddle-first-run__title">
+				<h2 className="saddle-first-run__title">
 					{ __( 'Hi, I’m Saddle.', 'saddle' ) }
-				</h1>
+				</h2>
 				<p className="saddle-first-run__lead">
 					{ __(
 						'I let your AI work on this site, and I ask you before anything risky. Let me look around first.',

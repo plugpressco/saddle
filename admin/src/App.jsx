@@ -34,7 +34,7 @@ import Tour from './components/Tour';
 import AuthTrouble from './components/AuthTrouble';
 import Frame from './components/Frame';
 import { pickSlot } from './notices';
-import Screen, { describe } from './screens';
+import Screen from './screens';
 import { showFirstRun, tourDue } from './onboarding-logic';
 import {
 	areaUrl,
@@ -477,18 +477,35 @@ export default function App() {
 	} else if ( authError ) {
 		view = <AuthTrouble onRetry={ () => window.location.reload() } />;
 	} else if ( area.key === 'home' && firstRunOpen ) {
+		// First run sits in the same frame as every page, without tabs. Every
+		// notice waits behind the bell so nothing competes with the steps.
 		view = (
-			<div className="pp-app saddle-app saddle-app--setup">
-				<FirstRun
-					tier={ tier }
-					clients={ clients }
-					firstRun={ firstRunStart }
-					send={ sendOnboarding }
-					onTierSaved={ setTier }
-					onClientsChanged={ refreshClients }
-					onFinish={ finishOnboarding }
-				/>
-			</div>
+			<Frame
+				area={ area }
+				tab="setup"
+				showTabs={ false }
+				crumb={ __( 'Setup', 'saddle' ) }
+				status={ {
+					tier,
+					paused,
+					rehearsal,
+					href: areaUrl( AREAS, 'connections', 'permissions' ),
+				} }
+				moreNotices={ [ slotNotice, ...bellNotices ].filter( Boolean ) }
+				onDismissNotice={ dismissNotice }
+			>
+				<div className="saddle-app--setup">
+					<FirstRun
+						tier={ tier }
+						clients={ clients }
+						firstRun={ firstRunStart }
+						send={ sendOnboarding }
+						onTierSaved={ setTier }
+						onClientsChanged={ refreshClients }
+						onFinish={ finishOnboarding }
+					/>
+				</div>
+			</Frame>
 		);
 	} else {
 		view = (
@@ -496,7 +513,6 @@ export default function App() {
 				area={ area }
 				tab={ tab }
 				onTab={ setTab }
-				description={ wizardOpen ? null : describe( area, tab ) }
 				status={ {
 					tier,
 					paused,

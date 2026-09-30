@@ -105,6 +105,11 @@ export const SHELL_VERSION = 2;
 // plan hands over the whole @plugpress/ui namespace instead; that waits until
 // the library tree-shakes LicensePanel and UpgradeCard, because importing the
 // namespace would put licence and upsell UI into free's bundle.
+//
+// PageHeader stays in this contract (shell v1 addons may use it), but a module
+// screen should not draw one: Core's header band already names the page
+// ("Saddle / Analytics") and holds its tabs (#280). Start a screen with its
+// first section instead.
 export const ui = {
 	Badge,
 	Button,

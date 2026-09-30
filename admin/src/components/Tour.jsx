@@ -66,7 +66,7 @@ function stopsFor( activityLabel ) {
 				visible(
 					Array.from(
 						document.querySelectorAll(
-							'.saddle-frame [role="tab"]'
+							'.saddle-header [role="tab"]'
 						)
 					).find( ( el ) => el.textContent.trim() === activityLabel )
 				),

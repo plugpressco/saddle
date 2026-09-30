@@ -123,7 +123,11 @@ the issue and the rule is revisited there.
   phases after them). It changes structure, not style. Saddle's WordPress
   submenu becomes the nav, with one page per area and no sidebar inside the
   page, and each sibling plugin adds its page through `saddle_modules`. Same
-  kit and tokens.
+  kit and tokens. A fourth, on Fahim's request 2026-10-01 after reviewing
+  Jetpack's admin: a visual redesign (#280–#282). The admin becomes
+  WordPress-native (its greys, links and focus) with one brand color, Petrol
+  teal, a full-width header band with the tabs inside it, one small type scale,
+  and less text on every page. Still one kit.
 - **Runtime license checks in Pro** (decided 2026-07-12, saddle-pro#23).
 - Per-connection access profiles, comment abilities, activity-log export and
   retention — closed as not planned on 2026-09-07.

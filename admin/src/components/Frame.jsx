@@ -1,16 +1,20 @@
 /**
- * The frame Core draws on every Saddle page (#274).
+ * The frame Core draws on every Saddle page (#274, #280).
  *
- * What page this is, the one sentence that says what it is for, the safety
- * pill, other plugins' notices behind a bell, and one row of tabs. WordPress's
- * own left menu is the navigation: there is no sidebar inside the page. A
- * module's content sits inside the same frame, so every Saddle page reads as
- * one product.
+ * A white header band across the full width: the mark and "Saddle / Page",
+ * the safety pill and the notices bell, and the page's tabs inside the band.
+ * Then the page, and a quiet footer. WordPress's own left menu is the
+ * navigation: there is no sidebar inside the page. A module's content sits in
+ * the same frame, so every Saddle page reads as one product.
+ *
+ * Never draw the frame while the app is still loading: WordPress's common.js
+ * moves every `.notice` to just after the first `.wrap h1` once the page has
+ * loaded, and the header's h1 would pull the quarantined notices back into
+ * view.
  */
 import { useState, useEffect, useCallback, useRef } from '@wordpress/element';
 import {
 	AppContent,
-	PageHeader,
 	Tabs,
 	Tooltip,
 	StatusDot,
@@ -19,7 +23,7 @@ import {
 	SkipLink,
 } from '@plugpress/ui';
 import { __, sprintf, _n } from '@wordpress/i18n';
-import { levelFor } from '../api';
+import { levelFor, saddleData } from '../api';
 import { BrandMark, IconBell } from './icons';
 import NoticeItem from './NoticeItem';
 
@@ -189,13 +193,55 @@ function ForeignNotices( { extra = [], onDismiss } ) {
 }
 
 /**
+ * The footer strip on every page: which build this is, and where to read more.
+ *
+ * @param {Object} props
+ * @param {Object} props.area The page; a module page also names its product.
+ */
+function Footer( { area } ) {
+	const parts = [
+		sprintf(
+			/* translators: %s: plugin version. */
+			__( 'Saddle %s', 'saddle' ),
+			saddleData.version || ''
+		).trim(),
+	];
+	if ( area.module && area.product ) {
+		parts.push(
+			[ area.product, area.version ].filter( Boolean ).join( ' ' )
+		);
+	}
+
+	return (
+		<footer className="saddle-footer">
+			<span className="saddle-footer__brand">
+				<BrandMark />
+				{ parts.join( ' · ' ) }
+			</span>
+			{ saddleData.docsUrl && (
+				<a href={ saddleData.docsUrl } target="_blank" rel="noreferrer">
+					{ __( 'Docs', 'saddle' ) }
+				</a>
+			) }
+			{ saddleData.rateUrl && (
+				<a href={ saddleData.rateUrl } target="_blank" rel="noreferrer">
+					{ __( 'Rate Saddle', 'saddle' ) }
+				</a>
+			) }
+		</footer>
+	);
+}
+
+/**
  * @param {Object}   props
  * @param {Object}   props.area            The page, from saddleData.areas.
  * @param {string}   props.tab             The active tab.
  * @param {Function} props.onTab           Called with a tab key.
- * @param {string}   props.description     The one sentence for this tab.
  * @param {Object}   props.status          { tier, paused, rehearsal, href }.
  * @param {boolean}  props.notices         Show the notices bell.
+ * @param {boolean}  props.showTabs        Draw the page's tabs (first run doesn't).
+ * @param {string=}  props.crumb           The page name after "Saddle /", when it
+ *                                         is not the page's own title.
  * @param {Object=}  props.notice          The one notice shown under the header.
  * @param {Object[]} props.moreNotices     The rest, for the bell.
  * @param {Function} props.onDismissNotice Called with a dismissible notice.
@@ -205,66 +251,74 @@ export default function Frame( {
 	area,
 	tab,
 	onTab,
-	description,
 	status,
 	notices = true,
+	showTabs = true,
+	crumb,
 	notice = null,
 	moreNotices = [],
 	onDismissNotice,
 	children,
 } ) {
-	// A module's header names the product it comes from; Core's pages are
-	// simply Saddle.
-	const source =
-		area.module && area.product
-			? [ area.product, area.version ].filter( Boolean ).join( ' ' )
-			: __( 'Saddle', 'saddle' );
+	const home = ( saddleData.areas || [] ).find( ( a ) => a.key === 'home' );
+	const tabs = showTabs && area.tabs.length > 1 ? area.tabs : null;
 
 	return (
 		<div className="pp-app saddle-app saddle-app--frame">
 			<SkipLink href="#pp-main">
 				{ __( 'Skip to content', 'saddle' ) }
 			</SkipLink>
+			<header
+				className={ `saddle-header${
+					tabs ? ' saddle-header--tabs' : ''
+				}` }
+			>
+				<div className="saddle-header__row">
+					<h1 className="saddle-header__title">
+						<a
+							className="saddle-header__home"
+							href={ home ? home.url : undefined }
+						>
+							<BrandMark />
+							<span>{ __( 'Saddle', 'saddle' ) }</span>
+						</a>
+						<span className="saddle-header__sep" aria-hidden="true">
+							/
+						</span>
+						<span aria-current="page">{ crumb || area.title }</span>
+					</h1>
+					<div className="saddle-header__actions">
+						{ notices && (
+							<ForeignNotices
+								extra={ moreNotices }
+								onDismiss={ onDismissNotice }
+							/>
+						) }
+						{ status && status.tier && (
+							<StatusPill { ...status } />
+						) }
+					</div>
+				</div>
+				{ tabs && (
+					<div className="saddle-header__tabs">
+						<Tabs
+							value={ tab }
+							onChange={ onTab }
+							aria-label={ area.title }
+							items={ tabs.map( ( t ) => ( {
+								value: t.key,
+								label: t.label,
+							} ) ) }
+						/>
+					</div>
+				) }
+			</header>
 			<main
 				id="pp-main"
 				className="saddle-frame"
 				data-saddle-screen={ `${ area.key }/${ tab }` }
 			>
 				<AppContent width={ PAGE_WIDTH }>
-					<PageHeader
-						eyebrow={
-							<span className="saddle-frame__source">
-								<BrandMark />
-								<span>{ source }</span>
-							</span>
-						}
-						title={ area.title }
-						description={ description }
-						actions={
-							<div className="saddle-frame__actions">
-								{ notices && (
-									<ForeignNotices
-										extra={ moreNotices }
-										onDismiss={ onDismissNotice }
-									/>
-								) }
-								{ status.tier && <StatusPill { ...status } /> }
-							</div>
-						}
-						tabs={
-							area.tabs.length > 1 ? (
-								<Tabs
-									value={ tab }
-									onChange={ onTab }
-									aria-label={ area.title }
-									items={ area.tabs.map( ( t ) => ( {
-										value: t.key,
-										label: t.label,
-									} ) ) }
-								/>
-							) : null
-						}
-					/>
 					{ notice && (
 						<NoticeItem
 							className="saddle-frame__notice"
@@ -279,6 +333,7 @@ export default function Frame( {
 					{ children }
 				</AppContent>
 			</main>
+			<Footer area={ area } />
 		</div>
 	);
 }

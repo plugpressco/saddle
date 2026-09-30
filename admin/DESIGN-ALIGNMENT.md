@@ -1,98 +1,120 @@
 # Saddle — Design Alignment
 
-> **DECIDED (2026-09-26, Fahim; applied to the plugin in #198):** the brand
-> colour is **olive `#4D6410`**, matching saddle.to. Magenta read as pink on the
-> site; a saddle-brown was tried and rejected. Everything below about the
-> 85/15 split still holds; only the accent hexes changed. The olive is dark
-> enough to carry text (6.68:1 on white), so the fill/text split for the accent
-> no longer does work, but the seam stays.
->
-> **DECIDED (2026-08-25, Fahim):** Saddle has a brand palette, built on
-> **`#DA5CC7`** (superseded by the olive above). This **supersedes the 2026-07-04 monochrome
-> decision** kept below for history. The register is unchanged — calm, restrained,
-> Vercel/Geist — but the one accent is now the brand colour instead of near-black.
-> **Roughly 85% of the interface stays black, white and gray; the accent is the
-> remaining 15%.** Don't re-litigate this; do hold the line on the 85/15.
+> **DECIDED (2026-10-01, Fahim; #280):** the admin is **WordPress-native with one
+> brand color, Petrol teal `#0B6470`**. Fahim reviewed Jetpack's admin and asked
+> for "a simple UI compliant with the default WordPress UI yet representing the
+> plugin's branding", with less clutter, less text and no oversized type. He
+> chose a full-width white header band with the tabs inside it, and Petrol over
+> a deeper olive and a graphite option. This supersedes the olive decision
+> (2026-09-26) and the 85/15 rule below it. Don't re-litigate the color; do
+> hold the line on where it may appear.
 
 ## The palette
 
-| Role | Name | Hex |
+Everything except the brand is WordPress's own value, so a Saddle page sits in
+wp-admin like a core screen.
+
+| Role | Hex | Contrast |
 |---|---|---|
-| Primary brand | Olive | `#4D6410` |
-| Hover / active | — | `#3D500C` |
-| Soft background | — | `#F1F5D8` |
-| Highlight (fill only, never text) | Lime | `#DBE77A` |
-| Main text | Near Black | `#111111` |
-| Page background | Warm White | `#FBFBFA` |
-| Success / read-only | Lime | `#84CC16` |
-| Activity / info | Cyan | `#06B6D4` |
-| Warning / gated | Amber | — |
-| Destructive / blocked | Coral | `#F43F5E` |
+| **Brand** (Petrol) | `#0B6470` | white on it 6.84; on white 6.84 |
+| Brand hover / press | `#08505A` / `#063F47` | white 9.11 / 11.60 |
+| Brand tint / soft | `#E2F1F2` / `#C5E4E7` | brand on tint 5.89 |
+| Page | `#F0F0F1` | |
+| Surface (blocks, header band) | `#FFFFFF` | |
+| Surface 2 (row hover, sub-panels) | `#F6F7F7` | |
+| Border / border 2 | `#DCDCDE` / `#C3C4C7` | hairlines, decorative |
+| Field edge, switch off | `#8C8F94` | 3.24 on white |
+| Text / secondary / muted | `#1D2327` / `#50575E` / `#646970` | 13.95 / 6.43 / 4.86 on the page |
+| Links | `#2271B1`, hover `#135E96` | 5.17 on white, 4.54 on the page |
+| Focus | `var(--wp-admin-theme-color)` | WordPress's own |
+| Success | `#007017` on `#EDFAEF` | 5.86 |
+| Warning | `#8A4F00` on `#FEF8EE` | 6.21 |
+| Danger | `#B32D2E` on `#FCF0F1` | 5.67 |
+| Info | `#2271B1` on `#F0F6FC` | 4.75 |
 
-It lives in `admin/src/style.scss` as consumer-side `--pp-*` overrides. **Never in
-`@plugpress/ui`** — the library is off-limits from a plugin task, and the DS
-defines its tokens inside `:where()` (zero specificity), so a plain class selector
-wins with no `!important`. Both `.pp-app` and the body class are targeted, because
-portaled overlays render outside `.pp-app` and would otherwise lose every token.
+It lives in `admin/src/style.scss` as consumer-side `--pp-*` overrides (the
+brand as `--saddle-brand*`). **Never in `@plugpress/ui`**: the library is
+off-limits from a plugin task, and the DS defines its tokens inside `:where()`
+(zero specificity), so a plain class selector wins with no `!important`. Both
+`.pp-app` and the body class are targeted, because portaled overlays render
+outside `.pp-app` and would otherwise lose every token.
 
-## The rule that governs every color
+WordPress's warning yellow `#DBA617` (2.22 on white) is a mark only, never
+text; its red `#D63638` (4.73) is too thin for text, so text uses `#B32D2E`.
 
-**Every color has a bright value for FILLS and a darker same-hue value for TEXT.**
-This is not a preference. Lime is 1.98:1 on white, cyan 2.43, coral 3.67 (and the
-magenta this palette used until #198 was 3.31). None of them can carry a label,
-and none can be the ground under a white one. The olive brand colour is the
-exception: at 6.68:1 it is its own readable step, used for links and for the
-primary button, with `#3D500C` on hover. The DS mandates the
-same split for the accent (`--pp-accent` paints surfaces at 3:1;
-`--pp-accent-text` paints links and labels at 4.5:1, measured against the *tint*,
-not just white).
+## Where the brand may appear
 
-Three consequences worth knowing before you touch a status color:
+**Only:** the mark in the header band · the active tab's indicator · primary
+buttons (`--pp-action`) · switches, radios and checkboxes when on · the
+selected access-level card on Connections → Permissions.
 
-- **A mark needs 3:1 too.** A status dot, a 2px lane rail or a thin ring is a
-  graphical object, so lime and cyan are each used **one step down their ramp**
-  (`#65A30D`, `#0891B2`) — at the `-500` step they are invisible on a white card.
-  Coral already clears it and is used exactly as given.
-- **The DS collapses `--pp-tone-text` into `--pp-tone`** for status tones, so the
-  readable partners are put back at the tone layer — the same seam the accent tone
-  already uses.
-- **Warning and destructive are two different signals.** Amber means "powerful,
-  asks first" (the Remove lane, the shield chip, the write-tier pill); coral means
-  "blocked or failed" (a denied call, a connection error). They need opposite
-  reactions from the reader — don't fold them together.
+**Never:** links (WordPress blue), focus rings (WordPress's theme color), text,
+headings, borders, icons, backgrounds of blocks or bands. If a screen seems to
+need more teal, it needs less of something else.
 
-## Where the accent is allowed to land
+The dark overlays (tooltip, toast, coachmark, apply bar, bulk bar) read their
+ground from `--pp-action` in the kit, so `style.scss` pins them to `#1D2327`;
+code panels are pinned the same way. Both are kit seams.
 
-**Yes:** primary buttons · links · focus rings · the active nav row · the brand
-mark · the Cookbook-style accent bars · `tone="accent"` fills · selection states.
+## The frame
 
-**No:** card backgrounds, page bands, table headers, every icon, borders at large,
-section headings. If a screen has more than a few accented elements, remove some
-rather than softening the accent.
+Every Saddle page, module pages and first run included, is drawn by
+`admin/src/components/Frame.jsx`:
 
-**One deliberate deviation from the DS guide, recorded so it isn't "fixed" back:**
-the guide says *"Primary buttons are near-black (`--pp-action`), never the accent
-color."* Saddle's carry the accent. The cost was that `.pp-code--dark` reads
-`--pp-code-bg` from `--pp-action` while hard-coding its border, muted and body
-colors, so `--pp-code-bg` is pinned back to near-black in `style.scss`. Code panels
-are deliberately **not** the button color.
+- **Header band:** white, full width of wp-admin's content area, `16px 24px`,
+  one `#DCDCDE` hairline under it. Row 1: the 20px mark in Petrol, then an `h1`
+  breadcrumb "Saddle / Page" (15px; "Saddle" in grey links Home; the page in
+  600). A module page reads "Saddle / Analytics". On the right, only the AI
+  status pill and the notices bell. Row 2, when a page has two or more tabs:
+  the kit `Tabs`, sitting on the band's hairline with a Petrol indicator.
+  **No description sentence** under the title.
+- **Page:** WordPress grey, one centered 960px column.
+- **Footer strip:** a hairline, then mark · "Saddle 1.5.0" (and the module's
+  product and version on a module page) · Docs · Rate Saddle, in 12px grey.
+
+Never draw the frame while the app is loading: WordPress's `common.js` moves
+every `.notice` after the first `.wrap h1`, and the header's `h1` would pull the
+quarantined notices back into view.
+
+## Type: one scale
+
+| Use | Size / weight |
+|---|---|
+| Page (header breadcrumb) | 15 / 600 |
+| Section heading | 14 / 600 |
+| Block title, row label | 13 / 600 |
+| Body, controls | 13 / 400 |
+| Meta, hints, footer | 12 / 400, `#646970` |
+| Numbers in stat cards only | up to 20 / 600 |
+
+Nothing is bigger, anywhere: no hero sentences, no 24px ledes, no 27px titles.
+The kit's larger steps are pulled in through `--pp-text-*`.
+
+## Structure: page → tab → section → block → row
+
+- A **section** is a 14px heading with at most one short muted line under it.
+  It has no box.
+- A **block** is a white box with a 1px border and 4px corners (a kit `Card` or
+  `RowList`), holding rows.
+- A **row** is a label on the left and a control or value on the right, with
+  one line of meta under the label only when it is needed.
+- **Don't show everything.** Explanations go behind a `HelpTip` or a
+  `Collapsible`; rarely used things start collapsed. A label beats a
+  sentence, and a sentence beats a paragraph.
+
+Geometry: 4px corners everywhere (the pill stays for badges, dots and switches),
+no shadows (hairlines draw structure; overlays keep the DS's own).
 
 ## The UX register
 
-Four rules the admin is held to. A change that doesn't trace to one of these
-doesn't belong.
-
-1. **One idea per screen.** Lead with the thing the user came to find out, in a
-   sentence. Supporting facts go quiet underneath. The Dashboard is the worked
-   example: it opens with `levelFor( tier ).one` and nothing competes with it.
-2. **Content over chrome.** Structure comes from type, spacing and hairlines, not
-   from more panels. Radii are 3/4/6px and elevation is flat — close to wp-admin's
-   own square register, a hair softer.
+1. **One idea per block.** Lead with the thing the reader came for; everything
+   else is quieter or folded away.
+2. **Content over chrome.** Structure comes from the frame, sections and
+   hairlines, not from more panels.
 3. **Say nothing rather than say nothing.** A tile reading `—` is worse than no
-   tile. The Dashboard's old "Connection" tile is why this rule is written down.
-4. **Plain, task-first names.** Labels say what you do there. WordPress's Saddle
-   submenu is the nav: one flat list with no group headings — Home, each
-   installed module, then Connections, Context and Settings. There is no
+   tile.
+4. **Plain, task-first names.** WordPress's Saddle submenu is the nav: Home,
+   each installed module, then Connections, Context and Settings. There is no
    sidebar inside the page.
 
 ## Constraints that still apply
@@ -101,11 +123,12 @@ doesn't belong.
   Tailwind, no styled-components, no second UI kit.
 - One Core React root per Saddle page: `#saddle-root`, carrying `data-area` and
   `data-tab`. No second root on a page and no hash routing; tabs are `&tab=`
-  URLs.
+  URLs. `data-saddle-screen` stays on `<main>` (browser agents rely on it).
 - Don't regress accessibility: labels, focus rings, `role`/`aria-*` semantics and
-  `prefers-reduced-motion` must survive any restyling. Every text pair in the
-  palette clears AA; muted text actually improved (4.40 → 4.50).
+  `prefers-reduced-motion` must survive any restyling. Every text pair above
+  clears AA.
 - Light-only: never add a theme toggle.
+- New CSS uses logical properties (`margin-inline`, `padding-block`, …).
 - Portaled DS overlays read tokens from `pp-scope` on `<body>` (via
   `admin_body_class`) — keep it.
 - Stylesheet order: the DS bundle (`index.css` → `saddle-admin-ds`) loads before
@@ -116,26 +139,26 @@ doesn't belong.
   core's `svg-painter.js` needs to repaint the wp-admin menu icon per the user's
   admin color scheme. The menu icon is deliberately left alone.
 
+## Kit seams (each belongs upstream in plugpress-ui)
+
+Kept together in one block of `style.scss`:
+
+- the dark overlays and code panels pinned off `--pp-action`;
+- link-buttons (`<a class="pp-btn">`) get their text color back: the kit's
+  `#wpbody-content .pp-app a` rule otherwise paints them link-blue;
+- block titles at 13/600 and row titles at 600;
+- field edges and the off switch at `#8C8F94`;
+- the header's tab row drops its own border (the band draws it).
+
 ---
 
 ## History
 
-> **SUPERSEDED (2026-07-04, Fahim):** the monochrome identity is intentional, not
-> a placeholder. Saddle keeps its own near-black/white, OpenAI/Apple-register
-> look — one restrained accent reserved for status/safety.
->
-> Still true in spirit: the restraint, the single accent, the register. What
-> changed on 2026-08-25 is only which color the accent is.
+> **SUPERSEDED (2026-10-01):** olive `#4D6410` (2026-09-26, matching saddle.to)
+> and the 85/15 split with the accent on links, focus and nav. Before that,
+> magenta `#DA5CC7` (2026-08-25), and before that monochrome (2026-07-04).
 
 > **DECIDED (2026-07-10, Fahim):** the admin UI is fully migrated to
 > `@plugpress/ui` — the shared PlugPress design system. Import primitives directly
 > from `@plugpress/ui`; the old `admin/src/ui.jsx` compat shim is deleted. The
 > system is light-only (dark mode was removed from the DS in v0.2.0).
-
-### The former rule (superseded 2026-07-04)
-
-Do **not** invent a visual design from memory or taste. Saddle has to read as "the
-same workspace" as the rest of the PlugPress portfolio (inbees/outbees). That means
-pulling real values, not approximating them — and if a shared PlugPress
-design-system package exists, consume it rather than re-implementing it. (That
-package now exists: `@plugpress/ui`. It happened.)
