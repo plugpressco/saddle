@@ -21,6 +21,7 @@ import {
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { levelFor } from '../api';
 import { BrandMark, IconBell } from './icons';
+import NoticeItem from './NoticeItem';
 
 // One content width for every page: sparse pages don't feel empty, the
 // Permissions lanes still fit, and the column never resizes between tabs.
@@ -76,8 +77,15 @@ function StatusPill( { tier, paused, rehearsal, href } ) {
  * (see Saddle_Settings::setup_notice_quarantine), surfaced behind a quiet
  * disclosure instead of piling above the page. Nodes are MOVED into the panel
  * — not re-rendered — so their own dismiss buttons and handlers keep working.
+ *
+ * Saddle's own notices that did not win the frame's one slot (#276) sit above
+ * them as their own section, and the count includes them.
+ *
+ * @param {Object}    props
+ * @param {Object[]=} props.extra     Saddle notices for the bell.
+ * @param {Function=} props.onDismiss Called with a dismissible notice.
  */
-function ForeignNotices() {
+function ForeignNotices( { extra = [], onDismiss } ) {
 	const [ count, setCount ] = useState( 0 );
 	const [ open, setOpen ] = useState( false );
 
@@ -112,11 +120,12 @@ function ForeignNotices() {
 		}
 	}, [] );
 
-	if ( ! count ) {
+	const total = count + extra.length;
+	if ( ! total ) {
 		return null;
 	}
 
-	const label = sprintf(
+	const foreignLabel = sprintf(
 		/* translators: %d: number of notices. */
 		_n(
 			'%d notice from other plugins',
@@ -126,6 +135,13 @@ function ForeignNotices() {
 		),
 		count
 	);
+	const label = extra.length
+		? sprintf(
+				/* translators: %d: number of notices. */
+				_n( '%d notice', '%d notices', total, 'saddle' ),
+				total
+		  )
+		: foreignLabel;
 
 	return (
 		<Popover
@@ -140,25 +156,50 @@ function ForeignNotices() {
 					aria-label={ label }
 				>
 					<IconBell />
-					<span>{ count }</span>
+					<span>{ total }</span>
 				</button>
 			}
 		>
-			<div className="saddle-foreign__head">{ label }</div>
-			<div ref={ mountList } />
+			{ extra.length > 0 && (
+				<div className="saddle-foreign__saddle">
+					<div className="saddle-foreign__head">
+						{ __( 'From Saddle', 'saddle' ) }
+					</div>
+					{ extra.map( ( notice ) => (
+						<NoticeItem
+							key={ notice.id }
+							notice={ notice }
+							onDismiss={
+								notice.dismiss && onDismiss
+									? onDismiss
+									: undefined
+							}
+						/>
+					) ) }
+				</div>
+			) }
+			{ count > 0 && (
+				<>
+					<div className="saddle-foreign__head">{ foreignLabel }</div>
+					<div ref={ mountList } />
+				</>
+			) }
 		</Popover>
 	);
 }
 
 /**
  * @param {Object}   props
- * @param {Object}   props.area        The page, from saddleData.areas.
- * @param {string}   props.tab         The active tab.
- * @param {Function} props.onTab       Called with a tab key.
- * @param {string}   props.description The one sentence for this tab.
- * @param {Object}   props.status      { tier, paused, rehearsal, href }.
- * @param {boolean}  props.notices     Show the notices bell.
- * @param {*}        props.children    The page content.
+ * @param {Object}   props.area            The page, from saddleData.areas.
+ * @param {string}   props.tab             The active tab.
+ * @param {Function} props.onTab           Called with a tab key.
+ * @param {string}   props.description     The one sentence for this tab.
+ * @param {Object}   props.status          { tier, paused, rehearsal, href }.
+ * @param {boolean}  props.notices         Show the notices bell.
+ * @param {Object=}  props.notice          The one notice shown under the header.
+ * @param {Object[]} props.moreNotices     The rest, for the bell.
+ * @param {Function} props.onDismissNotice Called with a dismissible notice.
+ * @param {*}        props.children        The page content.
  */
 export default function Frame( {
 	area,
@@ -167,6 +208,9 @@ export default function Frame( {
 	description,
 	status,
 	notices = true,
+	notice = null,
+	moreNotices = [],
+	onDismissNotice,
 	children,
 } ) {
 	// A module's header names the product it comes from; Core's pages are
@@ -198,7 +242,12 @@ export default function Frame( {
 						description={ description }
 						actions={
 							<div className="saddle-frame__actions">
-								{ notices && <ForeignNotices /> }
+								{ notices && (
+									<ForeignNotices
+										extra={ moreNotices }
+										onDismiss={ onDismissNotice }
+									/>
+								) }
 								{ status.tier && <StatusPill { ...status } /> }
 							</div>
 						}
@@ -216,6 +265,17 @@ export default function Frame( {
 							) : null
 						}
 					/>
+					{ notice && (
+						<NoticeItem
+							className="saddle-frame__notice"
+							notice={ notice }
+							onDismiss={
+								notice.dismiss && onDismissNotice
+									? onDismissNotice
+									: undefined
+							}
+						/>
+					) }
 					{ children }
 				</AppContent>
 			</main>
