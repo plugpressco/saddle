@@ -21,12 +21,20 @@
 // This is a consumer-side override, not a library edit. Never change anything
 // under node_modules/@plugpress/ui (see the consumer agent guide).
 //
-// Contrast, measured (WCAG 2.x): text #1d2327 13.95 on the page, #50575e
-// 6.43, #646970 4.86; links #2271b1 5.17 on white and 4.54 on the page;
-// white on the brand 6.84; every status text on its tint 5.6 or more.
+// The surfaces are WordPress 7's own (core's Connectors screen, measured
+// 2026-10-01): one white canvas, white blocks on a #ddd hairline with 8px
+// corners, neutral greys, and links in the admin color scheme's own blue.
+//
+// Contrast, measured (WCAG 2.x) on white: text #1e1e1e 16.67, #5e5e5e 6.58,
+// #717171 4.84; field edges #949494 3.03; white on the brand 6.84; every
+// status text on its tint 5.6 or more. Links follow --wp-admin-theme-color
+// (fresh #2271b1 5.17, modern #3858e9 5.36).
 // ---------------------------------------------------------------------------
+// `.pp-scope` is on every portaled layer (drawers, lists, menus, tooltips)
+// and the DS re-declares its own tokens there, so it is named here too:
+// without it those layers fall back to the DS's greys.
 body.saddle-admin-page,
-body.pp-scope,
+.pp-scope,
 .saddle-app,
 .pp-app {
 	// The brand. Nothing reads these directly except the few places listed in
@@ -37,29 +45,30 @@ body.pp-scope,
 	--saddle-brand-tint: #e2f1f2;
 	--saddle-brand-soft: #c5e4e7;
 
-	// WordPress's admin greys (wp-admin's own #f0f0f1 page, #dcdcde and
-	// #c3c4c7 hairlines, #8c8f94 field edges, #1d2327 / #50575e / #646970 text).
-	--pp-n-50: #f6f7f7;
-	--pp-n-100: #f0f0f1; // -> --pp-canvas, the page
-	--pp-n-200: #f6f7f7; // -> --pp-surface-alt
-	--pp-n-300: #dcdcde; // -> --pp-border, --pp-surface-hover
-	--pp-n-400: #c3c4c7; // -> --pp-border-strong
-	--pp-n-500: #a7aaad;
-	--pp-n-600: #646970; // -> --pp-text-muted, 4.86 on the page
-	--pp-n-700: #50575e; // -> --pp-text-secondary, 6.43 on the page
-	--pp-n-800: #3c434a;
-	--pp-n-900: #2c3338;
-	--pp-n-950: #1d2327; // -> --pp-text, 13.95 on the page
+	// WordPress 7's neutral greys (the @wordpress/components gray scale).
+	--pp-n-50: #f5f5f5;
+	--pp-n-100: #f0f0f0;
+	--pp-n-200: #f5f5f5; // -> --pp-surface-alt (code chips, sub-panels)
+	--pp-n-300: #dddddd; // -> --pp-border
+	--pp-n-400: #cccccc; // -> --pp-border-strong
+	--pp-n-500: #a0a0a0;
+	--pp-n-600: #717171; // -> --pp-text-muted, 4.84
+	--pp-n-700: #5e5e5e; // -> --pp-text-secondary, 6.58
+	--pp-n-800: #2f2f2f;
+	--pp-n-900: #232323;
+	--pp-n-950: #1e1e1e; // -> --pp-text, 16.67
+	--pp-canvas: #ffffff; // one surface: page, header band and blocks
 	--pp-surface: #ffffff;
-	--pp-surface-hover: #f6f7f7;
+	--pp-surface-hover: #f5f5f5;
 
-	// Links, focus, badges and spinners: WordPress blue, so the pages feel
-	// native. The brand is not a link color.
-	--pp-accent: #2271b1;
-	--pp-accent-hover: #135e96;
-	--pp-accent-text: #2271b1;
-	--pp-accent-tint: #f0f6fc;
-	--pp-accent-muted: rgba( 34, 113, 177, 0.12 );
+	// Links, focus, badges and spinners: the admin color scheme's own blue
+	// (WordPress sets it per scheme), so Saddle's links match the rest of
+	// wp-admin. The brand is not a link color.
+	--pp-accent: var( --wp-admin-theme-color, #2271b1 );
+	--pp-accent-hover: var( --wp-admin-theme-color-darker-10, #135e96 );
+	--pp-accent-text: var( --wp-admin-theme-color, #2271b1 );
+	--pp-accent-tint: color-mix( in srgb, var( --pp-accent ) 7%, #ffffff );
+	--pp-accent-muted: color-mix( in srgb, var( --pp-accent ) 12%, transparent );
 	--pp-on-accent: #ffffff;
 	--pp-focus: var( --wp-admin-theme-color, #2271b1 );
 
@@ -80,11 +89,12 @@ body.pp-scope,
 	--pp-danger-hover: #8a2424;
 	--pp-danger-bg: #fcf0f1;
 
-	// Geometry: WordPress's square register. The pill stays for dots, badges
-	// and switches.
+	// Geometry: blocks (cards, row lists, stat tiles) round at 8px like
+	// WordPress 7's cards; controls, buttons and notices stay at 4px. The pill
+	// stays for dots, badges and switches.
 	--pp-r-sm: 4px;
 	--pp-r: 4px;
-	--pp-r-lg: 4px;
+	--pp-r-lg: 8px;
 
 	// Hairlines, not elevation. Overlays keep the DS's own md/lg shadows.
 	--pp-shadow-xs: none;
@@ -132,7 +142,7 @@ body.pp-scope,
 .pp-coachmark,
 .pp-applybar,
 .pp-bulkbar {
-	--pp-action: #1d2327;
+	--pp-action: #1e1e1e;
 	--pp-action-hover: #000000;
 }
 
@@ -175,14 +185,20 @@ body.saddle-admin-page {
 		font-weight: 600;
 	}
 
-	// Field edges and the off switch need 3:1 against white; WordPress's own
-	// #8c8f94 is 3.24.
+	// Field edges and the off switch need 3:1 against white; WordPress 7's
+	// #949494 is 3.03.
 	.pp-control {
-		--pp-border: #8c8f94;
+		--pp-border: #949494;
 	}
 
 	.pp-switch {
-		--pp-border-strong: #8c8f94;
+		--pp-border-strong: #949494;
+	}
+
+	// A row's icon or status dot sits on the block itself, like the logos on
+	// WordPress's Connectors screen, not in a grey square.
+	.pp-rowlist__icon {
+		background: transparent;
 	}
 }
 
@@ -223,7 +239,7 @@ body.saddle-admin-page,
 
 	--s-focus: var( --pp-focus );
 
-	--s-code-bg: #1d2327;
+	--s-code-bg: #1e1e1e;
 
 	--s-shadow-sm: var( --pp-shadow-sm );
 	--s-shadow-md: var( --pp-shadow-md );
@@ -258,13 +274,18 @@ body.saddle-admin-page {
 // clipping rather than by a percentage transform, which is what made it show
 // up over wp-admin's admin bar. Fixed at source — see saddle#74.
 
+// Geometry and motion ride the body too, so portaled layers (the Connect
+// drawer, lists) get them.
+body.saddle-admin-page,
 .saddle-app {
 	--s-radius: var( --pp-r );
 	--s-radius-lg: var( --pp-r-lg );
 	--s-radius-pill: var( --pp-r-pill );
 	--s-ease: cubic-bezier( 0.4, 0, 0.2, 1 );
 	--s-dur: 160ms;
+}
 
+.saddle-app {
 	box-sizing: border-box;
 	// The DS AppShell owns the layout: sticky rail + centered AppContent
 	// column. This wrapper only carries tokens and typography.
@@ -613,12 +634,16 @@ body.saddle-admin-page {
 // sit 24px apart on the page (the content column's gap).
 .saddle-section {
 	display: grid;
+	// One column that may shrink: a long one-line description (a skill's)
+	// ellipsizes instead of widening the block past the page.
+	grid-template-columns: minmax( 0, 1fr );
 	gap: var(--pp-space-3);
 	align-content: start;
 	min-width: 0;
 }
 
 // A heading that carries a "?" beside it.
+.saddle-guide__heading,
 .saddle-settings__label,
 .saddle-signin__label,
 .saddle-integrations__title,
@@ -712,7 +737,7 @@ body.saddle-admin-page {
 		gap: var(--pp-space-3);
 		padding: var(--pp-space-4);
 		border: 1px solid var(--s-border);
-		border-radius: var(--s-radius);
+		border-radius: var(--s-radius-lg);
 		background: var(--s-bg);
 		min-width: 0;
 	}
@@ -1107,7 +1132,7 @@ body.saddle-admin-page {
 /* Readable rendering of the auto-context (vs the raw monospace view). */
 .saddle-doc {
 	border: 1px solid var(--s-border);
-	border-radius: var(--s-radius);
+	border-radius: var(--s-radius-lg);
 	background: var(--s-surface-2);
 	padding: 16px 18px;
 	max-height: 340px;
@@ -1296,6 +1321,12 @@ body.saddle-admin-page {
 
 	.pp-select__item {
 		padding-block: 8px;
+	}
+
+	// In a list the highlight is the position; a focus ring on top of it is
+	// noise. Arrow keys still move the highlight.
+	.pp-select__item:focus-visible {
+		outline: none;
 	}
 }
 
@@ -1793,16 +1824,20 @@ body.saddle-admin-page {
 .saddle-adv {
 	background: var(--s-bg);
 	border: 1px solid var(--s-border);
-	border-radius: var(--s-radius);
+	border-radius: var(--s-radius-lg);
 	overflow: hidden;
 
 	> .pp-collapsible + .pp-collapsible {
 		border-block-start: 1px solid var(--s-border);
 	}
 
+	// Label on the left, chevron on the right (the kit draws the chevron
+	// first), like WordPress's own panels.
 	.pp-collapsible__trigger {
 		inline-size: 100%;
+		flex-direction: row-reverse;
 		justify-content: space-between;
+		text-align: start;
 		padding: var(--pp-space-3) var(--pp-space-4);
 		font-size: 13px;
 		font-weight: 600;
@@ -1833,7 +1868,7 @@ body.saddle-admin-page {
 	&__signin .pp-rowlist,
 	.saddle-settings-form .pp-rowlist {
 		border: 1px solid var(--s-border);
-		border-radius: var(--s-radius);
+		border-radius: var(--s-radius-lg);
 	}
 }
 
@@ -1937,9 +1972,9 @@ body.saddle-admin-page {
 	max-height: 240px;
 	overflow: auto;
 	white-space: pre-wrap;
-	background: #f6f7f7;
-	border: 1px solid #dcdcde;
-	border-radius: 4px;
+	background: var(--s-surface-2);
+	border: 1px solid var(--s-border);
+	border-radius: var(--s-radius);
 }
 
 .saddle-needs-ok__actions {
