@@ -1,15 +1,17 @@
 /**
- * Saddle admin styles — calm, modern, person-first.
+ * Saddle admin styles: WordPress-native, with one brand color (#280).
  *
  * Powered by the PlugPress design system (@plugpress/ui). Saddle overrides the
- * shared --pp-* tokens below to carry its own brand, and every
- * --s-* token then aliases one of those. Light-only (the design system dropped
- * dark mode in v0.2.0). See DESIGN-ALIGNMENT.md for the palette and the rules
- * that govern where the accent is allowed to land.
+ * shared --pp-* tokens below so the admin reads as WordPress itself: its greys,
+ * its link blue, its focus color, 4px corners and hairlines instead of
+ * shadows. The brand, Petrol teal, lands in a handful of places only: the
+ * mark, the active tab, primary buttons, switches and radios when on, and the
+ * selected access level. Light-only. See DESIGN-ALIGNMENT.md for the palette,
+ * the type scale and where the brand may appear.
  */
 
 // ---------------------------------------------------------------------------
-// Brand tokens — Saddle's palette, written over the design system's.
+// Tokens, written over the design system's.
 //
 // The DS defines its tokens inside :where(), which has ZERO specificity, so a
 // plain class selector wins with no !important. Both .pp-app and the body class
@@ -17,144 +19,177 @@
 // render OUTSIDE .pp-app and would lose every token without the body half.
 //
 // This is a consumer-side override, not a library edit. Never change anything
-// under node_modules/@plugpress/ui — see the consumer agent guide.
+// under node_modules/@plugpress/ui (see the consumer agent guide).
 //
-// THE RULE THAT GOVERNS THE WHOLE PALETTE: every color has a bright value for
-// FILLS and a darker same-hue value for TEXT. Three of the four brand hexes
-// cannot carry text at all — lime is 1.98:1 on white, cyan 2.43, coral 3.67 —
-// so using the bright value for a label is an accessibility regression, not a
-// style choice. The DS mandates this same split for the accent
-// (--pp-accent = surfaces, 3:1; --pp-accent-text = links and labels, 4.5:1).
+// Contrast, measured (WCAG 2.x): text #1d2327 13.95 on the page, #50575e
+// 6.43, #646970 4.86; links #2271b1 5.17 on white and 4.54 on the page;
+// white on the brand 6.84; every status text on its tint 5.6 or more.
 // ---------------------------------------------------------------------------
 body.saddle-admin-page,
 body.pp-scope,
 .saddle-app,
 .pp-app {
-	// Neutral ramp. No DS component reads --pp-n-* directly — all eleven are
-	// consumed only by the ten semantic aliases below them — so warming the
-	// ramp warms the entire neutral system in one place. Same lightness steps
-	// as the DS ramp, so nothing about the visual hierarchy moves.
-	--pp-n-50: #fafafa;
-	--pp-n-100: #fbfbfa; // Warm White -> --pp-canvas, the page ground
-	--pp-n-200: #efeeec;
-	--pp-n-300: #e7e6e4;
-	--pp-n-400: #d4d2cf;
-	--pp-n-500: #aaa8a4;
-	--pp-n-600: #767471; // --pp-text-muted   — 4.50 on page (DS ships 4.40)
-	--pp-n-700: #64625d; // --pp-text-secondary — 5.88 on page
-	--pp-n-800: #444341;
-	--pp-n-900: #292928;
-	--pp-n-950: #111111; // Near Black -> --pp-text, 18.24 on page
+	// The brand. Nothing reads these directly except the few places listed in
+	// DESIGN-ALIGNMENT.md; everything else maps onto WordPress's own values.
+	--saddle-brand: #0b6470; // Petrol, 6.84 on white either way round
+	--saddle-brand-hover: #08505a;
+	--saddle-brand-press: #063f47;
+	--saddle-brand-tint: #e2f1f2;
+	--saddle-brand-soft: #c5e4e7;
 
-	// Cards stay pure white against the warm page, a 1.04:1 step, so the
-	// hairline border carries the separation rather than a tonal shift.
+	// WordPress's admin greys (wp-admin's own #f0f0f1 page, #dcdcde and
+	// #c3c4c7 hairlines, #8c8f94 field edges, #1d2327 / #50575e / #646970 text).
+	--pp-n-50: #f6f7f7;
+	--pp-n-100: #f0f0f1; // -> --pp-canvas, the page
+	--pp-n-200: #f6f7f7; // -> --pp-surface-alt
+	--pp-n-300: #dcdcde; // -> --pp-border, --pp-surface-hover
+	--pp-n-400: #c3c4c7; // -> --pp-border-strong
+	--pp-n-500: #a7aaad;
+	--pp-n-600: #646970; // -> --pp-text-muted, 4.86 on the page
+	--pp-n-700: #50575e; // -> --pp-text-secondary, 6.43 on the page
+	--pp-n-800: #3c434a;
+	--pp-n-900: #2c3338;
+	--pp-n-950: #1d2327; // -> --pp-text, 13.95 on the page
 	--pp-surface: #ffffff;
+	--pp-surface-hover: #f6f7f7;
 
-	// Accent. --pp-accent paints surfaces and needs 3:1; --pp-accent-text
-	// paints links and labels and needs 4.5:1 measured against the TINT, not
-	// just white.
-	//
-	// Olive since 2026-09-26, matching saddle.to (#198; magenta read as pink
-	// on the site, and a saddle-brown was tried and rejected). Unlike the
-	// magenta it replaced (3.31:1, fill-only), the olive is dark enough to be
-	// READ: 6.68 on white, 6.45 on the page, 5.97 on the tint. So the one
-	// value serves fills and labels alike, and the fill/text split below is
-	// kept only as the seam it has always been. The site's lime highlight
-	// (#dbe77a, 1.34 on white) is fill-only and is not used here.
-	--pp-accent: #4d6410;
-	--pp-accent-hover: #3d500c;
-	--pp-accent-text: #4d6410; // 6.45 on the page, 5.97 on the tint
-	--pp-accent-tint: #f1f5d8;
-	--pp-accent-muted: rgba( 77, 100, 16, 0.12 );
+	// Links, focus, badges and spinners: WordPress blue, so the pages feel
+	// native. The brand is not a link color.
+	--pp-accent: #2271b1;
+	--pp-accent-hover: #135e96;
+	--pp-accent-text: #2271b1;
+	--pp-accent-tint: #f0f6fc;
+	--pp-accent-muted: rgba( 34, 113, 177, 0.12 );
 	--pp-on-accent: #ffffff;
+	--pp-focus: var( --wp-admin-theme-color, #2271b1 );
 
-	// Primary buttons. The DS guide reserves these for near-black and says the
-	// accent is for links and nav only; Saddle deviates deliberately (Fahim,
-	// 2026-08-25 — see DESIGN-ALIGNMENT.md). White on the olive is 6.68, on
-	// its hover 8.93.
-	--pp-action: #4d6410;
-	--pp-action-hover: #3d500c;
+	// Primary buttons, switches and radios when on, done steps: the brand.
+	--pp-action: var( --saddle-brand );
+	--pp-action-hover: var( --saddle-brand-hover );
 	--pp-on-action: #ffffff;
 
-	// --pp-focus is NOT part of the accent contract: it is a separate literal
-	// in ui.css that no accent file touches, which is why Saddle shipped a
-	// monochrome accent with a WordPress-blue focus ring until #153. A ring is
-	// a mark, so it takes the brand colour.
-	--pp-focus: #4d6410;
+	// Status, WordPress's notice family at readable strengths. The marks and
+	// the text share one value; each passes 4.5 on its tint.
+	--pp-success: #007017; // 5.86 on its tint
+	--pp-success-bg: #edfaef;
+	--pp-info: #2271b1; // 4.75 on its tint
+	--pp-info-bg: #f0f6fc;
+	--pp-warning: #8a4f00; // 6.21 on its tint
+	--pp-warning-bg: #fef8ee;
+	--pp-danger: #b32d2e; // 5.67 on its tint
+	--pp-danger-hover: #8a2424;
+	--pp-danger-bg: #fcf0f1;
 
-	// Status. These paint MARKS — status dots, rings, small fills — so each has
-	// to clear 3:1 on a white card to be seen at all. The brand palette's lime
-	// (#84cc16) and cyan (#06b6d4) are the -500 step of their ramps and sit at
-	// 1.98:1 and 2.43:1 on white: invisible as a dot, and far worse than what
-	// the DS ships. Each is moved one step down its own ramp, so the family and
-	// the hue are the brand's but the mark can actually be seen. Coral is
-	// already at 3.67:1 and is used exactly as given. Labels never use these —
-	// they use the -text partners at the tone layer below.
-	--pp-success: #65a30d; // Lime, one step down — 3.09 on white
-	--pp-success-bg: #f7fee7;
-	--pp-info: #0891b2; // Cyan, one step down — 3.68 on white
-	--pp-info-bg: #ecfeff;
-	--pp-warning: #d97706; // Amber — 3.19 on white
-	--pp-warning-bg: #fffbeb;
-	--pp-danger: #f43f5e; // Coral, exactly as given — 3.67 on white
-	--pp-danger-hover: #be123c;
-	--pp-danger-bg: #fff1f2;
-
-	// Geometry. Tighter than the DS ships, to sit closer to wp-admin's own
-	// square-ish register — core buttons are 3px and its boxes are 0-4px —
-	// while staying a hair softer than core so it still reads as modern.
-	// The pill is untouched: badges, dots and status chips stay fully round.
-	--pp-r-sm: 3px;
+	// Geometry: WordPress's square register. The pill stays for dots, badges
+	// and switches.
+	--pp-r-sm: 4px;
 	--pp-r: 4px;
-	--pp-r-lg: 6px;
+	--pp-r-lg: 4px;
 
-	// Flatter surfaces. wp-admin draws structure with hairlines, not elevation,
-	// so cards lean on the border and keep shadow for things that genuinely
-	// float. Overlays (dialogs, menus, toasts) keep the DS's own md/lg shadows.
+	// Hairlines, not elevation. Overlays keep the DS's own md/lg shadows.
 	--pp-shadow-xs: none;
-	--pp-shadow-sm: 0 1px 2px rgba( 17, 17, 17, 0.04 );
+	--pp-shadow-sm: none;
+	--pp-shadow-btn: none;
+	--pp-shadow-btn-hover: none;
+
+	// One type scale: 15 page title, 14 section, 13 body and block titles,
+	// 12 meta. The DS's larger steps are pulled in so nothing shouts.
+	--pp-text-md: 14px;
+	--pp-text-lg: 15px;
+	--pp-text-xl: 15px;
+	--pp-text-2xl: 15px;
+	--pp-text-3xl: 20px; // Numbers only (stat cards).
+	--pp-text-4xl: 20px;
 }
 
-// The DS derives --pp-tone-text from --pp-tone for the status tones, so a
-// bright --pp-success would mean lime badge TEXT at 1.9:1. Put the readable
-// partner back at the tone layer — the same seam the accent tone already uses
-// (--pp-tone-text: var( --pp-accent-text )). All four clear AA on their own
-// tint: 4.82 / 5.15 / 4.84 / 5.72.
+// The DS derives --pp-tone-text from --pp-tone; the status values above are
+// already text-strength, so every tone reads its own mark color.
 .pp-tone--success {
-	--pp-tone-text: #4d7c0f;
+	--pp-tone-text: var( --pp-success );
 }
 
 .pp-tone--info {
-	--pp-tone-text: #0e7490;
+	--pp-tone-text: var( --pp-info );
 }
 
 .pp-tone--warning {
-	--pp-tone-text: #b45309;
+	--pp-tone-text: var( --pp-warning );
 }
 
 .pp-tone--danger {
-	--pp-tone-text: #be123c;
+	--pp-tone-text: var( --pp-danger );
 }
 
-// Code panels read --pp-code-bg from --pp-action, but hard-code their border,
-// muted and body colors — so an accent-coloured action token would leave 35
-// CodeBlock / Snippet instances on that ground with muted text far below AA.
-// Pin the ground
-// back to near-black: code blocks look exactly as they did, and stop being
-// coupled to the button color. Upstream fix belongs in plugpress-ui.
+// ---------------------------------------------------------------------------
+// Kit seams. Each rule below works around something @plugpress/ui paints from
+// a token Saddle repurposes; each belongs upstream in plugpress-ui (#280).
+// ---------------------------------------------------------------------------
+
+// Dark overlays read --pp-action for their ground. With the action on the
+// brand they would turn teal, so they keep WordPress's near-black.
+.pp-tooltip,
+.pp-toast,
+.pp-coachmark,
+.pp-applybar,
+.pp-bulkbar {
+	--pp-action: #1d2327;
+	--pp-action-hover: #000000;
+}
+
+// A button that is a link (`<a class="pp-btn">`, e.g. "Add to Claude") gets
+// its text color from the kit's ID-strength link rule, which reads
+// --pp-accent-text: blue text on a teal button. Point that token back at each
+// variant's own text color.
+.pp-btn--primary,
+.pp-btn--danger {
+	--pp-accent-text: var( --pp-on-action );
+	--pp-accent-hover: var( --pp-on-action );
+}
+
+.pp-btn--secondary {
+	--pp-accent-text: var( --pp-text );
+	--pp-accent-hover: var( --pp-text );
+}
+
+.pp-btn--ghost {
+	--pp-accent-text: var( --pp-text-secondary );
+	--pp-accent-hover: var( --pp-text );
+}
+
+// Code panels read --pp-code-bg from --pp-action: pin them to near-black so
+// they stop following the button color.
 .pp-code--dark {
 	--pp-code-bg: var( --s-code-bg );
 }
 
-// Every --s-* token aliases a shared design-system --pp-* token, so Saddle's
-// whole stylesheet rides the palette above. The old s-palette-light/dark mixins
-// and saddle-theme-* classes are retired.
-//
-// Requires the page body to carry .pp-scope and .saddle-app to carry .pp-app
-// (both are applied) so the --pp-* tokens resolve here.
+// Block titles are 13px/600; the DS draws card titles at 15px and row titles
+// at 500.
+.saddle-app,
+body.saddle-admin-page {
+	.pp-card__title {
+		font-size: 13px;
+		font-weight: 600;
+	}
+
+	.pp-rowlist__title {
+		font-weight: 600;
+	}
+
+	// Field edges and the off switch need 3:1 against white; WordPress's own
+	// #8c8f94 is 3.24.
+	.pp-control {
+		--pp-border: #8c8f94;
+	}
+
+	.pp-switch {
+		--pp-border-strong: #8c8f94;
+	}
+}
+
+// Every --s-* token aliases a shared --pp-* token, so the whole stylesheet
+// rides the palette above.
 body.saddle-admin-page,
 .saddle-app {
-	// Neutrals + status — resolve straight to the shared tokens.
 	--s-canvas: var( --pp-canvas );
 	--s-bg: var( --pp-surface );
 	--s-fg: var( --pp-text );
@@ -170,30 +205,25 @@ body.saddle-admin-page,
 
 	--s-accent: var( --pp-accent );
 	--s-accent-text: var( --pp-accent-text );
+	--s-brand: var( --saddle-brand );
 
-	// Status, in fill/text pairs. Reach for -text whenever the color lands on
-	// a label, and for the plain token whenever it fills a shape.
 	--s-safe: var( --pp-success );
 	--s-safe-bg: var( --pp-success-bg );
-	--s-safe-text: #4d7c0f;
+	--s-safe-text: var( --pp-success );
 	--s-active: var( --pp-warning );
 	--s-active-bg: var( --pp-warning-bg );
-	--s-active-text: #b45309;
+	--s-active-text: var( --pp-warning );
 	--s-danger: var( --pp-danger );
-	--s-danger-text: #be123c;
+	--s-danger-text: var( --pp-danger );
 
-	// Thin elements are the exception to "bright fills": a 2px rail or a
-	// hairline at 1.9:1 is simply not there. The Permissions lane rails are how
-	// that screen is scanned, so they take the readable step.
+	// The Permissions lane rails are how that screen is scanned.
 	--s-rail-safe: var( --s-safe-text );
 	--s-rail-change: var( --pp-accent );
 	--s-rail-remove: var( --s-active-text );
 
 	--s-focus: var( --pp-focus );
 
-	// Code panels stay dark by design, and are deliberately NOT the action
-	// color — see the .pp-code--dark rule above.
-	--s-code-bg: #171717;
+	--s-code-bg: #1d2327;
 
 	--s-shadow-sm: var( --pp-shadow-sm );
 	--s-shadow-md: var( --pp-shadow-md );
@@ -247,10 +277,10 @@ body.saddle-admin-page {
 		padding: 120px 0;
 	}
 
-	// First run is a separate return branch (no shell): one reading column,
-	// no card, so it reads as the product talking rather than a form (#269).
+	// First run sits in the frame without tabs: one reading column, no card,
+	// so it reads as the product talking rather than a form (#269).
 	&--setup {
-		padding: 20px 24px 96px;
+		padding-block-end: var( --pp-space-8 );
 	}
 
 	button:focus-visible,
@@ -275,7 +305,11 @@ body.saddle-admin-page {
 	}
 
 	a:not( [class] ) {
-		color: var(--s-focus);
+		color: var(--s-accent-text);
+
+		&:hover {
+			color: var( --pp-accent-hover );
+		}
 	}
 }
 
@@ -349,36 +383,157 @@ body.saddle-admin-page {
 	}
 }
 
-/* ---------- The frame (#274) ---------- */
-// WordPress's own left menu is the navigation, so the page has no rail of its
-// own: the frame is the content column with a header on top. It keeps the
-// padding the old shell's main area had, so the column sits where it did.
-.saddle-frame {
-	padding: var(--pp-space-6) var(--pp-space-6) var(--pp-space-8);
+/* ---------- The frame: header band, page, footer (#274, #280) ---------- */
+// One column the full height of the screen, so the footer sits at the bottom
+// of a short page.
+.saddle-app--frame {
+	display: flex;
+	flex-direction: column;
+	min-height: calc( 100vh - var( --wp-admin--admin-bar--height, 32px ) );
 }
 
-// Above the page title: which product this page belongs to.
-.saddle-frame__source {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
+// The header band: white, the full width of wp-admin's content area, one
+// hairline under it. The only place the brand shows besides buttons and
+// switches is here: the mark and the active tab.
+.saddle-header {
+	--pp-accent: var( --saddle-brand ); // the active tab's indicator
+	padding: 16px 24px;
+	background: var( --s-bg );
+	border-block-end: 1px solid var( --s-border );
 
-	// The brand mark is a single `currentColor` path shared with the wp-admin
-	// menu icon, so it is recolored HERE rather than in the SVG: editing the
-	// file would break class-saddle-settings.php's `black` sentinel, which
-	// core's svg-painter needs to repaint the menu icon per admin color scheme.
-	svg {
-		width: 14px;
-		height: 14px;
-		color: var(--s-accent);
+	&--tabs {
+		padding-block-end: 0;
+	}
+
+	&__row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16px;
+		min-height: 32px;
+	}
+
+	// Two classes, to beat wp-admin's `.wrap h1` (23px/400 with padding).
+	.saddle-app &__title {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin: 0;
+		padding: 0;
+		font-size: 15px;
+		font-weight: 400;
+		line-height: 1.4;
+		color: var( --s-fg-muted );
+
+		> [aria-current] {
+			font-weight: 600;
+			color: var( --s-fg );
+		}
+	}
+
+	// The kit colors every link from --pp-accent-text through an ID-strength
+	// selector, so the quiet grey is set on that token here, not on `color`.
+	&__home {
+		--pp-accent-text: var( --s-fg-muted );
+		--pp-accent-hover: var( --s-fg );
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		text-decoration: none;
+
+		// The brand mark is a single `currentColor` path shared with the
+		// wp-admin menu icon, so it is recolored HERE rather than in the SVG:
+		// editing the file would break class-saddle-settings.php's `black`
+		// sentinel, which core's svg-painter needs to repaint the menu icon.
+		svg {
+			width: 20px;
+			height: 20px;
+			color: var( --s-brand );
+		}
+	}
+
+	&__sep {
+		color: var( --s-fg-subtle );
+	}
+
+	&__actions {
+		display: flex;
+		align-items: center;
+		flex: 0 0 auto;
+		gap: 10px;
+	}
+
+	// The tabs sit on the band's bottom hairline; the band draws the line, so
+	// the tab row's own border goes. Scrolls sideways when a module has many.
+	&__tabs {
+		margin-block-start: 8px;
+		margin-inline: -4px;
+		padding-inline: 4px;
+		overflow-x: auto;
+		overflow-y: visible;
+		--pp-tabs-gap: 0;
+
+		.pp-tabs {
+			margin: 0;
+			border-block-end: 0;
+		}
 	}
 }
 
-// Header actions: notices beside the safety pill.
-.saddle-frame__actions {
+// The page: WordPress's grey, one centered column.
+.saddle-frame {
+	flex: 1 0 auto;
+	padding: var( --pp-space-5 ) var( --pp-space-5 ) var( --pp-space-8 );
+}
+
+.saddle-frame__notice {
+	margin-block-end: var( --pp-space-4 );
+}
+
+// The footer strip: which build this is, and where to read more.
+.saddle-footer {
 	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
-	gap: 10px;
+	gap: 8px 20px;
+	padding: 16px 24px;
+	border-block-start: 1px solid var( --s-border );
+	color: var( --s-fg-subtle );
+	font-size: 12px;
+
+	&__brand {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		margin-inline-end: auto;
+
+		svg {
+			width: 14px;
+			height: 14px;
+			color: var( --s-fg-subtle );
+		}
+	}
+
+	a {
+		--pp-accent-text: var( --s-fg-muted );
+		--pp-accent-hover: var( --s-fg );
+		text-decoration: none;
+
+		&:hover,
+		&:focus {
+			text-decoration: underline;
+		}
+	}
+}
+
+// The selected access level carries the brand (the one card choice that
+// decides what an AI may do).
+.saddle-perm > .pp-selcard-group {
+	--pp-accent: var( --saddle-brand );
+	--pp-accent-text: var( --saddle-brand );
+	--pp-accent-tint: var( --saddle-brand-tint );
+	--pp-accent-muted: var( --saddle-brand-tint );
 }
 
 // The safety-status pill: what connected apps may do right now. A link to
@@ -402,29 +557,40 @@ body.saddle-admin-page {
 		text-decoration: none;
 	}
 
-	&--safe,
-	&--safe:hover,
-	&--safe:focus {
+	// The pill is a link, and the kit colors links from --pp-accent-text
+	// through an ID-strength selector, so each tone sets that token.
+	&--safe {
+		--pp-accent-text: var(--s-safe-text);
+		--pp-accent-hover: var(--s-safe-text);
 		background: var(--s-safe-bg);
-		color: var(--s-safe-text);
 	}
-	&--active,
-	&--active:hover,
-	&--active:focus {
+	&--active {
+		--pp-accent-text: var(--s-active-text);
+		--pp-accent-hover: var(--s-active-text);
 		background: var(--s-active-bg);
-		color: var(--s-active-text);
 	}
-	&--paused,
-	&--paused:hover,
-	&--paused:focus {
+	&--paused {
+		--pp-accent-text: var(--s-fg-muted);
+		--pp-accent-hover: var(--s-fg-muted);
 		background: var(--s-surface-3);
-		color: var(--s-fg-subtle);
 	}
 }
 
 @media (max-width: 782px) {
+	.saddle-header {
+		padding-inline: 16px;
+	}
+
+	.saddle-header__row {
+		flex-wrap: wrap;
+	}
+
 	.saddle-frame {
 		padding: var(--pp-space-4) var(--pp-space-4) var(--pp-space-6);
+	}
+
+	.saddle-footer {
+		padding-inline: 16px;
 	}
 }
 
@@ -439,15 +605,15 @@ body.saddle-admin-page {
 
 	&__title {
 		margin: 0;
-		font-size: 15px;
+		font-size: 14px;
 		font-weight: 600;
 		line-height: 1.4;
 	}
 
 	&__desc {
 		margin: 2px 0 0;
-		color: var(--s-fg-muted);
-		font-size: 13px;
+		color: var(--s-fg-subtle);
+		font-size: 12px;
 	}
 
 	&__actions {
@@ -796,18 +962,17 @@ body.saddle-admin-page {
 /* ---------- First run (#269) ---------- */
 
 .saddle-first-run {
+	// "Skip setup" at the top right of the column; the mark is in the band.
 	&__bar {
 		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		max-width: 960px;
-		margin: 0 auto 40px;
+		justify-content: flex-end;
+		max-width: 640px;
+		margin: 0 auto 8px;
 	}
 
-	&__mark {
-		display: flex;
-		width: 30px;
-		height: 30px;
+	// The site's counts are facts, not headlines.
+	&__stats {
+		--pp-text-3xl: 15px;
 	}
 
 	&__column {
@@ -816,17 +981,16 @@ body.saddle-admin-page {
 	}
 
 	&__title {
-		margin: 0 0 10px;
-		font-size: 27px;
-		line-height: 1.2;
-		font-weight: 660;
-		letter-spacing: -0.02em;
+		margin: 0 0 6px;
+		font-size: 15px;
+		line-height: 1.4;
+		font-weight: 600;
 		text-wrap: balance;
 	}
 
 	&__lead {
 		margin: 0 0 20px;
-		font-size: 15px;
+		font-size: 13px;
 		line-height: 1.6;
 		color: var(--s-fg-muted);
 		text-wrap: pretty;
@@ -857,9 +1021,8 @@ body.saddle-admin-page {
 
 	&__question {
 		margin: 0 0 8px;
-		font-size: 22px;
-		font-weight: 640;
-		letter-spacing: -0.02em;
+		font-size: 14px;
+		font-weight: 600;
 	}
 
 	&__actions {
@@ -943,10 +1106,9 @@ body.saddle-admin-page {
 	&__headline {
 		max-width: 34ch;
 		margin: 0;
-		font-size: 24px;
+		font-size: 15px;
 		font-weight: 600;
-		line-height: 1.3;
-		letter-spacing: -0.02em;
+		line-height: 1.4;
 		color: var(--s-fg);
 	}
 
@@ -1040,7 +1202,7 @@ body.saddle-admin-page {
 		h3 {
 			margin: 0;
 			font-size: 13px;
-			font-weight: 640;
+			font-weight: 600;
 			color: var(--s-fg);
 		}
 
@@ -1095,7 +1257,7 @@ body.saddle-admin-page {
 	&__h {
 		margin: 18px 0 8px;
 		font-size: 13px;
-		font-weight: 640;
+		font-weight: 600;
 		letter-spacing: 0.01em;
 		color: var(--s-fg);
 
@@ -1536,9 +1698,8 @@ body.saddle-admin-page {
 
 .saddle-wizard__title {
 	margin: 0 0 8px;
-	font-size: 22px;
-	font-weight: 640;
-	letter-spacing: -0.02em;
+	font-size: 15px;
+	font-weight: 600;
 }
 
 .saddle-wizard__lead {
@@ -1729,9 +1890,8 @@ body.saddle-admin-page {
 .saddle-activity {
 	&__title {
 		margin: 0 0 4px;
-		font-size: 20px;
-		font-weight: 660;
-		letter-spacing: -0.02em;
+		font-size: 14px;
+		font-weight: 600;
 	}
 
 	&__lead {

@@ -41,51 +41,6 @@ import {
 } from './extensions';
 
 /**
- * The one sentence under a page's title: what this tab is for. Home's
- * Overview has none here, because its own first line is that sentence.
- *
- * @param {Object} area The page.
- * @param {string} tab  The tab.
- * @return {string|null} Sentence.
- */
-export function describe( area, tab ) {
-	switch ( `${ area.key }/${ tab }` ) {
-		case 'home/activity':
-			return __(
-				'Everything your connected apps have changed through Saddle — and every attempt that was blocked. Reading is never logged; only changes are.',
-				'saddle'
-			);
-		case 'connections/apps':
-			return __( 'Apps you’ve let talk to this site.', 'saddle' );
-		case 'connections/permissions':
-			return __(
-				'Pick how much your connected apps are allowed to do. You can change this whenever you like.',
-				'saddle'
-			);
-		case 'context/overview':
-			return __(
-				'What Claude, ChatGPT and every connected app know about this site. They read it before they work, so correct anything that looks wrong.',
-				'saddle'
-			);
-		case 'settings/general':
-			return __(
-				'The facts about how apps reach this site, and the settings other plugins add.',
-				'saddle'
-			);
-		case 'settings/advanced':
-			return __(
-				'Settings you rarely need to change. The defaults suit most sites.',
-				'saddle'
-			);
-	}
-
-	// A module's first tab says what the module is for.
-	return area.module && area.tabs[ 0 ] && area.tabs[ 0 ].key === tab
-		? area.summary || null
-		: null;
-}
-
-/**
  * Cards another plugin added to this spot.
  *
  * @param {Object} props
