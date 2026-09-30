@@ -575,6 +575,7 @@ export default function App() {
 						refreshClients={ refreshClients }
 						removeClient={ removeClient }
 						onTogglePause={ togglePause }
+						loadCaps={ loadCaps }
 						onboarding={ onboarding }
 						onHideSetup={ hideSetup }
 					/>

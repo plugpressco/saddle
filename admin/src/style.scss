@@ -527,15 +527,6 @@ body.saddle-admin-page {
 	}
 }
 
-// The selected access level carries the brand (the one card choice that
-// decides what an AI may do).
-.saddle-perm .pp-selcard-group {
-	--pp-accent: var( --saddle-brand );
-	--pp-accent-text: var( --saddle-brand );
-	--pp-accent-tint: var( --saddle-brand-tint );
-	--pp-accent-muted: var( --saddle-brand-tint );
-}
-
 // The status pill: "AI on" or "Paused". A link to the Dashboard, where the
 // switch is.
 .saddle-status-pill {
@@ -628,7 +619,7 @@ body.saddle-admin-page {
 }
 
 // A heading that carries a "?" beside it.
-.saddle-perm__label,
+.saddle-settings__label,
 .saddle-signin__label,
 .saddle-integrations__title,
 .saddle-memory__title {
@@ -817,43 +808,48 @@ body.saddle-admin-page {
 }
 
 /* ---------- Context (#274) ---------- */
-// A sheet the owner fills in and corrects: named fields, each saying whether
-// anything is written, with an example as the placeholder.
+// The owner's instructions as rows: the text cut to one line, or a quiet
+// "Not written yet"; Edit opens the textarea under the row.
 .saddle-context {
 	display: grid;
 	gap: var(--pp-space-5);
 	align-content: start;
-
-	&__fields {
-		display: grid;
-		gap: var(--pp-space-4);
-	}
 }
 
 .saddle-context-field {
-	display: grid;
-	gap: 4px;
-
-	&__head {
-		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: 12px;
+	.pp-rowlist__body {
+		min-width: 0;
 	}
 
 	&__label {
-		font-weight: 600;
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
 	}
 
-	&__state {
+	&__text {
+		display: block;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	&__empty {
 		color: var(--s-fg-subtle);
-		font-size: 12px;
 	}
 
-	&__hint {
-		margin: 0 0 4px;
-		color: var(--s-fg-muted);
-		font-size: 12px;
+	&__edit {
+		display: grid;
+		gap: var(--pp-space-3);
+		padding: var(--pp-space-3) var(--pp-space-4);
+		border-block-start: 1px solid var(--s-border);
+		background: var(--s-surface-2);
+	}
+
+	&__actions {
+		display: flex;
+		align-items: center;
+		gap: 8px;
 	}
 }
 
@@ -1025,15 +1021,6 @@ body.saddle-admin-page {
 	color: var(--s-fg-muted);
 }
 
-/* ---------- Permissions ---------- */
-
-// The three sections (access level, Safety, Tools) sit 24px apart.
-.saddle-perm {
-	display: grid;
-	gap: var(--pp-space-5);
-	align-content: start;
-}
-
 // Per-app setup guide drawer: three numbered sections with one rhythm.
 .saddle-setup-guide {
 	display: grid;
@@ -1092,15 +1079,6 @@ body.saddle-admin-page {
 }
 
 /* ---------- Guidance ---------- */
-
-// Each guidance section is a DS Card; only the rhythm between them is ours.
-.saddle-guide__block {
-	margin-bottom: 16px;
-
-	&:last-child {
-		margin-bottom: 0;
-	}
-}
 
 /* Readable rendering of the auto-context (vs the raw monospace view). */
 .saddle-doc {
@@ -1181,6 +1159,41 @@ body.saddle-admin-page {
 	gap: 8px;
 }
 
+.saddle-memory .pp-rowlist__body {
+	min-width: 0;
+}
+
+// A memory entry is one line: the text cut to one line; View opens it in full
+// with Pin and Delete under it.
+.saddle-memory__text {
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.saddle-memory__open {
+	display: grid;
+	gap: var(--pp-space-2);
+	padding: var(--pp-space-2) var(--pp-space-4) var(--pp-space-3);
+	border-block-start: 1px solid var(--s-border);
+
+	&-actions {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+	}
+}
+
+.saddle-memory__pin {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 12px;
+	color: var(--s-fg-muted);
+}
+
 // The auto-include switch is the last row of the memory block: its label
 // carries the "?" beside it.
 .saddle-memory__setting-label {
@@ -1209,222 +1222,16 @@ body.saddle-admin-page {
 	margin-top: 10px;
 }
 
+.saddle-guide__delete {
+	margin-top: var(--pp-space-3);
+}
+
 .saddle-guide__system {
 	margin-top: 0;
 	max-height: 320px;
 	overflow: auto;
 	white-space: pre-wrap;
 	color: var(--s-fg-muted);
-}
-
-.saddle-guide__actions {
-	margin-top: 12px;
-}
-
-/* ---------- Lanes + chips (Permissions detail) ---------- */
-
-.saddle-lanes__hint {
-	margin: 10px 0 0;
-	font-size: 12px;
-	color: var(--s-fg-subtle);
-}
-
-.saddle-lanes__filter {
-	appearance: none;
-	margin-top: 12px;
-	width: 100%;
-	max-width: 320px;
-	padding: 7px 12px;
-	font: inherit;
-	font-size: 13px;
-	color: var(--s-fg);
-	background: var(--s-bg);
-	border: 1px solid var(--s-border);
-	border-radius: var(--s-radius-pill);
-
-	&:focus-visible {
-		outline: 2px solid var(--s-focus);
-		outline-offset: 2px;
-	}
-}
-
-.saddle-lanes {
-	margin-top: 16px;
-	display: grid;
-	grid-template-columns: repeat( 3, 1fr );
-	gap: 14px;
-
-	@media ( max-width: 900px ) {
-		grid-template-columns: 1fr;
-	}
-}
-
-.saddle-lane {
-	border: 1px solid var(--s-border);
-	border-radius: var(--s-radius-lg);
-	padding: 18px;
-	background: var(--s-bg);
-	transition: opacity var(--s-dur) var(--s-ease);
-
-	&.is-off {
-		opacity: 0.6;
-		background: var(--s-surface-2);
-	}
-
-	&__head {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-	}
-
-	&__title {
-		margin: 0;
-		font-size: 14px;
-		font-weight: 620;
-	}
-
-	&__count {
-		font-size: 11px;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-		color: var(--s-fg-subtle);
-	}
-
-	&__rail {
-		height: 2px;
-		border-radius: 2px;
-		margin: 12px 0;
-		background: var(--s-border);
-	}
-	// A 2px rail is a thin element: the bright status values sit at ~1.9:1 on
-	// white and would simply not be there. These take the readable step, which
-	// is what makes the three lanes scannable at a glance.
-	&--look.is-on &__rail {
-		background: var(--s-rail-safe);
-	}
-	&--change.is-on &__rail {
-		background: var(--s-rail-change);
-	}
-	&--remove.is-on &__rail {
-		background: var(--s-rail-remove);
-	}
-}
-
-.saddle-catgroup {
-	margin-top: 12px;
-
-	&__title {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		margin: 0 0 6px;
-		font-size: 11px;
-		font-weight: 620;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-		color: var(--s-fg-subtle);
-	}
-
-	&__count {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		min-width: 18px;
-		height: 16px;
-		padding: 0 5px;
-		font-size: 10px;
-		font-weight: 600;
-		letter-spacing: 0;
-		color: var(--s-fg-subtle);
-		background: var(--s-surface-2);
-		border-radius: var(--s-radius-pill);
-	}
-}
-
-.saddle-lane__empty {
-	margin: 8px 0 0;
-	font-size: 12px;
-	color: var(--s-fg-subtle);
-}
-
-.saddle-chips {
-	margin: 0;
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-}
-
-.saddle-chip {
-	appearance: none;
-	font: inherit;
-	color: inherit;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 8px;
-	width: 100%;
-	min-width: 0;
-	padding: 8px 10px;
-	border: 1px solid var(--s-border);
-	border-radius: 7px;
-	background: var(--s-bg);
-	cursor: pointer;
-	text-align: left;
-	transition: opacity var(--s-dur) var(--s-ease),
-		background var(--s-dur) var(--s-ease);
-
-	&:hover {
-		background: var(--s-surface-2);
-	}
-
-	&.is-off {
-		opacity: 0.5;
-	}
-	&.is-on {
-		border-color: var(--s-border-strong);
-	}
-
-	&.is-disabled {
-		opacity: 0.55;
-		background: var(--s-surface-2);
-
-		.saddle-chip__label {
-			text-decoration: line-through;
-			text-decoration-color: var(--s-fg-subtle);
-		}
-	}
-
-	&__label {
-		font-size: 13px;
-		min-width: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	&__shield {
-		flex: 0 0 auto;
-		font-size: 10px;
-		font-weight: 500;
-		letter-spacing: 0.02em;
-		color: var(--s-active-text);
-		background: var(--s-active-bg);
-		border-radius: var(--s-radius-pill);
-		padding: 2px 8px;
-		white-space: nowrap;
-	}
-
-	&__off {
-		flex: 0 0 auto;
-		font-size: 10px;
-		font-weight: 500;
-		letter-spacing: 0.02em;
-		color: var(--s-fg-subtle);
-		background: var(--s-surface-3);
-		border-radius: var(--s-radius-pill);
-		padding: 2px 8px;
-		white-space: nowrap;
-	}
 }
 
 /* ---------- AI apps: the connected list (#285) ---------- */
@@ -1942,6 +1749,93 @@ body.saddle-admin-page {
 		display: flex;
 		align-items: center;
 		gap: 8px;
+	}
+}
+
+/* ---------- Settings (#285) ---------- */
+// Advanced is one block of disclosures, hairlines between them.
+.saddle-adv {
+	background: var(--s-bg);
+	border: 1px solid var(--s-border);
+	border-radius: var(--s-radius);
+	overflow: hidden;
+
+	> .pp-collapsible + .pp-collapsible {
+		border-block-start: 1px solid var(--s-border);
+	}
+
+	.pp-collapsible__trigger {
+		inline-size: 100%;
+		justify-content: space-between;
+		padding: var(--pp-space-3) var(--pp-space-4);
+		font-size: 13px;
+		font-weight: 600;
+	}
+
+	.pp-collapsible__panel {
+		padding: 0 0 var(--pp-space-3);
+	}
+
+	// Sign-in for apps: the disclosure already names it.
+	&__signin .saddle-section-head {
+		display: none;
+	}
+
+	&__signin,
+	&__check,
+	.saddle-settings-form {
+		padding-inline: var(--pp-space-4);
+	}
+
+	// The rows inside a disclosure sit in the block, not in boxes of their own.
+	.pp-rowlist {
+		border: 0;
+		border-radius: 0;
+		background: transparent;
+	}
+
+	&__signin .pp-rowlist,
+	.saddle-settings-form .pp-rowlist {
+		border: 1px solid var(--s-border);
+		border-radius: var(--s-radius);
+	}
+}
+
+// The tools: a search, then every area as a small heading over its rows.
+.saddle-tools {
+	display: grid;
+	gap: var(--pp-space-3);
+
+	&__search {
+		appearance: none;
+		margin-inline: var(--pp-space-4);
+		padding: 6px 10px;
+		font: inherit;
+		font-size: 13px;
+		color: var(--s-fg);
+		background: var(--s-bg);
+		border: 1px solid var(--s-border);
+		border-radius: var(--s-radius);
+
+		&:focus-visible {
+			outline: 2px solid var(--s-focus);
+			outline-offset: 1px;
+		}
+	}
+
+	&__area {
+		margin: 0;
+		padding: var(--pp-space-1) var(--pp-space-4);
+		font-size: 12px;
+		font-weight: 600;
+		color: var(--s-fg-subtle);
+	}
+
+	&__empty {
+		margin: 0;
+		padding-inline: var(--pp-space-4);
+		font-size: 12px;
+		color: var(--s-fg-subtle);
 	}
 }
 

@@ -186,15 +186,6 @@ export function draftProblems( fields, draft ) {
 }
 
 /**
- * Labels of the fields an agent may ask to change.
- *
- * @param {Array} fields Renderable fields.
- * @return {string[]} Labels.
- */
-export const agentWritableLabels = ( fields ) =>
-	fields.filter( ( f ) => 'write' === f.agent ).map( ( f ) => f.label );
-
-/**
  * The field a `#saddle-field-{scope}-{key}` address points at.
  *
  * @param {string} hash   `window.location.hash`.
