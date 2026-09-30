@@ -69,6 +69,7 @@ export default function Apps( {
 	onClientsChanged,
 	onClientRemoved,
 	siteTier,
+	onConnect,
 } ) {
 	const confirm = useConfirm();
 	// The setup-guide drawer: { app, label, password? } — password only right
@@ -242,6 +243,17 @@ export default function Apps( {
 						{ __( 'Connected apps', 'saddle' ) }
 					</Titled>
 				}
+				actions={
+					onConnect && (
+						<Button
+							variant="primary"
+							size="sm"
+							onClick={ onConnect }
+						>
+							{ __( 'Connect an app', 'saddle' ) }
+						</Button>
+					)
+				}
 			/>
 
 			{ loading && <Spinner /> }
@@ -251,13 +263,15 @@ export default function Apps( {
 			{ ! loading &&
 				clients.length === 0 &&
 				oauthConnections.length === 0 && (
-					<Card>
-						<CardContent>
-							<p className="saddle-apps__empty">
-								{ __( 'Nothing connected yet.', 'saddle' ) }
-							</p>
-						</CardContent>
-					</Card>
+					<RowList>
+						<Row
+							title={
+								<span className="saddle-apps__empty">
+									{ __( 'No apps connected yet.', 'saddle' ) }
+								</span>
+							}
+						/>
+					</RowList>
 				) }
 
 			{ /* Both kinds live in ONE card: they are one mental list ("what can

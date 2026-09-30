@@ -645,77 +645,60 @@ body.saddle-admin-page {
 }
 
 /* ---------- Connections → Apps (#274) ---------- */
-// This site's address, then the apps down the side and the steps for the one
-// picked in one block. The site's own way of connecting, laid out like the
-// hosted MCP pages people already know.
+// The site address as one row, a compact grid of app tiles, and the steps for
+// the one picked beneath the grid. Nothing below the grid until an app is
+// picked.
 .saddle-connect {
 
-	&__address {
-		display: grid;
-		gap: 6px;
-	}
-
-	&__label {
-		color: var(--s-fg-muted);
-		font-size: 12px;
-	}
-
 	&__url {
-		display: flex;
+		display: inline-flex;
 		align-items: center;
 		gap: 8px;
-		flex-wrap: wrap;
+		min-width: 0;
 
 		code {
-			padding: 6px 10px;
+			padding: 4px 8px;
 			border: 1px solid var(--s-border);
 			border-radius: var(--s-radius);
 			background: var(--s-surface-2);
-			font-size: 13px;
-			word-break: break-all;
+			font-size: 12px;
+			overflow-wrap: anywhere;
 		}
-	}
-
-	&__picker {
-		display: grid;
-		grid-template-columns: minmax(170px, 220px) 1fr;
-		align-items: start;
-		border: 1px solid var(--s-border);
-		border-radius: var(--s-radius-lg);
-		background: var(--s-bg);
-		overflow: hidden;
 	}
 
 	&__apps {
 		display: grid;
-		gap: 2px;
-		padding: var(--pp-space-2);
+		grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+		gap: 8px;
 	}
 
 	&__app {
 		display: flex;
 		align-items: center;
-		gap: 10px;
-		width: 100%;
+		gap: 8px;
+		min-width: 0;
 		padding: 8px 10px;
-		border: 0;
+		border: 1px solid var(--s-border);
 		border-radius: var(--s-radius);
-		background: transparent;
+		background: var(--s-bg);
 		color: var(--s-fg);
 		font: inherit;
+		font-size: 13px;
 		text-align: start;
 		cursor: pointer;
 
 		img {
+			flex: 0 0 auto;
 			width: 18px;
 			height: 18px;
 		}
 
 		&:hover {
-			background: var(--s-surface-3);
+			background: var(--s-surface-2);
 		}
 
-		&[aria-selected='true'] {
+		&[aria-pressed='true'] {
+			border-color: var(--s-border-strong);
 			background: var(--s-surface-3);
 			font-weight: 600;
 		}
@@ -723,14 +706,27 @@ body.saddle-admin-page {
 
 	&__app-label {
 		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	&__steps {
 		display: grid;
 		gap: var(--pp-space-3);
 		padding: var(--pp-space-4);
-		border-inline-start: 1px solid var(--s-border);
+		border: 1px solid var(--s-border);
+		border-radius: var(--s-radius);
+		background: var(--s-bg);
 		min-width: 0;
+	}
+
+	&__steps-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
 	}
 
 	&__steps-title {
@@ -834,21 +830,6 @@ body.saddle-admin-page {
 	}
 }
 
-@media (max-width: 782px) {
-	.saddle-connect__picker {
-		grid-template-columns: 1fr;
-	}
-
-	.saddle-connect__apps {
-		grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-	}
-
-	.saddle-connect__steps {
-		border-inline-start: 0;
-		border-block-start: 1px solid var(--s-border);
-	}
-}
-
 /* ---------- Context (#274) ---------- */
 // A sheet the owner fills in and corrects: named fields, each saying whether
 // anything is written, with an example as the placeholder.
@@ -856,11 +837,6 @@ body.saddle-admin-page {
 	display: grid;
 	gap: var(--pp-space-5);
 	align-content: start;
-
-	&__empty {
-		margin: 0;
-		color: var(--s-fg-subtle);
-	}
 
 	&__fields {
 		display: grid;
@@ -1213,10 +1189,34 @@ body.saddle-admin-page {
 	}
 }
 
-.saddle-memory__empty {
-	margin: 0;
-	font-size: 13px;
-	color: var(--s-fg-subtle);
+.saddle-memory__compose-actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+// The auto-include switch is the last row of the memory block: its label
+// carries the "?" beside it.
+.saddle-memory__setting-label {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-weight: 600;
+}
+
+// A skill is one line: name, then its description cut to one line with the
+// full text in the title.
+.saddle-skill-row {
+	.pp-rowlist__body {
+		min-width: 0;
+	}
+
+	&__desc {
+		display: block;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
 }
 
 .saddle-guide__rawtoggle {
@@ -1233,13 +1233,6 @@ body.saddle-admin-page {
 
 .saddle-guide__actions {
 	margin-top: 12px;
-}
-
-.saddle-guide__actions--stack {
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
-	align-items: flex-start;
 }
 
 /* ---------- Lanes + chips (Permissions detail) ---------- */
@@ -1907,18 +1900,6 @@ body.saddle-admin-page {
 	overflow: auto;
 }
 
-// A Switch with its visible label beside it.
-.saddle-toggle-row {
-	display: flex;
-	align-items: flex-start;
-	gap: 10px;
-
-	span {
-		font-size: 13px;
-		color: var(--s-fg);
-	}
-}
-
 // Settings rendered from a schema (SettingsForm): a heading and one block of
 // rows per section. The control sits on the right of its label.
 .saddle-settings-form {
@@ -1968,32 +1949,25 @@ body.saddle-admin-page {
 	margin-top: 8px;
 }
 
-/* Unsplash key card (Integrations tab) — entry form or masked status row.
-   Spacing comes from the page's grid rhythm. */
+/* Unsplash row (Integrations): the key form opens under the row. */
 .saddle-unsplash {
-	&__hint {
-		margin: 8px 0 12px;
-		font-size: 12px;
+	&__key {
 		color: var(--s-fg-muted);
+		font-size: 12px;
+	}
+
+	&__form {
+		display: grid;
+		gap: var(--pp-space-3);
+		padding: var(--pp-space-3) var(--pp-space-4);
+		border-block-start: 1px solid var(--s-border);
+		background: var(--s-surface-2);
 	}
 
 	&__actions {
 		display: flex;
 		align-items: center;
 		gap: 8px;
-	}
-
-	&__configured {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		flex-wrap: wrap;
-		gap: 8px;
-
-		span {
-			font-size: 13px;
-			color: var(--s-fg);
-		}
 	}
 }
 

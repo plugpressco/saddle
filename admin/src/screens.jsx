@@ -131,8 +131,8 @@ function ModuleScreen( { area, tab, navigate } ) {
 }
 
 /**
- * Connections → Apps: the app picker, the connected apps, the one sign-in
- * control they share, and the troubleshooting details, collapsed, last.
+ * Connections → Apps: the connected apps first, then the app picker, the one
+ * sign-in control they share, and the troubleshooting details, collapsed, last.
  *
  * @param {Object}   props
  * @param {Function} props.openWizard     Opens the key setup.
@@ -151,19 +151,34 @@ function AppsTab( {
 	navigate,
 } ) {
 	const signIn = useOauthSettings();
+
+	// The header's "Connect an app": bring the picker into view and focus its
+	// first tile.
+	const toPicker = () => {
+		const section = document.getElementById( 'saddle-connect' );
+		const first = document.querySelector( '#saddle-connect-apps button' );
+		if ( section ) {
+			section.scrollIntoView( { block: 'start' } );
+		}
+		if ( first ) {
+			first.focus( { preventScroll: true } );
+		}
+	};
+
 	return (
 		<>
-			<ConnectApps
-				oauth={ signIn.oauth }
-				onKey={ openWizard }
-				onConnected={ refreshClients }
-			/>
 			<Apps
 				clients={ clients }
 				loading={ false }
 				onClientsChanged={ refreshClients }
 				onClientRemoved={ removeClient }
 				siteTier={ tier }
+				onConnect={ toPicker }
+			/>
+			<ConnectApps
+				oauth={ signIn.oauth }
+				onKey={ openWizard }
+				onConnected={ refreshClients }
 			/>
 			<SignInCard { ...signIn } />
 			<Cards where="connections" navigate={ navigate } />

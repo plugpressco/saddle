@@ -40,6 +40,8 @@ export default function Memory( { onChanged } ) {
 	const [ howOpen, setHowOpen ] = useState( false );
 	const [ draft, setDraft ] = useState( { key: '', text: '' } );
 	const [ adding, setAdding ] = useState( false );
+	// The add form opens from the header's button and closes on Cancel.
+	const [ composing, setComposing ] = useState( false );
 
 	const apply = ( res ) => {
 		setEntries( res.entries || [] );
@@ -72,6 +74,7 @@ export default function Memory( { onChanged } ) {
 		} ).finally( () => {
 			setAdding( false );
 			setDraft( { key: '', text: '' } );
+			setComposing( false );
 		} );
 	};
 
@@ -134,171 +137,217 @@ export default function Memory( { onChanged } ) {
 					</span>
 				}
 				actions={
-					<Button
-						variant="secondary"
-						size="sm"
-						onClick={ () => setHowOpen( true ) }
-					>
-						{ __( 'How memory works', 'saddle' ) }
-					</Button>
+					<>
+						<Button
+							variant="link"
+							size="sm"
+							onClick={ () => setHowOpen( true ) }
+						>
+							{ __( 'How memory works', 'saddle' ) }
+						</Button>
+						<Button
+							variant="secondary"
+							size="sm"
+							onClick={ () => setComposing( true ) }
+							disabled={ composing }
+						>
+							{ __( 'Add memory', 'saddle' ) }
+						</Button>
+					</>
 				}
 			/>
 
-			{ entries.length === 0 && (
+			{ composing && (
 				<Card>
 					<CardContent>
-						<p className="saddle-memory__empty">
-							{ __( 'Nothing remembered yet.', 'saddle' ) }
-						</p>
+						<div className="saddle-memory__compose">
+							<Field
+								label={ __(
+									'Add something to remember',
+									'saddle'
+								) }
+							>
+								{ ( a11y ) => (
+									<Textarea
+										{ ...a11y }
+										value={ draft.text }
+										onChange={ ( e ) =>
+											setDraft( ( d ) => ( {
+												...d,
+												text: e.target.value,
+											} ) )
+										}
+										rows={ 3 }
+										placeholder={ __(
+											'e.g. The pricing page is “Plans” (page 42) — update it, never create a new one.',
+											'saddle'
+										) }
+									/>
+								) }
+							</Field>
+							<Field label={ __( 'Name (optional)', 'saddle' ) }>
+								{ ( a11y ) => (
+									<Input
+										{ ...a11y }
+										value={ draft.key }
+										onChange={ ( e ) =>
+											setDraft( ( d ) => ( {
+												...d,
+												key: e.target.value,
+											} ) )
+										}
+										placeholder={ __(
+											'e.g. pricing-page',
+											'saddle'
+										) }
+									/>
+								) }
+							</Field>
+							<div className="saddle-memory__compose-actions">
+								<Button
+									variant="secondary"
+									onClick={ addEntry }
+									loading={ adding }
+									disabled={ adding || ! draft.text.trim() }
+								>
+									{ __( 'Remember this', 'saddle' ) }
+								</Button>
+								<Button
+									variant="ghost"
+									onClick={ () => {
+										setComposing( false );
+										setDraft( { key: '', text: '' } );
+									} }
+									disabled={ adding }
+								>
+									{ __( 'Cancel', 'saddle' ) }
+								</Button>
+							</div>
+						</div>
 					</CardContent>
 				</Card>
 			) }
 
-			{ entries.length > 0 && (
-				<RowList>
-					{ entries.map( ( entry ) => (
-						<div key={ entry.key }>
-							<Row
-								title={ entry.key }
-								description={
-									( entry.source === 'owner'
-										? __( 'You', 'saddle' )
-										: sprintf(
-												/* translators: %s: client name. */
-												__( 'AI · %s', 'saddle' ),
-												entry.client ||
-													__( 'unknown', 'saddle' )
-										  ) ) +
-									' · ' +
-									entry.type +
-									( entry.pinned
-										? ' · ' + __( 'pinned', 'saddle' )
-										: '' )
-								}
-								actions={
-									<>
-										<Switch
-											checked={ entry.pinned }
-											onChange={ () =>
-												call( `memory/${ entry.key }`, {
-													method: 'POST',
-													data: {
-														pinned: ! entry.pinned,
-													},
-												} )
-											}
-											aria-label={ sprintf(
-												/* translators: %s: entry key. */
-												__(
-													'Pin “%s” so every session is told it',
-													'saddle'
-												),
-												entry.key
-											) }
-										/>
-										<Button
-											variant="link"
-											onClick={ () =>
-												setOpenKey(
-													openKey === entry.key
-														? null
-														: entry.key
-												)
-											}
-										>
-											{ openKey === entry.key
-												? __( 'Hide', 'saddle' )
-												: __( 'View', 'saddle' ) }
-										</Button>
-										<Button
-											variant="link"
-											className="saddle-link-danger"
-											onClick={ () =>
-												forgetEntry( entry )
-											}
-										>
-											{ __( 'Delete', 'saddle' ) }
-										</Button>
-									</>
-								}
+			<RowList>
+				{ entries.length === 0 && (
+					<Row
+						title={
+							<span className="saddle-apps__empty">
+								{ __( 'Nothing remembered yet.', 'saddle' ) }
+							</span>
+						}
+					/>
+				) }
+				{ entries.map( ( entry ) => (
+					<div key={ entry.key }>
+						<Row
+							title={ entry.key }
+							description={
+								( entry.source === 'owner'
+									? __( 'You', 'saddle' )
+									: sprintf(
+											/* translators: %s: client name. */
+											__( 'AI · %s', 'saddle' ),
+											entry.client ||
+												__( 'unknown', 'saddle' )
+									  ) ) +
+								' · ' +
+								entry.type +
+								( entry.pinned
+									? ' · ' + __( 'pinned', 'saddle' )
+									: '' )
+							}
+							actions={
+								<>
+									<Switch
+										checked={ entry.pinned }
+										onChange={ () =>
+											call( `memory/${ entry.key }`, {
+												method: 'POST',
+												data: {
+													pinned: ! entry.pinned,
+												},
+											} )
+										}
+										aria-label={ sprintf(
+											/* translators: %s: entry key. */
+											__(
+												'Pin “%s” so every session is told it',
+												'saddle'
+											),
+											entry.key
+										) }
+									/>
+									<Button
+										variant="link"
+										onClick={ () =>
+											setOpenKey(
+												openKey === entry.key
+													? null
+													: entry.key
+											)
+										}
+									>
+										{ openKey === entry.key
+											? __( 'Hide', 'saddle' )
+											: __( 'View', 'saddle' ) }
+									</Button>
+									<Button
+										variant="link"
+										className="saddle-link-danger"
+										onClick={ () => forgetEntry( entry ) }
+									>
+										{ __( 'Delete', 'saddle' ) }
+									</Button>
+								</>
+							}
+						/>
+						{ openKey === entry.key && (
+							<CodeBlock
+								className="saddle-rows__body"
+								code={ entry.text }
+								copy={ false }
 							/>
-							{ openKey === entry.key && (
-								<CodeBlock
-									className="saddle-rows__body"
-									code={ entry.text }
-									copy={ false }
-								/>
-							) }
-						</div>
-					) ) }
-				</RowList>
-			) }
-
-			<Card>
-				<CardContent>
-					<div className="saddle-memory__compose">
-						<Field
-							label={ __(
-								'Add something to remember',
-								'saddle'
-							) }
-						>
-							{ ( a11y ) => (
-								<Textarea
-									{ ...a11y }
-									value={ draft.text }
-									onChange={ ( e ) =>
-										setDraft( ( d ) => ( {
-											...d,
-											text: e.target.value,
-										} ) )
-									}
-									rows={ 3 }
-									placeholder={ __(
-										'e.g. The pricing page is “Plans” (page 42) — update it, never create a new one.',
-										'saddle'
-									) }
-								/>
-							) }
-						</Field>
-						<Field label={ __( 'Name (optional)', 'saddle' ) }>
-							{ ( a11y ) => (
-								<Input
-									{ ...a11y }
-									value={ draft.key }
-									onChange={ ( e ) =>
-										setDraft( ( d ) => ( {
-											...d,
-											key: e.target.value,
-										} ) )
-									}
-									placeholder={ __(
-										'e.g. pricing-page',
-										'saddle'
-									) }
-								/>
-							) }
-						</Field>
-						<Button
-							variant="secondary"
-							onClick={ addEntry }
-							loading={ adding }
-							disabled={ adding || ! draft.text.trim() }
-						>
-							{ __( 'Remember this', 'saddle' ) }
-						</Button>
+						) }
 					</div>
-				</CardContent>
-			</Card>
-
-			{ settings && (
-				<Card>
-					<CardContent>
-						<div className="saddle-guide__actions saddle-guide__actions--stack">
+				) ) }
+				{ settings && (
+					<Row
+						className="saddle-memory__setting"
+						title={
 							<label
-								className="saddle-toggle-row"
+								className="saddle-memory__setting-label"
 								htmlFor="saddle-memory-autoinject"
 							>
+								{ __(
+									'Auto-include AI-written memory',
+									'saddle'
+								) }
+								<HelpTip>
+									{ __(
+										'Entries an AI saved on its own are only found when it searches, unless you pin them or turn this on. Off is safest: pin entries instead.',
+										'saddle'
+									) }
+								</HelpTip>
+							</label>
+						}
+						actions={
+							<>
+								{ agentCount > 0 && (
+									<Button
+										variant="link"
+										size="sm"
+										className="saddle-link-danger"
+										onClick={ () =>
+											clearAgentMemory( agentCount )
+										}
+									>
+										{ __(
+											'Clear AI-written memory',
+											'saddle'
+										) }
+									</Button>
+								) }
 								<Switch
 									id="saddle-memory-autoinject"
 									checked={ settings.autoinject_agent }
@@ -313,37 +362,11 @@ export default function Memory( { onChanged } ) {
 										'saddle'
 									) }
 								/>
-								<span>
-									{ __(
-										'Auto-include AI-written memory',
-										'saddle'
-									) }
-								</span>
-								<HelpTip>
-									{ __(
-										'Entries an AI saved on its own are only found when it searches, unless you pin them or turn this on. Off is safest: pin entries instead.',
-										'saddle'
-									) }
-								</HelpTip>
-							</label>
-							{ agentCount > 0 && (
-								<Button
-									variant="secondary"
-									className="saddle-link-danger"
-									onClick={ () =>
-										clearAgentMemory( agentCount )
-									}
-								>
-									{ __(
-										'Clear AI-written memory',
-										'saddle'
-									) }
-								</Button>
-							) }
-						</div>
-					</CardContent>
-				</Card>
-			) }
+							</>
+						}
+					/>
+				) }
+			</RowList>
 
 			{ preview !== '' && (
 				<Collapsible

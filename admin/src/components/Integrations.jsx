@@ -3,7 +3,7 @@
  * WordPress.
  *
  * Three kinds of row, all served by GET /integrations: tools built into
- * Saddle (Unsplash, which needs the Access Key card, and the SEO/store
+ * Saddle (Unsplash, whose row holds the Access Key form, and the SEO/store
  * plugins it edits natively), PlugPress plugins whose tools Saddle wraps as
  * soon as they are active, and third-party plugins that enrolled through the
  * public `saddle_integrations` filter. Third-party rows start switched off;
@@ -15,7 +15,7 @@ import { RowList, Row, Badge, Switch, HelpTip, toast } from '@plugpress/ui';
 import SectionHeader from './SectionHeader';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { api } from '../api';
-import UnsplashKeyCard from './UnsplashKeyCard';
+import UnsplashKeyRow from './UnsplashKeyCard';
 
 const SOURCE_LABELS = {
 	plugpress: __( 'PlugPress', 'saddle' ),
@@ -137,54 +137,56 @@ export default function Integrations( { caps, onChanged } ) {
 				}
 			/>
 
-			<UnsplashKeyCard />
-
 			<RowList loading={ null === rows }>
-				{ all.map( ( row ) => (
-					<Row
-						key={ row.slug }
-						title={ row.title }
-						description={ describe( row ) }
-						actions={
-							<>
-								{ SOURCE_LABELS[ row.source ] && (
-									<Badge>
-										{ SOURCE_LABELS[ row.source ] }
-									</Badge>
-								) }
-								<Badge>
-									{ sprintf(
-										/* translators: %d: number of tools. */
-										_n(
-											'%d tool',
-											'%d tools',
-											row.tools,
-											'saddle'
-										),
-										row.tools
+				{ all.map( ( row ) =>
+					'unsplash' === row.slug ? (
+						<UnsplashKeyRow key={ row.slug } tools={ row.tools } />
+					) : (
+						<Row
+							key={ row.slug }
+							title={ row.title }
+							description={ describe( row ) }
+							actions={
+								<>
+									{ SOURCE_LABELS[ row.source ] && (
+										<Badge>
+											{ SOURCE_LABELS[ row.source ] }
+										</Badge>
 									) }
-								</Badge>
-								{ 'third-party' === row.source && (
-									<Switch
-										checked={ row.enabled }
-										disabled={ saving === row.slug }
-										onChange={ ( next ) =>
-											toggle( row, next )
-										}
-										aria-label={ sprintf(
-											/* translators: %s: plugin name. */
-											__(
-												'Let your AI use %s tools',
+									<Badge>
+										{ sprintf(
+											/* translators: %d: number of tools. */
+											_n(
+												'%d tool',
+												'%d tools',
+												row.tools,
 												'saddle'
 											),
-											row.title
+											row.tools
 										) }
-									/>
-								) }
-							</>
-						}
-					/>
-				) ) }
+									</Badge>
+									{ 'third-party' === row.source && (
+										<Switch
+											checked={ row.enabled }
+											disabled={ saving === row.slug }
+											onChange={ ( next ) =>
+												toggle( row, next )
+											}
+											aria-label={ sprintf(
+												/* translators: %s: plugin name. */
+												__(
+													'Let your AI use %s tools',
+													'saddle'
+												),
+												row.title
+											) }
+										/>
+									) }
+								</>
+							}
+						/>
+					)
+				) }
 			</RowList>
 		</section>
 	);

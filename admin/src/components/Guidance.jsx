@@ -323,8 +323,16 @@ export default function Guidance() {
 							{ skills.map( ( skill ) => (
 								<Row
 									key={ skill.name }
+									className="saddle-skill-row"
 									title={ skill.name }
-									description={ skill.description }
+									description={
+										<span
+											className="saddle-skill-row__desc"
+											title={ skill.description }
+										>
+											{ skill.description }
+										</span>
+									}
 									actions={
 										<>
 											{ /* A bundled skill is provided by a
@@ -380,9 +388,15 @@ export default function Guidance() {
 							) ) }
 						</RowList>
 					) : (
-						<p className="saddle-context__empty">
-							{ __( 'No skills yet.', 'saddle' ) }
-						</p>
+						<RowList>
+							<Row
+								title={
+									<span className="saddle-apps__empty">
+										{ __( 'No skills yet.', 'saddle' ) }
+									</span>
+								}
+							/>
+						</RowList>
 					) }
 				</div>
 			</section>

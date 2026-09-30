@@ -12,7 +12,7 @@ import { Button, Row, RowList, StatusDot } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { api, levelFor } from '../api';
 import { APPS } from '../connect-apps';
-import { parseModules } from '../onboarding-logic';
+import { parseModules, setupBlock } from '../onboarding-logic';
 import SetupBlock from './SetupBlock';
 import SectionHeader from './SectionHeader';
 import { actionLabel, parseEntryDate, relativeWhen } from '../activity-format';
@@ -68,21 +68,24 @@ const STATE_TONE = {
  * A row whose right side is a value and the link that changes it.
  *
  * @param {Object}   props
- * @param {*}        props.title   Label.
- * @param {*}        props.value   Current value.
- * @param {string}   props.link    Link text.
- * @param {Function} props.onClick Called when the link is used.
+ * @param {*}        props.title    Label.
+ * @param {*}        props.value    Current value.
+ * @param {string}   props.link     Link text.
+ * @param {boolean}  props.hideLink Show the value without the link.
+ * @param {Function} props.onClick  Called when the link is used.
  */
-function StatusRow( { title, value, link, onClick } ) {
+function StatusRow( { title, value, link, hideLink, onClick } ) {
 	return (
 		<Row
 			title={ title }
 			actions={
 				<>
 					<span className="saddle-home__value">{ value }</span>
-					<Button variant="link" size="sm" onClick={ onClick }>
-						{ link }
-					</Button>
+					{ ! hideLink && (
+						<Button variant="link" size="sm" onClick={ onClick }>
+							{ link }
+						</Button>
+					) }
 				</>
 			}
 		/>
@@ -176,6 +179,15 @@ export default function Dashboard( {
 			? activity.entries.slice( 0, ACTIVITY_ROWS )
 			: [];
 
+	// Setup's first row already offers "Connect" while it shows and nothing is
+	// connected, so the status row stays quiet then.
+	const setupShowing =
+		Array.isArray( connections ) &&
+		!! areas &&
+		!! onboarding &&
+		setupBlock( { connections, onboarding, tier, areas } ).visible;
+	const hideConnect = setupShowing && 0 === names.length;
+
 	const toPermissions = () => onNavigate( 'permissions' );
 	const toApps = () => onNavigate( 'connect' );
 
@@ -217,6 +229,7 @@ export default function Dashboard( {
 									? __( 'Manage', 'saddle' )
 									: __( 'Connect', 'saddle' )
 							}
+							hideLink={ hideConnect }
 							onClick={ names.length ? toApps : onConnect }
 						/>
 					) }

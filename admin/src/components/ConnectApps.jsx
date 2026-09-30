@@ -15,14 +15,13 @@
  */
 import { useState, useEffect, useRef } from '@wordpress/element';
 import {
-	Badge,
 	Button,
-	Card,
-	CardContent,
 	CodeBlock,
 	CopyButton,
 	HelpTip,
 	Notice,
+	Row,
+	RowList,
 	StatusDot,
 } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
@@ -127,7 +126,8 @@ function usePulse( active, onConnected ) {
  * @param {Function} props.onConnected Called when a new app connects.
  */
 export default function ConnectApps( { oauth, onKey, onConnected } ) {
-	const [ selected, setSelected ] = useState( 'claude' );
+	// Nothing is picked until the owner picks: no steps, warnings or code yet.
+	const [ selected, setSelected ] = useState( null );
 	const [ connections, setConnections ] = useState( [] );
 
 	const loadConnections = () =>
@@ -139,10 +139,10 @@ export default function ConnectApps( { oauth, onKey, onConnected } ) {
 		loadConnections();
 	}, [] );
 
-	const app = APPS.find( ( a ) => a.key === selected ) || APPS[ 0 ];
+	const app = APPS.find( ( a ) => a.key === selected ) || null;
 	const signInOn = !! ( oauth && oauth.enabled );
-	const byAddress = signInOn && app.viaAddress;
-	const unreachable = IS_LOCAL && WEB_APPS.includes( app.key );
+	const byAddress = !! app && signInOn && app.viaAddress;
+	const unreachable = !! app && IS_LOCAL && WEB_APPS.includes( app.key );
 
 	const arrived = usePulse( byAddress && ! unreachable, () => {
 		loadConnections();
@@ -151,7 +151,7 @@ export default function ConnectApps( { oauth, onKey, onConnected } ) {
 		}
 	} );
 
-	// There is one sign-in switch on this page, in the card below the apps.
+	// There is one sign-in switch on this page, in the section below the apps.
 	// This hint points the owner at it rather than repeating it.
 	const showSignIn = () => {
 		const card = document.getElementById( 'saddle-signin' );
@@ -165,10 +165,11 @@ export default function ConnectApps( { oauth, onKey, onConnected } ) {
 	};
 
 	const connectedApps = new Set( connections.map( ( c ) => c.app ) );
-	const count = connections.filter( ( c ) => c.first_seen_at ).length;
 
 	const config = byAddress ? buildConfig( app.key, null, 'address' ) : '';
 	const links = byAddress ? installLinks( app.key, null, 'address' ) : [];
+
+	const pick = ( key ) => setSelected( key === selected ? null : key );
 
 	return (
 		<section className="saddle-section saddle-connect" id="saddle-connect">
@@ -182,100 +183,101 @@ export default function ConnectApps( { oauth, onKey, onConnected } ) {
 								'saddle'
 							) }
 						</HelpTip>
-						{ count > 0 ? (
-							<Badge tone="success">
-								{ sprintf(
-									/* translators: %d: number of connected apps. */
-									__( '%d connected', 'saddle' ),
-									count
-								) }
-							</Badge>
-						) : (
-							<Badge>{ __( 'Not connected', 'saddle' ) }</Badge>
-						) }
 					</span>
 				}
 			/>
 
-			<Card>
-				<CardContent className="saddle-connect__address">
-					<span className="saddle-connect__label">
-						{ __( 'This site’s MCP address', 'saddle' ) }
-					</span>
-					<div className="saddle-connect__url">
-						<code>{ MCP_URL }</code>
-						<CopyButton
-							value={ MCP_URL }
-							size="sm"
-							variant="secondary"
-						/>
-					</div>
-				</CardContent>
-			</Card>
-
-			{ oauth && ! signInOn && (
-				<Notice tone="info">
-					{ oauth.ready
-						? __(
-								'Sign-in for apps is off, so apps connect with a key. Turn it on to connect with the address alone.',
-								'saddle'
-						  )
-						: __(
-								'This site can’t use sign-in for apps yet: it needs HTTPS and a permalink setting other than Plain. Apps connect with a key instead.',
-								'saddle'
-						  ) }
-					{ oauth.ready && (
-						<span className="saddle-notice__actions">
-							<Button
-								variant="secondary"
+			<RowList>
+				<Row
+					title={ __( 'Site address', 'saddle' ) }
+					actions={
+						<span className="saddle-connect__url">
+							<code>{ MCP_URL }</code>
+							<CopyButton
+								value={ MCP_URL }
 								size="sm"
-								onClick={ showSignIn }
-							>
-								{ __( 'Go to the sign-in setting', 'saddle' ) }
-							</Button>
+								variant="secondary"
+							/>
 						</span>
-					) }
-				</Notice>
-			) }
+					}
+				/>
+			</RowList>
 
-			<div className="saddle-connect__picker">
-				<div
-					className="saddle-connect__apps"
-					role="listbox"
-					aria-label={ __( 'AI apps', 'saddle' ) }
-				>
-					{ APPS.map( ( a ) => (
-						<button
-							key={ a.key }
-							type="button"
-							role="option"
-							aria-selected={ a.key === app.key }
-							className="saddle-connect__app"
-							onClick={ () => setSelected( a.key ) }
-						>
-							<AppLogo app={ a.key } />
-							<span className="saddle-connect__app-label">
-								{ a.label }
-							</span>
-							{ connectedApps.has( a.key ) && (
-								<StatusDot
-									tone="success"
-									aria-label={ __( 'Connected', 'saddle' ) }
-								/>
-							) }
-						</button>
-					) ) }
-				</div>
-
-				<div className="saddle-connect__steps">
-					<h3 className="saddle-connect__steps-title">
-						<AppLogo app={ app.key } />
-						{ sprintf(
-							/* translators: %s: app name, such as Claude. */
-							__( 'Connect %s', 'saddle' ),
-							app.label
+			<div
+				id="saddle-connect-apps"
+				className="saddle-connect__apps"
+				role="group"
+				aria-label={ __( 'AI apps', 'saddle' ) }
+			>
+				{ APPS.map( ( a ) => (
+					<button
+						key={ a.key }
+						type="button"
+						aria-pressed={ !! app && a.key === app.key }
+						className="saddle-connect__app"
+						onClick={ () => pick( a.key ) }
+					>
+						<AppLogo app={ a.key } />
+						<span className="saddle-connect__app-label">
+							{ a.label }
+						</span>
+						{ connectedApps.has( a.key ) && (
+							<StatusDot
+								tone="success"
+								aria-label={ __( 'Connected', 'saddle' ) }
+							/>
 						) }
-					</h3>
+					</button>
+				) ) }
+			</div>
+
+			{ app && (
+				<div className="saddle-connect__steps">
+					<div className="saddle-connect__steps-head">
+						<h3 className="saddle-connect__steps-title">
+							<AppLogo app={ app.key } />
+							{ sprintf(
+								/* translators: %s: app name, such as Claude. */
+								__( 'Connect %s', 'saddle' ),
+								app.label
+							) }
+						</h3>
+						<Button
+							variant="link"
+							size="sm"
+							onClick={ () => setSelected( null ) }
+						>
+							{ __( 'Close', 'saddle' ) }
+						</Button>
+					</div>
+
+					{ oauth && ! signInOn && app.viaAddress && (
+						<Notice tone="info">
+							{ oauth.ready
+								? __(
+										'Sign-in for apps is off, so apps connect with a key. Turn it on to connect with the address alone.',
+										'saddle'
+								  )
+								: __(
+										'This site can’t use sign-in for apps yet: it needs HTTPS and a permalink setting other than Plain. Apps connect with a key instead.',
+										'saddle'
+								  ) }
+							{ oauth.ready && (
+								<span className="saddle-notice__actions">
+									<Button
+										variant="secondary"
+										size="sm"
+										onClick={ showSignIn }
+									>
+										{ __(
+											'Go to the sign-in setting',
+											'saddle'
+										) }
+									</Button>
+								</span>
+							) }
+						</Notice>
+					) }
 
 					{ unreachable && (
 						<Notice tone="warning">
@@ -409,7 +411,7 @@ export default function ConnectApps( { oauth, onKey, onConnected } ) {
 						</Button>
 					) }
 				</div>
-			</div>
+			) }
 		</section>
 	);
 }
