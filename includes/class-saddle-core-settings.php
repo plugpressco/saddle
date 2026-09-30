@@ -52,7 +52,7 @@ class Saddle_Core_Settings {
 	 * @return array<string,array>
 	 */
 	public static function fields() {
-		$permissions = 'connections/permissions';
+		$permissions = 'permissions/overview';
 		$apps        = 'connections/apps';
 
 		return array(

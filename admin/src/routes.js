@@ -2,8 +2,8 @@
  * Where each Saddle page lives, and where the old in-page addresses went.
  *
  * Saddle's pages are real wp-admin pages under the Saddle menu
- * (`admin.php?page=saddle`, `saddle-connections`, `saddle-settings`, and one
- * per module), with `&tab=` for a tab. The server hands over the list as
+ * (`admin.php?page=saddle`, `saddle-connections`, `saddle-permissions`,
+ * `saddle-context`, `saddle-settings`, and one per module), with `&tab=` for a tab. The server hands over the list as
  * `saddleData.areas`, so the menu and the page can never disagree. These
  * helpers are pure: they take that list and return URLs.
  */
@@ -18,8 +18,8 @@ export const LEGACY = {
 	home: { area: 'home', tab: 'overview' },
 	activity: { area: 'home', tab: 'activity' },
 	connect: { area: 'connections', tab: 'apps' },
-	permissions: { area: 'connections', tab: 'permissions' },
-	integrations: { area: 'connections', tab: 'permissions' },
+	permissions: { area: 'permissions', tab: 'overview' },
+	integrations: { area: 'permissions', tab: 'overview' },
 	guidance: { area: 'context', tab: 'overview' },
 	memory: { area: 'context', tab: 'overview', anchor: 'memory' },
 	settings: { area: 'settings', tab: 'general' },

@@ -52,7 +52,7 @@ const AREAS = saddleData.areas || [];
 const CURRENT = findArea( AREAS, saddleData.area ) ||
 	findArea( AREAS, 'home' ) || {
 		key: 'home',
-		title: __( 'Home', 'saddle' ),
+		title: __( 'Dashboard', 'saddle' ),
 		url: window.location.href,
 		tabs: [ { key: 'overview', label: __( 'Overview', 'saddle' ) } ],
 	};
@@ -489,7 +489,7 @@ export default function App() {
 					tier,
 					paused,
 					rehearsal,
-					href: areaUrl( AREAS, 'connections', 'permissions' ),
+					href: areaUrl( AREAS, 'permissions' ),
 				} }
 				moreNotices={ [ slotNotice, ...bellNotices ].filter( Boolean ) }
 				onDismissNotice={ dismissNotice }
@@ -517,7 +517,7 @@ export default function App() {
 					tier,
 					paused,
 					rehearsal,
-					href: areaUrl( AREAS, 'connections', 'permissions' ),
+					href: areaUrl( AREAS, 'permissions' ),
 				} }
 				notices={ ! wizardOpen }
 				notice={ slotNotice }

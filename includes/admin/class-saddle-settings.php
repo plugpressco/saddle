@@ -67,7 +67,7 @@ class Saddle_Settings {
 	}
 
 	/**
-	 * Keep Connections, Context and Settings last in the Saddle menu.
+	 * Keep Apps, Permissions, Context and Settings last in the Saddle menu.
 	 *
 	 * A sibling that adds its own submenu (Saddle Rank does, at priority 20)
 	 * lands after whatever is already there. The modules belong between Home
@@ -82,7 +82,7 @@ class Saddle_Settings {
 		}
 
 		$areas = Saddle_Modules::areas();
-		$last  = array( $areas['connections']['slug'], $areas['context']['slug'], $areas['settings']['slug'] );
+		$last  = array( $areas['connections']['slug'], $areas['permissions']['slug'], $areas['context']['slug'], $areas['settings']['slug'] );
 		$head  = array();
 		$tail  = array();
 
@@ -97,6 +97,39 @@ class Saddle_Settings {
 
 		ksort( $tail );
 		$submenu[ self::PAGE_SLUG ] = array_merge( $head, array_values( $tail ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Reordering our own menu's items, after every plugin has added to it.
+	}
+
+	/**
+	 * Permissions was a tab of Connections until #285. An old link to it
+	 * (`page=saddle-connections&tab=permissions`) goes to its own page, once,
+	 * before anything is drawn.
+	 */
+	public static function redirect_legacy() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Reading which page was asked for; nothing is changed.
+		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( (string) $_GET['page'] ) ) : '';
+		$tab  = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( (string) $_GET['tab'] ) ) : '';
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		$target = self::legacy_target( $page, $tab );
+		if ( '' !== $target ) {
+			wp_safe_redirect( $target );
+			exit;
+		}
+	}
+
+	/**
+	 * Where an old Saddle admin address now lives, or '' when it is current.
+	 *
+	 * @param string $page `admin.php?page=` value.
+	 * @param string $tab  `&tab=` value.
+	 * @return string
+	 */
+	public static function legacy_target( $page, $tab ) {
+		if ( 'saddle-connections' === $page && 'permissions' === $tab ) {
+			return Saddle_Modules::url( 'permissions' );
+		}
+
+		return '';
 	}
 
 	/**

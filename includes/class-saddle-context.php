@@ -489,7 +489,7 @@ class Saddle_Context {
 			// gets before every single call fails.
 			array_unshift(
 				$lines,
-				'- ' . __( 'SADDLE IS PAUSED. The site owner has switched off all AI access, so every tool below will be refused until they resume it in Saddle → Settings. Tell the user that before attempting anything.', 'saddle' )
+				'- ' . __( 'SADDLE IS PAUSED. The site owner has switched off all AI access, so every tool below will be refused until they resume it in Saddle → Permissions. Tell the user that before attempting anything.', 'saddle' )
 			);
 		}
 

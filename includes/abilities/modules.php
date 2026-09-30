@@ -17,7 +17,7 @@ function saddle_register_module_abilities() {
 		'saddle/list-modules',
 		array(
 			'label'               => __( 'List Saddle pages and modules', 'saddle' ),
-			'description'         => __( 'Lists every page of the owner\'s Saddle admin (Home, Connections, Context, Settings) and every installed Saddle module (for example Analytics), in menu order. Each entry has a one-sentence "summary" you can repeat to the owner, its "state" and status "line" where a module reports one, setup progress with each unfinished task, the "admin_url" of the page and of each tab, how many tools it owns and how many of those you can call now, and which of its settings you may change ("agent_writable"). Use it first when the owner asks what is installed, what is left to set up, or where something lives. When you point the owner somewhere, give them the "admin_url" instead of describing clicks. Read-only. A Saddle module is an add-on plugin with its own page in the Saddle menu, such as Analytics; it is not a Divi module or a block on a page, which the saddle-divi-* and block tools handle.', 'saddle' ),
+			'description'         => __( 'Lists every page of the owner\'s Saddle admin (Dashboard, Apps, Permissions, Context, Settings) and every installed Saddle module (for example Analytics), in menu order. Each entry has a one-sentence "summary" you can repeat to the owner, its "state" and status "line" where a module reports one, setup progress with each unfinished task, the "admin_url" of the page and of each tab, how many tools it owns and how many of those you can call now, and which of its settings you may change ("agent_writable"). Use it first when the owner asks what is installed, what is left to set up, or where something lives. When you point the owner somewhere, give them the "admin_url" instead of describing clicks. Read-only. A Saddle module is an add-on plugin with its own page in the Saddle menu, such as Analytics; it is not a Divi module or a block on a page, which the saddle-divi-* and block tools handle.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -287,12 +287,8 @@ class Saddle_Module_Abilities {
 		foreach ( Saddle_Modules::modules() as $module ) {
 			$pages[] = $module['title'];
 		}
-		$pages[] = sprintf(
-			/* translators: 1: page name, 2: tab names. */
-			__( '%1$s (%2$s tabs)', 'saddle' ),
-			$areas['connections']['title'],
-			implode( ', ', $areas['connections']['tabs'] )
-		);
+		$pages[] = $areas['connections']['title'];
+		$pages[] = $areas['permissions']['title'];
 		$pages[] = $areas['context']['title'];
 		$pages[] = $areas['settings']['title'];
 

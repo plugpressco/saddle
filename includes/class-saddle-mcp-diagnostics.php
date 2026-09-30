@@ -562,8 +562,8 @@ class Saddle_MCP_Diagnostics {
 						? __( 'The web server drops the Authorization header before WordPress sees it, so apps that connect with a key are refused.', 'saddle' )
 						: __( 'The web server drops Bearer sign-ins, so apps that connect through OAuth (such as ChatGPT) are refused even though pasted-key apps work.', 'saddle' ),
 					'fix'     => $probe['htaccess_fixable']
-						? __( 'Saddle → Settings → Connection check can add the fix to .htaccess in one click.', 'saddle' )
-						: __( 'Ask the host to forward the Authorization header to PHP. Saddle → Settings → Connection check shows the exact rule.', 'saddle' ),
+						? __( 'Saddle → Apps → Connection details can add the fix to .htaccess in one click.', 'saddle' )
+						: __( 'Ask the host to forward the Authorization header to PHP. Saddle → Apps → Connection details shows the exact rule.', 'saddle' ),
 				);
 			}
 		} else {

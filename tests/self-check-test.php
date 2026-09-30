@@ -117,7 +117,7 @@ class Saddle_Self_Check_Test extends WP_UnitTestCase {
 		$this->assertSame( 'attention', $result['status'] );
 		$this->assertContains( 'bearer_header_stripped', $this->codes( $result ) );
 		$problem = $result['problems'][ array_search( 'bearer_header_stripped', $this->codes( $result ), true ) ];
-		$this->assertStringContainsString( 'Connection check', $problem['fix'] );
+		$this->assertStringContainsString( 'Connection details', $problem['fix'] );
 	}
 
 	/**

@@ -62,7 +62,7 @@ class Saddle_Modules_REST_Test extends WP_UnitTestCase {
 
 		$this->assertSame( 200, $response->get_status() );
 		$areas = $response->get_data()['areas'];
-		$this->assertSame( array( 'home', 'broken', 'demo', 'connections', 'context', 'settings' ), wp_list_pluck( $areas, 'key' ) );
+		$this->assertSame( array( 'home', 'broken', 'demo', 'connections', 'permissions', 'context', 'settings' ), wp_list_pluck( $areas, 'key' ) );
 	}
 
 	public function test_a_module_area_has_the_documented_shape() {
@@ -101,7 +101,7 @@ class Saddle_Modules_REST_Test extends WP_UnitTestCase {
 	public function test_core_areas_say_nothing_of_state_or_setup() {
 		$areas = array_column( $this->call( 'GET', '/modules' )->get_data()['areas'], null, 'key' );
 
-		foreach ( array( 'home', 'connections', 'context', 'settings' ) as $key ) {
+		foreach ( array( 'home', 'connections', 'permissions', 'context', 'settings' ) as $key ) {
 			$this->assertSame( 'core', $areas[ $key ]['kind'], $key );
 			$this->assertNull( $areas[ $key ]['state'], $key );
 			$this->assertNull( $areas[ $key ]['setup'], $key );

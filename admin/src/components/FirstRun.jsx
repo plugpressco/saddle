@@ -392,7 +392,7 @@ function Choose( { app, tier, siteName, onTierSaved, onFinish } ) {
 				</div>
 				<p className="saddle-first-run__foot">
 					{ __(
-						'Skills and instructions live in Context. Each module has its own page in the Saddle menu.',
+						'Skills and instructions live on the Context page. Each module has its own page in the Saddle menu.',
 						'saddle'
 					) }
 				</p>

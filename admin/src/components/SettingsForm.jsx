@@ -402,11 +402,7 @@ export default function SettingsForm( { scope, screen } ) {
 	);
 
 	const writable = agentWritableLabels( shown );
-	const permissionsUrl = areaUrl(
-		saddleData.areas || [],
-		'connections',
-		'permissions'
-	);
+	const permissionsUrl = areaUrl( saddleData.areas || [], 'permissions' );
 
 	return (
 		<div className="saddle-settings-form" data-scope={ scope }>
@@ -448,7 +444,7 @@ export default function SettingsForm( { scope, screen } ) {
 						<>
 							{ ' ' }
 							<a href={ permissionsUrl }>
-								{ __( 'Connections → Permissions', 'saddle' ) }
+								{ __( 'Permissions', 'saddle' ) }
 							</a>
 						</>
 					) }

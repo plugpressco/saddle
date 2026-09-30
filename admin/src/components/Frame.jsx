@@ -47,7 +47,7 @@ const DOT_TONES = {
  * @param {string}  props.tier
  * @param {boolean} props.paused
  * @param {boolean} props.rehearsal
- * @param {string}  props.href      Connections → Permissions.
+ * @param {string}  props.href      The Permissions page.
  */
 function StatusPill( { tier, paused, rehearsal, href } ) {
 	const level = levelFor( tier );
@@ -58,7 +58,7 @@ function StatusPill( { tier, paused, rehearsal, href } ) {
 	return (
 		<Tooltip
 			content={ __(
-				'Change this in Connections → Permissions',
+				'Change this on the Permissions page',
 				'saddle'
 			) }
 		>

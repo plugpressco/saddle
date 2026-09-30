@@ -54,7 +54,7 @@ function stopsFor( activityLabel ) {
 				visible( document.getElementById( 'toplevel_page_saddle' ) ),
 			title: __( 'Everything else is in the Saddle menu', 'saddle' ),
 			description: __(
-				'Your modules, Connections, Context and Settings are all here.',
+				'Your modules, Apps, Permissions, Context and Settings are all here.',
 				'saddle'
 			),
 			side: 'right',

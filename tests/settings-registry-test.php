@@ -246,7 +246,7 @@ class Saddle_Settings_Registry_Test extends WP_UnitTestCase {
 		$body   = Saddle_Settings_View::describe( 'saddle', Saddle_Settings_Registry::schema( 'saddle' ) );
 		$by_key = array_column( $body['fields'], null, 'key' );
 
-		$this->assertStringContainsString( 'page=saddle-connections&tab=permissions#saddle-field-saddle-tier', $by_key['tier']['admin_url'] );
+		$this->assertStringContainsString( 'page=saddle-permissions#saddle-field-saddle-tier', $by_key['tier']['admin_url'] );
 		$this->assertStringContainsString( 'page=saddle-connections#saddle-field-saddle-oauth_enabled', $by_key['oauth_enabled']['admin_url'] );
 		$this->assertStringContainsString( 'page=saddle-context#saddle-field-saddle-memory_autoinject_agent', $by_key['memory_autoinject_agent']['admin_url'] );
 		$this->assertStringContainsString( 'page=saddle-settings#saddle-field-saddle-memory_recent_limit', $by_key['memory_recent_limit']['admin_url'] );

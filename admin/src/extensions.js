@@ -44,9 +44,9 @@
  * - `saddle.admin.screens` — a module's content for one of its tabs:
  *   `{ module: 'analytics', tab: 'overview', Component }`. The Component gets
  *   `{ ui, kit, module, tab, navigate, api, shellVersion }`.
- * - `saddle.admin.homeCards` — a card on Home → Overview: `{ id, order,
+ * - `saddle.admin.homeCards` — a card on Dashboard → Overview: `{ id, order,
  *   Component }`.
- * - `saddle.admin.connectionCards` — a card on Connections → Apps.
+ * - `saddle.admin.connectionCards` — a card on the Apps page.
  * - `kit.SettingsForm` (feature `settings-form`): `<SettingsForm scope="key" />`
  *   draws a module's settings from its schema. Core mounts it on a module's
  *   Settings tab on its own; a module only needs it inside its own screen.
@@ -245,7 +245,7 @@ export function collectScreens() {
 }
 
 /**
- * Cards contributed to Home → Overview or Connections → Apps.
+ * Cards contributed to Dashboard → Overview or the Apps page.
  *
  * @param {string} where `home` or `connections`.
  * @return {Array} Entries of shape { id, order, Component }.

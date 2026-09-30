@@ -300,7 +300,7 @@ export default function Screen( props ) {
 				/>
 			);
 
-		case 'connections/permissions':
+		case 'permissions/overview':
 			return (
 				<>
 					<Permissions

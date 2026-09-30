@@ -92,8 +92,9 @@ class Saddle_Modules_View {
 
 		$core = array(
 			'home'        => __( 'What your connected apps have been doing, and what is left to set up.', 'saddle' ),
-			'connections' => __( 'Connect apps, and choose what they are allowed to do.', 'saddle' ),
-			'context'     => __( 'What every connected app knows about this site: your instructions, skills and memory.', 'saddle' ),
+			'connections' => __( 'The AI apps connected to this site, and how to connect another.', 'saddle' ),
+			'permissions' => __( 'What connected apps are allowed to do: the access level, safety switches and tools.', 'saddle' ),
+			'context'     => __( 'What every connected app should know about this site: your instructions, skills and memory.', 'saddle' ),
 			'settings'    => __( 'Memory limits, recent changes and the site address check.', 'saddle' ),
 		);
 
