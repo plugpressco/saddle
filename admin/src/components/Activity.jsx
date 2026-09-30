@@ -3,7 +3,8 @@
  *
  * Every executed change and every blocked attempt, newest first, grouped by
  * day. Filterable to just changes or just blocked attempts; pages in with
- * "Show more". Reads are never logged (see Saddle_Log), and the page says so.
+ * "Show more". Reads are never logged (see Saddle_Log); a tip beside the
+ * filters says so.
  */
 import { useState, useEffect, useCallback } from '@wordpress/element';
 import {
@@ -13,6 +14,7 @@ import {
 	FilterTabs,
 	EmptyState,
 	Badge,
+	HelpTip,
 } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { api } from '../api';
@@ -88,6 +90,12 @@ export default function Activity() {
 					value={ filter }
 					onChange={ pickFilter }
 				/>
+				<HelpTip>
+					{ __(
+						'Reading is never logged; only changes are.',
+						'saddle'
+					) }
+				</HelpTip>
 				{ total > 0 && (
 					<span className="saddle-activity__total">
 						{ sprintf(

@@ -12,7 +12,6 @@ import {
 	Button,
 	Spinner,
 	Card,
-	CardHeader,
 	CardContent,
 	Collapsible,
 	Drawer,
@@ -21,6 +20,7 @@ import {
 	Textarea,
 	Switch,
 	CodeBlock,
+	HelpTip,
 	RowList,
 	Row,
 	useConfirm,
@@ -119,14 +119,20 @@ export default function Memory( { onChanged } ) {
 	const agentCount = entries.filter( ( e ) => e.source !== 'owner' ).length;
 
 	return (
-		<div className="saddle-memory">
+		<section className="saddle-section saddle-memory">
 			<SectionHeader
 				id="memory"
-				title={ __( 'Memory', 'saddle' ) }
-				description={ __(
-					'Things worth knowing between sessions — saved by you here, or noted by your AI as it works.',
-					'saddle'
-				) }
+				title={
+					<span className="saddle-memory__title">
+						{ __( 'Memory', 'saddle' ) }
+						<HelpTip>
+							{ __(
+								'Things worth knowing between sessions, saved by you here or noted by your AI as it works. Pin an entry so every session is told it; your own notes are told to every session automatically.',
+								'saddle'
+							) }
+						</HelpTip>
+					</span>
+				}
 				actions={
 					<Button
 						variant="secondary"
@@ -138,130 +144,105 @@ export default function Memory( { onChanged } ) {
 				}
 			/>
 
-			<Card>
-				<CardHeader
-					title={ __( 'Memories', 'saddle' ) }
-					description={ __(
-						'Every entry with its provenance — yours, or written by an AI. Pin an entry so every session is told it.',
-						'saddle'
-					) }
-				/>
-				<CardContent>
-					{ entries.length === 0 && (
+			{ entries.length === 0 && (
+				<Card>
+					<CardContent>
 						<p className="saddle-memory__empty">
-							{ __(
-								'Nothing remembered yet — add the first note below, or let your AI save things as it works.',
-								'saddle'
-							) }
+							{ __( 'Nothing remembered yet.', 'saddle' ) }
 						</p>
-					) }
-					{ entries.length > 0 && (
-						<RowList className="saddle-rows">
-							{ entries.map( ( entry ) => (
-								<div key={ entry.key }>
-									<Row
-										title={ entry.key }
-										description={
-											( entry.source === 'owner'
-												? __( 'You', 'saddle' )
-												: sprintf(
-														/* translators: %s: client name. */
-														__(
-															'AI · %s',
-															'saddle'
-														),
-														entry.client ||
-															__(
-																'unknown',
-																'saddle'
-															)
-												  ) ) +
-											' · ' +
-											entry.type +
-											( entry.pinned
-												? ' · ' +
-												  __( 'pinned', 'saddle' )
-												: '' )
-										}
-										actions={
-											<>
-												<Switch
-													checked={ entry.pinned }
-													onChange={ () =>
-														call(
-															`memory/${ entry.key }`,
-															{
-																method: 'POST',
-																data: {
-																	pinned: ! entry.pinned,
-																},
-															}
-														)
-													}
-													aria-label={ sprintf(
-														/* translators: %s: entry key. */
-														__(
-															'Pin “%s” so every session is told it',
-															'saddle'
-														),
-														entry.key
-													) }
-												/>
-												<Button
-													variant="link"
-													onClick={ () =>
-														setOpenKey(
-															openKey ===
-																entry.key
-																? null
-																: entry.key
-														)
-													}
-												>
-													{ openKey === entry.key
-														? __( 'Hide', 'saddle' )
-														: __(
-																'View',
-																'saddle'
-														  ) }
-												</Button>
-												<Button
-													variant="link"
-													className="saddle-link-danger"
-													onClick={ () =>
-														forgetEntry( entry )
-													}
-												>
-													{ __( 'Delete', 'saddle' ) }
-												</Button>
-											</>
-										}
-									/>
-									{ openKey === entry.key && (
-										<CodeBlock
-											className="saddle-rows__body"
-											code={ entry.text }
-											copy={ false }
+					</CardContent>
+				</Card>
+			) }
+
+			{ entries.length > 0 && (
+				<RowList>
+					{ entries.map( ( entry ) => (
+						<div key={ entry.key }>
+							<Row
+								title={ entry.key }
+								description={
+									( entry.source === 'owner'
+										? __( 'You', 'saddle' )
+										: sprintf(
+												/* translators: %s: client name. */
+												__( 'AI · %s', 'saddle' ),
+												entry.client ||
+													__( 'unknown', 'saddle' )
+										  ) ) +
+									' · ' +
+									entry.type +
+									( entry.pinned
+										? ' · ' + __( 'pinned', 'saddle' )
+										: '' )
+								}
+								actions={
+									<>
+										<Switch
+											checked={ entry.pinned }
+											onChange={ () =>
+												call( `memory/${ entry.key }`, {
+													method: 'POST',
+													data: {
+														pinned: ! entry.pinned,
+													},
+												} )
+											}
+											aria-label={ sprintf(
+												/* translators: %s: entry key. */
+												__(
+													'Pin “%s” so every session is told it',
+													'saddle'
+												),
+												entry.key
+											) }
 										/>
-									) }
-								</div>
-							) ) }
-						</RowList>
-					) }
-				</CardContent>
-			</Card>
+										<Button
+											variant="link"
+											onClick={ () =>
+												setOpenKey(
+													openKey === entry.key
+														? null
+														: entry.key
+												)
+											}
+										>
+											{ openKey === entry.key
+												? __( 'Hide', 'saddle' )
+												: __( 'View', 'saddle' ) }
+										</Button>
+										<Button
+											variant="link"
+											className="saddle-link-danger"
+											onClick={ () =>
+												forgetEntry( entry )
+											}
+										>
+											{ __( 'Delete', 'saddle' ) }
+										</Button>
+									</>
+								}
+							/>
+							{ openKey === entry.key && (
+								<CodeBlock
+									className="saddle-rows__body"
+									code={ entry.text }
+									copy={ false }
+								/>
+							) }
+						</div>
+					) ) }
+				</RowList>
+			) }
 
 			<Card>
-				<CardHeader
-					title={ __( 'Add something to remember', 'saddle' ) }
-					description={ __(
-						'Your own notes are told to every session automatically.',
-						'saddle'
-					) }
-				/>
 				<CardContent>
 					<div className="saddle-memory__compose">
-						<Field label={ __( 'What to remember', 'saddle' ) }>
+						<Field
+							label={ __(
+								'Add something to remember',
+								'saddle'
+							) }
+						>
 							{ ( a11y ) => (
 								<Textarea
 									{ ...a11y }
@@ -312,13 +293,6 @@ export default function Memory( { onChanged } ) {
 
 			{ settings && (
 				<Card>
-					<CardHeader
-						title={ __( 'AI-written memory', 'saddle' ) }
-						description={ __(
-							'Entries an AI saved on its own are only found when it searches — unless you pin them, or turn this on.',
-							'saddle'
-						) }
-					/>
 					<CardContent>
 						<div className="saddle-guide__actions saddle-guide__actions--stack">
 							<label
@@ -341,10 +315,16 @@ export default function Memory( { onChanged } ) {
 								/>
 								<span>
 									{ __(
-										'Auto-include AI-written memory (off is safest — pin entries instead)',
+										'Auto-include AI-written memory',
 										'saddle'
 									) }
 								</span>
+								<HelpTip>
+									{ __(
+										'Entries an AI saved on its own are only found when it searches, unless you pin them or turn this on. Off is safest: pin entries instead.',
+										'saddle'
+									) }
+								</HelpTip>
 							</label>
 							{ agentCount > 0 && (
 								<Button
@@ -366,26 +346,18 @@ export default function Memory( { onChanged } ) {
 			) }
 
 			{ preview !== '' && (
-				<Card>
-					<CardHeader
-						title={ __( 'What every session is told', 'saddle' ) }
-						description={ __(
-							'The exact memory block a new AI session starts with.',
-							'saddle'
-						) }
+				<Collapsible
+					trigger={ __(
+						'Show what every session is told about memory',
+						'saddle'
+					) }
+				>
+					<CodeBlock
+						className="saddle-guide__system"
+						code={ preview }
+						copy={ false }
 					/>
-					<CardContent>
-						<Collapsible
-							trigger={ __( 'Show the exact text', 'saddle' ) }
-						>
-							<CodeBlock
-								className="saddle-guide__system"
-								code={ preview }
-								copy={ false }
-							/>
-						</Collapsible>
-					</CardContent>
-				</Card>
+				</Collapsible>
 			) }
 
 			<Drawer
@@ -444,6 +416,6 @@ export default function Memory( { onChanged } ) {
 					</p>
 				</div>
 			</Drawer>
-		</div>
+		</section>
 	);
 }

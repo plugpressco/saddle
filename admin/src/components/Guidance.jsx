@@ -9,7 +9,8 @@
  *  - Skills — playbook files (.md) you install; every app sees the list and
  *    reads one when a task matches.
  *  - Memory — what the apps noted as they worked, and what you pinned.
- *  - What Saddle tells every app automatically, from the site itself.
+ *  - What apps see — what Saddle tells every app automatically, from the
+ *    site itself (collapsed).
  */
 import { useState, useEffect, useRef } from '@wordpress/element';
 import {
@@ -103,8 +104,8 @@ function renderContext( text ) {
 }
 
 /**
- * One field of the context sheet: its name, whether anything is written, a
- * line on what belongs there, and an example as the placeholder.
+ * One field of the context sheet: its name, a line on what belongs there, and
+ * an example as the placeholder. "Not saved" shows only while it is true.
  *
  * @param {Object}   props
  * @param {Object}   props.field    From FIELDS.
@@ -114,19 +115,18 @@ function renderContext( text ) {
  */
 function ContextField( { field, value, saved, onChange } ) {
 	const id = `saddle-field-context-${ field.key }`;
-	let state = __( 'Empty', 'saddle' );
-	if ( value !== saved ) {
-		state = __( 'Not saved', 'saddle' );
-	} else if ( saved.trim() ) {
-		state = __( 'Saved', 'saddle' );
-	}
+	const unsaved = value !== saved;
 	return (
 		<div className="saddle-context-field">
 			<div className="saddle-context-field__head">
 				<label htmlFor={ id } className="saddle-context-field__label">
 					{ field.label }
 				</label>
-				<span className="saddle-context-field__state">{ state }</span>
+				{ unsaved && (
+					<span className="saddle-context-field__state">
+						{ __( 'Not saved', 'saddle' ) }
+					</span>
+				) }
 			</div>
 			<p className="saddle-context-field__hint">{ field.hint }</p>
 			<Textarea
@@ -247,50 +247,45 @@ export default function Guidance() {
 	const dirty = FIELDS.some(
 		( f ) => fields[ f.key ] !== savedFields[ f.key ]
 	);
-	const empty = FIELDS.every( ( f ) => ! savedFields[ f.key ].trim() );
 
 	return (
 		<div className="saddle-guide saddle-context">
 			{ loadError && <Notice tone="danger">{ loadError }</Notice> }
 
-			{ empty && (
-				<p className="saddle-context__empty">
-					{ __(
-						'Nothing written down yet. Fill in what you can, or ask your AI to look around the site and draft these for you to paste in.',
-						'saddle'
-					) }
-				</p>
-			) }
-
-			<section className="saddle-context__fields">
-				{ FIELDS.map( ( field ) => (
-					<ContextField
-						key={ field.key }
-						field={ field }
-						value={ fields[ field.key ] }
-						saved={ savedFields[ field.key ] }
-						onChange={ ( text ) =>
-							setFields( ( prev ) => ( {
-								...prev,
-								[ field.key ]: text,
-							} ) )
-						}
-					/>
-				) ) }
-				<div className="saddle-guide__actions">
-					<Button
-						variant="primary"
-						onClick={ save }
-						loading={ saving }
-						disabled={ saving || ! dirty }
-					>
-						{ __( 'Save changes', 'saddle' ) }
-					</Button>
-				</div>
+			<section className="saddle-section">
+				<SectionHeader title={ __( 'Instructions', 'saddle' ) } />
+				<Card>
+					<CardContent className="saddle-context__fields">
+						{ FIELDS.map( ( field ) => (
+							<ContextField
+								key={ field.key }
+								field={ field }
+								value={ fields[ field.key ] }
+								saved={ savedFields[ field.key ] }
+								onChange={ ( text ) =>
+									setFields( ( prev ) => ( {
+										...prev,
+										[ field.key ]: text,
+									} ) )
+								}
+							/>
+						) ) }
+						<div className="saddle-guide__actions">
+							<Button
+								variant="primary"
+								onClick={ save }
+								loading={ saving }
+								disabled={ saving || ! dirty }
+							>
+								{ __( 'Save changes', 'saddle' ) }
+							</Button>
+						</div>
+					</CardContent>
+				</Card>
 			</section>
 
 			{ /* Skills — named playbooks agents load on demand */ }
-			<section className="saddle-stack">
+			<section className="saddle-section">
 				<SectionHeader
 					title={
 						<Heading
@@ -302,10 +297,6 @@ export default function Guidance() {
 							{ __( 'Skills', 'saddle' ) }
 						</Heading>
 					}
-					description={ __(
-						'Step-by-step playbooks for jobs you want done the same way every time.',
-						'saddle'
-					) }
 					actions={
 						<Button
 							variant="secondary"
@@ -328,7 +319,7 @@ export default function Guidance() {
 						} }
 					/>
 					{ skills.length > 0 ? (
-						<RowList className="saddle-rows">
+						<RowList>
 							{ skills.map( ( skill ) => (
 								<Row
 									key={ skill.name }
@@ -389,11 +380,8 @@ export default function Guidance() {
 							) ) }
 						</RowList>
 					) : (
-						<p className="saddle-card__empty">
-							{ __(
-								'No skills yet. Add a .md playbook to teach your AI a repeatable job.',
-								'saddle'
-							) }
+						<p className="saddle-context__empty">
+							{ __( 'No skills yet.', 'saddle' ) }
 						</p>
 					) }
 				</div>
@@ -404,59 +392,43 @@ export default function Guidance() {
 			{ /* Read-only, written by Saddle from the site itself — last, and
 			     collapsed, because the owner corrects the parts above and only
 			     reads this one. */ }
-			<section className="saddle-stack">
+			<section className="saddle-section">
 				<SectionHeader
 					title={
 						<Heading
 							help={ __(
-								'Saddle writes this from your site and its active plugins and keeps it current. It’s shown for transparency — you don’t edit it here.',
+								'Saddle writes this from your site and its active plugins and keeps it current: its pages, design, plugins and what each app may do. It’s shown for transparency; you don’t edit it here.',
 								'saddle'
 							) }
 						>
-							{ __( 'What Saddle tells every app', 'saddle' ) }
+							{ __( 'What apps see', 'saddle' ) }
 						</Heading>
 					}
-					description={ __(
-						'Written from the site itself and kept current: its pages, design, plugins and what each app may do.',
-						'saddle'
-					) }
-					actions={
-						<Badge>
-							{ __( 'Automatic · read-only', 'saddle' ) }
-						</Badge>
-					}
 				/>
-				<Card>
-					<CardContent>
-						<Collapsible
-							className="saddle-guide__reveal"
-							trigger={ __(
-								'Show what your AI is told',
-								'saddle'
-							) }
-						>
-							{ showRaw ? (
-								<CodeBlock
-									className="saddle-guide__system"
-									code={ system }
-								/>
-							) : (
-								<div className="saddle-doc saddle-guide__system">
-									{ renderContext( system ) }
-								</div>
-							) }
-							<Button
-								variant="link"
-								className="saddle-guide__rawtoggle"
-								onClick={ () => setShowRaw( ( v ) => ! v ) }
-							>
-								{ showRaw
-									? __( 'Show readable view', 'saddle' )
-									: __( 'View exact text', 'saddle' ) }
-							</Button>
-						</Collapsible>
-					</CardContent>
-				</Card>
+				<Collapsible
+					className="saddle-guide__reveal"
+					trigger={ __( 'Show what your AI is told', 'saddle' ) }
+				>
+					{ showRaw ? (
+						<CodeBlock
+							className="saddle-guide__system"
+							code={ system }
+						/>
+					) : (
+						<div className="saddle-doc saddle-guide__system">
+							{ renderContext( system ) }
+						</div>
+					) }
+					<Button
+						variant="link"
+						className="saddle-guide__rawtoggle"
+						onClick={ () => setShowRaw( ( v ) => ! v ) }
+					>
+						{ showRaw
+							? __( 'Show readable view', 'saddle' )
+							: __( 'View exact text', 'saddle' ) }
+					</Button>
+				</Collapsible>
 			</section>
 
 			{ /* One slide-over shows the full playbook for whichever skill the

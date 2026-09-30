@@ -17,8 +17,11 @@ import { useState, useEffect, useRef } from '@wordpress/element';
 import {
 	Badge,
 	Button,
+	Card,
+	CardContent,
 	CodeBlock,
 	CopyButton,
+	HelpTip,
 	Notice,
 	StatusDot,
 } from '@plugpress/ui';
@@ -26,6 +29,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import { api } from '../api';
 import { APPS, MCP_URL, buildConfig, installLinks } from '../connect-apps';
 import { AppLogo } from './icons';
+import SectionHeader from './SectionHeader';
 
 // A site on this computer: web apps (their servers) cannot reach it.
 const IS_LOCAL = /(?:localhost|127\.0\.0\.1|\.test|\.local)(?::|\/|$)/i.test(
@@ -167,11 +171,17 @@ export default function ConnectApps( { oauth, onKey, onConnected } ) {
 	const links = byAddress ? installLinks( app.key, null, 'address' ) : [];
 
 	return (
-		<div className="saddle-connect" id="saddle-connect">
-			<div className="saddle-connect__intro">
-				<div className="saddle-connect__intro-text">
-					<h2 className="saddle-connect__title">
-						{ __( 'Work on this site from your AI app', 'saddle' ) }
+		<section className="saddle-section saddle-connect" id="saddle-connect">
+			<SectionHeader
+				title={
+					<span className="saddle-connect__title">
+						{ __( 'Connect an app', 'saddle' ) }
+						<HelpTip>
+							{ __(
+								'Claude, ChatGPT, Cursor and other AI apps connect with this site’s own address, and you approve each one here. Nothing goes through anyone else’s server.',
+								'saddle'
+							) }
+						</HelpTip>
 						{ count > 0 ? (
 							<Badge tone="success">
 								{ sprintf(
@@ -183,42 +193,31 @@ export default function ConnectApps( { oauth, onKey, onConnected } ) {
 						) : (
 							<Badge>{ __( 'Not connected', 'saddle' ) }</Badge>
 						) }
-					</h2>
-					<p className="saddle-connect__lede">
-						{ __(
-							'Claude, ChatGPT, Cursor and other AI apps connect with this site’s own address, and you approve each one here. Nothing goes through anyone else’s server.',
-							'saddle'
-						) }
-					</p>
-				</div>
-				<div className="saddle-connect__logos" aria-hidden="true">
-					{ [ 'claude', 'chatgpt', 'cursor' ].map( ( key ) => (
-						<span key={ key } className="saddle-connect__logo">
-							<AppLogo app={ key } />
-						</span>
-					) ) }
-				</div>
-			</div>
+					</span>
+				}
+			/>
 
-			<div className="saddle-connect__address">
-				<span className="saddle-connect__label">
-					{ __( 'This site’s MCP address', 'saddle' ) }
-				</span>
-				<div className="saddle-connect__url">
-					<code>{ MCP_URL }</code>
-					<CopyButton
-						value={ MCP_URL }
-						size="sm"
-						variant="secondary"
-					/>
-				</div>
-			</div>
+			<Card>
+				<CardContent className="saddle-connect__address">
+					<span className="saddle-connect__label">
+						{ __( 'This site’s MCP address', 'saddle' ) }
+					</span>
+					<div className="saddle-connect__url">
+						<code>{ MCP_URL }</code>
+						<CopyButton
+							value={ MCP_URL }
+							size="sm"
+							variant="secondary"
+						/>
+					</div>
+				</CardContent>
+			</Card>
 
 			{ oauth && ! signInOn && (
 				<Notice tone="info">
 					{ oauth.ready
 						? __(
-								'To connect with the address alone, turn on sign-in for apps (below, under your connected apps). Each app then opens a screen here where you approve it. Until then, apps connect with a key.',
+								'Sign-in for apps is off, so apps connect with a key. Turn it on to connect with the address alone.',
 								'saddle'
 						  )
 						: __(
@@ -411,6 +410,6 @@ export default function ConnectApps( { oauth, onKey, onConnected } ) {
 					) }
 				</div>
 			</div>
-		</div>
+		</section>
 	);
 }

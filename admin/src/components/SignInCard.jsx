@@ -5,17 +5,10 @@
  * switches all sit here; nothing else on the page flips them.
  */
 import { useState, useEffect, useCallback } from '@wordpress/element';
-import {
-	Card,
-	CardHeader,
-	CardContent,
-	Switch,
-	RowList,
-	Row,
-	Badge,
-} from '@plugpress/ui';
+import { Switch, RowList, Row, Badge, HelpTip } from '@plugpress/ui';
 import { __ } from '@wordpress/i18n';
 import { api } from '../api';
+import SectionHeader from './SectionHeader';
 
 /**
  * The state behind the card, shared with the Apps tab so the hint above the
@@ -96,6 +89,20 @@ const DISCOVERY_BADGE = ( state ) => {
 };
 
 /**
+ * A row label with its long explanation behind a "?".
+ *
+ * @param {Object} props
+ * @param {*}      props.children The label.
+ * @param {*}      props.help     The explanation.
+ */
+const Labelled = ( { children, help } ) => (
+	<span className="saddle-signin__label">
+		{ children }
+		<HelpTip>{ help }</HelpTip>
+	</span>
+);
+
+/**
  * @param {Object}   props
  * @param {Object}   props.oauth  The settings from useOauthSettings().
  * @param {boolean}  props.saving Whether a save is running.
@@ -103,64 +110,62 @@ const DISCOVERY_BADGE = ( state ) => {
  * @param {Function} props.save   Saves `{ enabled, dcr, cimd }` changes.
  */
 export default function SignInCard( { oauth, saving, error, save } ) {
-	return (
-		<Card id="saddle-signin">
-			<CardHeader
-				title={ __( 'Sign-in for apps', 'saddle' ) }
-				description={ __(
-					'With this on, an app needs only this site’s address: it opens your browser and you approve it here, the same way “Sign in with Google” works. Claude, ChatGPT, Claude Code, Codex, Cursor, VS Code and Gemini CLI all connect this way, and ChatGPT can connect no other way. Off by default; pasted keys keep working either way.',
+	let state = __( 'Off', 'saddle' );
+	if ( oauth && ! oauth.ready ) {
+		state = oauth.permalinks
+			? __( 'Needs HTTPS first.', 'saddle' )
+			: __(
+					'Needs pretty permalinks: Settings → Permalinks, anything but Plain.',
 					'saddle'
-				) }
-			/>
-			<CardContent>
-				{ oauth && ! oauth.ready && (
-					<p className="saddle-settings__note">
-						{ oauth.permalinks
-							? __(
-									'This needs your site to be served over HTTPS first — a sign-in token sent over plain HTTP can be read in transit.',
-									'saddle'
-							  )
-							: __(
-									'This needs pretty permalinks. Go to Settings → Permalinks, choose anything other than Plain, and come back.',
-									'saddle'
-							  ) }
-					</p>
-				) }
+			  );
+	} else if ( oauth?.enabled ) {
+		state = __( 'On. You approve each app.', 'saddle' );
+	}
 
-				<label
-					className="saddle-toggle-row"
-					htmlFor="saddle-oauth-switch"
-				>
-					<Switch
-						id="saddle-oauth-switch"
-						checked={ !! oauth?.enabled }
-						disabled={ ! oauth || ! oauth.ready || saving }
-						onChange={ () => save( { enabled: ! oauth.enabled } ) }
-						aria-label={ __(
-							'Allow apps to sign in with your WordPress account',
+	return (
+		<section className="saddle-section" id="saddle-signin">
+			<SectionHeader
+				title={
+					<Labelled
+						help={ __(
+							'With this on, an app needs only this site’s address: it opens your browser and you approve it here, the same way “Sign in with Google” works. Claude, ChatGPT, Claude Code, Codex, Cursor, VS Code and Gemini CLI all connect this way, and ChatGPT can connect no other way. Off by default; pasted keys keep working either way.',
 							'saddle'
 						) }
-					/>
-					<span>
-						{ oauth?.enabled
-							? __(
-									'On — apps can ask to connect by address. You approve each one.',
-									'saddle'
-							  )
-							: __(
-									'Off — no app can start a sign-in, and nothing is published for them to find.',
-									'saddle'
-							  ) }
-					</span>
-				</label>
+					>
+						{ __( 'Sign-in for apps', 'saddle' ) }
+					</Labelled>
+				}
+			/>
 
-				{ error && <p className="saddle-settings__note">{ error }</p> }
-
+			<RowList>
+				<Row
+					title={ __( 'Let apps sign in', 'saddle' ) }
+					description={ state }
+					actions={
+						<Switch
+							id="saddle-oauth-switch"
+							checked={ !! oauth?.enabled }
+							disabled={ ! oauth || ! oauth.ready || saving }
+							onChange={ () =>
+								save( { enabled: ! oauth.enabled } )
+							}
+							aria-label={ __(
+								'Allow apps to sign in with your WordPress account',
+								'saddle'
+							) }
+						/>
+					}
+				/>
 				{ oauth?.enabled && (
-					<RowList>
+					<>
 						<Row
-							title={ __( 'Discoverable', 'saddle' ) }
-							description={ DISCOVERY_NOTE( oauth.discovery ) }
+							title={
+								<Labelled
+									help={ DISCOVERY_NOTE( oauth.discovery ) }
+								>
+									{ __( 'Discoverable', 'saddle' ) }
+								</Labelled>
+							}
 							actions={
 								<Badge
 									tone={
@@ -174,14 +179,19 @@ export default function SignInCard( { oauth, saving, error, save } ) {
 							}
 						/>
 						<Row
-							title={ __(
-								'Let apps register themselves',
-								'saddle'
-							) }
-							description={ __(
-								'Needed to connect by address. An app that registers still cannot do anything until you approve it on screen.',
-								'saddle'
-							) }
+							title={
+								<Labelled
+									help={ __(
+										'Needed to connect by address. An app that registers still cannot do anything until you approve it on screen.',
+										'saddle'
+									) }
+								>
+									{ __(
+										'Let apps register themselves',
+										'saddle'
+									) }
+								</Labelled>
+							}
 							actions={
 								<Switch
 									checked={ !! oauth.dcr }
@@ -197,11 +207,16 @@ export default function SignInCard( { oauth, saving, error, save } ) {
 							}
 						/>
 						<Row
-							title={ __( 'Check app identity', 'saddle' ) }
-							description={ __(
-								'When an app identifies itself by web address, Saddle fetches that address to confirm it vouches for the app. Turning this off means every app shows as unverified.',
-								'saddle'
-							) }
+							title={
+								<Labelled
+									help={ __(
+										'When an app identifies itself by web address, Saddle fetches that address to confirm it vouches for the app. Turning this off means every app shows as unverified.',
+										'saddle'
+									) }
+								>
+									{ __( 'Check app identity', 'saddle' ) }
+								</Labelled>
+							}
 							actions={
 								<Switch
 									checked={ !! oauth.cimd }
@@ -216,9 +231,11 @@ export default function SignInCard( { oauth, saving, error, save } ) {
 								/>
 							}
 						/>
-					</RowList>
+					</>
 				) }
-			</CardContent>
-		</Card>
+			</RowList>
+
+			{ error && <p className="saddle-settings__note">{ error }</p> }
+		</section>
 	);
 }

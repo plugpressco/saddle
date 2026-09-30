@@ -2,9 +2,9 @@
  * Connect tab — the steady state.
  *
  * A list of connected apps you can trust at a glance (what's connected, when it
- * last talked to the site, from where) plus one clear action: Connect an app,
- * which opens the guided wizard. The endpoint test and server health checks
- * live behind a disclosure — they're for troubleshooting, not for every visit.
+ * last talked to the site, from where). The endpoint test and server health
+ * checks are their own collapsed section at the bottom of the page
+ * (ConnectionDetails) — they're for troubleshooting, not for every visit.
  */
 import { useState, useEffect } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
@@ -12,7 +12,6 @@ import {
 	Button,
 	Spinner,
 	Collapsible,
-	EmptyState,
 	RowList,
 	Row,
 	StatusDot,
@@ -31,7 +30,7 @@ import { saddleData, api, LEVELS, tierUnlocks } from '../api';
 import ConnectionHealth from './ConnectionHealth';
 import McpDiagnostics from './McpDiagnostics';
 import SetupGuideDrawer from './SetupGuideDrawer';
-import { IconConnect, AppLogo, appKeyFromLabel } from './icons';
+import { AppLogo, appKeyFromLabel } from './icons';
 
 const MCP_URL = saddleData.mcpUrl || '';
 
@@ -67,14 +66,11 @@ const levelTitle = ( key ) =>
 export default function Apps( {
 	clients,
 	loading,
-	onConnect,
 	onClientsChanged,
 	onClientRemoved,
 	siteTier,
 } ) {
 	const confirm = useConfirm();
-	const [ showAdvanced, setShowAdvanced ] = useState( false );
-	const [ test, setTest ] = useState( null );
 	// The setup-guide drawer: { app, label, password? } — password only right
 	// after a rotation (shown once), otherwise placeholder mode.
 	const [ guide, setGuide ] = useState( null );
@@ -233,69 +229,8 @@ export default function Apps( {
 			.catch( ( e ) => toast.error( e.message ) );
 	};
 
-	// Live round-trip against the MCP endpoint using the admin session. The
-	// adapter's HTTP transport requires an MCP session, so initialize first to
-	// get the Mcp-Session-Id, then list tools with it.
-	const runTest = () => {
-		setTest( { state: 'running' } );
-		const started = window.performance ? window.performance.now() : 0;
-		const accept = 'application/json, text/event-stream';
-		const elapsed = () =>
-			window.performance
-				? Math.round( window.performance.now() - started )
-				: null;
-
-		apiFetch( {
-			url: MCP_URL,
-			method: 'POST',
-			parse: false, // need the raw Response to read the session header
-			headers: { Accept: accept },
-			data: {
-				jsonrpc: '2.0',
-				id: 0,
-				method: 'initialize',
-				params: {
-					protocolVersion: '2025-11-25',
-					capabilities: {},
-					clientInfo: { name: 'Saddle Admin', version: '1' },
-				},
-			},
-		} )
-			.then( ( resp ) => {
-				const sid = resp.headers.get( 'Mcp-Session-Id' );
-				return resp.json().then( ( init ) => ( { sid, init } ) );
-			} )
-			.then( ( { sid, init } ) => {
-				if ( init && init.error ) {
-					throw new Error( init.error.message );
-				}
-				if ( ! sid ) {
-					setTest( { state: 'ok', count: null, ms: elapsed() } );
-					return;
-				}
-				return apiFetch( {
-					url: MCP_URL,
-					method: 'POST',
-					headers: { Accept: accept, 'Mcp-Session-Id': sid },
-					data: { jsonrpc: '2.0', id: 1, method: 'tools/list' },
-				} ).then( ( res ) => {
-					if ( res && res.error ) {
-						throw new Error( res.error.message );
-					}
-					const count =
-						res && res.result && Array.isArray( res.result.tools )
-							? res.result.tools.length
-							: null;
-					setTest( { state: 'ok', count, ms: elapsed() } );
-				} );
-			} )
-			.catch( ( e ) =>
-				setTest( { state: 'error', message: e.message } )
-			);
-	};
-
 	return (
-		<div className="saddle-apps">
+		<section className="saddle-section saddle-apps">
 			<SectionHeader
 				title={
 					<Titled
@@ -307,11 +242,6 @@ export default function Apps( {
 						{ __( 'Connected apps', 'saddle' ) }
 					</Titled>
 				}
-				actions={
-					<Button variant="primary" onClick={ onConnect }>
-						{ __( 'Connect an app', 'saddle' ) }
-					</Button>
-				}
 			/>
 
 			{ loading && <Spinner /> }
@@ -321,19 +251,13 @@ export default function Apps( {
 			{ ! loading &&
 				clients.length === 0 &&
 				oauthConnections.length === 0 && (
-					<EmptyState
-						icon={ <IconConnect /> }
-						title={ __( 'Nothing connected yet', 'saddle' ) }
-						description={ __(
-							'Connect Claude, Cursor, or another AI app — it takes about a minute.',
-							'saddle'
-						) }
-						actions={
-							<Button variant="primary" onClick={ onConnect }>
-								{ __( 'Connect an app', 'saddle' ) }
-							</Button>
-						}
-					/>
+					<Card>
+						<CardContent>
+							<p className="saddle-apps__empty">
+								{ __( 'Nothing connected yet.', 'saddle' ) }
+							</p>
+						</CardContent>
+					</Card>
 				) }
 
 			{ /* Both kinds live in ONE card: they are one mental list ("what can
@@ -602,11 +526,95 @@ export default function Apps( {
 					</Card>
 				) }
 
+			{ guide && (
+				<SetupGuideDrawer
+					open={ !! guide }
+					onOpenChange={ ( open ) => ! open && setGuide( null ) }
+					app={ guide.app }
+					label={ guide.label }
+					password={ guide.password }
+				/>
+			) }
+		</section>
+	);
+}
+
+/**
+ * Connection details: the address, an endpoint test, the server health checks
+ * and the request record. For troubleshooting, so it starts collapsed.
+ */
+export function ConnectionDetails() {
+	const [ open, setOpen ] = useState( false );
+	const [ test, setTest ] = useState( null );
+
+	// Live round-trip against the MCP endpoint using the admin session. The
+	// adapter's HTTP transport requires an MCP session, so initialize first to
+	// get the Mcp-Session-Id, then list tools with it.
+	const runTest = () => {
+		setTest( { state: 'running' } );
+		const started = window.performance ? window.performance.now() : 0;
+		const accept = 'application/json, text/event-stream';
+		const elapsed = () =>
+			window.performance
+				? Math.round( window.performance.now() - started )
+				: null;
+
+		apiFetch( {
+			url: MCP_URL,
+			method: 'POST',
+			parse: false, // need the raw Response to read the session header
+			headers: { Accept: accept },
+			data: {
+				jsonrpc: '2.0',
+				id: 0,
+				method: 'initialize',
+				params: {
+					protocolVersion: '2025-11-25',
+					capabilities: {},
+					clientInfo: { name: 'Saddle Admin', version: '1' },
+				},
+			},
+		} )
+			.then( ( resp ) => {
+				const sid = resp.headers.get( 'Mcp-Session-Id' );
+				return resp.json().then( ( init ) => ( { sid, init } ) );
+			} )
+			.then( ( { sid, init } ) => {
+				if ( init && init.error ) {
+					throw new Error( init.error.message );
+				}
+				if ( ! sid ) {
+					setTest( { state: 'ok', count: null, ms: elapsed() } );
+					return;
+				}
+				return apiFetch( {
+					url: MCP_URL,
+					method: 'POST',
+					headers: { Accept: accept, 'Mcp-Session-Id': sid },
+					data: { jsonrpc: '2.0', id: 1, method: 'tools/list' },
+				} ).then( ( res ) => {
+					if ( res && res.error ) {
+						throw new Error( res.error.message );
+					}
+					const count =
+						res && res.result && Array.isArray( res.result.tools )
+							? res.result.tools.length
+							: null;
+					setTest( { state: 'ok', count, ms: elapsed() } );
+				} );
+			} )
+			.catch( ( e ) =>
+				setTest( { state: 'error', message: e.message } )
+			);
+	};
+
+	return (
+		<section className="saddle-section saddle-details">
+			<SectionHeader title={ __( 'Connection details', 'saddle' ) } />
 			<Collapsible
-				className="saddle-apps__more"
-				open={ showAdvanced }
-				onOpenChange={ setShowAdvanced }
-				trigger={ __( 'Connection details & health', 'saddle' ) }
+				open={ open }
+				onOpenChange={ setOpen }
+				trigger={ __( 'Health and diagnostics', 'saddle' ) }
 			>
 				<div className="saddle-apps__advanced">
 					{ /* Label stacked ABOVE the control rather than ridden into
@@ -669,16 +677,6 @@ export default function Apps( {
 					<McpDiagnostics />
 				</div>
 			</Collapsible>
-
-			{ guide && (
-				<SetupGuideDrawer
-					open={ !! guide }
-					onOpenChange={ ( open ) => ! open && setGuide( null ) }
-					app={ guide.app }
-					label={ guide.label }
-					password={ guide.password }
-				/>
-			) }
-		</div>
+		</section>
 	);
 }
