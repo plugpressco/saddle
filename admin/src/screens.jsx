@@ -1,12 +1,14 @@
 /**
  * What each Saddle page shows, tab by tab (#274).
  *
- * Eight in-app screens became three pages:
+ * Eight in-app screens became four pages:
  *
  * - Home: Overview (the old Dashboard) · Activity
- * - Connections: Apps · Permissions (with Integrations as its section for
- *   third-party tools)
- * - Settings: General · Guidance (instructions, skills and memory)
+ * - Connections: Apps (connect an app, and the connected ones) · Permissions
+ *   (with Integrations as its section for third-party tools)
+ * - Context: what every app knows — instructions as named fields, skills,
+ *   memory, and what Saddle tells every app automatically
+ * - Settings: General
  *
  * A module's page shows the screen its own bundle registered for the tab
  * (`saddle.admin.screens`), or mounts its app into a slot
@@ -19,8 +21,8 @@ import { __, sprintf } from '@wordpress/i18n';
 import { api } from './api';
 import Dashboard from './components/Dashboard';
 import Permissions from './components/Permissions';
-import Guidance from './components/Guidance';
-import Memory from './components/Memory';
+import Context from './components/Guidance';
+import ConnectApps from './components/ConnectApps';
 import Apps from './components/ConnectedClients';
 import Integrations from './components/Integrations';
 import Activity from './components/Activity';
@@ -58,14 +60,14 @@ export function describe( area, tab ) {
 				'Pick how much your connected apps are allowed to do. You can change this whenever you like.',
 				'saddle'
 			);
+		case 'context/overview':
+			return __(
+				'What Claude, ChatGPT and every connected app know about this site. They read it before they work, so correct anything that looks wrong.',
+				'saddle'
+			);
 		case 'settings/general':
 			return __(
 				'How Saddle behaves on this site: the switches you rarely touch, and the facts about its connection.',
-				'saddle'
-			);
-		case 'settings/guidance':
-			return __(
-				'Every connected AI is told the same things about your site and follows the same instructions from you.',
 				'saddle'
 			);
 	}
@@ -176,6 +178,7 @@ export default function Screen( props ) {
 		paused,
 		pausing,
 		wizardOpen,
+		wizardApp,
 		openWizard,
 		closeWizard,
 		refreshClients,
@@ -199,7 +202,7 @@ export default function Screen( props ) {
 						tier={ tier }
 						clients={ clients }
 						onNavigate={ navigate }
-						onConnect={ openWizard }
+						onConnect={ () => openWizard() }
 					/>
 					<Cards where="home" navigate={ navigate } />
 				</>
@@ -215,13 +218,25 @@ export default function Screen( props ) {
 					clients={ clients }
 					onExit={ closeWizard }
 					onClientsChanged={ refreshClients }
+					initialApp={ wizardApp }
 				/>
 			) : (
 				<>
+					<ConnectApps
+						onKey={ openWizard }
+						onConnected={ refreshClients }
+					/>
 					<Apps
 						clients={ clients }
 						loading={ false }
-						onConnect={ openWizard }
+						// The app picker is right above the list on this page.
+						onConnect={ () => {
+							const picker =
+								document.getElementById( 'saddle-connect' );
+							if ( picker ) {
+								picker.scrollIntoView();
+							}
+						} }
 						onClientsChanged={ refreshClients }
 						onClientRemoved={ removeClient }
 						siteTier={ tier }
@@ -264,13 +279,8 @@ export default function Screen( props ) {
 				</>
 			);
 
-		case 'settings/guidance':
-			return (
-				<>
-					<Guidance />
-					<Memory />
-				</>
-			);
+		case 'context/overview':
+			return <Context />;
 	}
 
 	return null;

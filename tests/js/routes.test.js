@@ -35,15 +35,14 @@ const AREAS = [
 		],
 	},
 	{
+		key: 'context',
+		url: `${ BASE }?page=saddle-context`,
+		tabs: [ { key: 'overview', url: `${ BASE }?page=saddle-context` } ],
+	},
+	{
 		key: 'settings',
 		url: `${ BASE }?page=saddle-settings`,
-		tabs: [
-			{ key: 'general', url: `${ BASE }?page=saddle-settings` },
-			{
-				key: 'guidance',
-				url: `${ BASE }?page=saddle-settings&tab=guidance`,
-			},
-		],
+		tabs: [ { key: 'general', url: `${ BASE }?page=saddle-settings` } ],
 	},
 ];
 
@@ -58,8 +57,8 @@ describe( 'legacy hash addresses', () => {
 			'#integrations',
 			`${ BASE }?page=saddle-connections&tab=permissions`,
 		],
-		[ '#guidance', `${ BASE }?page=saddle-settings&tab=guidance` ],
-		[ '#memory', `${ BASE }?page=saddle-settings&tab=guidance#memory` ],
+		[ '#guidance', `${ BASE }?page=saddle-context` ],
+		[ '#memory', `${ BASE }?page=saddle-context#memory` ],
 		// Saddle Pro's licence link is page=saddle#settings.
 		[ '#settings', `${ BASE }?page=saddle-settings` ],
 	] )( '%s lands on its new page', ( hash, url ) => {
@@ -89,11 +88,11 @@ describe( 'tabs and places', () => {
 	} );
 
 	it( 'builds a tab URL, and the page URL for an unknown tab', () => {
-		expect( areaUrl( AREAS, 'settings', 'guidance' ) ).toBe(
-			`${ BASE }?page=saddle-settings&tab=guidance`
+		expect( areaUrl( AREAS, 'connections', 'permissions' ) ).toBe(
+			`${ BASE }?page=saddle-connections&tab=permissions`
 		);
-		expect( areaUrl( AREAS, 'settings', 'nope' ) ).toBe(
-			`${ BASE }?page=saddle-settings`
+		expect( areaUrl( AREAS, 'connections', 'nope' ) ).toBe(
+			`${ BASE }?page=saddle-connections`
 		);
 		expect( areaUrl( AREAS, 'nope' ) ).toBe( '' );
 	} );
@@ -107,9 +106,13 @@ describe( 'tabs and places', () => {
 			area: 'home',
 			tab: 'activity',
 		} );
-		expect( placeFor( { area: 'settings', tab: 'guidance' } ) ).toEqual( {
+		expect( placeFor( 'memory' ) ).toEqual( {
+			area: 'context',
+			tab: 'overview',
+		} );
+		expect( placeFor( { area: 'settings', tab: 'general' } ) ).toEqual( {
 			area: 'settings',
-			tab: 'guidance',
+			tab: 'general',
 		} );
 		expect( placeFor( 'nowhere' ) ).toBeNull();
 	} );

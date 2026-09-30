@@ -73,6 +73,8 @@ const COMMON_APPS = [ 'claude', 'chatgpt', 'claude-code', 'cursor' ];
  *                                          listening on one screen, and no done
  *                                          screen — `onConnected` takes over.
  * @param {Function} props.onConnected      Called with the app once it connects.
+ * @param {string}   props.initialApp       Start on the key setup for this app
+ *                                          (Connections → Apps, "Use a key").
  */
 export default function ConnectWizard( {
 	tier,
@@ -81,6 +83,7 @@ export default function ConnectWizard( {
 	onClientsChanged,
 	embedded = false,
 	onConnected,
+	initialApp = null,
 } ) {
 	const [ step, setStep ] = useState( 0 ); // 0 pick, 1 setup, 2 hello, 3 done
 	const [ app, setApp ] = useState( null );
@@ -207,6 +210,16 @@ export default function ConnectWizard( {
 		}
 		pickByKey( key );
 	};
+
+	// Connections → Apps sends the owner here to make a key for one app: skip
+	// the picker and go straight to that app's key setup.
+	useEffect( () => {
+		if ( initialApp && APPS.some( ( a ) => a.key === initialApp ) ) {
+			setPreferAddress( false );
+			pickByKey( initialApp );
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- once, on arrival.
+	}, [] );
 
 	/* ----- leaving: never strand an orphan credential ----- */
 

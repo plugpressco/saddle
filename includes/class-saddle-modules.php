@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * One list of every Saddle admin page, so one code path draws them all.
  *
- * Core has three pages: Home, Connections and Settings. A sibling plugin
+ * Core has four pages: Home, Connections, Context and Settings. A sibling plugin
  * (Analytics, SEO, CRM) joins through the `saddle_modules` filter under the
  * same key it uses for `saddle_integrations`, and gets a submenu page at
  * `admin.php?page=saddle-{key}` with Core's frame around its content. A
@@ -26,10 +26,14 @@ class Saddle_Modules {
 	/**
 	 * Keys a module may not take: Core's own pages.
 	 */
-	const RESERVED = array( 'home', 'connections', 'settings' );
+	const RESERVED = array( 'home', 'connections', 'context', 'settings' );
 
 	/**
-	 * Core's three pages, in menu order around the modules.
+	 * Core's pages, in menu order around the modules.
+	 *
+	 * Context was Settings → Guidance until Fahim's 2026-09-30 review ("guidance
+	 * page make it context page"): what every connected app knows about the
+	 * site is a page of its own, not a tab of the rarely-used Settings.
 	 *
 	 * @return array<string,array>
 	 */
@@ -51,12 +55,18 @@ class Saddle_Modules {
 					'permissions' => __( 'Permissions', 'saddle' ),
 				),
 			),
+			'context'     => array(
+				'slug'  => 'saddle-context',
+				'title' => __( 'Context', 'saddle' ),
+				'tabs'  => array(
+					'overview' => __( 'Context', 'saddle' ),
+				),
+			),
 			'settings'    => array(
 				'slug'  => 'saddle-settings',
 				'title' => __( 'Settings', 'saddle' ),
 				'tabs'  => array(
-					'general'  => __( 'General', 'saddle' ),
-					'guidance' => __( 'Guidance', 'saddle' ),
+					'general' => __( 'General', 'saddle' ),
 				),
 			),
 		);
@@ -116,7 +126,8 @@ class Saddle_Modules {
 	}
 
 	/**
-	 * Every page, in menu order: Home, the modules, Connections, Settings.
+	 * Every page, in menu order: Home, the modules, Connections, Context,
+	 * Settings.
 	 *
 	 * @return array<string,array> Keyed by area; each has `slug`, `title`,
 	 *                             `tabs`, `nav`, `capability`, `module`.
@@ -130,6 +141,7 @@ class Saddle_Modules {
 		}
 
 		$areas['connections'] = $core['connections'];
+		$areas['context']     = $core['context'];
 		$areas['settings']    = $core['settings'];
 
 		foreach ( $areas as $key => $area ) {

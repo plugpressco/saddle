@@ -449,6 +449,308 @@ body.saddle-admin-page {
 	}
 }
 
+/* ---------- Connections → Apps (#274) ---------- */
+// One calm column: what this is, this site's address, then the apps down the
+// side and the steps for the one picked. The site's own way of connecting,
+// laid out like the hosted MCP pages people already know.
+.saddle-connect {
+	display: grid;
+	gap: var(--pp-space-5);
+
+	&__intro {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--pp-space-5);
+		padding: var(--pp-space-5);
+		border-radius: var(--s-radius-lg);
+		background: var(--s-surface-2);
+	}
+
+	&__title {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin: 0;
+		font-size: 15px;
+		font-weight: 600;
+		line-height: 1.4;
+	}
+
+	&__lede {
+		max-width: 60ch;
+		margin: 4px 0 0;
+		color: var(--s-fg-muted);
+	}
+
+	&__logos {
+		display: flex;
+		flex: 0 0 auto;
+	}
+
+	&__logo {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 40px;
+		height: 40px;
+		margin-inline-start: -8px;
+		border: 1px solid var(--s-border);
+		border-radius: 50%;
+		background: var(--s-bg);
+
+		img {
+			width: 20px;
+			height: 20px;
+		}
+	}
+
+	&__address {
+		display: grid;
+		gap: 6px;
+	}
+
+	&__label {
+		color: var(--s-fg-muted);
+		font-size: 12px;
+	}
+
+	&__url {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		flex-wrap: wrap;
+
+		code {
+			padding: 6px 10px;
+			border: 1px solid var(--s-border);
+			border-radius: var(--s-radius);
+			background: var(--s-surface-2);
+			font-size: 13px;
+			word-break: break-all;
+		}
+	}
+
+	&__picker {
+		display: grid;
+		grid-template-columns: minmax(170px, 220px) 1fr;
+		gap: var(--pp-space-4);
+		align-items: start;
+	}
+
+	&__apps {
+		display: grid;
+		gap: 2px;
+	}
+
+	&__app {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		width: 100%;
+		padding: 8px 10px;
+		border: 0;
+		border-radius: var(--s-radius);
+		background: transparent;
+		color: var(--s-fg);
+		font: inherit;
+		text-align: start;
+		cursor: pointer;
+
+		img {
+			width: 18px;
+			height: 18px;
+		}
+
+		&:hover {
+			background: var(--s-surface-3);
+		}
+
+		&[aria-selected='true'] {
+			background: var(--s-surface-3);
+			font-weight: 600;
+		}
+	}
+
+	&__app-label {
+		flex: 1;
+	}
+
+	&__steps {
+		display: grid;
+		gap: var(--pp-space-3);
+		padding: var(--pp-space-5);
+		border: 1px solid var(--s-border);
+		border-radius: var(--s-radius-lg);
+		background: var(--s-bg);
+		min-width: 0;
+	}
+
+	&__steps-title {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		margin: 0;
+		font-size: 15px;
+		font-weight: 600;
+
+		img {
+			width: 20px;
+			height: 20px;
+		}
+	}
+
+	&__list {
+		display: grid;
+		gap: var(--pp-space-4);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		counter-reset: saddle-step;
+
+		> li {
+			position: relative;
+			display: grid;
+			gap: 10px;
+			margin: 0;
+			padding-inline-start: 34px;
+			counter-increment: saddle-step;
+
+			&::before {
+				content: counter(saddle-step);
+				position: absolute;
+				inset-inline-start: 0;
+				top: 0;
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				width: 22px;
+				height: 22px;
+				border: 1px solid var(--s-border);
+				border-radius: 50%;
+				color: var(--s-fg-muted);
+				font-size: 12px;
+			}
+		}
+
+		p {
+			margin: 0;
+		}
+	}
+
+	&__links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+
+	&__config {
+		min-width: 0;
+	}
+
+	&__key {
+		display: grid;
+		gap: var(--pp-space-3);
+		justify-items: start;
+
+		p {
+			margin: 0;
+		}
+	}
+
+	&__steps > .pp-btn--link {
+		justify-self: start;
+	}
+
+	&__waiting {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		margin: 0;
+		color: var(--s-fg-muted);
+		font-size: 13px;
+	}
+
+	&__spinner {
+		width: 10px;
+		height: 10px;
+		border: 2px solid var(--s-border-strong);
+		border-top-color: var(--s-accent);
+		border-radius: 50%;
+		animation: saddle-spin 0.9s linear infinite;
+	}
+}
+
+@keyframes saddle-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@media (max-width: 782px) {
+	.saddle-connect__picker {
+		grid-template-columns: 1fr;
+	}
+
+	.saddle-connect__apps {
+		grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+	}
+
+	.saddle-connect__logos {
+		display: none;
+	}
+}
+
+/* ---------- Context (#274) ---------- */
+// A sheet the owner fills in and corrects: named fields, each saying whether
+// anything is written, with an example as the placeholder.
+.saddle-context {
+	display: grid;
+	gap: var(--pp-space-6);
+	max-width: 760px;
+
+	&__empty {
+		margin: 0;
+		padding: var(--pp-space-4);
+		border: 1px dashed var(--s-border-strong);
+		border-radius: var(--s-radius-lg);
+		color: var(--s-fg-muted);
+	}
+
+	&__fields {
+		display: grid;
+		gap: var(--pp-space-5);
+	}
+}
+
+.saddle-context-field {
+	display: grid;
+	gap: 4px;
+
+	&__head {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 12px;
+	}
+
+	&__label {
+		font-weight: 600;
+	}
+
+	&__state {
+		color: var(--s-fg-subtle);
+		font-size: 12px;
+	}
+
+	&__hint {
+		margin: 0 0 4px;
+		color: var(--s-fg-muted);
+		font-size: 12px;
+	}
+}
+
 // A section that stacks its heading and its content on one rhythm.
 .saddle-stack {
 	display: grid;

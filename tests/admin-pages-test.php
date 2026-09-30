@@ -85,13 +85,14 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 
 	/* ------------------------------------------------------------- the menu */
 
-	public function test_core_has_three_pages_under_one_menu() {
+	public function test_core_has_four_pages_under_one_menu() {
 		$this->build_menu();
 
 		$this->assertSame(
 			array(
 				'saddle'             => 'Home',
 				'saddle-connections' => 'Connections',
+				'saddle-context'     => 'Context',
 				'saddle-settings'    => 'Settings',
 			),
 			$this->saddle_submenu()
@@ -103,7 +104,7 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		$this->build_menu();
 
 		$this->assertSame(
-			array( 'saddle', 'saddle-analytics', 'saddle-connections', 'saddle-settings' ),
+			array( 'saddle', 'saddle-analytics', 'saddle-connections', 'saddle-context', 'saddle-settings' ),
 			array_keys( $this->saddle_submenu() )
 		);
 		$this->assertSame( 'Analytics', $this->saddle_submenu()['saddle-analytics'] );
@@ -119,7 +120,7 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		Saddle_Settings::order_submenu();
 
 		$this->assertSame(
-			array( 'saddle', 'saddle-rank', 'saddle-connections', 'saddle-settings' ),
+			array( 'saddle', 'saddle-rank', 'saddle-connections', 'saddle-context', 'saddle-settings' ),
 			array_keys( $this->saddle_submenu() )
 		);
 	}
@@ -152,7 +153,7 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 
 		$this->assertSame( array( 'rank', 'crm' ), array_keys( Saddle_Modules::modules() ) );
 		$this->assertSame(
-			array( 'home', 'rank', 'crm', 'connections', 'settings' ),
+			array( 'home', 'rank', 'crm', 'connections', 'context', 'settings' ),
 			array_keys( Saddle_Modules::areas() )
 		);
 		$this->assertSame( array( 'overview' => 'Overview' ), Saddle_Modules::modules()['crm']['tabs'], 'A module with no tabs gets one.' );
@@ -198,8 +199,9 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 			'Home, Activity'             => array( 'saddle', 'activity', 'home', 'activity' ),
 			'Connections'                => array( 'saddle-connections', null, 'connections', 'apps' ),
 			'Connections, Permissions'   => array( 'saddle-connections', 'permissions', 'connections', 'permissions' ),
-			'Settings, Guidance'         => array( 'saddle-settings', 'guidance', 'settings', 'guidance' ),
-			'an unknown tab falls back'  => array( 'saddle-settings', 'nope', 'settings', 'general' ),
+			'Context'                    => array( 'saddle-context', null, 'context', 'overview' ),
+			'Settings'                   => array( 'saddle-settings', null, 'settings', 'general' ),
+			'an unknown tab falls back'  => array( 'saddle-connections', 'nope', 'connections', 'apps' ),
 			'markup in the tab is inert' => array( 'saddle', '"><script>', 'home', 'overview' ),
 		);
 	}
@@ -208,7 +210,7 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		$this->assertSame( admin_url( 'admin.php?page=saddle' ), Saddle_Modules::url( 'home' ) );
 		$this->assertSame( admin_url( 'admin.php?page=saddle' ), Saddle_Modules::url( 'home', 'overview' ) );
 		$this->assertSame( admin_url( 'admin.php?page=saddle-connections&tab=permissions' ), Saddle_Modules::url( 'connections', 'permissions' ) );
-		$this->assertSame( admin_url( 'admin.php?page=saddle-settings' ), Saddle_Modules::url( 'settings', 'nope' ) );
+		$this->assertSame( admin_url( 'admin.php?page=saddle-context' ), Saddle_Modules::url( 'context', 'nope' ) );
 	}
 
 	/* --------------------------------------------------------------- assets */
@@ -219,9 +221,9 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		Saddle_Settings::enqueue_assets( 'index.php' );
 		$this->assertFalse( wp_script_is( 'saddle-admin', 'enqueued' ) );
 
-		$_GET['page'] = 'saddle-settings';
-		$_GET['tab']  = 'guidance';
-		Saddle_Settings::enqueue_assets( get_plugin_page_hookname( 'saddle-settings', 'saddle' ) );
+		$_GET['page'] = 'saddle-connections';
+		$_GET['tab']  = 'permissions';
+		Saddle_Settings::enqueue_assets( get_plugin_page_hookname( 'saddle-connections', 'saddle' ) );
 		$this->assertTrue( wp_script_is( 'saddle-admin', 'enqueued' ) );
 
 		$data = wp_scripts()->get_data( 'saddle-admin', 'before' );
@@ -230,14 +232,14 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		preg_match( '/window\.saddleData = (\{.*\});/s', implode( "\n", $data ), $match );
 		$saddle = json_decode( $match[1], true );
 
-		$this->assertSame( 'settings', $saddle['area'] );
-		$this->assertSame( 'guidance', $saddle['tab'] );
-		$this->assertSame( array( 'home', 'connections', 'settings' ), array_column( $saddle['areas'], 'key' ) );
+		$this->assertSame( 'connections', $saddle['area'] );
+		$this->assertSame( 'permissions', $saddle['tab'] );
+		$this->assertSame( array( 'home', 'connections', 'context', 'settings' ), array_column( $saddle['areas'], 'key' ) );
 		$this->assertSame( 2, $saddle['shellVersion'] );
 
-		$settings = $saddle['areas'][2];
-		$this->assertSame( array( 'general', 'guidance' ), array_column( $settings['tabs'], 'key' ) );
-		$this->assertSame( admin_url( 'admin.php?page=saddle-settings&tab=guidance' ), $settings['tabs'][1]['url'] );
+		$connections = $saddle['areas'][1];
+		$this->assertSame( array( 'apps', 'permissions' ), array_column( $connections['tabs'], 'key' ) );
+		$this->assertSame( admin_url( 'admin.php?page=saddle-connections&tab=permissions' ), $connections['tabs'][1]['url'] );
 	}
 
 	public function test_a_modules_own_script_loads_on_its_page() {

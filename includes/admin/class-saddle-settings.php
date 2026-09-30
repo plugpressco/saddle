@@ -67,11 +67,11 @@ class Saddle_Settings {
 	}
 
 	/**
-	 * Keep Connections and Settings last in the Saddle menu.
+	 * Keep Connections, Context and Settings last in the Saddle menu.
 	 *
 	 * A sibling that adds its own submenu (Saddle Rank does, at priority 20)
 	 * lands after whatever is already there. The modules belong between Home
-	 * and the two configuration pages, so those two move to the end once every
+	 * and Core's configuration pages, so those move to the end once every
 	 * plugin has had its turn.
 	 */
 	public static function order_submenu() {
@@ -82,7 +82,7 @@ class Saddle_Settings {
 		}
 
 		$areas = Saddle_Modules::areas();
-		$last  = array( $areas['connections']['slug'], $areas['settings']['slug'] );
+		$last  = array( $areas['connections']['slug'], $areas['context']['slug'], $areas['settings']['slug'] );
 		$head  = array();
 		$tail  = array();
 

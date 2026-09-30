@@ -20,8 +20,8 @@ export const LEGACY = {
 	connect: { area: 'connections', tab: 'apps' },
 	permissions: { area: 'connections', tab: 'permissions' },
 	integrations: { area: 'connections', tab: 'permissions' },
-	guidance: { area: 'settings', tab: 'guidance' },
-	memory: { area: 'settings', tab: 'guidance', anchor: 'memory' },
+	guidance: { area: 'context', tab: 'overview' },
+	memory: { area: 'context', tab: 'overview', anchor: 'memory' },
 	settings: { area: 'settings', tab: 'general' },
 };
 

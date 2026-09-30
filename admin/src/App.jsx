@@ -88,6 +88,9 @@ export default function App() {
 	// so it gets its own view instead of an error strip over an empty frame.
 	const [ authError, setAuthError ] = useState( false );
 	const [ wizardOpen, setWizardOpen ] = useState( wantsWizard );
+	// The app a key is being made for, when Connections → Apps sent the
+	// owner to the key setup for one app.
+	const [ wizardApp, setWizardApp ] = useState( null );
 
 	const setTab = useCallback(
 		( next ) => {
@@ -255,12 +258,13 @@ export default function App() {
 		'1'
 	);
 
-	const openWizard = () => {
+	const openWizard = ( appKey = null ) => {
 		if ( area.key !== 'connections' ) {
 			window.location.assign( connectUrl );
 			return;
 		}
 		setTabState( 'apps' );
+		setWizardApp( appKey );
 		setWizardOpen( true );
 		if ( window.history && window.history.pushState ) {
 			window.history.pushState( {}, '', connectUrl );
@@ -399,6 +403,7 @@ export default function App() {
 						paused={ paused }
 						pausing={ pausing }
 						wizardOpen={ wizardOpen }
+						wizardApp={ wizardApp }
 						openWizard={ openWizard }
 						closeWizard={ closeWizard }
 						refreshClients={ refreshClients }
