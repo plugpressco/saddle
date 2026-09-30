@@ -74,7 +74,7 @@ class Saddle_Settings_Registry {
 			if ( '' === $key || ! is_array( $field ) || ! isset( $field['type'] ) || ! in_array( $field['type'], self::TYPES, true ) ) {
 				continue;
 			}
-			$fields[ $key ] = array_merge(
+			$fields[ $key ]                = array_merge(
 				array(
 					'default'     => null,
 					'label'       => $key,
@@ -167,7 +167,7 @@ class Saddle_Settings_Registry {
 		$stored = self::stored( $schema );
 		$values = array();
 		foreach ( $schema['fields'] as $key => $field ) {
-			$value            = array_key_exists( $key, $stored ) ? $stored[ $key ] : $field['default'];
+			$value          = array_key_exists( $key, $stored ) ? $stored[ $key ] : $field['default'];
 			$values[ $key ] = self::typed( $field['type'], $value );
 		}
 
