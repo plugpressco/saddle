@@ -37,7 +37,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * A catalog entry may declare, besides `prefix` and `title`:
  *   - `description`, `author`, `url` — shown to the owner on the
- *     Integrations screen. Plain text and a link; nothing is fetched.
+ *     Services section. Plain text and a link; nothing is fetched.
  *   - `force_destructive` (string[]) — source short names to gate even when
  *     the partner forgot the `destructive` annotation. Saddle's tier/gate
  *     promises are only as honest as partner annotation hygiene; this is
@@ -60,7 +60,7 @@ class Saddle_Integration_Engine {
 	/**
 	 * Slugs no integration may take. Each is a prefix Saddle's own tools
 	 * already use, so a wrapper under it would collide with them or be filed
-	 * under the wrong group on the Permissions screen.
+	 * under the wrong group in Settings → Advanced → Turn off single tools.
 	 *
 	 * @var string[]
 	 */

@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-30T23:14:02+00:00\n"
+"POT-Creation-Date: 2026-09-30T23:47:36+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -5000,7 +5000,7 @@ msgid "SEO and AEO tools from the Waggle plugin."
 msgstr ""
 
 #: includes/class-saddle-integrations.php:145
-msgid "PlugPress integrations are always on. Turn individual tools off on the Permissions screen."
+msgid "PlugPress integrations are always on. Turn individual tools off under Saddle → Settings → Advanced."
 msgstr ""
 
 #: includes/class-saddle-integrations.php:157
@@ -5846,7 +5846,7 @@ msgid "That does not look like an Unsplash Access Key. Copy the \"Access Key\" (
 msgstr ""
 
 #: includes/class-saddle-unsplash.php:141
-msgid "Unsplash is not set up on this site. The site owner must add an Unsplash Access Key on the Saddle Permissions screen — keys are free at unsplash.com/developers. Do not retry until it is configured."
+msgid "Unsplash is not set up on this site. The site owner must add an Unsplash Access Key under Saddle → Settings → Services — keys are free at unsplash.com/developers. Do not retry until it is configured."
 msgstr ""
 
 #. translators: %s: transport error message.
@@ -5856,7 +5856,7 @@ msgid "Could not reach the Unsplash API: %s. This is usually transient — one r
 msgstr ""
 
 #: includes/class-saddle-unsplash.php:180
-msgid "Unsplash rejected the configured Access Key. The site owner should re-check it on the Saddle Permissions screen. Do not retry until it is fixed."
+msgid "Unsplash rejected the configured Access Key. The site owner should re-check it under Saddle → Settings → Services. Do not retry until it is fixed."
 msgstr ""
 
 #. translators: %s: remaining request quota reported by Unsplash, or '0'.

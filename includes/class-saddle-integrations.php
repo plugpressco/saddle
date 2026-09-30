@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
  * `saddle_integrations` filter (see docs/integrating.md). PlugPress's own
  * plugins, listed in {@see self::FIRST_PARTY}, are live as soon as they are
  * active. Every other plugin's tools stay off until the site owner switches
- * them on from the Integrations screen — Saddle can't vouch for a stranger's
+ * them on under Settings → Services — Saddle can't vouch for a stranger's
  * annotations, and even a read tool can expose data the owner didn't expect
  * an agent to see (non-negotiable #2).
  */
@@ -142,7 +142,7 @@ class Saddle_Integrations {
 		if ( self::is_first_party( $slug ) ) {
 			return new WP_Error(
 				'saddle_integration_first_party',
-				__( 'PlugPress integrations are always on. Turn individual tools off on the Permissions screen.', 'saddle' ),
+				__( 'PlugPress integrations are always on. Turn individual tools off under Saddle → Settings → Advanced.', 'saddle' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -171,7 +171,7 @@ class Saddle_Integrations {
 	}
 
 	/**
-	 * Every installed integration, for the owner's Integrations screen.
+	 * Every installed integration, for Settings → Services.
 	 *
 	 * `tools` counts the partner's own abilities, so an integration that is
 	 * still off shows what switching it on would add.
