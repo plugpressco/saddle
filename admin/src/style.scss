@@ -1876,6 +1876,68 @@ body.saddle-admin-page {
 	}
 }
 
+// Settings rendered from a schema (SettingsForm). A switch sits beside its
+// label; any other control sits under it. Spacing comes from the tokens.
+.saddle-settings-form {
+	display: grid;
+	gap: var(--pp-space-4);
+	align-content: start;
+
+	&__agent {
+		margin: 0;
+		font-size: 13px;
+		color: var(--s-fg-muted);
+	}
+}
+
+.saddle-fields {
+	display: grid;
+	gap: var(--pp-space-5);
+
+	&__more {
+		margin-top: var(--pp-space-5);
+	}
+
+	&__more > div {
+		margin-top: var(--pp-space-5);
+	}
+}
+
+.saddle-field {
+	display: grid;
+	gap: var(--pp-space-2);
+
+	&--switch {
+		grid-template-columns: auto 1fr;
+		align-items: start;
+		column-gap: 10px;
+	}
+
+	&--switch .saddle-field__text {
+		display: grid;
+		gap: var(--pp-space-1);
+	}
+
+	&--stacked .saddle-field__text {
+		display: grid;
+		gap: var(--pp-space-1);
+	}
+
+	&--stacked .pp-control {
+		max-width: 360px;
+	}
+
+	&--switch > .pp-error-text {
+		grid-column: 2;
+	}
+
+	&__status {
+		margin: 0;
+		font-size: 13px;
+		color: var(--s-fg-muted);
+	}
+}
+
 // Trailing action links inside a DS Notice (e.g. the domain warning).
 .saddle-notice__actions {
 	display: flex;

@@ -8,7 +8,7 @@
  *   (with Integrations as its section for third-party tools)
  * - Context: what every app knows — instructions as named fields, skills,
  *   memory, and what Saddle tells every app automatically
- * - Settings: General
+ * - Settings: General · Advanced
  *
  * A module's page shows the screen its own bundle registered for the tab
  * (`saddle.admin.screens`), or mounts its app into a slot
@@ -27,6 +27,8 @@ import Apps from './components/ConnectedClients';
 import Integrations from './components/Integrations';
 import Activity from './components/Activity';
 import Settings from './components/Settings';
+import SettingsForm from './components/SettingsForm';
+import SignInCard, { useOauthSettings } from './components/SignInCard';
 import ConnectWizard from './components/ConnectWizard';
 import SectionHeader from './components/SectionHeader';
 import {
@@ -67,7 +69,12 @@ export function describe( area, tab ) {
 			);
 		case 'settings/general':
 			return __(
-				'How Saddle behaves on this site: the switches you rarely touch, and the facts about its connection.',
+				'The facts about how apps reach this site, and the settings other plugins add.',
+				'saddle'
+			);
+		case 'settings/advanced':
+			return __(
+				'Settings you rarely need to change. The defaults suit most sites.',
 				'saddle'
 			);
 	}
@@ -134,6 +141,11 @@ function ModuleScreen( { area, tab, navigate } ) {
 	const entry = screens.find(
 		( s ) => s.module === area.key && s.tab === tab
 	);
+	if ( ! entry && 'settings' === tab ) {
+		// Core appends a Settings tab to a module that has settings; when the
+		// module drew nothing there, the schema draws it.
+		return <SettingsForm scope={ area.key } />;
+	}
 	if ( ! entry ) {
 		return (
 			<Notice tone="warning">
@@ -159,6 +171,54 @@ function ModuleScreen( { area, tab, navigate } ) {
 			api={ api }
 			shellVersion={ SHELL_VERSION }
 		/>
+	);
+}
+
+/**
+ * Connections → Apps: the app picker, the connected apps, and the one
+ * sign-in control they share.
+ *
+ * @param {Object}   props
+ * @param {Function} props.openWizard     Opens the key setup.
+ * @param {Function} props.refreshClients Reloads the connected apps.
+ * @param {Function} props.removeClient   Drops a revoked app from the list.
+ * @param {Array}    props.clients        Connected apps.
+ * @param {string}   props.tier           The site's level.
+ * @param {*}        props.navigate       Navigation helper.
+ */
+function AppsTab( {
+	openWizard,
+	refreshClients,
+	removeClient,
+	clients,
+	tier,
+	navigate,
+} ) {
+	const signIn = useOauthSettings();
+	return (
+		<>
+			<ConnectApps
+				oauth={ signIn.oauth }
+				onKey={ openWizard }
+				onConnected={ refreshClients }
+			/>
+			<Apps
+				clients={ clients }
+				loading={ false }
+				// The app picker is right above the list on this page.
+				onConnect={ () => {
+					const picker = document.getElementById( 'saddle-connect' );
+					if ( picker ) {
+						picker.scrollIntoView();
+					}
+				} }
+				onClientsChanged={ refreshClients }
+				onClientRemoved={ removeClient }
+				siteTier={ tier }
+			/>
+			<SignInCard { ...signIn } />
+			<Cards where="connections" navigate={ navigate } />
+		</>
 	);
 }
 
@@ -226,28 +286,14 @@ export default function Screen( props ) {
 					initialApp={ wizardApp }
 				/>
 			) : (
-				<>
-					<ConnectApps
-						onKey={ openWizard }
-						onConnected={ refreshClients }
-					/>
-					<Apps
-						clients={ clients }
-						loading={ false }
-						// The app picker is right above the list on this page.
-						onConnect={ () => {
-							const picker =
-								document.getElementById( 'saddle-connect' );
-							if ( picker ) {
-								picker.scrollIntoView();
-							}
-						} }
-						onClientsChanged={ refreshClients }
-						onClientRemoved={ removeClient }
-						siteTier={ tier }
-					/>
-					<Cards where="connections" navigate={ navigate } />
-				</>
+				<AppsTab
+					openWizard={ openWizard }
+					refreshClients={ refreshClients }
+					removeClient={ removeClient }
+					clients={ clients }
+					tier={ tier }
+					navigate={ navigate }
+				/>
 			);
 
 		case 'connections/permissions':
@@ -259,19 +305,21 @@ export default function Screen( props ) {
 						onTierSaved={ onTierSaved }
 						onCapsChanged={ loadCaps }
 						onRehearsalChanged={ onRehearsalChanged }
+						paused={ paused }
+						pausing={ pausing }
+						onTogglePause={ onTogglePause }
 					/>
 					<Integrations caps={ caps } onChanged={ loadCaps } />
 				</>
 			);
 
+		case 'settings/advanced':
+			return <SettingsForm scope="saddle" screen="settings/advanced" />;
+
 		case 'settings/general':
 			return (
 				<>
-					<Settings
-						paused={ paused }
-						pausing={ pausing }
-						onTogglePause={ onTogglePause }
-					/>
+					<Settings />
 					{ extTabs.map( ( t ) => (
 						<section key={ t.id } className="saddle-stack">
 							<SectionHeader title={ t.label } />

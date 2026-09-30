@@ -36,14 +36,20 @@ $saddle_options = array(
 	'saddle_enabled_integrations',    // Saddle_Integrations::APPROVED_OPTION.
 	'saddle_update_runs',             // Saddle_Update_Runner::OPTION.
 	'saddle_connections',             // Saddle_Connections::OPTION.
+	'saddle_mcp_health',              // Saddle_MCP_Diagnostics::HEALTH_OPTION.
+	'saddle_mcp_trace',               // Saddle_MCP_Diagnostics::TRACE_OPTION.
+	'saddle_mcp_trace_until',         // Saddle_MCP_Diagnostics::RECORDING_OPTION.
+	'saddle_dismissed_notices',       // Saddle_Notices::STORE (site-wide dismissals).
 );
 foreach ( $saddle_options as $saddle_option ) {
 	delete_option( $saddle_option );
 }
 
-// Per-user data: admin theme preference, credential last-4 hints, and the
-// issued-credential markers scoping keys on.
+// Per-user data: the admin theme preference older versions stored, dismissed
+// notices, credential last-4 hints, and the issued-credential markers scoping
+// keys on.
 delete_metadata( 'user', 0, 'saddle_admin_theme', '', true );
+delete_metadata( 'user', 0, 'saddle_dismissed_notices', '', true ); // Saddle_Notices::STORE.
 delete_metadata( 'user', 0, 'saddle_client_hints', '', true );
 delete_metadata( 'user', 0, 'saddle_issued_credentials', '', true );
 

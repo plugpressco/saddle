@@ -56,6 +56,9 @@ export default function Permissions( {
 	onTierSaved,
 	onCapsChanged,
 	onRehearsalChanged,
+	paused,
+	pausing,
+	onTogglePause,
 } ) {
 	const [ choice, setChoice ] = useState( levelKey( savedTier ) );
 	const [ saving, setSaving ] = useState( false );
@@ -84,8 +87,8 @@ export default function Permissions( {
 			.catch( () => setUnderLevelled( [] ) );
 	}, [ savedTier ] );
 
-	// Drafts-only: saves immediately on toggle, like Settings' pause/OAuth
-	// switches — it isn't part of the level/tools ApplyBar below.
+	// Drafts-only: saves immediately on toggle, like the pause switch above;
+	// it isn't part of the level/tools ApplyBar below.
 	const [ draftsOnly, setDraftsOnly ] = useState( false );
 	const [ savingDraftsOnly, setSavingDraftsOnly ] = useState( false );
 	// Rehearsal: the same save-on-toggle switch. The top bar shows it too, so
@@ -271,6 +274,44 @@ export default function Permissions( {
 					description: lvl.short,
 				} ) ) }
 			/>
+
+			<Card>
+				<CardHeader
+					title={ __( 'AI access', 'saddle' ) }
+					description={ __(
+						'The master switch. Pausing blocks every tool call from every connected app until you resume — nothing is disconnected or forgotten.',
+						'saddle'
+					) }
+				/>
+				<CardContent>
+					<label
+						className="saddle-toggle-row"
+						htmlFor="saddle-pause-switch"
+					>
+						<Switch
+							id="saddle-pause-switch"
+							checked={ ! paused }
+							disabled={ pausing }
+							onChange={ onTogglePause }
+							aria-label={ __(
+								'Saddle is answering connected apps',
+								'saddle'
+							) }
+						/>
+						<span>
+							{ paused
+								? __(
+										'Paused — every request is refused until you resume.',
+										'saddle'
+								  )
+								: __(
+										'Active — connected apps can use their allowed tools.',
+										'saddle'
+								  ) }
+						</span>
+					</label>
+				</CardContent>
+			</Card>
 
 			<Card>
 				<CardHeader
