@@ -202,6 +202,7 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 			'Connections, Permissions'   => array( 'saddle-connections', 'permissions', 'connections', 'permissions' ),
 			'Context'                    => array( 'saddle-context', null, 'context', 'overview' ),
 			'Settings'                   => array( 'saddle-settings', null, 'settings', 'general' ),
+			'an old Advanced link'       => array( 'saddle-settings', 'advanced', 'settings', 'general' ),
 			'an unknown tab falls back'  => array( 'saddle-connections', 'nope', 'connections', 'apps' ),
 			'markup in the tab is inert' => array( 'saddle', '"><script>', 'home', 'overview' ),
 		);

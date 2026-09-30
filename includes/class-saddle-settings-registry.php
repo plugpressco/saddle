@@ -83,14 +83,16 @@ class Saddle_Settings_Registry {
 					'agent'       => 'read',
 					'destructive' => false,
 					'screen'      => '',
+					'section'     => '',
 					'control'     => 'auto',
 				),
-				array_intersect_key( $field, array_flip( array( 'type', 'enum', 'minimum', 'maximum', 'default', 'label', 'help', 'level', 'agent', 'destructive', 'screen', 'control' ) ) )
+				array_intersect_key( $field, array_flip( array( 'type', 'enum', 'minimum', 'maximum', 'default', 'label', 'help', 'level', 'agent', 'destructive', 'screen', 'section', 'control' ) ) )
 			);
 			$fields[ $key ]['level']       = 'advanced' === $fields[ $key ]['level'] ? 'advanced' : 'basic';
 			$fields[ $key ]['agent']       = 'write' === $fields[ $key ]['agent'] ? 'write' : 'read';
 			$fields[ $key ]['control']     = 'custom' === $fields[ $key ]['control'] ? 'custom' : 'auto';
 			$fields[ $key ]['destructive'] = (bool) $fields[ $key ]['destructive'];
+			$fields[ $key ]['section']     = is_string( $fields[ $key ]['section'] ) ? wp_strip_all_tags( $fields[ $key ]['section'] ) : '';
 		}
 
 		if ( ! $fields ) {

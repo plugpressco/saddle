@@ -64,6 +64,7 @@ class Saddle_Settings_View {
 				'agent'       => $field['agent'],
 				'destructive' => $field['destructive'],
 				'screen'      => '' !== $field['screen'] ? $field['screen'] : $scope . '/settings',
+				'section'     => $field['section'],
 				'control'     => $field['control'],
 				'admin_url'   => self::admin_url( $scope, $key, $field ),
 				'value'       => 'secret' === $field['type'] ? self::redact( $values[ $key ] ) : $values[ $key ],

@@ -249,7 +249,7 @@ class Saddle_Settings_Registry_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'page=saddle-connections&tab=permissions#saddle-field-saddle-tier', $by_key['tier']['admin_url'] );
 		$this->assertStringContainsString( 'page=saddle-connections#saddle-field-saddle-oauth_enabled', $by_key['oauth_enabled']['admin_url'] );
 		$this->assertStringContainsString( 'page=saddle-context#saddle-field-saddle-memory_autoinject_agent', $by_key['memory_autoinject_agent']['admin_url'] );
-		$this->assertStringContainsString( 'page=saddle-settings&tab=advanced#saddle-field-saddle-memory_recent_limit', $by_key['memory_recent_limit']['admin_url'] );
+		$this->assertStringContainsString( 'page=saddle-settings#saddle-field-saddle-memory_recent_limit', $by_key['memory_recent_limit']['admin_url'] );
 		$this->assertSame( 'auto', $by_key['memory_recent_limit']['control'] );
 		$this->assertSame( 'custom', $by_key['tier']['control'] );
 	}
@@ -444,8 +444,37 @@ class Saddle_Settings_Registry_Test extends WP_UnitTestCase {
 		$this->assertSame( array( 'settings' => 'My settings' ), Saddle_Modules::modules()['own']['tabs'] );
 	}
 
-	public function test_core_settings_page_has_an_advanced_tab_after_general() {
-		$this->assertSame( array( 'general', 'advanced' ), array_keys( Saddle_Modules::core_areas()['settings']['tabs'] ) );
+	public function test_core_settings_page_is_one_tab() {
+		$this->assertSame( array( 'general' ), array_keys( Saddle_Modules::core_areas()['settings']['tabs'] ) );
+	}
+
+	public function test_an_old_advanced_tab_link_lands_on_general() {
+		$this->assertSame( 'general', Saddle_Modules::resolve_tab( 'settings', 'advanced' ) );
+	}
+
+	public function test_a_field_section_is_carried_and_defaults_to_empty() {
+		$schema = Saddle_Settings_Registry::normalize(
+			array(
+				'store'  => array( 'option' => 'saddle_test_sections' ),
+				'fields' => array(
+					'one' => array(
+						'type'    => 'boolean',
+						'section' => 'Memory',
+					),
+					'two' => array( 'type' => 'boolean' ),
+				),
+			)
+		);
+		$this->assertSame( 'Memory', $schema['fields']['one']['section'] );
+		$this->assertSame( '', $schema['fields']['two']['section'] );
+
+		$body   = Saddle_Settings_View::describe( 'saddle', Saddle_Settings_Registry::schema( 'saddle' ) );
+		$by_key = array_column( $body['fields'], null, 'key' );
+		$this->assertSame( 'Memory', $by_key['memory_max_entries']['section'] );
+		$this->assertSame( 'Recent changes', $by_key['memory_recent_limit']['section'] );
+		$this->assertSame( 'Security', $by_key['enforce_tier_domain']['section'] );
+		$this->assertSame( 'settings/general', $by_key['memory_recent_limit']['screen'] );
+		$this->assertSame( 'basic', $by_key['memory_recent_limit']['level'] );
 	}
 
 	public function test_status_and_setup_are_resolved_server_side() {

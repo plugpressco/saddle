@@ -8,7 +8,7 @@
  *   (with Integrations as its section for third-party tools)
  * - Context: what every app knows — instructions as named fields, skills,
  *   memory, and what Saddle tells every app automatically
- * - Settings: General · Advanced
+ * - Settings: one page, in sections
  *
  * A module's page shows the screen its own bundle registered for the tab
  * (`saddle.admin.screens`), or mounts its app into a slot
@@ -16,9 +16,10 @@
  */
 import { useMemo, useEffect, useRef } from '@wordpress/element';
 import { doAction } from '@wordpress/hooks';
-import { Notice } from '@plugpress/ui';
+import { Button, Notice, Row, RowList } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
-import { api } from './api';
+import { api, saddleData } from './api';
+import { findArea, withArg } from './routes';
 import Dashboard from './components/Dashboard';
 import Permissions from './components/Permissions';
 import Context from './components/Guidance';
@@ -26,13 +27,13 @@ import ConnectApps from './components/ConnectApps';
 import Apps from './components/ConnectedClients';
 import Integrations from './components/Integrations';
 import Activity from './components/Activity';
-import Settings from './components/Settings';
 import SettingsForm from './components/SettingsForm';
 import SignInCard, { useOauthSettings } from './components/SignInCard';
 import ConnectWizard from './components/ConnectWizard';
 import SectionHeader from './components/SectionHeader';
 import {
 	collectCards,
+	collectSettingsCards,
 	collectScreens,
 	collectTabs,
 	kit,
@@ -178,6 +179,58 @@ function AppsTab( {
 }
 
 /**
+ * Settings: Saddle's own settings by section, a Setup section, then whatever
+ * other plugins add (a licence, say), each as a section of its own.
+ *
+ * @param {Object} props
+ * @param {Array}  props.extTabs Sections contributed as v1 tabs.
+ */
+function SettingsScreen( { extTabs } ) {
+	// Collected at mount: addon bundles registered before the app mounted.
+	const cards = useMemo( collectSettingsCards, [] );
+	const home = findArea( saddleData.areas, 'home' );
+
+	return (
+		<>
+			<SettingsForm scope="saddle" screen="settings/general" />
+			{ home && (
+				<section className="saddle-stack">
+					<SectionHeader title={ __( 'Setup', 'saddle' ) } />
+					<RowList>
+						<Row
+							title={ __( 'Run setup again', 'saddle' ) }
+							actions={
+								<Button
+									href={ withArg( home.url, 'setup', '1' ) }
+									variant="link"
+									size="sm"
+								>
+									{ __( 'Start', 'saddle' ) }
+								</Button>
+							}
+						/>
+					</RowList>
+				</section>
+			) }
+			{ cards.map( ( card ) => (
+				<section key={ card.id } className="saddle-stack">
+					{ ( card.title || card.label ) && (
+						<SectionHeader title={ card.title || card.label } />
+					) }
+					<card.Component ui={ ui } shellVersion={ SHELL_VERSION } />
+				</section>
+			) ) }
+			{ extTabs.map( ( t ) => (
+				<section key={ t.id } className="saddle-stack">
+					<SectionHeader title={ t.label } />
+					<t.Component ui={ ui } shellVersion={ SHELL_VERSION } />
+				</section>
+			) ) }
+		</>
+	);
+}
+
+/**
  * The content of one tab of one page.
  *
  * @param {Object} props See App.jsx for each prop; they are the app's state.
@@ -218,6 +271,8 @@ export default function Screen( props ) {
 					<Dashboard
 						tier={ tier }
 						clients={ clients }
+						paused={ paused }
+						caps={ caps }
 						onNavigate={ navigate }
 						onConnect={ () => openWizard() }
 						onboarding={ onboarding }
@@ -268,24 +323,8 @@ export default function Screen( props ) {
 				</>
 			);
 
-		case 'settings/advanced':
-			return <SettingsForm scope="saddle" screen="settings/advanced" />;
-
 		case 'settings/general':
-			return (
-				<>
-					<Settings />
-					{ extTabs.map( ( t ) => (
-						<section key={ t.id } className="saddle-stack">
-							<SectionHeader title={ t.label } />
-							<t.Component
-								ui={ ui }
-								shellVersion={ SHELL_VERSION }
-							/>
-						</section>
-					) ) }
-				</>
-			);
+			return <SettingsScreen extTabs={ extTabs } />;
 
 		case 'context/overview':
 			return <Context />;
