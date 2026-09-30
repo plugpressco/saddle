@@ -27,6 +27,7 @@ import {
 } from '@plugpress/ui';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { api, levelFor } from '../api';
+import { APPS } from '../connect-apps';
 import { parseEntryDate, relativeWhen, shortLabel } from '../activity-format';
 
 // How many recent entries the Dashboard preview shows; the full record lives on
@@ -38,11 +39,41 @@ const PREVIEW_COUNT = 6;
 // granularity.
 let healthCache = null;
 
+/**
+ * A connection's name as the owner knows it: the app Saddle recognised, else
+ * the name it was connected under, else what the app calls itself.
+ *
+ * @param {Object} c A row from GET /connections.
+ * @return {string} Label.
+ */
+function connectionLabel( c ) {
+	const app = APPS.find( ( a ) => a.key === c.app );
+	return ( app && app.label ) || c.name || c.client;
+}
+
 export default function Dashboard( { tier, clients, onNavigate, onConnect } ) {
-	const hasApps = clients.length > 0;
+	// Keys and address (OAuth) connections, from the connection registry. It
+	// used to be the keys alone, so a site connected by address alone was told
+	// to connect its first app. `false` means the route failed: fall back to
+	// the keys the app already loaded rather than claim there are none.
+	const [ connections, setConnections ] = useState( null );
+	const apps =
+		connections === false
+			? clients.map( ( c ) => ( {
+					id: c.uuid,
+					name: c.label || c.name,
+			  } ) )
+			: connections;
+	const hasApps = !! apps && apps.length > 0;
 
 	const [ activity, setActivity ] = useState( null );
 	const [ health, setHealth ] = useState( healthCache );
+
+	useEffect( () => {
+		api( 'connections' )
+			.then( ( res ) => setConnections( res.connections || [] ) )
+			.catch( () => setConnections( false ) );
+	}, [] );
 
 	useEffect( () => {
 		// Only the preview page is needed here; `total` is the full count for
@@ -99,10 +130,10 @@ export default function Dashboard( { tier, clients, onNavigate, onConnect } ) {
 				_n(
 					'%d app connected',
 					'%d apps connected',
-					clients.length,
+					apps.length,
 					'saddle'
 				),
-				clients.length
+				apps.length
 			)
 		);
 	}
@@ -159,8 +190,10 @@ export default function Dashboard( { tier, clients, onNavigate, onConnect } ) {
 				/>
 			) }
 
-			{ /* When no apps yet, make connecting the clear next step */ }
-			{ ! hasApps && (
+			{ /* When no apps yet, make connecting the clear next step. Not
+			     while the list is still loading: that would flash the callout
+			     at every owner who has connected. */ }
+			{ apps && ! hasApps && (
 				<CalloutCard
 					title={ __( 'Connect your first app', 'saddle' ) }
 					description={ __(
@@ -185,11 +218,11 @@ export default function Dashboard( { tier, clients, onNavigate, onConnect } ) {
 						/>
 						<CardContent>
 							<RowList>
-								{ clients.slice( 0, 4 ).map( ( c ) => (
+								{ apps.slice( 0, 4 ).map( ( c ) => (
 									<Row
-										key={ c.uuid }
+										key={ c.id }
 										icon={ <StatusDot tone="success" /> }
-										title={ c.label || c.name }
+										title={ connectionLabel( c ) }
 									/>
 								) ) }
 							</RowList>

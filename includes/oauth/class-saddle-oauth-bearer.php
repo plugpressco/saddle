@@ -179,6 +179,20 @@ class Saddle_OAuth_Bearer {
 	}
 
 	/**
+	 * The grant behind the current request's token, or '' when the request
+	 * did not sign in with one. Saddle_Connections keys its record on it.
+	 *
+	 * @return string
+	 */
+	public static function current_grant_id() {
+		if ( null === self::$token_record || empty( self::$token_record['grant_id'] ) ) {
+			return '';
+		}
+
+		return (string) self::$token_record['grant_id'];
+	}
+
+	/**
 	 * Belt-and-braces confinement for a token-authenticated request.
 	 *
 	 * {@see self::resolve()} never authenticates a token off the MCP endpoint, so

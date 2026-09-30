@@ -35,6 +35,7 @@ $saddle_options = array(
 	'saddle_oauth_cimd_enabled',      // Saddle_OAuth_Clients::CIMD_OPTION.
 	'saddle_enabled_integrations',    // Saddle_Integrations::APPROVED_OPTION.
 	'saddle_update_runs',             // Saddle_Update_Runner::OPTION.
+	'saddle_connections',             // Saddle_Connections::OPTION.
 );
 foreach ( $saddle_options as $saddle_option ) {
 	delete_option( $saddle_option );
