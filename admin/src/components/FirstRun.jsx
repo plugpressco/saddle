@@ -1,27 +1,46 @@
 /**
- * First run (#269). Saddle reads the site before it asks for anything, then
- * connects the owner's AI, then asks for edit rights in the light of what it
- * found, and ends on a first prompt made from those findings.
+ * First run (#269, v2 in #277). Saddle reads the site before it asks for
+ * anything, connects the owner's AI, proves the connection with a read-only
+ * prompt, and only then asks whether it may edit.
  *
- * It replaces a welcome screen and an up-front safety-level choice. The
- * owner is never asked to decide something before they have seen a reason
- * to, and a new install stays at read unless they click "Let it edit".
+ * Steps: the site read (0), which AI (app), connect, try it, and what Saddle
+ * can do (choose). The step is stored with each change, so a reload resumes
+ * where the owner was. "Skip setup" is on every step and leaves the tier at
+ * read: only the "Let it draft and edit content" button ever raises it.
  */
 import { useState, useEffect, useRef } from '@wordpress/element';
 import {
 	Button,
+	CalloutCard,
+	CardRadioGroup,
 	ChecklistItem,
+	EyeIcon,
+	Kbd,
 	Notice,
+	RefreshIcon,
+	Row,
+	RowList,
+	ShieldCheckIcon,
 	Snippet,
 	StatCard,
 	StatGrid,
 	useReducedMotion,
 } from '@plugpress/ui';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import { api, levelFor } from '../api';
-import { BrandMark } from './icons';
+import { api, levelFor, saddleData } from '../api';
+import { AppLogo, BrandMark } from './icons';
 import ConnectWizard from './ConnectWizard';
-import { HELLO_PROMPT } from '../connect-apps';
+import WaitingLine from './WaitingLine';
+import { APPS } from '../connect-apps';
+import { createPulse } from '../pulse';
+import {
+	connectStatus,
+	resumeStep,
+	stepAfter,
+	timeoutTip,
+	tryPrompt,
+	tryStatus,
+} from '../onboarding-logic';
 
 // Time between lines, so each one can be read as it lands.
 const BEAT = 700;
@@ -125,34 +144,327 @@ function findingLines( { findings } ) {
 	return found;
 }
 
-// The first thing to ask, made from what Saddle found.
-function firstPrompt( look, canEdit ) {
-	const findings = look ? look.findings : {};
-	if ( findings.missing_alt > 0 ) {
-		return canEdit
-			? __(
-					'Find the images on my site with no alt text and write alt text for each one.',
-					'saddle'
-			  )
-			: __( 'Which images on my site have no alt text?', 'saddle' );
+// The six tiles. "Other" opens the rest of the catalog.
+const TILES = [ 'claude', 'claude-code', 'chatgpt', 'codex', 'cursor' ];
+const OTHER_APPS = [
+	'vscode',
+	'gemini-cli',
+	'windsurf',
+	'openclaw',
+	'grok',
+	'other',
+];
+
+// How long the try-it step waits for a tool call before it offers a tip.
+const TRY_PATIENCE = 120000;
+// Once the first call lands, keep listening this long so the next ones show.
+const TRY_SETTLE = 6000;
+
+const appMeta = ( key ) => APPS.find( ( a ) => a.key === key );
+
+const errorText = ( e ) =>
+	// apiFetch's raw invalid_json message ("not a valid JSON response") reads
+	// like a site fault; name the likely actor.
+	'invalid_json' === e.code
+		? __(
+				'A security layer at your host answered instead of WordPress. Reload and try again — if it keeps happening, ask your host to allow the WordPress REST API for signed-in administrators.',
+				'saddle'
+		  )
+		: e.message;
+
+/**
+ * The try-it step: a read-only prompt to paste into the app, and a waiting
+ * line that shows each call as it lands.
+ *
+ * @param {Object}   props
+ * @param {string}   props.app    App key.
+ * @param {Object}   props.look   GET /first-look, or null.
+ * @param {Function} props.onDone The owner carries on.
+ */
+function TryIt( { app, look, onDone } ) {
+	const label = appMeta( app ).label;
+	const pulse = useRef( null );
+	const [ tried, setTried ] = useState( false );
+	const [ slow, setSlow ] = useState( false );
+
+	if ( ! pulse.current ) {
+		pulse.current = createPulse();
 	}
-	if ( findings.missing_description > 0 ) {
-		return canEdit
-			? __(
-					'Find my pages and posts with no search description and write one for each.',
-					'saddle'
-			  )
-			: __(
-					'Which of my pages and posts have no search description?',
-					'saddle'
-			  );
-	}
-	return HELLO_PROMPT;
+
+	// Enter carries on once it works, unless focus is on a control of its own.
+	useEffect( () => {
+		if ( ! tried ) {
+			return undefined;
+		}
+		const onKey = ( e ) => {
+			if ( 'Enter' === e.key && document.body === e.target ) {
+				onDone();
+			}
+		};
+		document.addEventListener( 'keydown', onKey );
+		return () => document.removeEventListener( 'keydown', onKey );
+	}, [ tried, onDone ] );
+
+	return (
+		<div className="saddle-first-run__after">
+			<div className="saddle-first-run__ask">
+				<h2 className="saddle-first-run__question">
+					{ sprintf(
+						/* translators: %s: the app name. */
+						__( 'Try it. Paste this into %s:', 'saddle' ),
+						label
+					) }
+				</h2>
+				<Snippet value={ tryPrompt( look ) } />
+			</div>
+
+			<WaitingLine
+				check={ () =>
+					pulse.current
+						.poll()
+						.then( ( { rows } ) =>
+							tryStatus( { rows, app, appLabel: label } )
+						)
+				}
+				initialText={ sprintf(
+					/* translators: %s: the app name. */
+					__( 'Waiting for %s to use Saddle…', 'saddle' ),
+					label
+				) }
+				settleMs={ TRY_SETTLE }
+				timeoutMs={ TRY_PATIENCE }
+				onTimeout={ () => setSlow( true ) }
+				onDone={ () => setTried( true ) }
+			/>
+
+			{ slow && ! tried && (
+				<CalloutCard
+					tone="warning"
+					title={ __( 'Nothing has arrived yet', 'saddle' ) }
+					description={ timeoutTip( app, label ) }
+				/>
+			) }
+
+			<div className="saddle-first-run__actions">
+				{ tried ? (
+					<Button variant="primary" onClick={ onDone }>
+						{ __( 'Continue', 'saddle' ) }
+						<Kbd>↵</Kbd>
+					</Button>
+				) : (
+					<Button variant="ghost" onClick={ onDone }>
+						{ __( 'Skip this step', 'saddle' ) }
+					</Button>
+				) }
+			</div>
+		</div>
+	);
 }
 
+/**
+ * The last step: what Saddle can do, and the one real choice.
+ *
+ * @param {Object}   props
+ * @param {string}   props.app         App key.
+ * @param {string}   props.tier        The site's tier now.
+ * @param {string}   props.siteName    For the heading.
+ * @param {Function} props.onTierSaved Called with the tier after a save.
+ * @param {Function} props.onFinish    Called with the choice, `read` or `write`.
+ */
+function Choose( { app, tier, siteName, onTierSaved, onFinish } ) {
+	const label = appMeta( app ).label;
+	const [ saving, setSaving ] = useState( false );
+	const [ error, setError ] = useState( null );
+	const canEdit = 'read' !== tier;
+	const modules = ( saddleData.areas || [] )
+		.filter( ( a ) => a.module )
+		.map( ( a ) => a.title );
+
+	const allowEditing = () => {
+		setSaving( true );
+		setError( null );
+		api( 'preferences', { method: 'POST', data: { tier: 'write' } } )
+			.then( ( res ) => {
+				onTierSaved( res.tier );
+				onFinish( 'write' );
+			} )
+			.catch( ( e ) => {
+				setError( errorText( e ) );
+				setSaving( false );
+			} );
+	};
+
+	return (
+		<div className="saddle-first-run__after">
+			<div className="saddle-first-run__ask">
+				<h2 className="saddle-first-run__question">
+					{ sprintf(
+						/* translators: 1: the app name, 2: the site name. */
+						__( 'Here’s what %1$s can do on %2$s.', 'saddle' ),
+						label,
+						siteName
+					) }
+				</h2>
+				<RowList>
+					<Row
+						icon={ <EyeIcon size={ 18 } /> }
+						title={ __( 'It can look', 'saddle' ) }
+						description={
+							modules.length
+								? sprintf(
+										/* translators: %s: module names, e.g. Analytics, SEO. */
+										__(
+											'Pages, posts, media and settings, and your modules: %s.',
+											'saddle'
+										),
+										modules.join( ', ' )
+								  )
+								: __(
+										'Pages, posts, media and settings.',
+										'saddle'
+								  )
+						}
+					/>
+					<Row
+						icon={ <ShieldCheckIcon size={ 18 } /> }
+						title={ __( 'It asks first', 'saddle' ) }
+						description={ __(
+							'Deleting or changing many things shows you a preview and waits for your OK.',
+							'saddle'
+						) }
+					/>
+					<Row
+						icon={ <RefreshIcon size={ 18 } /> }
+						title={ __( 'You can undo', 'saddle' ) }
+						description={ __(
+							'Every change is listed on Home, in the Activity tab, with undo.',
+							'saddle'
+						) }
+					/>
+				</RowList>
+			</div>
+
+			{ error && (
+				<Notice tone="danger" onDismiss={ () => setError( null ) }>
+					{ error }
+				</Notice>
+			) }
+
+			<div className="saddle-first-run__ask">
+				<h2 className="saddle-first-run__question">
+					{ canEdit
+						? __(
+								'Right now it can draft and edit content.',
+								'saddle'
+						  )
+						: __( 'Right now it’s read-only.', 'saddle' ) }
+				</h2>
+				<div className="saddle-first-run__actions">
+					{ canEdit ? (
+						<Button
+							variant="primary"
+							onClick={ () => onFinish( 'write' ) }
+						>
+							{ __( 'Go to Saddle', 'saddle' ) }
+						</Button>
+					) : (
+						<>
+							<Button
+								variant="primary"
+								onClick={ allowEditing }
+								loading={ saving }
+								disabled={ saving }
+							>
+								{ __(
+									'Let it draft and edit content',
+									'saddle'
+								) }
+							</Button>
+							<Button
+								variant="ghost"
+								onClick={ () => onFinish( 'read' ) }
+								disabled={ saving }
+							>
+								{ __( 'Keep read-only', 'saddle' ) }
+							</Button>
+						</>
+					) }
+				</div>
+				<p className="saddle-first-run__foot">
+					{ __(
+						'Skills and instructions live in Context. Each module has its own page in the Saddle menu.',
+						'saddle'
+					) }
+				</p>
+			</div>
+		</div>
+	);
+}
+
+/**
+ * The six tiles. "Other" swaps them for the rest of the catalog.
+ *
+ * @param {Object}   props
+ * @param {Function} props.onPick Called with an app key.
+ */
+function AppTiles( { onPick } ) {
+	const [ other, setOther ] = useState( false );
+	const keys = other ? OTHER_APPS : TILES;
+	const options = keys.map( ( key ) => ( {
+		value: key,
+		icon: <AppLogo app={ key } />,
+		title: appMeta( key ).label,
+		description: appMeta( key ).kind,
+	} ) );
+	if ( ! other ) {
+		options.push( {
+			value: '__other',
+			icon: <AppLogo app="other" />,
+			title: __( 'Other', 'saddle' ),
+			description: __(
+				'VS Code, Gemini CLI, Windsurf and more',
+				'saddle'
+			),
+		} );
+	}
+
+	return (
+		<div className="saddle-first-run__ask">
+			<h2 className="saddle-first-run__question">
+				{ __( 'Which AI do you use?', 'saddle' ) }
+			</h2>
+			<CardRadioGroup
+				className="saddle-wizard__apps"
+				aria-label={ __( 'Which AI do you use?', 'saddle' ) }
+				options={ options }
+				onChange={ ( value ) =>
+					'__other' === value ? setOther( true ) : onPick( value )
+				}
+			/>
+			{ other && (
+				<Button variant="link" onClick={ () => setOther( false ) }>
+					{ __( 'Back to the main apps', 'saddle' ) }
+				</Button>
+			) }
+		</div>
+	);
+}
+
+/**
+ * @param {Object}   props
+ * @param {string}   props.tier             The site's tier.
+ * @param {Array}    props.clients          Keys, for the wizard's duplicate check.
+ * @param {Object}   props.firstRun         `first_run` from GET /onboarding.
+ * @param {Function} props.send             Posts one onboarding event.
+ * @param {Function} props.onTierSaved      Called with the tier after a save.
+ * @param {Function} props.onClientsChanged Reload the keys list.
+ * @param {Function} props.onFinish         First run is over; go to Home.
+ */
 export default function FirstRun( {
 	tier,
 	clients,
+	firstRun,
+	send,
 	onTierSaved,
 	onClientsChanged,
 	onFinish,
@@ -161,12 +473,17 @@ export default function FirstRun( {
 	const [ look, setLook ] = useState( null );
 	const [ lookFailed, setLookFailed ] = useState( false );
 	const [ shown, setShown ] = useState( 0 );
-	const [ app, setApp ] = useState( null );
-	const [ decided, setDecided ] = useState( false );
-	const [ saving, setSaving ] = useState( false );
-	const [ error, setError ] = useState( null );
+
+	// Where a reload resumes. The site read is always shown again, all at once.
+	const storedApp = appMeta( firstRun.app ) ? firstRun.app : '';
+	const resumed = useRef( resumeStep( { ...firstRun, app: storedApp } ) );
+	const [ step, setStep ] = useState( resumed.current );
+	const [ app, setApp ] = useState(
+		'read' === resumed.current ? null : storedApp
+	);
 	// The newest block on screen, kept in view the way a chat thread is.
 	const newest = useRef( null );
+	const pulseForConnect = useRef( null );
 
 	useEffect( () => {
 		let alive = true;
@@ -215,21 +532,31 @@ export default function FirstRun( {
 		} );
 	}
 
-	// Reveal one line per beat, then the connect step. All at once when the
-	// owner prefers reduced motion.
+	// Reveal one line per beat, then the next step. All at once when the owner
+	// prefers reduced motion, or when this is a resume.
 	const total = lines.length + 1;
 	const ready = !! look || lookFailed;
+	const instant = reduced || 'read' !== resumed.current;
 	useEffect( () => {
 		if ( ! ready || shown >= total ) {
 			return undefined;
 		}
-		if ( reduced ) {
+		if ( instant ) {
 			setShown( total );
 			return undefined;
 		}
 		const t = window.setTimeout( () => setShown( shown + 1 ), BEAT );
 		return () => window.clearTimeout( t );
-	}, [ ready, shown, total, reduced ] );
+	}, [ ready, shown, total, instant ] );
+
+	// The site read is done: move to choosing an AI, and remember it.
+	const read = ready && shown >= total;
+	useEffect( () => {
+		if ( read && 'read' === step ) {
+			setStep( 'app' );
+			send( { event: 'first_run.step', step: 'app' } );
+		}
+	}, [ read, step, send ] );
 
 	useEffect( () => {
 		if ( newest.current ) {
@@ -240,38 +567,69 @@ export default function FirstRun( {
 				block: 'nearest',
 			} );
 		}
-	}, [ shown, app, decided, reduced ] );
+	}, [ shown, step, reduced ] );
 
-	const canEdit = 'read' !== tier;
-
-	const allowEditing = () => {
-		setSaving( true );
-		setError( null );
-		api( 'preferences', { method: 'POST', data: { tier: 'write' } } )
-			.then( ( res ) => {
-				onTierSaved( res.tier );
-				setDecided( true );
-			} )
-			.catch( ( e ) =>
-				setError(
-					// apiFetch's raw invalid_json message ("not a valid JSON
-					// response") reads like a site fault; name the likely actor.
-					'invalid_json' === e.code
-						? __(
-								'A security layer at your host answered instead of WordPress. Reload and try again — if it keeps happening, ask your host to allow the WordPress REST API for signed-in administrators.',
-								'saddle'
-						  )
-						: e.message
-				)
-			)
-			.finally( () => setSaving( false ) );
+	const goTo = ( next, extra = {} ) => {
+		setStep( next );
+		send( { event: 'first_run.step', step: next, ...extra } );
 	};
 
-	// The dashboard opens at its top, not at wherever this page was scrolled.
-	const finish = () => {
+	const pick = ( key ) => {
+		setApp( key );
+		goTo( 'connect', { app: key } );
+	};
+
+	const skip = () => {
 		window.scrollTo( 0, 0 );
-		onFinish( { connect: false } );
+		send( { event: 'first_run.skip' } );
+		onFinish();
 	};
+
+	const finish = ( choice ) => {
+		window.scrollTo( 0, 0 );
+		send( { event: 'first_run.done', tier_choice: choice } );
+		onFinish();
+	};
+
+	const label = app && appMeta( app ) ? appMeta( app ).label : '';
+	const siteName = look ? look.site.name : __( 'this site', 'saddle' );
+
+	const renderWaiting = ( { app: appKey, appLabel, keyId, connected } ) => {
+		// One pulse reader per attempt: a new key is a new baseline.
+		const id = keyId || 'address';
+		if ( ! pulseForConnect.current || pulseForConnect.current.id !== id ) {
+			pulseForConnect.current = {
+				id,
+				reader: createPulse( { ignoreExisting: true } ),
+			};
+		}
+		const { reader } = pulseForConnect.current;
+
+		return (
+			<WaitingLine
+				key={ id }
+				check={ () =>
+					reader.poll().then( ( { rows, pending } ) =>
+						connectStatus( {
+							rows,
+							pending,
+							app: appKey,
+							appLabel,
+							keyId,
+						} )
+					)
+				}
+				initialText={ sprintf(
+					/* translators: %s: the app name. */
+					__( 'Waiting for %s…', 'saddle' ),
+					appLabel
+				) }
+				onDone={ connected }
+			/>
+		);
+	};
+
+	const afterApp = 'read' !== step && 'app' !== step;
 
 	return (
 		<div className="saddle-first-run">
@@ -279,10 +637,8 @@ export default function FirstRun( {
 				<span className="saddle-first-run__mark" aria-hidden="true">
 					<BrandMark />
 				</span>
-				<Button variant="link" onClick={ finish }>
-					{ app
-						? __( 'Go to Saddle', 'saddle' )
-						: __( 'Skip setup', 'saddle' ) }
+				<Button variant="link" onClick={ skip }>
+					{ __( 'Skip setup', 'saddle' ) }
 				</Button>
 			</div>
 
@@ -348,102 +704,75 @@ export default function FirstRun( {
 							) }
 						</div>
 					) ) }
+					{ afterApp && label && (
+						<div className="saddle-first-run__line">
+							<ChecklistItem
+								status="done"
+								label={ sprintf(
+									/* translators: %s: the app name. */
+									__( 'You use %s', 'saddle' ),
+									label
+								) }
+							/>
+						</div>
+					) }
+					{ [ 'try', 'choose' ].includes( step ) && (
+						<div className="saddle-first-run__line">
+							<ChecklistItem
+								status="done"
+								label={ sprintf(
+									/* translators: %s: the app name. */
+									__( '%s connected', 'saddle' ),
+									label
+								) }
+							/>
+						</div>
+					) }
+					{ 'choose' === step && (
+						<div className="saddle-first-run__line">
+							<ChecklistItem
+								status="done"
+								label={ __( 'It works', 'saddle' ) }
+							/>
+						</div>
+					) }
 				</div>
 
-				{ ready && shown >= total && ! app && (
-					<div ref={ newest }>
+				<div ref={ 'read' === step ? undefined : newest } key={ step }>
+					{ 'app' === step && <AppTiles onPick={ pick } /> }
+
+					{ 'connect' === step && app && (
 						<ConnectWizard
 							embedded
+							presetApp={ app }
 							tier={ tier }
 							clients={ clients }
 							onClientsChanged={ onClientsChanged }
-							onConnected={ setApp }
-							onExit={ finish }
+							renderWaiting={ renderWaiting }
+							onBack={ () => goTo( 'app' ) }
+							onConnected={ () => goTo( 'try' ) }
+							onExit={ skip }
 						/>
-					</div>
-				) }
+					) }
 
-				{ app && (
-					<div className="saddle-first-run__after" ref={ newest }>
-						<ChecklistItem
-							status="done"
-							label={ sprintf(
-								/* translators: %s: the app name. */
-								__( '%s connected', 'saddle' ),
-								app.label
-							) }
+					{ 'try' === step && app && (
+						<TryIt
+							app={ app }
+							look={ look }
+							onDone={ () => goTo( stepAfter( 'try' ) ) }
 						/>
+					) }
 
-						{ error && (
-							<Notice
-								tone="danger"
-								onDismiss={ () => setError( null ) }
-							>
-								{ error }
-							</Notice>
-						) }
-
-						{ ! canEdit && ! decided && (
-							<div className="saddle-first-run__ask">
-								<h2 className="saddle-first-run__question">
-									{ __(
-										'Right now it can look, not touch.',
-										'saddle'
-									) }
-								</h2>
-								<p className="saddle-first-run__lead">
-									{ __(
-										'Let it create and edit content too? Deleting always asks you first, and every change is logged in Activity. You can change this anytime in Permissions.',
-										'saddle'
-									) }
-								</p>
-								<div className="saddle-first-run__actions">
-									<Button
-										variant="primary"
-										onClick={ allowEditing }
-										loading={ saving }
-										disabled={ saving }
-									>
-										{ __(
-											'Let it edit content',
-											'saddle'
-										) }
-									</Button>
-									<Button
-										variant="ghost"
-										onClick={ () => setDecided( true ) }
-										disabled={ saving }
-									>
-										{ __( 'Keep it read-only', 'saddle' ) }
-									</Button>
-								</div>
-							</div>
-						) }
-
-						{ ( canEdit || decided ) && (
-							<div className="saddle-first-run__ask">
-								<h2 className="saddle-first-run__question">
-									{ sprintf(
-										/* translators: %s: the app name. */
-										__( 'Try this in %s', 'saddle' ),
-										app.label
-									) }
-								</h2>
-								<Snippet
-									value={ firstPrompt( look, canEdit ) }
-								/>
-								<div className="saddle-first-run__actions">
-									<Button
-										variant="primary"
-										onClick={ finish }
-									>
-										{ __( 'Go to Saddle', 'saddle' ) }
-									</Button>
-								</div>
-							</div>
-						) }
-					</div>
-				) }
+					{ 'choose' === step && app && (
+						<Choose
+							app={ app }
+							tier={ tier }
+							siteName={ siteName }
+							onTierSaved={ onTierSaved }
+							onFinish={ finish }
+						/>
+					) }
+				</div>
 			</div>
 		</div>
 	);

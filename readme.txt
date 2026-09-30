@@ -211,6 +211,9 @@ The WordPress.org version never checks for its own updates. The version from plu
 * Removed: The unused dark and light theme setting. The Saddle screens have one light theme.
 * Changed: First run reads your site before it asks you anything. It counts your pages, posts, media and waiting updates. It also lists work your AI app could do, such as images with no alt text. Then it helps you connect your app on the same screen.
 * Changed: Saddle asks whether your AI app may edit content after the app connects, not before. A new install still starts read-only.
+* New: First run proves the connection. Pick your AI app from six, connect it, then paste a read-only prompt and watch each tool call arrive. Saddle then explains what your app can do and asks whether it may edit content. Skipping any step keeps the app read-only.
+* New: Home shows a short Setup list until an app is connected, has tried a prompt, and you have chosen what it can do. A three-stop tour shows where things are, once per person. Settings > Run setup again opens first run at any time.
+* Improved: While you wait for an app to connect, Saddle says when it has asked to connect and is waiting for your approval. After three minutes it checks HTTPS, permalinks and the sign-in header, and offers a key instead.
 * Fixed: Closing the connect screen no longer removes a key the app has already used. This happened when the key was copied by hand instead of with Copy setup.
 * Fixed: The Dashboard now counts apps that connect by address. A site connected only that way was told to connect its first app.
 * Improved: The Dashboard names each connected app, such as Claude or Cursor, from what the app reports about itself. Saddle also notes when each app first used a tool. Reads still add nothing to the activity log.

@@ -9,9 +9,17 @@
  * reload or a shared link lands on the same tab and Back steps between tabs.
  * Switching pages is an ordinary WordPress page load.
  *
- * First run (#269) still replaces Home until the owner finishes or skips it.
+ * First run (#269, #277) replaces Home until the owner finishes or skips it,
+ * and `&setup=1` opens it again from Settings. Its state is the onboarding
+ * record (`GET /onboarding`), not a flag.
  */
-import { useState, useEffect, useCallback, useMemo } from '@wordpress/element';
+import {
+	useState,
+	useEffect,
+	useCallback,
+	useMemo,
+	useRef,
+} from '@wordpress/element';
 import {
 	TooltipProvider,
 	ConfirmProvider,
@@ -22,10 +30,12 @@ import {
 import { __, sprintf } from '@wordpress/i18n';
 import { api, saddleData } from './api';
 import FirstRun from './components/FirstRun';
+import Tour from './components/Tour';
 import AuthTrouble from './components/AuthTrouble';
 import Frame from './components/Frame';
 import { pickSlot } from './notices';
 import Screen, { describe } from './screens';
+import { showFirstRun, tourDue } from './onboarding-logic';
 import {
 	areaUrl,
 	findArea,
@@ -46,6 +56,10 @@ const CURRENT = findArea( AREAS, saddleData.area ) ||
 		url: window.location.href,
 		tabs: [ { key: 'overview', label: __( 'Overview', 'saddle' ) } ],
 	};
+
+// `&setup=1` (Settings → Run setup again, and Home's Setup block) opens first
+// run even when it is finished. `&step=try&app=claude` opens it on that step.
+const setupParams = () => new URLSearchParams( window.location.search );
 
 // The notices Core sent for this page and tab (Saddle_Notices), most severe
 // first.
@@ -81,7 +95,17 @@ export default function App() {
 	const [ tier, setTier ] = useState( null );
 	const [ caps, setCaps ] = useState( [] );
 	const [ clients, setClients ] = useState( [] );
+	// The onboarding record, or null until it arrives (or if its route failed,
+	// in which case the old `onboarded` answer from /preferences stands in).
+	const [ onboarding, setOnboarding ] = useState( null );
 	const [ onboarded, setOnboarded ] = useState( true );
+	const [ setupForced, setSetupForced ] = useState(
+		() => CURRENT.key === 'home' && setupParams().has( 'setup' )
+	);
+	const [ tourDismissed, setTourDismissed ] = useState( false );
+	// Set when first run ends here, so a slow answer to an earlier step can
+	// never put it back on screen.
+	const finishedHere = useRef( false );
 	const [ paused, setPaused ] = useState( false );
 	const [ rehearsal, setRehearsal ] = useState( false );
 	const [ pausing, setPausing ] = useState( false );
@@ -141,6 +165,22 @@ export default function App() {
 			}
 		},
 		[ area, setTab ]
+	);
+
+	// One onboarding event to the server; the answer is the new state.
+	const sendOnboarding = useCallback(
+		( event ) =>
+			api( 'onboarding', { method: 'POST', data: event } )
+				.then( ( res ) => {
+					const open = [ 'new', 'active' ].includes(
+						res.first_run.state
+					);
+					if ( ! ( finishedHere.current && open ) ) {
+						setOnboarding( res );
+					}
+				} )
+				.catch( () => {} ),
+		[]
 	);
 
 	const loadCaps = useCallback(
@@ -213,6 +253,9 @@ export default function App() {
 		Promise.all( [
 			loadCaps(),
 			loadClients(),
+			api( 'onboarding' )
+				.then( setOnboarding )
+				.catch( () => {} ),
 			api( 'preferences' ).then( ( res ) => {
 				setOnboarded( !! res.onboarded );
 				setPaused( !! res.paused );
@@ -258,6 +301,12 @@ export default function App() {
 		return () => timers.forEach( clearTimeout );
 	}, [ loading ] );
 
+	const activityLabel =
+		( ( findArea( AREAS, 'home' ) || {} ).tabs || [] ).reduce(
+			( found, t ) => ( 'activity' === t.key ? t.label : found ),
+			''
+		) || __( 'Activity', 'saddle' );
+
 	const connectUrl = withArg(
 		areaUrl( AREAS, 'connections', 'apps' ) || window.location.href,
 		'add',
@@ -289,17 +338,36 @@ export default function App() {
 		refreshClients();
 	};
 
-	const finishOnboarding = ( { connect } = {} ) => {
+	// First run is over (finished or skipped): the events were already sent.
+	// Show Home at once, and drop `&setup=1` so a reload does not reopen it.
+	const finishOnboarding = () => {
+		finishedHere.current = true;
 		setOnboarded( true );
-		api( 'preferences', {
-			method: 'POST',
-			data: { onboarded: true },
-		} ).catch( () => {} );
-		if ( connect ) {
-			openWizard();
-		} else {
-			setTab( 'overview' );
+		setSetupForced( false );
+		setOnboarding( ( prev ) =>
+			prev && [ 'new', 'active' ].includes( prev.first_run.state )
+				? {
+						...prev,
+						first_run: { ...prev.first_run, state: 'skipped' },
+				  }
+				: prev
+		);
+		if ( window.history && window.history.replaceState ) {
+			let url = window.location.href;
+			[ 'setup', 'step', 'app' ].forEach( ( name ) => {
+				url = withArg( url, name, null );
+			} );
+			window.history.replaceState( {}, '', url );
 		}
+		setTab( 'overview' );
+	};
+
+	const hideSetup = () =>
+		sendOnboarding( { event: 'setup.hide', module: 'home' } );
+
+	const finishTour = () => {
+		setTourDismissed( true );
+		sendOnboarding( { event: 'tour.done' } );
 	};
 
 	const togglePause = () => {
@@ -376,6 +444,28 @@ export default function App() {
 	// overlays pick up tokens from the pp-scope body class.
 	let view = null;
 
+	// First run shows while it is unfinished (or asked for again). Without the
+	// onboarding record the old flag decides.
+	const firstRunOpen = onboarding
+		? showFirstRun( onboarding.first_run, setupForced )
+		: ! onboarded || setupForced;
+	// Asked for again on a finished site, it starts from the top unless the
+	// address names a step (Home's Setup block sends `step=try&app=…`).
+	const firstRunStart = ( () => {
+		const base = onboarding
+			? onboarding.first_run
+			: { state: 'new', step: '', app: '' };
+		const params = setupParams();
+		if (
+			setupForced &&
+			'try' === params.get( 'step' ) &&
+			params.get( 'app' )
+		) {
+			return { ...base, step: 'try', app: params.get( 'app' ) };
+		}
+		return base;
+	} )();
+
 	if ( redirect ) {
 		view = null;
 	} else if ( loading ) {
@@ -386,12 +476,14 @@ export default function App() {
 		);
 	} else if ( authError ) {
 		view = <AuthTrouble onRetry={ () => window.location.reload() } />;
-	} else if ( ! onboarded && area.key === 'home' ) {
+	} else if ( area.key === 'home' && firstRunOpen ) {
 		view = (
 			<div className="pp-app saddle-app saddle-app--setup">
 				<FirstRun
 					tier={ tier }
 					clients={ clients }
+					firstRun={ firstRunStart }
+					send={ sendOnboarding }
 					onTierSaved={ setTier }
 					onClientsChanged={ refreshClients }
 					onFinish={ finishOnboarding }
@@ -441,8 +533,20 @@ export default function App() {
 						onTierSaved={ handleTierSaved }
 						onRehearsalChanged={ setRehearsal }
 						onTogglePause={ togglePause }
+						onboarding={ onboarding }
+						onHideSetup={ hideSetup }
 					/>
 				</div>
+				{ ! wizardOpen &&
+					area.key === 'home' &&
+					'overview' === tab &&
+					! tourDismissed &&
+					tourDue( onboarding ) && (
+						<Tour
+							activityLabel={ activityLabel }
+							onFinish={ finishTour }
+						/>
+					) }
 			</Frame>
 		);
 	}

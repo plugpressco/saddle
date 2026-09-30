@@ -26,6 +26,7 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		remove_all_filters( 'saddle_modules' );
 		$this->reset_menus();
 		unset( $_GET['page'], $_GET['tab'] );
+		delete_option( Saddle_Onboarding::OPTION );
 		delete_option( 'saddle_onboarded' );
 		wp_dequeue_script( 'saddle-admin' );
 		wp_deregister_script( 'saddle-test-module' );
@@ -260,7 +261,7 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'Get started', $links[0] );
 		$this->assertStringContainsString( 'page=saddle"', $links[0] );
 
-		update_option( 'saddle_onboarded', true );
+		Saddle_Onboarding::apply( array( 'event' => 'first_run.skip' ) );
 		$links = Saddle_Settings::action_links( array( 'deactivate' => '<a>Deactivate</a>' ) );
 		$this->assertStringContainsString( 'Settings', $links[0] );
 		$this->assertStringContainsString( 'page=saddle-settings', $links[0] );

@@ -54,6 +54,10 @@
  *   (`content => 'mount'` in its descriptor). It fires with an element React
  *   never touches, and `{ module, tab }`.
  *
+ * - `kit.WaitingLine` (feature `waiting-line`): a status line that polls
+ *   `check()` (3 s, backing off to 30 s, paused in a hidden tab) and says the
+ *   finest true thing while a task waits. See components/WaitingLine.jsx.
+ *
  * Feature-detect, never compare versions: `window.saddleShell.has( 'screens' )`.
  */
 import { applyFilters } from '@wordpress/hooks';
@@ -92,6 +96,7 @@ import {
 } from '@plugpress/ui';
 import SectionHeader from './components/SectionHeader';
 import SettingsForm from './components/SettingsForm';
+import WaitingLine from './components/WaitingLine';
 
 export const SHELL_VERSION = 2;
 
@@ -138,6 +143,7 @@ export const ui = {
 export const kit = {
 	SectionHeader,
 	SettingsForm,
+	WaitingLine,
 };
 
 const FEATURES = [
@@ -148,6 +154,7 @@ const FEATURES = [
 	'connectionCards',
 	'mount',
 	'settings-form',
+	'waiting-line',
 ];
 
 // What this shell supports, for addons that feature-detect. Set when the

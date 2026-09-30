@@ -608,7 +608,7 @@ class Saddle_REST_Admin {
 				'tier'           => Saddle_Capabilities::get_site_tier(),
 				'tiers'          => Saddle_Capabilities::tiers(),
 				'default'        => Saddle_Capabilities::DEFAULT_TIER,
-				'onboarded'      => (bool) get_option( 'saddle_onboarded', false ),
+				'onboarded'      => Saddle_Onboarding::is_finished(),
 				'paused'         => Saddle_Capabilities::is_paused(),
 				'domain_warning' => ! Saddle_Capabilities::domain_matches_recorded(),
 				'domain'         => array(
@@ -658,7 +658,7 @@ class Saddle_REST_Admin {
 		}
 
 		if ( array_key_exists( 'onboarded', $params ) ) {
-			update_option( 'saddle_onboarded', (bool) $request->get_param( 'onboarded' ) );
+			Saddle_Onboarding::set_finished_flag( (bool) $request->get_param( 'onboarded' ) );
 		}
 
 		if ( array_key_exists( 'paused', $params ) ) {

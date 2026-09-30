@@ -36,6 +36,7 @@ import {
 import { __, sprintf } from '@wordpress/i18n';
 import { api, saddleData, levelFor } from '../api';
 import ConnectionHealth from './ConnectionHealth';
+import SelfCheck from './SelfCheck';
 import { AppLogo, appKeyFromLabel } from './icons';
 import {
 	APPS,
@@ -50,8 +51,10 @@ const IS_LOCAL = /(?:localhost|127\.0\.0\.1|\.test|\.local)(?::|\/|$)/i.test(
 	MCP_URL
 );
 
-// How long we listen before offering troubleshooting, in seconds.
+// How long we listen before offering troubleshooting, in seconds. First run
+// waits longer: the owner may be switching windows to approve the app.
 const PATIENCE = 45;
+const PATIENCE_EMBEDDED = 180;
 
 const STEPS = [
 	{ label: __( 'Choose app', 'saddle' ) },
@@ -75,6 +78,15 @@ const COMMON_APPS = [ 'claude', 'chatgpt', 'claude-code', 'cursor' ];
  * @param {Function} props.onConnected      Called with the app once it connects.
  * @param {string}   props.initialApp       Start on the key setup for this app
  *                                          (Connections → Apps, "Use a key").
+ * @param {string}   props.presetApp        First run: the app already chosen on
+ *                                          its own tiles. Skips the picker and
+ *                                          opens that app's setup.
+ * @param {Function} props.renderWaiting    First run: draws the waiting line
+ *                                          and calls `connected()` when it sees
+ *                                          the app. It replaces the wizard's
+ *                                          own poll. Gets `{ app, appLabel,
+ *                                          keyId, connected }`.
+ * @param {Function} props.onBack           First run: back to the tiles.
  */
 export default function ConnectWizard( {
 	tier,
@@ -84,6 +96,9 @@ export default function ConnectWizard( {
 	embedded = false,
 	onConnected,
 	initialApp = null,
+	presetApp = null,
+	renderWaiting = null,
+	onBack = null,
 } ) {
 	const [ step, setStep ] = useState( 0 ); // 0 pick, 1 setup, 2 hello, 3 done
 	const [ app, setApp ] = useState( null );
@@ -106,6 +121,9 @@ export default function ConnectWizard( {
 	const [ oauthState, setOauthState ] = useState( null );
 	const [ enablingOauth, setEnablingOauth ] = useState( false );
 	const [ oauthError, setOauthError ] = useState( null );
+	// Whether the sign-in state has arrived (or failed): a preset app is
+	// picked only then, because the path it takes depends on it.
+	const [ oauthSettled, setOauthSettled ] = useState( false );
 
 	// Which path the user prefers this session. null = not chosen: follow the
 	// switch (address when sign-in is on, key otherwise). "Use a key instead"
@@ -137,7 +155,8 @@ export default function ConnectWizard( {
 		let alive = true;
 		api( 'oauth-settings' )
 			.then( ( res ) => alive && setOauthState( res ) )
-			.catch( () => {} );
+			.catch( () => {} )
+			.finally( () => alive && setOauthSettled( true ) );
 		return () => {
 			alive = false;
 		};
@@ -221,6 +240,21 @@ export default function ConnectWizard( {
 		// eslint-disable-next-line react-hooks/exhaustive-deps -- once, on arrival.
 	}, [] );
 
+	// First run chose the app on its own tiles: open that app's setup.
+	const presetDone = useRef( false );
+	useEffect( () => {
+		if (
+			presetApp &&
+			oauthSettled &&
+			! presetDone.current &&
+			APPS.some( ( a ) => a.key === presetApp )
+		) {
+			presetDone.current = true;
+			pick( presetApp );
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- once, when sign-in state is known.
+	}, [ presetApp, oauthSettled ] );
+
 	/* ----- leaving: never strand an orphan credential ----- */
 
 	// Latest values for the unmount cleanup below — a cleanup closure only
@@ -271,6 +305,19 @@ export default function ConnectWizard( {
 		setApp( null );
 		setEverCopied( false );
 		setStep( 0 );
+		if ( onBack ) {
+			onBack();
+		}
+	};
+
+	// The waiting line saw the app: the same outcome as the poll below.
+	const markConnected = () => {
+		everCopiedRef.current = true;
+		setEverCopied( true );
+		setStep( 3 );
+		if ( onClientsChanged ) {
+			onClientsChanged();
+		}
 	};
 
 	/* ----- switching paths on step 2 ----- */
@@ -345,6 +392,10 @@ export default function ConnectWizard( {
 		if ( step === 0 || step === 3 || ( ! cred && ! byAddress ) ) {
 			return undefined;
 		}
+		// First run's waiting line does the watching.
+		if ( embedded && renderWaiting ) {
+			return undefined;
+		}
 		pollRef.current = window.setInterval( () => {
 			if ( byAddress ) {
 				// The minted-key signal can never fire on the address path —
@@ -395,7 +446,7 @@ export default function ConnectWizard( {
 				.catch( () => {} );
 		}, 3000 );
 		return () => window.clearInterval( pollRef.current );
-	}, [ cred, step, onClientsChanged, byAddress ] );
+	}, [ cred, step, onClientsChanged, byAddress, embedded, renderWaiting ] );
 
 	// Embedded, the caller carries on from here instead of the done screen.
 	useEffect( () => {
@@ -415,10 +466,10 @@ export default function ConnectWizard( {
 		setPatienceUp( false );
 		const t = window.setTimeout(
 			() => setPatienceUp( true ),
-			PATIENCE * 1000
+			( embedded ? PATIENCE_EMBEDDED : PATIENCE ) * 1000
 		);
 		return () => window.clearTimeout( t );
-	}, [ step, waiting ] );
+	}, [ step, waiting, embedded ] );
 
 	let config = '';
 	let links = [];
@@ -491,7 +542,16 @@ export default function ConnectWizard( {
 
 	// Troubleshooting, offered once the wait has run a while.
 	const renderTrouble = () =>
-		patienceUp && (
+		patienceUp &&
+		( embedded && renderWaiting ? (
+			<SelfCheck
+				app={ app }
+				local={ IS_LOCAL }
+				permalinks={ oauthState ? oauthState.permalinks : true }
+				onUseKey={ byAddress && activeApp.viaKey ? switchToKey : null }
+				onSkip={ () => exit( false ) }
+			/>
+		) : (
 			<CalloutCard
 				className="saddle-wizard__trouble"
 				tone="warning"
@@ -550,7 +610,7 @@ export default function ConnectWizard( {
 					</Button>
 				) }
 			</CalloutCard>
-		);
+		) );
 
 	const shownApps = allApps
 		? APPS
@@ -931,24 +991,35 @@ export default function ConnectWizard( {
 
 					{ /* Embedded, the poll is already running on this step:
 					     say so here and skip the separate hello screen. */ }
-					{ embedded && ( ! byAddress || oauthState?.enabled ) && (
-						<div
-							className="saddle-wizard__listening"
-							role="status"
-							aria-live="polite"
-						>
-							<LiveIndicator>
-								{ sprintf(
-									/* translators: %s: the app name. */
-									__(
-										'Waiting for %s. This moves on by itself the moment it connects.',
-										'saddle'
-									),
-									activeApp.label
-								) }
-							</LiveIndicator>
-						</div>
-					) }
+					{ embedded &&
+						renderWaiting &&
+						( ! byAddress || oauthState?.enabled ) &&
+						renderWaiting( {
+							app,
+							appLabel: activeApp.label,
+							keyId: cred ? `key:${ cred.uuid }` : null,
+							connected: markConnected,
+						} ) }
+					{ embedded &&
+						! renderWaiting &&
+						( ! byAddress || oauthState?.enabled ) && (
+							<div
+								className="saddle-wizard__listening"
+								role="status"
+								aria-live="polite"
+							>
+								<LiveIndicator>
+									{ sprintf(
+										/* translators: %s: the app name. */
+										__(
+											'Waiting for %s. This moves on by itself the moment it connects.',
+											'saddle'
+										),
+										activeApp.label
+									) }
+								</LiveIndicator>
+							</div>
+						) }
 					{ embedded && renderTrouble() }
 
 					<div className="saddle-wizard__actions">

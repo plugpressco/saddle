@@ -870,6 +870,51 @@ body.saddle-admin-page {
 	}
 }
 
+// The line under a step that says what Saddle is waiting for, and each thing
+// it sees land. The reduced-motion rule at the end of this file shortens the
+// animation, so the lines appear all at once.
+.saddle-waiting {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	margin: 4px 0 8px;
+
+	&__line {
+		animation: saddle-step-in 0.28s var(--s-ease) both;
+	}
+}
+
+.saddle-first-run__foot {
+	margin: 18px 0 0;
+	font-size: 13px;
+	line-height: 1.55;
+	color: var(--s-fg-subtle);
+}
+
+.saddle-selfcheck {
+	&__rows {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+		margin: 4px 0 12px;
+	}
+}
+
+// The tour's anchor: an invisible box over the thing it points at.
+.saddle-tour__anchor {
+	position: fixed;
+	pointer-events: none;
+	z-index: 0;
+}
+
+.saddle-setup {
+	&__rows {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+}
+
 // The connect wizard inside first run: same steps, none of the card chrome.
 // Doubled class: .saddle-wizard is declared further down and would win.
 .saddle-wizard.saddle-wizard--embedded {

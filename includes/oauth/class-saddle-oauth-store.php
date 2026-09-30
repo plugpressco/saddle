@@ -319,6 +319,35 @@ class Saddle_OAuth_Store {
 	}
 
 	/**
+	 * Every registered client, newest first, for the first-run waiting line.
+	 *
+	 * @return array[]
+	 */
+	public static function list_clients() {
+		$query = new WP_Query(
+			array(
+				'post_type'              => self::CPT,
+				'post_status'            => 'publish',
+				'title'                  => 'client',
+				'posts_per_page'         => self::MAX_CLIENTS,
+				'orderby'                => 'date',
+				'order'                  => 'DESC',
+				'fields'                 => 'ids',
+				'no_found_rows'          => true,
+				'update_post_meta_cache' => true,
+				'update_post_term_cache' => false,
+			)
+		);
+
+		$clients = array();
+		foreach ( $query->posts as $post_id ) {
+			$clients[] = self::hydrate( (int) $post_id );
+		}
+
+		return $clients;
+	}
+
+	/**
 	 * Keep the client table bounded. Registrations are unauthenticated by
 	 * protocol design, so the oldest records are evicted once the cap is hit.
 	 * Grants are unaffected — revoking access is a separate, explicit action.

@@ -27,6 +27,7 @@ import {
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { api, levelFor } from '../api';
 import { APPS } from '../connect-apps';
+import SetupBlock from './SetupBlock';
 import { parseEntryDate, relativeWhen, shortLabel } from '../activity-format';
 
 // How many recent entries the Dashboard preview shows; the full record lives on
@@ -50,7 +51,15 @@ function connectionLabel( c ) {
 	return ( app && app.label ) || c.name || c.client;
 }
 
-export default function Dashboard( { tier, clients, onNavigate, onConnect } ) {
+export default function Dashboard( {
+	tier,
+	clients,
+	onNavigate,
+	onConnect,
+	onboarding,
+	onHideSetup,
+	homeUrl,
+} ) {
 	// Keys and address (OAuth) connections, from the connection registry. It
 	// used to be the keys alone, so a site connected by address alone was told
 	// to connect its first app. `false` means the route failed: fall back to
@@ -64,6 +73,16 @@ export default function Dashboard( { tier, clients, onNavigate, onConnect } ) {
 			  } ) )
 			: connections;
 	const hasApps = !! apps && apps.length > 0;
+	// The Setup block shows unless the owner hid it (or the onboarding record
+	// hasn't arrived, when the block draws nothing either).
+	const setupShown = !! (
+		onboarding &&
+		! (
+			onboarding.modules &&
+			onboarding.modules.home &&
+			onboarding.modules.home.setup_hidden_at > 0
+		)
+	);
 
 	const [ activity, setActivity ] = useState( null );
 	const [ health, setHealth ] = useState( healthCache );
@@ -166,6 +185,18 @@ export default function Dashboard( { tier, clients, onNavigate, onConnect } ) {
 				) }
 			</section>
 
+			<SetupBlock
+				tier={ tier }
+				connections={
+					Array.isArray( connections ) ? connections : null
+				}
+				onboarding={ onboarding }
+				homeUrl={ homeUrl }
+				onConnect={ onConnect }
+				onNavigate={ onNavigate }
+				onHide={ onHideSetup }
+			/>
+
 			{ /* A stripped Authorization header (or app passwords off) breaks
 			     every connection — surface it here with a path to the fix. */ }
 			{ healthProblem && (
@@ -189,8 +220,9 @@ export default function Dashboard( { tier, clients, onNavigate, onConnect } ) {
 
 			{ /* When no apps yet, make connecting the clear next step. Not
 			     while the list is still loading: that would flash the callout
-			     at every owner who has connected. */ }
-			{ apps && ! hasApps && (
+			     at every owner who has connected. Not while the Setup block is
+			     up either: its first row already says "Connect an app". */ }
+			{ apps && ! hasApps && ! setupShown && (
 				<CalloutCard
 					title={ __( 'Connect your first app', 'saddle' ) }
 					description={ __(

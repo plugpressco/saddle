@@ -111,7 +111,7 @@ class Saddle_Settings {
 			return $links;
 		}
 
-		$link = get_option( 'saddle_onboarded' )
+		$link = Saddle_Onboarding::is_finished()
 			? '<a href="' . esc_url( Saddle_Modules::url( 'settings' ) ) . '">' . esc_html__( 'Settings', 'saddle' ) . '</a>'
 			: '<a href="' . esc_url( Saddle_Modules::url( 'home' ) ) . '">' . esc_html__( 'Get started', 'saddle' ) . '</a>';
 

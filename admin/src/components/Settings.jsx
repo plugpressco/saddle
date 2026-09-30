@@ -21,6 +21,7 @@ import {
 } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { api, saddleData } from '../api';
+import { findArea, withArg } from '../routes';
 import { collectSettingsCards, ui, SHELL_VERSION } from '../extensions';
 
 export default function Settings() {
@@ -117,6 +118,19 @@ export default function Settings() {
 				/>
 				<CardContent>
 					<div className="saddle-settings__links">
+						{ findArea( saddleData.areas, 'home' ) && (
+							<Button
+								href={ withArg(
+									findArea( saddleData.areas, 'home' ).url,
+									'setup',
+									'1'
+								) }
+								variant="ghost"
+								size="sm"
+							>
+								{ __( 'Run setup again', 'saddle' ) }
+							</Button>
+						) }
 						{ saddleData.docsUrl && (
 							<Button
 								href={ saddleData.docsUrl }
