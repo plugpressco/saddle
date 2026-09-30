@@ -11,8 +11,8 @@ defined( 'ABSPATH' ) || exit;
  * Registers the Saddle menu and its pages, and enqueues the built React assets
  * onto them.
  *
- * Saddle is one top-level menu. Every page is a submenu under it: Home, the
- * installed modules, Connections and Settings (see Saddle_Modules). WordPress's
+ * Saddle is one top-level menu. Every page is a submenu under it: Dashboard, the
+ * installed modules, AI apps, Context and Settings (see Saddle_Modules). WordPress's
  * own left menu is the only navigation; inside the page there is a header and,
  * where a page has them, one row of tabs.
  */
@@ -47,10 +47,10 @@ class Saddle_Settings {
 			}
 
 			// The first submenu shares the menu's slug, which is what renames
-			// WordPress's automatic "Saddle" item to "Home".
+			// WordPress's automatic "Saddle" item to "Dashboard".
 			$hook = add_submenu_page(
 				self::PAGE_SLUG,
-				/* translators: %s: page name, such as Home or Connections. */
+				/* translators: %s: page name, such as Dashboard or AI apps. */
 				sprintf( __( '%s ‹ Saddle', 'saddle' ), $area['title'] ),
 				$area['title'],
 				$area['capability'],
@@ -67,10 +67,10 @@ class Saddle_Settings {
 	}
 
 	/**
-	 * Keep Connections, Context and Settings last in the Saddle menu.
+	 * Keep AI apps, Context and Settings last in the Saddle menu.
 	 *
 	 * A sibling that adds its own submenu (Saddle Rank does, at priority 20)
-	 * lands after whatever is already there. The modules belong between Home
+	 * lands after whatever is already there. The modules belong between Dashboard
 	 * and Core's configuration pages, so those move to the end once every
 	 * plugin has had its turn.
 	 */
@@ -97,6 +97,40 @@ class Saddle_Settings {
 
 		ksort( $tail );
 		$submenu[ self::PAGE_SLUG ] = array_merge( $head, array_values( $tail ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Reordering our own menu's items, after every plugin has added to it.
+	}
+
+	/**
+	 * Permissions was a tab of Connections until #285 and is gone: access is
+	 * chosen per app on AI apps. An old link to it
+	 * (`page=saddle-connections&tab=permissions`) goes to AI apps, once,
+	 * before anything is drawn.
+	 */
+	public static function redirect_legacy() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Reading which page was asked for; nothing is changed.
+		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( (string) $_GET['page'] ) ) : '';
+		$tab  = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( (string) $_GET['tab'] ) ) : '';
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		$target = self::legacy_target( $page, $tab );
+		if ( '' !== $target ) {
+			wp_safe_redirect( $target );
+			exit;
+		}
+	}
+
+	/**
+	 * Where an old Saddle admin address now lives, or '' when it is current.
+	 *
+	 * @param string $page `admin.php?page=` value.
+	 * @param string $tab  `&tab=` value.
+	 * @return string
+	 */
+	public static function legacy_target( $page, $tab ) {
+		if ( 'saddle-connections' === $page && 'permissions' === $tab ) {
+			return Saddle_Modules::url( 'connections' );
+		}
+
+		return '';
 	}
 
 	/**

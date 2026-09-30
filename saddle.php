@@ -259,6 +259,7 @@ final class Saddle {
 		// its items (see Saddle_Settings::order_submenu()).
 		add_action( 'admin_menu', array( 'Saddle_Settings', 'register_menu' ), 9 );
 		add_action( 'admin_menu', array( 'Saddle_Settings', 'order_submenu' ), 999 );
+		add_action( 'admin_init', array( 'Saddle_Settings', 'redirect_legacy' ) );
 		add_filter( 'plugin_action_links_' . plugin_basename( SADDLE_FILE ), array( 'Saddle_Settings', 'action_links' ) );
 		add_action( 'admin_enqueue_scripts', array( 'Saddle_Settings', 'enqueue_assets' ) );
 		add_action( Saddle_Approval::GC_HOOK, array( 'Saddle_Approval', 'gc' ) );
