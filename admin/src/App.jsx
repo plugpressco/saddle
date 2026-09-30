@@ -18,14 +18,13 @@ import {
 	Toaster,
 	toast,
 	Spinner,
-	Notice,
-	Button,
 } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { api, saddleData } from './api';
 import FirstRun from './components/FirstRun';
 import AuthTrouble from './components/AuthTrouble';
 import Frame from './components/Frame';
+import { pickSlot } from './notices';
 import Screen, { describe } from './screens';
 import {
 	areaUrl,
@@ -47,6 +46,12 @@ const CURRENT = findArea( AREAS, saddleData.area ) ||
 		url: window.location.href,
 		tabs: [ { key: 'overview', label: __( 'Overview', 'saddle' ) } ],
 	};
+
+// The notices Core sent for this page and tab (Saddle_Notices), most severe
+// first.
+const SERVER_NOTICES = Array.isArray( saddleData.notices )
+	? saddleData.notices
+	: [];
 
 const wantsWizard = () =>
 	CURRENT.key === 'connections' &&
@@ -83,6 +88,7 @@ export default function App() {
 	const [ domainWarning, setDomainWarning ] = useState( false );
 	const [ loading, setLoading ] = useState( true );
 	const [ error, setError ] = useState( null );
+	const [ serverNotices, setServerNotices ] = useState( SERVER_NOTICES );
 	// A 401 means WordPress resolved nobody at all — the session never arrived,
 	// rather than arriving without permission. Nothing on this screen can load,
 	// so it gets its own view instead of an error strip over an empty frame.
@@ -313,6 +319,49 @@ export default function App() {
 			.catch( ( e ) => setError( e.message ) );
 	};
 
+	// Dismiss a server notice: gone at once, and back with a toast if the
+	// server could not keep the dismissal.
+	const dismissNotice = useCallback( ( notice ) => {
+		setServerNotices( ( prev ) =>
+			prev.filter( ( n ) => n.id !== notice.id )
+		);
+		api( `notices/${ encodeURIComponent( notice.id ) }/dismiss`, {
+			method: 'POST',
+		} ).catch( ( e ) => {
+			setServerNotices( ( prev ) => [ ...prev, notice ] );
+			toast.error( e.message );
+		} );
+	}, [] );
+
+	// One slot under the header for the most severe notice; the rest go behind
+	// the bell. The app's own notices come first so they win a tie: they are
+	// about what is happening now.
+	const { slot: slotNotice, rest: bellNotices } = pickSlot( [
+		...( error
+			? [ { id: 'app-error', severity: 'error', message: error } ]
+			: [] ),
+		...( domainWarning && ! wizardOpen
+			? [
+					{
+						id: 'domain-drift',
+						severity: 'warning',
+						message: __(
+							'This site’s address has changed since AI write access was turned on — often a sign of a staging clone or a migration carrying over live credentials. If that wasn’t intentional, review your connected apps and revoke anything unexpected.',
+							'saddle'
+						),
+						action: {
+							label: __(
+								'This is expected — clear this warning',
+								'saddle'
+							),
+							onClick: clearDomainWarning,
+						},
+					},
+			  ]
+			: [] ),
+		...serverNotices,
+	] );
+
 	// A tier save from Permissions also re-confirms the domain — carry that
 	// through instead of leaving a stale warning up after the user just fixed it.
 	const handleTierSaved = ( newTier, warning ) => {
@@ -363,30 +412,10 @@ export default function App() {
 					href: areaUrl( AREAS, 'connections', 'permissions' ),
 				} }
 				notices={ ! wizardOpen }
+				notice={ slotNotice }
+				moreNotices={ bellNotices }
+				onDismissNotice={ dismissNotice }
 			>
-				{ error && <Notice tone="danger">{ error }</Notice> }
-
-				{ domainWarning && ! wizardOpen && (
-					<Notice tone="warning">
-						{ __(
-							'This site’s address has changed since AI write access was turned on — often a sign of a staging clone or a migration carrying over live credentials. If that wasn’t intentional, review your connected apps and revoke anything unexpected.',
-							'saddle'
-						) }
-						<span className="saddle-notice__actions">
-							<Button
-								variant="link"
-								size="sm"
-								onClick={ clearDomainWarning }
-							>
-								{ __(
-									'This is expected — clear this warning',
-									'saddle'
-								) }
-							</Button>
-						</span>
-					</Notice>
-				) }
-
 				<div
 					className="saddle-tabpane"
 					key={ `${ area.key }/${ tab }${

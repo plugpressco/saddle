@@ -165,7 +165,9 @@ require_once SADDLE_DIR . 'includes/class-saddle-settings-guard.php';
 require_once SADDLE_DIR . 'includes/class-saddle-settings-view.php';
 require_once SADDLE_DIR . 'includes/class-saddle-core-settings.php';
 require_once SADDLE_DIR . 'includes/class-saddle-modules-view.php';
+require_once SADDLE_DIR . 'includes/class-saddle-notices.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-rest.php';
+require_once SADDLE_DIR . 'includes/admin/class-saddle-notices-admin.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-connections-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-modules-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-settings.php';
@@ -245,6 +247,7 @@ final class Saddle {
 		add_action( 'saddle_flush_cache', array( 'Saddle_Context_Bundle', 'flush' ) );
 		add_filter( 'saddle_context_sections', array( 'Saddle_Memory', 'context_section' ) );
 		add_action( 'rest_api_init', array( 'Saddle_REST_Admin', 'register_routes' ) );
+		Saddle_Notices_Admin::register();
 		add_action( 'rest_api_init', array( 'Saddle_Connection', 'register_routes' ) );
 		add_action( 'rest_api_init', array( 'Saddle_MCP_Diagnostics', 'register_routes' ) );
 		add_action( 'init', array( 'Saddle_Unsplash', 'register_taxonomy' ) );
