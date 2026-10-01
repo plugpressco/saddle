@@ -29,6 +29,7 @@ import {
 	badgeFor,
 	groupServices,
 	initialOf,
+	kindLabel,
 	metaLine,
 	replaceRecord,
 	roleLabel,
@@ -302,6 +303,12 @@ function Detail( { record, onChanged } ) {
 					<h3 className="saddle-svc__h">
 						{ __( 'Status', 'saddle' ) }
 					</h3>
+					{ record.description &&
+						record.description !== kindLabel( record ) && (
+							<p className="saddle-svc__text">
+								{ record.description }
+							</p>
+						) }
 					<p className="saddle-svc__text">{ statusText( record ) }</p>
 					{ record.can_toggle && (
 						<div className="saddle-svc__switch">

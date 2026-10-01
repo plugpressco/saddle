@@ -6,6 +6,7 @@ import {
 	replaceRecord,
 	roleLabel,
 	toolCount,
+	kindLabel,
 } from '../../admin/src/services-logic';
 
 const unsplash = {
@@ -59,9 +60,9 @@ describe( 'metaLine', () => {
 			'SEO plugin · nothing leaves your site · 1 tool'
 		);
 	} );
-	it( 'skips a missing description', () => {
+	it( 'names the kind when there is no description', () => {
 		expect( metaLine( { ...yoast, description: '' } ) ).toBe(
-			'nothing leaves your site · 1 tool'
+			'Plugin · nothing leaves your site · 1 tool'
 		);
 	} );
 } );
@@ -115,5 +116,32 @@ describe( 'toolCount', () => {
 	} );
 	it( 'falls back to the tool list', () => {
 		expect( toolCount( { tools: [ { name: 'a' } ] } ) ).toBe( '1 tool' );
+	} );
+} );
+
+describe( 'kindLabel', () => {
+	it( 'keeps a short description and swaps a long one for the kind', () => {
+		expect(
+			kindLabel( { kind: 'account', description: 'Stock photos' } )
+		).toBe( 'Stock photos' );
+		const long =
+			'This site’s own traffic analytics — visitors, sources, pages, AI referrals and AI crawlers. Read-only.';
+		expect(
+			kindLabel( {
+				kind: 'addon',
+				source: 'plugpress',
+				description: long,
+			} )
+		).toBe( 'PlugPress add-on' );
+		expect(
+			kindLabel( {
+				kind: 'addon',
+				source: 'third-party',
+				description: long,
+			} )
+		).toBe( 'Third-party add-on' );
+		expect( kindLabel( { kind: 'plugin', description: '' } ) ).toBe(
+			'Plugin'
+		);
 	} );
 } );
