@@ -32,7 +32,7 @@ import {
 } from '@plugpress/ui';
 import SectionHeader from './SectionHeader';
 import { __, sprintf } from '@wordpress/i18n';
-import { saddleData, api } from '../api';
+import { saddleData, api, connectionPath } from '../api';
 import { APPS } from '../connect-apps';
 import { relativeWhen } from '../activity-format';
 import ConnectionHealth from './ConnectionHealth';
@@ -181,7 +181,7 @@ export default function Apps( {
 		setRows( ( list ) =>
 			list.map( ( x ) => ( x.id === c.id ? { ...x, role } : x ) )
 		);
-		api( `connections/${ encodeURIComponent( c.id ) }/role`, {
+		api( connectionPath( c.id, 'role' ), {
 			method: 'POST',
 			data: { role },
 		} )

@@ -55,24 +55,60 @@ const restRouteUrl = ( path ) => {
 	return url.toString();
 };
 
+// WordPress answers a REST call that hit a fatal error with its HTML page
+// message ("<p>There has been a critical error on this website.</p><p><a …"),
+// and every screen shows `e.message` as text, tags and all. Reduce such a
+// message to its words once, here, for every caller.
+export const plainError = ( error ) => {
+	const message = error?.message;
+	if ( 'string' !== typeof message || ! /<[a-z/][^>]*>/i.test( message ) ) {
+		return error;
+	}
+	const spaced = message.replace(
+		/<\/(p|div|li|h[1-6])>|<br\s*\/?>/gi,
+		'$& '
+	);
+	const doc = new window.DOMParser().parseFromString( spaced, 'text/html' );
+	error.message = ( doc.body.textContent || '' )
+		.replace( /\s+/g, ' ' )
+		.trim();
+	return error;
+};
+
 // apiFetch against a namespaced Saddle route, WAF fallback included. The
 // fallback request carries `url` only, never `path` — core's root-URL
 // middleware rebuilds `url` from any lingering `path` and would undo it.
 export const api = ( path, options = {} ) => {
 	const url = restRouteUrl( path );
 	if ( viaRestRoute && url ) {
-		return apiFetch( { ...options, url } );
-	}
-	return apiFetch( { path: ns( path ), ...options } ).catch( ( error ) => {
-		if ( 'invalid_json' !== error?.code || ! url ) {
-			throw error;
-		}
-		return apiFetch( { ...options, url } ).then( ( result ) => {
-			viaRestRoute = true; // The fallback worked: prefer it from now on.
-			return result;
+		return apiFetch( { ...options, url } ).catch( ( error ) => {
+			throw plainError( error );
 		} );
-	} );
+	}
+	return apiFetch( { path: ns( path ), ...options } )
+		.catch( ( error ) => {
+			if ( 'invalid_json' !== error?.code || ! url ) {
+				throw error;
+			}
+			return apiFetch( { ...options, url } ).then( ( result ) => {
+				viaRestRoute = true; // The fallback worked: prefer it from now on.
+				return result;
+			} );
+		} )
+		.catch( ( error ) => {
+			throw plainError( error );
+		} );
 };
+
+// The REST path for one connection, e.g. connectionPath( 'key:ab12', 'role' ).
+// Its id carries a colon ("key:…", "oauth:…"), which is legal in a path and
+// stays as it is: some servers (WordPress Playground among them) do not
+// decode %3A before WordPress matches the route, so the encoded form was a
+// 404 and changing an app's access failed there.
+export const connectionPath = ( id, rest = '' ) =>
+	[ 'connections', encodeURIComponent( id ).replace( /%3A/gi, ':' ), rest ]
+		.filter( Boolean )
+		.join( '/' );
 
 // Tier ordering. Higher rank = more power.
 export const TIER_RANK = { read: 0, write: 1, admin: 2 };
