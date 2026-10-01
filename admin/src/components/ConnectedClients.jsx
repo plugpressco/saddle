@@ -5,8 +5,10 @@
  * content, Manage the site, changed on the spot (`POST
  * /connections/{id}/role`), and a ⋯ menu for the setup guide, a new key and
  * disconnecting. Keys and apps that signed in themselves are one list, from
- * the connection registry. The connect flow sits in a drawer opened by the
- * header button (ConnectApps). The endpoint test and server health checks
+ * the connection registry. With nothing connected the page shows a card per
+ * app instead (QuickStart, after Jetpack AI's Quick start); a card, or the
+ * header button once an app is connected, opens the connect drawer
+ * (ConnectApps). The endpoint test and server health checks
  * are their own collapsed section (ConnectionDetails), which Settings →
  * Advanced shows.
  */
@@ -27,13 +29,14 @@ import {
 	IconButton,
 	MoreHorizontalIcon,
 	CopyButton,
+	ChevronRightIcon,
 	useConfirm,
 	toast,
 } from '@plugpress/ui';
 import SectionHeader from './SectionHeader';
 import { __, sprintf } from '@wordpress/i18n';
 import { saddleData, api } from '../api';
-import { APPS } from '../connect-apps';
+import { APPS, APP_GROUPS } from '../connect-apps';
 import { relativeWhen } from '../activity-format';
 import ConnectionHealth from './ConnectionHealth';
 import McpDiagnostics from './McpDiagnostics';
@@ -146,6 +149,72 @@ function metaOf( c ) {
  * @param {string}   props.siteTier         The site's level (older Core).
  * @param {Function} props.onConnect        Opens the connect drawer.
  */
+/**
+ * Nothing connected yet: one card per app, in the connect drawer's groups,
+ * like Jetpack AI's Quick start. A card opens that app's setup.
+ *
+ * @param {Object}   props
+ * @param {Function} props.onPick Called with an app key.
+ */
+function QuickStart( { onPick } ) {
+	const byKey = Object.fromEntries( APPS.map( ( a ) => [ a.key, a ] ) );
+	return (
+		<section className="saddle-stack saddle-quick">
+			<SectionHeader title={ __( 'Connect an app', 'saddle' ) } />
+			{ APP_GROUPS.map( ( g ) => (
+				<div key={ g.key } className="saddle-quick__group">
+					<h3
+						className="saddle-quick__group-title"
+						id={ `saddle-quick-${ g.key }` }
+					>
+						{ g.label }
+					</h3>
+					<div
+						className="saddle-quick__cards"
+						role="group"
+						aria-labelledby={ `saddle-quick-${ g.key }` }
+					>
+						{ g.apps
+							.filter( ( key ) => byKey[ key ] )
+							.map( ( key ) => (
+								<button
+									key={ key }
+									type="button"
+									className="saddle-quick__card"
+									onClick={ () => onPick( key ) }
+								>
+									<AppLogo
+										app={ key }
+										width="24"
+										height="24"
+									/>
+									<span className="saddle-quick__text">
+										<span className="saddle-quick__name">
+											{ byKey[ key ].label }
+										</span>
+										<span className="saddle-quick__kind">
+											{ byKey[ key ].kind }
+										</span>
+									</span>
+									<ChevronRightIcon
+										size={ 16 }
+										className="saddle-quick__go"
+									/>
+								</button>
+							) ) }
+					</div>
+				</div>
+			) ) }
+			<p className="saddle-quick__other">
+				{ __( 'Not listed?', 'saddle' ) }{ ' ' }
+				<Button variant="link" onClick={ () => onPick( 'other' ) }>
+					{ __( 'Connect any MCP app', 'saddle' ) }
+				</Button>
+			</p>
+		</section>
+	);
+}
+
 export default function Apps( {
 	clients,
 	onClientsChanged,
@@ -291,132 +360,164 @@ export default function Apps( {
 			} );
 	};
 
+	const none = null !== rows && 0 === rows.length;
+
 	return (
 		<>
-			<section className="saddle-stack saddle-apps">
-				<SectionHeader
-					title={ __( 'Connected', 'saddle' ) }
-					actions={
-						onConnect && (
-							<Button
-								variant="primary"
-								size="sm"
-								onClick={ onConnect }
-							>
-								{ __( 'Connect an app', 'saddle' ) }
-							</Button>
-						)
-					}
-				/>
+			{ none && onConnect && (
+				<QuickStart onPick={ ( key ) => onConnect( key ) } />
+			) }
 
-				<RowList>
-					{ null !== rows && 0 === rows.length && (
-						<Row
-							title={
-								<span className="saddle-apps__empty">
-									{ __( 'No apps connected yet.', 'saddle' ) }
-								</span>
-							}
-						/>
-					) }
-					{ ( rows || [] ).map( ( c ) => (
-						<Row
-							key={ c.id }
-							icon={
-								<AppLogo
-									app={
-										c.app ||
-										appKeyFromLabel( c.name || c.client )
-									}
-								/>
-							}
-							title={ nameOf( c ) }
-							description={ metaOf( c ) }
-							actions={
-								<>
-									<Select
-										className="saddle-apps__access"
-										contentClassName="saddle-role__list"
-										options={ ROLE_OPTIONS }
-										value={ roleOf( c, siteTier ) }
-										aria-label={ sprintf(
-											/* translators: %s: the app name. */
-											__( 'What %s can do', 'saddle' ),
-											nameOf( c )
+			{ null !== rows && ! ( none && onConnect ) && (
+				<section className="saddle-stack saddle-apps">
+					<SectionHeader
+						title={ __( 'Connected', 'saddle' ) }
+						actions={
+							onConnect && (
+								<Button
+									variant="primary"
+									size="sm"
+									onClick={ () => onConnect() }
+								>
+									{ __( 'Connect an app', 'saddle' ) }
+								</Button>
+							)
+						}
+					/>
+
+					<RowList>
+						{ null !== rows && 0 === rows.length && (
+							<Row
+								title={
+									<span className="saddle-apps__empty">
+										{ __(
+											'No apps connected yet.',
+											'saddle'
 										) }
-										onChange={ ( role ) =>
-											changeRole( c, role )
+									</span>
+								}
+							/>
+						) }
+						{ ( rows || [] ).map( ( c ) => (
+							<Row
+								key={ c.id }
+								icon={
+									<AppLogo
+										app={
+											c.app ||
+											appKeyFromLabel(
+												c.name || c.client
+											)
 										}
 									/>
-									<DropdownMenu
-										trigger={
-											<IconButton
-												aria-label={ sprintf(
-													/* translators: %s: the app name. */
-													__(
-														'More for %s',
-														'saddle'
-													),
-													nameOf( c )
-												) }
-											>
-												<MoreHorizontalIcon
-													size={ 16 }
-												/>
-											</IconButton>
-										}
-									>
-										{ 'key' === c.kind && (
-											<>
-												<DropdownItem
-													onSelect={ () =>
-														setGuide( {
-															app: appKeyFromLabel(
-																c.name
-															),
-															label: nameOf( c ),
-														} )
-													}
-												>
-													{ __(
-														'Setup guide',
-														'saddle'
+								}
+								title={ nameOf( c ) }
+								description={ metaOf( c ) }
+								actions={
+									<>
+										<Select
+											className="saddle-apps__access"
+											contentClassName="saddle-role__list"
+											options={ ROLE_OPTIONS }
+											value={ roleOf( c, siteTier ) }
+											aria-label={ sprintf(
+												/* translators: %s: the app name. */
+												__(
+													'What %s can do',
+													'saddle'
+												),
+												nameOf( c )
+											) }
+											onChange={ ( role ) =>
+												changeRole( c, role )
+											}
+										/>
+										<DropdownMenu
+											trigger={
+												<IconButton
+													aria-label={ sprintf(
+														/* translators: %s: the app name. */
+														__(
+															'More for %s',
+															'saddle'
+														),
+														nameOf( c )
 													) }
-												</DropdownItem>
-												<DropdownItem
-													onSelect={ () =>
-														askRotate( c )
-													}
 												>
-													{ __(
-														'Rotate key',
-														'saddle'
-													) }
-												</DropdownItem>
-												<DropdownSeparator />
-											</>
-										) }
-										<DropdownItem
-											danger
-											onSelect={ () => askRevoke( c ) }
+													<MoreHorizontalIcon
+														size={ 16 }
+													/>
+												</IconButton>
+											}
 										>
-											{ __( 'Disconnect', 'saddle' ) }
-										</DropdownItem>
-									</DropdownMenu>
-								</>
-							}
-						/>
-					) ) }
+											{ 'key' === c.kind && (
+												<>
+													<DropdownItem
+														onSelect={ () =>
+															setGuide( {
+																app: appKeyFromLabel(
+																	c.name
+																),
+																label: nameOf(
+																	c
+																),
+															} )
+														}
+													>
+														{ __(
+															'Setup guide',
+															'saddle'
+														) }
+													</DropdownItem>
+													<DropdownItem
+														onSelect={ () =>
+															askRotate( c )
+														}
+													>
+														{ __(
+															'Rotate key',
+															'saddle'
+														) }
+													</DropdownItem>
+													<DropdownSeparator />
+												</>
+											) }
+											<DropdownItem
+												danger
+												onSelect={ () =>
+													askRevoke( c )
+												}
+											>
+												{ __( 'Disconnect', 'saddle' ) }
+											</DropdownItem>
+										</DropdownMenu>
+									</>
+								}
+							/>
+						) ) }
+					</RowList>
+				</section>
+			) }
+
+			<section className="saddle-stack saddle-apps__site">
+				<RowList>
+					<Row
+						title={ __( 'Site address for AI apps', 'saddle' ) }
+						description={
+							<code className="saddle-apps__url">
+								{ MCP_URL }
+							</code>
+						}
+						actions={
+							<CopyButton
+								value={ MCP_URL }
+								size="sm"
+								variant="secondary"
+							/>
+						}
+					/>
 				</RowList>
 			</section>
-
-			<p className="saddle-apps__address">
-				<span>
-					{ __( 'This site’s address for AI apps:', 'saddle' ) }
-				</span>
-				<code>{ MCP_URL }</code>
-				<CopyButton value={ MCP_URL } size="sm" variant="link" />
-			</p>
 
 			{ guide && (
 				<SetupGuideDrawer

@@ -1373,23 +1373,93 @@ body.saddle-admin-page,
 	}
 }
 
-// The one quiet line: the site's address for AI apps, and Copy.
-.saddle-apps__address {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: 8px;
-	margin: 0;
-	font-size: var( --s-text );
-	color: var(--s-fg-subtle);
+// The site's address for AI apps: one row in its own block, with Copy.
+.saddle-apps__url {
+	display: inline-block;
+	margin-block-start: 2px;
+	padding: 2px 6px;
+	border-radius: var( --s-radius );
+	background: var( --s-surface-2 );
+	color: var( --s-fg );
+	font-size: var( --s-text-sm );
+	overflow-wrap: anywhere;
+}
 
-	code {
-		padding: 4px 8px;
-		border: 1px solid var(--s-border);
-		border-radius: var(--s-radius);
-		background: var(--s-surface-2);
-		font-size: var( --s-text-sm );
-		overflow-wrap: anywhere;
+// Nothing connected yet: a card per app, grouped, like Jetpack AI's Quick
+// start. The cards are blocks (the soft edge and shadow); the whole card is
+// the button.
+.saddle-quick {
+	&__group {
+		display: grid;
+		gap: var( --pp-space-2 );
+	}
+
+	&__group-title {
+		margin: 0;
+		font-size: var( --s-text );
+		font-weight: 600;
+		color: var( --s-fg-muted );
+	}
+
+	&__cards {
+		display: grid;
+		grid-template-columns: repeat( auto-fill, minmax( 220px, 1fr ) );
+		gap: var( --pp-space-3 );
+	}
+
+	&__card {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		min-width: 0;
+		padding: 14px 16px;
+		border: 1px solid var( --s-border );
+		border-radius: var( --s-radius-lg );
+		background: var( --s-bg );
+		box-shadow: var( --s-shadow-sm );
+		color: var( --s-fg );
+		font: inherit;
+		text-align: start;
+		cursor: pointer;
+		transition: border-color var( --s-dur ) var( --s-ease );
+
+		&:hover {
+			border-color: var( --s-border-strong );
+		}
+
+		img {
+			flex: 0 0 auto;
+		}
+	}
+
+	&__text {
+		display: grid;
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	&__name {
+		font-size: var( --s-text );
+		font-weight: 600;
+	}
+
+	&__kind {
+		overflow: hidden;
+		color: var( --s-fg-muted );
+		font-size: var( --s-text );
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	&__go {
+		flex: 0 0 auto;
+		color: var( --s-fg-muted );
+	}
+
+	&__other {
+		margin: 0;
+		color: var( --s-fg-muted );
+		font-size: var( --s-text );
 	}
 }
 
