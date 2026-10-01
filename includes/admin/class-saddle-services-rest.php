@@ -18,8 +18,8 @@ class Saddle_Services_REST {
 	 * Register the routes.
 	 */
 	public static function register_routes() {
-		$can = array( 'Saddle_REST_Admin', 'can_manage' );
-		$key = '/services/(?P<key>[a-z0-9_-]+)';
+		$can  = array( 'Saddle_REST_Admin', 'can_manage' );
+		$path = '/services/(?P<service>[a-z0-9_-]+)';
 
 		register_rest_route(
 			Saddle_REST_Admin::REST_NAMESPACE,
@@ -33,7 +33,7 @@ class Saddle_Services_REST {
 
 		register_rest_route(
 			Saddle_REST_Admin::REST_NAMESPACE,
-			$key . '/key',
+			$path . '/key',
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => array( __CLASS__, 'set_key' ),
@@ -49,7 +49,7 @@ class Saddle_Services_REST {
 
 		register_rest_route(
 			Saddle_REST_Admin::REST_NAMESPACE,
-			$key . '/enabled',
+			$path . '/enabled',
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => array( __CLASS__, 'set_enabled' ),
@@ -81,7 +81,7 @@ class Saddle_Services_REST {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public static function set_key( WP_REST_Request $request ) {
-		$record = Saddle_Services::get( (string) $request->get_param( 'key' ) );
+		$record = Saddle_Services::get( (string) $request->get_param( 'service' ) );
 		if ( ! $record ) {
 			return self::not_found();
 		}
@@ -112,7 +112,7 @@ class Saddle_Services_REST {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public static function set_enabled( WP_REST_Request $request ) {
-		$record = Saddle_Services::get( (string) $request->get_param( 'key' ) );
+		$record = Saddle_Services::get( (string) $request->get_param( 'service' ) );
 		if ( ! $record ) {
 			return self::not_found();
 		}

@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-30T23:47:36+00:00\n"
+"POT-Creation-Date: 2026-10-01T00:37:15+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -1105,7 +1105,7 @@ msgid "Pass exactly one of \"source_url\" (a public URL to download) or \"data\"
 msgstr ""
 
 #: includes/abilities/core-content.php:1737
-#: includes/abilities/unsplash.php:230
+#: includes/abilities/unsplash.php:231
 msgid "You do not have permission to attach media to that item."
 msgstr ""
 
@@ -2404,17 +2404,17 @@ msgstr ""
 msgid "%1$s (%2$s tab)"
 msgstr ""
 
-#: includes/abilities/modules.php:296
+#: includes/abilities/modules.php:297
 msgid "The owner's admin"
 msgstr ""
 
 #. translators: %s: the owner's Saddle pages, comma separated.
-#: includes/abilities/modules.php:300
+#: includes/abilities/modules.php:301
 #, php-format
 msgid "Owner's admin: Saddle → %s."
 msgstr ""
 
-#: includes/abilities/modules.php:303
+#: includes/abilities/modules.php:304
 msgid "To explain or change a setting, call saddle-get-module-settings and give the owner the admin_url instead of describing clicks."
 msgstr ""
 
@@ -3040,94 +3040,94 @@ msgid_plural "Undo %d logged changes."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/abilities/unsplash.php:27
+#: includes/abilities/unsplash.php:28
 msgid "Search Unsplash"
 msgstr ""
 
-#: includes/abilities/unsplash.php:28
+#: includes/abilities/unsplash.php:29
 msgid "Searches the Unsplash free stock-photo library. Results are previews only. Each result includes in_library/media_id: when in_library is true the photo is ALREADY in this site's media library — reuse that media_id instead of importing again. Otherwise call unsplash-import with the photo id (pass your search words as its \"tags\" so the import stays findable later). Never sideload the preview URLs yourself; that skips Unsplash's required attribution and download tracking. The search query is sent to the Unsplash API using the site owner's own key. Rate-limited (free keys: 50 requests/hour), so search deliberately, not iteratively."
 msgstr ""
 
-#: includes/abilities/unsplash.php:36
+#: includes/abilities/unsplash.php:37
 msgid "Search keywords, e.g. \"mountain sunrise\"."
 msgstr ""
 
-#: includes/abilities/unsplash.php:42
+#: includes/abilities/unsplash.php:43
 msgid "Result page."
 msgstr ""
 
-#: includes/abilities/unsplash.php:49
+#: includes/abilities/unsplash.php:50
 msgid "Results per page (1–30)."
 msgstr ""
 
-#: includes/abilities/unsplash.php:54
+#: includes/abilities/unsplash.php:55
 msgid "Only photos of this orientation."
 msgstr ""
 
-#: includes/abilities/unsplash.php:59
+#: includes/abilities/unsplash.php:60
 msgid "Only photos with this dominant color."
 msgstr ""
 
-#: includes/abilities/unsplash.php:72
+#: includes/abilities/unsplash.php:73
 msgid "Import Unsplash photo"
 msgstr ""
 
-#: includes/abilities/unsplash.php:73
+#: includes/abilities/unsplash.php:74
 msgid "Downloads one Unsplash photo into the media library by its photo id (from unsplash-search) and returns the new media item. Handles Unsplash's required download tracking, defaults the alt text to Unsplash's description and the caption to the photographer attribution, and auto-tags the media item with Unsplash's own tags plus any \"tags\" you pass — so pass your search words to keep it findable via list-media's tag filter. Imports carry visible Unsplash provenance in the media library. Dedupe-safe: if the photo was already imported it returns the existing media item WITHOUT downloading again (your \"tags\" are still added) — pass force=true only if the user explicitly wants a duplicate copy. Additive and non-destructive."
 msgstr ""
 
-#: includes/abilities/unsplash.php:81
+#: includes/abilities/unsplash.php:82
 msgid "The Unsplash photo id from unsplash-search results."
 msgstr ""
 
-#: includes/abilities/unsplash.php:85
+#: includes/abilities/unsplash.php:86
 msgid "Media title. Defaults to the photo's Unsplash description."
 msgstr ""
 
-#: includes/abilities/unsplash.php:89
+#: includes/abilities/unsplash.php:90
 msgid "Alt text. Defaults to Unsplash's accessibility description."
 msgstr ""
 
-#: includes/abilities/unsplash.php:93
+#: includes/abilities/unsplash.php:94
 msgid "Caption. Defaults to the photographer attribution Unsplash requires — only override with the user's explicit intent."
 msgstr ""
 
-#: includes/abilities/unsplash.php:97
+#: includes/abilities/unsplash.php:98
 msgid "Optional post/page to attach the media to."
 msgstr ""
 
-#: includes/abilities/unsplash.php:103
+#: includes/abilities/unsplash.php:104
 msgid "Extra media tags to assign (created if missing). Pass the search words you used to find this photo so it stays findable later via list-media's \"tag\" filter. Unsplash's own tags for the photo are always added automatically."
 msgstr ""
 
-#: includes/abilities/unsplash.php:108
+#: includes/abilities/unsplash.php:109
 msgid "Re-download even if this photo is already in the media library."
 msgstr ""
 
-#: includes/abilities/unsplash.php:163
+#: includes/abilities/unsplash.php:164
 msgid "A \"query\" is required."
 msgstr ""
 
-#: includes/abilities/unsplash.php:225
+#: includes/abilities/unsplash.php:226
 msgid "A valid \"photo_id\" from unsplash-search is required."
 msgstr ""
 
-#: includes/abilities/unsplash.php:247
+#: includes/abilities/unsplash.php:248
 msgid "This Unsplash photo is already in the media library — nothing was downloaded. Reuse this media item, or pass force=true only if the user explicitly wants a duplicate copy."
 msgstr ""
 
-#: includes/abilities/unsplash.php:271
+#: includes/abilities/unsplash.php:272
 msgid "Unsplash did not return a downloadable file URL for that photo."
 msgstr ""
 
 #. translators: %s: Unsplash photo id.
-#: includes/abilities/unsplash.php:288
+#: includes/abilities/unsplash.php:289
 #, php-format
 msgid "Unsplash photo %s"
 msgstr ""
 
 #. translators: 1: Unsplash photo id, 2: attachment id.
-#: includes/abilities/unsplash.php:345
+#: includes/abilities/unsplash.php:346
 #, php-format
 msgid "Imported Unsplash photo %1$s as media #%2$d"
 msgstr ""
@@ -3623,84 +3623,103 @@ msgid "Owner cleared all agent-written memory (%d entries)."
 msgstr ""
 
 #. translators: %s: plugin name.
-#: includes/admin/class-saddle-rest.php:1126
+#: includes/admin/class-saddle-rest.php:1141
 #, php-format
 msgid "Switched on the %s integration"
 msgstr ""
 
 #. translators: %s: plugin name.
-#: includes/admin/class-saddle-rest.php:1126
+#: includes/admin/class-saddle-rest.php:1141
 #, php-format
 msgid "Switched off the %s integration"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1149
+#: includes/admin/class-saddle-rest.php:1164
 msgid "Yoast SEO"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1149
+#: includes/admin/class-saddle-rest.php:1164
 msgid "Yoast’s own SEO fields — titles, descriptions, robots — edited natively."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1150
+#: includes/admin/class-saddle-rest.php:1165
 msgid "Rank Math"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1150
+#: includes/admin/class-saddle-rest.php:1165
+#: includes/class-saddle-service-sources.php:67
 msgid "Rank Math’s own SEO fields, edited natively."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1151
+#: includes/admin/class-saddle-rest.php:1166
 msgid "AIOSEO"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1151
+#: includes/admin/class-saddle-rest.php:1166
+#: includes/class-saddle-service-sources.php:68
 msgid "AIOSEO’s own SEO fields, edited natively."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1152
+#: includes/admin/class-saddle-rest.php:1167
 msgid "WooCommerce"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1152
+#: includes/admin/class-saddle-rest.php:1167
+#: includes/class-saddle-service-sources.php:69
 msgid "Products and orders, handled natively."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1153
-#: includes/class-saddle-unsplash.php:568
-#: includes/class-saddle-unsplash.php:620
+#: includes/admin/class-saddle-rest.php:1168
+#: includes/class-saddle-unsplash.php:574
+#: includes/class-saddle-unsplash.php:626
 msgid "Unsplash"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1153
-msgid "Stock-photo search and import, built into Saddle. Needs the Access Key above."
+#: includes/admin/class-saddle-rest.php:1168
+msgid "Stock-photo search and import, built into Saddle. Needs an Access Key under Saddle → Services."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1205
+#: includes/admin/class-saddle-rest.php:1220
 msgid "MCP Client"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1240
-#: includes/admin/class-saddle-rest.php:1351
-#: includes/admin/class-saddle-rest.php:1406
+#: includes/admin/class-saddle-rest.php:1255
+#: includes/admin/class-saddle-rest.php:1366
+#: includes/admin/class-saddle-rest.php:1421
 msgid "Application Passwords are not available on this site."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1244
+#: includes/admin/class-saddle-rest.php:1259
 msgid "Application Passwords are turned off on this site — often because it isn’t served over HTTPS, or a security plugin disabled them."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1249
+#: includes/admin/class-saddle-rest.php:1264
 msgid "AI app"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1360
-#: includes/admin/class-saddle-rest.php:1412
+#: includes/admin/class-saddle-rest.php:1375
+#: includes/admin/class-saddle-rest.php:1427
 msgid "No Saddle client with that ID."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1432
+#: includes/admin/class-saddle-rest.php:1447
 msgid "The old key was removed, but issuing its replacement failed. Connect the app again from the Connections screen."
+msgstr ""
+
+#: includes/admin/class-saddle-services-rest.php:90
+msgid "Only an outside account has a key."
+msgstr ""
+
+#: includes/admin/class-saddle-services-rest.php:96
+msgid "This service keeps its key in its own plugin."
+msgstr ""
+
+#: includes/admin/class-saddle-services-rest.php:121
+msgid "Only a plugin from another developer has a switch."
+msgstr ""
+
+#: includes/admin/class-saddle-services-rest.php:152
+msgid "No service with that key."
 msgstr ""
 
 #. translators: %s: page name, such as Dashboard or AI apps.
@@ -3709,20 +3728,20 @@ msgstr ""
 msgid "%s ‹ Saddle"
 msgstr ""
 
-#: includes/admin/class-saddle-settings.php:149
-#: includes/class-saddle-modules.php:69
-#: includes/class-saddle-modules.php:118
+#: includes/admin/class-saddle-settings.php:156
+#: includes/class-saddle-modules.php:76
+#: includes/class-saddle-modules.php:125
 msgid "Settings"
 msgstr ""
 
-#: includes/admin/class-saddle-settings.php:150
+#: includes/admin/class-saddle-settings.php:157
 #: includes/class-saddle-notices.php:60
 #: includes/class-saddle-recipes.php:77
 #: includes/class-saddle-recipes.php:124
 msgid "Get started"
 msgstr ""
 
-#: includes/admin/class-saddle-settings.php:355
+#: includes/admin/class-saddle-settings.php:362
 msgid "Saddle: the admin UI has not been built yet. Run \"npm install && npm run build\" in the plugin folder."
 msgstr ""
 
@@ -4394,62 +4413,68 @@ msgstr ""
 msgid "%1$s does not allow %2$s among its children."
 msgstr ""
 
-#: includes/class-saddle-capabilities.php:439
+#: includes/class-saddle-capabilities.php:449
 msgid "The site owner has paused all AI access — every tool is refused until they resume it from Saddle → Dashboard. Do not retry; tell the user Saddle is paused."
 msgstr ""
 
-#: includes/class-saddle-capabilities.php:446
+#: includes/class-saddle-capabilities.php:456
 msgid "The request is not authenticated. Reconnect the app from Saddle → AI apps to issue a fresh sign-in key."
 msgstr ""
 
 #. translators: 1: WordPress capability name, 2: tool name.
-#: includes/class-saddle-capabilities.php:460
+#: includes/class-saddle-capabilities.php:470
 #, php-format
 msgid "The WordPress account this app is connected as cannot \"%1$s\", which \"%2$s\" requires. This is the account's role, not a Saddle setting — no access level or toggle will change it. Do not retry; tell the user to reconnect Saddle as an account with that permission."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:472
+#: includes/class-saddle-capabilities.php:482
 #, php-format
 msgid "The site owner turned the \"%s\" tool off individually (Saddle → Settings). Other tools still work — do not retry this one; tell the user it is disabled."
 msgstr ""
 
-#: includes/class-saddle-capabilities.php:494
+#. translators: %s: service name, such as Unsplash.
+#: includes/class-saddle-capabilities.php:495
+#, php-format
+msgid "%s is not set up. Ask the owner to add a key under Saddle → Services. Do not retry until they have."
+msgstr ""
+
+#: includes/class-saddle-capabilities.php:518
 msgid "This site's domain changed since write access was granted, and the owner has domain enforcement on — write tools are refused until they re-confirm this app's access on Saddle → AI apps (or turn the domain check off in Saddle → Settings). Do not retry; tell the user."
 msgstr ""
 
 #. translators: 1: required access level, 2: current access level.
-#: includes/class-saddle-capabilities.php:503
+#: includes/class-saddle-capabilities.php:527
 #, php-format
 msgid "This tool needs the \"%1$s\" access level, but this app only has \"%2$s\" access. Only the site owner can change it, on Saddle → AI apps. Do not retry — ask the user to change this app's access if they want this done."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:544
+#: includes/class-saddle-capabilities.php:568
 #, php-format
 msgid "Blocked: Saddle is paused — \"%s\" was refused."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:548
+#: includes/class-saddle-capabilities.php:572
 #, php-format
 msgid "Blocked: your account lacks permission for \"%s\"."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:552
+#: includes/class-saddle-capabilities.php:576
 #, php-format
 msgid "Blocked: the tool \"%s\" is turned off."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:556
+#: includes/class-saddle-capabilities.php:580
 #, php-format
 msgid "Blocked: the site domain changed since write access was granted — \"%s\" is refused until the access level is re-confirmed."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:561
+#: includes/class-saddle-capabilities.php:585
 #, php-format
 msgid "Blocked: \"%s\" needs a higher access level than is enabled."
 msgstr ""
@@ -5176,15 +5201,19 @@ msgid "The AI apps connected to this site: connect another, and choose what each
 msgstr ""
 
 #: includes/class-saddle-modules-view.php:96
-msgid "What every connected app knows about this site: your instructions, skills and memory."
+msgid "The outside accounts and plugins your apps can use, like Unsplash, and what each one sends off your site."
 msgstr ""
 
 #: includes/class-saddle-modules-view.php:97
-msgid "Safety switches, services, single tools, sign-in and the connection check."
+msgid "What every connected app knows about this site: your instructions, skills and memory."
+msgstr ""
+
+#: includes/class-saddle-modules-view.php:98
+msgid "Safety switches, single tools, sign-in and the connection check."
 msgstr ""
 
 #. translators: %s: module name.
-#: includes/class-saddle-modules-view.php:103
+#: includes/class-saddle-modules-view.php:104
 #, php-format
 msgid "%s is installed."
 msgstr ""
@@ -5196,7 +5225,7 @@ msgid "Dashboard"
 msgstr ""
 
 #: includes/class-saddle-modules.php:49
-#: includes/class-saddle-modules.php:105
+#: includes/class-saddle-modules.php:112
 #: admin/build/index.js:114
 #: admin/src/App.jsx:57
 msgid "Overview"
@@ -5215,10 +5244,17 @@ msgstr ""
 
 #: includes/class-saddle-modules.php:62
 #: includes/class-saddle-modules.php:64
+#: admin/build/index.js:109
+#: admin/src/components/Integrations.jsx:138
+msgid "Services"
+msgstr ""
+
+#: includes/class-saddle-modules.php:69
+#: includes/class-saddle-modules.php:71
 msgid "Context"
 msgstr ""
 
-#: includes/class-saddle-modules.php:71
+#: includes/class-saddle-modules.php:78
 msgid "General"
 msgstr ""
 
@@ -5594,6 +5630,80 @@ msgstr ""
 msgid "Rehearsed %1$s (%2$s). Nothing was saved."
 msgstr ""
 
+#: includes/class-saddle-service-sources.php:29
+msgid "Stock photos"
+msgstr ""
+
+#: includes/class-saddle-service-sources.php:30
+msgid "search and import stock photos"
+msgstr ""
+
+#: includes/class-saddle-service-sources.php:43
+msgid "Your search words or a photo ID, and your key"
+msgstr ""
+
+#: includes/class-saddle-service-sources.php:44
+msgid "When an app searches or imports"
+msgstr ""
+
+#: includes/class-saddle-service-sources.php:48
+msgid "The photo file download"
+msgstr ""
+
+#: includes/class-saddle-service-sources.php:49
+msgid "When an app imports a photo"
+msgstr ""
+
+#: includes/class-saddle-service-sources.php:66
+msgid "Yoast’s own SEO fields, edited natively."
+msgstr ""
+
+#: includes/class-saddle-services-connector.php:54
+msgid "Unsplash API Key"
+msgstr ""
+
+#: includes/class-saddle-services-connector.php:55
+msgid "API key for the Unsplash connector."
+msgstr ""
+
+#: includes/class-saddle-services-connector.php:69
+msgid "Stock photos for your AI apps, through Saddle."
+msgstr ""
+
+#. translators: %s: plugin name.
+#: includes/class-saddle-services.php:127
+#, php-format
+msgid "- %s: switched off by the owner. Don't ask for it."
+msgstr ""
+
+#. translators: %s: service name.
+#: includes/class-saddle-services.php:130
+#, php-format
+msgid "- %s: not set up; ask the owner to add a key under Saddle → Services."
+msgstr ""
+
+#. translators: 1: service name, 2: what it does.
+#: includes/class-saddle-services.php:133
+#, php-format
+msgid "- %1$s: ready (%2$s)."
+msgstr ""
+
+#. translators: 1: plugin name, 2: tool-name pattern such as saddle-yoast-*.
+#: includes/class-saddle-services.php:136
+#, php-format
+msgid "- %1$s: detected; use the %2$s tools."
+msgstr ""
+
+#. translators: 1: plugin name, 2: tool-name pattern such as saddle-yoast-*.
+#: includes/class-saddle-services.php:136
+#, php-format
+msgid "- %1$s: active; use the %2$s tools."
+msgstr ""
+
+#: includes/class-saddle-services.php:146
+msgid "Services on this site"
+msgstr ""
+
 #. translators: %s: setting key.
 #: includes/class-saddle-settings-registry.php:218
 #, php-format
@@ -5841,121 +5951,121 @@ msgstr ""
 msgid "Already undone on %s."
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:113
+#: includes/class-saddle-unsplash.php:119
 msgid "That does not look like an Unsplash Access Key. Copy the \"Access Key\" (not the Secret Key) from your app at unsplash.com/developers."
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:141
-msgid "Unsplash is not set up on this site. The site owner must add an Unsplash Access Key under Saddle → Settings → Services — keys are free at unsplash.com/developers. Do not retry until it is configured."
+#: includes/class-saddle-unsplash.php:147
+msgid "Unsplash is not set up on this site. The site owner must add an Unsplash Access Key under Saddle → Services — keys are free at unsplash.com/developers. Do not retry until it is configured."
 msgstr ""
 
 #. translators: %s: transport error message.
-#: includes/class-saddle-unsplash.php:167
+#: includes/class-saddle-unsplash.php:173
 #, php-format
 msgid "Could not reach the Unsplash API: %s. This is usually transient — one retry may help."
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:180
-msgid "Unsplash rejected the configured Access Key. The site owner should re-check it under Saddle → Settings → Services. Do not retry until it is fixed."
+#: includes/class-saddle-unsplash.php:186
+msgid "Unsplash rejected the configured Access Key. The site owner should re-check it under Saddle → Services. Do not retry until it is fixed."
 msgstr ""
 
 #. translators: %s: remaining request quota reported by Unsplash, or '0'.
-#: includes/class-saddle-unsplash.php:191
+#: includes/class-saddle-unsplash.php:197
 #, php-format
 msgid "Unsplash rate limit reached (free/demo keys allow 50 requests per hour; %s remaining). Wait before trying again — do NOT retry in a loop."
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:201
+#: includes/class-saddle-unsplash.php:207
 msgid "Unsplash has no photo or result at that address. Check the photo id (use unsplash-search to find valid ids)."
 msgstr ""
 
 #. translators: 1: HTTP status code, 2: error detail from Unsplash (may be empty).
-#: includes/class-saddle-unsplash.php:212
+#: includes/class-saddle-unsplash.php:218
 #, php-format
 msgid "Unsplash returned an unexpected HTTP %1$d response. %2$s"
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:223
+#: includes/class-saddle-unsplash.php:229
 msgid "Unexpected (non-JSON) response from Unsplash."
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:342
+#: includes/class-saddle-unsplash.php:348
 msgid "an Unsplash photographer"
 msgstr ""
 
 #. translators: 1: photographer profile URL, 2: photographer name, 3: Unsplash home URL.
-#: includes/class-saddle-unsplash.php:347
+#: includes/class-saddle-unsplash.php:353
 #, php-format
 msgid "Photo by <a href=\"%1$s\">%2$s</a> on <a href=\"%3$s\">Unsplash</a>"
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:404
+#: includes/class-saddle-unsplash.php:410
 msgid "Media Tags"
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:405
+#: includes/class-saddle-unsplash.php:411
 msgid "Media Tag"
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:406
+#: includes/class-saddle-unsplash.php:412
 msgid "Search media tags"
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:407
+#: includes/class-saddle-unsplash.php:413
 msgid "All media tags"
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:408
+#: includes/class-saddle-unsplash.php:414
 msgid "Edit media tag"
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:409
+#: includes/class-saddle-unsplash.php:415
 msgid "Update media tag"
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:410
+#: includes/class-saddle-unsplash.php:416
 msgid "Add new media tag"
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:411
+#: includes/class-saddle-unsplash.php:417
 msgid "New media tag"
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:412
+#: includes/class-saddle-unsplash.php:418
 msgid "No media tags found."
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:459
+#: includes/class-saddle-unsplash.php:465
 msgid "All sources"
 msgstr ""
 
 #. translators: %d: number of Unsplash-imported attachments.
-#: includes/class-saddle-unsplash.php:464
+#: includes/class-saddle-unsplash.php:470
 #, php-format
 msgid "Unsplash imports (%d)"
 msgstr ""
 
 #. translators: %s: photographer name (already escaped/linked).
-#: includes/class-saddle-unsplash.php:557
+#: includes/class-saddle-unsplash.php:563
 #, php-format
 msgid "Photo by %s"
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:564
+#: includes/class-saddle-unsplash.php:570
 msgid "View on Unsplash"
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:588
-#: includes/class-saddle-unsplash.php:593
+#: includes/class-saddle-unsplash.php:594
+#: includes/class-saddle-unsplash.php:599
 msgid "Source"
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:612
+#: includes/class-saddle-unsplash.php:618
 msgid "Uploaded directly"
 msgstr ""
 
 #. translators: %s: photographer name.
-#: includes/class-saddle-unsplash.php:619
+#: includes/class-saddle-unsplash.php:625
 #, php-format
 msgid "Unsplash · %s"
 msgstr ""
@@ -6675,7 +6785,7 @@ msgid "This persisted attribute does nothing — rewrite it on a path the block 
 msgstr ""
 
 #. translators: %s: minimum WordPress version.
-#: saddle.php:514
+#: saddle.php:522
 #, php-format
 msgid "Saddle requires WordPress %s or later (the core Abilities API). The MCP server is disabled until you upgrade."
 msgstr ""
@@ -9511,11 +9621,6 @@ msgstr ""
 #: admin/src/components/Integrations.jsx:61
 #, js-format
 msgid "By %s"
-msgstr ""
-
-#: admin/build/index.js:109
-#: admin/src/components/Integrations.jsx:138
-msgid "Services"
 msgstr ""
 
 #: admin/build/index.js:109

@@ -128,6 +128,7 @@ require_once SADDLE_DIR . 'includes/class-saddle-accessors.php';
 require_once SADDLE_DIR . 'includes/class-saddle-integration-engine.php';
 require_once SADDLE_DIR . 'includes/class-saddle-integrations.php';
 require_once SADDLE_DIR . 'includes/class-saddle-services-connector.php';
+require_once SADDLE_DIR . 'includes/class-saddle-service-sources.php';
 require_once SADDLE_DIR . 'includes/class-saddle-services.php';
 require_once SADDLE_DIR . 'includes/trait-saddle-mutation-log.php';
 require_once SADDLE_DIR . 'includes/integrations/class-saddle-seo-advice.php';
