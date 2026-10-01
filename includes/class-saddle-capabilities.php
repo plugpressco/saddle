@@ -356,6 +356,11 @@ class Saddle_Capabilities {
 			return false;
 		}
 
+		// A tool of an outside account the owner has not set up is not offered.
+		if ( class_exists( 'Saddle_Services' ) && ! Saddle_Services::has_tools_available( $short ) ) {
+			return false;
+		}
+
 		$meta     = $ability->get_meta();
 		$required = isset( $meta['saddle']['tier'] ) ? (string) $meta['saddle']['tier'] : '';
 
@@ -370,13 +375,14 @@ class Saddle_Capabilities {
 	 * split by what is withholding them — for telling an agent (and the owner)
 	 * what raising the access level would unlock.
 	 *
-	 * @return array{tier:int,disabled:int,capability:int,visible:int,total:int}
+	 * @return array{tier:int,disabled:int,capability:int,service:int,visible:int,total:int}
 	 */
 	public static function hidden_tool_counts() {
 		$counts = array(
 			'tier'       => 0,
 			'disabled'   => 0,
 			'capability' => 0,
+			'service'    => 0,
 			'visible'    => 0,
 			'total'      => 0,
 		);
@@ -404,6 +410,10 @@ class Saddle_Capabilities {
 				++$counts['capability'];
 			} elseif ( ! self::is_ability_enabled( $short ) ) {
 				++$counts['disabled'];
+			} elseif ( class_exists( 'Saddle_Services' ) && ! Saddle_Services::has_tools_available( $short ) ) {
+				// An account the owner has not set up; the Services section of
+				// the context says so, so it is not a shortfall of access.
+				++$counts['service'];
 			} else {
 				++$counts['tier'];
 			}
@@ -473,6 +483,20 @@ class Saddle_Capabilities {
 					$short
 				),
 			);
+		}
+
+		if ( class_exists( 'Saddle_Services' ) ) {
+			$account = Saddle_Services::unavailable_account( $short );
+			if ( '' !== $account ) {
+				return array(
+					'code'    => 'saddle_service_not_set_up',
+					'message' => sprintf(
+						/* translators: %s: service name, such as Unsplash. */
+						__( '%s is not set up. Ask the owner to add a key under Saddle → Services. Do not retry until they have.', 'saddle' ),
+						$account
+					),
+				);
+			}
 		}
 
 		$required = $gate ? (string) $gate['level'] : '';

@@ -1,12 +1,13 @@
 /**
  * What each Saddle page shows, tab by tab (#274).
  *
- * Four pages (#285):
+ * Five pages (#285, #291):
  *
  * - Dashboard: Overview · Activity
  * - AI apps: the connected apps, each with its own access, and Connect an app
  * - Context: what every app knows — instructions as named fields, skills,
  *   memory, and what Saddle tells every app automatically
+ * - Services: Accounts, Plugins and Add-ons, each row opening a drawer
  * - Settings: one page, in sections
  *
  * A module's page shows the screen its own bundle registered for the tab
@@ -24,6 +25,7 @@ import Context from './components/Guidance';
 import ConnectApps from './components/ConnectApps';
 import Apps from './components/ConnectedClients';
 import Activity from './components/Activity';
+import Services from './components/Services';
 import SettingsForm from './components/SettingsForm';
 import SettingsPage from './components/SettingsPage';
 import { useOauthSettings } from './components/SignInCard';
@@ -189,7 +191,7 @@ function AppsTab( {
 }
 
 /**
- * Settings: Safety, Services and Advanced (SettingsPage), then whatever other
+ * Settings: Safety and Advanced (SettingsPage), then whatever other
  * plugins add (a licence, say), each as a section of its own, and a plain link
  * to run setup again at the end.
  *
@@ -338,6 +340,9 @@ export default function Screen( props ) {
 					onRehearsalChanged={ onRehearsalChanged }
 				/>
 			);
+
+		case 'services/overview':
+			return <Services />;
 
 		case 'context/overview':
 			return <Context />;

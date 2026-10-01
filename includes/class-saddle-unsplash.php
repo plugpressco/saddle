@@ -59,6 +59,12 @@ class Saddle_Unsplash {
 	 */
 	const API_BASE = 'https://api.unsplash.com';
 
+	/**
+	 * What an Access Key looks like. One rule, for Saddle's own form and for
+	 * the WordPress Connectors screen.
+	 */
+	const KEY_PATTERN = '/^[A-Za-z0-9_\-]{16,128}$/';
+
 	/*
 	=========================================================================
 	 * Key storage
@@ -107,7 +113,7 @@ class Saddle_Unsplash {
 			return true;
 		}
 
-		if ( ! preg_match( '/^[A-Za-z0-9_\-]{16,128}$/', $key ) ) {
+		if ( ! preg_match( self::KEY_PATTERN, $key ) ) {
 			return new WP_Error(
 				'saddle_invalid_unsplash_key',
 				__( 'That does not look like an Unsplash Access Key. Copy the "Access Key" (not the Secret Key) from your app at unsplash.com/developers.', 'saddle' ),
@@ -138,7 +144,7 @@ class Saddle_Unsplash {
 		if ( '' === $key ) {
 			return new WP_Error(
 				'saddle_unsplash_not_configured',
-				__( 'Unsplash is not set up on this site. The site owner must add an Unsplash Access Key under Saddle → Settings → Services — keys are free at unsplash.com/developers. Do not retry until it is configured.', 'saddle' ),
+				__( 'Unsplash is not set up on this site. The site owner must add an Unsplash Access Key under Saddle → Services — keys are free at unsplash.com/developers. Do not retry until it is configured.', 'saddle' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -177,7 +183,7 @@ class Saddle_Unsplash {
 		if ( 401 === $status ) {
 			return new WP_Error(
 				'saddle_unsplash_invalid_key',
-				__( 'Unsplash rejected the configured Access Key. The site owner should re-check it under Saddle → Settings → Services. Do not retry until it is fixed.', 'saddle' ),
+				__( 'Unsplash rejected the configured Access Key. The site owner should re-check it under Saddle → Services. Do not retry until it is fixed.', 'saddle' ),
 				array( 'status' => 502 )
 			);
 		}

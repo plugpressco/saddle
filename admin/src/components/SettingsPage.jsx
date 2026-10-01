@@ -2,7 +2,6 @@
  * Settings — one page, no tabs (#285).
  *
  * - Safety: three switches that save the moment they are flipped.
- * - Services: Unsplash and the plugins Saddle can hand to the AI (Integrations).
  * - Advanced: rarely used things, each collapsed — single tools, sign-in for
  *   apps, memory limits, recent changes, the connection check.
  *
@@ -22,7 +21,6 @@ import { __, sprintf } from '@wordpress/i18n';
 import { api } from '../api';
 import { disabledSet, flipTool, groupTools } from '../tools-list';
 import SectionHeader from './SectionHeader';
-import Integrations from './Integrations';
 import SettingsForm from './SettingsForm';
 import SignInCard, { useOauthSettings } from './SignInCard';
 import ConnectionHealth from './ConnectionHealth';
@@ -268,7 +266,6 @@ export default function SettingsPage( {
 	return (
 		<>
 			<Safety onRehearsalChanged={ onRehearsalChanged } />
-			<Integrations caps={ caps } onChanged={ loadCaps } />
 
 			<section className="saddle-section">
 				<SectionHeader title={ __( 'Advanced', 'saddle' ) } />

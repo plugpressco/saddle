@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-30T23:47:36+00:00\n"
+"POT-Creation-Date: 2026-10-01T00:39:26+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -1105,7 +1105,7 @@ msgid "Pass exactly one of \"source_url\" (a public URL to download) or \"data\"
 msgstr ""
 
 #: includes/abilities/core-content.php:1737
-#: includes/abilities/unsplash.php:230
+#: includes/abilities/unsplash.php:231
 msgid "You do not have permission to attach media to that item."
 msgstr ""
 
@@ -2404,17 +2404,17 @@ msgstr ""
 msgid "%1$s (%2$s tab)"
 msgstr ""
 
-#: includes/abilities/modules.php:296
+#: includes/abilities/modules.php:297
 msgid "The owner's admin"
 msgstr ""
 
 #. translators: %s: the owner's Saddle pages, comma separated.
-#: includes/abilities/modules.php:300
+#: includes/abilities/modules.php:301
 #, php-format
 msgid "Owner's admin: Saddle → %s."
 msgstr ""
 
-#: includes/abilities/modules.php:303
+#: includes/abilities/modules.php:304
 msgid "To explain or change a setting, call saddle-get-module-settings and give the owner the admin_url instead of describing clicks."
 msgstr ""
 
@@ -3040,94 +3040,94 @@ msgid_plural "Undo %d logged changes."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/abilities/unsplash.php:27
+#: includes/abilities/unsplash.php:28
 msgid "Search Unsplash"
 msgstr ""
 
-#: includes/abilities/unsplash.php:28
+#: includes/abilities/unsplash.php:29
 msgid "Searches the Unsplash free stock-photo library. Results are previews only. Each result includes in_library/media_id: when in_library is true the photo is ALREADY in this site's media library — reuse that media_id instead of importing again. Otherwise call unsplash-import with the photo id (pass your search words as its \"tags\" so the import stays findable later). Never sideload the preview URLs yourself; that skips Unsplash's required attribution and download tracking. The search query is sent to the Unsplash API using the site owner's own key. Rate-limited (free keys: 50 requests/hour), so search deliberately, not iteratively."
 msgstr ""
 
-#: includes/abilities/unsplash.php:36
+#: includes/abilities/unsplash.php:37
 msgid "Search keywords, e.g. \"mountain sunrise\"."
 msgstr ""
 
-#: includes/abilities/unsplash.php:42
+#: includes/abilities/unsplash.php:43
 msgid "Result page."
 msgstr ""
 
-#: includes/abilities/unsplash.php:49
+#: includes/abilities/unsplash.php:50
 msgid "Results per page (1–30)."
 msgstr ""
 
-#: includes/abilities/unsplash.php:54
+#: includes/abilities/unsplash.php:55
 msgid "Only photos of this orientation."
 msgstr ""
 
-#: includes/abilities/unsplash.php:59
+#: includes/abilities/unsplash.php:60
 msgid "Only photos with this dominant color."
 msgstr ""
 
-#: includes/abilities/unsplash.php:72
+#: includes/abilities/unsplash.php:73
 msgid "Import Unsplash photo"
 msgstr ""
 
-#: includes/abilities/unsplash.php:73
+#: includes/abilities/unsplash.php:74
 msgid "Downloads one Unsplash photo into the media library by its photo id (from unsplash-search) and returns the new media item. Handles Unsplash's required download tracking, defaults the alt text to Unsplash's description and the caption to the photographer attribution, and auto-tags the media item with Unsplash's own tags plus any \"tags\" you pass — so pass your search words to keep it findable via list-media's tag filter. Imports carry visible Unsplash provenance in the media library. Dedupe-safe: if the photo was already imported it returns the existing media item WITHOUT downloading again (your \"tags\" are still added) — pass force=true only if the user explicitly wants a duplicate copy. Additive and non-destructive."
 msgstr ""
 
-#: includes/abilities/unsplash.php:81
+#: includes/abilities/unsplash.php:82
 msgid "The Unsplash photo id from unsplash-search results."
 msgstr ""
 
-#: includes/abilities/unsplash.php:85
+#: includes/abilities/unsplash.php:86
 msgid "Media title. Defaults to the photo's Unsplash description."
 msgstr ""
 
-#: includes/abilities/unsplash.php:89
+#: includes/abilities/unsplash.php:90
 msgid "Alt text. Defaults to Unsplash's accessibility description."
 msgstr ""
 
-#: includes/abilities/unsplash.php:93
+#: includes/abilities/unsplash.php:94
 msgid "Caption. Defaults to the photographer attribution Unsplash requires — only override with the user's explicit intent."
 msgstr ""
 
-#: includes/abilities/unsplash.php:97
+#: includes/abilities/unsplash.php:98
 msgid "Optional post/page to attach the media to."
 msgstr ""
 
-#: includes/abilities/unsplash.php:103
+#: includes/abilities/unsplash.php:104
 msgid "Extra media tags to assign (created if missing). Pass the search words you used to find this photo so it stays findable later via list-media's \"tag\" filter. Unsplash's own tags for the photo are always added automatically."
 msgstr ""
 
-#: includes/abilities/unsplash.php:108
+#: includes/abilities/unsplash.php:109
 msgid "Re-download even if this photo is already in the media library."
 msgstr ""
 
-#: includes/abilities/unsplash.php:163
+#: includes/abilities/unsplash.php:164
 msgid "A \"query\" is required."
 msgstr ""
 
-#: includes/abilities/unsplash.php:225
+#: includes/abilities/unsplash.php:226
 msgid "A valid \"photo_id\" from unsplash-search is required."
 msgstr ""
 
-#: includes/abilities/unsplash.php:247
+#: includes/abilities/unsplash.php:248
 msgid "This Unsplash photo is already in the media library — nothing was downloaded. Reuse this media item, or pass force=true only if the user explicitly wants a duplicate copy."
 msgstr ""
 
-#: includes/abilities/unsplash.php:271
+#: includes/abilities/unsplash.php:272
 msgid "Unsplash did not return a downloadable file URL for that photo."
 msgstr ""
 
 #. translators: %s: Unsplash photo id.
-#: includes/abilities/unsplash.php:288
+#: includes/abilities/unsplash.php:289
 #, php-format
 msgid "Unsplash photo %s"
 msgstr ""
 
 #. translators: 1: Unsplash photo id, 2: attachment id.
-#: includes/abilities/unsplash.php:345
+#: includes/abilities/unsplash.php:346
 #, php-format
 msgid "Imported Unsplash photo %1$s as media #%2$d"
 msgstr ""
@@ -3623,84 +3623,103 @@ msgid "Owner cleared all agent-written memory (%d entries)."
 msgstr ""
 
 #. translators: %s: plugin name.
-#: includes/admin/class-saddle-rest.php:1126
+#: includes/admin/class-saddle-rest.php:1141
 #, php-format
 msgid "Switched on the %s integration"
 msgstr ""
 
 #. translators: %s: plugin name.
-#: includes/admin/class-saddle-rest.php:1126
+#: includes/admin/class-saddle-rest.php:1141
 #, php-format
 msgid "Switched off the %s integration"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1149
+#: includes/admin/class-saddle-rest.php:1164
 msgid "Yoast SEO"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1149
+#: includes/admin/class-saddle-rest.php:1164
 msgid "Yoast’s own SEO fields — titles, descriptions, robots — edited natively."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1150
+#: includes/admin/class-saddle-rest.php:1165
 msgid "Rank Math"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1150
+#: includes/admin/class-saddle-rest.php:1165
+#: includes/class-saddle-service-sources.php:67
 msgid "Rank Math’s own SEO fields, edited natively."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1151
+#: includes/admin/class-saddle-rest.php:1166
 msgid "AIOSEO"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1151
+#: includes/admin/class-saddle-rest.php:1166
+#: includes/class-saddle-service-sources.php:68
 msgid "AIOSEO’s own SEO fields, edited natively."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1152
+#: includes/admin/class-saddle-rest.php:1167
 msgid "WooCommerce"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1152
+#: includes/admin/class-saddle-rest.php:1167
+#: includes/class-saddle-service-sources.php:69
 msgid "Products and orders, handled natively."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1153
-#: includes/class-saddle-unsplash.php:568
-#: includes/class-saddle-unsplash.php:620
+#: includes/admin/class-saddle-rest.php:1168
+#: includes/class-saddle-unsplash.php:574
+#: includes/class-saddle-unsplash.php:626
 msgid "Unsplash"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1153
-msgid "Stock-photo search and import, built into Saddle. Needs the Access Key above."
+#: includes/admin/class-saddle-rest.php:1168
+msgid "Stock-photo search and import, built into Saddle. Needs an Access Key under Saddle → Services."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1205
+#: includes/admin/class-saddle-rest.php:1220
 msgid "MCP Client"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1240
-#: includes/admin/class-saddle-rest.php:1351
-#: includes/admin/class-saddle-rest.php:1406
+#: includes/admin/class-saddle-rest.php:1255
+#: includes/admin/class-saddle-rest.php:1366
+#: includes/admin/class-saddle-rest.php:1421
 msgid "Application Passwords are not available on this site."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1244
+#: includes/admin/class-saddle-rest.php:1259
 msgid "Application Passwords are turned off on this site — often because it isn’t served over HTTPS, or a security plugin disabled them."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1249
+#: includes/admin/class-saddle-rest.php:1264
 msgid "AI app"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1360
-#: includes/admin/class-saddle-rest.php:1412
+#: includes/admin/class-saddle-rest.php:1375
+#: includes/admin/class-saddle-rest.php:1427
 msgid "No Saddle client with that ID."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1432
+#: includes/admin/class-saddle-rest.php:1447
 msgid "The old key was removed, but issuing its replacement failed. Connect the app again from the Connections screen."
+msgstr ""
+
+#: includes/admin/class-saddle-services-rest.php:90
+msgid "Only an outside account has a key."
+msgstr ""
+
+#: includes/admin/class-saddle-services-rest.php:96
+msgid "This service keeps its key in its own plugin."
+msgstr ""
+
+#: includes/admin/class-saddle-services-rest.php:121
+msgid "Only a plugin from another developer has a switch."
+msgstr ""
+
+#: includes/admin/class-saddle-services-rest.php:152
+msgid "No service with that key."
 msgstr ""
 
 #. translators: %s: page name, such as Dashboard or AI apps.
@@ -3709,20 +3728,20 @@ msgstr ""
 msgid "%s ‹ Saddle"
 msgstr ""
 
-#: includes/admin/class-saddle-settings.php:149
-#: includes/class-saddle-modules.php:69
-#: includes/class-saddle-modules.php:118
+#: includes/admin/class-saddle-settings.php:156
+#: includes/class-saddle-modules.php:76
+#: includes/class-saddle-modules.php:125
 msgid "Settings"
 msgstr ""
 
-#: includes/admin/class-saddle-settings.php:150
+#: includes/admin/class-saddle-settings.php:157
 #: includes/class-saddle-notices.php:60
 #: includes/class-saddle-recipes.php:77
 #: includes/class-saddle-recipes.php:124
 msgid "Get started"
 msgstr ""
 
-#: includes/admin/class-saddle-settings.php:355
+#: includes/admin/class-saddle-settings.php:362
 msgid "Saddle: the admin UI has not been built yet. Run \"npm install && npm run build\" in the plugin folder."
 msgstr ""
 
@@ -4017,24 +4036,30 @@ msgstr ""
 #: includes/class-saddle-access.php:65
 #: admin/build/index.js:77
 #: admin/build/index.js:91
+#: admin/build/index.js:111
 #: admin/src/activity-format.js:136
 #: admin/src/components/ConnectedClients.jsx:53
+#: admin/src/services-logic.js:61
 msgid "Read only"
 msgstr ""
 
 #: includes/class-saddle-access.php:66
 #: admin/build/index.js:77
 #: admin/build/index.js:91
+#: admin/build/index.js:111
 #: admin/src/activity-format.js:137
 #: admin/src/components/ConnectedClients.jsx:58
+#: admin/src/services-logic.js:63
 msgid "Edit content"
 msgstr ""
 
 #: includes/class-saddle-access.php:67
 #: admin/build/index.js:77
 #: admin/build/index.js:91
+#: admin/build/index.js:111
 #: admin/src/activity-format.js:138
 #: admin/src/components/ConnectedClients.jsx:63
+#: admin/src/services-logic.js:65
 msgid "Manage the site"
 msgstr ""
 
@@ -4394,62 +4419,68 @@ msgstr ""
 msgid "%1$s does not allow %2$s among its children."
 msgstr ""
 
-#: includes/class-saddle-capabilities.php:439
+#: includes/class-saddle-capabilities.php:449
 msgid "The site owner has paused all AI access — every tool is refused until they resume it from Saddle → Dashboard. Do not retry; tell the user Saddle is paused."
 msgstr ""
 
-#: includes/class-saddle-capabilities.php:446
+#: includes/class-saddle-capabilities.php:456
 msgid "The request is not authenticated. Reconnect the app from Saddle → AI apps to issue a fresh sign-in key."
 msgstr ""
 
 #. translators: 1: WordPress capability name, 2: tool name.
-#: includes/class-saddle-capabilities.php:460
+#: includes/class-saddle-capabilities.php:470
 #, php-format
 msgid "The WordPress account this app is connected as cannot \"%1$s\", which \"%2$s\" requires. This is the account's role, not a Saddle setting — no access level or toggle will change it. Do not retry; tell the user to reconnect Saddle as an account with that permission."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:472
+#: includes/class-saddle-capabilities.php:482
 #, php-format
 msgid "The site owner turned the \"%s\" tool off individually (Saddle → Settings). Other tools still work — do not retry this one; tell the user it is disabled."
 msgstr ""
 
-#: includes/class-saddle-capabilities.php:494
+#. translators: %s: service name, such as Unsplash.
+#: includes/class-saddle-capabilities.php:495
+#, php-format
+msgid "%s is not set up. Ask the owner to add a key under Saddle → Services. Do not retry until they have."
+msgstr ""
+
+#: includes/class-saddle-capabilities.php:518
 msgid "This site's domain changed since write access was granted, and the owner has domain enforcement on — write tools are refused until they re-confirm this app's access on Saddle → AI apps (or turn the domain check off in Saddle → Settings). Do not retry; tell the user."
 msgstr ""
 
 #. translators: 1: required access level, 2: current access level.
-#: includes/class-saddle-capabilities.php:503
+#: includes/class-saddle-capabilities.php:527
 #, php-format
 msgid "This tool needs the \"%1$s\" access level, but this app only has \"%2$s\" access. Only the site owner can change it, on Saddle → AI apps. Do not retry — ask the user to change this app's access if they want this done."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:544
+#: includes/class-saddle-capabilities.php:568
 #, php-format
 msgid "Blocked: Saddle is paused — \"%s\" was refused."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:548
+#: includes/class-saddle-capabilities.php:572
 #, php-format
 msgid "Blocked: your account lacks permission for \"%s\"."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:552
+#: includes/class-saddle-capabilities.php:576
 #, php-format
 msgid "Blocked: the tool \"%s\" is turned off."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:556
+#: includes/class-saddle-capabilities.php:580
 #, php-format
 msgid "Blocked: the site domain changed since write access was granted — \"%s\" is refused until the access level is re-confirmed."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-capabilities.php:561
+#: includes/class-saddle-capabilities.php:585
 #, php-format
 msgid "Blocked: \"%s\" needs a higher access level than is enabled."
 msgstr ""
@@ -4817,7 +4848,7 @@ msgid "Apps connect from the site address and you approve them on a consent scre
 msgstr ""
 
 #: includes/class-saddle-core-settings.php:107
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:202
 #: admin/src/components/SignInCard.jsx:215
 msgid "Let apps register themselves"
@@ -4896,8 +4927,8 @@ msgstr ""
 
 #: includes/class-saddle-core-settings.php:173
 #: includes/class-saddle-core-settings.php:184
-#: admin/build/index.js:113
-#: admin/src/components/SettingsPage.jsx:298
+#: admin/build/index.js:116
+#: admin/src/components/SettingsPage.jsx:295
 msgid "Recent changes"
 msgstr ""
 
@@ -5016,7 +5047,7 @@ msgstr ""
 #. translators: %s: plugin name.
 #: includes/class-saddle-integrations.php:256
 #, php-format
-msgid "- %s is installed, but the site owner has not switched on its tools. If they are needed, tell the user they can turn it on under Saddle → Settings."
+msgid "- %s is installed, but the site owner has not switched on its tools. If they are needed, tell the user they can turn it on under Saddle → Services."
 msgstr ""
 
 #: includes/class-saddle-integrations.php:267
@@ -5176,35 +5207,39 @@ msgid "The AI apps connected to this site: connect another, and choose what each
 msgstr ""
 
 #: includes/class-saddle-modules-view.php:96
-msgid "What every connected app knows about this site: your instructions, skills and memory."
+msgid "The outside accounts and plugins your apps can use, like Unsplash, and what each one sends off your site."
 msgstr ""
 
 #: includes/class-saddle-modules-view.php:97
-msgid "Safety switches, services, single tools, sign-in and the connection check."
+msgid "What every connected app knows about this site: your instructions, skills and memory."
+msgstr ""
+
+#: includes/class-saddle-modules-view.php:98
+msgid "Safety switches, single tools, sign-in and the connection check."
 msgstr ""
 
 #. translators: %s: module name.
-#: includes/class-saddle-modules-view.php:103
+#: includes/class-saddle-modules-view.php:104
 #, php-format
 msgid "%s is installed."
 msgstr ""
 
 #: includes/class-saddle-modules.php:47
-#: admin/build/index.js:114
-#: admin/src/App.jsx:55
+#: admin/build/index.js:117
+#: admin/src/App.jsx:56
 msgid "Dashboard"
 msgstr ""
 
 #: includes/class-saddle-modules.php:49
-#: includes/class-saddle-modules.php:105
-#: admin/build/index.js:114
-#: admin/src/App.jsx:57
+#: includes/class-saddle-modules.php:112
+#: admin/build/index.js:117
+#: admin/src/App.jsx:58
 msgid "Overview"
 msgstr ""
 
 #: includes/class-saddle-modules.php:50
-#: admin/build/index.js:115
-#: admin/src/App.jsx:325
+#: admin/build/index.js:118
+#: admin/src/App.jsx:326
 msgid "Activity"
 msgstr ""
 
@@ -5215,10 +5250,15 @@ msgstr ""
 
 #: includes/class-saddle-modules.php:62
 #: includes/class-saddle-modules.php:64
+msgid "Services"
+msgstr ""
+
+#: includes/class-saddle-modules.php:69
+#: includes/class-saddle-modules.php:71
 msgid "Context"
 msgstr ""
 
-#: includes/class-saddle-modules.php:71
+#: includes/class-saddle-modules.php:78
 msgid "General"
 msgstr ""
 
@@ -5594,6 +5634,74 @@ msgstr ""
 msgid "Rehearsed %1$s (%2$s). Nothing was saved."
 msgstr ""
 
+#: includes/class-saddle-service-sources.php:29
+msgid "Stock photos"
+msgstr ""
+
+#: includes/class-saddle-service-sources.php:30
+msgid "search and import stock photos"
+msgstr ""
+
+#: includes/class-saddle-service-sources.php:43
+msgid "Your search words or a photo ID, and your key"
+msgstr ""
+
+#: includes/class-saddle-service-sources.php:44
+msgid "When an app searches or imports"
+msgstr ""
+
+#: includes/class-saddle-service-sources.php:48
+msgid "The photo file download"
+msgstr ""
+
+#: includes/class-saddle-service-sources.php:49
+msgid "When an app imports a photo"
+msgstr ""
+
+#: includes/class-saddle-service-sources.php:66
+msgid "Yoast’s own SEO fields, edited natively."
+msgstr ""
+
+#: includes/class-saddle-services-connector.php:54
+msgid "Unsplash API Key"
+msgstr ""
+
+#: includes/class-saddle-services-connector.php:55
+msgid "API key for the Unsplash connector."
+msgstr ""
+
+#: includes/class-saddle-services-connector.php:69
+msgid "Stock photos for your AI apps, through Saddle."
+msgstr ""
+
+#. translators: %s: service name.
+#: includes/class-saddle-services.php:132
+#, php-format
+msgid "- %s: not set up; ask the owner to add a key under Saddle → Services."
+msgstr ""
+
+#. translators: 1: service name, 2: what it does.
+#: includes/class-saddle-services.php:135
+#, php-format
+msgid "- %1$s: ready (%2$s)."
+msgstr ""
+
+#. translators: 1: plugin name, 2: tool-name pattern such as saddle-yoast-*.
+#: includes/class-saddle-services.php:138
+#, php-format
+msgid "- %1$s: detected; use the %2$s tools."
+msgstr ""
+
+#. translators: 1: plugin name, 2: tool-name pattern such as saddle-yoast-*.
+#: includes/class-saddle-services.php:138
+#, php-format
+msgid "- %1$s: active; use the %2$s tools."
+msgstr ""
+
+#: includes/class-saddle-services.php:148
+msgid "Services on this site"
+msgstr ""
+
 #. translators: %s: setting key.
 #: includes/class-saddle-settings-registry.php:218
 #, php-format
@@ -5841,121 +5949,121 @@ msgstr ""
 msgid "Already undone on %s."
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:113
+#: includes/class-saddle-unsplash.php:119
 msgid "That does not look like an Unsplash Access Key. Copy the \"Access Key\" (not the Secret Key) from your app at unsplash.com/developers."
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:141
-msgid "Unsplash is not set up on this site. The site owner must add an Unsplash Access Key under Saddle → Settings → Services — keys are free at unsplash.com/developers. Do not retry until it is configured."
+#: includes/class-saddle-unsplash.php:147
+msgid "Unsplash is not set up on this site. The site owner must add an Unsplash Access Key under Saddle → Services — keys are free at unsplash.com/developers. Do not retry until it is configured."
 msgstr ""
 
 #. translators: %s: transport error message.
-#: includes/class-saddle-unsplash.php:167
+#: includes/class-saddle-unsplash.php:173
 #, php-format
 msgid "Could not reach the Unsplash API: %s. This is usually transient — one retry may help."
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:180
-msgid "Unsplash rejected the configured Access Key. The site owner should re-check it under Saddle → Settings → Services. Do not retry until it is fixed."
+#: includes/class-saddle-unsplash.php:186
+msgid "Unsplash rejected the configured Access Key. The site owner should re-check it under Saddle → Services. Do not retry until it is fixed."
 msgstr ""
 
 #. translators: %s: remaining request quota reported by Unsplash, or '0'.
-#: includes/class-saddle-unsplash.php:191
+#: includes/class-saddle-unsplash.php:197
 #, php-format
 msgid "Unsplash rate limit reached (free/demo keys allow 50 requests per hour; %s remaining). Wait before trying again — do NOT retry in a loop."
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:201
+#: includes/class-saddle-unsplash.php:207
 msgid "Unsplash has no photo or result at that address. Check the photo id (use unsplash-search to find valid ids)."
 msgstr ""
 
 #. translators: 1: HTTP status code, 2: error detail from Unsplash (may be empty).
-#: includes/class-saddle-unsplash.php:212
+#: includes/class-saddle-unsplash.php:218
 #, php-format
 msgid "Unsplash returned an unexpected HTTP %1$d response. %2$s"
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:223
+#: includes/class-saddle-unsplash.php:229
 msgid "Unexpected (non-JSON) response from Unsplash."
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:342
+#: includes/class-saddle-unsplash.php:348
 msgid "an Unsplash photographer"
 msgstr ""
 
 #. translators: 1: photographer profile URL, 2: photographer name, 3: Unsplash home URL.
-#: includes/class-saddle-unsplash.php:347
+#: includes/class-saddle-unsplash.php:353
 #, php-format
 msgid "Photo by <a href=\"%1$s\">%2$s</a> on <a href=\"%3$s\">Unsplash</a>"
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:404
+#: includes/class-saddle-unsplash.php:410
 msgid "Media Tags"
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:405
+#: includes/class-saddle-unsplash.php:411
 msgid "Media Tag"
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:406
+#: includes/class-saddle-unsplash.php:412
 msgid "Search media tags"
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:407
+#: includes/class-saddle-unsplash.php:413
 msgid "All media tags"
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:408
+#: includes/class-saddle-unsplash.php:414
 msgid "Edit media tag"
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:409
+#: includes/class-saddle-unsplash.php:415
 msgid "Update media tag"
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:410
+#: includes/class-saddle-unsplash.php:416
 msgid "Add new media tag"
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:411
+#: includes/class-saddle-unsplash.php:417
 msgid "New media tag"
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:412
+#: includes/class-saddle-unsplash.php:418
 msgid "No media tags found."
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:459
+#: includes/class-saddle-unsplash.php:465
 msgid "All sources"
 msgstr ""
 
 #. translators: %d: number of Unsplash-imported attachments.
-#: includes/class-saddle-unsplash.php:464
+#: includes/class-saddle-unsplash.php:470
 #, php-format
 msgid "Unsplash imports (%d)"
 msgstr ""
 
 #. translators: %s: photographer name (already escaped/linked).
-#: includes/class-saddle-unsplash.php:557
+#: includes/class-saddle-unsplash.php:563
 #, php-format
 msgid "Photo by %s"
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:564
+#: includes/class-saddle-unsplash.php:570
 msgid "View on Unsplash"
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:588
-#: includes/class-saddle-unsplash.php:593
+#: includes/class-saddle-unsplash.php:594
+#: includes/class-saddle-unsplash.php:599
 msgid "Source"
 msgstr ""
 
-#: includes/class-saddle-unsplash.php:612
+#: includes/class-saddle-unsplash.php:618
 msgid "Uploaded directly"
 msgstr ""
 
 #. translators: %s: photographer name.
-#: includes/class-saddle-unsplash.php:619
+#: includes/class-saddle-unsplash.php:625
 #, php-format
 msgid "Unsplash · %s"
 msgstr ""
@@ -6675,7 +6783,7 @@ msgid "This persisted attribute does nothing — rewrite it on a path the block 
 msgstr ""
 
 #. translators: %s: minimum WordPress version.
-#: saddle.php:514
+#: saddle.php:522
 #, php-format
 msgid "Saddle requires WordPress %s or later (the core Abilities API). The MCP server is disabled until you upgrade."
 msgstr ""
@@ -7017,10 +7125,10 @@ msgstr ""
 
 #: admin/build/index.js:23
 #: admin/build/index.js:94
-#: admin/build/index.js:114
+#: admin/build/index.js:117
 #: admin/src/components/ConnectedClients.jsx:306
 #: admin/src/onboarding-logic.js:568
-#: admin/src/screens.jsx:174
+#: admin/src/screens.jsx:176
 msgid "Connect an app"
 msgstr ""
 
@@ -7491,6 +7599,7 @@ msgstr ""
 #: admin/build/index.js:83
 #: admin/build/index.js:84
 #: admin/build/index.js:86
+#: admin/build/index.js:106
 #: admin/build/index.js:107
 #: admin/src/components/ConnectWizard.jsx:639
 #: admin/src/components/Guidance.jsx:198
@@ -7498,8 +7607,8 @@ msgstr ""
 #: admin/src/components/Memory.jsx:87
 #: admin/src/components/Memory.jsx:107
 #: admin/src/components/Memory.jsx:210
-#: admin/src/components/UnsplashKeyCard.jsx:79
-#: admin/src/components/UnsplashKeyCard.jsx:172
+#: admin/src/components/Services.jsx:106
+#: admin/src/components/Services.jsx:165
 msgid "Cancel"
 msgstr ""
 
@@ -8320,7 +8429,7 @@ msgid "Send this to your host"
 msgstr ""
 
 #: admin/build/index.js:66
-#: admin/build/index.js:104
+#: admin/build/index.js:114
 #: admin/src/components/AuthTrouble.jsx:143
 #: admin/src/components/SettingsForm.jsx:383
 msgid "Try again"
@@ -8409,8 +8518,8 @@ msgid "Choose"
 msgstr ""
 
 #: admin/build/index.js:69
-#: admin/build/index.js:115
-#: admin/src/App.jsx:516
+#: admin/build/index.js:118
+#: admin/src/App.jsx:517
 #: admin/src/components/SetupBlock.jsx:89
 msgid "Setup"
 msgstr ""
@@ -8467,7 +8576,7 @@ msgid "%1$s wants to %2$s"
 msgstr ""
 
 #: admin/build/index.js:75
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/approvals-logic.js:114
 #: admin/src/components/SignInCard.jsx:88
 msgid "Yes"
@@ -8845,11 +8954,9 @@ msgid "Add"
 msgstr ""
 
 #: admin/build/index.js:84
-#: admin/build/index.js:105
-#: admin/build/index.js:107
+#: admin/build/index.js:115
 #: admin/src/components/Guidance.jsx:190
 #: admin/src/components/SettingsForm.jsx:437
-#: admin/src/components/UnsplashKeyCard.jsx:164
 msgid "Save"
 msgstr ""
 
@@ -8884,9 +8991,7 @@ msgid "Skill installed."
 msgstr ""
 
 #: admin/build/index.js:84
-#: admin/build/index.js:106
 #: admin/src/components/Guidance.jsx:402
-#: admin/src/components/UnsplashKeyCard.jsx:99
 msgid "Built in"
 msgstr ""
 
@@ -9162,11 +9267,8 @@ msgid "Signed in as %s"
 msgstr ""
 
 #. translators: %s: the last four characters of a key.
-#. translators: %s: last four characters of the key.
 #: admin/build/index.js:93
-#: admin/build/index.js:107
 #: admin/src/components/ConnectedClients.jsx:123
-#: admin/src/components/UnsplashKeyCard.jsx:108
 #, js-format
 msgid "Key ····%s"
 msgstr ""
@@ -9354,417 +9456,554 @@ msgstr ""
 msgid "Show more"
 msgstr ""
 
-#. translators: %s: the smallest allowed number.
-#: admin/build/index.js:102
-#: admin/src/components/SettingsForm.jsx:76
-#, js-format
-msgid "Must be %s or more."
-msgstr ""
-
-#. translators: %s: the largest allowed number.
-#: admin/build/index.js:103
-#: admin/src/components/SettingsForm.jsx:83
-#, js-format
-msgid "Must be %s or less."
-msgstr ""
-
-#: admin/build/index.js:103
-#: admin/src/components/SettingsForm.jsx:87
-msgid "Enter a whole number."
-msgstr ""
-
-#. translators: %s: the last characters of a saved key.
-#: admin/build/index.js:104
-#: admin/src/components/SettingsForm.jsx:158
-#, js-format
-msgid "Set (%s)"
-msgstr ""
-
-#: admin/build/index.js:104
-#: admin/src/components/SettingsForm.jsx:161
-msgid "Not set"
-msgstr ""
-
-#: admin/build/index.js:104
-#: admin/src/components/SettingsForm.jsx:171
-msgid "Type a new value to replace it"
-msgstr ""
-
-#: admin/build/index.js:104
-#: admin/src/components/SettingsForm.jsx:261
-msgid "Could not load these settings."
-msgstr ""
-
-#: admin/build/index.js:104
-#: admin/src/components/SettingsForm.jsx:392
-msgid "There are no settings to change here."
-msgstr ""
-
-#. translators: %d: number of advanced settings.
-#: admin/build/index.js:105
-#: admin/src/components/SettingsForm.jsx:424
-#, js-format
-msgid "More settings (%d)"
-msgstr ""
-
-#: admin/build/index.js:105
-#: admin/src/components/SettingsForm.jsx:436
-msgid "You have unsaved changes."
-msgstr ""
-
-#: admin/build/index.js:105
-#: admin/src/components/SettingsForm.jsx:438
-msgid "Discard"
-msgstr ""
-
-#: admin/build/index.js:105
-#: admin/src/components/SettingsForm.jsx:349
-msgid "Settings saved."
-msgstr ""
-
-#: admin/build/index.js:105
-#: admin/build/index.js:112
-#: admin/src/components/SettingsForm.jsx:355
-#: admin/src/components/SettingsPage.jsx:86
-#: admin/src/components/SignInCard.jsx:45
-msgid "Could not save that setting."
-msgstr ""
-
-#: admin/build/index.js:105
-#: admin/src/components/UnsplashKeyCard.jsx:62
-msgid "Unsplash key saved."
-msgstr ""
-
-#: admin/build/index.js:105
-#: admin/src/components/UnsplashKeyCard.jsx:63
-msgid "Unsplash key removed."
-msgstr ""
-
-#: admin/build/index.js:105
-#: admin/src/components/UnsplashKeyCard.jsx:91
-msgid "Unsplash stock photos"
-msgstr ""
-
 #. translators: %d: number of tools.
-#: admin/build/index.js:106
-#: admin/build/index.js:108
-#: admin/src/components/Integrations.jsx:55
-#: admin/src/components/UnsplashKeyCard.jsx:95
+#: admin/build/index.js:102
+#: admin/src/services-logic.js:84
 #, js-format
 msgid "%d tool"
 msgid_plural "%d tools"
 msgstr[0] ""
 msgstr[1] ""
 
-#: admin/build/index.js:107
-#: admin/src/components/UnsplashKeyCard.jsx:115
-msgid "No key"
+#: admin/build/index.js:102
+#: admin/src/services-logic.js:97
+msgid "needs your key"
 msgstr ""
 
-#: admin/build/index.js:107
-#: admin/src/components/UnsplashKeyCard.jsx:125
+#. translators: %s: a host name, such as api.unsplash.com.
+#: admin/build/index.js:103
+#: admin/src/services-logic.js:107
+#, js-format
+msgid "sends data to %s"
+msgstr ""
+
+#: admin/build/index.js:103
+#: admin/src/services-logic.js:103
+msgid "nothing leaves your site"
+msgstr ""
+
+#. translators: %s: service name, such as Unsplash.
+#: admin/build/index.js:104
+#: admin/src/components/Services.jsx:75
+#, js-format
+msgid "%s key saved."
+msgstr ""
+
+#. translators: %s: service name, such as Unsplash.
+#: admin/build/index.js:105
+#: admin/src/components/Services.jsx:80
+#, js-format
+msgid "%s key removed."
+msgstr ""
+
+#: admin/build/index.js:105
+#: admin/src/components/Services.jsx:87
+msgid "Could not save that key."
+msgstr ""
+
+#: admin/build/index.js:105
+#: admin/src/components/Services.jsx:115
+msgid "Your key"
+msgstr ""
+
+#: admin/build/index.js:105
+#: admin/src/components/Services.jsx:119
+msgid "Access key"
+msgstr ""
+
+#. translators: %s: service name, such as Unsplash.
+#: admin/build/index.js:106
+#: admin/src/components/Services.jsx:122
+#, js-format
+msgid "Your key stays on this site; only %s sees it."
+msgstr ""
+
+#: admin/build/index.js:106
+#: admin/src/components/Services.jsx:135
+msgid "Paste your access key"
+msgstr ""
+
+#: admin/build/index.js:106
+#: admin/src/components/Services.jsx:152
+msgid "Save key"
+msgstr ""
+
+#: admin/build/index.js:106
+#: admin/src/components/Services.jsx:180
 msgid "Change"
 msgstr ""
 
+#. translators: %s: service name, such as Unsplash.
 #: admin/build/index.js:107
-#: admin/src/components/UnsplashKeyCard.jsx:126
-msgid "Add key"
+#: admin/src/components/Services.jsx:97
+#, js-format
+msgid "Remove the %s key?"
 msgstr ""
 
 #: admin/build/index.js:107
-#: admin/src/components/UnsplashKeyCard.jsx:136
-msgid "Access Key"
+#: admin/src/components/Services.jsx:100
+msgid "Your apps lose this service’s tools until a new key is added. Anything already saved on your site is kept."
 msgstr ""
 
 #: admin/build/index.js:107
-#: admin/src/components/UnsplashKeyCard.jsx:137
-msgid "Free at unsplash.com/developers. Use the Access Key, not the Secret Key."
-msgstr ""
-
-#: admin/build/index.js:107
-#: admin/src/components/UnsplashKeyCard.jsx:148
-msgid "Paste your Unsplash Access Key…"
-msgstr ""
-
-#: admin/build/index.js:107
-#: admin/src/components/UnsplashKeyCard.jsx:72
-msgid "Remove the Unsplash key?"
-msgstr ""
-
-#: admin/build/index.js:107
-#: admin/src/components/UnsplashKeyCard.jsx:73
-msgid "Your AI loses stock-photo search and import until a new key is added. Photos already in the media library are kept."
-msgstr ""
-
-#: admin/build/index.js:107
-#: admin/src/components/UnsplashKeyCard.jsx:78
+#: admin/src/components/Services.jsx:105
+#: admin/src/components/Services.jsx:189
 msgid "Remove"
 msgstr ""
 
 #: admin/build/index.js:107
-#: admin/src/components/UnsplashKeyCard.jsx:182
-msgid "Remove key"
+#: admin/src/components/Services.jsx:198
+msgid "Also in"
 msgstr ""
 
-#. translators: %s: plugin author.
-#: admin/build/index.js:109
-#: admin/src/components/Integrations.jsx:61
-#, js-format
-msgid "By %s"
+#: admin/build/index.js:107
+#: admin/src/components/Services.jsx:200
+msgid "Settings → Connectors"
 msgstr ""
 
-#: admin/build/index.js:109
-#: admin/src/components/Integrations.jsx:138
-msgid "Services"
+#: admin/build/index.js:107
+#: admin/src/components/Services.jsx:202
+msgid ", WordPress’s own list of keys. Saving it in either place saves it in both."
 msgstr ""
 
-#: admin/build/index.js:109
-#: admin/src/components/Integrations.jsx:140
-msgid "Extra services and plugins your AI can use through Saddle. Every tool still follows its app’s access and approval rules. Plugins that support Saddle appear here once they are active; third-party plugins stay off until you switch them on."
+#: admin/build/index.js:107
+#: admin/src/components/Services.jsx:287
+msgid "Get a free key"
+msgstr ""
+
+#: admin/build/index.js:107
+#: admin/src/components/Services.jsx:288
+msgid "Terms"
+msgstr ""
+
+#: admin/build/index.js:107
+#: admin/src/components/Services.jsx:289
+msgid "Privacy"
+msgstr ""
+
+#: admin/build/index.js:107
+#: admin/src/components/Services.jsx:299
+msgid "Status"
 msgstr ""
 
 #. translators: %s: plugin name.
-#: admin/build/index.js:110
-#: admin/src/components/Integrations.jsx:111
+#: admin/build/index.js:108
+#: admin/src/components/Services.jsx:217
+#, js-format
+msgid "%s is active on this site. Saddle works inside it and sends nothing out."
+msgstr ""
+
+#: admin/build/index.js:108
+#: admin/src/components/Services.jsx:225
+msgid "From another developer. Saddle can’t vouch for it, so its tools stay off until you turn them on."
+msgstr ""
+
+#: admin/build/index.js:108
+#: admin/src/components/Services.jsx:230
+msgid "A PlugPress add-on. Always on while the plugin is active."
+msgstr ""
+
+#. translators: %s: plugin name.
+#: admin/build/index.js:109
+#: admin/src/components/Services.jsx:262
 #, js-format
 msgid "%s is on. Its tools follow each app’s access and approval rules."
 msgstr ""
 
 #. translators: %s: plugin name.
-#: admin/build/index.js:111
-#: admin/src/components/Integrations.jsx:119
+#: admin/build/index.js:110
+#: admin/src/components/Services.jsx:270
 #, js-format
 msgid "%s is off."
 msgstr ""
 
-#. translators: %s: plugin name.
-#: admin/build/index.js:112
-#: admin/src/components/Integrations.jsx:168
-#, js-format
-msgid "Let your AI use %s tools"
+#: admin/build/index.js:110
+#: admin/build/index.js:115
+#: admin/src/components/Services.jsx:278
+#: admin/src/components/SettingsPage.jsx:191
+msgid "Could not save that change."
 msgstr ""
 
-#: admin/build/index.js:112
-#: admin/src/components/Integrations.jsx:177
+#. translators: %s: plugin name.
+#: admin/build/index.js:111
+#: admin/src/components/Services.jsx:310
+#, js-format
+msgid "Let apps use %s"
+msgstr ""
+
+#: admin/build/index.js:111
+#: admin/src/components/Services.jsx:314
+msgid "Let apps use it"
+msgstr ""
+
+#: admin/build/index.js:111
+#: admin/src/components/Services.jsx:322
+msgid "What leaves your site"
+msgstr ""
+
+#: admin/build/index.js:111
+#: admin/src/components/Services.jsx:336
+msgid "Nothing. It works inside your WordPress."
+msgstr ""
+
+#: admin/build/index.js:111
+#: admin/src/components/Services.jsx:347
+msgid "Tools your apps get"
+msgstr ""
+
+#: admin/build/index.js:111
+#: admin/src/components/Services.jsx:363
+msgid "Each app gets the tools its access allows, set on AI apps."
+msgstr ""
+
+#: admin/build/index.js:111
+#: admin/src/services-logic.js:16
+msgid "Accounts"
+msgstr ""
+
+#: admin/build/index.js:111
+#: admin/src/services-logic.js:17
+msgid "Outside services you sign up for."
+msgstr ""
+
+#: admin/build/index.js:111
+#: admin/src/services-logic.js:21
+msgid "Plugins"
+msgstr ""
+
+#: admin/build/index.js:111
+#: admin/src/services-logic.js:22
+msgid "Found on this site. Saddle works inside them."
+msgstr ""
+
+#: admin/build/index.js:111
+#: admin/src/services-logic.js:29
+msgid "Add-ons"
+msgstr ""
+
+#: admin/build/index.js:111
+#: admin/src/services-logic.js:30
+msgid "Plugins that give your apps more tools."
+msgstr ""
+
+#: admin/build/index.js:111
+#: admin/src/components/Services.jsx:420
+msgid "No services found on this site."
+msgstr ""
+
+#: admin/build/index.js:111
+#: admin/src/services-logic.js:135
+msgid "Add key"
+msgstr ""
+
+#: admin/build/index.js:111
+#: admin/src/services-logic.js:141
+msgid "Ready"
+msgstr ""
+
+#: admin/build/index.js:111
+#: admin/src/services-logic.js:147
+msgid "Detected"
+msgstr ""
+
+#: admin/build/index.js:111
+#: admin/src/services-logic.js:155
+msgid "On"
+msgstr ""
+
+#: admin/build/index.js:111
+#: admin/src/services-logic.js:156
 msgid "Active"
 msgstr ""
 
+#: admin/build/index.js:111
+#: admin/build/index.js:115
+#: admin/src/components/SignInCard.jsx:120
+#: admin/src/services-logic.js:161
+msgid "Off"
+msgstr ""
+
+#. translators: %s: the smallest allowed number.
 #: admin/build/index.js:112
+#: admin/src/components/SettingsForm.jsx:76
+#, js-format
+msgid "Must be %s or more."
+msgstr ""
+
+#. translators: %s: the largest allowed number.
+#: admin/build/index.js:113
+#: admin/src/components/SettingsForm.jsx:83
+#, js-format
+msgid "Must be %s or less."
+msgstr ""
+
+#: admin/build/index.js:113
+#: admin/src/components/SettingsForm.jsx:87
+msgid "Enter a whole number."
+msgstr ""
+
+#. translators: %s: the last characters of a saved key.
+#: admin/build/index.js:114
+#: admin/src/components/SettingsForm.jsx:158
+#, js-format
+msgid "Set (%s)"
+msgstr ""
+
+#: admin/build/index.js:114
+#: admin/src/components/SettingsForm.jsx:161
+msgid "Not set"
+msgstr ""
+
+#: admin/build/index.js:114
+#: admin/src/components/SettingsForm.jsx:171
+msgid "Type a new value to replace it"
+msgstr ""
+
+#: admin/build/index.js:114
+#: admin/src/components/SettingsForm.jsx:261
+msgid "Could not load these settings."
+msgstr ""
+
+#: admin/build/index.js:114
+#: admin/src/components/SettingsForm.jsx:392
+msgid "There are no settings to change here."
+msgstr ""
+
+#. translators: %d: number of advanced settings.
+#: admin/build/index.js:115
+#: admin/src/components/SettingsForm.jsx:424
+#, js-format
+msgid "More settings (%d)"
+msgstr ""
+
+#: admin/build/index.js:115
+#: admin/src/components/SettingsForm.jsx:436
+msgid "You have unsaved changes."
+msgstr ""
+
+#: admin/build/index.js:115
+#: admin/src/components/SettingsForm.jsx:438
+msgid "Discard"
+msgstr ""
+
+#: admin/build/index.js:115
+#: admin/src/components/SettingsForm.jsx:349
+msgid "Settings saved."
+msgstr ""
+
+#: admin/build/index.js:115
+#: admin/src/components/SettingsForm.jsx:355
+#: admin/src/components/SettingsPage.jsx:84
+#: admin/src/components/SignInCard.jsx:45
+msgid "Could not save that setting."
+msgstr ""
+
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:67
 msgid "Apps can find this site’s sign-in details on their own."
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:74
 msgid "This site answers too slowly for some apps to finish connecting. The sign-in details are correct and in the right place, but ChatGPT gives up after a few seconds and then reports that this site doesn’t support signing in. A page cache or a faster host usually fixes it."
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:80
 msgid "Apps may not be able to find the sign-in details automatically. This usually means WordPress lives in a subfolder, or your host blocks addresses starting with a dot. Most apps will still connect; ChatGPT may not."
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:92
 msgid "Too slow"
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:95
 msgid "Maybe not"
 msgstr ""
 
-#: admin/build/index.js:112
-#: admin/src/components/SignInCard.jsx:120
-msgid "Off"
-msgstr ""
-
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:123
 msgid "Needs HTTPS first."
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:124
 msgid "Needs pretty permalinks: Settings → Permalinks, anything but Plain."
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:129
 msgid "On. You approve each app."
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:137
 msgid "With this on, an app needs only this site’s address: it opens your browser and you approve it here, the same way “Sign in with Google” works. Claude, ChatGPT, Claude Code, Codex, Cursor, VS Code and Gemini CLI all connect this way, and ChatGPT can connect no other way. Off by default; pasted keys keep working either way."
 msgstr ""
 
-#: admin/build/index.js:112
-#: admin/build/index.js:113
-#: admin/src/components/SettingsPage.jsx:285
+#: admin/build/index.js:115
+#: admin/build/index.js:116
+#: admin/src/components/SettingsPage.jsx:282
 #: admin/src/components/SignInCard.jsx:142
 msgid "Sign-in for apps"
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:149
 msgid "Let apps sign in"
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:159
 msgid "Allow apps to sign in with your WordPress account"
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:171
 msgid "Advanced sign-in options"
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:179
 msgid "Discoverable"
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:197
 msgid "Needed to connect by address. An app that registers still cannot do anything until you approve it on screen."
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:225
 msgid "When an app identifies itself by web address, Saddle fetches that address to confirm it vouches for the app. Turning this off means every app shows as unverified."
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:230
 #: admin/src/components/SignInCard.jsx:240
 msgid "Check app identity"
 msgstr ""
 
-#: admin/build/index.js:112
-#: admin/src/components/SettingsPage.jsx:112
+#: admin/build/index.js:115
+#: admin/src/components/SettingsPage.jsx:110
 msgid "Safety"
 msgstr ""
 
-#: admin/build/index.js:112
-#: admin/src/components/SettingsPage.jsx:117
+#: admin/build/index.js:115
+#: admin/src/components/SettingsPage.jsx:115
 msgid "Publishing needs my OK"
 msgstr ""
 
-#: admin/build/index.js:112
-#: admin/src/components/SettingsPage.jsx:118
+#: admin/build/index.js:115
+#: admin/src/components/SettingsPage.jsx:116
 msgid "New posts and pages an app asks to publish or schedule are saved as drafts. Publishing or scheduling an existing item needs your confirmation. Edits to content that is already live still go through."
 msgstr ""
 
-#: admin/build/index.js:112
-#: admin/src/components/SettingsPage.jsx:122
+#: admin/build/index.js:115
+#: admin/src/components/SettingsPage.jsx:120
 msgid "Apps save drafts; you approve what goes live."
 msgstr ""
 
-#: admin/build/index.js:112
-#: admin/src/components/SettingsPage.jsx:130
+#: admin/build/index.js:115
+#: admin/src/components/SettingsPage.jsx:128
 msgid "Practice mode"
 msgstr ""
 
-#: admin/build/index.js:112
-#: admin/src/components/SettingsPage.jsx:131
+#: admin/build/index.js:115
+#: admin/src/components/SettingsPage.jsx:129
 msgid "Apps can try anything their access allows and nothing is saved. Each tool that would change the site says what it would have done, and the attempt shows in Activity as rehearsed. Reading works as usual."
 msgstr ""
 
-#: admin/build/index.js:112
-#: admin/src/components/SettingsPage.jsx:135
+#: admin/build/index.js:115
+#: admin/src/components/SettingsPage.jsx:133
 msgid "Apps try changes but nothing is saved."
 msgstr ""
 
-#: admin/build/index.js:112
-#: admin/src/components/SettingsPage.jsx:143
+#: admin/build/index.js:115
+#: admin/src/components/SettingsPage.jsx:141
 msgid "Stop writes if the site moves"
 msgstr ""
 
-#: admin/build/index.js:112
-#: admin/src/components/SettingsPage.jsx:144
+#: admin/build/index.js:115
+#: admin/src/components/SettingsPage.jsx:142
 msgid "If the site address changes, for example after copying it to another domain, apps are refused writes until you confirm their access again."
 msgstr ""
 
-#: admin/build/index.js:112
-#: admin/src/components/SettingsPage.jsx:148
+#: admin/build/index.js:115
+#: admin/src/components/SettingsPage.jsx:146
 msgid "After an address change, confirm access again."
 msgstr ""
 
-#: admin/build/index.js:112
-#: admin/src/components/SettingsPage.jsx:176
+#: admin/build/index.js:115
+#: admin/src/components/SettingsPage.jsx:174
 msgid "Other"
 msgstr ""
 
-#: admin/build/index.js:112
-#: admin/src/components/SettingsPage.jsx:206
+#: admin/build/index.js:115
+#: admin/src/components/SettingsPage.jsx:204
 msgid "Search tools…"
 msgstr ""
 
-#: admin/build/index.js:112
-#: admin/src/components/SettingsPage.jsx:207
+#: admin/build/index.js:115
+#: admin/src/components/SettingsPage.jsx:205
 msgid "Search tools"
 msgstr ""
 
-#: admin/build/index.js:112
-#: admin/src/components/SettingsPage.jsx:211
+#: admin/build/index.js:115
+#: admin/src/components/SettingsPage.jsx:209
 msgid "No tools match."
 msgstr ""
 
-#: admin/build/index.js:112
-#: admin/src/components/SettingsPage.jsx:193
-msgid "Could not save that change."
-msgstr ""
-
-#: admin/build/index.js:112
-#: admin/src/components/SettingsPage.jsx:274
+#: admin/build/index.js:115
+#: admin/src/components/SettingsPage.jsx:271
 msgid "Advanced"
 msgstr ""
 
 #. translators: %d: number of tools.
-#: admin/build/index.js:113
-#: admin/src/components/SettingsPage.jsx:279
+#: admin/build/index.js:116
+#: admin/src/components/SettingsPage.jsx:276
 #, js-format
 msgid "Turn off single tools (%d)"
 msgstr ""
 
-#: admin/build/index.js:113
-#: admin/src/components/SettingsPage.jsx:290
+#: admin/build/index.js:116
+#: admin/src/components/SettingsPage.jsx:287
 msgid "Memory limits"
 msgstr ""
 
-#: admin/build/index.js:113
-#: admin/src/components/SettingsPage.jsx:306
+#: admin/build/index.js:116
+#: admin/src/components/SettingsPage.jsx:303
 msgid "Connection check"
 msgstr ""
 
 #. translators: %s: module name, such as Saddle Analytics.
-#: admin/build/index.js:114
-#: admin/src/screens.jsx:108
+#: admin/build/index.js:117
+#: admin/src/screens.jsx:110
 #, js-format
 msgid "%s did not add this screen. Updating it may add it."
 msgstr ""
 
-#: admin/build/index.js:114
-#: admin/src/screens.jsx:239
+#: admin/build/index.js:117
+#: admin/src/screens.jsx:241
 msgid "Run setup again"
 msgstr ""
 
 #. translators: %s: error message.
-#: admin/build/index.js:115
-#: admin/src/App.jsx:227
+#: admin/build/index.js:118
+#: admin/src/App.jsx:228
 #, js-format
 msgid "Couldn’t refresh the connections list: %s"
 msgstr ""
 
-#: admin/build/index.js:115
-#: admin/src/App.jsx:454
+#: admin/build/index.js:118
+#: admin/src/App.jsx:455
 msgid "This site’s address has changed since AI write access was turned on — often a sign of a staging clone or a migration carrying over live credentials. If that wasn’t intentional, review your connected apps and revoke anything unexpected."
 msgstr ""
 
-#: admin/build/index.js:115
-#: admin/src/App.jsx:459
+#: admin/build/index.js:118
+#: admin/src/App.jsx:460
 msgid "This is expected — clear this warning"
 msgstr ""
 

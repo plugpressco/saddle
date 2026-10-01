@@ -8,6 +8,7 @@ import {
 	legacyUrl,
 	placeFor,
 	resolveTab,
+	servicesSectionUrl,
 	withArg,
 } from '../../admin/src/routes';
 
@@ -29,6 +30,11 @@ const AREAS = [
 		tabs: [ { key: 'apps', url: `${ BASE }?page=saddle-connections` } ],
 	},
 	{
+		key: 'services',
+		url: `${ BASE }?page=saddle-services`,
+		tabs: [ { key: 'overview', url: `${ BASE }?page=saddle-services` } ],
+	},
+	{
 		key: 'context',
 		url: `${ BASE }?page=saddle-context`,
 		tabs: [ { key: 'overview', url: `${ BASE }?page=saddle-context` } ],
@@ -48,7 +54,9 @@ describe( 'legacy hash addresses', () => {
 		[ '#connect', `${ BASE }?page=saddle-connections` ],
 		// Permissions was a tab of Connections until #285: both land on AI apps.
 		[ '#permissions', `${ BASE }?page=saddle-connections` ],
-		[ '#integrations', `${ BASE }?page=saddle-connections` ],
+		// Services is a page of its own (#291).
+		[ '#integrations', `${ BASE }?page=saddle-services` ],
+		[ '#services', `${ BASE }?page=saddle-services` ],
 		[ '#guidance', `${ BASE }?page=saddle-context` ],
 		[ '#memory', `${ BASE }?page=saddle-context#memory` ],
 		// Saddle Pro's licence link is page=saddle#settings.
@@ -63,11 +71,37 @@ describe( 'legacy hash addresses', () => {
 		} );
 	} );
 
+	it( 'does not crash when the Services page is absent', () => {
+		const without = AREAS.filter( ( a ) => a.key !== 'services' );
+		expect( legacyUrl( without, '#services' ) ).toBeNull();
+	} );
+
 	it( 'leaves anything else alone', () => {
 		expect( legacyUrl( AREAS, '' ) ).toBeNull();
 		expect( legacyUrl( AREAS, '#section-3' ) ).toBeNull();
 		expect( legacyUrl( AREAS, '#constructor' ) ).toBeNull();
 		expect( legacyUrl( AREAS, '#toString' ) ).toBeNull();
+	} );
+} );
+
+describe( 'settings section=services', () => {
+	it( 'lands on Services from Settings only', () => {
+		expect(
+			servicesSectionUrl(
+				AREAS[ 4 ],
+				AREAS,
+				'?page=saddle-settings&section=services'
+			)
+		).toBe( `${ BASE }?page=saddle-services` );
+		expect(
+			servicesSectionUrl( AREAS[ 4 ], AREAS, '?page=saddle-settings' )
+		).toBeNull();
+		expect(
+			servicesSectionUrl( AREAS[ 0 ], AREAS, '?section=services' )
+		).toBeNull();
+		expect(
+			servicesSectionUrl( AREAS[ 4 ], [], '?section=services' )
+		).toBeNull();
 	} );
 } );
 
@@ -104,6 +138,14 @@ describe( 'tabs and places', () => {
 		expect( placeFor( 'permissions' ) ).toEqual( {
 			area: 'connections',
 			tab: 'apps',
+		} );
+		expect( placeFor( 'integrations' ) ).toEqual( {
+			area: 'services',
+			tab: 'overview',
+		} );
+		expect( placeFor( 'services' ) ).toEqual( {
+			area: 'services',
+			tab: 'overview',
 		} );
 		expect( placeFor( 'memory' ) ).toEqual( {
 			area: 'context',

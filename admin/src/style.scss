@@ -646,7 +646,6 @@ body.saddle-admin-page,
 .saddle-guide__heading,
 .saddle-settings__label,
 .saddle-signin__label,
-.saddle-integrations__title,
 .saddle-memory__title {
 	display: inline-flex;
 	align-items: center;
@@ -1797,26 +1796,142 @@ body.saddle-admin-page,
 	margin-top: 8px;
 }
 
-/* Unsplash row (Integrations): the key form opens under the row. */
-.saddle-unsplash {
-	&__key {
+/* ---------- Services (#291) ---------- */
+// Sections of rows from the kit; a row opens a drawer. The tile is a neutral
+// letter, never a brand colour.
+.saddle-svc__logo {
+	display: inline-grid;
+	place-items: center;
+	inline-size: 28px;
+	block-size: 28px;
+	border-radius: var(--s-radius);
+	background: var(--s-surface-2);
+	border: 1px solid var(--s-border);
+	color: var(--s-fg-muted);
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.saddle-svc__detail {
+	display: grid;
+	gap: var(--pp-space-5);
+	min-width: 0;
+}
+
+.saddle-svc__block {
+	display: grid;
+	gap: var(--pp-space-2);
+	min-width: 0;
+}
+
+.saddle-svc__h {
+	margin: 0;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.saddle-svc__text,
+.saddle-svc__note {
+	margin: 0;
+	color: var(--s-fg-muted);
+}
+
+.saddle-svc__note {
+	font-size: 12px;
+}
+
+.saddle-svc__actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.saddle-svc__key {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--pp-space-3);
+	padding: 8px 12px;
+	border: 1px solid var(--s-border);
+	border-radius: var(--s-radius-lg);
+
+	code {
+		font-size: 12px;
+	}
+}
+
+.saddle-svc__switch {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+// What leaves the site, and the tools: two small bordered lists.
+.saddle-svc__sends,
+.saddle-svc__tools {
+	display: grid;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	border: 1px solid var(--s-border);
+	border-radius: var(--s-radius-lg);
+	overflow: hidden;
+
+	li {
+		padding: 8px 12px;
+	}
+
+	li + li {
+		border-block-start: 1px solid var(--s-border);
+	}
+
+	// Host names and tool names are plain monospace text: no grey bar
+	// (wp-admin paints every code element), no full-width stretch.
+	code {
+		justify-self: start;
+		display: block;
+		margin: 0;
+		padding: 0;
+		background: none;
+		font-size: 12px;
+	}
+}
+
+.saddle-svc__tools code {
+	color: var(--s-fg-subtle);
+}
+
+.saddle-svc__sends li {
+	display: grid;
+
+	span {
 		color: var(--s-fg-muted);
 		font-size: 12px;
 	}
+}
 
-	&__form {
+.saddle-svc__tools li {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	gap: var(--pp-space-3);
+
+	> span:first-child {
 		display: grid;
-		gap: var(--pp-space-3);
-		padding: var(--pp-space-3) var(--pp-space-4);
-		border-block-start: 1px solid var(--s-border);
-		background: var(--s-surface-2);
+		min-width: 0;
 	}
+}
 
-	&__actions {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-	}
+.saddle-svc__role {
+	color: var(--s-fg-muted);
+	font-size: 12px;
+	white-space: nowrap;
+}
+
+.saddle-svc__links {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--pp-space-4);
+	font-size: 12px;
 }
 
 /* ---------- Settings (#285) ---------- */

@@ -93,8 +93,9 @@ class Saddle_Modules_View {
 		$core = array(
 			'home'        => __( 'Whether AI access is on, what your connected apps have been doing, and what is left to set up.', 'saddle' ),
 			'connections' => __( 'The AI apps connected to this site: connect another, and choose what each may do.', 'saddle' ),
+			'services'    => __( 'The outside accounts and plugins your apps can use, like Unsplash, and what each one sends off your site.', 'saddle' ),
 			'context'     => __( 'What every connected app knows about this site: your instructions, skills and memory.', 'saddle' ),
-			'settings'    => __( 'Safety switches, services, single tools, sign-in and the connection check.', 'saddle' ),
+			'settings'    => __( 'Safety switches, single tools, sign-in and the connection check.', 'saddle' ),
 		);
 
 		return isset( $core[ $key ] )

@@ -329,7 +329,7 @@ class Saddle_Capabilities_Test extends WP_UnitTestCase {
 
 		$this->assertSame(
 			$counts['total'],
-			$counts['visible'] + $counts['tier'] + $counts['disabled'] + $counts['capability'],
+			$counts['visible'] + $counts['tier'] + $counts['disabled'] + $counts['capability'] + $counts['service'],
 			'Every tool must be accounted for exactly once.'
 		);
 		$this->assertGreaterThan( 0, $counts['tier'], 'The read tier withholds the write and admin tools.' );

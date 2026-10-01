@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
  * `saddle_integrations` filter (see docs/integrating.md). PlugPress's own
  * plugins, listed in {@see self::FIRST_PARTY}, are live as soon as they are
  * active. Every other plugin's tools stay off until the site owner switches
- * them on under Settings → Services — Saddle can't vouch for a stranger's
+ * them on under Services — Saddle can't vouch for a stranger's
  * annotations, and even a read tool can expose data the owner didn't expect
  * an agent to see (non-negotiable #2).
  */
@@ -171,7 +171,7 @@ class Saddle_Integrations {
 	}
 
 	/**
-	 * Every installed integration, for Settings → Services.
+	 * Every installed integration, for Saddle → Services.
 	 *
 	 * `tools` counts the partner's own abilities, so an integration that is
 	 * still off shows what switching it on would add.
@@ -253,7 +253,7 @@ class Saddle_Integrations {
 			}
 			$lines[] = sprintf(
 				/* translators: %s: plugin name. */
-				__( '- %s is installed, but the site owner has not switched on its tools. If they are needed, tell the user they can turn it on under Saddle → Settings.', 'saddle' ),
+				__( '- %s is installed, but the site owner has not switched on its tools. If they are needed, tell the user they can turn it on under Saddle → Services.', 'saddle' ),
 				$row['title']
 			);
 		}

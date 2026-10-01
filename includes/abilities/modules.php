@@ -288,6 +288,7 @@ class Saddle_Module_Abilities {
 			$pages[] = $module['title'];
 		}
 		$pages[] = $areas['connections']['title'];
+		$pages[] = $areas['services']['title'];
 		$pages[] = $areas['context']['title'];
 		$pages[] = $areas['settings']['title'];
 

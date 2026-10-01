@@ -182,7 +182,7 @@ class Saddle_Unsplash_Test extends WP_UnitTestCase {
 	/* -------- no key configured -------- */
 
 	public function test_search_without_key_errors_actionably_and_makes_no_http() {
-		Saddle_Capabilities::set_tier( 'read' );
+		Saddle_Capabilities::set_tier( 'write' );
 		$this->mock_http();
 
 		$result = $this->ability( 'saddle/unsplash-search' )->execute( array( 'query' => 'mountains' ) );
@@ -196,7 +196,7 @@ class Saddle_Unsplash_Test extends WP_UnitTestCase {
 	/* -------- search -------- */
 
 	public function test_search_returns_trimmed_results_and_sends_client_id() {
-		Saddle_Capabilities::set_tier( 'read' );
+		Saddle_Capabilities::set_tier( 'write' );
 		Saddle_Unsplash::set_key( self::KEY );
 		$this->mock_http(
 			array(

@@ -1106,9 +1106,24 @@ class Saddle_REST_Admin {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public static function update_integration( WP_REST_Request $request ) {
-		$slug    = (string) $request->get_param( 'slug' );
-		$enabled = (bool) $request->get_param( 'enabled' );
-		$result  = Saddle_Integrations::set_approved( $slug, $enabled );
+		$result = self::switch_integration( (string) $request->get_param( 'slug' ), (bool) $request->get_param( 'enabled' ) );
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		return new WP_REST_Response( array( 'integrations' => self::integration_rows() ), 200 );
+	}
+
+	/**
+	 * Approve or switch off one third-party integration, and log it. The one
+	 * path behind POST /integrations and POST /services/{key}/enabled.
+	 *
+	 * @param string $slug    Integration slug.
+	 * @param bool   $enabled Whether to approve it.
+	 * @return true|WP_Error
+	 */
+	public static function switch_integration( $slug, $enabled ) {
+		$result = Saddle_Integrations::set_approved( $slug, $enabled );
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}
@@ -1130,7 +1145,7 @@ class Saddle_REST_Admin {
 			);
 		}
 
-		return new WP_REST_Response( array( 'integrations' => self::integration_rows() ), 200 );
+		return true;
 	}
 
 	/**
@@ -1150,7 +1165,7 @@ class Saddle_REST_Admin {
 			'rank-math' => array( __( 'Rank Math', 'saddle' ), __( 'Rank Math’s own SEO fields, edited natively.', 'saddle' ), array( 'Saddle_Rank_Math', 'is_active' ) ),
 			'aioseo'    => array( __( 'AIOSEO', 'saddle' ), __( 'AIOSEO’s own SEO fields, edited natively.', 'saddle' ), array( 'Saddle_Aioseo', 'is_active' ) ),
 			'wc'        => array( __( 'WooCommerce', 'saddle' ), __( 'Products and orders, handled natively.', 'saddle' ), array( 'Saddle_WC', 'is_active' ) ),
-			'unsplash'  => array( __( 'Unsplash', 'saddle' ), __( 'Stock-photo search and import, built into Saddle. Needs the Access Key above.', 'saddle' ), null ),
+			'unsplash'  => array( __( 'Unsplash', 'saddle' ), __( 'Stock-photo search and import, built into Saddle. Needs an Access Key under Saddle → Services.', 'saddle' ), null ),
 		);
 		foreach ( $natives as $slug => $native ) {
 			list( $title, $description, $probe ) = $native;
