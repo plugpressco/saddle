@@ -201,6 +201,12 @@ The WordPress.org version never checks for its own updates. The version from plu
 == Changelog ==
 
 = Unreleased =
+* Fixed: First run sees an app that connects before the waiting line first checks. Reloading after the app connected goes on to Try it instead of offering to replace the key you just set up.
+* Fixed: Changing an app's access no longer fails on servers that do not decode the colon in its address, such as WordPress Playground.
+* Improved: Activity names the app that made each change, such as "via Claude Code", and keeps the name after you disconnect the app.
+* Improved: Lists show loading rows while they load instead of "Nothing yet", and a server error shows as plain words. The first tour stop points at the AI access switch.
+* Fixed: What Saddle tells your AI app names the AI access switch, AI apps and Settings instead of the removed Permissions page. The Divi playbook gives the right address for a page's first section.
+* Fixed: The design check no longer counts a dark tinted background, such as slate or a near-black green, as a second accent color.
 * New: The Services page. Unsplash, the SEO and shop plugins Saddle edits, and the plugins that add tools to Saddle are listed in one place. Each says what it sends off your site, which tools it gives your AI apps, and links to its terms and privacy policy. Add or remove your Unsplash key there. Plugins from other developers stay off until you switch them on there.
 * New: On WordPress 7.0 and later, your Unsplash key also appears under Settings > Connectors. It is the same key, so nothing to move.
 * Changed: Unsplash tools stay out of your AI app's tool list until you add a key. The AI app is told to ask you for one.
