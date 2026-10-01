@@ -491,12 +491,34 @@ final class Saddle {
 	}
 
 	/**
-	 * Whether the official WordPress MCP Adapter library is available.
+	 * Whether the official WordPress MCP Adapter library is available, at a
+	 * version Saddle can serve on.
 	 *
 	 * @return bool
 	 */
 	public static function adapter_available() {
-		return class_exists( '\\WP\\MCP\\Core\\McpAdapter' );
+		return class_exists( '\\WP\\MCP\\Core\\McpAdapter' ) && self::adapter_is_current();
+	}
+
+	/**
+	 * Whether the loaded adapter has the API Saddle's server is built on.
+	 *
+	 * WooCommerce 11 bundles MCP Adapter 0.1.0 and autoloads it on every
+	 * request. That copy has no McpPrompt::fromArray(), so handing it the
+	 * route fatalled every REST request on the site, admin included. It also
+	 * lacks the three hooks Saddle's server depends on:
+	 * `mcp_adapter_initialize_response` (the site context in the handshake),
+	 * `mcp_adapter_tools_list` (only the tools this app may call) and
+	 * `mcp_adapter_prompts_list`. All four arrived together in 0.5.0, and the
+	 * method is the one Saddle calls, so it is the probe. With an older copy
+	 * the built-in transport serves the route and Saddle never starts that
+	 * adapter itself.
+	 *
+	 * @param string $prompt_class The adapter's prompt class. A parameter only so the probe can be tested.
+	 * @return bool
+	 */
+	public static function adapter_is_current( $prompt_class = '\\WP\\MCP\\Domain\\Prompts\\McpPrompt' ) {
+		return method_exists( $prompt_class, 'fromArray' );
 	}
 
 
