@@ -53,6 +53,12 @@ class Saddle_Connections {
 	const THROTTLE = 60;
 
 	/**
+	 * How Saddle names the keys it issues ("Saddle: Claude Code"). The admin
+	 * layer's Saddle_REST_Admin::CLIENT_PREFIX is this constant.
+	 */
+	const KEY_PREFIX = 'Saddle: ';
+
+	/**
 	 * Wire the observer and the clean-up.
 	 */
 	public static function register() {
@@ -159,6 +165,34 @@ class Saddle_Connections {
 		if ( count( $kept ) !== count( $all ) ) {
 			self::save( $kept );
 		}
+	}
+
+	/**
+	 * The name the owner knows a connection by: the app picked in the connect
+	 * wizard for a key ("Claude Code"), or the name an app registered with
+	 * for a grant. '' when the credential is gone.
+	 *
+	 * @param string $id      `key:<uuid>` or `oauth:<grant>`.
+	 * @param int    $user_id The key's owner.
+	 * @return string
+	 */
+	public static function label( $id, $user_id ) {
+		list( $kind, $ref ) = array_pad( explode( ':', (string) $id, 2 ), 2, '' );
+
+		if ( 'key' === $kind && class_exists( 'WP_Application_Passwords' ) ) {
+			$item = WP_Application_Passwords::get_user_application_password( (int) $user_id, $ref );
+			$name = $item && isset( $item['name'] ) ? (string) $item['name'] : '';
+
+			return 0 === strpos( $name, self::KEY_PREFIX ) ? trim( substr( $name, strlen( self::KEY_PREFIX ) ) ) : $name;
+		}
+
+		if ( 'oauth' === $kind && class_exists( 'Saddle_OAuth_Store' ) ) {
+			$grant = Saddle_OAuth_Store::get_grant( $ref );
+
+			return $grant && isset( $grant['client_name'] ) ? (string) $grant['client_name'] : '';
+		}
+
+		return '';
 	}
 
 	/**

@@ -92,6 +92,19 @@ class Saddle_Log {
 		update_post_meta( $post_id, '_saddle_target', $target );
 		update_post_meta( $post_id, '_saddle_type', $type );
 
+		// Which app it was, by the name the owner knows it by, so the activity
+		// log says "via Claude Code" rather than the WordPress user every
+		// connection shares. Stored, not looked up later, so the entry keeps
+		// the name after the key is revoked.
+		$connection = class_exists( 'Saddle_Access' ) ? Saddle_Access::current_connection() : '';
+		if ( '' !== $connection ) {
+			update_post_meta( $post_id, '_saddle_connection', $connection );
+			$app = Saddle_Connections::label( $connection, get_current_user_id() );
+			if ( '' !== $app ) {
+				update_post_meta( $post_id, '_saddle_app', $app );
+			}
+		}
+
 		// What this change replaced, so saddle/undo-changes can put it back.
 		// Only an executed change carries a journal; a denial changed nothing.
 		$journal = 'executed' === $type && class_exists( 'Saddle_Journal' ) ? Saddle_Journal::take() : null;
@@ -179,6 +192,7 @@ class Saddle_Log {
 				'target'  => (string) get_post_meta( $post->ID, '_saddle_target', true ),
 				'summary' => $post->post_title,
 				'user'    => $user ? $user->user_login : '',
+				'app'     => (string) get_post_meta( $post->ID, '_saddle_app', true ),
 				// Entries predating the type field are executed mutations.
 				'type'    => in_array( $type, self::NOT_CHANGES, true ) ? $type : 'executed',
 			);

@@ -173,11 +173,11 @@ export default function Activity( { caps = [] } ) {
 												: e.summary }
 										</span>
 										<span className="saddle-activity__meta">
-											{ e.user &&
+											{ ( e.app || e.user ) &&
 												sprintf(
-													/* translators: %s: user login. */
+													/* translators: %s: the app that made the change ("Claude Code"), or the user login when no app did. */
 													__( 'via %s', 'saddle' ),
-													e.user
+													e.app || e.user
 												) }
 										</span>
 									</div>
