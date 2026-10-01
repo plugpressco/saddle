@@ -121,11 +121,13 @@ class Saddle_Services {
 			if ( $record['tool_count'] < 1 ) {
 				continue;
 			}
-			$prefix = 'saddle-' . $record['key'] . '-*';
+			// A third-party add-on the owner hasn't switched on is already named,
+			// with how to turn it on, under "Plugins connected to Saddle".
 			if ( 'off' === $record['status'] ) {
-				/* translators: %s: plugin name. */
-				$lines[] = sprintf( __( '- %s: switched off by the owner. Don\'t ask for it.', 'saddle' ), $record['name'] );
-			} elseif ( 'needs_key' === $record['status'] ) {
+				continue;
+			}
+			$prefix = 'saddle-' . $record['key'] . '-*';
+			if ( 'needs_key' === $record['status'] ) {
 				/* translators: %s: service name. */
 				$lines[] = sprintf( __( '- %s: not set up; ask the owner to add a key under Saddle → Services.', 'saddle' ), $record['name'] );
 			} elseif ( 'ready' === $record['status'] ) {

@@ -5,6 +5,7 @@ import {
 	metaLine,
 	replaceRecord,
 	roleLabel,
+	toolCount,
 } from '../../admin/src/services-logic';
 
 const unsplash = {
@@ -105,5 +106,14 @@ describe( 'roleLabel, initialOf, replaceRecord', () => {
 			yoast,
 			next,
 		] );
+	} );
+} );
+
+describe( 'toolCount', () => {
+	it( 'uses the server count, so an add-on that is off still says how many', () => {
+		expect( toolCount( { tools: [], tool_count: 3 } ) ).toBe( '3 tools' );
+	} );
+	it( 'falls back to the tool list', () => {
+		expect( toolCount( { tools: [ { name: 'a' } ] } ) ).toBe( '1 tool' );
 	} );
 } );

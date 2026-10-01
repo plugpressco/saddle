@@ -74,7 +74,11 @@ export function roleLabel( role ) {
  * @return {string} Tool count.
  */
 export function toolCount( record ) {
-	const n = ( record.tools || [] ).length;
+	// An add-on that is off registers no tools; the server still counts them.
+	const n =
+		typeof record.tool_count === 'number'
+			? record.tool_count
+			: ( record.tools || [] ).length;
 	return sprintf(
 		/* translators: %d: number of tools. */
 		_n( '%d tool', '%d tools', n, 'saddle' ),

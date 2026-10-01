@@ -512,7 +512,7 @@ class Saddle_Services_Test extends WP_UnitTestCase {
 		$this->assertSame( 'Services on this site', $section['title'] );
 		$text = implode( "\n", $section['lines'] );
 		$this->assertStringContainsString( '- Unsplash: not set up; ask the owner to add a key under Saddle → Services.', $text );
-		$this->assertStringContainsString( '- Acme Forms: switched off by the owner. Don\'t ask for it.', $text );
+		$this->assertStringNotContainsString( 'Acme Forms', $text, 'An add-on that is off is named once, under Plugins connected to Saddle.' );
 		$this->assertStringContainsString( '- Yoast SEO: detected; use the saddle-yoast-* tools.', $text );
 
 		Saddle_Unsplash::set_key( self::KEY );
