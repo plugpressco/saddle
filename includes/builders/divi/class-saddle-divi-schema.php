@@ -560,7 +560,10 @@ class Saddle_Divi_Schema {
 	 * @return string
 	 */
 	private static function font_group_path( $group, array $subgroups, $base ) {
-		$first = array( 'bodyFont' => 'body', 'headingFont' => 'h1' );
+		$first = array(
+			'bodyFont'    => 'body',
+			'headingFont' => 'h1',
+		);
 		if ( ! isset( $first[ $group ] ) ) {
 			return $base . '.desktop.value';
 		}
