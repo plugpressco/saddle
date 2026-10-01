@@ -38,7 +38,7 @@ wp-admin like a core screen.
 | Surface 2 (row hover, code chips, sub-panels) | `#F5F5F5` | |
 | Border / border 2 | `#F0F0F0` / `#CCCCCC` | block edges and row dividers, decorative |
 | Field edge, switch off | `#949494` | 3.03 on white |
-| Text / secondary / muted | `#1E1E1E` / `#5E5E5E` / `#717171` | 16.67 / 6.58 / 4.84 |
+| Text / secondary | `#1E1E1E` / `#707070` (one grey for every description, meta line, hint and footer, as on Jetpack AI) | 16.67 / 4.95 (4.83 on the canvas) |
 | Links, focus | `var(--wp-admin-theme-color)` (Default `#2271B1` 5.17, Modern `#3858E9` 5.36) | follows the owner's admin color scheme |
 | Success | `#007017` on `#EDFAEF` | 5.86 |
 | Warning | `#8A4F00` on `#FEF8EE` | 6.21 |
@@ -59,7 +59,7 @@ text; its red `#D63638` (4.73) is too thin for text, so text uses `#B32D2E`.
 
 ## Where the brand may appear
 
-**Only:** the mark in the header band · the active tab's indicator · primary
+**Only:** the mark in the header band · primary
 buttons (`--pp-action`) · switches, radios and checkboxes when on · the
 selected role (its tick and tint) in an app's access list on AI apps.
 
@@ -81,29 +81,33 @@ Every Saddle page, module pages and first run included, is drawn by
   breadcrumb "Saddle / Page" (15px; "Saddle" in grey links Home; the page in
   600). A module page reads "Saddle / Analytics". On the right, only the AI
   status pill and the notices bell. Row 2, when a page has two or more tabs:
-  the kit `Tabs`, sitting on the band's hairline with a Petrol indicator.
+  the kit `Tabs` in Jetpack AI's (WordPress 7's minimal) style: 48px tall,
+  13px regular, every tab `#1E1E1E`, a 1.5px `#6E6E6E` line under the active
+  one, sitting on the band's hairline. No brand color on tabs (2026-10-02,
+  Fahim: the teal underline and grey idle tabs looked dated).
   **No description sentence** under the title.
 - **Page:** the `#FCFCFC` canvas, one centered 960px column.
 - **Footer strip:** a hairline, then mark · "Saddle 1.5.0" (and the module's
-  product and version on a module page) · Docs · Rate Saddle, in 12px grey.
+  product and version on a module page) · Docs · Rate Saddle, in 13px grey.
 
 Never draw the frame while the app is loading: WordPress's `common.js` moves
 every `.notice` after the first `.wrap h1`, and the header's `h1` would pull the
 quarantined notices back into view.
 
-## Type: one scale
+## Type: three sizes (Jetpack AI's, 2026-10-02)
 
-| Use | Size / weight |
-|---|---|
-| Page (header breadcrumb) | 15 / 600 |
-| Section heading | 14 / 600 |
-| Block title, row label | 13 / 600 |
-| Body, controls | 13 / 400 |
-| Meta, hints, footer | 12 / 400, `#646970` |
-| Numbers in stat cards only | up to 20 / 600 |
+| Token | Size | Use |
+|---|---|---|
+| `--s-text-title` | 15 / 600 | page (header breadcrumb), section heading |
+| `--s-text` | 13 | everything you read: body, row titles (600), descriptions, meta, hints, buttons, tabs, footer |
+| `--s-text-sm` | 12 | badges, counts, code chips, the uppercase day label |
+| (numbers) | 20 / 600 | stat card values only |
 
+Every `font-size` in `style.scss` is one of the three tokens; no raw px value
+(the one exception is a 24px icon box). The kit's steps are mapped onto the
+same three through `--pp-text-*`, so kit components land on the scale too.
+Checked by computed style on every page: only 12, 13 and 15px render.
 Nothing is bigger, anywhere: no hero sentences, no 24px ledes, no 27px titles.
-The kit's larger steps are pulled in through `--pp-text-*`.
 
 ## Structure: page → tab → section → block → row
 
