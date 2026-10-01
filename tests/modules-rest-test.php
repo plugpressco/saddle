@@ -62,7 +62,7 @@ class Saddle_Modules_REST_Test extends WP_UnitTestCase {
 
 		$this->assertSame( 200, $response->get_status() );
 		$areas = $response->get_data()['areas'];
-		$this->assertSame( array( 'home', 'broken', 'demo', 'connections', 'context', 'settings' ), wp_list_pluck( $areas, 'key' ) );
+		$this->assertSame( array( 'home', 'broken', 'demo', 'connections', 'services', 'context', 'settings' ), wp_list_pluck( $areas, 'key' ) );
 	}
 
 	public function test_a_module_area_has_the_documented_shape() {

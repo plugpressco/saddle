@@ -15,9 +15,10 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Register the Unsplash abilities. Hooked to `wp_abilities_api_init`.
  *
- * Registered even when no Access Key is configured — the not-configured error
- * tells the agent exactly what the owner must do, and the Permissions UI
- * should show the tools exist.
+ * Registered even when no Access Key is configured, because registration runs
+ * before anyone is authenticated. Until the owner adds a key, the tools are
+ * left out of tools/list and refused with a message that names Saddle →
+ * Services (Saddle_Services::has_tools_available()).
  */
 function saddle_register_unsplash_abilities() {
 
@@ -61,8 +62,8 @@ function saddle_register_unsplash_abilities() {
 				),
 			),
 			'execute_callback'    => array( 'Saddle_Unsplash_Abilities', 'search' ),
-			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'unsplash-search' ),
-			'meta'                => saddle_ability_meta( true, false, true, 'read', true ),
+			'permission_callback' => Saddle_Capabilities::permission( 'write', 'edit_posts', 'unsplash-search' ),
+			'meta'                => saddle_ability_meta( true, false, true, 'write', true ),
 		)
 	);
 

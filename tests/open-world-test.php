@@ -54,6 +54,8 @@ class Saddle_Open_World_Test extends WP_UnitTestCase {
 	public function test_the_built_in_transport_sends_open_world_hint() {
 		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
 		Saddle_Capabilities::set_tier( 'admin' );
+		// Unsplash tools are listed only once the owner has added a key.
+		Saddle_Unsplash::set_key( 'testAccessKey_1234567890abcdef' );
 
 		$req = new WP_REST_Request( 'POST', '/saddle/v1/mcp' );
 		$req->set_header( 'content-type', 'application/json' );
@@ -62,6 +64,7 @@ class Saddle_Open_World_Test extends WP_UnitTestCase {
 		$tools = array_column( $data['result']['tools'], 'annotations', 'name' );
 
 		Saddle_Capabilities::set_tier( 'read' );
+		delete_option( Saddle_Unsplash::OPTION );
 
 		$this->assertFalse( $tools['saddle-get-post']['openWorldHint'] );
 		$this->assertTrue( $tools['saddle-unsplash-search']['openWorldHint'] );

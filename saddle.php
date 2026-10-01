@@ -127,6 +127,8 @@ require_once SADDLE_DIR . 'includes/class-saddle-http.php';
 require_once SADDLE_DIR . 'includes/class-saddle-accessors.php';
 require_once SADDLE_DIR . 'includes/class-saddle-integration-engine.php';
 require_once SADDLE_DIR . 'includes/class-saddle-integrations.php';
+require_once SADDLE_DIR . 'includes/class-saddle-services-connector.php';
+require_once SADDLE_DIR . 'includes/class-saddle-services.php';
 require_once SADDLE_DIR . 'includes/trait-saddle-mutation-log.php';
 require_once SADDLE_DIR . 'includes/integrations/class-saddle-seo-advice.php';
 require_once SADDLE_DIR . 'includes/integrations/yoast/class-saddle-yoast.php';
@@ -172,6 +174,7 @@ require_once SADDLE_DIR . 'includes/admin/class-saddle-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-notices-admin.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-connections-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-approvals-rest.php';
+require_once SADDLE_DIR . 'includes/admin/class-saddle-services-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-onboarding-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-modules-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-settings.php';
@@ -256,6 +259,8 @@ final class Saddle {
 		add_action( 'rest_api_init', array( 'Saddle_MCP_Diagnostics', 'register_routes' ) );
 		add_action( 'init', array( 'Saddle_Unsplash', 'register_taxonomy' ) );
 		Saddle_Unsplash::register_admin_hooks();
+		// Unsplash in Settings → Connectors, where core has the registry.
+		Saddle_Services_Connector::register_hooks();
 		// Priority 9: the Saddle menu exists before a sibling plugin adds to it
 		// at the default 10. Its order is settled once every plugin has added
 		// its items (see Saddle_Settings::order_submenu()).
@@ -296,6 +301,7 @@ final class Saddle {
 		Saddle_Access::register();
 		add_action( 'rest_api_init', array( 'Saddle_Connections_REST', 'register_routes' ) );
 		add_action( 'rest_api_init', array( 'Saddle_Approvals_REST', 'register_routes' ) );
+		add_action( 'rest_api_init', array( 'Saddle_Services_REST', 'register_routes' ) );
 		add_action( 'rest_api_init', array( 'Saddle_Modules_REST', 'register_routes' ) );
 
 		// First-run and module onboarding state (#277).
@@ -373,6 +379,7 @@ final class Saddle {
 			// plugins' own abilities exist to discover.
 			add_action( 'wp_abilities_api_init', array( 'Saddle_Integrations', 'register_wrappers' ), 30 );
 			add_filter( 'saddle_context_sections', array( 'Saddle_Integrations', 'context_section' ) );
+			add_filter( 'saddle_context_sections', array( 'Saddle_Services', 'context_section' ) );
 			Saddle_Seo_Skills::register();
 			Saddle_Divi_Context::register();
 

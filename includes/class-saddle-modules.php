@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * One list of every Saddle admin page, so one code path draws them all.
  *
- * Core has four pages: Dashboard, AI apps, Context and Settings. A sibling plugin
+ * Core has five pages: Dashboard, AI apps, Services, Context and Settings. A sibling plugin
  * (Analytics, SEO, CRM) joins through the `saddle_modules` filter under the
  * same key it uses for `saddle_integrations`, and gets a submenu page at
  * `admin.php?page=saddle-{key}` with Core's frame around its content. A
@@ -27,7 +27,7 @@ class Saddle_Modules {
 	/**
 	 * Keys a module may not take: Core's own pages.
 	 */
-	const RESERVED = array( 'home', 'connections', 'context', 'settings' );
+	const RESERVED = array( 'home', 'connections', 'services', 'context', 'settings' );
 
 	/**
 	 * Core's pages, in menu order around the modules.
@@ -55,6 +55,13 @@ class Saddle_Modules {
 				'title' => __( 'AI apps', 'saddle' ),
 				'tabs'  => array(
 					'apps' => __( 'AI apps', 'saddle' ),
+				),
+			),
+			'services'    => array(
+				'slug'  => 'saddle-services',
+				'title' => __( 'Services', 'saddle' ),
+				'tabs'  => array(
+					'overview' => __( 'Services', 'saddle' ),
 				),
 			),
 			'context'     => array(
@@ -145,8 +152,8 @@ class Saddle_Modules {
 	}
 
 	/**
-	 * Every page, in menu order: Dashboard, the modules, AI apps, Context,
-	 * Settings.
+	 * Every page, in menu order: Dashboard, the modules, AI apps, Services,
+	 * Context, Settings.
 	 *
 	 * @return array<string,array> Keyed by area; each has `slug`, `title`,
 	 *                             `tabs`, `nav`, `capability`, `module`.
@@ -160,6 +167,7 @@ class Saddle_Modules {
 		}
 
 		$areas['connections'] = $core['connections'];
+		$areas['services']    = $core['services'];
 		$areas['context']     = $core['context'];
 		$areas['settings']    = $core['settings'];
 
