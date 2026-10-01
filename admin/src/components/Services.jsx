@@ -112,11 +112,15 @@ function KeyForm( { record, onSaved } ) {
 
 	return (
 		<div className="saddle-svc__block">
-			<h3 className="saddle-svc__h">{ __( 'Your key', 'saddle' ) }</h3>
+			{ ! showForm && (
+				<h3 className="saddle-svc__h">
+					{ __( 'Your key', 'saddle' ) }
+				</h3>
+			) }
 			{ showForm ? (
 				<>
 					<Field
-						label={ __( 'Access key', 'saddle' ) }
+						label={ __( 'Your key', 'saddle' ) }
 						hint={ sprintf(
 							/* translators: %s: service name, such as Unsplash. */
 							__(

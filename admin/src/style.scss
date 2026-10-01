@@ -1885,9 +1885,20 @@ body.saddle-admin-page,
 		border-block-start: 1px solid var(--s-border);
 	}
 
+	// Host names and tool names are plain monospace text: no grey bar
+	// (wp-admin paints every code element), no full-width stretch.
 	code {
+		justify-self: start;
+		display: block;
+		margin: 0;
+		padding: 0;
+		background: none;
 		font-size: 12px;
 	}
+}
+
+.saddle-svc__tools code {
+	color: var(--s-fg-subtle);
 }
 
 .saddle-svc__sends li {
