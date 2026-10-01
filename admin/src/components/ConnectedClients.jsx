@@ -309,7 +309,7 @@ export default function Apps( {
 					}
 				/>
 
-				<RowList>
+				<RowList loading={ null === rows } loadingRows={ 1 }>
 					{ null !== rows && 0 === rows.length && (
 						<Row
 							title={
