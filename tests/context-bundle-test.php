@@ -209,4 +209,52 @@ class Saddle_Context_Bundle_Test extends WP_UnitTestCase {
 		// And the server really does refuse, which is why the flag exists.
 		$this->assertFalse( Saddle_Skills::set_enabled( 'build-page', false ) );
 	}
+	/**
+	 * Seed the cached bundle so summary_lines() reads exactly this shape.
+	 *
+	 * @param array $bundle The bundle fields to serve.
+	 */
+	private function serve_bundle( array $bundle ) {
+		$signature = new ReflectionMethod( 'Saddle_Context_Bundle', 'signature' );
+		if ( PHP_VERSION_ID < 80100 ) {
+			$signature->setAccessible( true );
+		}
+		$bundle['version'] = $signature->invoke( null );
+		set_transient( Saddle_Context_Bundle::TRANSIENT, $bundle, HOUR_IN_SECONDS );
+	}
+
+	/**
+	 * A Divi site with a classic theme read "11 ready-made theme patterns are
+	 * available. Use these slugs instead of ad-hoc values." — slugs the line
+	 * never named.
+	 */
+	public function test_a_patterns_only_summary_does_not_ask_for_slugs_it_never_names() {
+		$this->serve_bundle(
+			array(
+				'design_system' => array(),
+				'site'          => array(),
+				'patterns'      => array( 'theme' => array( array( 'name' => 'a' ), array( 'name' => 'b' ) ) ),
+			)
+		);
+
+		$line = implode( "\n", Saddle_Context_Bundle::summary_lines() );
+
+		$this->assertStringContainsString( '2 ready-made theme patterns are available.', $line );
+		$this->assertStringNotContainsString( 'Use these slugs', $line );
+	}
+
+	public function test_a_named_palette_still_asks_for_its_slugs() {
+		$this->serve_bundle(
+			array(
+				'design_system' => array( 'colors' => array( array( 'slug' => 'primary' ), array( 'slug' => 'contrast' ) ) ),
+				'site'          => array(),
+				'patterns'      => array(),
+			)
+		);
+
+		$line = implode( "\n", Saddle_Context_Bundle::summary_lines() );
+
+		$this->assertStringContainsString( 'The palette is primary, contrast.', $line );
+		$this->assertStringContainsString( 'Use these slugs instead of ad-hoc values.', $line );
+	}
 }

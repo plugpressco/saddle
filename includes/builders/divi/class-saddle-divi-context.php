@@ -230,7 +230,7 @@ class Saddle_Divi_Context {
 			'',
 			'Structural tools: for a new page, create-page then divi-set-page. divi-set-page replaces an existing page\'s full tree (revision-backed; refuses Divi 4 pages and non-empty non-Divi posts). divi-add-module inserts at a parent address + position; divi-edit-module patches fields/attrs at an address; divi-move-module reparents/reorders; divi-remove-module (leaf removals immediate + revision-recoverable; container removals preview + confirm).',
 			'',
-			'ADDRESSES SHIFT: addresses are positional dot-paths ("0" = first section, "0.1.0" = first module in its second row) and change after every structural edit. Every write returns its `changed` node(s) with full attrs — for the node you just touched, no re-read is needed. For OTHER nodes, re-read with divi-get-page; the default compact mode is a cheap skeleton, pass an `address` to pull one subtree with attrs, and pass back the previous `version` so an unchanged page costs one line.',
+			'ADDRESSES SHIFT: addresses are positional dot-paths and change after every structural edit. Most Divi 5 pages have a root placeholder, so "0" is that root, "0.0" the first section and "0.1.0.0.0" the first module of the second section; copy addresses from what divi-get-page and every write return rather than counting. Every write returns its `changed` node(s) with full attrs — for the node you just touched, no re-read is needed. For OTHER nodes, re-read with divi-get-page; the default compact mode is a cheap skeleton, pass an `address` to pull one subtree with attrs, and pass back the previous `version` so an unchanged page costs one line.',
 			'',
 			'## Styling — where silent failures live, read carefully',
 			'',

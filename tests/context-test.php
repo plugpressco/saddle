@@ -129,6 +129,18 @@ class Saddle_Context_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'confirm_token', $ctx );
 	}
 
+	/**
+	 * The playbook sent agents to "Permissions for level and per-tool
+	 * toggles" after #285 removed that page, so an agent told its user to
+	 * look for a screen that no longer exists.
+	 */
+	public function test_the_refusal_playbook_names_the_pages_that_exist() {
+		$ctx = Saddle_Context::system_context();
+
+		$this->assertStringNotContainsString( 'Permissions for level', $ctx );
+		$this->assertStringContainsString( 'the AI access switch on the Dashboard, this app\'s access on AI apps, or single tools under Settings', $ctx );
+	}
+
 	public function test_context_describes_the_approval_gate_at_write_tier() {
 		Saddle_Capabilities::set_tier( 'write' );
 		$ctx = Saddle_Context::system_context();
