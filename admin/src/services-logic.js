@@ -115,8 +115,35 @@ export function whereDataGoes( record ) {
  * @param {Object} record A service record.
  * @return {string} Line.
  */
+// Longer than this, a description goes to the drawer and the row says what
+// kind of service it is instead.
+const SHORT_DESCRIPTION = 40;
+
+/**
+ * The first part of a row's meta line: its own description when that is
+ * short ("Stock photos"), else what kind of service it is.
+ *
+ * @param {Object} record A service record.
+ * @return {string} A short label.
+ */
+export function kindLabel( record ) {
+	const d = ( record.description || '' ).trim();
+	if ( d && d.length <= SHORT_DESCRIPTION ) {
+		return d;
+	}
+	if ( 'account' === record.kind ) {
+		return __( 'Outside service', 'saddle' );
+	}
+	if ( 'plugin' === record.kind ) {
+		return __( 'Plugin', 'saddle' );
+	}
+	return 'plugpress' === record.source
+		? __( 'PlugPress add-on', 'saddle' )
+		: __( 'Third-party add-on', 'saddle' );
+}
+
 export function metaLine( record ) {
-	return [ record.description, whereDataGoes( record ), toolCount( record ) ]
+	return [ kindLabel( record ), whereDataGoes( record ), toolCount( record ) ]
 		.filter( Boolean )
 		.join( ' · ' );
 }
