@@ -207,6 +207,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 * Improved: Lists show loading rows while they load instead of "Nothing yet", and a server error shows as plain words. The first tour stop points at the AI access switch.
 * Fixed: What Saddle tells your AI app names the AI access switch, AI apps and Settings instead of the removed Permissions page. The Divi playbook gives the right address for a page's first section.
 * Fixed: On a Divi shop, your AI app can use Divi's WooCommerce modules, such as the products grid. They were missing from the module list.
+* Fixed: Styling body text on a Divi text module and similar modules now works. Saddle gave your AI app a path Divi does not read, so the color and size saved but never showed.
 * Fixed: The design check no longer counts a dark tinted background, such as slate or a near-black green, as a second accent color.
 * New: The Services page. Unsplash, the SEO and shop plugins Saddle edits, and the plugins that add tools to Saddle are listed in one place. Each says what it sends off your site, which tools it gives your AI apps, and links to its terms and privacy policy. Add or remove your Unsplash key there. Plugins from other developers stay off until you switch them on there.
 * New: On WordPress 7.0 and later, your Unsplash key also appears under Settings > Connectors. It is the same key, so nothing to move.
