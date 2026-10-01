@@ -200,4 +200,29 @@ class Saddle_Divi_Context_Bundle_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'CLOSED-LOOP', $body );
 		$this->assertStringContainsString( '`changed`', $body, 'The skill must teach that writes return their changed nodes.' );
 	}
+	/**
+	 * Divi keeps its WooCommerce modules (divi/shop and the rest) one folder
+	 * deeper than its other modules. The scan never reached them, so on a
+	 * Divi shop divi-get-module-schema answered "No module.json found for
+	 * divi/shop" and the catalog had no product grid.
+	 */
+	public function test_the_scan_reaches_divis_woocommerce_modules_while_woocommerce_is_active() {
+		remove_all_filters( 'saddle_divi_module_json_dirs' ); // set_up() points the scan at a fixture.
+		add_filter( 'saddle_wc_active', '__return_true' );
+		$dirs = Saddle_Divi_Schema::scan_dirs();
+		remove_filter( 'saddle_wc_active', '__return_true' );
+
+		$this->assertContains( get_template_directory() . '/includes/builder-5/visual-builder/packages/module-library/src/components/woocommerce', $dirs );
+	}
+
+	public function test_the_scan_leaves_them_out_without_woocommerce() {
+		remove_all_filters( 'saddle_divi_module_json_dirs' );
+		add_filter( 'saddle_wc_active', '__return_false' );
+		$dirs = Saddle_Divi_Schema::scan_dirs();
+		remove_filter( 'saddle_wc_active', '__return_false' );
+
+		foreach ( $dirs as $dir ) {
+			$this->assertStringEndsNotWith( '/components/woocommerce', $dir );
+		}
+	}
 }

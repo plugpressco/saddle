@@ -48,7 +48,16 @@ class Saddle_Divi_Schema {
 		// Divi core ships its module.json files inside the theme.
 		$template = get_template_directory();
 		if ( $template ) {
-			$dirs[] = $template . '/includes/builder-5/visual-builder/packages/module-library/src/components';
+			$components = $template . '/includes/builder-5/visual-builder/packages/module-library/src/components';
+			$dirs[]     = $components;
+
+			// Divi keeps its WooCommerce modules one level further down
+			// (components/woocommerce/<module>/module.json) and registers them
+			// only while WooCommerce is active. The one-level scan never found
+			// them, so an agent on a Divi shop could not place a product grid.
+			if ( class_exists( 'Saddle_WC' ) && Saddle_WC::is_active() ) {
+				$dirs[] = $components . '/woocommerce';
+			}
 		}
 
 		// Ecosystem plugins ship built copies at <plugin>/modules-json/ —
