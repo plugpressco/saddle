@@ -87,7 +87,7 @@ function saddle_register_wc_abilities() {
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => (object) array(),
+				'properties' => array(),
 			),
 			'execute_callback'    => array( 'Saddle_WC_Abilities', 'check_setup' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'wc-check-setup' ),

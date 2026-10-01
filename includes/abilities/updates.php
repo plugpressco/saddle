@@ -139,7 +139,7 @@ function saddle_register_update_abilities() {
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => (object) array(),
+				'properties' => array(),
 			),
 			'execute_callback'    => array( 'Saddle_Update_Abilities', 'get_site_health' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'admin', 'view_site_health_checks', 'get-site-health' ),
