@@ -167,7 +167,7 @@ function AppsTab( {
 				onClientsChanged={ refreshClients }
 				onClientRemoved={ removeClient }
 				siteTier={ tier }
-				onConnect={ () => openConnect() }
+				onConnect={ ( app ) => openConnect( app ) }
 			/>
 			<Cards where="connections" navigate={ navigate } />
 			<Drawer

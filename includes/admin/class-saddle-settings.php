@@ -381,13 +381,16 @@ class Saddle_Settings {
 		// "style-index.css" holds the compiled style.scss (Saddle's own rules,
 		// which alias the design-system --pp-* tokens). Load the design system
 		// first, then Saddle on top so its higher-specificity rules win.
+		// $asset['version'] hashes index.js only, so a CSS-only change kept the
+		// old ?ver= and browsers served the cached stylesheet (#307); each
+		// stylesheet carries its own file time as well.
 		$ds_dep = array();
 		if ( file_exists( $build_dir . 'index.css' ) ) {
 			wp_enqueue_style(
 				'saddle-admin-ds',
 				$build_url . 'index.css',
 				array(),
-				$asset['version']
+				$asset['version'] . '.' . filemtime( $build_dir . 'index.css' )
 			);
 			$ds_dep = array( 'saddle-admin-ds' );
 		}
@@ -396,7 +399,7 @@ class Saddle_Settings {
 				'saddle-admin',
 				$build_url . 'style-index.css',
 				$ds_dep,
-				$asset['version']
+				$asset['version'] . '.' . filemtime( $build_dir . 'style-index.css' )
 			);
 		}
 

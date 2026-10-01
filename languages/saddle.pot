@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-01T00:52:29+00:00\n"
+"POT-Creation-Date: 2026-10-01T23:29:33+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -4038,7 +4038,7 @@ msgstr ""
 #: admin/build/index.js:91
 #: admin/build/index.js:111
 #: admin/src/activity-format.js:136
-#: admin/src/components/ConnectedClients.jsx:53
+#: admin/src/components/ConnectedClients.jsx:56
 #: admin/src/services-logic.js:61
 msgid "Read only"
 msgstr ""
@@ -4048,7 +4048,7 @@ msgstr ""
 #: admin/build/index.js:91
 #: admin/build/index.js:111
 #: admin/src/activity-format.js:137
-#: admin/src/components/ConnectedClients.jsx:58
+#: admin/src/components/ConnectedClients.jsx:61
 #: admin/src/services-logic.js:63
 msgid "Edit content"
 msgstr ""
@@ -4058,7 +4058,7 @@ msgstr ""
 #: admin/build/index.js:91
 #: admin/build/index.js:111
 #: admin/src/activity-format.js:138
-#: admin/src/components/ConnectedClients.jsx:63
+#: admin/src/components/ConnectedClients.jsx:66
 #: admin/src/services-logic.js:65
 msgid "Manage the site"
 msgstr ""
@@ -7126,7 +7126,8 @@ msgstr ""
 #: admin/build/index.js:23
 #: admin/build/index.js:94
 #: admin/build/index.js:117
-#: admin/src/components/ConnectedClients.jsx:306
+#: admin/src/components/ConnectedClients.jsx:163
+#: admin/src/components/ConnectedClients.jsx:382
 #: admin/src/onboarding-logic.js:568
 #: admin/src/screens.jsx:176
 msgid "Connect an app"
@@ -7914,17 +7915,21 @@ msgstr ""
 #: admin/build/index.js:38
 #: admin/build/index.js:94
 #: admin/src/components/ConnectApps.jsx:157
-#: admin/src/components/ConnectedClients.jsx:298
+#: admin/src/components/ConnectedClients.jsx:374
 msgid "Connected"
 msgstr ""
 
 #: admin/build/index.js:38
+#: admin/build/index.js:94
 #: admin/src/components/ConnectApps.jsx:169
+#: admin/src/components/ConnectedClients.jsx:209
 msgid "Not listed?"
 msgstr ""
 
 #: admin/build/index.js:38
+#: admin/build/index.js:94
 #: admin/src/components/ConnectApps.jsx:171
+#: admin/src/components/ConnectedClients.jsx:211
 msgid "Connect any MCP app"
 msgstr ""
 
@@ -9155,7 +9160,7 @@ msgstr ""
 
 #: admin/build/index.js:88
 #: admin/build/index.js:91
-#: admin/src/components/ConnectedClients.jsx:103
+#: admin/src/components/ConnectedClients.jsx:106
 #: admin/src/components/McpDiagnostics.jsx:192
 msgid "App"
 msgstr ""
@@ -9240,141 +9245,141 @@ msgid "3. Say hello"
 msgstr ""
 
 #: admin/build/index.js:91
-#: admin/src/components/ConnectedClients.jsx:54
+#: admin/src/components/ConnectedClients.jsx:57
 msgid "Looks at everything, changes nothing"
 msgstr ""
 
 #: admin/build/index.js:91
-#: admin/src/components/ConnectedClients.jsx:59
+#: admin/src/components/ConnectedClients.jsx:62
 msgid "Posts, pages, media, menus and SEO"
 msgstr ""
 
 #: admin/build/index.js:91
-#: admin/src/components/ConnectedClients.jsx:64
+#: admin/src/components/ConnectedClients.jsx:67
 msgid "Also plugins, themes, updates and settings"
 msgstr ""
 
 #: admin/build/index.js:91
-#: admin/src/components/ConnectedClients.jsx:113
+#: admin/src/components/ConnectedClients.jsx:116
 msgid "Key"
 msgstr ""
 
 #. translators: %s: WordPress username.
 #: admin/build/index.js:92
-#: admin/src/components/ConnectedClients.jsx:117
+#: admin/src/components/ConnectedClients.jsx:120
 #, js-format
 msgid "Signed in as %s"
 msgstr ""
 
 #. translators: %s: the last four characters of a key.
 #: admin/build/index.js:93
-#: admin/src/components/ConnectedClients.jsx:123
+#: admin/src/components/ConnectedClients.jsx:126
 #, js-format
 msgid "Key ····%s"
 msgstr ""
 
 #. translators: %s: how long ago, such as "2 minutes ago".
 #: admin/build/index.js:94
-#: admin/src/components/ConnectedClients.jsx:133
+#: admin/src/components/ConnectedClients.jsx:136
 #, js-format
 msgid "used %s"
 msgstr ""
 
 #: admin/build/index.js:94
-#: admin/src/components/ConnectedClients.jsx:136
+#: admin/src/components/ConnectedClients.jsx:139
 msgid "not used yet"
 msgstr ""
 
 #: admin/build/index.js:94
-#: admin/src/components/ConnectedClients.jsx:317
+#: admin/src/components/ConnectedClients.jsx:393
 msgid "No apps connected yet."
 msgstr ""
 
 #. translators: %s: the app name.
 #: admin/build/index.js:95
-#: admin/src/components/ConnectedClients.jsx:344
+#: admin/src/components/ConnectedClients.jsx:425
 #, js-format
 msgid "What %s can do"
 msgstr ""
 
 #. translators: 1: the app name, 2: its access, such as "Edit content".
 #: admin/build/index.js:96
-#: admin/src/components/ConnectedClients.jsx:192
+#: admin/src/components/ConnectedClients.jsx:261
 #, js-format
 msgid "%1$s is now set to “%2$s”. Reopen the app to pick up its new tools."
 msgstr ""
 
 #. translators: %s: the app name.
 #: admin/build/index.js:97
-#: admin/src/components/ConnectedClients.jsx:356
+#: admin/src/components/ConnectedClients.jsx:440
 #, js-format
 msgid "More for %s"
 msgstr ""
 
 #: admin/build/index.js:97
-#: admin/src/components/ConnectedClients.jsx:381
+#: admin/src/components/ConnectedClients.jsx:467
 msgid "Setup guide"
 msgstr ""
 
 #. translators: %s: the app name.
 #: admin/build/index.js:98
-#: admin/src/components/ConnectedClients.jsx:212
+#: admin/src/components/ConnectedClients.jsx:281
 #, js-format
 msgid "Rotate “%s”’s key?"
 msgstr ""
 
 #: admin/build/index.js:98
-#: admin/src/components/ConnectedClients.jsx:215
+#: admin/src/components/ConnectedClients.jsx:284
 msgid "The current key stops working the moment you confirm, and a fresh one is issued under the same name. You’ll paste the new setup into the app right after — until then it can’t connect."
 msgstr ""
 
 #: admin/build/index.js:98
-#: admin/src/components/ConnectedClients.jsx:220
-#: admin/src/components/ConnectedClients.jsx:391
+#: admin/src/components/ConnectedClients.jsx:289
+#: admin/src/components/ConnectedClients.jsx:477
 msgid "Rotate key"
 msgstr ""
 
 #: admin/build/index.js:98
-#: admin/src/components/ConnectedClients.jsx:221
+#: admin/src/components/ConnectedClients.jsx:290
 msgid "Keep the current key"
 msgstr ""
 
 #. translators: %s: the app name.
 #: admin/build/index.js:99
-#: admin/src/components/ConnectedClients.jsx:246
+#: admin/src/components/ConnectedClients.jsx:315
 #, js-format
 msgid "Disconnect “%s”?"
 msgstr ""
 
 #: admin/build/index.js:99
-#: admin/src/components/ConnectedClients.jsx:250
+#: admin/src/components/ConnectedClients.jsx:319
 msgid "Its sign-in key stops working the moment you confirm — the app loses access to this site immediately. You can always connect the app again with a fresh key."
 msgstr ""
 
 #: admin/build/index.js:99
-#: admin/src/components/ConnectedClients.jsx:254
+#: admin/src/components/ConnectedClients.jsx:323
 msgid "It loses access the moment you confirm — no waiting for anything to expire. To use it again you’ll approve it once more."
 msgstr ""
 
 #: admin/build/index.js:99
-#: admin/src/components/ConnectedClients.jsx:259
-#: admin/src/components/ConnectedClients.jsx:403
+#: admin/src/components/ConnectedClients.jsx:328
+#: admin/src/components/ConnectedClients.jsx:491
 msgid "Disconnect"
 msgstr ""
 
 #: admin/build/index.js:99
-#: admin/src/components/ConnectedClients.jsx:260
+#: admin/src/components/ConnectedClients.jsx:329
 msgid "Keep it connected"
 msgstr ""
 
 #: admin/build/index.js:99
-#: admin/src/components/ConnectedClients.jsx:278
+#: admin/src/components/ConnectedClients.jsx:347
 msgid "Disconnected. That app’s sign-in no longer works."
 msgstr ""
 
 #: admin/build/index.js:99
-#: admin/src/components/ConnectedClients.jsx:415
-msgid "This site’s address for AI apps:"
+#: admin/src/components/ConnectedClients.jsx:505
+msgid "Site address for AI apps"
 msgstr ""
 
 #: admin/build/index.js:99
@@ -10027,40 +10032,40 @@ msgstr ""
 msgid "Refused"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:505
+#: admin/src/components/ConnectedClients.jsx:606
 msgid "Connection details"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:509
+#: admin/src/components/ConnectedClients.jsx:610
 msgid "Health and diagnostics"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:517
+#: admin/src/components/ConnectedClients.jsx:618
 msgid "Your site’s address for AI apps"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:531
+#: admin/src/components/ConnectedClients.jsx:632
 msgid "Test the endpoint"
 msgstr ""
 
 #. translators: 1: tool count, 2: milliseconds.
-#: admin/src/components/ConnectedClients.jsx:538
+#: admin/src/components/ConnectedClients.jsx:639
 #, js-format
 msgid "%1$d tools · %2$dms"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:545
+#: admin/src/components/ConnectedClients.jsx:646
 msgid "Responding"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:556
+#: admin/src/components/ConnectedClients.jsx:657
 msgid "Transport"
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:559
+#: admin/src/components/ConnectedClients.jsx:660
 msgid "Saddle is using the MCP Adapter plugin, which is active on this site. Your tools, access levels and approvals are unchanged — this only affects how requests are carried."
 msgstr ""
 
-#: admin/src/components/ConnectedClients.jsx:563
+#: admin/src/components/ConnectedClients.jsx:664
 msgid "Saddle speaks MCP itself, so there is nothing else to install. If you ever add the separate MCP Adapter plugin, Saddle will use it automatically; your tools, access levels and approvals stay the same either way."
 msgstr ""
