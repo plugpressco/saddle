@@ -3,8 +3,8 @@
  *
  * Powered by the PlugPress design system (@plugpress/ui). Saddle overrides the
  * shared --pp-* tokens below so the admin reads as WordPress itself: its greys,
- * its link blue, its focus color, 4px corners and hairlines instead of
- * shadows. The brand, Petrol teal, lands in a handful of places only: the
+ * its link blue, its focus color, and Jetpack's soft blocks on an off-white
+ * page. The brand, Petrol teal, lands in a handful of places only: the
  * mark, the active tab, primary buttons, switches and radios when on, and the
  * selected access level. Light-only. See DESIGN-ALIGNMENT.md for the palette,
  * the type scale and where the brand may appear.
@@ -21,9 +21,10 @@
 // This is a consumer-side override, not a library edit. Never change anything
 // under node_modules/@plugpress/ui (see the consumer agent guide).
 //
-// The surfaces are WordPress 7's own (core's Connectors screen, measured
-// 2026-10-01): one white canvas, white blocks on a #ddd hairline with 8px
-// corners, neutral greys, and links in the admin color scheme's own blue.
+// The surfaces are Jetpack's (its Modules screen, measured 2026-10-02, #307):
+// a #fcfcfc page under a white header band, white blocks with a #f0f0f0
+// hairline, 8px corners and one faint shadow. The greys are WordPress 7's,
+// and links use the admin color scheme's own blue.
 //
 // Contrast, measured (WCAG 2.x) on white: text #1e1e1e 16.67, #5e5e5e 6.58,
 // #717171 4.84; field edges #949494 3.03; white on the brand 6.84; every
@@ -49,7 +50,7 @@ body.saddle-admin-page,
 	--pp-n-50: #f5f5f5;
 	--pp-n-100: #f0f0f0;
 	--pp-n-200: #f5f5f5; // -> --pp-surface-alt (code chips, sub-panels)
-	--pp-n-300: #dddddd; // -> --pp-border
+	--pp-n-300: #f0f0f0; // -> --pp-border: block edges and row dividers
 	--pp-n-400: #cccccc; // -> --pp-border-strong
 	--pp-n-500: #a0a0a0;
 	--pp-n-600: #717171; // -> --pp-text-muted, 4.84
@@ -57,7 +58,7 @@ body.saddle-admin-page,
 	--pp-n-800: #2f2f2f;
 	--pp-n-900: #232323;
 	--pp-n-950: #1e1e1e; // -> --pp-text, 16.67
-	--pp-canvas: #ffffff; // one surface: page, header band and blocks
+	--pp-canvas: #fcfcfc; // the page; the header band and blocks are white
 	--pp-surface: #ffffff;
 	--pp-surface-hover: #f5f5f5;
 
@@ -96,9 +97,10 @@ body.saddle-admin-page,
 	--pp-r: 4px;
 	--pp-r-lg: 8px;
 
-	// Hairlines, not elevation. Overlays keep the DS's own md/lg shadows.
-	--pp-shadow-xs: none;
-	--pp-shadow-sm: none;
+	// A block sits on the canvas with a soft hairline and one faint shadow,
+	// Jetpack's values. Buttons stay flat; overlays keep the DS's md/lg.
+	--pp-shadow-xs: 0 1px 2px rgba( 0, 0, 0, 0.05 );
+	--pp-shadow-sm: 0 1px 2px rgba( 0, 0, 0, 0.05 );
 	--pp-shadow-btn: none;
 	--pp-shadow-btn-hover: none;
 
@@ -199,6 +201,18 @@ body.saddle-admin-page {
 	// WordPress's Connectors screen, not in a grey square.
 	.pp-rowlist__icon {
 		background: transparent;
+	}
+
+	// A row list is a block like a card, so it gets the card's shadow; the
+	// kit draws it flat. A block nested in another block stays flat.
+	.pp-rowlist {
+		box-shadow: var( --pp-shadow-xs );
+	}
+
+	.pp-card .pp-rowlist,
+	.saddle-adv .pp-rowlist,
+	.saddle-adv .pp-card {
+		box-shadow: none;
 	}
 }
 
@@ -1940,6 +1954,7 @@ body.saddle-admin-page,
 	background: var(--s-bg);
 	border: 1px solid var(--s-border);
 	border-radius: var(--s-radius-lg);
+	box-shadow: var(--s-shadow-sm);
 	overflow: hidden;
 
 	> .pp-collapsible + .pp-collapsible {

@@ -9,12 +9,18 @@
 > (2026-09-26) and the 85/15 rule below it. Don't re-litigate the color; do
 > hold the line on where it may appear.
 
-> **Surfaces updated (2026-10-01, Fahim: "bg color, box, surface color not
-> match").** Measured against WordPress 7.1's own Connectors screen (core's
-> `@wordpress/admin-ui` page) and Jetpack's AI hub: one **white** canvas, white
-> blocks on a `#ddd` hairline with **8px** corners, neutral greys, and links in
-> the **admin color scheme's own blue**. This replaces wp-admin's legacy grey
-> page (`#f0f0f1`), its blue-greys and a hard-coded `#2271b1`.
+> **Surfaces updated again (2026-10-02, Fahim, #307):** "why no bg color …
+> border around card", looking at Jetpack's Modules screen next to Saddle's
+> Dashboard on the same site. The all-white page with `#ddd` outlines read as
+> heavy boxes with nothing behind them. The surfaces are now **Jetpack's**,
+> measured: a `#FCFCFC` page under a white header band, white blocks with a
+> `#F0F0F0` hairline, 8px corners and one faint shadow
+> (`0 1px 2px rgba(0,0,0,.05)`). Greys, links and focus stay WordPress's.
+
+> *Superseded (2026-10-01):* one white canvas with white blocks on a `#DDD`
+> hairline and no shadow, measured against WordPress 7.1's Connectors screen.
+> That replaced wp-admin's legacy grey page (`#F0F0F1`) and a hard-coded
+> `#2271B1`.
 
 ## The palette
 
@@ -26,10 +32,11 @@ wp-admin like a core screen.
 | **Brand** (Petrol) | `#0B6470` | white on it 6.84; on white 6.84 |
 | Brand hover / press | `#08505A` / `#063F47` | white 9.11 / 11.60 |
 | Brand tint / soft | `#E2F1F2` / `#C5E4E7` | brand on tint 5.89 |
-| Canvas (page, header band) | `#FFFFFF` | |
-| Surface (blocks) | `#FFFFFF` on a `#DDDDDD` hairline, 8px corners | |
+| Canvas (page) | `#FCFCFC` | |
+| Header band | `#FFFFFF`, `#F0F0F0` hairline under it | |
+| Surface (blocks) | `#FFFFFF`, `#F0F0F0` hairline, 8px corners, `0 1px 2px rgba(0,0,0,.05)` | |
 | Surface 2 (row hover, code chips, sub-panels) | `#F5F5F5` | |
-| Border / border 2 | `#DDDDDD` / `#CCCCCC` | hairlines, decorative |
+| Border / border 2 | `#F0F0F0` / `#CCCCCC` | block edges and row dividers, decorative |
 | Field edge, switch off | `#949494` | 3.03 on white |
 | Text / secondary / muted | `#1E1E1E` / `#5E5E5E` / `#717171` | 16.67 / 6.58 / 4.84 |
 | Links, focus | `var(--wp-admin-theme-color)` (Default `#2271B1` 5.17, Modern `#3858E9` 5.36) | follows the owner's admin color scheme |
@@ -69,14 +76,14 @@ code panels are pinned the same way. Both are kit seams.
 Every Saddle page, module pages and first run included, is drawn by
 `admin/src/components/Frame.jsx`:
 
-- **Header band:** white like the canvas, full width of wp-admin's content
-  area, `16px 24px`, one `#DDDDDD` hairline under it. Row 1: the 20px mark in Petrol, then an `h1`
+- **Header band:** white over the `#FCFCFC` canvas, full width of wp-admin's
+  content area, `16px 24px`, one `#F0F0F0` hairline under it. Row 1: the 20px mark in Petrol, then an `h1`
   breadcrumb "Saddle / Page" (15px; "Saddle" in grey links Home; the page in
   600). A module page reads "Saddle / Analytics". On the right, only the AI
   status pill and the notices bell. Row 2, when a page has two or more tabs:
   the kit `Tabs`, sitting on the band's hairline with a Petrol indicator.
   **No description sentence** under the title.
-- **Page:** the white canvas, one centered 960px column.
+- **Page:** the `#FCFCFC` canvas, one centered 960px column.
 - **Footer strip:** a hairline, then mark · "Saddle 1.5.0" (and the module's
   product and version on a module page) · Docs · Rate Saddle, in 12px grey.
 
@@ -102,8 +109,9 @@ The kit's larger steps are pulled in through `--pp-text-*`.
 
 - A **section** is a 14px heading with at most one short muted line under it.
   It has no box.
-- A **block** is a white box with a 1px `#DDDDDD` border and 8px corners (a
-  kit `Card` or `RowList`), holding rows. A row's icon or status dot sits on
+- A **block** is a white box with a 1px `#F0F0F0` border, 8px corners and the
+  faint block shadow (a kit `Card` or `RowList`), holding rows. A block nested
+  inside another block stays flat. A row's icon or status dot sits on
   the block itself, not in a grey square.
 - A **row** is a label on the left and a control or value on the right, with
   one line of meta under the label only when it is needed.
@@ -113,8 +121,8 @@ The kit's larger steps are pulled in through `--pp-text-*`.
 
 Geometry: 8px corners on blocks (`--pp-r-lg`: cards, row lists, stat tiles,
 Saddle's own panels), 4px on controls, buttons, tiles and notices (`--pp-r`);
-the pill stays for badges, dots and switches. No shadows: hairlines draw
-structure; overlays keep the DS's own.
+the pill stays for badges, dots and switches. Blocks carry one faint shadow
+(`--pp-shadow-xs`); buttons stay flat; overlays keep the DS's own.
 
 ## The UX register
 
@@ -166,6 +174,8 @@ Kept together in one block of `style.scss`:
 - field edges and the off switch at `#949494`; row icons without the grey
   square; no focus ring on a `Select` option (the highlight is the position);
 - the header's tab row drops its own border (the band draws it).
+- row lists get the card's shadow (the kit draws them flat), and a block
+  nested in a card or in Advanced stays flat.
 
 ---
 
