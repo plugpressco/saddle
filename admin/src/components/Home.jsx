@@ -1,29 +1,32 @@
 /**
- * Home (#309, the Dashboard until then): an action page. What the apps did,
- * what waits for the owner, what to ask next, and what the apps can use.
+ * Home (#309, the Dashboard until then): an action page.
  *
- * Across the top, the week at a glance: changes, blocked attempts, what waits
- * for the owner's OK, and the apps. Then two columns. The main one holds
- * "Needs your OK" while something waits, one line from Saddle with the next
- * setup step while setup is unfinished, "Try asking": prompts built from
- * what Saddle found on the site, each one to copy into the app, and the
- * activity feed by day. The side one lists each connected app with what it
- * may do, the plugins on this site the apps can work inside ("Works with"),
- * a warning when connections may not work, and the installed modules.
+ * With no app connected, one block asks the owner to connect one, and the
+ * activity feed follows only when there is history. Nothing else is drawn:
+ * the week's numbers are about apps, and so is the side column.
+ *
+ * Once an app is connected, two columns. The main one holds "Needs your OK"
+ * while something waits, one line from Saddle with the next step for an app
+ * (try it, or let it edit), the week's three numbers, and the activity feed
+ * by day. The side one lists each connected app with what it may do, the
+ * plugins on this site the apps can work inside ("Works with"), a warning
+ * when connections may not work, and the installed modules.
+ *
  * The AI switch is in the header on every page, so Home does not repeat it,
  * and there are no tabs: the feed is part of the page.
  */
 import { useState, useEffect } from '@wordpress/element';
 import {
 	Button,
-	CopyButton,
+	Card,
+	CardHeader,
 	Row,
 	RowList,
 	StatCard,
 	StatGrid,
 	StatusDot,
 } from '@plugpress/ui';
-import { __, _n, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import { api } from '../api';
 import { APPS } from '../connect-apps';
 import { parseModules } from '../onboarding-logic';
@@ -33,10 +36,7 @@ import SectionHeader from './SectionHeader';
 import Activity from './Activity';
 import { ROLES } from './ConnectedClients';
 import { AppLogo, appKeyFromLabel } from './icons';
-import { askIdeas, countText, weekCount, worksWith } from '../home-logic';
-
-// One page of the log is enough to count a week at a glance; more shows "+".
-const WEEK_PAGE = 100;
+import { weekStart, weekTiles, worksWith } from '../home-logic';
 
 // Session cache for the connection self-check so re-opening Home doesn't
 // re-run the loopback probe. Reset on full reload, which is the right
@@ -66,6 +66,21 @@ function roleLabel( c ) {
 	return role ? role.label : '';
 }
 
+/**
+ * How many log entries of one type the week holds, from `total`.
+ *
+ * @param {string} type 'executed' or 'denied'.
+ * @return {Promise<number|null>} The count, or null when it failed.
+ */
+function weekTotal( type ) {
+	return api(
+		`audit-log?per_page=1&type=${ type }&since=${ weekStart() }`
+	).then(
+		( res ) => ( Number.isInteger( res.total ) ? res.total : null ),
+		() => null
+	);
+}
+
 const STATE_TONE = {
 	ready: 'success',
 	'needs-setup': 'warning',
@@ -92,19 +107,22 @@ export default function Home( {
 	const [ health, setHealth ] = useState( healthCache );
 	// Bumped after an approve or reject, so the feed and the counts show it.
 	const [ feedKey, setFeedKey ] = useState( 0 );
-	// What Saddle found on the site, for "Try asking".
-	const [ look, setLook ] = useState( null );
-	// The week at a glance: changes and blocked attempts, and what waits.
+	// This week: changes, blocked attempts, and what waits for the owner.
 	const [ week, setWeek ] = useState( null );
-	const [ waiting, setWaiting ] = useState( null );
 	// The Services records, for "Works with".
 	const [ services, setServices ] = useState( [] );
 
+	const apps =
+		false === connections
+			? clients.map( ( c ) => ( {
+					id: c.uuid,
+					name: c.label || c.name,
+			  } ) )
+			: connections;
+	const connected = Array.isArray( apps ) && apps.length > 0;
+
 	useEffect( () => {
 		let alive = true;
-		api( 'first-look' )
-			.then( ( res ) => alive && setLook( res ) )
-			.catch( () => alive && setLook( {} ) );
 		api( 'services' )
 			.then( ( res ) => alive && setServices( res.services || [] ) )
 			.catch( () => {} );
@@ -114,25 +132,25 @@ export default function Home( {
 	}, [] );
 
 	useEffect( () => {
+		if ( ! connected ) {
+			return;
+		}
 		let alive = true;
-		const count = ( type ) =>
-			api( `audit-log?per_page=${ WEEK_PAGE }&type=${ type }` )
-				.then( ( res ) =>
-					weekCount( res.enabled ? res.entries : [], WEEK_PAGE )
-				)
-				.catch( () => null );
-		Promise.all( [ count( 'executed' ), count( 'denied' ) ] ).then(
-			( [ changes, blocked ] ) => alive && setWeek( { changes, blocked } )
+		Promise.all( [
+			weekTotal( 'executed' ),
+			weekTotal( 'denied' ),
+			api( 'approvals' ).then(
+				( res ) => ( res.approvals || [] ).length,
+				() => null
+			),
+		] ).then(
+			( [ changes, blocked, waiting ] ) =>
+				alive && setWeek( { changes, blocked, waiting } )
 		);
-		api( 'approvals' )
-			.then(
-				( res ) => alive && setWaiting( ( res.approvals || [] ).length )
-			)
-			.catch( () => alive && setWaiting( null ) );
 		return () => {
 			alive = false;
 		};
-	}, [ feedKey ] );
+	}, [ feedKey, connected ] );
 
 	useEffect( () => {
 		api( 'connections' )
@@ -166,13 +184,34 @@ export default function Home( {
 			} );
 	}, [] );
 
-	const apps =
-		false === connections
-			? clients.map( ( c ) => ( {
-					id: c.uuid,
-					name: c.label || c.name,
-			  } ) )
-			: connections;
+	// Until the connections are in, which page this is is unknown.
+	if ( ! Array.isArray( apps ) ) {
+		return null;
+	}
+
+	// Nothing connected: one block, and the feed only when there is history.
+	if ( ! connected ) {
+		return (
+			<div className="saddle-home saddle-home--single">
+				<Card className="saddle-home__connect">
+					<p className="saddle-home__connect-text">
+						{ __( 'No AI app is connected yet.', 'saddle' ) }
+					</p>
+					<Button variant="primary" onClick={ onConnect }>
+						{ __( 'Connect an app', 'saddle' ) }
+					</Button>
+				</Card>
+
+				<section id="activity">
+					<Activity
+						caps={ caps }
+						title={ __( 'Activity', 'saddle' ) }
+						hideEmpty
+					/>
+				</section>
+			</div>
+		);
+	}
 
 	// Whether connected apps can reach the site. A stripped X-WP-Nonce header
 	// only affects this screen's own requests, which Saddle already works
@@ -184,62 +223,11 @@ export default function Home( {
 		health.status !== 'nonce_header_stripped';
 
 	const modules = ( areas || [] ).filter( ( a ) => 'module' === a.kind );
-	const toApps = () => onNavigate( 'connect' );
-	const ideas = look ? askIdeas( look ) : [];
 	const plugins = worksWith( services );
-	const appCount = Array.isArray( apps ) ? apps.length : null;
-	const dash = '–';
+	const tiles = weekTiles( week );
 
 	return (
 		<div className="saddle-home">
-			<section
-				className="saddle-home__glance"
-				aria-label={ __( 'This week at a glance', 'saddle' ) }
-			>
-				<StatGrid columns={ 4 } divided>
-					<StatCard
-						flush
-						label={ __( 'Changes', 'saddle' ) }
-						value={
-							week && week.changes
-								? countText( week.changes )
-								: dash
-						}
-						sub={ __( 'in the last 7 days', 'saddle' ) }
-					/>
-					<StatCard
-						flush
-						label={ __( 'Blocked', 'saddle' ) }
-						value={
-							week && week.blocked
-								? countText( week.blocked )
-								: dash
-						}
-						sub={ __( 'stopped by your rules', 'saddle' ) }
-					/>
-					<StatCard
-						flush
-						label={ __( 'Waiting for you', 'saddle' ) }
-						value={ null === waiting ? dash : String( waiting ) }
-						sub={
-							waiting
-								? __( 'Needs your OK, below', 'saddle' )
-								: __( 'Nothing to approve', 'saddle' )
-						}
-					/>
-					<StatCard
-						flush
-						label={ __( 'Apps', 'saddle' ) }
-						value={ null === appCount ? dash : String( appCount ) }
-						sub={
-							appCount
-								? __( 'connected to this site', 'saddle' )
-								: __( 'None connected yet', 'saddle' )
-						}
-					/>
-				</StatGrid>
-			</section>
-
 			<div className="saddle-home__main">
 				{ /* Big changes an app asked for, waiting for the owner (#287).
 				     Draws nothing when there are none. */ }
@@ -253,43 +241,24 @@ export default function Home( {
 					areas={ areas }
 					onboarding={ onboarding }
 					homeUrl={ homeUrl }
-					onConnect={ onConnect }
 					onNavigate={ onNavigate }
 					onHide={ onHideSetup }
 				/>
 
-				{ ideas.length > 0 && (
-					<section className="saddle-stack saddle-ideas">
-						<SectionHeader
-							title={ __( 'Try asking', 'saddle' ) }
-							description={ __(
-								'Copy a prompt into your AI app. Each one shows you first, before anything changes.',
-								'saddle'
-							) }
-						/>
-						<div className="saddle-ideas__grid">
-							{ ideas.map( ( idea ) => (
-								<div
-									className="saddle-ideas__card"
-									key={ idea.key }
-								>
-									<p className="saddle-ideas__title">
-										{ idea.title }
-									</p>
-									<p className="saddle-ideas__prompt">
-										{ idea.prompt }
-									</p>
-									<CopyButton
-										value={ idea.prompt }
-										size="sm"
-										variant="secondary"
-									>
-										{ __( 'Copy prompt', 'saddle' ) }
-									</CopyButton>
-								</div>
+				{ tiles.length > 0 && (
+					<Card className="saddle-home__week">
+						<CardHeader title={ __( 'This week', 'saddle' ) } />
+						<StatGrid columns={ tiles.length } divided>
+							{ tiles.map( ( t ) => (
+								<StatCard
+									key={ t.key }
+									flush
+									label={ t.label }
+									value={ String( t.value ) }
+								/>
 							) ) }
-						</div>
-					</section>
+						</StatGrid>
+					</Card>
 				) }
 
 				<section id="activity">
@@ -302,6 +271,78 @@ export default function Home( {
 			</div>
 
 			<aside className="saddle-home__side">
+				<section className="saddle-stack">
+					<SectionHeader
+						title={ __( 'Apps', 'saddle' ) }
+						actions={
+							<Button
+								variant="link"
+								size="sm"
+								onClick={ () => onNavigate( 'connect' ) }
+							>
+								{ __( 'Manage', 'saddle' ) }
+							</Button>
+						}
+					/>
+					<RowList>
+						{ apps.map( ( c ) => (
+							<Row
+								key={ c.id }
+								icon={
+									<AppLogo
+										app={
+											c.app ||
+											appKeyFromLabel(
+												c.name || c.client
+											)
+										}
+									/>
+								}
+								title={ connectionLabel( c ) }
+								description={ roleLabel( c ) || undefined }
+							/>
+						) ) }
+						<Row
+							title={
+								<Button
+									variant="link"
+									size="sm"
+									onClick={ onConnect }
+								>
+									{ __( 'Connect another app', 'saddle' ) }
+								</Button>
+							}
+						/>
+					</RowList>
+				</section>
+
+				{ plugins.length > 0 && (
+					<section className="saddle-stack">
+						<SectionHeader
+							title={ __( 'Works with', 'saddle' ) }
+							actions={
+								<Button
+									variant="link"
+									size="sm"
+									onClick={ () =>
+										onNavigate( {
+											area: 'services',
+											tab: 'overview',
+										} )
+									}
+								>
+									{ __( 'Services', 'saddle' ) }
+								</Button>
+							}
+						/>
+						<RowList>
+							{ plugins.map( ( p ) => (
+								<Row key={ p.key } title={ p.name } />
+							) ) }
+						</RowList>
+					</section>
+				) }
+
 				{ healthProblem && (
 					<RowList>
 						<Row
@@ -327,100 +368,6 @@ export default function Home( {
 							}
 						/>
 					</RowList>
-				) }
-
-				<section className="saddle-stack saddle-home__apps">
-					<SectionHeader
-						title={ __( 'Apps', 'saddle' ) }
-						actions={
-							apps && apps.length > 0 ? (
-								<Button
-									variant="link"
-									size="sm"
-									onClick={ toApps }
-								>
-									{ __( 'Manage', 'saddle' ) }
-								</Button>
-							) : null
-						}
-					/>
-					<RowList loading={ null === apps } loadingRows={ 1 }>
-						{ ( apps || [] ).map( ( c ) => (
-							<Row
-								key={ c.id }
-								icon={
-									<AppLogo
-										app={
-											c.app ||
-											appKeyFromLabel(
-												c.name || c.client
-											)
-										}
-									/>
-								}
-								title={ connectionLabel( c ) }
-								description={ roleLabel( c ) || undefined }
-							/>
-						) ) }
-						{ apps && (
-							<Row
-								title={
-									<Button
-										variant="link"
-										size="sm"
-										onClick={ onConnect }
-									>
-										{ apps.length
-											? __(
-													'Connect another app',
-													'saddle'
-											  )
-											: __( 'Connect an app', 'saddle' ) }
-									</Button>
-								}
-							/>
-						) }
-					</RowList>
-				</section>
-
-				{ plugins.length > 0 && (
-					<section className="saddle-stack">
-						<SectionHeader
-							title={ __( 'Works with', 'saddle' ) }
-							actions={
-								<Button
-									variant="link"
-									size="sm"
-									onClick={ () =>
-										onNavigate( {
-											area: 'services',
-											tab: 'overview',
-										} )
-									}
-								>
-									{ __( 'Services', 'saddle' ) }
-								</Button>
-							}
-						/>
-						<RowList>
-							{ plugins.map( ( p ) => (
-								<Row
-									key={ p.key }
-									title={ p.name }
-									description={ sprintf(
-										/* translators: %d: number of tools. */
-										_n(
-											'%d tool your apps can use',
-											'%d tools your apps can use',
-											p.tool_count,
-											'saddle'
-										),
-										p.tool_count
-									) }
-								/>
-							) ) }
-						</RowList>
-					</section>
 				) }
 
 				{ modules.length > 0 && (

@@ -141,11 +141,15 @@ class Saddle_Log {
 	 * @param int    $per_page Entries per page (1–100).
 	 * @param int    $page     Page number.
 	 * @param string $type     Optional filter: 'executed' | 'denied' | 'rehearsed' | '' (all).
+	 * @param int    $since    Optional Unix timestamp (UTC): only entries at or
+	 *                         after it. 0 means no limit. Home's "This week"
+	 *                         reads `total` with it, so the count is exact.
 	 * @return array{entries:array[],total:int,total_pages:int,page:int}
 	 */
-	public static function query( $per_page = 20, $page = 1, $type = '' ) {
+	public static function query( $per_page = 20, $page = 1, $type = '', $since = 0 ) {
 		$per_page = max( 1, min( 100, (int) $per_page ) );
 		$page     = max( 1, (int) $page );
+		$since    = max( 0, (int) $since );
 
 		$args = array(
 			'post_type'      => self::CPT,
@@ -155,6 +159,19 @@ class Saddle_Log {
 			'orderby'        => 'date',
 			'order'          => 'DESC',
 		);
+
+		// The stored GMT date against a UTC "Y-m-d H:i:s" string, which
+		// WP_Date_Query passes through unchanged (a bare timestamp would be
+		// shifted into the site's timezone).
+		if ( $since > 0 ) {
+			$args['date_query'] = array(
+				array(
+					'column'    => 'post_date_gmt',
+					'after'     => gmdate( 'Y-m-d H:i:s', $since ),
+					'inclusive' => true,
+				),
+			);
+		}
 
 		// Optional type filter. Entries predating the type meta are executed
 		// mutations, so "executed" must also match rows with no meta at all.

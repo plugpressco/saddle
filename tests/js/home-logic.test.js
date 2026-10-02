@@ -1,84 +1,40 @@
 /**
- * Home's pure helpers (#309): the week at a glance, the prompts worth trying
- * and the plugins the apps can work inside.
+ * Home's pure helpers (#309): the week's numbers and the plugins the apps
+ * can work inside.
  */
-import {
-	weekCount,
-	countText,
-	askIdeas,
-	worksWith,
-} from '../../admin/src/home-logic';
+import { weekStart, weekTiles, worksWith } from '../../admin/src/home-logic';
 
 const NOW = Date.parse( '2026-10-02T12:00:00Z' );
 
-describe( 'the week at a glance', () => {
-	it( 'counts only the last seven days', () => {
-		const entries = [
-			{ date: '2026-10-02 09:00:00' },
-			{ date: '2026-09-28 09:00:00' },
-			{ date: '2026-09-20 09:00:00' },
-			{ date: '' },
-		];
-		expect( weekCount( entries, 100, NOW ) ).toEqual( {
-			count: 2,
-			more: false,
-		} );
+describe( 'this week', () => {
+	it( 'starts seven days ago, in Unix seconds', () => {
+		expect( weekStart( NOW ) ).toBe(
+			Date.parse( '2026-09-25T12:00:00Z' ) / 1000
+		);
+		expect( Number.isInteger( weekStart( NOW + 999 ) ) ).toBe( true );
 	} );
 
-	it( 'says there are more when a full page is all inside the week', () => {
-		const entries = [
-			{ date: '2026-10-02 09:00:00' },
-			{ date: '2026-10-01 09:00:00' },
-		];
-		const c = weekCount( entries, 2, NOW );
-		expect( c ).toEqual( { count: 2, more: true } );
-		expect( countText( c ) ).toBe( '2+' );
-		expect( countText( { count: 0, more: false } ) ).toBe( '0' );
-	} );
-
-	it( 'survives no entries', () => {
-		expect( weekCount( null, 100, NOW ) ).toEqual( {
-			count: 0,
-			more: false,
-		} );
-	} );
-} );
-
-describe( 'prompts worth trying', () => {
-	it( 'leads with the work first-look found', () => {
-		const ideas = askIdeas( {
-			findings: { missing_alt: 12, missing_description: 1 },
-			updates: { plugins: 2, themes: 1 },
-		} );
-		expect( ideas.map( ( i ) => i.key ) ).toEqual( [
-			'alt',
-			'descriptions',
-			'updates',
+	it( 'shows the three numbers in order, zeros included', () => {
+		const tiles = weekTiles( { changes: 12, blocked: 0, waiting: 3 } );
+		expect( tiles.map( ( t ) => [ t.key, t.value ] ) ).toEqual( [
+			[ 'changes', 12 ],
+			[ 'blocked', 0 ],
+			[ 'waiting', 3 ],
 		] );
-		expect( ideas[ 0 ].title ).toBe( 'Add alt text to 12 images' );
-		expect( ideas[ 1 ].title ).toBe( 'Write 1 search description' );
-		expect( ideas[ 2 ].title ).toBe( 'Review 3 updates' );
+		expect( tiles.map( ( t ) => t.label ) ).toEqual( [
+			'Changes',
+			'Blocked',
+			'Waiting for you',
+		] );
 	} );
 
-	it( 'fills with everyday prompts on a tidy site', () => {
+	it( 'leaves out a number that failed to load', () => {
 		expect(
-			askIdeas( { findings: {}, updates: {} } ).map( ( i ) => i.key )
-		).toEqual( [ 'links', 'tour', 'draft' ] );
-		expect( askIdeas( null, 2 ) ).toHaveLength( 2 );
-	} );
-
-	it( 'never asks an app to change things unseen', () => {
-		askIdeas(
-			{
-				findings: { missing_alt: 1, missing_description: 1 },
-				updates: { plugins: 1 },
-			},
-			10
-		).forEach( ( idea ) => {
-			expect( idea.prompt ).toMatch(
-				/Don’t change anything|before you change|before you save|Don’t update|as a draft/
-			);
-		} );
+			weekTiles( { changes: null, blocked: 4, waiting: 1 } ).map(
+				( t ) => t.key
+			)
+		).toEqual( [ 'blocked', 'waiting' ] );
+		expect( weekTiles( null ) ).toEqual( [] );
 	} );
 } );
 
