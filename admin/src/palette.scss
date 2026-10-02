@@ -1,0 +1,23 @@
+/**
+ * Saddle's palette for pages outside the admin frame (K4).
+ *
+ * Tokens only. A page calls Saddle_Modules::enqueue_palette() and gets every
+ * --pp-*, --saddle-brand*, --s-* and --saddle-chart-* value, with no
+ * component, frame or wp-admin rules. The design system's stylesheet is not
+ * loaded there, so the tokens it would derive from the greys are written here.
+ */
+@use 'tokens';
+
+body.saddle-palette {
+	--pp-surface-alt: var( --pp-n-200 );
+	--pp-surface-hover: var( --pp-n-50 );
+	--pp-border: var( --pp-n-300 );
+	--pp-border-strong: var( --pp-n-400 );
+	--pp-text: var( --pp-n-950 );
+	--pp-text-secondary: var( --pp-n-700 );
+	--pp-text-muted: var( --pp-n-600 );
+	--pp-r-pill: 999px;
+	--pp-font-mono: ui-monospace, sfmono-regular, menlo, consolas, monospace;
+	--pp-shadow-md: 0 4px 12px rgba( 16, 17, 26, 0.08 ), 0 12px 32px -8px rgba( 16, 17, 26, 0.1 );
+	--pp-focus-ring: 0 0 0 2px var( --pp-surface ), 0 0 0 4px var( --pp-focus );
+}

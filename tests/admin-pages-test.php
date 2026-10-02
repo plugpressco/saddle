@@ -211,6 +211,29 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'data-view=""', ob_get_clean() );
 	}
 
+	/* -------------------------------------------------------------- palette */
+
+	public function test_the_palette_is_registered_but_not_enqueued_until_asked() {
+		Saddle_Modules::register_palette();
+		$this->assertTrue( wp_style_is( 'saddle-palette', 'registered' ) );
+		$this->assertFalse( wp_style_is( 'saddle-palette', 'enqueued' ) );
+	}
+
+	public function test_enqueue_palette_adds_the_sheet_and_the_body_classes() {
+		$this->assertTrue( Saddle_Modules::enqueue_palette() );
+		$this->assertTrue( wp_style_is( 'saddle-palette', 'enqueued' ) );
+
+		set_current_screen( 'dashboard' );
+		$classes = apply_filters( 'admin_body_class', '' );
+		$this->assertStringContainsString( 'saddle-palette', $classes );
+		$this->assertStringContainsString( 'pp-scope', $classes );
+		// Only the tokens: no frame rules, no wp-admin overrides.
+		$css = file_get_contents( SADDLE_DIR . 'admin/build/palette.css' );
+		$this->assertStringContainsString( '--saddle-chart-ink', $css );
+		$this->assertStringNotContainsString( '#wpcontent', $css );
+		$this->assertStringNotContainsString( '.saddle-header', $css );
+	}
+
 	public static function routes() {
 		return array(
 			'Home'                       => array( 'saddle', null, 'home', 'overview' ),

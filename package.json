@@ -6,8 +6,8 @@
 	"license": "GPL-2.0-or-later",
 	"private": true,
 	"scripts": {
-		"build": "wp-scripts build admin/src/index.js --output-path=admin/build",
-		"start": "wp-scripts start admin/src/index.js --output-path=admin/build",
+		"build": "wp-scripts build admin/src/index.js admin/src/palette.js --output-path=admin/build",
+		"start": "wp-scripts start admin/src/index.js admin/src/palette.js --output-path=admin/build",
 		"lint:js": "wp-scripts lint-js admin/src tests/js",
 		"test:js": "wp-scripts test-unit-js tests/js",
 		"format": "wp-scripts format admin/src",

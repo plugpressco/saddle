@@ -1,0 +1,198 @@
+/**
+ * The Saddle palette: tokens only, no component or frame rules.
+ *
+ * Both stylesheets include this file: style.scss (the admin frame) and
+ * palette.scss (pages outside the frame, via Saddle_Modules::enqueue_palette()).
+ * Nothing else defines these tokens (DESIGN-ALIGNMENT.md, "The family").
+ */
+
+// ---------------------------------------------------------------------------
+// Tokens, written over the design system's.
+//
+// The DS defines its tokens inside :where(), which has ZERO specificity, so a
+// plain class selector wins with no !important. Both .pp-app and the body class
+// are needed: portaled overlays (Dialog, DropdownMenu, Select, Tooltip, toasts)
+// render OUTSIDE .pp-app and would lose every token without the body half.
+//
+// This is a consumer-side override, not a library edit. Never change anything
+// under node_modules/@plugpress/ui (see the consumer agent guide).
+//
+// The surfaces are Jetpack's (its Modules screen, measured 2026-10-02, #307):
+// a #fcfcfc page under a white header band, white blocks with a #f0f0f0
+// hairline, 8px corners and one faint shadow. The greys are WordPress 7's,
+// and links use the admin color scheme's own blue.
+//
+// Contrast, measured (WCAG 2.x) on white: text #1e1e1e 16.67, #5e5e5e 6.58,
+// #717171 4.84; field edges #949494 3.03; white on the brand 6.84; every
+// status text on its tint 5.6 or more. Links follow --wp-admin-theme-color
+// (fresh #2271b1 5.17, modern #3858e9 5.36).
+// ---------------------------------------------------------------------------
+// `.pp-scope` is on every portaled layer (drawers, lists, menus, tooltips)
+// and the DS re-declares its own tokens there, so it is named here too:
+// without it those layers fall back to the DS's greys.
+body.saddle-admin-page,
+body.saddle-palette,
+.pp-scope,
+.saddle-app,
+.pp-app {
+	// The brand. Nothing reads these directly except the few places listed in
+	// DESIGN-ALIGNMENT.md; everything else maps onto WordPress's own values.
+	--saddle-brand: #0b6470; // Petrol, 6.84 on white either way round
+	--saddle-brand-hover: #08505a;
+	--saddle-brand-press: #063f47;
+	--saddle-brand-tint: #e2f1f2;
+	--saddle-brand-soft: #c5e4e7;
+
+	// WordPress 7's neutral greys (the @wordpress/components gray scale).
+	--pp-n-50: #f5f5f5;
+	--pp-n-100: #f0f0f0;
+	--pp-n-200: #f5f5f5; // -> --pp-surface-alt (code chips, sub-panels)
+	--pp-n-300: #f0f0f0; // -> --pp-border: block edges and row dividers
+	--pp-n-400: #cccccc; // -> --pp-border-strong
+	--pp-n-500: #a0a0a0;
+	// One secondary grey for every description, meta line and hint, as on
+	// Jetpack AI: 4.95 on white, 4.83 on the canvas, 4.54 on --pp-n-200.
+	--pp-n-600: #707070; // -> --pp-text-muted
+	--pp-n-700: #707070; // -> --pp-text-secondary
+	--pp-n-800: #2f2f2f;
+	--pp-n-900: #232323;
+	--pp-n-950: #1e1e1e; // -> --pp-text, 16.67
+	--pp-canvas: #fcfcfc; // the page; the header band and blocks are white
+	--pp-surface: #ffffff;
+	--pp-surface-hover: #f5f5f5;
+
+	// Links, focus, badges and spinners: the admin color scheme's own blue
+	// (WordPress sets it per scheme), so Saddle's links match the rest of
+	// wp-admin. The brand is not a link color.
+	--pp-accent: var( --wp-admin-theme-color, #2271b1 );
+	--pp-accent-hover: var( --wp-admin-theme-color-darker-10, #135e96 );
+	--pp-accent-text: var( --wp-admin-theme-color, #2271b1 );
+	--pp-accent-tint: color-mix( in srgb, var( --pp-accent ) 7%, #ffffff );
+	--pp-accent-muted: color-mix( in srgb, var( --pp-accent ) 12%, transparent );
+	--pp-on-accent: #ffffff;
+	--pp-focus: var( --wp-admin-theme-color, #2271b1 );
+
+	// Primary buttons, switches and radios when on, done steps: the brand.
+	--pp-action: var( --saddle-brand );
+	--pp-action-hover: var( --saddle-brand-hover );
+	--pp-on-action: #ffffff;
+
+	// Status, WordPress's notice family at readable strengths. The marks and
+	// the text share one value; each passes 4.5 on its tint.
+	--pp-success: #007017; // 5.86 on its tint
+	--pp-success-bg: #edfaef;
+	--pp-info: #2271b1; // 4.75 on its tint
+	--pp-info-bg: #f0f6fc;
+	--pp-warning: #8a4f00; // 6.21 on its tint
+	--pp-warning-bg: #fef8ee;
+	--pp-danger: #b32d2e; // 5.67 on its tint
+	--pp-danger-hover: #8a2424;
+	--pp-danger-bg: #fcf0f1;
+
+	// Geometry: blocks (cards, row lists, stat tiles) round at 8px like
+	// WordPress 7's cards; controls, buttons and notices stay at 4px. The pill
+	// stays for dots, badges and switches.
+	--pp-r-sm: 4px;
+	--pp-r: 4px;
+	--pp-r-lg: 8px;
+
+	// A block sits on the canvas with a soft hairline and one faint shadow,
+	// Jetpack's values. Buttons stay flat; overlays keep the DS's md/lg.
+	--pp-shadow-xs: 0 1px 2px rgba( 0, 0, 0, 0.05 );
+	--pp-shadow-sm: 0 1px 2px rgba( 0, 0, 0, 0.05 );
+	--pp-shadow-btn: none;
+	--pp-shadow-btn-hover: none;
+
+	// Three sizes, Jetpack AI's: 15 for titles (page, section), 13 for all
+	// reading text (body, descriptions, meta, buttons, tabs), 12 for badges,
+	// counts and code chips. 20 is for numbers only. Saddle's own rules use
+	// the --s-text-* names below, never a raw px value.
+	--pp-text-2xs: 12px;
+	--pp-text-xs: 13px;
+	--pp-text-sm: 13px;
+	--pp-text-md: 15px;
+	--pp-text-lg: 15px;
+	--pp-text-xl: 15px;
+	--pp-text-2xl: 15px;
+	--pp-text-3xl: 20px; // Numbers only (stat cards).
+	--pp-text-4xl: 20px;
+}
+
+// Every --s-* token aliases a shared --pp-* token, so the whole stylesheet
+// rides the palette above.
+body.saddle-admin-page,
+body.saddle-palette,
+.saddle-app {
+	--s-canvas: var( --pp-canvas );
+	--s-bg: var( --pp-surface );
+	--s-fg: var( --pp-text );
+	--s-fg-muted: var( --pp-text-secondary );
+	--s-fg-subtle: var( --pp-text-muted );
+	--s-border: var( --pp-border );
+	--s-border-strong: var( --pp-border-strong );
+	--s-surface-2: var( --pp-surface-alt );
+	--s-surface-3: var( --pp-surface-hover );
+
+	--s-action: var( --pp-action );
+	--s-on-action: var( --pp-on-action );
+
+	--s-accent: var( --pp-accent );
+	--s-accent-text: var( --pp-accent-text );
+	--s-brand: var( --saddle-brand );
+
+	--s-safe: var( --pp-success );
+	--s-safe-bg: var( --pp-success-bg );
+	--s-safe-text: var( --pp-success );
+	--s-active: var( --pp-warning );
+	--s-active-bg: var( --pp-warning-bg );
+	--s-active-text: var( --pp-warning );
+	--s-danger: var( --pp-danger );
+	--s-danger-text: var( --pp-danger );
+
+	// The Permissions lane rails are how that screen is scanned.
+	--s-rail-safe: var( --s-safe-text );
+	--s-rail-change: var( --pp-accent );
+	--s-rail-remove: var( --s-active-text );
+
+	--s-focus: var( --pp-focus );
+
+	--s-code-bg: #1e1e1e;
+
+	--s-shadow-sm: var( --pp-shadow-sm );
+	--s-shadow-md: var( --pp-shadow-md );
+
+	// The type scale (see the token block): every font-size in this file is
+	// one of these.
+	--s-text-sm: var( --pp-text-2xs ); // 12: badges, counts, code chips
+	--s-text: var( --pp-text-sm ); // 13: everything you read
+	--s-text-title: var( --pp-text-md ); // 15: page and section titles
+}
+
+// Geometry and motion ride the body too, so portaled layers (the Connect
+// drawer, lists) get them.
+body.saddle-admin-page,
+body.saddle-palette,
+.saddle-app {
+	--s-radius: var( --pp-r );
+	--s-radius-lg: var( --pp-r-lg );
+	--s-radius-pill: var( --pp-r-pill );
+	--s-ease: cubic-bezier( 0.4, 0, 0.2, 1 );
+	--s-dur: 160ms;
+}
+
+
+// Chart tokens (family look, K5). The one data series is the brand, the
+// comparison series is a flat grey, grid and labels ride the palette. A
+// vendor's bar keeps the vendor's colour; an unknown vendor is #707070,
+// never the brand. Modules read these by computed style.
+body.saddle-admin-page,
+body.saddle-palette,
+.saddle-app,
+.pp-app,
+.pp-scope {
+	--saddle-chart-ink: var( --saddle-brand );
+	--saddle-chart-ink-soft: color-mix( in srgb, var( --saddle-brand ) 14%, transparent );
+	--saddle-chart-compare: #707070;
+	--saddle-chart-grid: var( --pp-border );
+	--saddle-chart-text: var( --pp-text-secondary );
+}
