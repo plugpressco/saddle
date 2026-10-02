@@ -824,20 +824,18 @@ body.saddle-admin-page,
 		white-space: nowrap;
 	}
 
+	// The picked app's steps sit straight in the drawer: no box in a box.
 	&__steps {
 		display: grid;
-		gap: var(--pp-space-3);
-		padding: var(--pp-space-4);
-		border: 1px solid var(--s-border);
-		border-radius: var(--s-radius-lg);
-		background: var(--s-bg);
+		gap: var(--pp-space-4);
 		min-width: 0;
 	}
 
-	&__note {
-		margin: var(--pp-space-3) 0 0;
+	// One quiet line of fact (sign-in is off; a web app can't reach localhost).
+	&__hint {
+		margin: 0;
+		color: var(--s-fg-muted);
 		font-size: var( --s-text );
-		color: var(--s-fg-subtle);
 	}
 
 	&__steps-head {
@@ -905,18 +903,35 @@ body.saddle-admin-page,
 		gap: 8px;
 	}
 
+	// A command or config wraps instead of clipping in the drawer's width.
 	&__config {
 		min-width: 0;
+
+		pre,
+		code {
+			white-space: pre-wrap;
+			overflow-wrap: anywhere;
+		}
+	}
+
+	// Name / Address / Authentication for apps that take a form.
+	&__values {
+		code {
+			padding: 1px 6px;
+			border-radius: var( --s-radius );
+			background: var( --s-surface-2 );
+			font-size: var( --s-text-sm );
+			overflow-wrap: anywhere;
+		}
+
+		.pp-btn {
+			margin-inline-start: 8px;
+		}
 	}
 
 	&__key {
 		display: grid;
-		gap: var(--pp-space-3);
 		justify-items: start;
-
-		p {
-			margin: 0;
-		}
 	}
 
 	&__steps > .pp-btn--link {
