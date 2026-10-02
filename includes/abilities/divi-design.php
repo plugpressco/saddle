@@ -153,6 +153,9 @@ class Saddle_Divi_Design {
 		foreach ( $colors as $id => $entry ) {
 			$out[] = array(
 				'id'     => (string) $id,
+				// Divi names its five built-in colors ("Primary Color"); a
+				// custom one has no name in Divi 5.
+				'label'  => isset( $entry['label'] ) ? (string) $entry['label'] : '',
 				'color'  => isset( $entry['color'] ) ? (string) $entry['color'] : '',
 				'status' => isset( $entry['status'] ) ? (string) $entry['status'] : 'active',
 				'var'    => Saddle_Divi::css_var( $id ),

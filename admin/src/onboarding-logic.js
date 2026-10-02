@@ -36,6 +36,31 @@ export function resumeStep( firstRun ) {
 }
 
 /**
+ * Where a reload on the connect step resumes.
+ *
+ * The connect step makes a key and waits for the app. Reloaded after the app
+ * had connected, it started over: the wizard found the key it had just made,
+ * said the app was "already connected" and offered "Replace its key
+ * (recommended)", which would cut off the connection the owner had just set
+ * up. A used key for the chosen app means the step is done.
+ *
+ * @param {string}   step    What resumeStep() chose.
+ * @param {string}   app     The app the owner chose.
+ * @param {Object[]} clients Keys from GET /clients.
+ * @param {Function} appOf   Maps a key's label to an app key.
+ * @return {string} The step to open.
+ */
+export function resumeConnect( step, app, clients, appOf ) {
+	if ( 'connect' !== step || ! app ) {
+		return step;
+	}
+	const used = ( clients || [] ).some(
+		( c ) => c.last_used && appOf( c.label || c.name ) === app
+	);
+	return used ? stepAfter( 'connect' ) : step;
+}
+
+/**
  * @param {string} step A step from STEPS.
  * @return {string|null} The step after it, or null after the last.
  */
@@ -98,6 +123,23 @@ export function nextDelay( previous, changed ) {
 		return POLL_START;
 	}
 	return Math.min( POLL_CAP, Math.round( previous * 1.5 ) );
+}
+
+/**
+ * How the connect step's pulse reader treats its first answer.
+ *
+ * On the address path an earlier connection from the same app could match,
+ * so the first answer is only a baseline. A key made on this screen has no
+ * history: any row for it is the app connecting. Treating that first answer
+ * as a baseline lost the connection whenever it landed before the first poll
+ * (the tab was hidden when the key appeared, or the app was quicker than
+ * the poll), and the screen said "Waiting" for an app that had connected.
+ *
+ * @param {string|null} keyId `key:<uuid>` when a key was made.
+ * @return {{ignoreExisting: boolean}} Options for createPulse().
+ */
+export function connectPulseOptions( keyId ) {
+	return { ignoreExisting: ! keyId };
 }
 
 /**

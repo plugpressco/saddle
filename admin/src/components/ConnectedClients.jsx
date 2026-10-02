@@ -35,7 +35,7 @@ import {
 } from '@plugpress/ui';
 import SectionHeader from './SectionHeader';
 import { __, sprintf } from '@wordpress/i18n';
-import { saddleData, api } from '../api';
+import { saddleData, api, connectionPath } from '../api';
 import { APPS, APP_GROUPS } from '../connect-apps';
 import { relativeWhen } from '../activity-format';
 import ConnectionHealth from './ConnectionHealth';
@@ -250,7 +250,7 @@ export default function Apps( {
 		setRows( ( list ) =>
 			list.map( ( x ) => ( x.id === c.id ? { ...x, role } : x ) )
 		);
-		api( `connections/${ encodeURIComponent( c.id ) }/role`, {
+		api( connectionPath( c.id, 'role' ), {
 			method: 'POST',
 			data: { role },
 		} )
@@ -368,7 +368,7 @@ export default function Apps( {
 				<QuickStart onPick={ ( key ) => onConnect( key ) } />
 			) }
 
-			{ null !== rows && ! ( none && onConnect ) && (
+			{ ! ( none && onConnect ) && (
 				<section className="saddle-stack saddle-apps">
 					<SectionHeader
 						title={ __( 'Connected', 'saddle' ) }
@@ -385,7 +385,7 @@ export default function Apps( {
 						}
 					/>
 
-					<RowList>
+					<RowList loading={ null === rows } loadingRows={ 1 }>
 						{ null !== rows && 0 === rows.length && (
 							<Row
 								title={

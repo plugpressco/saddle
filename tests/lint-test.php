@@ -156,6 +156,29 @@ class Saddle_Lint_Test extends WP_UnitTestCase {
 		$this->assertSame( array(), $this->by_rule( $violations, 'mixed-accents' ) );
 	}
 
+	/**
+	 * A tinted near-black ground and a slate are neutrals, not accents. HSL
+	 * saturation put #1f2a24 at 0.15 and #0f172a at 0.47, so one real accent
+	 * on a dark tinted ground read as two hue families.
+	 */
+	public function test_tinted_darks_and_slates_are_neutral() {
+		foreach ( array( '#1f2a24', '#0f172a', '#1e293b', '#334155' ) as $hex ) {
+			$this->assertTrue( Saddle_Lint_Color::is_neutral( Saddle_Lint_Color::parse( $hex ) ), $hex );
+		}
+		foreach ( array( '#c8553d', '#2271b1', '#0b6470', '#8a9a5b' ) as $hex ) {
+			$this->assertFalse( Saddle_Lint_Color::is_neutral( Saddle_Lint_Color::parse( $hex ) ), $hex );
+		}
+	}
+
+	public function test_mixed_accents_silent_on_one_accent_over_a_tinted_dark() {
+		$violations = $this->lint(
+			$this->button( array( 'style' => array( 'color' => array( 'background' => '#c8553d' ) ) ) ) .
+			$this->button( array( 'style' => array( 'color' => array( 'background' => '#1f2a24' ) ) ) ) .
+			$this->button( array( 'style' => array( 'color' => array( 'background' => '#0f172a' ) ) ) )
+		);
+		$this->assertSame( array(), $this->by_rule( $violations, 'mixed-accents' ) );
+	}
+
 	/* -------- unaligned-buttons -------- */
 
 	public function test_unaligned_buttons_fires_on_disagreeing_siblings() {

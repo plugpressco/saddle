@@ -254,7 +254,8 @@ export default function Dashboard( {
 						</Button>
 					}
 				/>
-				<RowList>
+				{ /* Still loading: skeleton rows, not "Nothing yet". */ }
+				<RowList loading={ null === activity } loadingRows={ 2 }>
 					{ entries.length > 0 ? (
 						entries.map( ( e, i ) => (
 							<Row

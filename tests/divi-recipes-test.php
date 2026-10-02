@@ -112,6 +112,19 @@ class Saddle_Divi_Recipes_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'post_id=<id>', $body );
 	}
 
+	/**
+	 * The playbook said "0" is the first section. On a real page "0" is the
+	 * root placeholder and the first section is "0.0" (the surgical tests
+	 * address the first module as 0.0.0.0.0), so an agent counting from the
+	 * playbook edited the wrong node.
+	 */
+	public function test_skill_addresses_match_the_tree() {
+		$body = $this->skill_body();
+
+		$this->assertStringNotContainsString( '"0" = first section', $body );
+		$this->assertStringContainsString( '"0.0" the first section', $body );
+	}
+
 	public function test_skill_teaches_composition_and_the_stop_rebuilding_rule() {
 		$body = $this->skill_body();
 

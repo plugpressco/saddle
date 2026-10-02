@@ -5,6 +5,7 @@
 import {
 	STEPS,
 	resumeStep,
+	resumeConnect,
 	stepAfter,
 	showFirstRun,
 	tourDue,
@@ -12,6 +13,7 @@ import {
 	POLL_START,
 	POLL_CAP,
 	connectStatus,
+	connectPulseOptions,
 	tryStatus,
 	toolPhrase,
 	bareToolName,
@@ -549,5 +551,54 @@ describe( 'Home’s Setup block', () => {
 		expect( block.visible ).toBe( true );
 		expect( block.modules ).toEqual( [] );
 		expect( block.total ).toBe( 3 );
+	} );
+} );
+
+describe( 'the connect step pulse', () => {
+	it( 'keeps the first answer for a key made on this screen', () => {
+		// A key has no history, so a connection in the first answer is real.
+		expect( connectPulseOptions( 'key:abc' ) ).toEqual( {
+			ignoreExisting: false,
+		} );
+	} );
+
+	it( 'treats the first answer as a baseline on the address path', () => {
+		expect( connectPulseOptions( null ) ).toEqual( {
+			ignoreExisting: true,
+		} );
+	} );
+} );
+
+describe( 'resuming the connect step', () => {
+	const appOf = ( label ) =>
+		label.toLowerCase().includes( 'claude code' ) ? 'claude-code' : 'x';
+
+	it( 'moves on when the chosen app already used its key', () => {
+		const clients = [ { label: 'Claude Code', last_used: 1790849110 } ];
+		expect(
+			resumeConnect( 'connect', 'claude-code', clients, appOf )
+		).toBe( 'try' );
+	} );
+
+	it( 'stays when the key was never used', () => {
+		const clients = [ { label: 'Claude Code', last_used: null } ];
+		expect(
+			resumeConnect( 'connect', 'claude-code', clients, appOf )
+		).toBe( 'connect' );
+	} );
+
+	it( 'ignores another app’s key and other steps', () => {
+		const clients = [ { label: 'Cursor', last_used: 1 } ];
+		expect(
+			resumeConnect( 'connect', 'claude-code', clients, appOf )
+		).toBe( 'connect' );
+		expect(
+			resumeConnect(
+				'app',
+				'claude-code',
+				[ { label: 'Claude Code', last_used: 1 } ],
+				appOf
+			)
+		).toBe( 'app' );
 	} );
 } );

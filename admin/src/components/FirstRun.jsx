@@ -27,14 +27,17 @@ import {
 	useReducedMotion,
 } from '@plugpress/ui';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import { api, saddleData } from '../api';
+import { api, connectionPath, saddleData } from '../api';
 import ConnectWizard from './ConnectWizard';
 import WaitingLine from './WaitingLine';
 import { APPS } from '../connect-apps';
 import { AppGrid } from './ConnectApps';
+import { appKeyFromLabel } from './icons';
 import { createPulse } from '../pulse';
 import {
+	connectPulseOptions,
 	connectStatus,
+	resumeConnect,
 	resumeStep,
 	stepAfter,
 	timeoutTip,
@@ -323,13 +326,10 @@ function Choose( {
 		setSaving( true );
 		setError( null );
 		const saved = perApp
-			? api(
-					`connections/${ encodeURIComponent( connection.id ) }/role`,
-					{
-						method: 'POST',
-						data: { role: 'write' },
-					}
-			  )
+			? api( connectionPath( connection.id, 'role' ), {
+					method: 'POST',
+					data: { role: 'write' },
+			  } )
 			: // No connection is known: fall back to the site-wide tier, as
 			  // before roles were per app. Remove once every Core has roles.
 			  api( 'preferences', {
@@ -401,37 +401,55 @@ function Choose( {
 			) }
 
 			<div className="saddle-first-run__ask">
-				<h2 className="saddle-first-run__question">
-					{ canEdit
-						? sprintf(
-								/* translators: %s: the app name. */
-								__(
-									'Right now %s can draft and edit content.',
-									'saddle'
-								),
-								label
-						  )
-						: sprintf(
-								/* translators: %s: the app name. */
-								__( 'Right now %s is read-only.', 'saddle' ),
-								label
-						  ) }
-				</h2>
+				{ /* Until the app's access is known, say so: the fallback said
+				   "read-only" for an app that already had Edit content. */ }
+				{ undefined === connection && (
+					<ChecklistItem
+						status="active"
+						label={ sprintf(
+							/* translators: %s: the app name. */
+							__( 'Checking what %s may do…', 'saddle' ),
+							label
+						) }
+					/>
+				) }
+				{ undefined !== connection && (
+					<h2 className="saddle-first-run__question">
+						{ canEdit
+							? sprintf(
+									/* translators: %s: the app name. */
+									__(
+										'Right now %s can draft and edit content.',
+										'saddle'
+									),
+									label
+							  )
+							: sprintf(
+									/* translators: %s: the app name. */
+									__(
+										'Right now %s is read-only.',
+										'saddle'
+									),
+									label
+							  ) }
+					</h2>
+				) }
 				<div className="saddle-first-run__actions">
-					{ canEdit ? (
+					{ undefined !== connection && canEdit && (
 						<Button
 							variant="primary"
 							onClick={ () => onFinish( 'write' ) }
 						>
 							{ __( 'Go to Saddle', 'saddle' ) }
 						</Button>
-					) : (
+					) }
+					{ undefined !== connection && ! canEdit && (
 						<>
 							<Button
 								variant="primary"
 								onClick={ allowEditing }
 								loading={ saving }
-								disabled={ saving || undefined === connection }
+								disabled={ saving }
 							>
 								{ __(
 									'Let it draft and edit content',
@@ -502,7 +520,14 @@ export default function FirstRun( {
 
 	// Where a reload resumes. The site read is always shown again, all at once.
 	const storedApp = appMeta( firstRun.app ) ? firstRun.app : '';
-	const resumed = useRef( resumeStep( { ...firstRun, app: storedApp } ) );
+	const resumed = useRef(
+		resumeConnect(
+			resumeStep( { ...firstRun, app: storedApp } ),
+			storedApp,
+			clients,
+			appKeyFromLabel
+		)
+	);
 	const [ step, setStep ] = useState( resumed.current );
 	const [ app, setApp ] = useState(
 		'read' === resumed.current ? null : storedApp
@@ -631,7 +656,7 @@ export default function FirstRun( {
 		if ( ! pulseForConnect.current || pulseForConnect.current.id !== id ) {
 			pulseForConnect.current = {
 				id,
-				reader: createPulse( { ignoreExisting: true } ),
+				reader: createPulse( connectPulseOptions( keyId ) ),
 			};
 		}
 		const { reader } = pulseForConnect.current;

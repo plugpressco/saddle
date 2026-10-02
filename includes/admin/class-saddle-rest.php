@@ -25,7 +25,7 @@ class Saddle_REST_Admin {
 	/**
 	 * Application Password name prefix Saddle issues and filters on.
 	 */
-	const CLIENT_PREFIX = 'Saddle: ';
+	const CLIENT_PREFIX = Saddle_Connections::KEY_PREFIX;
 
 	/**
 	 * Register routes.

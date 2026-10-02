@@ -48,7 +48,16 @@ class Saddle_Divi_Schema {
 		// Divi core ships its module.json files inside the theme.
 		$template = get_template_directory();
 		if ( $template ) {
-			$dirs[] = $template . '/includes/builder-5/visual-builder/packages/module-library/src/components';
+			$components = $template . '/includes/builder-5/visual-builder/packages/module-library/src/components';
+			$dirs[]     = $components;
+
+			// Divi keeps its WooCommerce modules one level further down
+			// (components/woocommerce/<module>/module.json) and registers them
+			// only while WooCommerce is active. The one-level scan never found
+			// them, so an agent on a Divi shop could not place a product grid.
+			if ( class_exists( 'Saddle_WC' ) && Saddle_WC::is_active() ) {
+				$dirs[] = $components . '/woocommerce';
+			}
 		}
 
 		// Ecosystem plugins ship built copies at <plugin>/modules-json/ —
@@ -463,14 +472,22 @@ class Saddle_Divi_Schema {
 			$settings = isset( $attr['settings'] ) && is_array( $attr['settings'] ) ? $attr['settings'] : array();
 
 			if ( isset( $settings['decoration'] ) && is_array( $settings['decoration'] ) ) {
-				foreach ( array_keys( $settings['decoration'] ) as $g ) {
-					$base    = $attr_name . '.decoration.' . $g;
-					$entry   = array(
+				foreach ( $settings['decoration'] as $g => $group_settings ) {
+					$base      = $attr_name . '.decoration.' . $g;
+					$path      = self::distill_value_path( $render, array( $attr_name, 'decoration', $g ), $base );
+					$subgroups = self::subgroups( $group_settings );
+					if ( $base . '.desktop.value' === $path ) {
+						$path = self::font_group_path( $g, $subgroups, $base );
+					}
+					$entry = array(
 						'group'  => $g,
 						'attr'   => $attr_name,
-						'path'   => self::distill_value_path( $render, array( $attr_name, 'decoration', $g ), $base ),
+						'path'   => $path,
 						'fields' => isset( self::STYLE_FIELDS[ $g ] ) ? self::STYLE_FIELDS[ $g ] : array(),
 					);
+					if ( $subgroups ) {
+						$entry['subgroups'] = $subgroups;
+					}
 					$example = self::group_example( $render, $attr_name, $g );
 					if ( null !== $example ) {
 						$entry['example'] = $example;
@@ -514,6 +531,45 @@ class Saddle_Divi_Schema {
 			'advanced'     => $advanced,
 			'note'         => __( 'Universal styling. Call again with "group" for a group\'s fields. Style via divi-edit-module raw "attrs" at <path>.<field> with {"desktop":{"value":…}} breakpoints. A module\'s own paths never transfer to another module.', 'saddle' ),
 		);
+	}
+
+	/**
+	 * The sub-groups a decoration group's settings declare, e.g. body, link,
+	 * ul, ol, quote for a body font, or h1–h6 for a heading font.
+	 *
+	 * @param mixed $group_settings The group's entry in module.json settings.
+	 * @return string[]
+	 */
+	private static function subgroups( $group_settings ) {
+		$groups = is_array( $group_settings ) && isset( $group_settings['item']['component']['props']['groups'] ) ? $group_settings['item']['component']['props']['groups'] : array();
+
+		return is_array( $groups ) ? array_map( 'strval', array_keys( $groups ) ) : array();
+	}
+
+	/**
+	 * The path for a body or heading font group that has no default render
+	 * value to read it from. Divi nests these one key deeper than other
+	 * typography: content.decoration.bodyFont.body.font.desktop.value, and
+	 * headingFont.h1.font… through h6. The flat fallback
+	 * (bodyFont.desktop.value) saved, validated, and rendered nothing, on the
+	 * text module and 46 other attributes.
+	 *
+	 * @param string   $group     Decoration group.
+	 * @param string[] $subgroups Declared sub-groups.
+	 * @param string   $base      Dotted path to the group.
+	 * @return string
+	 */
+	private static function font_group_path( $group, array $subgroups, $base ) {
+		$first = array(
+			'bodyFont'    => 'body',
+			'headingFont' => 'h1',
+		);
+		if ( ! isset( $first[ $group ] ) ) {
+			return $base . '.desktop.value';
+		}
+		$sub = $subgroups ? $subgroups[0] : $first[ $group ];
+
+		return $base . '.' . $sub . '.font.desktop.value';
 	}
 
 	/**

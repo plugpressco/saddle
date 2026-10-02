@@ -31,6 +31,33 @@ class Saddle_Log_Test extends WP_UnitTestCase {
 		$this->assertSame( 'executed', $entry['type'], 'A plain record defaults to the executed type.' );
 	}
 
+	/**
+	 * Every connection shares the owner's WordPress user, so the activity log
+	 * said "via admin" for changes Claude Code made. The entry now names the
+	 * app, and keeps the name after the key is revoked.
+	 */
+	public function test_record_names_the_app_that_made_the_change() {
+		$admin = self::factory()->user->create( array( 'role' => 'administrator' ) );
+		wp_set_current_user( $admin );
+		list( , $item ) = WP_Application_Passwords::create_new_application_password( $admin, array( 'name' => Saddle_REST_Admin::CLIENT_PREFIX . 'Claude Code' ) );
+		$GLOBALS['wp_rest_application_password_uuid'] = $item['uuid'];
+
+		Saddle_Log::record_action( 'update-post', 1, 'Updated post #1' );
+		WP_Application_Passwords::delete_application_password( $admin, $item['uuid'] );
+		unset( $GLOBALS['wp_rest_application_password_uuid'] );
+
+		$entry = Saddle_Log::query( 1, 1 )['entries'][0];
+		$this->assertSame( 'Claude Code', $entry['app'] );
+	}
+
+	public function test_a_change_from_the_owners_browser_names_no_app() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+
+		Saddle_Log::record_action( 'set-role', 'key:x', 'Set Claude Code to "Edit content"' );
+
+		$this->assertSame( '', Saddle_Log::query( 1, 1 )['entries'][0]['app'] );
+	}
+
 	public function test_record_can_mark_an_entry_as_denied() {
 		Saddle_Log::record(
 			array(

@@ -42,7 +42,7 @@ function stopsFor( activityLabel ) {
 				visible( document.querySelector( '.saddle-status-pill' ) ),
 			title: __( 'This says whether your AI is on', 'saddle' ),
 			description: __(
-				'It shows AI on, or Paused. Click it to go to the Dashboard, where you can pause.',
+				'It shows AI on or Paused on every Saddle page. To pause, use the AI access switch on this page.',
 				'saddle'
 			),
 			side: 'bottom',

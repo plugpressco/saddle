@@ -98,12 +98,19 @@ class Saddle_Lint_Color {
 	 * Whether a parsed color is a neutral (gray/near-white/near-black) —
 	 * neutrals don't count as accent hues.
 	 *
+	 * HSL saturation alone overstates how colored a dark tint is: it divides
+	 * by a small number near black, so a tinted near-black ground (#1f2a24,
+	 * saturation 0.15) or a slate (#0f172a, 0.47) counted as an accent and a
+	 * page with one real accent read as two. Chroma (max − min) is how much
+	 * color is actually there; under 0.14 it is a tinted gray.
+	 *
 	 * @param int[] $rgb [r, g, b].
 	 * @return bool
 	 */
 	public static function is_neutral( array $rgb ) {
 		list( , $s, $l ) = self::hsl( $rgb );
-		return $s < 0.14 || $l > 0.93 || $l < 0.07;
+		$chroma          = ( max( $rgb ) - min( $rgb ) ) / 255;
+		return $s < 0.14 || $chroma < 0.14 || $l > 0.93 || $l < 0.07;
 	}
 
 	/**

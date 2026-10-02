@@ -227,6 +227,7 @@ class Saddle_Context_Bundle {
 		$design = isset( $bundle['design_system'] ) ? $bundle['design_system'] : array();
 
 		$facts = array();
+		$slugs = false;
 
 		if ( ! empty( $design['colors'] ) ) {
 			$swatches = array();
@@ -237,6 +238,7 @@ class Saddle_Context_Bundle {
 				}
 			}
 			if ( $swatches ) {
+				$slugs   = true;
 				$facts[] = sprintf(
 					/* translators: %s: comma-separated color slugs. */
 					__( 'the palette is %s', 'saddle' ),
@@ -268,8 +270,12 @@ class Saddle_Context_Bundle {
 		// No "Site design memory:" prefix and no "call context-bundle" tail: the
 		// context gives this its own heading and has already told the agent to
 		// orient with the bundle, so both would be said twice on every session.
-		$line = '- ' . ucfirst( implode( '; ', $facts ) ) . '. '
-			. __( 'Use these slugs instead of ad-hoc values.', 'saddle' );
+		// "Use these slugs" only when a palette is named: on a classic theme
+		// with patterns alone there are no slugs on the line to use.
+		$line = '- ' . ucfirst( implode( '; ', $facts ) ) . '.';
+		if ( $slugs ) {
+			$line .= ' ' . __( 'Use these slugs instead of ad-hoc values.', 'saddle' );
+		}
 
 		if ( strlen( $line ) > self::SUMMARY_BUDGET ) {
 			$line = substr( $line, 0, self::SUMMARY_BUDGET - 1 ) . '…';
