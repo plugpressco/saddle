@@ -3,9 +3,9 @@
  *
  * Powered by the PlugPress design system (@plugpress/ui). Saddle overrides the
  * shared --pp-* tokens below so the admin reads as WordPress itself: its greys,
- * its link blue, its focus color, 4px corners and hairlines instead of
- * shadows. The brand, Petrol teal, lands in a handful of places only: the
- * mark, the active tab, primary buttons, switches and radios when on, and the
+ * its link blue, its focus color, and Jetpack's soft blocks on an off-white
+ * page. The brand, Petrol teal, lands in a handful of places only: the
+ * mark, primary buttons, switches and radios when on, and the
  * selected access level. Light-only. See DESIGN-ALIGNMENT.md for the palette,
  * the type scale and where the brand may appear.
  */
@@ -21,9 +21,10 @@
 // This is a consumer-side override, not a library edit. Never change anything
 // under node_modules/@plugpress/ui (see the consumer agent guide).
 //
-// The surfaces are WordPress 7's own (core's Connectors screen, measured
-// 2026-10-01): one white canvas, white blocks on a #ddd hairline with 8px
-// corners, neutral greys, and links in the admin color scheme's own blue.
+// The surfaces are Jetpack's (its Modules screen, measured 2026-10-02, #307):
+// a #fcfcfc page under a white header band, white blocks with a #f0f0f0
+// hairline, 8px corners and one faint shadow. The greys are WordPress 7's,
+// and links use the admin color scheme's own blue.
 //
 // Contrast, measured (WCAG 2.x) on white: text #1e1e1e 16.67, #5e5e5e 6.58,
 // #717171 4.84; field edges #949494 3.03; white on the brand 6.84; every
@@ -49,15 +50,17 @@ body.saddle-admin-page,
 	--pp-n-50: #f5f5f5;
 	--pp-n-100: #f0f0f0;
 	--pp-n-200: #f5f5f5; // -> --pp-surface-alt (code chips, sub-panels)
-	--pp-n-300: #dddddd; // -> --pp-border
+	--pp-n-300: #f0f0f0; // -> --pp-border: block edges and row dividers
 	--pp-n-400: #cccccc; // -> --pp-border-strong
 	--pp-n-500: #a0a0a0;
-	--pp-n-600: #717171; // -> --pp-text-muted, 4.84
-	--pp-n-700: #5e5e5e; // -> --pp-text-secondary, 6.58
+	// One secondary grey for every description, meta line and hint, as on
+	// Jetpack AI: 4.95 on white, 4.83 on the canvas, 4.54 on --pp-n-200.
+	--pp-n-600: #707070; // -> --pp-text-muted
+	--pp-n-700: #707070; // -> --pp-text-secondary
 	--pp-n-800: #2f2f2f;
 	--pp-n-900: #232323;
 	--pp-n-950: #1e1e1e; // -> --pp-text, 16.67
-	--pp-canvas: #ffffff; // one surface: page, header band and blocks
+	--pp-canvas: #fcfcfc; // the page; the header band and blocks are white
 	--pp-surface: #ffffff;
 	--pp-surface-hover: #f5f5f5;
 
@@ -96,15 +99,21 @@ body.saddle-admin-page,
 	--pp-r: 4px;
 	--pp-r-lg: 8px;
 
-	// Hairlines, not elevation. Overlays keep the DS's own md/lg shadows.
-	--pp-shadow-xs: none;
-	--pp-shadow-sm: none;
+	// A block sits on the canvas with a soft hairline and one faint shadow,
+	// Jetpack's values. Buttons stay flat; overlays keep the DS's md/lg.
+	--pp-shadow-xs: 0 1px 2px rgba( 0, 0, 0, 0.05 );
+	--pp-shadow-sm: 0 1px 2px rgba( 0, 0, 0, 0.05 );
 	--pp-shadow-btn: none;
 	--pp-shadow-btn-hover: none;
 
-	// One type scale: 15 page title, 14 section, 13 body and block titles,
-	// 12 meta. The DS's larger steps are pulled in so nothing shouts.
-	--pp-text-md: 14px;
+	// Three sizes, Jetpack AI's: 15 for titles (page, section), 13 for all
+	// reading text (body, descriptions, meta, buttons, tabs), 12 for badges,
+	// counts and code chips. 20 is for numbers only. Saddle's own rules use
+	// the --s-text-* names below, never a raw px value.
+	--pp-text-2xs: 12px;
+	--pp-text-xs: 13px;
+	--pp-text-sm: 13px;
+	--pp-text-md: 15px;
 	--pp-text-lg: 15px;
 	--pp-text-xl: 15px;
 	--pp-text-2xl: 15px;
@@ -177,7 +186,7 @@ body.saddle-admin-page,
 .saddle-app,
 body.saddle-admin-page {
 	.pp-card__title {
-		font-size: 13px;
+		font-size: var( --s-text );
 		font-weight: 600;
 	}
 
@@ -199,6 +208,18 @@ body.saddle-admin-page {
 	// WordPress's Connectors screen, not in a grey square.
 	.pp-rowlist__icon {
 		background: transparent;
+	}
+
+	// A row list is a block like a card, so it gets the card's shadow; the
+	// kit draws it flat. A block nested in another block stays flat.
+	.pp-rowlist {
+		box-shadow: var( --pp-shadow-xs );
+	}
+
+	.pp-card .pp-rowlist,
+	.saddle-adv .pp-rowlist,
+	.saddle-adv .pp-card {
+		box-shadow: none;
 	}
 }
 
@@ -243,6 +264,12 @@ body.saddle-admin-page,
 
 	--s-shadow-sm: var( --pp-shadow-sm );
 	--s-shadow-md: var( --pp-shadow-md );
+
+	// The type scale (see the token block): every font-size in this file is
+	// one of these.
+	--s-text-sm: var( --pp-text-2xs ); // 12: badges, counts, code chips
+	--s-text: var( --pp-text-sm ); // 13: everything you read
+	--s-text-title: var( --pp-text-md ); // 15: page and section titles
 }
 
 // ---------- App shell: Saddle owns its canvas on this screen ----------
@@ -355,7 +382,7 @@ body.saddle-admin-page,
 		border-radius: var( --s-radius-pill );
 		background: var(--s-bg);
 		color: var( --s-fg-muted );
-		font-size: 12px;
+		font-size: var( --s-text );
 		line-height: 1;
 		cursor: pointer;
 
@@ -373,7 +400,7 @@ body.saddle-admin-page,
 	&__head {
 		margin-bottom: 8px;
 		color: var( --s-fg-subtle );
-		font-size: 12px;
+		font-size: var( --s-text );
 	}
 
 	// Saddle's own notices that lost the frame's one slot. Drawn in the
@@ -415,9 +442,8 @@ body.saddle-admin-page,
 
 // The header band: white, the full width of wp-admin's content area, one
 // hairline under it. The only place the brand shows besides buttons and
-// switches is here: the mark and the active tab.
+// switches is here: the mark.
 .saddle-header {
-	--pp-accent: var( --saddle-brand ); // the active tab's indicator
 	padding: 16px 24px;
 	background: var( --s-bg );
 	border-block-end: 1px solid var( --s-border );
@@ -442,7 +468,7 @@ body.saddle-admin-page,
 		gap: 8px;
 		margin: 0;
 		padding: 0;
-		font-size: 15px;
+		font-size: var( --s-text-title );
 		font-weight: 400;
 		line-height: 1.4;
 		color: var( --s-fg-muted );
@@ -487,6 +513,8 @@ body.saddle-admin-page,
 
 	// The tabs sit on the band's bottom hairline; the band draws the line, so
 	// the tab row's own border goes. Scrolls sideways when a module has many.
+	// Jetpack AI's (WordPress 7's minimal) tabs: 48px tall, 13px regular, every
+	// tab in the text color, and a thin grey line under the active one.
 	&__tabs {
 		margin-block-start: 8px;
 		margin-inline: -4px;
@@ -496,8 +524,24 @@ body.saddle-admin-page,
 		--pp-tabs-gap: 0;
 
 		.pp-tabs {
+			gap: 16px;
 			margin: 0;
 			border-block-end: 0;
+		}
+
+		.pp-tabs__tab {
+			min-block-size: 48px;
+			padding-block: 0;
+			font-size: var( --s-text );
+			font-weight: 400;
+			letter-spacing: normal;
+			color: var( --s-fg );
+		}
+
+		.pp-tabs__indicator {
+			height: 1.5px;
+			border-radius: 0;
+			background: #6e6e6e;
 		}
 	}
 }
@@ -521,7 +565,7 @@ body.saddle-admin-page,
 	padding: 16px 24px;
 	border-block-start: 1px solid var( --s-border );
 	color: var( --s-fg-subtle );
-	font-size: 12px;
+	font-size: var( --s-text );
 
 	&__brand {
 		display: inline-flex;
@@ -557,7 +601,7 @@ body.saddle-admin-page,
 	gap: 7px;
 	padding: 5px 12px;
 	border-radius: var(--s-radius-pill);
-	font-size: 12px;
+	font-size: var( --s-text-sm );
 	font-weight: 550;
 	line-height: 1.4;
 	text-decoration: none;
@@ -612,7 +656,7 @@ body.saddle-admin-page,
 
 	&__title {
 		margin: 0;
-		font-size: 14px;
+		font-size: var( --s-text-title );
 		font-weight: 600;
 		line-height: 1.4;
 	}
@@ -620,7 +664,7 @@ body.saddle-admin-page,
 	&__desc {
 		margin: 2px 0 0;
 		color: var(--s-fg-subtle);
-		font-size: 12px;
+		font-size: var( --s-text );
 	}
 
 	&__actions {
@@ -674,14 +718,14 @@ body.saddle-admin-page,
 
 	&__group-title {
 		margin: 0;
-		font-size: 12px;
+		font-size: var( --s-text );
 		font-weight: 600;
 		color: var(--s-fg-muted);
 	}
 
 	&__other {
 		margin: 0;
-		font-size: 12px;
+		font-size: var( --s-text );
 		color: var(--s-fg-subtle);
 	}
 
@@ -702,7 +746,7 @@ body.saddle-admin-page,
 		background: var(--s-bg);
 		color: var(--s-fg);
 		font: inherit;
-		font-size: 13px;
+		font-size: var( --s-text );
 		text-align: start;
 		cursor: pointer;
 
@@ -743,7 +787,7 @@ body.saddle-admin-page,
 
 	&__note {
 		margin: var(--pp-space-3) 0 0;
-		font-size: 12px;
+		font-size: var( --s-text );
 		color: var(--s-fg-subtle);
 	}
 
@@ -759,7 +803,7 @@ body.saddle-admin-page,
 		align-items: center;
 		gap: 10px;
 		margin: 0;
-		font-size: 13px;
+		font-size: var( --s-text );
 		font-weight: 600;
 
 		img {
@@ -797,7 +841,7 @@ body.saddle-admin-page,
 				border: 1px solid var(--s-border);
 				border-radius: 50%;
 				color: var(--s-fg-muted);
-				font-size: 12px;
+				font-size: var( --s-text-sm );
 			}
 		}
 
@@ -836,7 +880,7 @@ body.saddle-admin-page,
 		gap: 8px;
 		margin: 0;
 		color: var(--s-fg-muted);
-		font-size: 13px;
+		font-size: var( --s-text );
 	}
 
 	&__spinner {
@@ -949,7 +993,7 @@ body.saddle-admin-page,
 
 	&__title {
 		margin: 0 0 6px;
-		font-size: 15px;
+		font-size: var( --s-text-title );
 		line-height: 1.4;
 		font-weight: 600;
 		text-wrap: balance;
@@ -957,7 +1001,7 @@ body.saddle-admin-page,
 
 	&__lead {
 		margin: 0 0 20px;
-		font-size: 13px;
+		font-size: var( --s-text );
 		line-height: 1.6;
 		color: var(--s-fg-muted);
 		text-wrap: pretty;
@@ -988,7 +1032,7 @@ body.saddle-admin-page,
 
 	&__question {
 		margin: 0 0 8px;
-		font-size: 14px;
+		font-size: var( --s-text-title );
 		font-weight: 600;
 	}
 
@@ -1016,7 +1060,7 @@ body.saddle-admin-page,
 
 .saddle-first-run__foot {
 	margin: 18px 0 0;
-	font-size: 13px;
+	font-size: var( --s-text );
 	line-height: 1.55;
 	color: var(--s-fg-subtle);
 }
@@ -1057,14 +1101,14 @@ body.saddle-admin-page,
 // from the link beside it.
 .saddle-home__value {
 	color: var(--s-fg-subtle);
-	font-size: 13px;
+	font-size: var( --s-text );
 	font-variant-numeric: tabular-nums;
 }
 
 // Still used by Context (Guidance).
 .saddle-card__empty {
 	margin: 0 0 12px;
-	font-size: 13px;
+	font-size: var( --s-text );
 	line-height: 1.55;
 	color: var(--s-fg-muted);
 }
@@ -1093,14 +1137,14 @@ body.saddle-admin-page,
 
 		h3 {
 			margin: 0;
-			font-size: 13px;
+			font-size: var( --s-text );
 			font-weight: 600;
 			color: var(--s-fg);
 		}
 
 		p {
 			margin: 0;
-			font-size: 13px;
+			font-size: var( --s-text );
 			line-height: 1.55;
 			color: var(--s-fg-muted);
 		}
@@ -1139,7 +1183,7 @@ body.saddle-admin-page,
 
 	&__h {
 		margin: 18px 0 8px;
-		font-size: 13px;
+		font-size: var( --s-text );
 		font-weight: 600;
 		letter-spacing: 0.01em;
 		color: var(--s-fg);
@@ -1149,14 +1193,14 @@ body.saddle-admin-page,
 		}
 
 		&--sub {
-			font-size: 12px;
+			font-size: var( --s-text );
 			color: var(--s-fg-muted);
 		}
 	}
 
 	&__p {
 		margin: 0 0 8px;
-		font-size: 13px;
+		font-size: var( --s-text );
 		line-height: 1.6;
 		color: var(--s-fg-muted);
 	}
@@ -1169,7 +1213,7 @@ body.saddle-admin-page,
 		gap: 5px;
 
 		li {
-			font-size: 13px;
+			font-size: var( --s-text );
 			line-height: 1.55;
 			color: var(--s-fg-muted);
 		}
@@ -1238,7 +1282,7 @@ body.saddle-admin-page,
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
-	font-size: 12px;
+	font-size: var( --s-text );
 	color: var(--s-fg-muted);
 }
 
@@ -1305,7 +1349,7 @@ body.saddle-admin-page,
 }
 
 .saddle-role__hint {
-	font-size: 12px;
+	font-size: var( --s-text );
 	color: var(--s-fg-muted);
 }
 
@@ -1329,23 +1373,93 @@ body.saddle-admin-page,
 	}
 }
 
-// The one quiet line: the site's address for AI apps, and Copy.
-.saddle-apps__address {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: 8px;
-	margin: 0;
-	font-size: 12px;
-	color: var(--s-fg-subtle);
+// The site's address for AI apps: one row in its own block, with Copy.
+.saddle-apps__url {
+	display: inline-block;
+	margin-block-start: 2px;
+	padding: 2px 6px;
+	border-radius: var( --s-radius );
+	background: var( --s-surface-2 );
+	color: var( --s-fg );
+	font-size: var( --s-text-sm );
+	overflow-wrap: anywhere;
+}
 
-	code {
-		padding: 4px 8px;
-		border: 1px solid var(--s-border);
-		border-radius: var(--s-radius);
-		background: var(--s-surface-2);
-		font-size: 12px;
-		overflow-wrap: anywhere;
+// Nothing connected yet: a card per app, grouped, like Jetpack AI's Quick
+// start. The cards are blocks (the soft edge and shadow); the whole card is
+// the button.
+.saddle-quick {
+	&__group {
+		display: grid;
+		gap: var( --pp-space-2 );
+	}
+
+	&__group-title {
+		margin: 0;
+		font-size: var( --s-text );
+		font-weight: 600;
+		color: var( --s-fg-muted );
+	}
+
+	&__cards {
+		display: grid;
+		grid-template-columns: repeat( auto-fill, minmax( 220px, 1fr ) );
+		gap: var( --pp-space-3 );
+	}
+
+	&__card {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		min-width: 0;
+		padding: 14px 16px;
+		border: 1px solid var( --s-border );
+		border-radius: var( --s-radius-lg );
+		background: var( --s-bg );
+		box-shadow: var( --s-shadow-sm );
+		color: var( --s-fg );
+		font: inherit;
+		text-align: start;
+		cursor: pointer;
+		transition: border-color var( --s-dur ) var( --s-ease );
+
+		&:hover {
+			border-color: var( --s-border-strong );
+		}
+
+		img {
+			flex: 0 0 auto;
+		}
+	}
+
+	&__text {
+		display: grid;
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	&__name {
+		font-size: var( --s-text );
+		font-weight: 600;
+	}
+
+	&__kind {
+		overflow: hidden;
+		color: var( --s-fg-muted );
+		font-size: var( --s-text );
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	&__go {
+		flex: 0 0 auto;
+		color: var( --s-fg-muted );
+	}
+
+	&__other {
+		margin: 0;
+		color: var( --s-fg-muted );
+		font-size: var( --s-text );
 	}
 }
 
@@ -1375,7 +1489,7 @@ body.saddle-admin-page,
 
 .saddle-apps__fieldlabel {
 	color: var( --s-fg-muted );
-	font-size: 12px;
+	font-size: var( --s-text );
 	font-weight: 600;
 }
 
@@ -1390,14 +1504,14 @@ body.saddle-admin-page,
 	align-items: center;
 	gap: 6px;
 	margin: 0;
-	font-size: 12px;
+	font-size: var( --s-text );
 	color: var(--s-fg-subtle);
 }
 
 
 .saddle-wizard__lead--muted {
 	color: var(--s-fg-subtle);
-	font-size: 13px;
+	font-size: var( --s-text );
 }
 
 /* ---------- Connect wizard ---------- */
@@ -1439,13 +1553,13 @@ body.saddle-admin-page,
 
 .saddle-wizard__title {
 	margin: 0 0 8px;
-	font-size: 15px;
+	font-size: var( --s-text-title );
 	font-weight: 600;
 }
 
 .saddle-wizard__lead {
 	margin: 0 0 20px;
-	font-size: 14px;
+	font-size: var( --s-text );
 	line-height: 1.6;
 	color: var(--s-fg-muted);
 	max-width: 60ch;
@@ -1472,14 +1586,14 @@ body.saddle-admin-page,
 
 	&-note {
 		margin: 6px 0 0;
-		font-size: 12.5px;
+		font-size: var( --s-text );
 		color: var(--s-fg-muted);
 	}
 }
 
 .saddle-wizard__hint {
 	margin: 0 0 16px;
-	font-size: 12.5px;
+	font-size: var( --s-text );
 	color: var(--s-fg-subtle);
 }
 
@@ -1503,7 +1617,7 @@ body.saddle-admin-page,
 	display: flex;
 	align-items: center;
 	margin-top: 22px;
-	font-size: 13.5px;
+	font-size: var( --s-text );
 	color: var(--s-fg-muted);
 }
 
@@ -1514,7 +1628,7 @@ body.saddle-admin-page,
 	ul {
 		margin: 0 0 10px;
 		padding-left: 18px;
-		font-size: 13px;
+		font-size: var( --s-text );
 		line-height: 1.55;
 		color: var(--s-fg-muted);
 
@@ -1579,7 +1693,7 @@ body.saddle-admin-page,
    one-line status paragraphs. */
 .saddle-health {
 	margin-top: 14px;
-	font-size: 13px;
+	font-size: var( --s-text );
 
 	&--checking {
 		display: flex;
@@ -1631,7 +1745,7 @@ body.saddle-admin-page,
 .saddle-activity {
 	&__title {
 		margin: 0 0 4px;
-		font-size: 14px;
+		font-size: var( --s-text-title );
 		font-weight: 600;
 	}
 
@@ -1645,7 +1759,7 @@ body.saddle-admin-page,
 
 	&__total {
 		margin-inline-start: auto;
-		font-size: 12px;
+		font-size: var( --s-text );
 		color: var(--s-fg-subtle);
 		font-variant-numeric: tabular-nums;
 	}
@@ -1662,7 +1776,7 @@ body.saddle-admin-page,
 
 	&__daylabel {
 		margin: 0 0 8px;
-		font-size: 12px;
+		font-size: var( --s-text-sm );
 		font-weight: 620;
 		letter-spacing: 0.04em;
 		text-transform: uppercase;
@@ -1710,7 +1824,7 @@ body.saddle-admin-page,
 
 	&__summary {
 		display: block;
-		font-size: 13.5px;
+		font-size: var( --s-text );
 		line-height: 1.5;
 		overflow-wrap: anywhere;
 	}
@@ -1720,14 +1834,14 @@ body.saddle-admin-page,
 		align-items: center;
 		gap: 8px;
 		margin-top: 3px;
-		font-size: 11.5px;
+		font-size: var( --s-text );
 		color: var(--s-fg-subtle);
 	}
 
 
 	&__time {
 		flex: 0 0 auto;
-		font-size: 11.5px;
+		font-size: var( --s-text );
 		color: var(--s-fg-subtle);
 		font-variant-numeric: tabular-nums;
 		margin-top: 2px;
@@ -1756,7 +1870,7 @@ body.saddle-admin-page,
 
 	&__agent {
 		margin: 0;
-		font-size: 12px;
+		font-size: var( --s-text );
 		color: var(--s-fg-subtle);
 	}
 }
@@ -1783,7 +1897,7 @@ body.saddle-admin-page,
 
 	&__status {
 		margin: 0;
-		font-size: 12px;
+		font-size: var( --s-text );
 		color: var(--s-fg-subtle);
 	}
 }
@@ -1808,7 +1922,7 @@ body.saddle-admin-page,
 	background: var(--s-surface-2);
 	border: 1px solid var(--s-border);
 	color: var(--s-fg-muted);
-	font-size: 13px;
+	font-size: var( --s-text );
 	font-weight: 600;
 }
 
@@ -1826,7 +1940,7 @@ body.saddle-admin-page,
 
 .saddle-svc__h {
 	margin: 0;
-	font-size: 13px;
+	font-size: var( --s-text );
 	font-weight: 600;
 }
 
@@ -1837,7 +1951,7 @@ body.saddle-admin-page,
 }
 
 .saddle-svc__note {
-	font-size: 12px;
+	font-size: var( --s-text );
 }
 
 .saddle-svc__actions {
@@ -1856,7 +1970,7 @@ body.saddle-admin-page,
 	border-radius: var(--s-radius-lg);
 
 	code {
-		font-size: 12px;
+		font-size: var( --s-text-sm );
 	}
 }
 
@@ -1893,7 +2007,7 @@ body.saddle-admin-page,
 		margin: 0;
 		padding: 0;
 		background: none;
-		font-size: 12px;
+		font-size: var( --s-text-sm );
 	}
 }
 
@@ -1906,7 +2020,7 @@ body.saddle-admin-page,
 
 	span {
 		color: var(--s-fg-muted);
-		font-size: 12px;
+		font-size: var( --s-text );
 	}
 }
 
@@ -1923,7 +2037,7 @@ body.saddle-admin-page,
 
 .saddle-svc__role {
 	color: var(--s-fg-muted);
-	font-size: 12px;
+	font-size: var( --s-text );
 	white-space: nowrap;
 }
 
@@ -1931,7 +2045,7 @@ body.saddle-admin-page,
 	display: flex;
 	flex-wrap: wrap;
 	gap: var(--pp-space-4);
-	font-size: 12px;
+	font-size: var( --s-text );
 }
 
 /* ---------- Settings (#285) ---------- */
@@ -1940,6 +2054,7 @@ body.saddle-admin-page,
 	background: var(--s-bg);
 	border: 1px solid var(--s-border);
 	border-radius: var(--s-radius-lg);
+	box-shadow: var(--s-shadow-sm);
 	overflow: hidden;
 
 	> .pp-collapsible + .pp-collapsible {
@@ -1954,7 +2069,7 @@ body.saddle-admin-page,
 		justify-content: space-between;
 		text-align: start;
 		padding: var(--pp-space-3) var(--pp-space-4);
-		font-size: 13px;
+		font-size: var( --s-text );
 		font-weight: 600;
 	}
 
@@ -1997,7 +2112,7 @@ body.saddle-admin-page,
 		margin-inline: var(--pp-space-4);
 		padding: 6px 10px;
 		font: inherit;
-		font-size: 13px;
+		font-size: var( --s-text );
 		color: var(--s-fg);
 		background: var(--s-bg);
 		border: 1px solid var(--s-border);
@@ -2012,7 +2127,7 @@ body.saddle-admin-page,
 	&__area {
 		margin: 0;
 		padding: var(--pp-space-1) var(--pp-space-4);
-		font-size: 12px;
+		font-size: var( --s-text );
 		font-weight: 600;
 		color: var(--s-fg-subtle);
 	}
@@ -2020,7 +2135,7 @@ body.saddle-admin-page,
 	&__empty {
 		margin: 0;
 		padding-inline: var(--pp-space-4);
-		font-size: 12px;
+		font-size: var( --s-text );
 		color: var(--s-fg-subtle);
 	}
 }
@@ -2030,12 +2145,12 @@ body.saddle-admin-page,
 .saddle-mcp-diag {
 	&__health {
 		margin: 0 0 8px;
-		font-size: 13px;
+		font-size: var( --s-text );
 	}
 
 	&__degraded {
 		margin: 0 0 12px;
-		font-size: 13px;
+		font-size: var( --s-text );
 		color: var(--s-danger-text);
 	}
 
@@ -2050,14 +2165,14 @@ body.saddle-admin-page,
 	&__hint,
 	&__empty {
 		margin: 0 0 12px;
-		font-size: 13px;
+		font-size: var( --s-text );
 		color: var(--s-fg-subtle);
 	}
 
 	&__table {
 		width: 100%;
 		border-collapse: collapse;
-		font-size: 13px;
+		font-size: var( --s-text );
 
 		th,
 		td {
