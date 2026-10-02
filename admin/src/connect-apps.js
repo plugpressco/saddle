@@ -49,7 +49,7 @@ export const APPS = [
 		viaAddress: true,
 		viaKey: true,
 		howAddress: __(
-			'In Claude (claude.ai or the desktop app): Settings → Connectors → Add custom connector. Give it a name, paste the address, leave the OAuth client ID and secret blank, and click Add. Claude sends you here to approve it.',
+			'In Claude: Settings → Connectors → Add custom connector.',
 			'saddle'
 		),
 		// Older desktop builds only speak the local flavour of MCP, so the key
@@ -60,7 +60,7 @@ export const APPS = [
 			'saddle'
 		),
 		next: __(
-			'Open a chat, make sure the connector is enabled, and ask Claude about your site.',
+			'Turn the connector on in a chat and ask Claude about your site.',
 			'saddle'
 		),
 	},
@@ -71,7 +71,7 @@ export const APPS = [
 		viaAddress: true,
 		viaKey: true,
 		howAddress: __(
-			'Paste this into your terminal and press Enter. Then run claude, type /mcp, pick this server and choose Authenticate — it opens your browser and sends you here to approve it.',
+			'Paste this into your terminal, then run claude, type /mcp and choose Authenticate.',
 			'saddle'
 		),
 		how: __(
@@ -95,7 +95,7 @@ export const APPS = [
 		viaAddress: true,
 		viaKey: false,
 		howAddress: __(
-			'In ChatGPT on the web: turn on Developer mode (Settings → Apps & Connectors → Advanced settings), then create a connector. Paste the address, choose OAuth, and leave the client ID and secret blank. ChatGPT sends you here to approve it — the connector then works in the desktop app too.',
+			'In ChatGPT on the web: turn on Developer mode under Settings → Apps & Connectors → Advanced settings, then create a connector with OAuth.',
 			'saddle'
 		),
 		// Worth saying on the screen rather than in a support email: OpenAI has
@@ -104,7 +104,7 @@ export const APPS = [
 		// offered every tool and still decline to use the ones that change
 		// anything. That looks identical to a Saddle permission problem.
 		next: __(
-			'Enable the connector in a ChatGPT chat and ask it about your site. If it can read but refuses to change anything, check your ChatGPT plan — write-capable custom connectors have been limited to Business, Enterprise and Edu workspaces.',
+			'Turn the connector on in a chat and ask ChatGPT about your site. If it can read but not change anything, that is a ChatGPT plan limit.',
 			'saddle'
 		),
 	},
@@ -118,7 +118,7 @@ export const APPS = [
 		viaAddress: true,
 		viaKey: true,
 		howAddress: __(
-			'Codex reads a settings file. Open ~/.codex/config.toml, paste this at the end and save. Then run the login command from the last line in a terminal — Codex opens your browser and sends you here to approve it.',
+			'Paste this at the end of ~/.codex/config.toml, then run the login command from its last line.',
 			'saddle'
 		),
 		how: __(
@@ -137,7 +137,7 @@ export const APPS = [
 		viaAddress: true,
 		viaKey: true,
 		howAddress: __(
-			'In Cursor: Settings → MCP → Add new server. Paste this (or save it as .cursor/mcp.json). Cursor shows a “Needs login” button next to the server — click it and approve the connection here.',
+			'In Cursor: Settings → MCP → Add new server. Paste this, then click “Needs login” beside the server.',
 			'saddle'
 		),
 		how: __(
@@ -153,7 +153,7 @@ export const APPS = [
 		viaAddress: true,
 		viaKey: true,
 		howAddress: __(
-			'Save this as .vscode/mcp.json in your project, then start the server from the MCP: List Servers command. VS Code opens your browser and sends you here to approve it.',
+			'Save this as .vscode/mcp.json, then start the server from MCP: List Servers.',
 			'saddle'
 		),
 		how: __(
@@ -172,7 +172,7 @@ export const APPS = [
 		viaAddress: true,
 		viaKey: true,
 		howAddress: __(
-			'Paste this into your terminal and press Enter. The first time Gemini uses the server it opens your browser and sends you here to approve it.',
+			'Paste this into your terminal and press Enter.',
 			'saddle'
 		),
 		how: __(
@@ -191,7 +191,7 @@ export const APPS = [
 		viaAddress: true,
 		viaKey: true,
 		howAddress: __(
-			'In Windsurf: Settings → MCP → Add custom server. Paste this and save. Windsurf opens your browser and sends you here to approve it.',
+			'In Windsurf: Settings → MCP → Add custom server. Paste this and save.',
 			'saddle'
 		),
 		how: __(
@@ -211,7 +211,7 @@ export const APPS = [
 		viaAddress: true,
 		viaKey: true,
 		howAddress: __(
-			'Paste these two lines into a terminal on the computer running OpenClaw. The second one opens your browser and sends you here to approve it.',
+			'Paste these two lines into a terminal on the computer running OpenClaw.',
 			'saddle'
 		),
 		how: __(
@@ -230,7 +230,7 @@ export const APPS = [
 		viaAddress: true,
 		viaKey: false,
 		howAddress: __(
-			'In Grok (grok.com or the app): Connectors → New Connector → Custom. Paste the address and continue. Grok sends you here to approve it. On a Grok Business team, an admin adds the connector first.',
+			'In Grok: Connectors → New Connector → Custom. On a Grok Business team, an admin adds it.',
 			'saddle'
 		),
 		next: __(
@@ -245,7 +245,7 @@ export const APPS = [
 		viaAddress: true,
 		viaKey: true,
 		howAddress: __(
-			'Most AI apps accept this standard setup — look for “Add MCP server” in their settings and paste it there. If the app supports signing in, it opens your browser and sends you here to approve it; if it only takes a key, use the key instead.',
+			'Find “Add MCP server” in your app’s settings and paste this. If it only takes a key, use the key instead.',
 			'saddle'
 		),
 		how: __(

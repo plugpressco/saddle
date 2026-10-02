@@ -16,13 +16,20 @@
  * `/connections/pulse` and says the moment that app connects.
  */
 import { useState, useEffect, useRef } from '@wordpress/element';
-import { Button, CodeBlock, Notice, StatusDot } from '@plugpress/ui';
+import {
+	Button,
+	CodeBlock,
+	CopyButton,
+	KeyValueList,
+	StatusDot,
+} from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { api, saddleData } from '../api';
 import {
 	APPS,
 	APP_GROUPS,
 	MCP_URL,
+	SLUG,
 	buildConfig,
 	installLinks,
 } from '../connect-apps';
@@ -34,7 +41,9 @@ const IS_LOCAL = /(?:localhost|127\.0\.0\.1|\.test|\.local)(?::|\/|$)/i.test(
 	MCP_URL
 );
 
-// Apps that connect from their own servers, not from this computer.
+// Apps that connect from their own servers, not from this computer. They
+// also take the address in a form (name, address, authentication) rather
+// than a config file or a command.
 const WEB_APPS = [ 'claude', 'chatgpt', 'grok' ];
 
 // Every 3 seconds while the tab is visible, for up to 3 minutes.
@@ -166,9 +175,8 @@ export function AppGrid( { onPick, connected = new Set() } ) {
 				</div>
 			) ) }
 			<p className="saddle-connect__other">
-				{ __( 'Not listed?', 'saddle' ) }{ ' ' }
 				<Button variant="link" onClick={ () => onPick( 'other' ) }>
-					{ __( 'Connect any MCP app', 'saddle' ) }
+					{ __( 'Another MCP app', 'saddle' ) }
 				</Button>
 			</p>
 		</div>
@@ -236,11 +244,7 @@ export default function ConnectApps( {
 					<div className="saddle-connect__steps-head">
 						<h3 className="saddle-connect__steps-title">
 							<AppLogo app={ app.key } />
-							{ sprintf(
-								/* translators: %s: app name, such as Claude. */
-								__( 'Connect %s', 'saddle' ),
-								app.label
-							) }
+							{ app.label }
 						</h3>
 						<Button
 							variant="link"
@@ -252,44 +256,46 @@ export default function ConnectApps( {
 					</div>
 
 					{ oauth && ! signInOn && app.viaAddress && (
-						<Notice tone="info">
+						<p className="saddle-connect__hint">
 							{ oauth.ready
-								? __(
-										'Sign-in for apps is off, so apps connect with a key. Turn it on to connect with the address alone.',
-										'saddle'
+								? sprintf(
+										/* translators: %s: app name, such as Claude. */
+										__(
+											'Sign-in for apps is off, so %s connects with a key.',
+											'saddle'
+										),
+										app.label
 								  )
-								: __(
-										'This site can’t use sign-in for apps yet: it needs HTTPS and a permalink setting other than Plain. Apps connect with a key instead.',
-										'saddle'
+								: sprintf(
+										/* translators: %s: app name, such as Claude. */
+										__(
+											'Sign-in for apps needs HTTPS and pretty permalinks, so %s connects with a key.',
+											'saddle'
+										),
+										app.label
 								  ) }
 							{ oauth.ready && (
-								<span className="saddle-notice__actions">
-									<Button
-										variant="secondary"
-										size="sm"
-										href={ settingsUrl }
-									>
-										{ __(
-											'Go to the sign-in setting',
-											'saddle'
-										) }
-									</Button>
-								</span>
+								<>
+									{ ' ' }
+									<a href={ settingsUrl }>
+										{ __( 'Turn it on', 'saddle' ) }
+									</a>
+								</>
 							) }
-						</Notice>
+						</p>
 					) }
 
 					{ unreachable && (
-						<Notice tone="warning">
+						<p className="saddle-connect__hint">
 							{ sprintf(
 								/* translators: %s: app name, such as ChatGPT. */
 								__(
-									'%s connects from its own servers, and they can’t reach a site on this computer. Use Claude Code, Cursor or Codex here, or connect once the site is online.',
+									'%s runs on its own servers, so it can’t reach a site on this computer. Try Claude Code, Cursor or Codex here, or connect once the site is online.',
 									'saddle'
 								),
 								app.label
 							) }
-						</Notice>
+						</p>
 					) }
 
 					{ byAddress ? (
@@ -312,11 +318,55 @@ export default function ConnectApps( {
 										) ) }
 									</div>
 								) }
-								{ config && (
-									<CodeBlock
-										className="saddle-connect__config"
-										code={ config }
+								{ WEB_APPS.includes( app.key ) ? (
+									<KeyValueList
+										className="saddle-connect__values"
+										layout="stacked"
+										items={ [
+											{
+												label: __( 'Name', 'saddle' ),
+												value: <code>{ SLUG }</code>,
+											},
+											{
+												label: __(
+													'Address',
+													'saddle'
+												),
+												value: (
+													<>
+														<code>{ MCP_URL }</code>
+														<CopyButton
+															value={ MCP_URL }
+															variant="link"
+															size="sm"
+														>
+															{ __(
+																'Copy',
+																'saddle'
+															) }
+														</CopyButton>
+													</>
+												),
+											},
+											{
+												label: __(
+													'Authentication',
+													'saddle'
+												),
+												value: __(
+													'OAuth, client ID and secret blank',
+													'saddle'
+												),
+											},
+										] }
 									/>
+								) : (
+									config && (
+										<CodeBlock
+											className="saddle-connect__config"
+											code={ config }
+										/>
+									)
 								) }
 							</li>
 							<li>
@@ -324,7 +374,7 @@ export default function ConnectApps( {
 									{ sprintf(
 										/* translators: %s: app name, such as Claude. */
 										__(
-											'%s opens a screen on this site. Choose what it may do and click Allow.',
+											'Approve it on the screen %s opens here.',
 											'saddle'
 										),
 										app.label
@@ -337,25 +387,6 @@ export default function ConnectApps( {
 						</ol>
 					) : (
 						<div className="saddle-connect__key">
-							<p>
-								{ app.viaKey
-									? sprintf(
-											/* translators: %s: app name, such as Cursor. */
-											__(
-												'%s connects with a key here: Saddle makes one for it and shows the exact setup to paste.',
-												'saddle'
-											),
-											app.label
-									  )
-									: sprintf(
-											/* translators: %s: app name, such as ChatGPT. */
-											__(
-												'%s connects with the address only, so it needs sign-in for apps turned on.',
-												'saddle'
-											),
-											app.label
-									  ) }
-							</p>
 							{ app.viaKey && (
 								<Button
 									variant="primary"
@@ -412,12 +443,6 @@ export default function ConnectApps( {
 					) }
 				</div>
 			) }
-			<p className="saddle-connect__note">
-				{ __(
-					'It starts at Read only. You can change that in the list.',
-					'saddle'
-				) }
-			</p>
 		</div>
 	);
 }
