@@ -3,22 +3,26 @@
  * WordPress, on a page of its own: Accounts (outside services with a key),
  * Plugins (found on this site) and Add-ons (plugins that bring tools).
  *
- * One row per record from `GET /services`; a row opens a drawer with the key
- * form (accounts) or the switch (third-party add-ons), what leaves the site,
- * the tools the apps get with their role, and the links. A key never comes
- * back from the server, only whether one is set and its last four characters.
+ * One row per record from `GET /services`: the name and one status line. An
+ * account with no key has one button, "Add key"; any other row is itself the
+ * button that opens the drawer. The drawer holds one line of what the
+ * service is, the key form (accounts) or the switch (third-party add-ons),
+ * where the key comes from, and the tools, folded. A key never comes back
+ * from the server, only whether one is set and its last four characters.
  */
 import { useState, useEffect, useMemo } from '@wordpress/element';
 import {
-	Badge,
 	Button,
+	ChevronRightIcon,
+	Collapsible,
 	Drawer,
+	ErrorText,
 	Field,
 	Input,
-	Notice,
 	RowList,
 	Row,
 	Switch,
+	VisuallyHidden,
 	useConfirm,
 	toast,
 } from '@plugpress/ui';
@@ -26,24 +30,17 @@ import { __, sprintf } from '@wordpress/i18n';
 import { api } from '../api';
 import SectionHeader from './SectionHeader';
 import {
-	badgeFor,
 	groupServices,
-	initialOf,
-	kindLabel,
-	metaLine,
+	keyLink,
 	replaceRecord,
 	roleLabel,
+	statusLabel,
+	summaryOf,
+	toolCount,
 } from '../services-logic';
 
-// A neutral tile with the service's first letter, where there is no logo.
-const Logo = ( { name } ) => (
-	<span className="saddle-svc__logo" aria-hidden="true">
-		{ initialOf( name ) }
-	</span>
-);
-
 /**
- * "Your key": the form for an account.
+ * The key form for an account, or the key it has with Change and Remove.
  *
  * @param {Object}   props
  * @param {Object}   props.record  The account.
@@ -57,6 +54,7 @@ function KeyForm( { record, onSaved } ) {
 	const [ error, setError ] = useState( '' );
 	const cred = record.credential || {};
 	const showForm = ! cred.configured || changing;
+	const link = keyLink( record );
 
 	const save = ( key ) => {
 		setSaving( true );
@@ -111,135 +109,98 @@ function KeyForm( { record, onSaved } ) {
 		}
 	};
 
-	return (
-		<div className="saddle-svc__block">
-			{ ! showForm && (
-				<h3 className="saddle-svc__h">
-					{ __( 'Your key', 'saddle' ) }
-				</h3>
-			) }
-			{ showForm ? (
-				<>
-					<Field
-						label={ __( 'Your key', 'saddle' ) }
-						hint={ sprintf(
-							/* translators: %s: service name, such as Unsplash. */
-							__(
-								'Your key stays on this site; only %s sees it.',
-								'saddle'
-							),
-							record.name
-						) }
-					>
-						{ ( a11y ) => (
-							<Input
-								{ ...a11y }
-								type="password"
-								value={ draft }
-								onChange={ ( e ) => setDraft( e.target.value ) }
-								placeholder={ __(
-									'Paste your access key',
-									'saddle'
-								) }
-								autoComplete="off"
-							/>
-						) }
-					</Field>
-					{ error && <Notice tone="danger">{ error }</Notice> }
-					<div className="saddle-svc__actions">
+	if ( ! showForm ) {
+		return (
+			<div className="saddle-svc__key">
+				<div className="saddle-svc__key-row">
+					<span className="saddle-svc__key-label">
+						{ __( 'Your key', 'saddle' ) }
+					</span>
+					<code>{ `····${ cred.hint || '' }` }</code>
+					<span className="saddle-svc__actions">
 						<Button
-							variant="primary"
+							variant="secondary"
 							size="sm"
-							onClick={ () => save( draft.trim() ) }
-							loading={ saving }
-							disabled={ saving || ! draft.trim() }
+							onClick={ () => setChanging( true ) }
 						>
-							{ __( 'Save key', 'saddle' ) }
+							{ __( 'Change', 'saddle' ) }
 						</Button>
-						{ changing && (
-							<Button
-								variant="ghost"
-								size="sm"
-								onClick={ () => {
-									setChanging( false );
-									setDraft( '' );
-									setError( '' );
-								} }
-								disabled={ saving }
-							>
-								{ __( 'Cancel', 'saddle' ) }
-							</Button>
-						) }
-					</div>
-				</>
-			) : (
-				<>
-					<div className="saddle-svc__key">
-						<code>{ `····${ cred.hint || '' }` }</code>
-						<span className="saddle-svc__actions">
-							<Button
-								variant="secondary"
-								size="sm"
-								onClick={ () => setChanging( true ) }
-							>
-								{ __( 'Change', 'saddle' ) }
-							</Button>
-							<Button
-								variant="link"
-								size="sm"
-								className="saddle-link-danger"
-								onClick={ remove }
-								disabled={ saving }
-							>
-								{ __( 'Remove', 'saddle' ) }
-							</Button>
-						</span>
-					</div>
-					{ error && <Notice tone="danger">{ error }</Notice> }
-				</>
-			) }
-			{ cred.connector && cred.connectors_url && (
-				<Notice tone="info">
-					{ __( 'Also in', 'saddle' ) }{ ' ' }
-					<a href={ cred.connectors_url }>
-						{ __( 'Settings → Connectors', 'saddle' ) }
+						<Button
+							variant="link"
+							size="sm"
+							className="saddle-link-danger"
+							onClick={ remove }
+							disabled={ saving }
+						>
+							{ __( 'Remove', 'saddle' ) }
+						</Button>
+					</span>
+				</div>
+				{ error && <ErrorText>{ error }</ErrorText> }
+			</div>
+		);
+	}
+
+	return (
+		<div className="saddle-svc__key">
+			<Field label={ __( 'Your key', 'saddle' ) } error={ error }>
+				{ ( a11y ) => (
+					<Input
+						{ ...a11y }
+						type="password"
+						value={ draft }
+						onChange={ ( e ) => setDraft( e.target.value ) }
+						placeholder={ __( 'Paste your access key', 'saddle' ) }
+						autoComplete="off"
+					/>
+				) }
+			</Field>
+			{ link && (
+				<p className="saddle-svc__get">
+					<a
+						href={ link.url }
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						{ link.label }
+						<VisuallyHidden>
+							{ __( '(opens in a new tab)', 'saddle' ) }
+						</VisuallyHidden>
 					</a>
-					{ __(
-						', WordPress’s own list of keys. Saving it in either place saves it in both.',
-						'saddle'
-					) }
-				</Notice>
+				</p>
 			) }
+			<div className="saddle-svc__actions">
+				<Button
+					variant="primary"
+					size="sm"
+					onClick={ () => save( draft.trim() ) }
+					loading={ saving }
+					disabled={ saving || ! draft.trim() }
+				>
+					{ __( 'Save key', 'saddle' ) }
+				</Button>
+				{ changing && (
+					<Button
+						variant="ghost"
+						size="sm"
+						onClick={ () => {
+							setChanging( false );
+							setDraft( '' );
+							setError( '' );
+						} }
+						disabled={ saving }
+					>
+						{ __( 'Cancel', 'saddle' ) }
+					</Button>
+				) }
+			</div>
 		</div>
 	);
 }
 
-// The sentence under "Status" for a plugin or an add-on.
-const statusText = ( record ) => {
-	if ( 'plugin' === record.kind ) {
-		return sprintf(
-			/* translators: %s: plugin name. */
-			__(
-				'%s is active on this site. Saddle works inside it and sends nothing out.',
-				'saddle'
-			),
-			record.name
-		);
-	}
-	if ( 'third-party' === record.source ) {
-		return __(
-			'From another developer. Saddle can’t vouch for it, so its tools stay off until you turn them on.',
-			'saddle'
-		);
-	}
-	return __(
-		'A PlugPress add-on. Always on while the plugin is active.',
-		'saddle'
-	);
-};
-
 /**
- * The drawer body for one record.
+ * The drawer body for one record. Its one line of what the service is sits
+ * in the drawer's head, under the name.
  *
  * @param {Object}   props
  * @param {Object}   props.record    The service.
@@ -264,10 +225,7 @@ function Detail( { record, onChanged } ) {
 					next
 						? sprintf(
 								/* translators: %s: plugin name. */
-								__(
-									'%s is on. Its tools follow each app’s access and approval rules.',
-									'saddle'
-								),
+								__( '%s is on.', 'saddle' ),
 								record.name
 						  )
 						: sprintf(
@@ -286,114 +244,99 @@ function Detail( { record, onChanged } ) {
 			.finally( () => setBusy( false ) );
 	};
 
-	const sends = record.sends || [];
 	const tools = record.tools || [];
-	const links = [
-		[ __( 'Get a free key', 'saddle' ), record.credentials_url ],
-		[ __( 'Terms', 'saddle' ), record.terms_url ],
-		[ __( 'Privacy', 'saddle' ), record.privacy_url ],
-	].filter( ( l ) => l[ 1 ] );
 
 	return (
 		<div className="saddle-svc__detail">
-			{ 'account' === record.kind ? (
+			{ 'account' === record.kind && (
 				<KeyForm record={ record } onSaved={ onChanged } />
-			) : (
-				<div className="saddle-svc__block">
-					<h3 className="saddle-svc__h">
-						{ __( 'Status', 'saddle' ) }
-					</h3>
-					{ record.description &&
-						record.description !== kindLabel( record ) && (
-							<p className="saddle-svc__text">
-								{ record.description }
-							</p>
+			) }
+
+			{ 'account' !== record.kind && record.can_toggle && (
+				<div className="saddle-svc__switch">
+					<Switch
+						checked={ on }
+						disabled={ busy }
+						onChange={ toggle }
+						aria-label={ sprintf(
+							/* translators: %s: plugin name. */
+							__( 'Let apps use %s', 'saddle' ),
+							record.name
 						) }
-					<p className="saddle-svc__text">{ statusText( record ) }</p>
-					{ record.can_toggle && (
-						<div className="saddle-svc__switch">
-							<Switch
-								checked={ on }
-								disabled={ busy }
-								onChange={ toggle }
-								aria-label={ sprintf(
-									/* translators: %s: plugin name. */
-									__( 'Let apps use %s', 'saddle' ),
-									record.name
-								) }
-							/>
-							<span>{ __( 'Let apps use it', 'saddle' ) }</span>
-						</div>
-					) }
+					/>
+					<span aria-hidden="true">
+						{ __( 'Let apps use it', 'saddle' ) }
+					</span>
 				</div>
 			) }
 
-			<div className="saddle-svc__block">
-				<h3 className="saddle-svc__h">
-					{ __( 'What leaves your site', 'saddle' ) }
-				</h3>
-				{ sends.length ? (
-					<ul className="saddle-svc__sends">
-						{ sends.map( ( s ) => (
-							<li key={ s.host }>
-								<code>{ s.host }</code>
-								<span>{ s.what }</span>
-								<span>{ s.when }</span>
-							</li>
-						) ) }
-					</ul>
-				) : (
-					<p className="saddle-svc__text">
-						{ __(
-							'Nothing. It works inside your WordPress.',
-							'saddle'
-						) }
-					</p>
-				) }
-			</div>
-
 			{ tools.length > 0 && (
-				<div className="saddle-svc__block">
-					<h3 className="saddle-svc__h">
-						{ __( 'Tools your apps get', 'saddle' ) }
-					</h3>
-					<ul className="saddle-svc__tools">
+				<Collapsible
+					className="saddle-svc__tools"
+					trigger={ toolCount( record ) }
+				>
+					<ul className="saddle-svc__tool-list">
 						{ tools.map( ( t ) => (
-							<li key={ t.name }>
-								<span>
-									{ t.title || t.name }
-									<code>{ t.name }</code>
-								</span>
+							<li key={ t.name } title={ t.name }>
+								<span>{ t.title || t.name }</span>
 								<span className="saddle-svc__role">
 									{ roleLabel( t.role ) }
 								</span>
 							</li>
 						) ) }
 					</ul>
-					<p className="saddle-svc__note">
-						{ __(
-							'Each app gets the tools its access allows, set on AI apps.',
-							'saddle'
-						) }
-					</p>
-				</div>
-			) }
-
-			{ links.length > 0 && (
-				<div className="saddle-svc__links">
-					{ links.map( ( [ label, url ] ) => (
-						<a
-							key={ url }
-							href={ url }
-							target="_blank"
-							rel="noopener noreferrer"
-						>
-							{ label }
-						</a>
-					) ) }
-				</div>
+				</Collapsible>
 			) }
 		</div>
+	);
+}
+
+/**
+ * One service: its name and status. An account with no key gets "Add key";
+ * any other row is the button that opens the drawer.
+ *
+ * @param {Object}   props
+ * @param {Object}   props.record The service.
+ * @param {Function} props.onOpen Opens its drawer.
+ */
+function ServiceRow( { record, onOpen } ) {
+	const status = statusLabel( record );
+
+	if ( 'needs_key' === record.status ) {
+		return (
+			<Row
+				className="saddle-svc__row"
+				title={ record.name }
+				description={ status }
+				actions={
+					<Button variant="secondary" size="sm" onClick={ onOpen }>
+						{ __( 'Add key', 'saddle' ) }
+					</Button>
+				}
+			/>
+		);
+	}
+
+	// No `actions`, so the kit makes the whole row the button (role, tab
+	// stop, Enter and Space); the chevron sits inside its body.
+	return (
+		<Row
+			className="saddle-svc__row"
+			onClick={ onOpen }
+			aria-haspopup="dialog"
+		>
+			<span className="saddle-svc__line">
+				<span className="saddle-svc__name">
+					<span className="pp-rowlist__title">{ record.name }</span>
+					{ status && (
+						<span className="pp-rowlist__description">
+							{ status }
+						</span>
+					) }
+				</span>
+				<ChevronRightIcon size={ 16 } className="saddle-svc__go" />
+			</span>
+		</Row>
 	);
 }
 
@@ -417,55 +360,30 @@ export default function Services() {
 		setRecords( ( list ) => replaceRecord( list, next ) );
 
 	if ( null === records ) {
+		return <RowList loading />;
+	}
+
+	if ( 0 === groups.length ) {
 		return (
-			<section className="saddle-section">
-				<RowList loading />
-			</section>
+			<p className="saddle-svc__empty">
+				{ __( 'Nothing here yet.', 'saddle' ) }
+			</p>
 		);
 	}
 
 	return (
 		<>
-			{ 0 === groups.length && (
-				<Notice tone="info">
-					{ __( 'No services found on this site.', 'saddle' ) }
-				</Notice>
-			) }
 			{ groups.map( ( g ) => (
 				<section key={ g.kind } className="saddle-section">
-					<SectionHeader title={ g.title } description={ g.note } />
+					{ g.title && <SectionHeader title={ g.title } /> }
 					<RowList>
-						{ g.rows.map( ( r ) => {
-							const badge = badgeFor( r );
-							return (
-								<Row
-									key={ r.key }
-									className="saddle-svc__row"
-									icon={ <Logo name={ r.name } /> }
-									title={ r.name }
-									description={ metaLine( r ) }
-									onClick={ () => setOpenKey( r.key ) }
-									actions={
-										badge.button ? (
-											<Button
-												variant="primary"
-												size="sm"
-												onClick={ ( e ) => {
-													e.stopPropagation();
-													setOpenKey( r.key );
-												} }
-											>
-												{ badge.label }
-											</Button>
-										) : (
-											<Badge tone={ badge.tone }>
-												{ badge.label }
-											</Badge>
-										)
-									}
-								/>
-							);
-						} ) }
+						{ g.rows.map( ( r ) => (
+							<ServiceRow
+								key={ r.key }
+								record={ r }
+								onOpen={ () => setOpenKey( r.key ) }
+							/>
+						) ) }
 					</RowList>
 				</section>
 			) ) }
@@ -474,6 +392,8 @@ export default function Services() {
 				open={ !! open }
 				onOpenChange={ ( next ) => ! next && setOpenKey( null ) }
 				title={ open ? open.name : '' }
+				description={ open ? summaryOf( open ) : undefined }
+				closeLabel={ __( 'Close', 'saddle' ) }
 				size="md"
 			>
 				{ open && <Detail record={ open } onChanged={ update } /> }

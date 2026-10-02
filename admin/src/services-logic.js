@@ -1,52 +1,127 @@
 /**
- * Pure helpers for the Services page (#291): grouping the records, the
- * one-line meta, the status badge and the role labels. No React, no network.
+ * Pure helpers for the Services page (#291): grouping the records, each
+ * row's status line, the drawer's one line and key link, the tool count and
+ * the role labels. No React, no network.
  */
 import { __, _n, sprintf } from '@wordpress/i18n';
 
 /**
  * The sections, in the order the page shows them, one per `kind`.
  *
- * @return {Array<{kind:string,title:string,note:string}>} Sections.
+ * @return {Array<{kind:string,title:string}>} Sections.
  */
 export function sections() {
 	return [
-		{
-			kind: 'account',
-			title: __( 'Accounts', 'saddle' ),
-			note: __( 'Outside services you sign up for.', 'saddle' ),
-		},
-		{
-			kind: 'plugin',
-			title: __( 'Plugins', 'saddle' ),
-			note: __(
-				'Found on this site. Saddle works inside them.',
-				'saddle'
-			),
-		},
-		{
-			kind: 'addon',
-			title: __( 'Add-ons', 'saddle' ),
-			note: __( 'Plugins that give your apps more tools.', 'saddle' ),
-		},
+		{ kind: 'account', title: __( 'Accounts', 'saddle' ) },
+		{ kind: 'plugin', title: __( 'Plugins', 'saddle' ) },
+		{ kind: 'addon', title: __( 'Add-ons', 'saddle' ) },
 	];
 }
 
 /**
- * The records grouped by kind, in section order. A section with no records
- * is left out; a record of an unknown kind is ignored.
+ * The records grouped by kind, in section order. A kind with no records is
+ * left out; a record of an unknown kind is ignored. When only one kind has
+ * records, its `title` is empty: the page then draws no heading.
  *
  * @param {Array} records From GET /services.
- * @return {Array<{kind:string,title:string,note:string,rows:Array}>} Groups.
+ * @return {Array<{kind:string,title:string,rows:Array}>} Groups.
  */
 export function groupServices( records ) {
 	const list = Array.isArray( records ) ? records : [];
-	return sections()
+	const groups = sections()
 		.map( ( s ) => ( {
 			...s,
 			rows: list.filter( ( r ) => r && r.kind === s.kind ),
 		} ) )
 		.filter( ( g ) => g.rows.length > 0 );
+	return groups.length > 1
+		? groups
+		: groups.map( ( g ) => ( { ...g, title: '' } ) );
+}
+
+/**
+ * A row's one status line, from `status`. A plugin Saddle found on the site
+ * (`detected`) is as usable as an add-on that is on, so both read "Active".
+ *
+ * @param {Object} record A service record.
+ * @return {string} "Not set up", "Ready", "Active", "Off", or '' when unknown.
+ */
+export function statusLabel( record ) {
+	switch ( record && record.status ) {
+		case 'needs_key':
+			return __( 'Not set up', 'saddle' );
+		case 'ready':
+			return __( 'Ready', 'saddle' );
+		case 'detected':
+		case 'active':
+			return __( 'Active', 'saddle' );
+		case 'off':
+			return __( 'Off', 'saddle' );
+	}
+	return '';
+}
+
+/**
+ * The drawer's one line of what a service is: its own description, or what
+ * kind of service it is when it has none.
+ *
+ * @param {Object} record A service record.
+ * @return {string} Line.
+ */
+export function summaryOf( record ) {
+	if ( ! record ) {
+		return '';
+	}
+	const d = String( record.description || '' ).trim();
+	if ( d ) {
+		return d;
+	}
+	if ( 'account' === record.kind ) {
+		return __( 'Outside service', 'saddle' );
+	}
+	if ( 'plugin' === record.kind ) {
+		return __( 'Plugin', 'saddle' );
+	}
+	return 'third-party' === record.source
+		? __( 'Third-party add-on', 'saddle' )
+		: __( 'PlugPress add-on', 'saddle' );
+}
+
+/**
+ * Where an account's key comes from, as a link. Null for anything that is
+ * not an account, or an account that names no such page.
+ *
+ * @param {Object} record A service record.
+ * @return {{url:string,label:string}|null} Link.
+ */
+export function keyLink( record ) {
+	if ( ! record || 'account' !== record.kind || ! record.credentials_url ) {
+		return null;
+	}
+	return {
+		url: record.credentials_url,
+		label: sprintf(
+			/* translators: %s: service name, such as Unsplash. */
+			__( 'Get a key from %s', 'saddle' ),
+			record.name
+		),
+	};
+}
+
+/**
+ * "3 tools": the label of the drawer's collapsed tool list, counting the
+ * tools it lists.
+ *
+ * @param {Object} record A service record.
+ * @return {string} Tool count.
+ */
+export function toolCount( record ) {
+	const n = ( ( record && record.tools ) || [] ).length;
+	return sprintf(
+		/* translators: %d: number of tools. */
+		_n( '%d tool', '%d tools', n, 'saddle' ),
+		n
+	);
 }
 
 /**
@@ -65,141 +140,6 @@ export function roleLabel( role ) {
 			return __( 'Manage the site', 'saddle' );
 	}
 	return role || '';
-}
-
-/**
- * "3 tools".
- *
- * @param {Object} record A service record.
- * @return {string} Tool count.
- */
-export function toolCount( record ) {
-	// An add-on that is off registers no tools; the server still counts them.
-	const n =
-		typeof record.tool_count === 'number'
-			? record.tool_count
-			: ( record.tools || [] ).length;
-	return sprintf(
-		/* translators: %d: number of tools. */
-		_n( '%d tool', '%d tools', n, 'saddle' ),
-		n
-	);
-}
-
-/**
- * Where a record's data goes, in a few words.
- *
- * @param {Object} record A service record.
- * @return {string} Line.
- */
-export function whereDataGoes( record ) {
-	if ( 'needs_key' === record.status ) {
-		return __( 'needs your key', 'saddle' );
-	}
-	const hosts = ( record.sends || [] )
-		.map( ( s ) => s.host )
-		.filter( Boolean );
-	if ( ! hosts.length ) {
-		return __( 'nothing leaves your site', 'saddle' );
-	}
-	return sprintf(
-		/* translators: %s: a host name, such as api.unsplash.com. */
-		__( 'sends data to %s', 'saddle' ),
-		hosts[ 0 ]
-	);
-}
-
-/**
- * The row's meta line: "Stock photos · needs your key · 2 tools".
- *
- * @param {Object} record A service record.
- * @return {string} Line.
- */
-// Longer than this, a description goes to the drawer and the row says what
-// kind of service it is instead.
-const SHORT_DESCRIPTION = 40;
-
-/**
- * The first part of a row's meta line: its own description when that is
- * short ("Stock photos"), else what kind of service it is.
- *
- * @param {Object} record A service record.
- * @return {string} A short label.
- */
-export function kindLabel( record ) {
-	const d = ( record.description || '' ).trim();
-	if ( d && d.length <= SHORT_DESCRIPTION ) {
-		return d;
-	}
-	if ( 'account' === record.kind ) {
-		return __( 'Outside service', 'saddle' );
-	}
-	if ( 'plugin' === record.kind ) {
-		return __( 'Plugin', 'saddle' );
-	}
-	return 'plugpress' === record.source
-		? __( 'PlugPress add-on', 'saddle' )
-		: __( 'Third-party add-on', 'saddle' );
-}
-
-export function metaLine( record ) {
-	return [ kindLabel( record ), whereDataGoes( record ), toolCount( record ) ]
-		.filter( Boolean )
-		.join( ' · ' );
-}
-
-/**
- * What a row shows at its right edge. An account with no key gets a primary
- * button (`button: true`) instead of a badge.
- *
- * @param {Object} record A service record.
- * @return {{label:string,tone:string,button:boolean}} Badge.
- */
-export function badgeFor( record ) {
-	switch ( record.status ) {
-		case 'needs_key':
-			return {
-				label: __( 'Add key', 'saddle' ),
-				tone: 'neutral',
-				button: true,
-			};
-		case 'ready':
-			return {
-				label: __( 'Ready', 'saddle' ),
-				tone: 'success',
-				button: false,
-			};
-		case 'detected':
-			return {
-				label: __( 'Detected', 'saddle' ),
-				tone: 'neutral',
-				button: false,
-			};
-		case 'active':
-			return {
-				label:
-					'third-party' === record.source
-						? __( 'On', 'saddle' )
-						: __( 'Active', 'saddle' ),
-				tone: 'success',
-				button: false,
-			};
-	}
-	return { label: __( 'Off', 'saddle' ), tone: 'neutral', button: false };
-}
-
-/**
- * The first letter of a name, for the neutral tile used where a service has
- * no logo.
- *
- * @param {string} name Service name.
- * @return {string} One uppercase character, or "?".
- */
-export function initialOf( name ) {
-	const ch = String( name || '' )
-		.trim()
-		.charAt( 0 );
-	return ch ? ch.toUpperCase() : '?';
 }
 
 /**
