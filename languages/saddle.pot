@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-02T00:21:32+00:00\n"
+"POT-Creation-Date: 2026-10-02T00:36:14+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -4488,7 +4488,7 @@ msgid "Saddle sign-in keys cannot be used over XML-RPC."
 msgstr ""
 
 #: includes/class-saddle-connection.php:386
-#: includes/class-saddle-mcp.php:579
+#: includes/class-saddle-mcp.php:580
 msgid "Your sign-in key was rejected — it was most likely revoked or removed. Reconnect the app from Saddle to issue a fresh key."
 msgstr ""
 
@@ -5096,65 +5096,65 @@ msgstr ""
 msgid "Tiered, default-safe, approval-gated MCP access to posts, pages, and media."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:516
+#: includes/class-saddle-mcp.php:517
 msgid "This MCP endpoint does not offer an event stream. Send JSON-RPC over POST instead."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:517
+#: includes/class-saddle-mcp.php:518
 msgid "This MCP endpoint is stateless and issues no session to terminate."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:568
+#: includes/class-saddle-mcp.php:569
 msgid "The access token was rejected — it has expired, been revoked, or was issued for a different site. Refresh it, or reconnect the app to authorize a new one."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:589
+#: includes/class-saddle-mcp.php:590
 msgid "The request arrived without a sign-in key. If you did connect one, your host may be stripping the Authorization header — open Saddle and run the connection check to confirm and fix it."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:622
+#: includes/class-saddle-mcp.php:623
 msgid "Parse error: request body is not valid JSON-RPC."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:631
+#: includes/class-saddle-mcp.php:632
 msgid "Invalid request."
 msgstr ""
 
 #. translators: 1: protocol version the client asked for, 2: comma-separated list of supported versions.
-#: includes/class-saddle-mcp.php:781
+#: includes/class-saddle-mcp.php:782
 #, php-format
 msgid "Unsupported MCP protocol version \"%1$s\". This server speaks %2$s."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:856
+#: includes/class-saddle-mcp.php:857
 msgid "No prompt by that name for this connection."
 msgstr ""
 
 #. translators: %s: JSON-RPC method name.
-#: includes/class-saddle-mcp.php:871
+#: includes/class-saddle-mcp.php:872
 #, php-format
 msgid "Method not found: %s"
 msgstr ""
 
-#: includes/class-saddle-mcp.php:930
+#: includes/class-saddle-mcp.php:931
 msgid "Saddle is paused on this site, so no tools will run. The site owner can resume it from the AI switch at the top of any Saddle page. Do not retry until they do."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:942
+#: includes/class-saddle-mcp.php:943
 msgid "Saddle exposes tiered, approval-gated access to this site's posts, pages, and media. Call saddle/get-instructions for the current scope and safety rules before acting."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:1139
+#: includes/class-saddle-mcp.php:1140
 msgid "Invalid params: a Saddle tool name is required."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-mcp.php:1149
+#: includes/class-saddle-mcp.php:1150
 #, php-format
 msgid "Tool not found: %s"
 msgstr ""
 
-#: includes/class-saddle-mcp.php:1179
+#: includes/class-saddle-mcp.php:1180
 msgid "None of Saddle’s site-wide gates (pause, access level, per-tool toggles) blocked this — the connected WordPress account likely lacks a capability this tool requires, or the specific item is protected. Do not retry the same call."
 msgstr ""
 
@@ -6772,7 +6772,7 @@ msgid "This persisted attribute does nothing — rewrite it on a path the block 
 msgstr ""
 
 #. translators: %s: minimum WordPress version.
-#: saddle.php:522
+#: saddle.php:544
 #, php-format
 msgid "Saddle requires WordPress %s or later (the core Abilities API). The MCP server is disabled until you upgrade."
 msgstr ""
