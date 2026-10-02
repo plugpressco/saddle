@@ -15,7 +15,9 @@ defined( 'ABSPATH' ) || exit;
  * same key it uses for `saddle_integrations`, and gets a submenu page at
  * `admin.php?page=saddle-{key}` with Core's frame around its content. A
  * sibling detects Core with `class_exists( 'Saddle_Modules' )`, never with a
- * version number, and keeps its own top-level menu when Core is absent.
+ * version number. Every sibling declares `Requires Plugins: saddle`; if Core
+ * is still missing, its admin is one "Install Saddle" page while its
+ * front-end work (tracking, SEO output, unsubscribe links) keeps running.
  *
  * A module ships no tokens, no accent file and no chrome; Core paints it.
  * Use the `ui` prop, never a copy of the kit. Pages outside the frame call
