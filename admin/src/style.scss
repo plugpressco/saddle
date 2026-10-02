@@ -1333,7 +1333,8 @@ body.saddle-admin-page,
 /* ---------- Home ---------- */
 
 // The feed and what waits on the left, the apps on the right (#309). One
-// column below 1100px, the apps after the feed.
+// column below 1100px, the apps after the feed. With no app connected there
+// is no side column, so the page is one column at every width.
 .saddle-home {
 	display: grid;
 	grid-template-columns: minmax( 0, 1fr ) 280px;
@@ -1347,82 +1348,60 @@ body.saddle-admin-page,
 		min-width: 0;
 	}
 
+	&--single {
+		grid-template-columns: minmax( 0, 1fr );
+	}
+
 	@media ( max-width: 1100px ) {
 		grid-template-columns: minmax( 0, 1fr );
 	}
 }
 
-// The week at a glance, across both columns: four numbers in one block.
-.saddle-home__glance {
-	grid-column: 1 / -1;
-	padding: var( --pp-space-4 ) var( --pp-space-5 );
-	border: 1px solid var( --s-border );
-	border-radius: var( --s-radius-lg );
-	background: var( --s-bg );
-	box-shadow: var( --s-shadow-sm );
+// No app connected: one sentence and one button, centred in one block.
+.saddle-home__connect {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var( --pp-space-4 );
+	padding-block: var( --pp-space-8 );
+	text-align: center;
+}
 
-	.pp-stat__value {
-		font-variant-numeric: tabular-nums;
+.saddle-home__connect-text {
+	margin: 0;
+	font-size: var( --s-text );
+}
+
+// This week: three numbers in one block, its title in the header row.
+.saddle-home__week {
+	padding: var( --pp-space-4 ) var( --pp-space-5 );
+
+	.pp-card__header {
+		margin-block-end: var( --pp-space-3 );
 	}
 
-	@media ( max-width: 782px ) {
-		.pp-stat-grid {
-			grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
+	.pp-stat {
+		padding-block: 0;
+	}
+
+	// Three short numbers fit side by side down to phone width; the kit
+	// would break them 2 + 1 below 900px.
+	@media ( min-width: 561px ) and ( max-width: 900px ) {
+		.pp-stat-grid--fixed {
+			grid-template-columns: repeat(
+				var( --pp-stat-grid-cols, 3 ),
+				minmax( 0, 1fr )
+			);
 		}
 	}
 }
 
-// Try asking: prompts built from what Saddle found, each to copy into the
-// app. Cards that do one thing each: a title, the prompt, one button.
-.saddle-ideas__grid {
-	display: grid;
-	grid-template-columns: repeat( auto-fill, minmax( 200px, 1fr ) );
-	gap: var( --pp-space-3 );
-}
-
-.saddle-ideas__card {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
-	gap: 6px;
-	min-width: 0;
-	padding: 14px 16px;
-	border: 1px solid var( --s-border );
-	border-radius: var( --s-radius-lg );
-	background: var( --s-bg );
-	box-shadow: var( --s-shadow-sm );
-
-	.pp-btn {
-		margin-block-start: auto;
-	}
-}
-
-.saddle-ideas__title {
-	margin: 0;
-	font-size: var( --s-text );
-	font-weight: 600;
-}
-
-.saddle-ideas__prompt {
-	display: -webkit-box;
-	margin: 0 0 6px;
-	overflow: hidden;
-	color: var( --s-fg-muted );
-	font-size: var( --s-text );
-	-webkit-line-clamp: 3;
-	-webkit-box-orient: vertical;
-}
-
-// One line from Saddle with the next setup step, beside its mark.
+// One line from Saddle with the next step for an app, beside its mark. A
+// line, not a box: one sentence doesn't get a border.
 .saddle-nudge {
 	display: flex;
 	align-items: center;
 	gap: 12px;
-	padding: 10px 10px 10px 14px;
-	border: 1px solid var( --s-border );
-	border-radius: var( --s-radius-lg );
-	background: var( --s-bg );
-	box-shadow: var( --s-shadow-sm );
 
 	&__mark svg {
 		display: block;
@@ -1437,14 +1416,6 @@ body.saddle-admin-page,
 		margin: 0;
 		font-size: var( --s-text );
 	}
-}
-
-// The value on the right of a Home row ("Active", "2 minutes ago"), set apart
-// from the link beside it.
-.saddle-home__value {
-	color: var(--s-fg-subtle);
-	font-size: var( --s-text );
-	font-variant-numeric: tabular-nums;
 }
 
 // Still used by Context (Guidance).
@@ -2089,12 +2060,6 @@ body.saddle-admin-page,
 /* ---------- Activity page ---------- */
 
 .saddle-activity {
-	&__title {
-		margin: 0 0 4px;
-		font-size: var( --s-text-title );
-		font-weight: 600;
-	}
-
 	// The pills themselves are the design system's FilterTabs. On Home the
 	// section's heading leads the row and the filters sit at its end.
 	&__filters {
@@ -2137,12 +2102,13 @@ body.saddle-admin-page,
 		overflow: hidden;
 	}
 
+	// One line: who (the logo), what, when. Who in words is the tooltip.
 	&__row {
 		display: flex;
-		align-items: flex-start;
+		align-items: center;
 		gap: 12px;
 		margin: 0;
-		padding: 12px 16px;
+		padding: 10px 16px;
 
 		& + & {
 			border-top: 1px solid var(--s-border);
@@ -2154,14 +2120,13 @@ body.saddle-admin-page,
 		flex: 0 0 auto;
 		width: 20px;
 		height: 20px;
-		margin-top: 1px;
 	}
 
 	&__mark {
 		flex: 0 0 auto;
 		width: 8px;
 		height: 8px;
-		margin: 7px 6px 0;
+		margin-inline: 6px;
 		border-radius: 50%;
 		background: var(--s-safe);
 
@@ -2170,34 +2135,21 @@ body.saddle-admin-page,
 		}
 	}
 
-	&__body {
-		flex: 1;
-		min-width: 0;
-	}
-
 	&__summary {
-		display: block;
+		flex: 1 1 auto;
+		min-width: 0;
+		overflow: hidden;
 		font-size: var( --s-text );
 		line-height: 1.5;
-		overflow-wrap: anywhere;
+		white-space: nowrap;
+		text-overflow: ellipsis;
 	}
-
-	&__meta {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		margin-top: 3px;
-		font-size: var( --s-text );
-		color: var(--s-fg-subtle);
-	}
-
 
 	&__time {
 		flex: 0 0 auto;
 		font-size: var( --s-text );
 		color: var(--s-fg-subtle);
 		font-variant-numeric: tabular-nums;
-		margin-top: 2px;
 	}
 
 	&__more {

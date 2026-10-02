@@ -3,9 +3,11 @@
  * Home's feed since #309.
  *
  * Every executed change and every blocked attempt, newest first, grouped by
- * day, each row led by the logo of the app that did it. Filterable to just
- * changes or just blocked attempts; pages in with "Show older". Reads are
- * never logged (see Saddle_Log); a tip beside the filters says so.
+ * day. Each row is one line: the logo of the app that did it (a dot when no
+ * app did), what happened, and the time; who did it is the row's tooltip.
+ * Filterable to just changes or just blocked attempts, and to rehearsals when
+ * the first page holds one; pages in with "Show older". Reads are never
+ * logged (see Saddle_Log); the empty state says so.
  */
 import { useState, useEffect, useCallback } from '@wordpress/element';
 import {
@@ -14,7 +16,7 @@ import {
 	Notice,
 	FilterTabs,
 	EmptyState,
-	HelpTip,
+	VisuallyHidden,
 } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { api } from '../api';
@@ -23,19 +25,32 @@ import { AppLogo, appKeyFromLabel } from './icons';
 
 const PER_PAGE = 25;
 
-const FILTERS = [
-	{ key: '', label: __( 'Everything', 'saddle' ) },
-	{ key: 'executed', label: __( 'Changes', 'saddle' ) },
-	{ key: 'denied', label: __( 'Blocked', 'saddle' ) },
-	{ key: 'rehearsed', label: __( 'Rehearsed', 'saddle' ) },
-];
+/**
+ * Who made an entry, for the row's tooltip: the app, else the user's login.
+ *
+ * @param {Object} e Audit-log entry.
+ * @return {string|undefined} "via Claude Code", or undefined.
+ */
+function via( e ) {
+	const who = e.app || e.user;
+	return who
+		? sprintf(
+				/* translators: %s: the app that made the change ("Claude Code"), or the user login when no app did. */
+				__( 'via %s', 'saddle' ),
+				who
+		  )
+		: undefined;
+}
 
 /**
  * @param {Object}   props
- * @param {Object[]} props.caps  The capabilities list, for tool names.
- * @param {string=}  props.title A heading drawn on the filters' row (Home).
+ * @param {Object[]} props.caps      The capabilities list, for tool names.
+ * @param {string=}  props.title     A heading drawn on the filters' row (Home).
+ * @param {boolean=} props.hideEmpty Draw nothing at all, not even while
+ *                                   loading, when the log is empty (Home with
+ *                                   no app connected).
  */
-export default function Activity( { caps = [], title } ) {
+export default function Activity( { caps = [], title, hideEmpty = false } ) {
 	const [ entries, setEntries ] = useState( [] );
 	const [ total, setTotal ] = useState( 0 );
 	const [ page, setPage ] = useState( 1 );
@@ -43,6 +58,9 @@ export default function Activity( { caps = [], title } ) {
 	const [ loading, setLoading ] = useState( true );
 	const [ more, setMore ] = useState( false );
 	const [ error, setError ] = useState( null );
+	// What the unfiltered first page held: whether there is any history, and
+	// whether a rehearsal is in it (the Rehearsed filter shows only then).
+	const [ first, setFirst ] = useState( null );
 
 	const load = useCallback( ( nextPage, nextFilter, append ) => {
 		if ( append ) {
@@ -56,11 +74,18 @@ export default function Activity( { caps = [], title } ) {
 			}`
 		)
 			.then( ( res ) => {
+				const got = res.entries || [];
 				setEntries( ( prev ) =>
-					append ? [ ...prev, ...res.entries ] : res.entries
+					append ? [ ...prev, ...got ] : got
 				);
 				setTotal( res.total || 0 );
 				setPage( nextPage );
+				if ( 1 === nextPage && ! nextFilter ) {
+					setFirst( {
+						any: got.length > 0,
+						rehearsed: got.some( ( e ) => 'rehearsed' === e.type ),
+					} );
+				}
 			} )
 			.catch( ( e ) => setError( e.message ) )
 			.finally( () => {
@@ -73,6 +98,10 @@ export default function Activity( { caps = [], title } ) {
 		load( 1, '', false );
 	}, [ load ] );
 
+	if ( hideEmpty && ! ( first && first.any ) ) {
+		return null;
+	}
+
 	const pickFilter = ( key ) => {
 		if ( key === filter ) {
 			return;
@@ -80,6 +109,18 @@ export default function Activity( { caps = [], title } ) {
 		setFilter( key );
 		load( 1, key, false );
 	};
+
+	const filters = [
+		{ value: '', label: __( 'All', 'saddle' ) },
+		{ value: 'executed', label: __( 'Changes', 'saddle' ) },
+		{ value: 'denied', label: __( 'Blocked', 'saddle' ) },
+	];
+	if ( first && first.rehearsed ) {
+		filters.push( {
+			value: 'rehearsed',
+			label: __( 'Rehearsed', 'saddle' ),
+		} );
+	}
 
 	// Group into days, preserving order.
 	const groups = groupByDay( entries );
@@ -90,21 +131,15 @@ export default function Activity( { caps = [], title } ) {
 				{ title && (
 					<h2 className="saddle-activity__heading">{ title }</h2>
 				) }
-				<FilterTabs
-					aria-label={ __( 'Filter activity', 'saddle' ) }
-					items={ FILTERS.map( ( f ) => ( {
-						value: f.key,
-						label: f.label,
-					} ) ) }
-					value={ filter }
-					onChange={ pickFilter }
-				/>
-				<HelpTip>
-					{ __(
-						'Reading is never logged; only changes are.',
-						'saddle'
-					) }
-				</HelpTip>
+				{ /* Nothing to filter until there is history. */ }
+				{ first && first.any && (
+					<FilterTabs
+						aria-label={ __( 'Filter activity', 'saddle' ) }
+						items={ filters }
+						value={ filter }
+						onChange={ pickFilter }
+					/>
+				) }
 			</div>
 
 			{ error && <Notice tone="danger">{ error }</Notice> }
@@ -129,7 +164,7 @@ export default function Activity( { caps = [], title } ) {
 									'saddle'
 							  )
 							: __(
-									'Once a connected app makes a change, it shows up here.',
+									'Once a connected app makes a change, it shows up here. Reading is never logged.',
 									'saddle'
 							  )
 					}
@@ -149,6 +184,7 @@ export default function Activity( { caps = [], title } ) {
 									className={ `saddle-activity__row${
 										e.type === 'denied' ? ' is-denied' : ''
 									}` }
+									title={ via( e ) }
 								>
 									{ e.app ? (
 										<AppLogo
@@ -161,31 +197,27 @@ export default function Activity( { caps = [], title } ) {
 											aria-hidden="true"
 										/>
 									) }
-									<div className="saddle-activity__body">
-										{ /* A blocked or rehearsed call reads as the tool's
-										     own name ("Blocked · Update option · needs
-										     Admin"); the raw tool name stays in the title
-										     for anyone who wants it. */ }
-										<span
-											className="saddle-activity__summary"
-											title={ e.action || undefined }
-										>
-											{ 'denied' === e.type ||
-											'rehearsed' === e.type
-												? actionLabel( e, caps )
-												: e.summary }
-										</span>
-										<span className="saddle-activity__meta">
-											{ ( e.app || e.user ) &&
-												sprintf(
-													/* translators: %s: the app that made the change ("Claude Code"), or the user login when no app did. */
-													__( 'via %s', 'saddle' ),
-													e.app || e.user
-												) }
-										</span>
-									</div>
+									{ /* A blocked or rehearsed call reads as the tool's
+									     own name ("Blocked · Update option · needs
+									     Admin"). */ }
+									<span className="saddle-activity__summary">
+										{ 'denied' === e.type ||
+										'rehearsed' === e.type
+											? actionLabel( e, caps )
+											: e.summary }
+										{ /* The logo is decorative and the tooltip is
+										     not read out, so say who did it here. */ }
+										{ via( e ) && (
+											<VisuallyHidden>
+												{ ` ${ via( e ) }` }
+											</VisuallyHidden>
+										) }
+									</span>
 									<time
 										className="saddle-activity__time"
+										dateTime={
+											e.d ? e.d.toISOString() : undefined
+										}
 										title={
 											e.d
 												? e.d.toLocaleString()
