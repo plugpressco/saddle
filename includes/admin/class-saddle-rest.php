@@ -348,6 +348,14 @@ class Saddle_REST_Admin {
 				'methods'             => 'GET',
 				'callback'            => array( __CLASS__, 'get_audit_log' ),
 				'permission_callback' => array( __CLASS__, 'can_manage' ),
+				'args'                => array(
+					// Home's "This week" counts entries from this Unix time (UTC) on.
+					'since' => array(
+						'type'              => 'integer',
+						'minimum'           => 0,
+						'sanitize_callback' => 'absint',
+					),
+				),
 			)
 		);
 
