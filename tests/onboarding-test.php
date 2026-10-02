@@ -184,13 +184,24 @@ class Saddle_Onboarding_Test extends WP_UnitTestCase {
 		$this->assertSame( '', $data['first_run']['step'] );
 	}
 
+	public function test_the_welcome_can_record_manage_the_site() {
+		$data = $this->post(
+			array(
+				'event'       => 'first_run.done',
+				'tier_choice' => 'admin',
+			)
+		)->get_data();
+
+		$this->assertSame( 'admin', $data['first_run']['tier_choice'], 'Manage the site is one of the welcome\'s three choices (#309).' );
+	}
+
 	public function test_a_bad_tier_choice_is_refused() {
 		$this->assertSame(
 			400,
 			$this->post(
 				array(
 					'event'       => 'first_run.done',
-					'tier_choice' => 'admin',
+					'tier_choice' => 'owner',
 				)
 			)->get_status()
 		);

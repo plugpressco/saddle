@@ -1019,77 +1019,270 @@ body.saddle-admin-page,
 	animation: saddle-step-in 0.24s var(--s-ease) both;
 }
 
-/* ---------- First run (#269) ---------- */
+/* ---------- The welcome: a conversation (#309) ---------- */
+// Saddle's lines beside its mark, the owner's answers as bubbles on the
+// right, quick replies as chips. One reading column; the text is 15px, the
+// welcome's one step up from the admin's 13, because the conversation is the
+// page.
+.saddle-chat {
+	max-width: 680px;
+	margin: 0 auto;
+	padding-block-end: var( --pp-space-8 );
 
-.saddle-first-run {
-	// "Skip setup" at the top right of the column; the mark is in the band.
 	&__bar {
 		display: flex;
 		justify-content: flex-end;
-		max-width: 640px;
-		margin: 0 auto 8px;
+		margin-block-end: 8px;
+
+		.pp-btn {
+			color: var( --s-fg-muted );
+		}
 	}
 
-	// The site's counts are facts, not headlines.
-	&__stats {
-		--pp-text-3xl: 15px;
+	&__thread {
+		display: grid;
+		gap: 4px;
 	}
 
-	&__column {
-		max-width: 640px;
-		margin: 0 auto;
+	&__say {
+		display: grid;
+		grid-template-columns: 28px minmax( 0, 1fr );
+		gap: 12px;
+		align-items: start;
+		margin-block-start: 14px;
+		animation: saddle-step-in 0.28s var( --s-ease ) both;
+
+		&.is-cont {
+			margin-block-start: 6px;
+
+			.saddle-chat__avatar {
+				visibility: hidden;
+			}
+		}
 	}
 
-	&__title {
-		margin: 0 0 6px;
+	&__avatar svg {
+		display: block;
+		width: 28px;
+		height: 28px;
+		color: var( --s-brand );
+	}
+
+	&__body {
+		display: grid;
+		grid-template-columns: minmax( 0, 1fr );
+		gap: 12px;
+		min-width: 0;
+		padding-block-start: 3px;
 		font-size: var( --s-text-title );
-		line-height: 1.4;
-		font-weight: 600;
-		text-wrap: balance;
+		line-height: 1.5;
+
+		> p {
+			margin: 0;
+			text-wrap: pretty;
+		}
 	}
 
-	&__lead {
-		margin: 0 0 20px;
-		font-size: var( --s-text );
-		line-height: 1.6;
-		color: var(--s-fg-muted);
-		text-wrap: pretty;
+	&__muted {
+		color: var( --s-fg-muted );
 	}
 
-	&__lines {
+	&__typing {
+		display: inline-flex;
+		gap: 4px;
+		padding-block-start: 10px;
+
+		i {
+			width: 6px;
+			height: 6px;
+			border-radius: 50%;
+			background: #b8b8b8;
+			animation: saddle-typing 1s infinite ease-in-out;
+
+			&:nth-child( 2 ) {
+				animation-delay: 0.15s;
+			}
+
+			&:nth-child( 3 ) {
+				animation-delay: 0.3s;
+			}
+		}
+	}
+
+	&__you {
 		display: flex;
-		flex-direction: column;
-		gap: 18px;
-		margin: 28px 0 36px;
+		justify-content: flex-end;
+		margin-block-start: 14px;
+		animation: saddle-step-in 0.22s var( --s-ease ) both;
 	}
 
-	// Each line lands like a message, one beat after the last.
-	&__line {
-		animation: saddle-step-in 0.28s var(--s-ease) both;
-	}
-
-	&__stats {
-		margin: 12px 0 0 28px;
-	}
-
-	&__after {
-		display: flex;
-		flex-direction: column;
-		gap: 24px;
-		animation: saddle-step-in 0.28s var(--s-ease) both;
-	}
-
-	&__question {
-		margin: 0 0 8px;
+	&__bubble {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		max-width: 80%;
+		padding: 8px 14px;
+		border-radius: 18px 18px 4px 18px;
+		background: #f0f0f0;
 		font-size: var( --s-text-title );
-		font-weight: 600;
 	}
 
-	&__actions {
+	// A finished thing, with a tick.
+	&__done {
 		display: flex;
 		align-items: center;
-		gap: 10px;
-		margin-top: 20px;
+		gap: 8px;
+		margin: 0;
+		color: var( --s-safe-text );
+		font-size: var( --s-text );
+
+		&::before {
+			content: '';
+			flex: 0 0 auto;
+			width: 16px;
+			height: 16px;
+			border-radius: 50%;
+			background: var( --s-safe ) url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.2 8.2l2.5 2.5 5.1-5.3' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" ) center / 16px no-repeat;
+		}
+	}
+
+	&__calls {
+		margin: 0;
+		padding-inline-start: 24px;
+		color: var( --s-fg-muted );
+		font-size: var( --s-text );
+	}
+
+	// Quick replies: the owner's possible answers, under Saddle's question.
+	&__replies {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin-block-start: 12px;
+		padding-inline-start: 40px;
+		animation: saddle-step-in 0.28s var( --s-ease ) both;
+	}
+
+	&__chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		padding: 7px 14px 7px 10px;
+		border: 1px solid var( --s-border-strong );
+		border-radius: var( --s-radius-pill );
+		background: var( --s-bg );
+		color: var( --s-fg );
+		font: inherit;
+		font-size: var( --s-text );
+		font-weight: 500;
+		cursor: pointer;
+		transition: border-color var( --s-dur ) var( --s-ease );
+
+		&:hover {
+			border-color: #949494;
+		}
+
+		&--more {
+			padding-inline-start: 14px;
+			color: var( --s-fg-muted );
+		}
+	}
+
+	// The access choice: three answers, each with its one-line hint.
+	&__options {
+		display: grid;
+		gap: 8px;
+		max-width: 460px;
+		margin-block-start: 12px;
+		padding-inline-start: 40px;
+		animation: saddle-step-in 0.28s var( --s-ease ) both;
+	}
+
+	&__option {
+		display: grid;
+		justify-items: start;
+		gap: 1px;
+		padding: 10px 14px;
+		border: 1px solid var( --s-border-strong );
+		border-radius: 10px;
+		background: var( --s-bg );
+		color: var( --s-fg );
+		font: inherit;
+		font-size: var( --s-text );
+		text-align: start;
+		cursor: pointer;
+		transition: border-color var( --s-dur ) var( --s-ease );
+
+		&:hover:not( :disabled ) {
+			border-color: #949494;
+		}
+
+		&:disabled {
+			cursor: default;
+			opacity: 0.6;
+		}
+
+		&[aria-busy='true'] {
+			opacity: 1;
+			border-color: var( --s-brand );
+		}
+
+		strong {
+			font-weight: 600;
+		}
+
+		span {
+			color: var( --s-fg-muted );
+		}
+
+		small {
+			margin-block-start: 4px;
+			padding: 1px 8px;
+			border-radius: var( --s-radius-pill );
+			background: var( --saddle-brand-tint );
+			color: var( --s-brand );
+			font-size: var( --s-text-sm );
+		}
+	}
+
+	// The prompt to paste reads as a sentence, so it wraps like one.
+	.pp-snippet__code {
+		white-space: normal;
+		overflow-wrap: anywhere;
+		font-family: inherit;
+		font-size: var( --s-text );
+		line-height: 1.5;
+	}
+
+	// The connect step lives inside Saddle's message: the conversation already
+	// names the app and the choice comes later, so the wizard's own heading
+	// and its "what it will be able to do" card stay out of the thread.
+	.saddle-wizard--embedded {
+		font-size: var( --s-text );
+
+		.saddle-wizard__title,
+		.saddle-wizard__cando {
+			display: none;
+		}
+	}
+
+	@media ( max-width: 782px ) {
+		&__replies,
+		&__options {
+			padding-inline-start: 0;
+		}
+	}
+}
+
+@keyframes saddle-typing {
+	0%,
+	80%,
+	100% {
+		opacity: 0.3;
+	}
+
+	40% {
+		opacity: 1;
 	}
 }
 
@@ -1105,13 +1298,6 @@ body.saddle-admin-page,
 	&__line {
 		animation: saddle-step-in 0.28s var(--s-ease) both;
 	}
-}
-
-.saddle-first-run__foot {
-	margin: 18px 0 0;
-	font-size: var( --s-text );
-	line-height: 1.55;
-	color: var(--s-fg-subtle);
 }
 
 .saddle-selfcheck {
@@ -1164,6 +1350,67 @@ body.saddle-admin-page,
 	@media ( max-width: 1100px ) {
 		grid-template-columns: minmax( 0, 1fr );
 	}
+}
+
+// The week at a glance, across both columns: four numbers in one block.
+.saddle-home__glance {
+	grid-column: 1 / -1;
+	padding: var( --pp-space-4 ) var( --pp-space-5 );
+	border: 1px solid var( --s-border );
+	border-radius: var( --s-radius-lg );
+	background: var( --s-bg );
+	box-shadow: var( --s-shadow-sm );
+
+	.pp-stat__value {
+		font-variant-numeric: tabular-nums;
+	}
+
+	@media ( max-width: 782px ) {
+		.pp-stat-grid {
+			grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
+		}
+	}
+}
+
+// Try asking: prompts built from what Saddle found, each to copy into the
+// app. Cards that do one thing each: a title, the prompt, one button.
+.saddle-ideas__grid {
+	display: grid;
+	grid-template-columns: repeat( auto-fill, minmax( 200px, 1fr ) );
+	gap: var( --pp-space-3 );
+}
+
+.saddle-ideas__card {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 6px;
+	min-width: 0;
+	padding: 14px 16px;
+	border: 1px solid var( --s-border );
+	border-radius: var( --s-radius-lg );
+	background: var( --s-bg );
+	box-shadow: var( --s-shadow-sm );
+
+	.pp-btn {
+		margin-block-start: auto;
+	}
+}
+
+.saddle-ideas__title {
+	margin: 0;
+	font-size: var( --s-text );
+	font-weight: 600;
+}
+
+.saddle-ideas__prompt {
+	display: -webkit-box;
+	margin: 0 0 6px;
+	overflow: hidden;
+	color: var( --s-fg-muted );
+	font-size: var( --s-text );
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
 }
 
 // One line from Saddle with the next setup step, beside its mark.

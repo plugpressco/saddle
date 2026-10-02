@@ -95,7 +95,7 @@ class Saddle_Onboarding {
 				'state'       => isset( $first['state'] ) && in_array( $first['state'], self::STATES, true ) ? $first['state'] : 'new',
 				'step'        => isset( $first['step'] ) && in_array( $first['step'], self::STEPS, true ) ? $first['step'] : '',
 				'app'         => isset( $first['app'] ) ? sanitize_key( $first['app'] ) : '',
-				'tier_choice' => isset( $first['tier_choice'] ) && in_array( $first['tier_choice'], array( 'read', 'write' ), true ) ? $first['tier_choice'] : '',
+				'tier_choice' => isset( $first['tier_choice'] ) && in_array( $first['tier_choice'], array( 'read', 'write', 'admin' ), true ) ? $first['tier_choice'] : '',
 				'finished_at' => isset( $first['finished_at'] ) ? (int) $first['finished_at'] : 0,
 			),
 			'modules'   => $clean_modules,
@@ -288,8 +288,9 @@ class Saddle_Onboarding {
 
 			case 'first_run.done':
 				$choice = isset( $event['tier_choice'] ) ? (string) $event['tier_choice'] : '';
-				if ( ! in_array( $choice, array( '', 'read', 'write' ), true ) ) {
-					return self::invalid( __( 'The choice must be read or write.', 'saddle' ) );
+				// Manage the site is a choice too since the welcome (#309).
+				if ( ! in_array( $choice, array( '', 'read', 'write', 'admin' ), true ) ) {
+					return self::invalid( __( 'The choice must be read, write or admin.', 'saddle' ) );
 				}
 				$state['first_run']['state']       = 'done';
 				$state['first_run']['step']        = '';
