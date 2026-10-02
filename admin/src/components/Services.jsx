@@ -270,6 +270,18 @@ function Detail( { record, onChanged } ) {
 				</div>
 			) }
 
+			{ /* The one privacy fact an owner needs before adding a key: which
+			     hosts this service sends to (non-negotiable #1). */ }
+			{ ( record.sends || [] ).length > 0 && (
+				<p className="saddle-svc__sends">
+					{ sprintf(
+						/* translators: %s: host names, e.g. "api.unsplash.com, images.unsplash.com". */
+						__( 'Sends to %s', 'saddle' ),
+						record.sends.map( ( s ) => s.host ).join( ', ' )
+					) }
+				</p>
+			) }
+
 			{ tools.length > 0 && (
 				<Collapsible
 					className="saddle-svc__tools"
