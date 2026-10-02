@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-02T01:33:31+00:00\n"
+"POT-Creation-Date: 2026-10-02T16:50:10+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -21,7 +21,7 @@ msgstr ""
 #: includes/admin/class-saddle-settings.php:34
 #: includes/class-saddle-core-settings.php:40
 #: admin/build/index.js:77
-#: admin/src/components/Frame.jsx:306
+#: admin/src/components/Frame.jsx:308
 msgid "Saddle"
 msgstr ""
 
@@ -3723,8 +3723,8 @@ msgid "%s ‹ Saddle"
 msgstr ""
 
 #: includes/admin/class-saddle-settings.php:156
-#: includes/class-saddle-modules.php:77
-#: includes/class-saddle-modules.php:126
+#: includes/class-saddle-modules.php:82
+#: includes/class-saddle-modules.php:131
 msgid "Settings"
 msgstr ""
 
@@ -3735,7 +3735,7 @@ msgstr ""
 msgid "Get started"
 msgstr ""
 
-#: includes/admin/class-saddle-settings.php:362
+#: includes/admin/class-saddle-settings.php:367
 msgid "Saddle: the admin UI has not been built yet. Run \"npm install && npm run build\" in the plugin folder."
 msgstr ""
 
@@ -5221,36 +5221,36 @@ msgstr ""
 msgid "%s is installed."
 msgstr ""
 
-#: includes/class-saddle-modules.php:49
-#: includes/class-saddle-modules.php:51
+#: includes/class-saddle-modules.php:54
+#: includes/class-saddle-modules.php:56
 #: admin/build/index.js:117
-#: admin/src/App.jsx:56
 #: admin/src/App.jsx:58
+#: admin/src/App.jsx:60
 msgid "Home"
 msgstr ""
 
-#: includes/class-saddle-modules.php:56
-#: includes/class-saddle-modules.php:58
+#: includes/class-saddle-modules.php:61
+#: includes/class-saddle-modules.php:63
 msgid "AI apps"
 msgstr ""
 
-#: includes/class-saddle-modules.php:63
-#: includes/class-saddle-modules.php:65
+#: includes/class-saddle-modules.php:68
+#: includes/class-saddle-modules.php:70
 #: admin/build/index.js:89
 #: admin/src/components/Home.jsx:334
 msgid "Services"
 msgstr ""
 
-#: includes/class-saddle-modules.php:70
-#: includes/class-saddle-modules.php:72
+#: includes/class-saddle-modules.php:75
+#: includes/class-saddle-modules.php:77
 msgid "Context"
 msgstr ""
 
-#: includes/class-saddle-modules.php:79
+#: includes/class-saddle-modules.php:84
 msgid "General"
 msgstr ""
 
-#: includes/class-saddle-modules.php:113
+#: includes/class-saddle-modules.php:118
 msgid "Overview"
 msgstr ""
 
@@ -6775,7 +6775,7 @@ msgid "This persisted attribute does nothing — rewrite it on a path the block 
 msgstr ""
 
 #. translators: %s: minimum WordPress version.
-#: saddle.php:544
+#: saddle.php:545
 #, php-format
 msgid "Saddle requires WordPress %s or later (the core Abilities API). The MCP server is disabled until you upgrade."
 msgstr ""
@@ -8147,7 +8147,7 @@ msgstr ""
 #: admin/src/components/ConnectedClients.jsx:363
 #: admin/src/components/Home.jsx:201
 #: admin/src/onboarding-logic.js:610
-#: admin/src/screens.jsx:175
+#: admin/src/screens.jsx:186
 msgid "Connect an app"
 msgstr ""
 
@@ -8420,7 +8420,7 @@ msgstr ""
 
 #: admin/build/index.js:64
 #: admin/build/index.js:118
-#: admin/src/App.jsx:511
+#: admin/src/App.jsx:561
 #: admin/src/components/FirstRun.jsx:732
 msgid "Welcome"
 msgstr ""
@@ -8652,7 +8652,7 @@ msgstr ""
 #: admin/build/index.js:74
 #: admin/build/index.js:77
 #: admin/src/components/Frame.jsx:77
-#: admin/src/components/Frame.jsx:340
+#: admin/src/components/Frame.jsx:342
 msgid "No app can read or change this site until you resume."
 msgstr ""
 
@@ -8664,7 +8664,7 @@ msgstr ""
 #: admin/build/index.js:74
 #: admin/build/index.js:77
 #: admin/src/components/Frame.jsx:97
-#: admin/src/components/Frame.jsx:352
+#: admin/src/components/Frame.jsx:354
 msgid "Resume"
 msgstr ""
 
@@ -8714,12 +8714,12 @@ msgid "Rate Saddle"
 msgstr ""
 
 #: admin/build/index.js:77
-#: admin/src/components/Frame.jsx:294
+#: admin/src/components/Frame.jsx:296
 msgid "Skip to content"
 msgstr ""
 
 #: admin/build/index.js:77
-#: admin/src/components/Frame.jsx:339
+#: admin/src/components/Frame.jsx:341
 msgid "AI is paused."
 msgstr ""
 
@@ -9827,30 +9827,30 @@ msgstr ""
 
 #. translators: %s: module name, such as Saddle Analytics.
 #: admin/build/index.js:117
-#: admin/src/screens.jsx:109
+#: admin/src/screens.jsx:115
 #, js-format
 msgid "%s did not add this screen. Updating it may add it."
 msgstr ""
 
 #: admin/build/index.js:117
-#: admin/src/screens.jsx:240
+#: admin/src/screens.jsx:251
 msgid "Run setup again"
 msgstr ""
 
 #. translators: %s: error message.
 #: admin/build/index.js:118
-#: admin/src/App.jsx:228
+#: admin/src/App.jsx:278
 #, js-format
 msgid "Couldn’t refresh the connections list: %s"
 msgstr ""
 
 #: admin/build/index.js:118
-#: admin/src/App.jsx:449
+#: admin/src/App.jsx:499
 msgid "This site’s address has changed since AI write access was turned on — often a sign of a staging clone or a migration carrying over live credentials. If that wasn’t intentional, review your connected apps and revoke anything unexpected."
 msgstr ""
 
 #: admin/build/index.js:118
-#: admin/src/App.jsx:454
+#: admin/src/App.jsx:504
 msgid "This is expected — clear this warning"
 msgstr ""
 

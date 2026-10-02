@@ -254,6 +254,8 @@ The WordPress.org version never checks for its own updates. The version from plu
 * New: Your AI app can upload a file it has no public link for, such as an image it made. It sends the file itself, and WordPress checks it like any other upload.
 * New: A "Check the connection" tool. Your AI app can find out why tools are missing or why another app cannot connect, and tell you how to fix it.
 * Improved: Connecting an app now takes one address. Turn on sign-in for apps once, paste the address into Claude, Claude Code, ChatGPT, Codex, Cursor, VS Code, Gemini CLI or Windsurf, and approve the connection when your browser opens. No key to copy and nothing to install. Pasted keys still work and stay the fallback for sites without HTTPS or pretty permalinks.
+* New: Plugins that add a page under Saddle (Analytics, SEO, CRM) can show a deeper screen at an address of its own, such as a campaign's report, with the Back button and shared links working. Their unfinished setup steps show above their first tab.
+* New: Saddle's colours are available to other plugins' full-screen admin pages, so a page outside the Saddle frame, like an email editor, matches it.
 * Changed: The Saddle screens use saddle.to's olive brand colour instead of magenta. Buttons and links are easier to read: 6.7:1 contrast on white, up from 5.2.
 * Fixed: On a site with the trash turned off, the delete preview no longer says a post or page can be restored.
 * Fixed: With Saddle Rank installed, Saddle could count its own Rank Math tools as Saddle Rank's when telling your AI app what is available, and list them under Integrations on sites without Rank Math.
