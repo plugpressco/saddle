@@ -1,8 +1,8 @@
 /**
  * The Saddle palette: tokens only, no component or frame rules.
  *
- * Both stylesheets include this file: style.scss (the admin frame) and
- * palette.scss (pages outside the frame, via Saddle_Modules::enqueue_palette()).
+ * Declarations only, as mixins. style.scss includes them under the frame's
+ * selectors; palette.scss includes them under body.saddle-palette alone.
  * Nothing else defines these tokens (DESIGN-ALIGNMENT.md, "The family").
  */
 
@@ -30,11 +30,7 @@
 // `.pp-scope` is on every portaled layer (drawers, lists, menus, tooltips)
 // and the DS re-declares its own tokens there, so it is named here too:
 // without it those layers fall back to the DS's greys.
-body.saddle-admin-page,
-body.saddle-palette,
-.pp-scope,
-.saddle-app,
-.pp-app {
+@mixin palette {
 	// The brand. Nothing reads these directly except the few places listed in
 	// DESIGN-ALIGNMENT.md; everything else maps onto WordPress's own values.
 	--saddle-brand: #0b6470; // Petrol, 6.84 on white either way round
@@ -120,9 +116,7 @@ body.saddle-palette,
 
 // Every --s-* token aliases a shared --pp-* token, so the whole stylesheet
 // rides the palette above.
-body.saddle-admin-page,
-body.saddle-palette,
-.saddle-app {
+@mixin aliases {
 	--s-canvas: var( --pp-canvas );
 	--s-bg: var( --pp-surface );
 	--s-fg: var( --pp-text );
@@ -170,9 +164,7 @@ body.saddle-palette,
 
 // Geometry and motion ride the body too, so portaled layers (the Connect
 // drawer, lists) get them.
-body.saddle-admin-page,
-body.saddle-palette,
-.saddle-app {
+@mixin geometry {
 	--s-radius: var( --pp-r );
 	--s-radius-lg: var( --pp-r-lg );
 	--s-radius-pill: var( --pp-r-pill );
@@ -185,11 +177,7 @@ body.saddle-palette,
 // comparison series is a flat grey, grid and labels ride the palette. A
 // vendor's bar keeps the vendor's colour; an unknown vendor is #707070,
 // never the brand. Modules read these by computed style.
-body.saddle-admin-page,
-body.saddle-palette,
-.saddle-app,
-.pp-app,
-.pp-scope {
+@mixin chart {
 	--saddle-chart-ink: var( --saddle-brand );
 	--saddle-chart-ink-soft: color-mix( in srgb, var( --saddle-brand ) 14%, transparent );
 	--saddle-chart-compare: #707070;

@@ -13,6 +13,26 @@
 // The palette (tokens only) lives in _tokens.scss, shared with palette.scss.
 @use 'tokens';
 
+body.saddle-admin-page,
+.pp-scope,
+.saddle-app,
+.pp-app {
+	@include tokens.palette;
+}
+
+body.saddle-admin-page,
+.saddle-app {
+	@include tokens.aliases;
+	@include tokens.geometry;
+}
+
+body.saddle-admin-page,
+.saddle-app,
+.pp-app,
+.pp-scope {
+	@include tokens.chart;
+}
+
 // The DS derives --pp-tone-text from --pp-tone; the status values above are
 // already text-strength, so every tone reads its own mark color.
 .pp-tone--success {

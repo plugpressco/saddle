@@ -8,7 +8,16 @@
  */
 @use 'tokens';
 
+// Under the body class only: custom properties inherit from the body, which is
+// all a full-screen editor or a Dashboard widget needs. Nothing here may match
+// .pp-scope or .pp-app, so another plugin's kit widgets on the same page keep
+// their own palette.
 body.saddle-palette {
+	@include tokens.palette;
+	@include tokens.aliases;
+	@include tokens.geometry;
+	@include tokens.chart;
+
 	--pp-surface-alt: var( --pp-n-200 );
 	--pp-surface-hover: var( --pp-n-50 );
 	--pp-border: var( --pp-n-300 );

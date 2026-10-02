@@ -265,7 +265,10 @@ class Saddle_Modules {
 	/**
 	 * Give a page outside the Saddle frame Saddle's palette: every `--pp-*`,
 	 * `--saddle-brand*`, `--s-*` and `--saddle-chart-*` token, and nothing
-	 * else (no component, frame or wp-admin rules).
+	 * else (no component, frame or wp-admin rules). The tokens sit under
+	 * `body.saddle-palette` alone and inherit from the body; the page gets no
+	 * `pp-scope` or `pp-app` class, so another plugin's kit widgets on the
+	 * same screen keep their own palette.
 	 *
 	 * Safe to call on `admin_enqueue_scripts` on any admin screen. A sibling
 	 * probes it with `method_exists( 'Saddle_Modules', 'enqueue_palette' )`.
@@ -285,7 +288,7 @@ class Saddle_Modules {
 			add_filter(
 				'admin_body_class',
 				static function ( $classes ) {
-					return $classes . ' saddle-palette pp-scope';
+					return $classes . ' saddle-palette';
 				}
 			);
 		}

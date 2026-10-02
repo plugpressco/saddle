@@ -277,12 +277,14 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		set_current_screen( 'dashboard' );
 		$classes = apply_filters( 'admin_body_class', '' );
 		$this->assertStringContainsString( 'saddle-palette', $classes );
-		$this->assertStringContainsString( 'pp-scope', $classes );
+		$this->assertStringNotContainsString( 'pp-scope', $classes, 'Another plugin kit widgets must keep their own palette.' );
 		// Only the tokens: no frame rules, no wp-admin overrides.
 		$css = file_get_contents( SADDLE_DIR . 'admin/build/palette.css' );
 		$this->assertStringContainsString( '--saddle-chart-ink', $css );
 		$this->assertStringNotContainsString( '#wpcontent', $css );
 		$this->assertStringNotContainsString( '.saddle-header', $css );
+		$this->assertStringNotContainsString( '.pp-scope', $css );
+		$this->assertStringNotContainsString( '.pp-app', $css );
 	}
 
 	public static function routes() {

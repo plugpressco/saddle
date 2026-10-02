@@ -142,8 +142,10 @@ computed style or by grep:
 - **F10 Settings through the schema.** A module's settings are a `settings`
   callable; Core draws the form and exposes the module tools.
 - **F11 Pages outside the frame** (a full-screen editor, a Dashboard widget)
-  call `Saddle_Modules::enqueue_palette()`: tokens only, nothing else on the
-  page changes.
+  call `Saddle_Modules::enqueue_palette()`: tokens only, under
+  `body.saddle-palette` and inherited from the body. The page gets no
+  `pp-scope` or `pp-app` class, so nothing else on it changes, including
+  other plugins' kit widgets.
 
 ## Home (#309, v2 the same day)
 
