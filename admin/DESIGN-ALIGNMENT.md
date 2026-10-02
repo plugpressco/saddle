@@ -102,26 +102,55 @@ Never draw the frame while the app is loading: WordPress's `common.js` moves
 every `.notice` after the first `.wrap h1`, and the header's `h1` would pull the
 quarantined notices back into view.
 
-## Home (#309)
+## Home (#309, v2 the same day)
 
-Home replaced the Dashboard on 2026-10-02 (Fahim: "not a boring page … clean
-and action homepage"). It is an action page, top to bottom:
+Home replaced the Dashboard on 2026-10-02. The first build had captioned stat
+tiles, a row of suggested prompts and three ways to say "connect"; Fahim:
+"more ugly now … no ai slop, random text box, ai text, no repeat unnecessary
+things". The v2 plan is `planning/HOME-APPS-SERVICES-V2.md`. Home is now:
 
-- **The week at a glance**, across both columns: one block of four numbers,
-  Changes and Blocked in the last 7 days, Waiting for you, Apps.
-- Left column: **Needs your OK** while something waits; **one line from
-  Saddle** with the single next setup step (it replaced the Setup checklist,
-  and can be hidden); **Try asking**: three prompts built from what Saddle
-  found on the site (missing alt text, missing search descriptions, updates
-  waiting, then safe everyday ones), each a card with "Copy prompt", none
-  changing anything before the app shows the owner; then the **activity
-  feed** by day, filters beside its heading, the app's logo on each row,
-  "Show older" at the end.
-- Right column: **Apps** (each with its access, "Connect another app"),
-  **Works with** (plugins on this site the apps have tools for, linking to
-  Services), the connection warning when there is one, and **Modules**.
+- **Nothing connected:** one block, centred, "No AI app is connected yet." and
+  a primary "Connect an app". Then the feed if there is history. No stats,
+  no side column.
+- **Connected:** left, "Needs your OK" while something waits; one plain line
+  from Saddle with the single next setup step (`try` or `choose` only;
+  mark, sentence, button, close; no box); **This week**, one block with its
+  title in the header row and three numbers with labels only, Changes ·
+  Blocked · Waiting for you, exact (the log's `since` argument); then
+  **Activity**: the heading and the filters (All · Changes · Blocked, and
+  Rehearsed only when one exists) on one row, days as 13/600 grey labels,
+  one-line rows (the app's logo or a status dot, the summary, the time; the
+  actor in the row's tooltip), "Show older". Right, **Apps** (logo, name,
+  role, "Manage", "Connect another app" as the last row), **Works with**
+  (plugin names only, "Services" link) when non-empty, the connection
+  warning, **Modules**.
+- Nothing generated: no suggested prompts, no tips, no captions under
+  numbers.
 
-No tabs and no "View all": the old Activity tab is Home's feed (`#activity`).
+## AI apps (#309 v2)
+
+- **Nothing connected:** "Connect an app" (15/600, no sentence), then Chat
+  apps · Agents · Code editors as rows of light tiles: logo and name only,
+  44px, hairline, no shadow, 6px corners, `#949494` on hover. Under them one
+  link, "Another MCP app", and one line, "Address", the URL in a code chip,
+  "Copy" as a link-button. No boxes besides the tiles.
+- **Connected:** the list; each row has at most one meta fact ("Last used …"
+  or "Connected …", the more recent) and never repeats the role shown in the
+  dropdown beside it.
+
+## Services (#309 v2)
+
+- No section notes. No section heading when only one kind has records; with
+  two or more, "Accounts" / "Plugins" / "Add-ons" and nothing under them.
+- Rows: the name and one status word ("Not set up" · "Ready" · "Active" ·
+  "Off"). No letter avatar, no description, no tool count. "Add key"
+  (secondary) only for `needs_key`; every other row is the button that opens
+  the drawer, with a chevron.
+- The drawer: the service's one-line summary under its name, the key form
+  or the on/off switch, "Get a key from <service>", **"Sends to <hosts>"**
+  (the one privacy fact an owner needs; never remove it), and the tools as a
+  collapsed list.
+- Empty page: one grey line, "Nothing here yet."
 
 ## The welcome (#309)
 

@@ -615,6 +615,18 @@ export default function ConnectWizard( {
 		? APPS
 		: APPS.filter( ( a ) => COMMON_APPS.includes( a.key ) );
 
+	// The welcome has already chosen the app. Until the sign-in state is known
+	// and the key (or address) is ready, the picker would flash as the wrong
+	// step inside the conversation, so wait quietly instead. An error or a
+	// duplicate still draws the normal step, where the owner can act on it.
+	if ( embedded && presetApp && 0 === step && ! error && ! duplicateOf ) {
+		return (
+			<div className="saddle-wizard saddle-wizard--embedded">
+				<Spinner />
+			</div>
+		);
+	}
+
 	return (
 		<div
 			className={
