@@ -33,7 +33,9 @@ class Saddle_Modules {
 	 * Core's pages, in menu order around the modules.
 	 *
 	 * Named by Fahim on 2026-10-01 (#285): Dashboard, AI apps, Context and
-	 * Settings, one job each; only Dashboard has tabs. The area keys and slugs
+	 * Settings, one job each. On 2026-10-02 (#309) Dashboard became Home, and
+	 * its Activity tab became Home's own feed, so no core page has tabs; an
+	 * old `&tab=activity` address lands on Home. The area keys and slugs
 	 * are older than the names (`home`, `connections`) and stay, because agent
 	 * tools and browser hooks carry them. Access is chosen per app on the AI
 	 * apps page, so there is no Permissions page or tab any more.
@@ -44,10 +46,9 @@ class Saddle_Modules {
 		return array(
 			'home'        => array(
 				'slug'  => 'saddle',
-				'title' => __( 'Dashboard', 'saddle' ),
+				'title' => __( 'Home', 'saddle' ),
 				'tabs'  => array(
-					'overview' => __( 'Overview', 'saddle' ),
-					'activity' => __( 'Activity', 'saddle' ),
+					'overview' => __( 'Home', 'saddle' ),
 				),
 			),
 			'connections' => array(

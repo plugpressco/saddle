@@ -255,7 +255,7 @@ class Saddle_Context {
 
 		$lines[] = __( '# When a call is refused', 'saddle' );
 		$lines[] = '';
-		$lines[] = '- ' . __( 'A permission error on a tool call means one of the site owner\'s controls blocked it: the global pause switch, the site\'s access level, or that specific tool being turned off. These are the owner\'s deliberate choices — never retry in a loop; tell the user which control to check in Saddle: the AI access switch on the Dashboard, this app\'s access on AI apps, or single tools under Settings.', 'saddle' );
+		$lines[] = '- ' . __( 'A permission error on a tool call means one of the site owner\'s controls blocked it: the global pause switch, the site\'s access level, or that specific tool being turned off. These are the owner\'s deliberate choices — never retry in a loop; tell the user which control to check in Saddle: the AI switch at the top of any Saddle page, this app\'s access on AI apps, or single tools under Settings.', 'saddle' );
 		$lines[] = '- ' . __( 'A 401 saying the key was rejected means the sign-in key was revoked or rotated. Ask the user to reconnect this app from Saddle → AI apps (or paste the fresh setup if they just rotated the key).', 'saddle' );
 		$lines[] = '- ' . __( 'A 401 saying no key arrived usually means the web server strips the Authorization header. Ask the user to open Saddle → Settings → Connection check and run it — it can fix this automatically on most hosts.', 'saddle' );
 		$lines[] = '- ' . __( 'A destructive tool answering with a preview and a confirm_token is NOT an error — that is the approval gate. Show the user the preview; call again with the token only after they agree.', 'saddle' );
@@ -495,7 +495,7 @@ class Saddle_Context {
 			// gets before every single call fails.
 			array_unshift(
 				$lines,
-				'- ' . __( 'SADDLE IS PAUSED. The site owner has switched off all AI access, so every tool below will be refused until they resume it in Saddle → Dashboard. Tell the user that before attempting anything.', 'saddle' )
+				'- ' . __( 'SADDLE IS PAUSED. The site owner has switched off all AI access, so every tool below will be refused until they resume it from the AI switch at the top of any Saddle page. Tell the user that before attempting anything.', 'saddle' )
 			);
 		}
 

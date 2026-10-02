@@ -446,7 +446,7 @@ class Saddle_Capabilities {
 		if ( self::is_paused() ) {
 			return array(
 				'code'    => 'saddle_paused',
-				'message' => __( 'The site owner has paused all AI access — every tool is refused until they resume it from Saddle → Dashboard. Do not retry; tell the user Saddle is paused.', 'saddle' ),
+				'message' => __( 'The site owner has paused all AI access — every tool is refused until they resume it from the AI switch at the top of any Saddle page. Do not retry; tell the user Saddle is paused.', 'saddle' ),
 			);
 		}
 

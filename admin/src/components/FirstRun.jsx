@@ -1,38 +1,31 @@
 /**
- * First run (#269, v2 in #277). Saddle reads the site before it asks for
- * anything, connects the owner's AI, proves the connection with a read-only
- * prompt, and only then asks whether it may edit.
+ * The welcome (#309; first run since #269, v2 in #277): a conversation.
  *
- * Steps: the site read (0), which AI (app), connect, try it, and what Saddle
- * can do (choose). The step is stored with each change, so a reload resumes
- * where the owner was. "Skip setup" is on every step and leaves the app at
- * Read only: only the "Let it draft and edit content" button ever raises it,
- * and only for the app that was just connected (#285).
+ * Saddle talks beside its mark, a line at a time, and asks one question at a
+ * time. The owner answers with quick replies, which then show as the owner's
+ * own messages. Saddle reads the site before it asks anything, connects the
+ * owner's AI, proves the connection with a read-only prompt, and only then
+ * asks how much the app may do.
+ *
+ * Steps: the site read (0), which AI (app), connect, try it, and how much it
+ * may do (choose). The step is stored with each change, so a reload rebuilds
+ * the conversation up to where the owner was. "Skip for now" leaves the app
+ * at Read only: only the owner's pick on the last step ever raises it, and
+ * only for the app that was just connected (#285).
  */
 import { useState, useEffect, useRef } from '@wordpress/element';
 import {
 	Button,
 	CalloutCard,
-	ChecklistItem,
-	EyeIcon,
-	Kbd,
 	Notice,
-	RefreshIcon,
-	Row,
-	RowList,
-	ShieldCheckIcon,
 	Snippet,
-	StatCard,
-	StatGrid,
 	useReducedMotion,
 } from '@plugpress/ui';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import { api, connectionPath, saddleData } from '../api';
+import { api, connectionPath } from '../api';
 import ConnectWizard from './ConnectWizard';
 import WaitingLine from './WaitingLine';
 import { APPS } from '../connect-apps';
-import { AppGrid } from './ConnectApps';
-import { appKeyFromLabel } from './icons';
 import { createPulse } from '../pulse';
 import {
 	connectPulseOptions,
@@ -44,9 +37,14 @@ import {
 	tryPrompt,
 	tryStatus,
 } from '../onboarding-logic';
+import { ROLES } from './ConnectedClients';
+import { AppLogo, BrandMark, appKeyFromLabel } from './icons';
 
-// Time between lines, so each one can be read as it lands.
-const BEAT = 700;
+// Time between Saddle's lines, so each one can be read as it lands.
+const BEAT = 900;
+
+// The apps offered first; "More…" shows the rest.
+const FIRST_APPS = [ 'claude', 'chatgpt', 'claude-code', 'codex', 'cursor' ];
 
 const SEO_NAMES = {
 	yoast: 'Yoast SEO',
@@ -54,7 +52,16 @@ const SEO_NAMES = {
 	aioseo: 'All in One SEO',
 };
 
-function siteLine( { site } ) {
+/**
+ * What Saddle says about the site, as one or two messages: what it found,
+ * then the first piece of work it noticed, if any. Whole sentences, each
+ * translated on its own.
+ *
+ * @param {Object} look GET /first-look.
+ * @return {string[]} Messages.
+ */
+function lookLines( look ) {
+	const { site, findings = {}, seo, updates } = look;
 	let builder;
 	if ( 'divi5' === site.builder ) {
 		builder = __(
@@ -69,22 +76,15 @@ function siteLine( { site } ) {
 	} else {
 		builder = __( 'Your AI can edit your pages and posts.', 'saddle' );
 	}
-	// Two whole sentences, each translated on its own.
-	return [
+
+	const parts = [
 		sprintf(
-			/* translators: 1: site name, 2: WordPress version, 3: theme name. */
-			__( '%1$s runs WordPress %2$s with the %3$s theme.', 'saddle' ),
-			site.name,
-			site.wp_version,
-			site.theme
+			/* translators: %s: site name. */
+			__( 'I had a quick look around %s.', 'saddle' ),
+			site.name
 		),
 		builder,
-	].join( ' ' );
-}
-
-function pluginsLine( { seo, updates } ) {
-	const waiting = updates.plugins + updates.themes;
-	const parts = [];
+	];
 	if ( seo && SEO_NAMES[ seo ] ) {
 		parts.push(
 			sprintf(
@@ -97,6 +97,7 @@ function pluginsLine( { seo, updates } ) {
 			)
 		);
 	}
+	const waiting = updates ? updates.plugins + updates.themes : 0;
 	parts.push(
 		waiting
 			? sprintf(
@@ -111,10 +112,7 @@ function pluginsLine( { seo, updates } ) {
 			  )
 			: __( 'Everything is up to date.', 'saddle' )
 	);
-	return parts.join( ' ' );
-}
 
-function findingLines( { findings } ) {
 	const found = [];
 	if ( findings.missing_alt > 0 ) {
 		found.push(
@@ -144,7 +142,18 @@ function findingLines( { findings } ) {
 			)
 		);
 	}
-	return found;
+
+	const lines = [ parts.join( ' ' ) ];
+	if ( found.length ) {
+		lines.push(
+			sprintf(
+				/* translators: %s: one or two sentences, e.g. "12 images have no alt text." */
+				__( 'Something your AI could start with: %s', 'saddle' ),
+				found.join( ' ' )
+			)
+		);
+	}
+	return lines;
 }
 
 // How long the try-it step waits for a tool call before it offers a tip.
@@ -164,54 +173,146 @@ const errorText = ( e ) =>
 		  )
 		: e.message;
 
+/* ------------------------------------------------------------------------ */
+/* The conversation's pieces                                                */
+/* ------------------------------------------------------------------------ */
+
+/**
+ * One message from Saddle, beside its mark. A message that follows another
+ * of Saddle's own hides the mark, the way a chat thread groups them.
+ *
+ * @param {Object}  props
+ * @param {boolean} props.cont     It follows another of Saddle's messages.
+ * @param {boolean} props.typing   Draw the typing dots instead of the content.
+ * @param {*}       props.children The message.
+ */
+function Say( { cont = false, typing = false, children } ) {
+	return (
+		<div className={ `saddle-chat__say${ cont ? ' is-cont' : '' }` }>
+			<span className="saddle-chat__avatar" aria-hidden="true">
+				<BrandMark />
+			</span>
+			<div className="saddle-chat__body">
+				{ typing ? (
+					<span
+						className="saddle-chat__typing"
+						role="img"
+						aria-label={ __( 'Saddle is typing', 'saddle' ) }
+					>
+						<i />
+						<i />
+						<i />
+					</span>
+				) : (
+					children
+				) }
+			</div>
+		</div>
+	);
+}
+
+/**
+ * One of the owner's answers, on the right.
+ *
+ * @param {Object} props
+ * @param {*}      props.children The answer.
+ */
+function You( { children } ) {
+	return (
+		<div className="saddle-chat__you">
+			<span className="saddle-chat__bubble">{ children }</span>
+		</div>
+	);
+}
+
+/**
+ * A finished thing, with a tick: "Claude is connected."
+ *
+ * @param {Object} props
+ * @param {*}      props.children What finished.
+ */
+function Done( { children } ) {
+	return <p className="saddle-chat__done">{ children }</p>;
+}
+
+/**
+ * Which AI: the common apps as quick replies, and "More…" for the rest.
+ *
+ * @param {Object}   props
+ * @param {Function} props.onPick Called with an app key.
+ */
+function AppChips( { onPick } ) {
+	const [ more, setMore ] = useState( false );
+	const keys = more
+		? [
+				...FIRST_APPS,
+				...APPS.map( ( a ) => a.key ).filter(
+					( k ) => ! FIRST_APPS.includes( k )
+				),
+		  ]
+		: FIRST_APPS;
+
+	return (
+		<div
+			className="saddle-chat__replies"
+			role="group"
+			aria-label={ __( 'Which AI do you use?', 'saddle' ) }
+		>
+			{ keys
+				.filter( ( k ) => appMeta( k ) )
+				.map( ( k ) => (
+					<button
+						key={ k }
+						type="button"
+						className="saddle-chat__chip"
+						onClick={ () => onPick( k ) }
+					>
+						<AppLogo app={ k } width="18" height="18" />
+						{ appMeta( k ).label }
+					</button>
+				) ) }
+			{ ! more && (
+				<button
+					type="button"
+					className="saddle-chat__chip saddle-chat__chip--more"
+					onClick={ () => setMore( true ) }
+				>
+					{ __( 'More…', 'saddle' ) }
+				</button>
+			) }
+		</div>
+	);
+}
+
 /**
  * The try-it step: a read-only prompt to paste into the app, and a waiting
- * line that shows each call as it lands.
+ * line that shows each call as it lands. Moves on by itself once it works.
  *
  * @param {Object}   props
  * @param {string}   props.app    App key.
  * @param {Object}   props.look   GET /first-look, or null.
- * @param {Function} props.onDone The owner carries on; called with the id of
- *                                the connection that made the call, if known.
+ * @param {Function} props.onDone Called with the final status (or null when
+ *                                skipped): its `connection` and `items`.
  */
 function TryIt( { app, look, onDone } ) {
 	const label = appMeta( app ).label;
 	const pulse = useRef( null );
-	const [ tried, setTried ] = useState( false );
 	const [ slow, setSlow ] = useState( false );
-	const connection = useRef( '' );
 
 	if ( ! pulse.current ) {
 		pulse.current = createPulse();
 	}
 
-	// Enter carries on once it works, unless focus is on a control of its own.
-	useEffect( () => {
-		if ( ! tried ) {
-			return undefined;
-		}
-		const onKey = ( e ) => {
-			if ( 'Enter' === e.key && document.body === e.target ) {
-				onDone( connection.current );
-			}
-		};
-		document.addEventListener( 'keydown', onKey );
-		return () => document.removeEventListener( 'keydown', onKey );
-	}, [ tried, onDone ] );
-
 	return (
-		<div className="saddle-first-run__after">
-			<div className="saddle-first-run__ask">
-				<h2 className="saddle-first-run__question">
-					{ sprintf(
-						/* translators: %s: the app name. */
-						__( 'Try it. Paste this into %s:', 'saddle' ),
-						label
-					) }
-				</h2>
-				<Snippet value={ tryPrompt( look ) } />
-			</div>
-
+		<Say>
+			<p>
+				{ sprintf(
+					/* translators: %s: the app name. */
+					__( 'Let’s try it. Paste this into %s:', 'saddle' ),
+					label
+				) }
+			</p>
+			<Snippet value={ tryPrompt( look ) } />
 			<WaitingLine
 				check={ () =>
 					pulse.current
@@ -222,78 +323,56 @@ function TryIt( { app, look, onDone } ) {
 				}
 				initialText={ sprintf(
 					/* translators: %s: the app name. */
-					__( 'Waiting for %s to use Saddle…', 'saddle' ),
+					__( 'Waiting for %s to ask me something…', 'saddle' ),
 					label
 				) }
 				settleMs={ TRY_SETTLE }
 				timeoutMs={ TRY_PATIENCE }
 				onTimeout={ () => setSlow( true ) }
-				onDone={ ( status ) => {
-					connection.current = ( status && status.connection ) || '';
-					setTried( true );
-				} }
+				onDone={ ( status ) => onDone( status || null ) }
 			/>
-
-			{ slow && ! tried && (
+			{ slow && (
 				<CalloutCard
 					tone="warning"
 					title={ __( 'Nothing has arrived yet', 'saddle' ) }
 					description={ timeoutTip( app, label ) }
 				/>
 			) }
-
-			<div className="saddle-first-run__actions">
-				{ tried ? (
-					<Button
-						variant="primary"
-						onClick={ () => onDone( connection.current ) }
-					>
-						{ __( 'Continue', 'saddle' ) }
-						<Kbd>↵</Kbd>
-					</Button>
-				) : (
-					<Button variant="ghost" onClick={ () => onDone( '' ) }>
-						{ __( 'Skip this step', 'saddle' ) }
-					</Button>
-				) }
+			<div>
+				<Button variant="link" onClick={ () => onDone( null ) }>
+					{ __( 'Skip this step', 'saddle' ) }
+				</Button>
 			</div>
-		</div>
+		</Say>
 	);
 }
 
 /**
- * The last step: what the connected app can do, and the one real choice.
+ * The last question: how much the connected app may do. Read only, Edit
+ * content or Manage the site, each with its one-line hint; the app starts at
+ * Read only and only this pick raises it.
  *
- * The choice is about this app only: "Let it draft and edit content" sets the
- * role of the connection that just made its first call to Edit content. The
- * connection is the one the try step saw; when that is not known (a resume,
- * or the step was skipped) it is the app's newest connection.
+ * The choice is about this app only: it sets the role of the connection that
+ * just made its first call. The connection is the one the try step saw; when
+ * that is not known (a resume, or the step was skipped) it is the app's
+ * newest connection. With no connection to find, it falls back to the site's
+ * tier, as before roles were per app.
  *
  * @param {Object}   props
  * @param {string}   props.app          App key.
  * @param {string}   props.connectionId The connection the try step saw, or ''.
  * @param {string}   props.tier         The site's tier now (older Core only).
- * @param {string}   props.siteName     For the heading.
  * @param {Function} props.onTierSaved  Called with the tier after a site-wide save.
- * @param {Function} props.onFinish     Called with the choice, `read` or `write`.
+ * @param {Function} props.onChosen     Called with `read`, `write` or `admin`
+ *                                      once the choice is saved.
  */
-function Choose( {
-	app,
-	connectionId,
-	tier,
-	siteName,
-	onTierSaved,
-	onFinish,
-} ) {
+function Choose( { app, connectionId, tier, onTierSaved, onChosen } ) {
 	const label = appMeta( app ).label;
-	const [ saving, setSaving ] = useState( false );
+	const [ saving, setSaving ] = useState( '' );
 	const [ error, setError ] = useState( null );
 	// The connection whose access this step sets; undefined until looked up,
 	// null when there is none to find.
 	const [ connection, setConnection ] = useState( undefined );
-	const modules = ( saddleData.areas || [] )
-		.filter( ( a ) => a.module )
-		.map( ( a ) => a.title );
 
 	useEffect( () => {
 		let alive = true;
@@ -320,179 +399,155 @@ function Choose( {
 	// Per-app access when the server reports a role for the connection; the
 	// site's tier otherwise (no connection known, or a Core without roles).
 	const perApp = !! connection && !! connection.role;
-	const canEdit = perApp ? 'read' !== connection.role : 'read' !== tier;
+	const current = perApp ? connection.role : tier || 'read';
 
-	const allowEditing = () => {
-		setSaving( true );
+	const pick = ( role ) => {
+		if ( 'read' === role || role === current ) {
+			onChosen( role );
+			return;
+		}
+		setSaving( role );
 		setError( null );
 		const saved = perApp
 			? api( connectionPath( connection.id, 'role' ), {
 					method: 'POST',
-					data: { role: 'write' },
+					data: { role },
 			  } )
 			: // No connection is known: fall back to the site-wide tier, as
 			  // before roles were per app. Remove once every Core has roles.
 			  api( 'preferences', {
 					method: 'POST',
-					data: { tier: 'write' },
+					data: { tier: role },
 			  } ).then( ( res ) => onTierSaved( res.tier ) );
 		saved
-			.then( () => onFinish( 'write' ) )
+			.then( () => onChosen( role ) )
 			.catch( ( e ) => {
 				setError( errorText( e ) );
-				setSaving( false );
+				setSaving( '' );
 			} );
 	};
 
-	return (
-		<div className="saddle-first-run__after">
-			<div className="saddle-first-run__ask">
-				<h2 className="saddle-first-run__question">
+	if ( undefined === connection ) {
+		return (
+			<Say cont>
+				<p className="saddle-chat__muted">
 					{ sprintf(
-						/* translators: 1: the app name, 2: the site name. */
-						__( 'Here’s what %1$s can do on %2$s.', 'saddle' ),
-						label,
-						siteName
-					) }
-				</h2>
-				<RowList>
-					<Row
-						icon={ <EyeIcon size={ 18 } /> }
-						title={ __( 'It can look', 'saddle' ) }
-						description={
-							modules.length
-								? sprintf(
-										/* translators: %s: module names, e.g. Analytics, SEO. */
-										__(
-											'Pages, posts, media and settings, and your modules: %s.',
-											'saddle'
-										),
-										modules.join( ', ' )
-								  )
-								: __(
-										'Pages, posts, media and settings.',
-										'saddle'
-								  )
-						}
-					/>
-					<Row
-						icon={ <ShieldCheckIcon size={ 18 } /> }
-						title={ __( 'It asks first', 'saddle' ) }
-						description={ __(
-							'Deleting or changing many things shows you a preview and waits for your OK.',
-							'saddle'
-						) }
-					/>
-					<Row
-						icon={ <RefreshIcon size={ 18 } /> }
-						title={ __( 'You can undo', 'saddle' ) }
-						description={ __(
-							'Every change is listed on the Dashboard, in the Activity tab, and can be undone.',
-							'saddle'
-						) }
-					/>
-				</RowList>
-			</div>
-
-			{ error && (
-				<Notice tone="danger" onDismiss={ () => setError( null ) }>
-					{ error }
-				</Notice>
-			) }
-
-			<div className="saddle-first-run__ask">
-				{ /* Until the app's access is known, say so: the fallback said
-				   "read-only" for an app that already had Edit content. */ }
-				{ undefined === connection && (
-					<ChecklistItem
-						status="active"
-						label={ sprintf(
-							/* translators: %s: the app name. */
-							__( 'Checking what %s may do…', 'saddle' ),
-							label
-						) }
-					/>
-				) }
-				{ undefined !== connection && (
-					<h2 className="saddle-first-run__question">
-						{ canEdit
-							? sprintf(
-									/* translators: %s: the app name. */
-									__(
-										'Right now %s can draft and edit content.',
-										'saddle'
-									),
-									label
-							  )
-							: sprintf(
-									/* translators: %s: the app name. */
-									__(
-										'Right now %s is read-only.',
-										'saddle'
-									),
-									label
-							  ) }
-					</h2>
-				) }
-				<div className="saddle-first-run__actions">
-					{ undefined !== connection && canEdit && (
-						<Button
-							variant="primary"
-							onClick={ () => onFinish( 'write' ) }
-						>
-							{ __( 'Go to Saddle', 'saddle' ) }
-						</Button>
-					) }
-					{ undefined !== connection && ! canEdit && (
-						<>
-							<Button
-								variant="primary"
-								onClick={ allowEditing }
-								loading={ saving }
-								disabled={ saving }
-							>
-								{ __(
-									'Let it draft and edit content',
-									'saddle'
-								) }
-							</Button>
-							<Button
-								variant="ghost"
-								onClick={ () => onFinish( 'read' ) }
-								disabled={ saving }
-							>
-								{ __( 'Keep read-only', 'saddle' ) }
-							</Button>
-						</>
-					) }
-				</div>
-				<p className="saddle-first-run__foot">
-					{ __(
-						'Skills and instructions live on the Context page, and you can change what each app may do on AI apps. Each module has its own page in the Saddle menu.',
-						'saddle'
+						/* translators: %s: the app name. */
+						__( 'Checking what %s may do…', 'saddle' ),
+						label
 					) }
 				</p>
+			</Say>
+		);
+	}
+
+	return (
+		<>
+			<Say cont>
+				<p>
+					{ 'read' === current
+						? sprintf(
+								/* translators: %s: the app name. */
+								__(
+									'Right now %s can only look. How much should it do?',
+									'saddle'
+								),
+								label
+						  )
+						: sprintf(
+								/* translators: %s: the app name. */
+								__(
+									'%s can already do more than look. Keep it that way, or change it:',
+									'saddle'
+								),
+								label
+						  ) }
+				</p>
+				{ error && (
+					<Notice tone="danger" onDismiss={ () => setError( null ) }>
+						{ error }
+					</Notice>
+				) }
+			</Say>
+			<div
+				className="saddle-chat__options"
+				role="group"
+				aria-label={ sprintf(
+					/* translators: %s: the app name. */
+					__( 'What %s can do', 'saddle' ),
+					label
+				) }
+			>
+				{ ROLES.map( ( r ) => (
+					<button
+						key={ r.key }
+						type="button"
+						className={ `saddle-chat__option${
+							r.key === current ? ' is-current' : ''
+						}` }
+						disabled={ !! saving }
+						aria-busy={ saving === r.key || undefined }
+						onClick={ () => pick( r.key ) }
+					>
+						<strong>{ r.label }</strong>
+						<span>{ r.hint }</span>
+						{ 'write' === r.key && 'read' === current && (
+							<small>
+								{ __( 'Most people pick this', 'saddle' ) }
+							</small>
+						) }
+						{ r.key === current && 'read' !== current && (
+							<small>{ __( 'Now', 'saddle' ) }</small>
+						) }
+					</button>
+				) ) }
 			</div>
-		</div>
+		</>
 	);
 }
 
 /**
- * Which AI: the same grouped tiles as AI apps → Connect an app.
+ * What Saddle says once the owner has chosen.
  *
- * @param {Object}   props
- * @param {Function} props.onPick Called with an app key.
+ * @param {string} role  `read`, `write` or `admin`.
+ * @param {string} label The app's name.
+ * @return {string} One or two sentences.
  */
-function AppTiles( { onPick } ) {
-	return (
-		<div className="saddle-first-run__ask">
-			<h2 className="saddle-first-run__question">
-				{ __( 'Which AI do you use?', 'saddle' ) }
-			</h2>
-			<AppGrid onPick={ onPick } />
-		</div>
-	);
+function endLine( role, label ) {
+	switch ( role ) {
+		case 'write':
+			return sprintf(
+				/* translators: %s: the app name. */
+				__(
+					'Done. %s can now draft and edit your content. Anything big still waits for your OK, and every change shows up on Home.',
+					'saddle'
+				),
+				label
+			);
+		case 'admin':
+			return sprintf(
+				/* translators: %s: the app name. */
+				__(
+					'Done. %s can now help run the site. Anything big still waits for your OK, and every change shows up on Home.',
+					'saddle'
+				),
+				label
+			);
+		default:
+			return sprintf(
+				/* translators: %s: the app name. */
+				__(
+					'Done. %s can look around, and you can give it more on AI apps any time.',
+					'saddle'
+				),
+				label
+			);
+	}
 }
+
+/* ------------------------------------------------------------------------ */
+/* The welcome                                                              */
+/* ------------------------------------------------------------------------ */
 
 /**
  * @param {Object}   props
@@ -502,7 +557,7 @@ function AppTiles( { onPick } ) {
  * @param {Function} props.send             Posts one onboarding event.
  * @param {Function} props.onTierSaved      Called with the tier after a save.
  * @param {Function} props.onClientsChanged Reload the keys list.
- * @param {Function} props.onFinish         First run is over; go to the Dashboard.
+ * @param {Function} props.onFinish         The welcome is over; go Home.
  */
 export default function FirstRun( {
 	tier,
@@ -532,9 +587,12 @@ export default function FirstRun( {
 	const [ app, setApp ] = useState(
 		'read' === resumed.current ? null : storedApp
 	);
-	// The connection the try step saw make its first call.
-	const [ connectionId, setConnectionId ] = useState( '' );
-	// The newest block on screen, kept in view the way a chat thread is.
+	// What the try step saw: the connection that made the first call, and
+	// the calls in plain words.
+	const [ tried, setTried ] = useState( null );
+	// The owner's answer to the last question, once saved.
+	const [ chosen, setChosen ] = useState( '' );
+	// The newest part of the conversation, kept in view the way a chat is.
 	const newest = useRef( null );
 	const pulseForConnect = useRef( null );
 
@@ -548,71 +606,42 @@ export default function FirstRun( {
 		};
 	}, [] );
 
-	const lines = [];
-	if ( look ) {
-		lines.push( {
-			key: 'site',
-			label: __( 'Site read', 'saddle' ),
-			hint: siteLine( look ),
-			stats: look.content,
-		} );
-		lines.push( {
-			key: 'plugins',
-			label: __( 'Plugins checked', 'saddle' ),
-			hint: pluginsLine( look ),
-		} );
-		const found = findingLines( look );
-		lines.push(
-			found.length
-				? {
-						key: 'work',
-						label: __( 'Found work for your AI', 'saddle' ),
-						hint: found.join( ' ' ),
-				  }
-				: {
-						key: 'work',
-						label: __( 'Nothing urgent', 'saddle' ),
-						hint: __(
-							'Your AI can start with whatever you have in mind.',
-							'saddle'
-						),
-				  }
-		);
-		lines.push( {
-			key: 'safe',
-			label: __( 'Safe to start', 'saddle' ),
-			hint: __(
-				'Every app starts at Read only, and asks you before anything risky.',
-				'saddle'
-			),
-		} );
-	}
-
-	// Reveal one line per beat, then the next step. All at once when the owner
-	// prefers reduced motion, or when this is a resume.
-	const total = lines.length + 1;
+	// Saddle's opening lines: hello, what it found, and the first question.
 	const ready = !! look || lookFailed;
+	const intro = [
+		__(
+			'Hi, I’m Saddle. I let your AI work on this site, and I ask you before anything risky.',
+			'saddle'
+		),
+		...( look ? lookLines( look ) : [] ),
+		__( 'Which AI do you use?', 'saddle' ),
+	];
+	// The hello needs nothing; the rest waits for the site read.
+	const available = ready ? intro.length : 1;
 	const instant = reduced || 'read' !== resumed.current;
+
+	// One line per beat, with the typing dots in between. All at once when
+	// the owner prefers reduced motion, or when this is a resume.
 	useEffect( () => {
-		if ( ! ready || shown >= total ) {
+		if ( shown >= available ) {
 			return undefined;
 		}
 		if ( instant ) {
-			setShown( total );
+			setShown( available );
 			return undefined;
 		}
 		const t = window.setTimeout( () => setShown( shown + 1 ), BEAT );
 		return () => window.clearTimeout( t );
-	}, [ ready, shown, total, instant ] );
+	}, [ shown, available, instant ] );
 
-	// The site read is done: move to choosing an AI, and remember it.
-	const read = ready && shown >= total;
+	// The opening is done: ask which AI, and remember it.
+	const opened = ready && shown >= intro.length;
 	useEffect( () => {
-		if ( read && 'read' === step ) {
+		if ( opened && 'read' === step ) {
 			setStep( 'app' );
 			send( { event: 'first_run.step', step: 'app' } );
 		}
-	}, [ read, step, send ] );
+	}, [ opened, step, send ] );
 
 	useEffect( () => {
 		if ( newest.current ) {
@@ -623,7 +652,7 @@ export default function FirstRun( {
 				block: 'nearest',
 			} );
 		}
-	}, [ shown, step, reduced ] );
+	}, [ shown, step, chosen, reduced ] );
 
 	const goTo = ( next, extra = {} ) => {
 		setStep( next );
@@ -648,7 +677,7 @@ export default function FirstRun( {
 	};
 
 	const label = app && appMeta( app ) ? appMeta( app ).label : '';
-	const siteName = look ? look.site.name : __( 'this site', 'saddle' );
+	const role = ROLES.find( ( r ) => r.key === chosen );
 
 	const renderWaiting = ( { app: appKey, appLabel, keyId, connected } ) => {
 		// One pulse reader per attempt: a new key is a new baseline.
@@ -677,7 +706,7 @@ export default function FirstRun( {
 				}
 				initialText={ sprintf(
 					/* translators: %s: the app name. */
-					__( 'Waiting for %s…', 'saddle' ),
+					__( 'I’ll know the moment %s connects…', 'saddle' ),
 					appLabel
 				) }
 				onDone={ connected }
@@ -686,148 +715,128 @@ export default function FirstRun( {
 	};
 
 	const afterApp = 'read' !== step && 'app' !== step;
+	const moreIntro = shown < ( ready ? intro.length : 2 );
 
 	return (
-		<div className="saddle-first-run">
-			<div className="saddle-first-run__bar">
+		<div className="saddle-chat">
+			<div className="saddle-chat__bar">
 				<Button variant="link" onClick={ skip }>
-					{ __( 'Skip setup', 'saddle' ) }
+					{ __( 'Skip for now', 'saddle' ) }
 				</Button>
 			</div>
 
-			<div className="saddle-first-run__column">
-				<h2 className="saddle-first-run__title">
-					{ __( 'Hi, I’m Saddle.', 'saddle' ) }
-				</h2>
-				<p className="saddle-first-run__lead">
-					{ __(
-						'I let your AI work on this site, and I ask you before anything risky. Let me look around first.',
-						'saddle'
-					) }
-				</p>
-
-				<div
-					className="saddle-first-run__lines"
-					role="status"
-					aria-live="polite"
-				>
-					{ ! ready && (
-						<ChecklistItem
-							status="active"
-							label={ __( 'Reading your site…', 'saddle' ) }
-						/>
-					) }
-					{ lines.slice( 0, shown ).map( ( line, i ) => (
-						<div
-							key={ line.key }
-							ref={
-								i === shown - 1 && shown <= lines.length
-									? newest
-									: undefined
-							}
-							className="saddle-first-run__line"
-						>
-							<ChecklistItem
-								status="done"
-								label={ line.label }
-								hint={ line.hint }
-							/>
-							{ line.stats && (
-								<StatGrid
-									className="saddle-first-run__stats"
-									columns={ 3 }
-									divided
-								>
-									<StatCard
-										flush
-										label={ __( 'Pages', 'saddle' ) }
-										value={ line.stats.pages }
-									/>
-									<StatCard
-										flush
-										label={ __( 'Posts', 'saddle' ) }
-										value={ line.stats.posts }
-									/>
-									<StatCard
-										flush
-										label={ __( 'Media', 'saddle' ) }
-										value={ line.stats.media }
-									/>
-								</StatGrid>
-							) }
-						</div>
-					) ) }
-					{ afterApp && label && (
-						<div className="saddle-first-run__line">
-							<ChecklistItem
-								status="done"
-								label={ sprintf(
-									/* translators: %s: the app name. */
-									__( 'You use %s', 'saddle' ),
-									label
-								) }
-							/>
-						</div>
-					) }
-					{ [ 'try', 'choose' ].includes( step ) && (
-						<div className="saddle-first-run__line">
-							<ChecklistItem
-								status="done"
-								label={ sprintf(
-									/* translators: %s: the app name. */
-									__( '%s connected', 'saddle' ),
-									label
-								) }
-							/>
-						</div>
-					) }
-					{ 'choose' === step && (
-						<div className="saddle-first-run__line">
-							<ChecklistItem
-								status="done"
-								label={ __( 'It works', 'saddle' ) }
-							/>
-						</div>
-					) }
-				</div>
+			<div
+				className="saddle-chat__thread"
+				role="log"
+				aria-live="polite"
+				aria-label={ __( 'Welcome', 'saddle' ) }
+			>
+				{ intro.slice( 0, shown ).map( ( text, i ) => (
+					<div
+						key={ `intro-${ i }` }
+						ref={ i === shown - 1 ? newest : undefined }
+					>
+						<Say cont={ i > 0 }>
+							<p>{ text }</p>
+						</Say>
+					</div>
+				) ) }
+				{ moreIntro && ! instant && <Say cont={ shown > 0 } typing /> }
 
 				<div ref={ 'read' === step ? undefined : newest } key={ step }>
-					{ 'app' === step && <AppTiles onPick={ pick } /> }
+					{ 'app' === step && <AppChips onPick={ pick } /> }
+
+					{ afterApp && label && (
+						<You>
+							<AppLogo app={ app } width="18" height="18" />
+							{ label }
+						</You>
+					) }
 
 					{ 'connect' === step && app && (
-						<ConnectWizard
-							embedded
-							presetApp={ app }
-							tier={ tier }
-							clients={ clients }
-							onClientsChanged={ onClientsChanged }
-							renderWaiting={ renderWaiting }
-							onBack={ () => goTo( 'app' ) }
-							onConnected={ () => goTo( 'try' ) }
-							onExit={ skip }
-						/>
+						<Say>
+							<p>
+								{ sprintf(
+									/* translators: %s: the app name. */
+									__( 'Nice. Let’s connect %s.', 'saddle' ),
+									label
+								) }
+							</p>
+							<ConnectWizard
+								embedded
+								presetApp={ app }
+								tier={ tier }
+								clients={ clients }
+								onClientsChanged={ onClientsChanged }
+								renderWaiting={ renderWaiting }
+								onBack={ () => goTo( 'app' ) }
+								onConnected={ () => goTo( 'try' ) }
+								onExit={ skip }
+							/>
+						</Say>
+					) }
+
+					{ [ 'try', 'choose' ].includes( step ) && label && (
+						<Say>
+							<Done>
+								{ sprintf(
+									/* translators: %s: the app name. */
+									__( '%s is connected.', 'saddle' ),
+									label
+								) }
+							</Done>
+						</Say>
 					) }
 
 					{ 'try' === step && app && (
 						<TryIt
 							app={ app }
 							look={ look }
-							onDone={ ( id ) => {
-								setConnectionId( id || '' );
+							onDone={ ( status ) => {
+								setTried( status );
 								goTo( stepAfter( 'try' ) );
 							} }
 						/>
 					) }
 
-					{ 'choose' === step && app && (
+					{ 'choose' === step && tried && (
+						<Say cont>
+							<Done>{ __( 'It works.', 'saddle' ) }</Done>
+							{ tried.items && tried.items.length > 0 && (
+								<ul className="saddle-chat__calls">
+									{ tried.items.map( ( item, i ) => (
+										<li key={ i }>{ item }</li>
+									) ) }
+								</ul>
+							) }
+						</Say>
+					) }
+
+					{ 'choose' === step && app && ! chosen && (
 						<Choose
 							app={ app }
-							connectionId={ connectionId }
+							connectionId={ ( tried && tried.connection ) || '' }
 							tier={ tier }
-							siteName={ siteName }
 							onTierSaved={ onTierSaved }
-							onFinish={ finish }
+							onChosen={ setChosen }
 						/>
+					) }
+
+					{ 'choose' === step && role && (
+						<>
+							<You>{ role.label }</You>
+							<Say>
+								<p>{ endLine( chosen, label ) }</p>
+								<div>
+									<Button
+										variant="primary"
+										onClick={ () => finish( chosen ) }
+									>
+										{ __( 'Finish', 'saddle' ) }
+									</Button>
+								</div>
+							</Say>
+						</>
 					) }
 				</div>
 			</div>

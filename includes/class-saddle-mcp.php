@@ -928,7 +928,7 @@ class Saddle_MCP {
 			// FEWER checks: a paused site still answered, and every tier got the
 			// same payload. Pause is the owner saying stop; honour it here too.
 			if ( class_exists( 'Saddle_Capabilities' ) && Saddle_Capabilities::is_paused() ) {
-				return __( 'Saddle is paused on this site, so no tools will run. The site owner can resume it in Saddle → Dashboard. Do not retry until they do.', 'saddle' );
+				return __( 'Saddle is paused on this site, so no tools will run. The site owner can resume it from the AI switch at the top of any Saddle page. Do not retry until they do.', 'saddle' );
 			}
 
 			// system_context() is already tier-aware, so what a session is told

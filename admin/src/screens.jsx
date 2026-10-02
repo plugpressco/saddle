@@ -3,7 +3,7 @@
  *
  * Five pages (#285, #291):
  *
- * - Dashboard: Overview · Activity
+ * - Home: what the apps did, what waits for the owner, and the apps (#309)
  * - AI apps: the connected apps, each with its own access, and Connect an app
  * - Context: what every app knows — instructions as named fields, skills,
  *   memory, and what Saddle tells every app automatically
@@ -20,11 +20,10 @@ import { Button, Drawer, Notice } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { api, saddleData } from './api';
 import { findArea, withArg } from './routes';
-import Dashboard from './components/Dashboard';
+import Home from './components/Home';
 import Context from './components/Guidance';
 import ConnectApps from './components/ConnectApps';
 import Apps from './components/ConnectedClients';
-import Activity from './components/Activity';
 import Services from './components/Services';
 import SettingsForm from './components/SettingsForm';
 import SettingsPage from './components/SettingsPage';
@@ -287,7 +286,7 @@ export default function Screen( props ) {
 		case 'home/overview':
 			return (
 				<>
-					<Dashboard
+					<Home
 						tier={ tier }
 						clients={ clients }
 						paused={ paused }
@@ -303,9 +302,6 @@ export default function Screen( props ) {
 					<Cards where="home" navigate={ navigate } />
 				</>
 			);
-
-		case 'home/activity':
-			return <Activity caps={ caps } />;
 
 		case 'connections/apps':
 			return wizardOpen ? (

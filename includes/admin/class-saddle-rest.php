@@ -348,6 +348,14 @@ class Saddle_REST_Admin {
 				'methods'             => 'GET',
 				'callback'            => array( __CLASS__, 'get_audit_log' ),
 				'permission_callback' => array( __CLASS__, 'can_manage' ),
+				'args'                => array(
+					// Home's "This week" counts entries from this Unix time (UTC) on.
+					'since' => array(
+						'type'              => 'integer',
+						'minimum'           => 0,
+						'sanitize_callback' => 'absint',
+					),
+				),
 			)
 		);
 
@@ -1482,6 +1490,9 @@ class Saddle_REST_Admin {
 	/**
 	 * GET /audit-log — real entries from the Saddle_Log store.
 	 *
+	 * Optional `since` (Unix seconds, UTC) keeps only entries at or after it;
+	 * Home reads `total` with it for the week's exact counts.
+	 *
 	 * @param WP_REST_Request $request Request.
 	 * @return WP_REST_Response
 	 */
@@ -1492,9 +1503,10 @@ class Saddle_REST_Admin {
 		$page     = $page > 0 ? $page : 1;
 		$type     = (string) $request->get_param( 'type' );
 		$type     = in_array( $type, array( 'executed', 'denied', 'rehearsed' ), true ) ? $type : '';
+		$since    = absint( $request->get_param( 'since' ) );
 
 		$result = class_exists( 'Saddle_Log' )
-			? Saddle_Log::query( $per_page, $page, $type )
+			? Saddle_Log::query( $per_page, $page, $type, $since )
 			: array(
 				'entries'     => array(),
 				'total'       => 0,

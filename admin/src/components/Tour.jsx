@@ -1,6 +1,6 @@
 /**
  * The three-stop tour (#277), shown once per user right after first run:
- * the status pill, the Saddle menu, the Activity tab. Never more than three.
+ * the AI switch, the Saddle menu, Home's activity feed. Never more than three.
  *
  * The things it points at are not all React's: the Saddle menu is
  * WordPress's own. So each stop finds its element in the page and a small
@@ -31,18 +31,16 @@ const visible = ( el ) => {
 };
 
 /**
- * @param {string} activityLabel The Activity tab's label.
  * @return {Object[]} The stops, each with a `find` for its element.
  */
-function stopsFor( activityLabel ) {
+function stopsFor() {
 	return [
 		{
 			id: 'status',
-			find: () =>
-				visible( document.querySelector( '.saddle-status-pill' ) ),
-			title: __( 'This says whether your AI is on', 'saddle' ),
+			find: () => visible( document.querySelector( '.saddle-ai' ) ),
+			title: __( 'Pause your AI from here', 'saddle' ),
 			description: __(
-				'It shows AI on or Paused on every Saddle page. To pause, use the AI access switch on this page.',
+				'It shows AI on or Paused at the top of every Saddle page. Click it to pause every app at once.',
 				'saddle'
 			),
 			side: 'bottom',
@@ -63,19 +61,13 @@ function stopsFor( activityLabel ) {
 		{
 			id: 'activity',
 			find: () =>
-				visible(
-					Array.from(
-						document.querySelectorAll(
-							'.saddle-header [role="tab"]'
-						)
-					).find( ( el ) => el.textContent.trim() === activityLabel )
-				),
+				visible( document.querySelector( '#activity h2, #activity' ) ),
 			title: __( 'Every change shows up here', 'saddle' ),
 			description: __(
-				'The Activity tab lists what your AI changed, with undo.',
+				'What your AI changed, and what Saddle blocked, newest first.',
 				'saddle'
 			),
-			side: 'bottom',
+			side: 'top',
 			align: 'start',
 		},
 	];
@@ -124,18 +116,17 @@ function Anchored( { find, children } ) {
 
 /**
  * @param {Object}   props
- * @param {string}   props.activityLabel The Activity tab's label.
- * @param {Function} props.onFinish      Called once, on the last Next, Skip,
- *                                       Escape or a click outside.
+ * @param {Function} props.onFinish Called once, on the last Next, Skip,
+ *                                  Escape or a click outside.
  */
-export default function Tour( { activityLabel, onFinish } ) {
+export default function Tour( { onFinish } ) {
 	const [ stops, setStops ] = useState( null );
 	const [ index, setIndex ] = useState( 0 );
 
 	// After the page has laid out, keep only the stops that can be found.
 	useEffect( () => {
 		const t = window.setTimeout( () => {
-			const found = stopsFor( activityLabel ).filter( ( s ) => s.find() );
+			const found = stopsFor().filter( ( s ) => s.find() );
 			setStops( found );
 			if ( ! found.length ) {
 				onFinish();

@@ -49,13 +49,13 @@ import {
 const AREAS = saddleData.areas || [];
 
 // The page this request is for. A build that predates the page list (or a
-// broken one) still gets a working Dashboard rather than a blank screen.
+// broken one) still gets a working Home rather than a blank screen.
 const CURRENT = findArea( AREAS, saddleData.area ) ||
 	findArea( AREAS, 'home' ) || {
 		key: 'home',
-		title: __( 'Dashboard', 'saddle' ),
+		title: __( 'Home', 'saddle' ),
 		url: window.location.href,
-		tabs: [ { key: 'overview', label: __( 'Overview', 'saddle' ) } ],
+		tabs: [ { key: 'overview', label: __( 'Home', 'saddle' ) } ],
 	};
 
 // `&setup=1` (Settings → Run setup again, and the Dashboard's Setup block) opens first
@@ -319,12 +319,6 @@ export default function App() {
 		return () => timers.forEach( clearTimeout );
 	}, [ loading ] );
 
-	const activityLabel =
-		( ( findArea( AREAS, 'home' ) || {} ).tabs || [] ).reduce(
-			( found, t ) => ( 'activity' === t.key ? t.label : found ),
-			''
-		) || __( 'Activity', 'saddle' );
-
 	const connectBase =
 		areaUrl( AREAS, 'connections', 'apps' ) || window.location.href;
 
@@ -514,11 +508,8 @@ export default function App() {
 				area={ area }
 				tab="setup"
 				showTabs={ false }
-				crumb={ __( 'Setup', 'saddle' ) }
-				status={ {
-					paused,
-					href: areaUrl( AREAS, 'home' ),
-				} }
+				crumb={ __( 'Welcome', 'saddle' ) }
+				status={ { paused, pausing, onToggle: togglePause } }
 				moreNotices={ [ slotNotice, ...bellNotices ].filter( Boolean ) }
 				onDismissNotice={ dismissNotice }
 			>
@@ -541,10 +532,7 @@ export default function App() {
 				area={ area }
 				tab={ tab }
 				onTab={ setTab }
-				status={ {
-					paused,
-					href: areaUrl( AREAS, 'home' ),
-				} }
+				status={ { paused, pausing, onToggle: togglePause } }
 				notices={ ! wizardOpen }
 				notice={ slotNotice }
 				moreNotices={ bellNotices }
@@ -585,12 +573,7 @@ export default function App() {
 					area.key === 'home' &&
 					'overview' === tab &&
 					! tourDismissed &&
-					tourDue( onboarding ) && (
-						<Tour
-							activityLabel={ activityLabel }
-							onFinish={ finishTour }
-						/>
-					) }
+					tourDue( onboarding ) && <Tour onFinish={ finishTour } /> }
 			</Frame>
 		);
 	}

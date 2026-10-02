@@ -663,3 +663,33 @@ export function setupBlock( { connections, onboarding, tier, areas } ) {
 		visible: ! hidden && ! everything,
 	};
 }
+
+/**
+ * The one next step Home suggests (#309), instead of the whole Setup list:
+ * the first unfinished Core task, else the first unfinished module task.
+ *
+ * A Core step names the app it is about: for "try", an app that has not used
+ * Saddle yet; for "choose", an app that is still Read only; else the first.
+ *
+ * @param {Object}   block       From setupBlock().
+ * @param {Object[]} connections From GET /connections.
+ * @return {Object|null} `{ id, app }` for a Core task (`connect`, `try`,
+ *         `choose`), `{ id: 'module', module, product, task }` for a module
+ *         task, or null when there is nothing to suggest.
+ */
+export function nextStep( block, connections ) {
+	if ( ! block || ! block.visible ) {
+		return null;
+	}
+	const core = ( block.core || [] ).find( ( t ) => ! t.done );
+	if ( core ) {
+		const list = ( connections || [] ).filter( ( c ) => c.app );
+		const pick = {
+			try: list.find( ( c ) => ! c.first_tool_at ),
+			choose: list.find( ( c ) => ! c.role || 'read' === c.role ),
+		}[ core.id ];
+		return { id: core.id, app: ( pick || list[ 0 ] || {} ).app || '' };
+	}
+	const mod = ( block.modules || [] )[ 0 ];
+	return mod ? { id: 'module', ...mod } : null;
+}

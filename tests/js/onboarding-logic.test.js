@@ -24,6 +24,7 @@ import {
 	moduleTasks,
 	coreTasks,
 	setupBlock,
+	nextStep,
 } from '../../admin/src/onboarding-logic';
 
 describe( 'the step machine', () => {
@@ -600,5 +601,79 @@ describe( 'resuming the connect step', () => {
 				appOf
 			)
 		).toBe( 'app' );
+	} );
+} );
+
+describe( 'Home’s one next step (#309)', () => {
+	const block = ( core, modules = [], visible = true ) => ( {
+		core: core.map( ( [ id, done ] ) => ( { id, title: id, done } ) ),
+		modules,
+		visible,
+	} );
+
+	it( 'suggests nothing when the block is hidden or done', () => {
+		expect(
+			nextStep( block( [ [ 'connect', false ] ], [], false ), [] )
+		).toBeNull();
+		expect( nextStep( block( [ [ 'connect', true ] ] ), [] ) ).toBeNull();
+		expect( nextStep( null, [] ) ).toBeNull();
+	} );
+
+	it( 'asks to connect first', () => {
+		expect(
+			nextStep(
+				block( [
+					[ 'connect', false ],
+					[ 'try', false ],
+				] ),
+				[]
+			)
+		).toEqual( { id: 'connect', app: '' } );
+	} );
+
+	it( 'names the app that has not used Saddle yet for "try"', () => {
+		const step = nextStep(
+			block( [
+				[ 'connect', true ],
+				[ 'try', false ],
+			] ),
+			[
+				{ app: 'cursor', first_tool_at: 9 },
+				{ app: 'claude', first_tool_at: 0 },
+			]
+		);
+		expect( step ).toEqual( { id: 'try', app: 'claude' } );
+	} );
+
+	it( 'names an app that is still Read only for "choose"', () => {
+		const step = nextStep(
+			block( [
+				[ 'connect', true ],
+				[ 'try', true ],
+				[ 'choose', false ],
+			] ),
+			[
+				{ app: 'claude', role: 'write', first_tool_at: 1 },
+				{ app: 'cursor', role: 'read', first_tool_at: 1 },
+			]
+		);
+		expect( step ).toEqual( { id: 'choose', app: 'cursor' } );
+	} );
+
+	it( 'falls back to the first module task once Core is done', () => {
+		const task = { id: 'goal', title: 'Add a goal' };
+		const step = nextStep(
+			block(
+				[ [ 'connect', true ] ],
+				[ { module: 'analytics', product: 'Analytics', task } ]
+			),
+			[ { app: 'claude' } ]
+		);
+		expect( step ).toEqual( {
+			id: 'module',
+			module: 'analytics',
+			product: 'Analytics',
+			task,
+		} );
 	} );
 } );

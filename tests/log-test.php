@@ -116,4 +116,98 @@ class Saddle_Log_Test extends WP_UnitTestCase {
 	public function cap_at_three() {
 		return 3;
 	}
+
+	/**
+	 * Record an entry, then move its stored date back `$days` days.
+	 *
+	 * @param string $type 'executed' or 'denied'.
+	 * @param int    $days How many days ago it happened.
+	 */
+	private function record_days_ago( $type, $days ) {
+		global $wpdb;
+
+		Saddle_Log::record(
+			array(
+				'action'  => "{$type}-{$days}",
+				'summary' => "{$type} {$days} days ago",
+				'type'    => $type,
+			)
+		);
+		$id = (int) $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM {$wpdb->posts} WHERE post_type = %s ORDER BY ID DESC LIMIT 1", Saddle_Log::CPT ) );
+		$at = time() - $days * DAY_IN_SECONDS;
+		$wpdb->update(
+			$wpdb->posts,
+			array(
+				'post_date'     => get_date_from_gmt( gmdate( 'Y-m-d H:i:s', $at ) ),
+				'post_date_gmt' => gmdate( 'Y-m-d H:i:s', $at ),
+			),
+			array( 'ID' => $id )
+		);
+		clean_post_cache( $id );
+	}
+
+	/**
+	 * Home's "This week" reads `total` with `since`, so the count is exact:
+	 * an entry from before the window must not be counted, of either type.
+	 */
+	public function test_since_excludes_older_entries() {
+		$since  = time() - WEEK_IN_SECONDS;
+		$before = array(
+			'executed' => Saddle_Log::query( 1, 1, 'executed', $since )['total'],
+			'denied'   => Saddle_Log::query( 1, 1, 'denied', $since )['total'],
+			'all'      => $this->total(),
+		);
+
+		$this->record_days_ago( 'executed', 10 );
+		$this->record_days_ago( 'executed', 2 );
+		$this->record_days_ago( 'denied', 30 );
+		$this->record_days_ago( 'denied', 1 );
+		$this->record_days_ago( 'denied', 0 );
+
+		$this->assertSame( $before['executed'] + 1, Saddle_Log::query( 1, 1, 'executed', $since )['total'], 'Only the change from two days ago is in the week.' );
+		$this->assertSame( $before['denied'] + 2, Saddle_Log::query( 1, 1, 'denied', $since )['total'], 'The blocked attempt from 30 days ago is outside the week.' );
+		$this->assertSame( $before['all'] + 5, $this->total(), 'Without since, every entry still counts.' );
+
+		$recent = Saddle_Log::query( 100, 1, '', $since )['entries'];
+		$this->assertNotContains( 'executed 10 days ago', wp_list_pluck( $recent, 'summary' ) );
+		$this->assertContains( 'executed 2 days ago', wp_list_pluck( $recent, 'summary' ) );
+	}
+
+	/** The admin's GET /audit-log takes `since` and passes it through. */
+	public function test_rest_audit_log_takes_since() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+		$since = time() - WEEK_IN_SECONDS;
+
+		$count = static function ( $args ) {
+			$request = new WP_REST_Request( 'GET', '/saddle/v1/audit-log' );
+			$request->set_query_params( $args );
+			$response = rest_do_request( $request );
+			return $response->get_data()['total'];
+		};
+
+		$all    = $count( array( 'type' => 'executed' ) );
+		$recent = $count(
+			array(
+				'type'     => 'executed',
+				'per_page' => 1,
+				'since'    => $since,
+			)
+		);
+
+		$this->record_days_ago( 'executed', 10 );
+		$this->record_days_ago( 'executed', 3 );
+
+		$this->assertSame( $all + 2, $count( array( 'type' => 'executed' ) ) );
+		$this->assertSame(
+			$recent + 1,
+			$count(
+				array(
+					'type'     => 'executed',
+					'per_page' => 1,
+					'since'    => $since,
+				)
+			),
+			'The entry from ten days ago must not count for the week.'
+		);
+	}
 }

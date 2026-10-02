@@ -1,12 +1,12 @@
 import {
-	badgeFor,
 	groupServices,
-	initialOf,
-	metaLine,
+	keyLink,
 	replaceRecord,
 	roleLabel,
+	sections,
+	statusLabel,
+	summaryOf,
 	toolCount,
-	kindLabel,
 } from '../../admin/src/services-logic';
 
 const unsplash = {
@@ -16,6 +16,7 @@ const unsplash = {
 	kind: 'account',
 	source: 'built-in',
 	status: 'needs_key',
+	credentials_url: 'https://unsplash.com/developers',
 	sends: [ { host: 'api.unsplash.com', what: 'x', when: 'y' } ],
 	tools: [ { name: 'a' }, { name: 'b' } ],
 };
@@ -29,77 +30,166 @@ const yoast = {
 	sends: [],
 	tools: [ { name: 'a' } ],
 };
+const analytics = {
+	key: 'analytics',
+	name: 'Saddle Analytics',
+	description: '',
+	kind: 'addon',
+	source: 'plugpress',
+	status: 'active',
+	tools: [],
+};
+
+describe( 'sections', () => {
+	it( 'has a title and no note for each kind, in page order', () => {
+		expect( sections() ).toEqual( [
+			{ kind: 'account', title: 'Accounts' },
+			{ kind: 'plugin', title: 'Plugins' },
+			{ kind: 'addon', title: 'Add-ons' },
+		] );
+	} );
+} );
 
 describe( 'groupServices', () => {
-	it( 'groups by kind in page order and drops empty sections', () => {
-		const groups = groupServices( [ yoast, unsplash ] );
+	it( 'groups by kind in page order and drops empty kinds', () => {
+		const groups = groupServices( [ analytics, yoast, unsplash ] );
 		expect( groups.map( ( g ) => g.kind ) ).toEqual( [
 			'account',
 			'plugin',
+			'addon',
 		] );
-		expect( groups[ 0 ].title ).toBe( 'Accounts' );
+		expect( groups.map( ( g ) => g.title ) ).toEqual( [
+			'Accounts',
+			'Plugins',
+			'Add-ons',
+		] );
 		expect( groups[ 1 ].rows ).toEqual( [ yoast ] );
+	} );
+	it( 'keeps the headings when two kinds have records', () => {
+		const groups = groupServices( [ yoast, unsplash ] );
+		expect( groups.map( ( g ) => g.title ) ).toEqual( [
+			'Accounts',
+			'Plugins',
+		] );
+	} );
+	it( 'drops the heading when only one kind has records', () => {
+		const groups = groupServices( [
+			unsplash,
+			{ ...unsplash, key: 'pexels', name: 'Pexels' },
+		] );
+		expect( groups ).toHaveLength( 1 );
+		expect( groups[ 0 ].kind ).toBe( 'account' );
+		expect( groups[ 0 ].title ).toBe( '' );
+		expect( groups[ 0 ].rows ).toHaveLength( 2 );
+	} );
+	it( 'carries no section note', () => {
+		const groups = groupServices( [ yoast, unsplash ] );
+		groups.forEach( ( g ) => expect( g ).not.toHaveProperty( 'note' ) );
 	} );
 	it( 'copes with nothing, and ignores unknown kinds', () => {
 		expect( groupServices( null ) ).toEqual( [] );
+		expect( groupServices( [] ) ).toEqual( [] );
 		expect( groupServices( [ { key: 'x', kind: 'weird' } ] ) ).toEqual(
 			[]
 		);
+		// An unknown kind does not count towards "two kinds".
+		const groups = groupServices( [ yoast, { key: 'x', kind: 'weird' } ] );
+		expect( groups ).toHaveLength( 1 );
+		expect( groups[ 0 ].title ).toBe( '' );
 	} );
 } );
 
-describe( 'metaLine', () => {
-	it( 'says kind, where data goes and the tool count', () => {
-		expect( metaLine( unsplash ) ).toBe(
-			'Stock photos · needs your key · 2 tools'
+describe( 'statusLabel', () => {
+	it( 'says one word or two for each status', () => {
+		expect( statusLabel( unsplash ) ).toBe( 'Not set up' );
+		expect( statusLabel( { status: 'ready' } ) ).toBe( 'Ready' );
+		expect( statusLabel( { status: 'active' } ) ).toBe( 'Active' );
+		expect( statusLabel( { status: 'off' } ) ).toBe( 'Off' );
+	} );
+	it( 'reads a plugin found on the site as Active', () => {
+		expect( statusLabel( yoast ) ).toBe( 'Active' );
+	} );
+	it( 'says Active whoever made the add-on', () => {
+		expect(
+			statusLabel( { status: 'active', source: 'third-party' } )
+		).toBe( 'Active' );
+		expect( statusLabel( { status: 'active', source: 'plugpress' } ) ).toBe(
+			'Active'
 		);
-		expect( metaLine( { ...unsplash, status: 'ready' } ) ).toBe(
-			'Stock photos · sends data to api.unsplash.com · 2 tools'
+	} );
+	it( 'says nothing for an unknown status or no record', () => {
+		expect( statusLabel( { status: 'weird' } ) ).toBe( '' );
+		expect( statusLabel( {} ) ).toBe( '' );
+		expect( statusLabel( null ) ).toBe( '' );
+	} );
+	it( 'never mentions tools or where data goes', () => {
+		[ 'needs_key', 'ready', 'detected', 'active', 'off' ].forEach(
+			( status ) => {
+				const label = statusLabel( { ...unsplash, status } );
+				expect( label ).not.toMatch( /tool|·|send|leaves/i );
+			}
 		);
-		expect( metaLine( yoast ) ).toBe(
-			'SEO plugin · nothing leaves your site · 1 tool'
-		);
+	} );
+} );
+
+describe( 'summaryOf', () => {
+	it( 'is the service’s own description, whole', () => {
+		expect( summaryOf( unsplash ) ).toBe( 'Stock photos' );
+		const long =
+			'This site’s own traffic analytics — visitors, sources, pages, AI referrals and AI crawlers. Read-only.';
+		expect( summaryOf( { ...analytics, description: long } ) ).toBe( long );
 	} );
 	it( 'names the kind when there is no description', () => {
-		expect( metaLine( { ...yoast, description: '' } ) ).toBe(
-			'Plugin · nothing leaves your site · 1 tool'
+		expect( summaryOf( { kind: 'account', description: '' } ) ).toBe(
+			'Outside service'
+		);
+		expect( summaryOf( { kind: 'plugin', description: '  ' } ) ).toBe(
+			'Plugin'
+		);
+		expect( summaryOf( analytics ) ).toBe( 'PlugPress add-on' );
+		expect( summaryOf( { kind: 'addon', source: 'third-party' } ) ).toBe(
+			'Third-party add-on'
 		);
 	} );
-} );
-
-describe( 'badgeFor', () => {
-	it( 'maps each status', () => {
-		expect( badgeFor( unsplash ) ).toMatchObject( {
-			label: 'Add key',
-			button: true,
-		} );
-		expect( badgeFor( { status: 'ready' } ) ).toMatchObject( {
-			label: 'Ready',
-			tone: 'success',
-		} );
-		expect( badgeFor( yoast ).label ).toBe( 'Detected' );
-		expect( badgeFor( { status: 'off' } ).label ).toBe( 'Off' );
-	} );
-	it( 'says Active for PlugPress add-ons and On for approved third-party', () => {
-		expect(
-			badgeFor( { status: 'active', source: 'plugpress' } ).label
-		).toBe( 'Active' );
-		expect(
-			badgeFor( { status: 'active', source: 'third-party' } ).label
-		).toBe( 'On' );
+	it( 'copes with no record', () => {
+		expect( summaryOf( null ) ).toBe( '' );
 	} );
 } );
 
-describe( 'roleLabel, initialOf, replaceRecord', () => {
+describe( 'keyLink', () => {
+	it( 'links an account to where its key comes from', () => {
+		expect( keyLink( unsplash ) ).toEqual( {
+			url: 'https://unsplash.com/developers',
+			label: 'Get a key from Unsplash',
+		} );
+	} );
+	it( 'is null without a URL, for anything but an account, or no record', () => {
+		expect( keyLink( { ...unsplash, credentials_url: '' } ) ).toBeNull();
+		expect(
+			keyLink( { ...yoast, credentials_url: 'https://example.com' } )
+		).toBeNull();
+		expect( keyLink( null ) ).toBeNull();
+	} );
+} );
+
+describe( 'toolCount', () => {
+	it( 'counts the tools the drawer lists', () => {
+		expect( toolCount( unsplash ) ).toBe( '2 tools' );
+		expect( toolCount( yoast ) ).toBe( '1 tool' );
+	} );
+	it( 'ignores the server count, which an add-on that is off keeps', () => {
+		expect( toolCount( { tools: [], tool_count: 3 } ) ).toBe( '0 tools' );
+		expect( toolCount( {} ) ).toBe( '0 tools' );
+	} );
+} );
+
+describe( 'roleLabel, replaceRecord', () => {
 	it( 'names the roles as AI apps does', () => {
 		expect( roleLabel( 'read' ) ).toBe( 'Read only' );
 		expect( roleLabel( 'write' ) ).toBe( 'Edit content' );
 		expect( roleLabel( 'admin' ) ).toBe( 'Manage the site' );
 		expect( roleLabel( 'other' ) ).toBe( 'other' );
-	} );
-	it( 'takes a tile letter', () => {
-		expect( initialOf( 'unsplash' ) ).toBe( 'U' );
-		expect( initialOf( '' ) ).toBe( '?' );
+		expect( roleLabel( undefined ) ).toBe( '' );
 	} );
 	it( 'replaces one record by key', () => {
 		const next = { ...unsplash, status: 'ready' };
@@ -107,41 +197,6 @@ describe( 'roleLabel, initialOf, replaceRecord', () => {
 			yoast,
 			next,
 		] );
-	} );
-} );
-
-describe( 'toolCount', () => {
-	it( 'uses the server count, so an add-on that is off still says how many', () => {
-		expect( toolCount( { tools: [], tool_count: 3 } ) ).toBe( '3 tools' );
-	} );
-	it( 'falls back to the tool list', () => {
-		expect( toolCount( { tools: [ { name: 'a' } ] } ) ).toBe( '1 tool' );
-	} );
-} );
-
-describe( 'kindLabel', () => {
-	it( 'keeps a short description and swaps a long one for the kind', () => {
-		expect(
-			kindLabel( { kind: 'account', description: 'Stock photos' } )
-		).toBe( 'Stock photos' );
-		const long =
-			'This site’s own traffic analytics — visitors, sources, pages, AI referrals and AI crawlers. Read-only.';
-		expect(
-			kindLabel( {
-				kind: 'addon',
-				source: 'plugpress',
-				description: long,
-			} )
-		).toBe( 'PlugPress add-on' );
-		expect(
-			kindLabel( {
-				kind: 'addon',
-				source: 'third-party',
-				description: long,
-			} )
-		).toBe( 'Third-party add-on' );
-		expect( kindLabel( { kind: 'plugin', description: '' } ) ).toBe(
-			'Plugin'
-		);
+		expect( replaceRecord( null, next ) ).toEqual( [] );
 	} );
 } );

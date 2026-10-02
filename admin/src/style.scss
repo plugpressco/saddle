@@ -461,11 +461,13 @@ body.saddle-admin-page,
 	}
 
 	// Two classes, to beat wp-admin's `.wrap h1` (23px/400 with padding).
+	// The mark and the page's name (#309): no "Saddle /" breadcrumb, the
+	// mark already says whose page this is.
 	.saddle-app &__title {
 		display: flex;
 		align-items: center;
 		flex-wrap: wrap;
-		gap: 8px;
+		gap: 10px;
 		margin: 0;
 		padding: 0;
 		font-size: var( --s-text-title );
@@ -494,14 +496,10 @@ body.saddle-admin-page,
 		// editing the file would break class-saddle-settings.php's `black`
 		// sentinel, which core's svg-painter needs to repaint the menu icon.
 		svg {
-			width: 20px;
-			height: 20px;
+			width: 22px;
+			height: 22px;
 			color: var( --s-brand );
 		}
-	}
-
-	&__sep {
-		color: var( --s-fg-subtle );
 	}
 
 	&__actions {
@@ -592,38 +590,89 @@ body.saddle-admin-page,
 	}
 }
 
-// The status pill: "AI on" or "Paused". A link to the Dashboard, where the
-// switch is.
-.saddle-status-pill {
-	display: flex;
+// The AI switch (#309): "AI on" or "Paused" at the top of every page. It
+// opens a small panel to pause or resume every app. A pill with a status
+// dot, quiet until it matters; paused, the dot turns amber.
+.saddle-ai {
+	display: inline-flex;
 	align-items: center;
 	flex: 0 0 auto;
-	gap: 7px;
-	padding: 5px 12px;
-	border-radius: var(--s-radius-pill);
-	font-size: var( --s-text-sm );
-	font-weight: 550;
-	line-height: 1.4;
-	text-decoration: none;
-	background: var(--s-surface-3);
-	color: var(--s-fg-muted);
+	gap: 8px;
+	height: 32px;
+	padding: 0 10px 0 12px;
+	border: 1px solid var( --s-border-strong );
+	border-radius: var( --s-radius-pill );
+	background: var( --s-bg );
+	color: var( --s-fg );
+	font: inherit;
+	font-size: var( --s-text );
+	font-weight: 500;
+	cursor: pointer;
+	transition: border-color var( --s-dur ) var( --s-ease );
 
-	&:hover,
-	&:focus {
-		text-decoration: none;
+	&:hover {
+		border-color: #949494;
 	}
 
-	// The pill is a link, and the kit colors links from --pp-accent-text
-	// through an ID-strength selector, so each tone sets that token.
-	&--on {
-		--pp-accent-text: var(--s-safe-text);
-		--pp-accent-hover: var(--s-safe-text);
-		background: var(--s-safe-bg);
+	svg {
+		color: var( --s-fg-muted );
 	}
-	&--paused {
-		--pp-accent-text: var(--s-fg-muted);
-		--pp-accent-hover: var(--s-fg-muted);
-		background: var(--s-surface-3);
+
+	&__dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var( --s-safe );
+		box-shadow: 0 0 0 3px var( --s-safe-bg );
+	}
+
+	&.is-paused &__dot {
+		background: #b26200;
+		box-shadow: 0 0 0 3px var( --s-active-bg );
+	}
+}
+
+// The panel the switch opens (portaled, so it is styled on its own class).
+.saddle-ai__panel {
+	display: grid;
+	gap: 6px;
+	width: 280px;
+	padding: 14px 16px 16px;
+
+	p {
+		margin: 0;
+		font-size: var( --s-text );
+	}
+
+	.pp-btn {
+		justify-self: start;
+		margin-top: 6px;
+	}
+}
+
+.saddle-ai__head {
+	font-weight: 600;
+}
+
+.saddle-ai__text {
+	color: var( --s-fg-muted );
+}
+
+// Paused: said once, under the header, on every Saddle page.
+.saddle-paused {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 10px 24px;
+	background: var( --s-active-bg );
+	border-block-end: 1px solid #f5e1c0;
+	color: var( --s-active-text );
+	font-size: var( --s-text );
+
+	strong {
+		font-weight: 600;
 	}
 }
 
@@ -970,77 +1019,270 @@ body.saddle-admin-page,
 	animation: saddle-step-in 0.24s var(--s-ease) both;
 }
 
-/* ---------- First run (#269) ---------- */
+/* ---------- The welcome: a conversation (#309) ---------- */
+// Saddle's lines beside its mark, the owner's answers as bubbles on the
+// right, quick replies as chips. One reading column; the text is 15px, the
+// welcome's one step up from the admin's 13, because the conversation is the
+// page.
+.saddle-chat {
+	max-width: 680px;
+	margin: 0 auto;
+	padding-block-end: var( --pp-space-8 );
 
-.saddle-first-run {
-	// "Skip setup" at the top right of the column; the mark is in the band.
 	&__bar {
 		display: flex;
 		justify-content: flex-end;
-		max-width: 640px;
-		margin: 0 auto 8px;
+		margin-block-end: 8px;
+
+		.pp-btn {
+			color: var( --s-fg-muted );
+		}
 	}
 
-	// The site's counts are facts, not headlines.
-	&__stats {
-		--pp-text-3xl: 15px;
+	&__thread {
+		display: grid;
+		gap: 4px;
 	}
 
-	&__column {
-		max-width: 640px;
-		margin: 0 auto;
+	&__say {
+		display: grid;
+		grid-template-columns: 28px minmax( 0, 1fr );
+		gap: 12px;
+		align-items: start;
+		margin-block-start: 14px;
+		animation: saddle-step-in 0.28s var( --s-ease ) both;
+
+		&.is-cont {
+			margin-block-start: 6px;
+
+			.saddle-chat__avatar {
+				visibility: hidden;
+			}
+		}
 	}
 
-	&__title {
-		margin: 0 0 6px;
+	&__avatar svg {
+		display: block;
+		width: 28px;
+		height: 28px;
+		color: var( --s-brand );
+	}
+
+	&__body {
+		display: grid;
+		grid-template-columns: minmax( 0, 1fr );
+		gap: 12px;
+		min-width: 0;
+		padding-block-start: 3px;
 		font-size: var( --s-text-title );
-		line-height: 1.4;
-		font-weight: 600;
-		text-wrap: balance;
+		line-height: 1.5;
+
+		> p {
+			margin: 0;
+			text-wrap: pretty;
+		}
 	}
 
-	&__lead {
-		margin: 0 0 20px;
-		font-size: var( --s-text );
-		line-height: 1.6;
-		color: var(--s-fg-muted);
-		text-wrap: pretty;
+	&__muted {
+		color: var( --s-fg-muted );
 	}
 
-	&__lines {
+	&__typing {
+		display: inline-flex;
+		gap: 4px;
+		padding-block-start: 10px;
+
+		i {
+			width: 6px;
+			height: 6px;
+			border-radius: 50%;
+			background: #b8b8b8;
+			animation: saddle-typing 1s infinite ease-in-out;
+
+			&:nth-child( 2 ) {
+				animation-delay: 0.15s;
+			}
+
+			&:nth-child( 3 ) {
+				animation-delay: 0.3s;
+			}
+		}
+	}
+
+	&__you {
 		display: flex;
-		flex-direction: column;
-		gap: 18px;
-		margin: 28px 0 36px;
+		justify-content: flex-end;
+		margin-block-start: 14px;
+		animation: saddle-step-in 0.22s var( --s-ease ) both;
 	}
 
-	// Each line lands like a message, one beat after the last.
-	&__line {
-		animation: saddle-step-in 0.28s var(--s-ease) both;
-	}
-
-	&__stats {
-		margin: 12px 0 0 28px;
-	}
-
-	&__after {
-		display: flex;
-		flex-direction: column;
-		gap: 24px;
-		animation: saddle-step-in 0.28s var(--s-ease) both;
-	}
-
-	&__question {
-		margin: 0 0 8px;
+	&__bubble {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		max-width: 80%;
+		padding: 8px 14px;
+		border-radius: 18px 18px 4px 18px;
+		background: #f0f0f0;
 		font-size: var( --s-text-title );
-		font-weight: 600;
 	}
 
-	&__actions {
+	// A finished thing, with a tick.
+	&__done {
 		display: flex;
 		align-items: center;
-		gap: 10px;
-		margin-top: 20px;
+		gap: 8px;
+		margin: 0;
+		color: var( --s-safe-text );
+		font-size: var( --s-text );
+
+		&::before {
+			content: '';
+			flex: 0 0 auto;
+			width: 16px;
+			height: 16px;
+			border-radius: 50%;
+			background: var( --s-safe ) url( "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.2 8.2l2.5 2.5 5.1-5.3' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" ) center / 16px no-repeat;
+		}
+	}
+
+	&__calls {
+		margin: 0;
+		padding-inline-start: 24px;
+		color: var( --s-fg-muted );
+		font-size: var( --s-text );
+	}
+
+	// Quick replies: the owner's possible answers, under Saddle's question.
+	&__replies {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin-block-start: 12px;
+		padding-inline-start: 40px;
+		animation: saddle-step-in 0.28s var( --s-ease ) both;
+	}
+
+	&__chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		padding: 7px 14px 7px 10px;
+		border: 1px solid var( --s-border-strong );
+		border-radius: var( --s-radius-pill );
+		background: var( --s-bg );
+		color: var( --s-fg );
+		font: inherit;
+		font-size: var( --s-text );
+		font-weight: 500;
+		cursor: pointer;
+		transition: border-color var( --s-dur ) var( --s-ease );
+
+		&:hover {
+			border-color: #949494;
+		}
+
+		&--more {
+			padding-inline-start: 14px;
+			color: var( --s-fg-muted );
+		}
+	}
+
+	// The access choice: three answers, each with its one-line hint.
+	&__options {
+		display: grid;
+		gap: 8px;
+		max-width: 460px;
+		margin-block-start: 12px;
+		padding-inline-start: 40px;
+		animation: saddle-step-in 0.28s var( --s-ease ) both;
+	}
+
+	&__option {
+		display: grid;
+		justify-items: start;
+		gap: 1px;
+		padding: 10px 14px;
+		border: 1px solid var( --s-border-strong );
+		border-radius: 10px;
+		background: var( --s-bg );
+		color: var( --s-fg );
+		font: inherit;
+		font-size: var( --s-text );
+		text-align: start;
+		cursor: pointer;
+		transition: border-color var( --s-dur ) var( --s-ease );
+
+		&:hover:not( :disabled ) {
+			border-color: #949494;
+		}
+
+		&:disabled {
+			cursor: default;
+			opacity: 0.6;
+		}
+
+		&[aria-busy='true'] {
+			opacity: 1;
+			border-color: var( --s-brand );
+		}
+
+		strong {
+			font-weight: 600;
+		}
+
+		span {
+			color: var( --s-fg-muted );
+		}
+
+		small {
+			margin-block-start: 4px;
+			padding: 1px 8px;
+			border-radius: var( --s-radius-pill );
+			background: var( --saddle-brand-tint );
+			color: var( --s-brand );
+			font-size: var( --s-text-sm );
+		}
+	}
+
+	// The prompt to paste reads as a sentence, so it wraps like one.
+	.pp-snippet__code {
+		white-space: normal;
+		overflow-wrap: anywhere;
+		font-family: inherit;
+		font-size: var( --s-text );
+		line-height: 1.5;
+	}
+
+	// The connect step lives inside Saddle's message: the conversation already
+	// names the app and the choice comes later, so the wizard's own heading
+	// and its "what it will be able to do" card stay out of the thread.
+	.saddle-wizard--embedded {
+		font-size: var( --s-text );
+
+		.saddle-wizard__title,
+		.saddle-wizard__cando {
+			display: none;
+		}
+	}
+
+	@media ( max-width: 782px ) {
+		&__replies,
+		&__options {
+			padding-inline-start: 0;
+		}
+	}
+}
+
+@keyframes saddle-typing {
+	0%,
+	80%,
+	100% {
+		opacity: 0.3;
+	}
+
+	40% {
+		opacity: 1;
 	}
 }
 
@@ -1056,13 +1298,6 @@ body.saddle-admin-page,
 	&__line {
 		animation: saddle-step-in 0.28s var(--s-ease) both;
 	}
-}
-
-.saddle-first-run__foot {
-	margin: 18px 0 0;
-	font-size: var( --s-text );
-	line-height: 1.55;
-	color: var(--s-fg-subtle);
 }
 
 .saddle-selfcheck {
@@ -1097,12 +1332,90 @@ body.saddle-admin-page,
 
 /* ---------- Home ---------- */
 
-// The value on the right of a Home row ("Active", "2 minutes ago"), set apart
-// from the link beside it.
-.saddle-home__value {
-	color: var(--s-fg-subtle);
+// The feed and what waits on the left, the apps on the right (#309). One
+// column below 1100px, the apps after the feed. With no app connected there
+// is no side column, so the page is one column at every width.
+.saddle-home {
+	display: grid;
+	grid-template-columns: minmax( 0, 1fr ) 280px;
+	gap: var( --pp-space-6 );
+	align-items: start;
+
+	&__main,
+	&__side {
+		display: grid;
+		gap: var( --pp-space-6 );
+		min-width: 0;
+	}
+
+	&--single {
+		grid-template-columns: minmax( 0, 1fr );
+	}
+
+	@media ( max-width: 1100px ) {
+		grid-template-columns: minmax( 0, 1fr );
+	}
+}
+
+// No app connected: one sentence and one button, centred in one block.
+.saddle-home__connect {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var( --pp-space-4 );
+	padding-block: var( --pp-space-8 );
+	text-align: center;
+}
+
+.saddle-home__connect-text {
+	margin: 0;
 	font-size: var( --s-text );
-	font-variant-numeric: tabular-nums;
+}
+
+// This week: three numbers in one block, its title in the header row.
+.saddle-home__week {
+	padding: var( --pp-space-4 ) var( --pp-space-5 );
+
+	.pp-card__header {
+		margin-block-end: var( --pp-space-3 );
+	}
+
+	.pp-stat {
+		padding-block: 0;
+	}
+
+	// Three short numbers fit side by side down to phone width; the kit
+	// would break them 2 + 1 below 900px.
+	@media ( min-width: 561px ) and ( max-width: 900px ) {
+		.pp-stat-grid--fixed {
+			grid-template-columns: repeat(
+				var( --pp-stat-grid-cols, 3 ),
+				minmax( 0, 1fr )
+			);
+		}
+	}
+}
+
+// One line from Saddle with the next step for an app, beside its mark. A
+// line, not a box: one sentence doesn't get a border.
+.saddle-nudge {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+
+	&__mark svg {
+		display: block;
+		width: 22px;
+		height: 22px;
+		color: var( --s-brand );
+	}
+
+	&__text {
+		flex: 1 1 auto;
+		min-width: 0;
+		margin: 0;
+		font-size: var( --s-text );
+	}
 }
 
 // Still used by Context (Guidance).
@@ -1373,10 +1686,24 @@ body.saddle-admin-page,
 	}
 }
 
-// The site's address for AI apps: one row in its own block, with Copy.
+// The site's address for AI apps: one quiet line, not a block. A label, the
+// address in a code chip, and Copy as a link.
+.saddle-apps__address {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	margin: 0;
+	font-size: var( --s-text );
+}
+
+.saddle-apps__address-label {
+	color: var( --s-fg-muted );
+}
+
 .saddle-apps__url {
-	display: inline-block;
-	margin-block-start: 2px;
+	min-width: 0;
+	margin: 0;
 	padding: 2px 6px;
 	border-radius: var( --s-radius );
 	background: var( --s-surface-2 );
@@ -1385,9 +1712,9 @@ body.saddle-admin-page,
 	overflow-wrap: anywhere;
 }
 
-// Nothing connected yet: a card per app, grouped, like Jetpack AI's Quick
-// start. The cards are blocks (the soft edge and shadow); the whole card is
-// the button.
+// Nothing connected yet: a light tile per app, logo and name, in three
+// groups. Tiles are picked from, not read, so they are light: a hairline, no
+// shadow, and the field edge on hover. The whole tile is the button.
 .saddle-quick {
 	&__group {
 		display: grid;
@@ -1403,28 +1730,30 @@ body.saddle-admin-page,
 
 	&__cards {
 		display: grid;
-		grid-template-columns: repeat( auto-fill, minmax( 220px, 1fr ) );
-		gap: var( --pp-space-3 );
+		grid-template-columns: repeat( auto-fill, minmax( 160px, 1fr ) );
+		gap: var( --pp-space-2 );
 	}
 
 	&__card {
 		display: flex;
 		align-items: center;
-		gap: 12px;
+		gap: 10px;
+		box-sizing: border-box;
 		min-width: 0;
-		padding: 14px 16px;
+		min-height: 44px;
+		padding: 0 12px;
 		border: 1px solid var( --s-border );
-		border-radius: var( --s-radius-lg );
+		border-radius: 6px;
 		background: var( --s-bg );
-		box-shadow: var( --s-shadow-sm );
 		color: var( --s-fg );
 		font: inherit;
+		font-size: var( --s-text );
 		text-align: start;
 		cursor: pointer;
 		transition: border-color var( --s-dur ) var( --s-ease );
 
 		&:hover {
-			border-color: var( --s-border-strong );
+			border-color: #949494;
 		}
 
 		img {
@@ -1432,33 +1761,21 @@ body.saddle-admin-page,
 		}
 	}
 
-	&__text {
-		display: grid;
-		flex: 1 1 auto;
-		min-width: 0;
-	}
-
 	&__name {
-		font-size: var( --s-text );
-		font-weight: 600;
-	}
-
-	&__kind {
 		overflow: hidden;
-		color: var( --s-fg-muted );
-		font-size: var( --s-text );
+		font-weight: 600;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
 
-	&__go {
-		flex: 0 0 auto;
-		color: var( --s-fg-muted );
+	// "Another MCP app" and the address: two quiet lines after the groups.
+	&__more {
+		display: grid;
+		gap: var( --pp-space-2 );
 	}
 
 	&__other {
 		margin: 0;
-		color: var( --s-fg-muted );
 		font-size: var( --s-text );
 	}
 }
@@ -1743,25 +2060,20 @@ body.saddle-admin-page,
 /* ---------- Activity page ---------- */
 
 .saddle-activity {
-	&__title {
-		margin: 0 0 4px;
-		font-size: var( --s-text-title );
-		font-weight: 600;
-	}
-
-	// The pills themselves are the design system's FilterTabs.
+	// The pills themselves are the design system's FilterTabs. On Home the
+	// section's heading leads the row and the filters sit at its end.
 	&__filters {
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
 		gap: 6px;
-		margin-bottom: 20px;
+		margin-bottom: 16px;
 	}
 
-	&__total {
-		margin-inline-start: auto;
-		font-size: var( --s-text );
-		color: var(--s-fg-subtle);
-		font-variant-numeric: tabular-nums;
+	&__heading {
+		margin: 0 auto 0 0;
+		font-size: var( --s-text-title );
+		font-weight: 600;
 	}
 
 	&__loading {
@@ -1776,10 +2088,8 @@ body.saddle-admin-page,
 
 	&__daylabel {
 		margin: 0 0 8px;
-		font-size: var( --s-text-sm );
-		font-weight: 620;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
+		font-size: var( --s-text );
+		font-weight: 600;
 		color: var(--s-fg-subtle);
 	}
 
@@ -1792,23 +2102,31 @@ body.saddle-admin-page,
 		overflow: hidden;
 	}
 
+	// One line: who (the logo), what, when. Who in words is the tooltip.
 	&__row {
 		display: flex;
-		align-items: flex-start;
+		align-items: center;
 		gap: 12px;
 		margin: 0;
-		padding: 12px 16px;
+		padding: 10px 16px;
 
 		& + & {
 			border-top: 1px solid var(--s-border);
 		}
 	}
 
+	// The app that did it; a dot when no app did (the owner, a cron run).
+	&__logo {
+		flex: 0 0 auto;
+		width: 20px;
+		height: 20px;
+	}
+
 	&__mark {
 		flex: 0 0 auto;
 		width: 8px;
 		height: 8px;
-		margin-top: 6px;
+		margin-inline: 6px;
 		border-radius: 50%;
 		background: var(--s-safe);
 
@@ -1817,34 +2135,21 @@ body.saddle-admin-page,
 		}
 	}
 
-	&__body {
-		flex: 1;
-		min-width: 0;
-	}
-
 	&__summary {
-		display: block;
+		flex: 1 1 auto;
+		min-width: 0;
+		overflow: hidden;
 		font-size: var( --s-text );
 		line-height: 1.5;
-		overflow-wrap: anywhere;
+		white-space: nowrap;
+		text-overflow: ellipsis;
 	}
-
-	&__meta {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		margin-top: 3px;
-		font-size: var( --s-text );
-		color: var(--s-fg-subtle);
-	}
-
 
 	&__time {
 		flex: 0 0 auto;
 		font-size: var( --s-text );
 		color: var(--s-fg-subtle);
 		font-variant-numeric: tabular-nums;
-		margin-top: 2px;
 	}
 
 	&__more {
@@ -1911,141 +2216,140 @@ body.saddle-admin-page,
 }
 
 /* ---------- Services (#291) ---------- */
-// Sections of rows from the kit; a row opens a drawer. The tile is a neutral
-// letter, never a brand colour.
-.saddle-svc__logo {
-	display: inline-grid;
-	place-items: center;
-	inline-size: 28px;
-	block-size: 28px;
-	border-radius: var(--s-radius);
-	background: var(--s-surface-2);
-	border: 1px solid var(--s-border);
-	color: var(--s-fg-muted);
+// One row per service: its name and one status line. "Add key" is the only
+// button a row carries; any other row is itself the button that opens the
+// drawer, with a chevron at its end.
+.saddle-svc__row.pp-rowlist__row--clickable:focus-visible {
+	// The block clips anything outside a row, so the ring sits inside it.
+	outline: 2px solid var( --s-focus );
+	outline-offset: -2px;
+	box-shadow: none;
+}
+
+.saddle-svc__line {
+	display: flex;
+	align-items: center;
+	gap: var( --pp-space-3 );
+	min-width: 0;
+}
+
+.saddle-svc__name {
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	gap: var( --pp-space-05 );
+	min-width: 0;
+}
+
+.saddle-svc__go {
+	flex: 0 0 auto;
+	color: var( --s-fg-subtle );
+}
+
+.saddle-svc__empty {
+	margin: 0;
+	color: var( --s-fg-subtle );
 	font-size: var( --s-text );
-	font-weight: 600;
+}
+
+// The drawer: the key form or the switch, then the tools, folded. Its one
+// line of what the service is lives in the drawer's head.
+.saddle-svc__sends {
+	margin: 0;
+	color: var( --s-fg-muted );
+	font-size: var( --s-text );
 }
 
 .saddle-svc__detail {
 	display: grid;
-	gap: var(--pp-space-5);
+	gap: var( --pp-space-5 );
 	min-width: 0;
 }
 
-.saddle-svc__block {
+.saddle-svc__key {
 	display: grid;
-	gap: var(--pp-space-2);
+	gap: var( --pp-space-2 );
 	min-width: 0;
 }
 
-.saddle-svc__h {
-	margin: 0;
-	font-size: var( --s-text );
+// A key that is set: "Your key ····abcd", then Change and Remove at the end.
+.saddle-svc__key-row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var( --pp-space-3 );
+
+	code {
+		margin: 0;
+		padding: 2px 6px;
+		background: var( --s-surface-2 );
+		border-radius: var( --s-radius );
+		font-size: var( --s-text-sm );
+	}
+
+	.saddle-svc__actions {
+		margin-inline-start: auto;
+	}
+}
+
+.saddle-svc__key-label {
 	font-weight: 600;
 }
 
-.saddle-svc__text,
-.saddle-svc__note {
+.saddle-svc__get {
 	margin: 0;
-	color: var(--s-fg-muted);
-}
-
-.saddle-svc__note {
 	font-size: var( --s-text );
 }
 
 .saddle-svc__actions {
 	display: flex;
 	align-items: center;
-	gap: 8px;
-}
-
-.saddle-svc__key {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: var(--pp-space-3);
-	padding: 8px 12px;
-	border: 1px solid var(--s-border);
-	border-radius: var(--s-radius-lg);
-
-	code {
-		font-size: var( --s-text-sm );
-	}
+	gap: var( --pp-space-2 );
 }
 
 .saddle-svc__switch {
 	display: flex;
 	align-items: center;
-	gap: 10px;
+	gap: var( --pp-space-2 );
+	font-size: var( --s-text );
 }
 
-// What leaves the site, and the tools: two small bordered lists.
-.saddle-svc__sends,
-.saddle-svc__tools {
+// The drawer is portaled outside the app root, where Saddle's focus rule
+// does not reach, and the kit draws no ring on this trigger.
+.saddle-svc__tools .pp-collapsible__trigger:focus-visible {
+	outline: 2px solid var( --s-focus );
+	outline-offset: 2px;
+	border-radius: var( --s-radius );
+}
+
+// The tools: a small bordered list, each tool's name and the role it needs.
+// The tool's id is its tooltip.
+.saddle-svc__tool-list {
 	display: grid;
 	margin: 0;
 	padding: 0;
 	list-style: none;
-	border: 1px solid var(--s-border);
-	border-radius: var(--s-radius-lg);
+	border: 1px solid var( --s-border );
+	border-radius: var( --s-radius-lg );
 	overflow: hidden;
+	font-size: var( --s-text );
 
 	li {
-		padding: 8px 12px;
+		display: grid;
+		grid-template-columns: minmax( 0, 1fr ) auto;
+		gap: var( --pp-space-3 );
+		margin: 0;
+		padding: var( --pp-space-2 ) var( --pp-space-3 );
 	}
 
 	li + li {
-		border-block-start: 1px solid var(--s-border);
-	}
-
-	// Host names and tool names are plain monospace text: no grey bar
-	// (wp-admin paints every code element), no full-width stretch.
-	code {
-		justify-self: start;
-		display: block;
-		margin: 0;
-		padding: 0;
-		background: none;
-		font-size: var( --s-text-sm );
-	}
-}
-
-.saddle-svc__tools code {
-	color: var(--s-fg-subtle);
-}
-
-.saddle-svc__sends li {
-	display: grid;
-
-	span {
-		color: var(--s-fg-muted);
-		font-size: var( --s-text );
-	}
-}
-
-.saddle-svc__tools li {
-	display: grid;
-	grid-template-columns: minmax(0, 1fr) auto;
-	gap: var(--pp-space-3);
-
-	> span:first-child {
-		display: grid;
-		min-width: 0;
+		border-block-start: 1px solid var( --s-border );
 	}
 }
 
 .saddle-svc__role {
-	color: var(--s-fg-muted);
-	font-size: var( --s-text );
+	color: var( --s-fg-muted );
 	white-space: nowrap;
-}
-
-.saddle-svc__links {
-	display: flex;
-	flex-wrap: wrap;
-	gap: var(--pp-space-4);
-	font-size: var( --s-text );
 }
 
 /* ---------- Settings (#285) ---------- */

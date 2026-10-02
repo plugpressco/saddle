@@ -77,22 +77,91 @@ Every Saddle page, module pages and first run included, is drawn by
 `admin/src/components/Frame.jsx`:
 
 - **Header band:** white over the `#FCFCFC` canvas, full width of wp-admin's
-  content area, `16px 24px`, one `#F0F0F0` hairline under it. Row 1: the 20px mark in Petrol, then an `h1`
-  breadcrumb "Saddle / Page" (15px; "Saddle" in grey links Home; the page in
-  600). A module page reads "Saddle / Analytics". On the right, only the AI
-  status pill and the notices bell. Row 2, when a page has two or more tabs:
-  the kit `Tabs` in Jetpack AI's (WordPress 7's minimal) style: 48px tall,
-  13px regular, every tab `#1E1E1E`, a 1.5px `#6E6E6E` line under the active
-  one, sitting on the band's hairline. No brand color on tabs (2026-10-02,
-  Fahim: the teal underline and grey idle tabs looked dated).
+  content area, `16px 24px`, one `#F0F0F0` hairline under it. Row 1: the
+  22px mark in Petrol (a link to Home), then the page's name as the `h1`
+  (15/600): "Home", "AI apps", "Analytics" on a module page, "Welcome" on
+  first run. No "Saddle /" breadcrumb (#309): the mark says whose page it is.
+  On the right, the notices bell and the **AI switch**: a pill reading
+  "AI on" (green dot) or "Paused" (amber dot) that opens a small panel with
+  what the state means and one button, "Pause all apps" or "Resume". The
+  switch lives here, on every page, and nowhere else. While paused, a strip
+  under the header says "AI is paused. No app can read or change this site
+  until you resume." with Resume, on every Saddle page. Row 2, when a page
+  has two or more tabs (no core page does since #309; modules may): the kit
+  `Tabs` in Jetpack AI's (WordPress 7's minimal) style: 48px tall, 13px
+  regular, every tab `#1E1E1E`, a 1.5px `#6E6E6E` line under the active one.
+  No brand color on tabs (2026-10-02, Fahim: the teal underline and grey idle
+  tabs looked dated).
   **No description sentence** under the title.
-- **Page:** the `#FCFCFC` canvas, one centered 960px column.
+- **Page:** the `#FCFCFC` canvas, one centered 960px column (Home: 1040px,
+  for its two columns).
 - **Footer strip:** a hairline, then mark · "Saddle 1.5.0" (and the module's
   product and version on a module page) · Docs · Rate Saddle, in 13px grey.
 
 Never draw the frame while the app is loading: WordPress's `common.js` moves
 every `.notice` after the first `.wrap h1`, and the header's `h1` would pull the
 quarantined notices back into view.
+
+## Home (#309, v2 the same day)
+
+Home replaced the Dashboard on 2026-10-02. The first build had captioned stat
+tiles, a row of suggested prompts and three ways to say "connect"; Fahim:
+"more ugly now … no ai slop, random text box, ai text, no repeat unnecessary
+things". The v2 plan is `planning/HOME-APPS-SERVICES-V2.md`. Home is now:
+
+- **Nothing connected:** one block, centred, "No AI app is connected yet." and
+  a primary "Connect an app". Then the feed if there is history. No stats,
+  no side column.
+- **Connected:** left, "Needs your OK" while something waits; one plain line
+  from Saddle with the single next setup step (`try` or `choose` only;
+  mark, sentence, button, close; no box); **This week**, one block with its
+  title in the header row and three numbers with labels only, Changes ·
+  Blocked · Waiting for you, exact (the log's `since` argument); then
+  **Activity**: the heading and the filters (All · Changes · Blocked, and
+  Rehearsed only when one exists) on one row, days as 13/600 grey labels,
+  one-line rows (the app's logo or a status dot, the summary, the time; the
+  actor in the row's tooltip), "Show older". Right, **Apps** (logo, name,
+  role, "Manage", "Connect another app" as the last row), **Works with**
+  (plugin names only, "Services" link) when non-empty, the connection
+  warning, **Modules**.
+- Nothing generated: no suggested prompts, no tips, no captions under
+  numbers.
+
+## AI apps (#309 v2)
+
+- **Nothing connected:** "Connect an app" (15/600, no sentence), then Chat
+  apps · Agents · Code editors as rows of light tiles: logo and name only,
+  44px, hairline, no shadow, 6px corners, `#949494` on hover. Under them one
+  link, "Another MCP app", and one line, "Address", the URL in a code chip,
+  "Copy" as a link-button. No boxes besides the tiles.
+- **Connected:** the list; each row has at most one meta fact ("Last used …"
+  or "Connected …", the more recent) and never repeats the role shown in the
+  dropdown beside it.
+
+## Services (#309 v2)
+
+- No section notes. No section heading when only one kind has records; with
+  two or more, "Accounts" / "Plugins" / "Add-ons" and nothing under them.
+- Rows: the name and one status word ("Not set up" · "Ready" · "Active" ·
+  "Off"). No letter avatar, no description, no tool count. "Add key"
+  (secondary) only for `needs_key`; every other row is the button that opens
+  the drawer, with a chevron.
+- The drawer: the service's one-line summary under its name, the key form
+  or the on/off switch, "Get a key from <service>", **"Sends to <hosts>"**
+  (the one privacy fact an owner needs; never remove it), and the tools as a
+  collapsed list.
+- Empty page: one grey line, "Nothing here yet."
+
+## The welcome (#309)
+
+First run is a conversation, titled "Welcome": Saddle's lines beside its
+28px mark (a following line hides the mark, as a chat groups them), typing
+dots between lines, the owner's answers as right-aligned grey bubbles, quick
+replies as pills, and the access choice as three option buttons with their
+hints. It reads at **15px**, one step above the admin's 13, because the
+conversation is the page; it is the only place body text is 15. One sentence
+about the site replaces stat tiles and check rows (Fahim: the Pages / Posts /
+Media strip "not feel chat"; "onboarding should not like it setup").
 
 ## Type: three sizes (Jetpack AI's, 2026-10-02)
 
