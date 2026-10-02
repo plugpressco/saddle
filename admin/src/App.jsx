@@ -40,6 +40,8 @@ import {
 	areaUrl,
 	findArea,
 	legacyUrl,
+	readRoute,
+	routeUrl,
 	servicesSectionUrl,
 	placeFor,
 	resolveTab,
@@ -100,8 +102,23 @@ export default function App() {
 		}
 	}, [ redirect ] );
 
-	const [ tab, setTabState ] = useState( () =>
-		resolveTab( area, saddleData.tab )
+	// Where we are: the tab, a view inside it and the module's own query
+	// arguments. Read from the address, not from the server's copy, so a
+	// module that rewrote an old `#/…` link with replaceState before mount
+	// lands on the right screen. A page without the argument falls back to
+	// what the server resolved.
+	const [ route, setRoute ] = useState( () => {
+		const here = readRoute( window.location.search );
+		return {
+			tab: resolveTab( area, here.tab || saddleData.tab ),
+			view: here.view,
+			args: here.args,
+		};
+	} );
+	const { tab, view: routeView, args: routeArgs } = route;
+	const setTabState = useCallback(
+		( next ) => setRoute( { tab: next, view: '', args: {} } ),
+		[]
 	);
 	const [ tier, setTier ] = useState( null );
 	const [ caps, setCaps ] = useState( [] );
@@ -149,14 +166,43 @@ export default function App() {
 				window.history.pushState( {}, '', url );
 			}
 		},
-		[ area ]
+		[ area, setTabState ]
+	);
+
+	// A module's deep screen on this page: `&view=` and its own arguments,
+	// no reload. The tab stays unless one is named.
+	const goRoute = useCallback(
+		( next ) => {
+			const resolved = resolveTab( area, next.tab || route.tab );
+			setRoute( {
+				tab: resolved,
+				view: next.view || '',
+				args: next.args || {},
+			} );
+			setWizardOpen( false );
+			const url = routeUrl(
+				AREAS,
+				area.key,
+				resolved,
+				next.view || '',
+				next.args || {}
+			);
+			if ( url && window.history && window.history.pushState ) {
+				window.history.pushState( {}, '', url );
+			}
+		},
+		[ area, route.tab ]
 	);
 
 	// Back and Forward between tabs of this page.
 	useEffect( () => {
 		const onPop = () => {
-			const params = new URLSearchParams( window.location.search );
-			setTabState( resolveTab( area, params.get( 'tab' ) || '' ) );
+			const here = readRoute( window.location.search );
+			setRoute( {
+				tab: resolveTab( area, here.tab ),
+				view: here.view,
+				args: here.args,
+			} );
 			setWizardOpen( wantsWizard() );
 			setConnectOpen( wantsConnect() );
 			setConnectApp( appParam( addParam() ) );
@@ -174,8 +220,12 @@ export default function App() {
 			if ( ! place ) {
 				return;
 			}
-			if ( place.area === area.key ) {
-				setTab( place.tab );
+			if ( ! place.area || place.area === area.key ) {
+				if ( 'view' in place ) {
+					goRoute( place );
+				} else {
+					setTab( place.tab );
+				}
 				return;
 			}
 			const url = areaUrl( AREAS, place.area, place.tab );
@@ -183,7 +233,7 @@ export default function App() {
 				window.location.assign( url );
 			}
 		},
-		[ area, setTab ]
+		[ area, setTab, goRoute ]
 	);
 
 	// One onboarding event to the server; the answer is the new state.
@@ -531,6 +581,7 @@ export default function App() {
 			<Frame
 				area={ area }
 				tab={ tab }
+				view={ routeView }
 				onTab={ setTab }
 				status={ { paused, pausing, onToggle: togglePause } }
 				notices={ ! wizardOpen }
@@ -541,12 +592,14 @@ export default function App() {
 				<div
 					className="saddle-tabpane"
 					key={ `${ area.key }/${ tab }${
-						wizardOpen ? '/add' : ''
-					}` }
+						routeView ? `/${ routeView }` : ''
+					}${ wizardOpen ? '/add' : '' }` }
 				>
 					<Screen
 						area={ area }
 						tab={ tab }
+						view={ routeView }
+						args={ routeArgs }
 						navigate={ navigate }
 						tier={ tier }
 						caps={ caps }

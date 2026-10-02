@@ -259,12 +259,13 @@ class Saddle_Settings {
 	 * The area and tab of the current request: which page this is, and which
 	 * of its tabs. An unknown tab falls back to the page's first one.
 	 *
-	 * @return array{0:string,1:string}
+	 * @return array{0:string,1:string,2:string} Area, tab, and the view inside the tab ('' for none).
 	 */
 	private static function current_route() {
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Reading which page to draw; nothing is changed.
 		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( (string) $_GET['page'] ) ) : self::PAGE_SLUG;
 		$tab  = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( (string) $_GET['tab'] ) ) : '';
+		$view = isset( $_GET['view'] ) ? sanitize_key( wp_unslash( (string) $_GET['view'] ) ) : '';
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 		$area = Saddle_Modules::area_for_page( $page );
@@ -272,19 +273,20 @@ class Saddle_Settings {
 			$area = 'home';
 		}
 
-		return array( $area, Saddle_Modules::resolve_tab( $area, $tab ) );
+		return array( $area, Saddle_Modules::resolve_tab( $area, $tab ), $view );
 	}
 
 	/**
 	 * Render the mount point for the React app, naming the page and tab.
 	 */
 	public static function render_page() {
-		list( $area, $tab ) = self::current_route();
+		list( $area, $tab, $view ) = self::current_route();
 
 		printf(
-			'<div class="wrap"><div id="saddle-root" data-area="%s" data-tab="%s"></div></div>',
+			'<div class="wrap"><div id="saddle-root" data-area="%s" data-tab="%s" data-view="%s"></div></div>',
 			esc_attr( $area ),
-			esc_attr( $tab )
+			esc_attr( $tab ),
+			esc_attr( $view )
 		);
 	}
 
@@ -332,7 +334,7 @@ class Saddle_Settings {
 			return;
 		}
 
-		list( $area, $tab ) = self::current_route();
+		list( $area, $tab, $view ) = self::current_route();
 
 		$build_dir = SADDLE_DIR . 'admin/build/';
 		$build_url = SADDLE_URL . 'admin/build/';
@@ -467,6 +469,7 @@ class Saddle_Settings {
 					// and the page can never disagree.
 					'area'         => $area,
 					'tab'          => $tab,
+					'view'         => $view,
 					'areas'        => self::areas_for_app(),
 					// The notices for this page and tab, most severe first.
 					'notices'      => Saddle_Notices::for_screen( 'saddle', $area . '/' . $tab ),

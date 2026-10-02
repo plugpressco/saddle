@@ -25,7 +25,7 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 	public function tear_down() {
 		remove_all_filters( 'saddle_modules' );
 		$this->reset_menus();
-		unset( $_GET['page'], $_GET['tab'] );
+		unset( $_GET['page'], $_GET['tab'], $_GET['view'] );
 		delete_option( Saddle_Onboarding::OPTION );
 		delete_option( 'saddle_onboarded' );
 		wp_dequeue_script( 'saddle-admin' );
@@ -193,6 +193,22 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'id="saddle-root"', $html );
 		$this->assertStringContainsString( 'data-area="' . $area . '"', $html );
 		$this->assertStringContainsString( 'data-tab="' . $expected_tab . '"', $html );
+	}
+
+	public function test_the_view_reaches_the_root_and_the_app() {
+		$_GET['page'] = 'saddle';
+		$_GET['view'] = 'Review"><b>';
+
+		ob_start();
+		Saddle_Settings::render_page();
+		$html = ob_get_clean();
+
+		$this->assertStringContainsString( 'data-view="reviewb"', $html );
+		unset( $_GET['view'] );
+
+		ob_start();
+		Saddle_Settings::render_page();
+		$this->assertStringContainsString( 'data-view=""', ob_get_clean() );
 	}
 
 	public static function routes() {

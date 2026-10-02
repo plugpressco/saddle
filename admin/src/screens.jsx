@@ -84,9 +84,11 @@ function MountSlot( { module, tab } ) {
  * @param {Object}   props
  * @param {Object}   props.area     The module's page.
  * @param {string}   props.tab      The tab.
+ * @param {string}   props.view     The view inside the tab, or ''.
+ * @param {Object}   props.args     The module's own query arguments.
  * @param {Function} props.navigate Navigation helper.
  */
-function ModuleScreen( { area, tab, navigate } ) {
+function ModuleScreen( { area, tab, view, args, navigate } ) {
 	const screens = useMemo( collectScreens, [] );
 
 	if ( area.content === 'mount' ) {
@@ -122,6 +124,8 @@ function ModuleScreen( { area, tab, navigate } ) {
 			kit={ kit }
 			module={ area.key }
 			tab={ tab }
+			view={ view || '' }
+			args={ args || {} }
 			navigate={ navigate }
 			api={ api }
 			shellVersion={ SHELL_VERSION }
@@ -254,6 +258,8 @@ export default function Screen( props ) {
 	const {
 		area,
 		tab,
+		view,
+		args,
 		navigate,
 		tier,
 		caps,
@@ -279,7 +285,15 @@ export default function Screen( props ) {
 	const extTabs = useMemo( collectTabs, [] );
 
 	if ( area.module ) {
-		return <ModuleScreen area={ area } tab={ tab } navigate={ navigate } />;
+		return (
+			<ModuleScreen
+				area={ area }
+				tab={ tab }
+				view={ view }
+				args={ args }
+				navigate={ navigate }
+			/>
+		);
 	}
 
 	switch ( `${ area.key }/${ tab }` ) {

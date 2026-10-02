@@ -45,7 +45,12 @@
  *
  * - `saddle.admin.screens` — a module's content for one of its tabs:
  *   `{ module: 'analytics', tab: 'overview', Component }`. The Component gets
- *   `{ ui, kit, module, tab, navigate, api, shellVersion }`.
+ *   `{ ui, kit, module, tab, view, args, navigate, api, shellVersion }`.
+ *   `view` ('' when absent) and `args` (the other query args, strings) come
+ *   from `admin.php?page=saddle-{key}&tab={tab}&view={view}&campaign=12`.
+ *   `navigate( { tab, view, args } )` inside the module changes the address
+ *   with pushState and no reload (Back works); `navigate( { tab } )` clears
+ *   view and args; `navigate( { view, args } )` keeps the tab. Feature `view`.
  * - `saddle.admin.homeCards` — a card on Dashboard → Overview: `{ id, order,
  *   Component }`.
  * - `saddle.admin.connectionCards` — a card on AI apps.
@@ -183,6 +188,7 @@ import {
 	XIcon,
 	XCircleIcon,
 	ZapIcon,
+	DashboardIcon,
 } from '@plugpress/ui';
 import SectionHeader from './components/SectionHeader';
 import SettingsForm from './components/SettingsForm';
@@ -251,6 +257,7 @@ export const icons = {
 	X: XIcon,
 	XCircle: XCircleIcon,
 	Zap: ZapIcon,
+	Dashboard: DashboardIcon,
 };
 
 // The design-system primitives an addon may use. Every symbol here is one
@@ -345,6 +352,7 @@ const FEATURES = [
 	'settings-form',
 	'waiting-line',
 	'ui-wide',
+	'view',
 ];
 
 // What this shell supports, for addons that feature-detect. Set when the

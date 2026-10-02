@@ -261,6 +261,7 @@ function Footer( { area } ) {
  * @param {Object}   props
  * @param {Object}   props.area            The page, from saddleData.areas.
  * @param {string}   props.tab             The active tab.
+ * @param {string}   props.view            The module's view inside the tab, or ''.
  * @param {Function} props.onTab           Called with a tab key.
  * @param {Object}   props.status          { paused, pausing, onToggle }.
  * @param {boolean}  props.notices         Show the notices bell.
@@ -275,6 +276,7 @@ function Footer( { area } ) {
 export default function Frame( {
 	area,
 	tab,
+	view = '',
 	onTab,
 	status,
 	notices = true,
@@ -356,7 +358,9 @@ export default function Frame( {
 			<main
 				id="pp-main"
 				className="saddle-frame"
-				data-saddle-screen={ `${ area.key }/${ tab }` }
+				data-saddle-screen={ `${ area.key }/${ tab }${
+					view ? `/${ view }` : ''
+				}` }
 			>
 				<AppContent
 					width={
