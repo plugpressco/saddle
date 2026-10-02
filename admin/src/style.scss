@@ -1715,10 +1715,24 @@ body.saddle-admin-page,
 	}
 }
 
-// The site's address for AI apps: one row in its own block, with Copy.
+// The site's address for AI apps: one quiet line, not a block. A label, the
+// address in a code chip, and Copy as a link.
+.saddle-apps__address {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	margin: 0;
+	font-size: var( --s-text );
+}
+
+.saddle-apps__address-label {
+	color: var( --s-fg-muted );
+}
+
 .saddle-apps__url {
-	display: inline-block;
-	margin-block-start: 2px;
+	min-width: 0;
+	margin: 0;
 	padding: 2px 6px;
 	border-radius: var( --s-radius );
 	background: var( --s-surface-2 );
@@ -1727,9 +1741,9 @@ body.saddle-admin-page,
 	overflow-wrap: anywhere;
 }
 
-// Nothing connected yet: a card per app, grouped, like Jetpack AI's Quick
-// start. The cards are blocks (the soft edge and shadow); the whole card is
-// the button.
+// Nothing connected yet: a light tile per app, logo and name, in three
+// groups. Tiles are picked from, not read, so they are light: a hairline, no
+// shadow, and the field edge on hover. The whole tile is the button.
 .saddle-quick {
 	&__group {
 		display: grid;
@@ -1745,28 +1759,30 @@ body.saddle-admin-page,
 
 	&__cards {
 		display: grid;
-		grid-template-columns: repeat( auto-fill, minmax( 220px, 1fr ) );
-		gap: var( --pp-space-3 );
+		grid-template-columns: repeat( auto-fill, minmax( 160px, 1fr ) );
+		gap: var( --pp-space-2 );
 	}
 
 	&__card {
 		display: flex;
 		align-items: center;
-		gap: 12px;
+		gap: 10px;
+		box-sizing: border-box;
 		min-width: 0;
-		padding: 14px 16px;
+		min-height: 44px;
+		padding: 0 12px;
 		border: 1px solid var( --s-border );
-		border-radius: var( --s-radius-lg );
+		border-radius: 6px;
 		background: var( --s-bg );
-		box-shadow: var( --s-shadow-sm );
 		color: var( --s-fg );
 		font: inherit;
+		font-size: var( --s-text );
 		text-align: start;
 		cursor: pointer;
 		transition: border-color var( --s-dur ) var( --s-ease );
 
 		&:hover {
-			border-color: var( --s-border-strong );
+			border-color: #949494;
 		}
 
 		img {
@@ -1774,33 +1790,21 @@ body.saddle-admin-page,
 		}
 	}
 
-	&__text {
-		display: grid;
-		flex: 1 1 auto;
-		min-width: 0;
-	}
-
 	&__name {
-		font-size: var( --s-text );
-		font-weight: 600;
-	}
-
-	&__kind {
 		overflow: hidden;
-		color: var( --s-fg-muted );
-		font-size: var( --s-text );
+		font-weight: 600;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
 
-	&__go {
-		flex: 0 0 auto;
-		color: var( --s-fg-muted );
+	// "Another MCP app" and the address: two quiet lines after the groups.
+	&__more {
+		display: grid;
+		gap: var( --pp-space-2 );
 	}
 
 	&__other {
 		margin: 0;
-		color: var( --s-fg-muted );
 		font-size: var( --s-text );
 	}
 }

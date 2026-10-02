@@ -1,16 +1,17 @@
 /**
- * AI apps → Connected (#285): one row per app that can reach the site.
+ * AI apps → Connected (#285, #309): one row per app that can reach the site.
  *
  * Each row is an app with its own access: a dropdown of Read only, Edit
  * content, Manage the site, changed on the spot (`POST
- * /connections/{id}/role`), and a ⋯ menu for the setup guide, a new key and
+ * /connections/{id}/role`), one line under its name (when it was last used
+ * or connected), and a ⋯ menu for the setup guide, a new key and
  * disconnecting. Keys and apps that signed in themselves are one list, from
- * the connection registry. With nothing connected the page shows a card per
- * app instead (QuickStart, after Jetpack AI's Quick start); a card, or the
- * header button once an app is connected, opens the connect drawer
- * (ConnectApps). The endpoint test and server health checks
- * are their own collapsed section (ConnectionDetails), which Settings →
- * Advanced shows.
+ * the connection registry. With nothing connected the page shows a light
+ * tile per app instead (QuickStart); a tile, the "Another MCP app" link, or
+ * the section button once an app is connected, opens the connect drawer
+ * (ConnectApps). The site's address sits on one line under either. The
+ * endpoint test and server health checks are their own collapsed section
+ * (ConnectionDetails), which Settings → Advanced shows.
  */
 import { useState, useEffect, useCallback } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
@@ -29,7 +30,6 @@ import {
 	IconButton,
 	MoreHorizontalIcon,
 	CopyButton,
-	ChevronRightIcon,
 	useConfirm,
 	toast,
 } from '@plugpress/ui';
@@ -37,7 +37,7 @@ import SectionHeader from './SectionHeader';
 import { __, sprintf } from '@wordpress/i18n';
 import { saddleData, api, connectionPath } from '../api';
 import { APPS, APP_GROUPS } from '../connect-apps';
-import { relativeWhen } from '../activity-format';
+import { metaLine } from '../apps-logic';
 import ConnectionHealth from './ConnectionHealth';
 import McpDiagnostics from './McpDiagnostics';
 import SetupGuideDrawer from './SetupGuideDrawer';
@@ -107,51 +107,34 @@ function nameOf( c ) {
 }
 
 /**
- * "Key ····4f2a · used 2 minutes ago" or "Signed in as fahim · used …".
- *
- * @param {Object} c A row from GET /connections.
- * @return {string} One line.
+ * The site's address for AI apps on one quiet line: a label, the address in
+ * a code chip, and Copy.
  */
-function metaOf( c ) {
-	let how = __( 'Key', 'saddle' );
-	if ( 'oauth' === c.kind ) {
-		how = sprintf(
-			/* translators: %s: WordPress username. */
-			__( 'Signed in as %s', 'saddle' ),
-			c.user_login
-		);
-	} else if ( c.hint ) {
-		how = sprintf(
-			/* translators: %s: the last four characters of a key. */
-			__( 'Key ····%s', 'saddle' ),
-			c.hint
-		);
+function AddressLine() {
+	if ( ! MCP_URL ) {
+		return null;
 	}
-	const last = c.last_tool_at || c.last_seen_at;
-	return [
-		how,
-		last
-			? sprintf(
-					/* translators: %s: how long ago, such as "2 minutes ago". */
-					__( 'used %s', 'saddle' ),
-					relativeWhen( new Date( last * 1000 ) )
-			  )
-			: __( 'not used yet', 'saddle' ),
-	].join( ' · ' );
+	return (
+		<p className="saddle-apps__address">
+			<span className="saddle-apps__address-label">
+				{ __( 'Address', 'saddle' ) }
+			</span>
+			<code className="saddle-apps__url">{ MCP_URL }</code>
+			<CopyButton
+				value={ MCP_URL }
+				variant="link"
+				copiedLabel={ __( 'Copied', 'saddle' ) }
+			>
+				{ __( 'Copy', 'saddle' ) }
+			</CopyButton>
+		</p>
+	);
 }
 
 /**
- * @param {Object}   props
- * @param {Array}    props.clients          The keys (GET /clients); a change
- *                                          here reloads the list.
- * @param {Function} props.onClientsChanged Reloads the keys.
- * @param {Function} props.onClientRemoved  Drops a revoked key from the list.
- * @param {string}   props.siteTier         The site's level (older Core).
- * @param {Function} props.onConnect        Opens the connect drawer.
- */
-/**
- * Nothing connected yet: one card per app, in the connect drawer's groups,
- * like Jetpack AI's Quick start. A card opens that app's setup.
+ * Nothing connected yet: a light tile per app, logo and name, in the connect
+ * drawer's groups. A tile opens that app's setup; "Another MCP app" opens
+ * the generic one.
  *
  * @param {Object}   props
  * @param {Function} props.onPick Called with an app key.
@@ -183,38 +166,36 @@ function QuickStart( { onPick } ) {
 									className="saddle-quick__card"
 									onClick={ () => onPick( key ) }
 								>
-									<AppLogo
-										app={ key }
-										width="24"
-										height="24"
-									/>
-									<span className="saddle-quick__text">
-										<span className="saddle-quick__name">
-											{ byKey[ key ].label }
-										</span>
-										<span className="saddle-quick__kind">
-											{ byKey[ key ].kind }
-										</span>
+									<AppLogo app={ key } />
+									<span className="saddle-quick__name">
+										{ byKey[ key ].label }
 									</span>
-									<ChevronRightIcon
-										size={ 16 }
-										className="saddle-quick__go"
-									/>
 								</button>
 							) ) }
 					</div>
 				</div>
 			) ) }
-			<p className="saddle-quick__other">
-				{ __( 'Not listed?', 'saddle' ) }{ ' ' }
-				<Button variant="link" onClick={ () => onPick( 'other' ) }>
-					{ __( 'Connect any MCP app', 'saddle' ) }
-				</Button>
-			</p>
+			<div className="saddle-quick__more">
+				<p className="saddle-quick__other">
+					<Button variant="link" onClick={ () => onPick( 'other' ) }>
+						{ __( 'Another MCP app', 'saddle' ) }
+					</Button>
+				</p>
+				<AddressLine />
+			</div>
 		</section>
 	);
 }
 
+/**
+ * @param {Object}   props
+ * @param {Array}    props.clients          The keys (GET /clients); a change
+ *                                          here reloads the list.
+ * @param {Function} props.onClientsChanged Reloads the keys.
+ * @param {Function} props.onClientRemoved  Drops a revoked key from the list.
+ * @param {string}   props.siteTier         The site's level (older Core).
+ * @param {Function} props.onConnect        Opens the connect drawer.
+ */
 export default function Apps( {
 	clients,
 	onClientsChanged,
@@ -412,7 +393,7 @@ export default function Apps( {
 									/>
 								}
 								title={ nameOf( c ) }
-								description={ metaOf( c ) }
+								description={ metaLine( c ) }
 								actions={
 									<>
 										<Select
@@ -496,28 +477,9 @@ export default function Apps( {
 							/>
 						) ) }
 					</RowList>
+					<AddressLine />
 				</section>
 			) }
-
-			<section className="saddle-stack saddle-apps__site">
-				<RowList>
-					<Row
-						title={ __( 'Site address for AI apps', 'saddle' ) }
-						description={
-							<code className="saddle-apps__url">
-								{ MCP_URL }
-							</code>
-						}
-						actions={
-							<CopyButton
-								value={ MCP_URL }
-								size="sm"
-								variant="secondary"
-							/>
-						}
-					/>
-				</RowList>
-			</section>
 
 			{ guide && (
 				<SetupGuideDrawer
