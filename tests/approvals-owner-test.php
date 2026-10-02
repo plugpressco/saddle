@@ -1,7 +1,7 @@
 <?php
 /**
  * "Needs your OK": previews bound to the asking app, pending approvals the
- * owner decides on the Dashboard, and the gate honouring that decision.
+ * owner decides on Home, and the gate honouring that decision.
  *
  * @package Saddle
  */
@@ -124,7 +124,7 @@ class Saddle_Approvals_Owner_Test extends WP_UnitTestCase {
 	public function test_preview_tells_the_agent_about_the_dashboard() {
 		$reply = Saddle_Approval::gate( $this->args( $calls ) );
 
-		$this->assertStringContainsString( 'The owner can also approve this on their Saddle Dashboard.', $reply['instructions'] );
+		$this->assertStringContainsString( 'The owner can also approve this on their Saddle Home page.', $reply['instructions'] );
 	}
 
 	public function test_pending_approval_is_recorded_and_listed() {
@@ -258,7 +258,7 @@ class Saddle_Approvals_Owner_Test extends WP_UnitTestCase {
 		$needs   = wp_list_filter( $notices, array( 'id' => 'saddle-needs-ok' ) );
 		$this->assertCount( 1, $needs );
 		$this->assertSame( '2 changes are waiting for your OK.', reset( $needs )['message'] );
-		$this->assertNotContains( 'saddle-needs-ok', $ids( 'home/overview' ), 'The Dashboard shows the list itself.' );
+		$this->assertNotContains( 'saddle-needs-ok', $ids( 'home/overview' ), 'Home shows the list itself.' );
 
 		foreach ( $this->pending() as $row ) {
 			$this->decide( $row['id'], 'reject' );

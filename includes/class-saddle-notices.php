@@ -85,7 +85,7 @@ class Saddle_Notices {
 					'url'   => Saddle_Modules::url( 'home' ),
 				),
 				'where'    => 'saddle',
-				'screens'  => array( 'home/activity', 'connections', 'context', 'settings' ),
+				'screens'  => array( 'connections', 'context', 'settings' ),
 				'dismiss'  => false,
 			);
 		}

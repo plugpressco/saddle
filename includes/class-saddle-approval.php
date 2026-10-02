@@ -170,7 +170,7 @@ class Saddle_Approval {
 			'action'                => $action,
 			'summary'               => isset( $args['summary'] ) ? (string) $args['summary'] : '',
 			'preview'               => isset( $args['preview'] ) ? $args['preview'] : null,
-			'instructions'          => __( 'This is a preview — nothing has changed. To proceed, call this tool again with the same arguments plus "confirm_token" set to the value above. The token is single-use and expires in 15 minutes. The owner can also approve this on their Saddle Dashboard.', 'saddle' ),
+			'instructions'          => __( 'This is a preview — nothing has changed. To proceed, call this tool again with the same arguments plus "confirm_token" set to the value above. The token is single-use and expires in 15 minutes. The owner can also approve this on their Saddle Home page.', 'saddle' ),
 		);
 	}
 

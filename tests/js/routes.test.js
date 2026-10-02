@@ -19,10 +19,7 @@ const AREAS = [
 	{
 		key: 'home',
 		url: `${ BASE }?page=saddle`,
-		tabs: [
-			{ key: 'overview', url: `${ BASE }?page=saddle` },
-			{ key: 'activity', url: `${ BASE }?page=saddle&tab=activity` },
-		],
+		tabs: [ { key: 'overview', url: `${ BASE }?page=saddle` } ],
 	},
 	{
 		key: 'connections',
@@ -50,7 +47,8 @@ describe( 'legacy hash addresses', () => {
 	it.each( [
 		[ '#dashboard', `${ BASE }?page=saddle` ],
 		[ '#home', `${ BASE }?page=saddle` ],
-		[ '#activity', `${ BASE }?page=saddle&tab=activity` ],
+		// Activity is Home's feed since #309.
+		[ '#activity', `${ BASE }?page=saddle#activity` ],
 		[ '#connect', `${ BASE }?page=saddle-connections` ],
 		// Permissions was a tab of Connections until #285: both land on AI apps.
 		[ '#permissions', `${ BASE }?page=saddle-connections` ],
@@ -115,7 +113,7 @@ describe( 'tabs and places', () => {
 
 	it( 'builds a tab URL, and the page URL for an unknown tab', () => {
 		expect( areaUrl( AREAS, 'home', 'activity' ) ).toBe(
-			`${ BASE }?page=saddle&tab=activity`
+			`${ BASE }?page=saddle`
 		);
 		expect( areaUrl( AREAS, 'connections', 'permissions' ) ).toBe(
 			`${ BASE }?page=saddle-connections`
@@ -133,7 +131,7 @@ describe( 'tabs and places', () => {
 		} );
 		expect( placeFor( 'activity' ) ).toEqual( {
 			area: 'home',
-			tab: 'activity',
+			tab: 'overview',
 		} );
 		expect( placeFor( 'permissions' ) ).toEqual( {
 			area: 'connections',

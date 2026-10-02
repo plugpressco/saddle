@@ -1,7 +1,7 @@
 <?php
 /**
  * The Saddle admin as WordPress pages (#274): one menu, a submenu per page,
- * modules between Dashboard and the two configuration pages, the page and tab
+ * modules between Home and the two configuration pages, the page and tab
  * handed to the app, and assets only on Saddle's own screens.
  *
  * @package Saddle
@@ -91,7 +91,7 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 
 		$this->assertSame(
 			array(
-				'saddle'             => 'Dashboard',
+				'saddle'             => 'Home',
 				'saddle-connections' => 'AI apps',
 				'saddle-services'    => 'Services',
 				'saddle-context'     => 'Context',
@@ -114,7 +114,7 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 
 	/**
 	 * Saddle Rank adds its own submenu at priority 20, after Core's items. It
-	 * still lands between Dashboard and AI apps.
+	 * still lands between Home and AI apps.
 	 */
 	public function test_a_sibling_that_adds_its_own_item_still_lands_before_connections() {
 		Saddle_Settings::register_menu();
@@ -197,8 +197,8 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 
 	public static function routes() {
 		return array(
-			'Dashboard'                  => array( 'saddle', null, 'home', 'overview' ),
-			'Dashboard, Activity'        => array( 'saddle', 'activity', 'home', 'activity' ),
+			'Home'                       => array( 'saddle', null, 'home', 'overview' ),
+			'an old Activity tab link'   => array( 'saddle', 'activity', 'home', 'overview' ),
 			'AI apps'                    => array( 'saddle-connections', null, 'connections', 'apps' ),
 			'AI apps, an old Permissions link' => array( 'saddle-connections', 'permissions', 'connections', 'apps' ),
 			'Context'                    => array( 'saddle-context', null, 'context', 'overview' ),
@@ -212,7 +212,7 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 	public function test_urls_leave_the_first_tab_out() {
 		$this->assertSame( admin_url( 'admin.php?page=saddle' ), Saddle_Modules::url( 'home' ) );
 		$this->assertSame( admin_url( 'admin.php?page=saddle' ), Saddle_Modules::url( 'home', 'overview' ) );
-		$this->assertSame( admin_url( 'admin.php?page=saddle&tab=activity' ), Saddle_Modules::url( 'home', 'activity' ) );
+		$this->assertSame( admin_url( 'admin.php?page=saddle' ), Saddle_Modules::url( 'home', 'activity' ), 'The Activity tab is Home now (#309).' );
 		$this->assertSame( admin_url( 'admin.php?page=saddle-connections' ), Saddle_Modules::url( 'connections', 'permissions' ) );
 		$this->assertSame( admin_url( 'admin.php?page=saddle-context' ), Saddle_Modules::url( 'context', 'nope' ) );
 	}
@@ -250,8 +250,8 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		$connections = $saddle['areas'][1];
 		$this->assertSame( array( 'apps' ), array_column( $connections['tabs'], 'key' ) );
 		$this->assertSame( 'AI apps', $connections['title'] );
-		$this->assertSame( array( 'overview', 'activity' ), array_column( $saddle['areas'][0]['tabs'], 'key' ) );
-		$this->assertSame( 'Dashboard', $saddle['areas'][0]['title'] );
+		$this->assertSame( array( 'overview' ), array_column( $saddle['areas'][0]['tabs'], 'key' ) );
+		$this->assertSame( 'Home', $saddle['areas'][0]['title'] );
 	}
 
 	public function test_a_modules_own_script_loads_on_its_page() {

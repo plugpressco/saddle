@@ -462,7 +462,7 @@ class Saddle_Access_Test extends WP_UnitTestCase {
 		Saddle_Capabilities::set_paused( true );
 		$reason = Saddle_Capabilities::denial_reason( 'saddle/list-posts' );
 		Saddle_Capabilities::set_paused( false );
-		$this->assertStringContainsString( 'Saddle → Dashboard', $reason['message'] );
+		$this->assertStringContainsString( 'the AI switch at the top of any Saddle page', $reason['message'] );
 
 		Saddle_Capabilities::set_disabled_abilities( array( 'list-posts' ) );
 		$reason = Saddle_Capabilities::denial_reason( 'saddle/list-posts' );

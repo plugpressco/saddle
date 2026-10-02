@@ -138,7 +138,7 @@ class Saddle_Context_Test extends WP_UnitTestCase {
 		$ctx = Saddle_Context::system_context();
 
 		$this->assertStringNotContainsString( 'Permissions for level', $ctx );
-		$this->assertStringContainsString( 'the AI access switch on the Dashboard, this app\'s access on AI apps, or single tools under Settings', $ctx );
+		$this->assertStringContainsString( 'the AI switch at the top of any Saddle page, this app\'s access on AI apps, or single tools under Settings', $ctx );
 	}
 
 	public function test_context_describes_the_approval_gate_at_write_tier() {

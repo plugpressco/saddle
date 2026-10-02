@@ -16,7 +16,8 @@
 export const LEGACY = {
 	dashboard: { area: 'home', tab: 'overview' },
 	home: { area: 'home', tab: 'overview' },
-	activity: { area: 'home', tab: 'activity' },
+	// Activity was a tab of the Dashboard until #309; it is Home's feed now.
+	activity: { area: 'home', tab: 'overview', anchor: 'activity' },
 	connect: { area: 'connections', tab: 'apps' },
 	// Permissions was a tab of Connections until #285; access is now chosen
 	// per app on AI apps.

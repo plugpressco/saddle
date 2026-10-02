@@ -47,7 +47,7 @@ class Saddle_Settings {
 			}
 
 			// The first submenu shares the menu's slug, which is what renames
-			// WordPress's automatic "Saddle" item to "Dashboard".
+			// WordPress's automatic "Saddle" item to "Home".
 			$hook = add_submenu_page(
 				self::PAGE_SLUG,
 				/* translators: %s: page name, such as Dashboard or AI apps. */

@@ -461,11 +461,13 @@ body.saddle-admin-page,
 	}
 
 	// Two classes, to beat wp-admin's `.wrap h1` (23px/400 with padding).
+	// The mark and the page's name (#309): no "Saddle /" breadcrumb, the
+	// mark already says whose page this is.
 	.saddle-app &__title {
 		display: flex;
 		align-items: center;
 		flex-wrap: wrap;
-		gap: 8px;
+		gap: 10px;
 		margin: 0;
 		padding: 0;
 		font-size: var( --s-text-title );
@@ -494,14 +496,10 @@ body.saddle-admin-page,
 		// editing the file would break class-saddle-settings.php's `black`
 		// sentinel, which core's svg-painter needs to repaint the menu icon.
 		svg {
-			width: 20px;
-			height: 20px;
+			width: 22px;
+			height: 22px;
 			color: var( --s-brand );
 		}
-	}
-
-	&__sep {
-		color: var( --s-fg-subtle );
 	}
 
 	&__actions {
@@ -592,38 +590,89 @@ body.saddle-admin-page,
 	}
 }
 
-// The status pill: "AI on" or "Paused". A link to the Dashboard, where the
-// switch is.
-.saddle-status-pill {
-	display: flex;
+// The AI switch (#309): "AI on" or "Paused" at the top of every page. It
+// opens a small panel to pause or resume every app. A pill with a status
+// dot, quiet until it matters; paused, the dot turns amber.
+.saddle-ai {
+	display: inline-flex;
 	align-items: center;
 	flex: 0 0 auto;
-	gap: 7px;
-	padding: 5px 12px;
-	border-radius: var(--s-radius-pill);
-	font-size: var( --s-text-sm );
-	font-weight: 550;
-	line-height: 1.4;
-	text-decoration: none;
-	background: var(--s-surface-3);
-	color: var(--s-fg-muted);
+	gap: 8px;
+	height: 32px;
+	padding: 0 10px 0 12px;
+	border: 1px solid var( --s-border-strong );
+	border-radius: var( --s-radius-pill );
+	background: var( --s-bg );
+	color: var( --s-fg );
+	font: inherit;
+	font-size: var( --s-text );
+	font-weight: 500;
+	cursor: pointer;
+	transition: border-color var( --s-dur ) var( --s-ease );
 
-	&:hover,
-	&:focus {
-		text-decoration: none;
+	&:hover {
+		border-color: #949494;
 	}
 
-	// The pill is a link, and the kit colors links from --pp-accent-text
-	// through an ID-strength selector, so each tone sets that token.
-	&--on {
-		--pp-accent-text: var(--s-safe-text);
-		--pp-accent-hover: var(--s-safe-text);
-		background: var(--s-safe-bg);
+	svg {
+		color: var( --s-fg-muted );
 	}
-	&--paused {
-		--pp-accent-text: var(--s-fg-muted);
-		--pp-accent-hover: var(--s-fg-muted);
-		background: var(--s-surface-3);
+
+	&__dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		background: var( --s-safe );
+		box-shadow: 0 0 0 3px var( --s-safe-bg );
+	}
+
+	&.is-paused &__dot {
+		background: #b26200;
+		box-shadow: 0 0 0 3px var( --s-active-bg );
+	}
+}
+
+// The panel the switch opens (portaled, so it is styled on its own class).
+.saddle-ai__panel {
+	display: grid;
+	gap: 6px;
+	width: 280px;
+	padding: 14px 16px 16px;
+
+	p {
+		margin: 0;
+		font-size: var( --s-text );
+	}
+
+	.pp-btn {
+		justify-self: start;
+		margin-top: 6px;
+	}
+}
+
+.saddle-ai__head {
+	font-weight: 600;
+}
+
+.saddle-ai__text {
+	color: var( --s-fg-muted );
+}
+
+// Paused: said once, under the header, on every Saddle page.
+.saddle-paused {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 10px 24px;
+	background: var( --s-active-bg );
+	border-block-end: 1px solid #f5e1c0;
+	color: var( --s-active-text );
+	font-size: var( --s-text );
+
+	strong {
+		font-weight: 600;
 	}
 }
 
@@ -1096,6 +1145,52 @@ body.saddle-admin-page,
 }
 
 /* ---------- Home ---------- */
+
+// The feed and what waits on the left, the apps on the right (#309). One
+// column below 1100px, the apps after the feed.
+.saddle-home {
+	display: grid;
+	grid-template-columns: minmax( 0, 1fr ) 280px;
+	gap: var( --pp-space-6 );
+	align-items: start;
+
+	&__main,
+	&__side {
+		display: grid;
+		gap: var( --pp-space-6 );
+		min-width: 0;
+	}
+
+	@media ( max-width: 1100px ) {
+		grid-template-columns: minmax( 0, 1fr );
+	}
+}
+
+// One line from Saddle with the next setup step, beside its mark.
+.saddle-nudge {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 10px 10px 10px 14px;
+	border: 1px solid var( --s-border );
+	border-radius: var( --s-radius-lg );
+	background: var( --s-bg );
+	box-shadow: var( --s-shadow-sm );
+
+	&__mark svg {
+		display: block;
+		width: 22px;
+		height: 22px;
+		color: var( --s-brand );
+	}
+
+	&__text {
+		flex: 1 1 auto;
+		min-width: 0;
+		margin: 0;
+		font-size: var( --s-text );
+	}
+}
 
 // The value on the right of a Home row ("Active", "2 minutes ago"), set apart
 // from the link beside it.
@@ -1749,19 +1844,20 @@ body.saddle-admin-page,
 		font-weight: 600;
 	}
 
-	// The pills themselves are the design system's FilterTabs.
+	// The pills themselves are the design system's FilterTabs. On Home the
+	// section's heading leads the row and the filters sit at its end.
 	&__filters {
 		display: flex;
+		flex-wrap: wrap;
 		align-items: center;
 		gap: 6px;
-		margin-bottom: 20px;
+		margin-bottom: 16px;
 	}
 
-	&__total {
-		margin-inline-start: auto;
-		font-size: var( --s-text );
-		color: var(--s-fg-subtle);
-		font-variant-numeric: tabular-nums;
+	&__heading {
+		margin: 0 auto 0 0;
+		font-size: var( --s-text-title );
+		font-weight: 600;
 	}
 
 	&__loading {
@@ -1776,10 +1872,8 @@ body.saddle-admin-page,
 
 	&__daylabel {
 		margin: 0 0 8px;
-		font-size: var( --s-text-sm );
-		font-weight: 620;
-		letter-spacing: 0.04em;
-		text-transform: uppercase;
+		font-size: var( --s-text );
+		font-weight: 600;
 		color: var(--s-fg-subtle);
 	}
 
@@ -1804,11 +1898,19 @@ body.saddle-admin-page,
 		}
 	}
 
+	// The app that did it; a dot when no app did (the owner, a cron run).
+	&__logo {
+		flex: 0 0 auto;
+		width: 20px;
+		height: 20px;
+		margin-top: 1px;
+	}
+
 	&__mark {
 		flex: 0 0 auto;
 		width: 8px;
 		height: 8px;
-		margin-top: 6px;
+		margin: 7px 6px 0;
 		border-radius: 50%;
 		background: var(--s-safe);
 

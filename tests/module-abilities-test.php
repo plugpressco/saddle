@@ -329,7 +329,7 @@ class Saddle_Module_Abilities_Test extends WP_UnitTestCase {
 		$context = Saddle_Context::system_context();
 
 		$this->assertStringContainsString( "# The owner's admin", $context );
-		$this->assertStringContainsString( "Owner's admin: Saddle → Dashboard (Activity tab), ", $context );
+		$this->assertStringContainsString( "Owner's admin: Saddle → Home, ", $context );
 		$this->assertStringContainsString( 'Demo', $context );
 		$this->assertStringContainsString( 'AI apps, Services, Context, Settings.', $context );
 		$this->assertStringContainsString( 'call saddle-get-module-settings and give the owner the admin_url instead of describing clicks.', $context );

@@ -1,8 +1,11 @@
 /**
  * The frame Core draws on every Saddle page (#274, #280).
  *
- * A white header band across the full width: the mark and "Saddle / Page",
- * the AI on / Paused pill and the notices bell, and the page's tabs inside the band.
+ * A white header band across the full width: the mark and the page's name,
+ * the notices bell, and the AI switch (#309): "AI on" or "Paused", which
+ * opens a small panel to pause or resume every app. While paused, a strip
+ * under the header says so on every Saddle page. A page with more than one
+ * tab draws them inside the band.
  * Then the page, and a quiet footer. WordPress's own left menu is the
  * navigation: there is no sidebar inside the page. A module's content sits in
  * the same frame, so every Saddle page reads as one product.
@@ -15,9 +18,9 @@
 import { useState, useEffect, useCallback, useRef } from '@wordpress/element';
 import {
 	AppContent,
+	Button,
+	ChevronDownIcon,
 	Tabs,
-	Tooltip,
-	StatusDot,
 	Popover,
 	SkipLink,
 } from '@plugpress/ui';
@@ -27,40 +30,74 @@ import { BrandMark, IconBell } from './icons';
 import NoticeItem from './NoticeItem';
 
 // One content width for every page: sparse pages don't feel empty and the
-// column never resizes between tabs.
+// column never resizes between tabs. Home is wider, for its two columns.
 const PAGE_WIDTH = 960;
+const HOME_WIDTH = 1040;
 
 /**
- * Whether AI access is on, always in view: "AI on" or "Paused". A real link
- * to the Dashboard, where the switch is. What each app may do is chosen per
- * app on AI apps, so the pill no longer names a level.
+ * The AI switch, on every Saddle page: "AI on" or "Paused". It opens a small
+ * panel that says what the state means and pauses or resumes every app. The
+ * one control that matters on every page lives in the header, not on a card.
  *
- * @param {Object}  props
- * @param {boolean} props.paused
- * @param {string}  props.href   The Dashboard.
+ * @param {Object}   props
+ * @param {boolean}  props.paused
+ * @param {boolean}  props.pausing  A save is in flight.
+ * @param {Function} props.onToggle Pause or resume.
  */
-function StatusPill( { paused, href } ) {
+function AiSwitch( { paused, pausing, onToggle } ) {
+	const [ open, setOpen ] = useState( false );
 	return (
-		<Tooltip
-			content={ __(
-				'Turn AI access on or off on the Dashboard',
-				'saddle'
-			) }
+		<Popover
+			className="saddle-ai__panel"
+			open={ open }
+			onOpenChange={ setOpen }
+			align="end"
+			trigger={
+				<button
+					type="button"
+					className={ `saddle-ai${ paused ? ' is-paused' : '' }` }
+				>
+					<span className="saddle-ai__dot" aria-hidden="true" />
+					<span>
+						{ paused
+							? __( 'Paused', 'saddle' )
+							: __( 'AI on', 'saddle' ) }
+					</span>
+					<ChevronDownIcon size={ 12 } />
+				</button>
+			}
 		>
-			<a
-				href={ href }
-				className={ `saddle-status-pill saddle-status-pill--${
-					paused ? 'paused' : 'on'
-				}` }
+			<p className="saddle-ai__head">
+				{ paused
+					? __( 'AI is paused', 'saddle' )
+					: __( 'AI is on', 'saddle' ) }
+			</p>
+			<p className="saddle-ai__text">
+				{ paused
+					? __(
+							'No app can read or change this site until you resume.',
+							'saddle'
+					  )
+					: __(
+							'Your apps can work on this site, each within the access you gave it.',
+							'saddle'
+					  ) }
+			</p>
+			<Button
+				variant="secondary"
+				size="sm"
+				loading={ pausing }
+				disabled={ pausing }
+				onClick={ () => {
+					onToggle();
+					setOpen( false );
+				} }
 			>
-				<StatusDot tone={ paused ? 'neutral' : 'success' } />
-				<span>
-					{ paused
-						? __( 'Paused', 'saddle' )
-						: __( 'AI on', 'saddle' ) }
-				</span>
-			</a>
-		</Tooltip>
+				{ paused
+					? __( 'Resume', 'saddle' )
+					: __( 'Pause all apps', 'saddle' ) }
+			</Button>
+		</Popover>
 	);
 }
 
@@ -225,11 +262,11 @@ function Footer( { area } ) {
  * @param {Object}   props.area            The page, from saddleData.areas.
  * @param {string}   props.tab             The active tab.
  * @param {Function} props.onTab           Called with a tab key.
- * @param {Object}   props.status          { paused, href }.
+ * @param {Object}   props.status          { paused, pausing, onToggle }.
  * @param {boolean}  props.notices         Show the notices bell.
  * @param {boolean}  props.showTabs        Draw the page's tabs (first run doesn't).
- * @param {string=}  props.crumb           The page name after "Saddle /", when it
- *                                         is not the page's own title.
+ * @param {string=}  props.crumb           The name in the header, when it is not
+ *                                         the page's own title (first run).
  * @param {Object=}  props.notice          The one notice shown under the header.
  * @param {Object[]} props.moreNotices     The rest, for the bell.
  * @param {Function} props.onDismissNotice Called with a dismissible notice.
@@ -266,13 +303,10 @@ export default function Frame( {
 						<a
 							className="saddle-header__home"
 							href={ home ? home.url : undefined }
+							aria-label={ __( 'Saddle', 'saddle' ) }
 						>
 							<BrandMark />
-							<span>{ __( 'Saddle', 'saddle' ) }</span>
 						</a>
-						<span className="saddle-header__sep" aria-hidden="true">
-							/
-						</span>
 						<span aria-current="page">{ crumb || area.title }</span>
 					</h1>
 					<div className="saddle-header__actions">
@@ -282,7 +316,7 @@ export default function Frame( {
 								onDismiss={ onDismissNotice }
 							/>
 						) }
-						{ status && <StatusPill { ...status } /> }
+						{ status && <AiSwitch { ...status } /> }
 					</div>
 				</div>
 				{ tabs && (
@@ -299,12 +333,38 @@ export default function Frame( {
 					</div>
 				) }
 			</header>
+			{ status && status.paused && (
+				<div className="saddle-paused" role="status">
+					<span>
+						<strong>{ __( 'AI is paused.', 'saddle' ) }</strong>{ ' ' }
+						{ __(
+							'No app can read or change this site until you resume.',
+							'saddle'
+						) }
+					</span>
+					<Button
+						variant="secondary"
+						size="sm"
+						loading={ status.pausing }
+						disabled={ status.pausing }
+						onClick={ status.onToggle }
+					>
+						{ __( 'Resume', 'saddle' ) }
+					</Button>
+				</div>
+			) }
 			<main
 				id="pp-main"
 				className="saddle-frame"
 				data-saddle-screen={ `${ area.key }/${ tab }` }
 			>
-				<AppContent width={ PAGE_WIDTH }>
+				<AppContent
+					width={
+						'home' === area.key && 'overview' === tab
+							? HOME_WIDTH
+							: PAGE_WIDTH
+					}
+				>
 					{ notice && (
 						<NoticeItem
 							className="saddle-frame__notice"

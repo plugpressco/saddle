@@ -1,10 +1,11 @@
 /**
- * Activity — the full record of what connected apps have done through Saddle.
+ * Activity — the full record of what connected apps have done through Saddle,
+ * Home's feed since #309.
  *
  * Every executed change and every blocked attempt, newest first, grouped by
- * day. Filterable to just changes or just blocked attempts; pages in with
- * "Show more". Reads are never logged (see Saddle_Log); a tip beside the
- * filters says so.
+ * day, each row led by the logo of the app that did it. Filterable to just
+ * changes or just blocked attempts; pages in with "Show older". Reads are
+ * never logged (see Saddle_Log); a tip beside the filters says so.
  */
 import { useState, useEffect, useCallback } from '@wordpress/element';
 import {
@@ -18,6 +19,7 @@ import {
 import { __, sprintf } from '@wordpress/i18n';
 import { api } from '../api';
 import { actionLabel, clock, groupByDay } from '../activity-format';
+import { AppLogo, appKeyFromLabel } from './icons';
 
 const PER_PAGE = 25;
 
@@ -30,9 +32,10 @@ const FILTERS = [
 
 /**
  * @param {Object}   props
- * @param {Object[]} props.caps The capabilities list, for tool names.
+ * @param {Object[]} props.caps  The capabilities list, for tool names.
+ * @param {string=}  props.title A heading drawn on the filters' row (Home).
  */
-export default function Activity( { caps = [] } ) {
+export default function Activity( { caps = [], title } ) {
 	const [ entries, setEntries ] = useState( [] );
 	const [ total, setTotal ] = useState( 0 );
 	const [ page, setPage ] = useState( 1 );
@@ -84,6 +87,9 @@ export default function Activity( { caps = [] } ) {
 	return (
 		<div className="saddle-activity">
 			<div className="saddle-activity__filters">
+				{ title && (
+					<h2 className="saddle-activity__heading">{ title }</h2>
+				) }
 				<FilterTabs
 					aria-label={ __( 'Filter activity', 'saddle' ) }
 					items={ FILTERS.map( ( f ) => ( {
@@ -99,16 +105,6 @@ export default function Activity( { caps = [] } ) {
 						'saddle'
 					) }
 				</HelpTip>
-				{ total > 0 && (
-					<span className="saddle-activity__total">
-						{ sprintf(
-							/* translators: 1: entries shown, 2: total entries. */
-							__( '%1$d of %2$d', 'saddle' ),
-							entries.length,
-							total
-						) }
-					</span>
-				) }
 			</div>
 
 			{ error && <Notice tone="danger">{ error }</Notice> }
@@ -154,10 +150,17 @@ export default function Activity( { caps = [] } ) {
 										e.type === 'denied' ? ' is-denied' : ''
 									}` }
 								>
-									<span
-										className="saddle-activity__mark"
-										aria-hidden="true"
-									/>
+									{ e.app ? (
+										<AppLogo
+											className="saddle-activity__logo"
+											app={ appKeyFromLabel( e.app ) }
+										/>
+									) : (
+										<span
+											className="saddle-activity__mark"
+											aria-hidden="true"
+										/>
+									) }
 									<div className="saddle-activity__body">
 										{ /* A blocked or rehearsed call reads as the tool's
 										     own name ("Blocked · Update option · needs
@@ -205,7 +208,7 @@ export default function Activity( { caps = [] } ) {
 						loading={ more }
 						disabled={ more }
 					>
-						{ __( 'Show more', 'saddle' ) }
+						{ __( 'Show older', 'saddle' ) }
 					</Button>
 				</div>
 			) }
