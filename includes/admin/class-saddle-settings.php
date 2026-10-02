@@ -336,6 +336,9 @@ class Saddle_Settings {
 
 		list( $area, $tab, $view ) = self::current_route();
 
+		$areas = Saddle_Modules::areas();
+		$setup = ! empty( $areas[ $area ]['module'] ) ? Saddle_Modules::setup( $area ) : null;
+
 		$build_dir = SADDLE_DIR . 'admin/build/';
 		$build_url = SADDLE_URL . 'admin/build/';
 		$asset_php = $build_dir . 'index.asset.php';
@@ -470,6 +473,9 @@ class Saddle_Settings {
 					'area'         => $area,
 					'tab'          => $tab,
 					'view'         => $view,
+					// A module's setup tasks, cleaned; Core draws the
+					// unfinished ones above the module's first tab.
+					'setup'        => $setup ? $setup : array(),
 					'areas'        => self::areas_for_app(),
 					// The notices for this page and tab, most severe first.
 					'notices'      => Saddle_Notices::for_screen( 'saddle', $area . '/' . $tab ),

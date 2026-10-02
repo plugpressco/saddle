@@ -211,6 +211,57 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'data-view=""', ob_get_clean() );
 	}
 
+	/* ---------------------------------------------------------- setup tasks */
+
+	public function test_a_modules_setup_tasks_reach_its_page() {
+		add_filter(
+			'saddle_modules',
+			static function ( $modules ) {
+				$modules['analytics'] = array(
+					'title' => 'Analytics',
+					'tabs'  => array( 'overview' => 'Overview' ),
+					'setup' => static function () {
+						return array(
+							array(
+								'id'     => 'tracker',
+								'title'  => 'Turn tracking on',
+								'done'   => false,
+								'line'   => 'No visit counted yet.',
+								'action' => array(
+									'label' => 'Open settings',
+									'tab'   => 'settings',
+								),
+							),
+						);
+					},
+				);
+				return $modules;
+			}
+		);
+		$this->build_menu();
+		$_GET['page'] = 'saddle-analytics';
+		Saddle_Settings::enqueue_assets( get_plugin_page_hookname( 'saddle-analytics', 'saddle' ) );
+
+		$data = implode( "\n", wp_scripts()->get_data( 'saddle-admin', 'before' ) );
+		preg_match( '/window\.saddleData = (\{.*\});/s', $data, $match );
+		$saddle = json_decode( $match[1], true );
+
+		$this->assertSame( 'tracker', $saddle['setup'][0]['id'] );
+		$this->assertFalse( $saddle['setup'][0]['done'] );
+		$this->assertSame( 'No visit counted yet.', $saddle['setup'][0]['line'] );
+		wp_deregister_script( 'saddle-admin' );
+	}
+
+	public function test_core_pages_carry_no_setup_tasks() {
+		$this->build_menu();
+		$_GET['page'] = 'saddle';
+		Saddle_Settings::enqueue_assets( get_plugin_page_hookname( 'saddle', 'saddle' ) );
+		$data = implode( "\n", wp_scripts()->get_data( 'saddle-admin', 'before' ) );
+		preg_match( '/window\.saddleData = (\{.*\});/s', $data, $match );
+		$this->assertSame( array(), json_decode( $match[1], true )['setup'] );
+		wp_deregister_script( 'saddle-admin' );
+	}
+
 	/* -------------------------------------------------------------- palette */
 
 	public function test_the_palette_is_registered_but_not_enqueued_until_asked() {
