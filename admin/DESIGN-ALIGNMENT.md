@@ -77,22 +77,62 @@ Every Saddle page, module pages and first run included, is drawn by
 `admin/src/components/Frame.jsx`:
 
 - **Header band:** white over the `#FCFCFC` canvas, full width of wp-admin's
-  content area, `16px 24px`, one `#F0F0F0` hairline under it. Row 1: the 20px mark in Petrol, then an `h1`
-  breadcrumb "Saddle / Page" (15px; "Saddle" in grey links Home; the page in
-  600). A module page reads "Saddle / Analytics". On the right, only the AI
-  status pill and the notices bell. Row 2, when a page has two or more tabs:
-  the kit `Tabs` in Jetpack AI's (WordPress 7's minimal) style: 48px tall,
-  13px regular, every tab `#1E1E1E`, a 1.5px `#6E6E6E` line under the active
-  one, sitting on the band's hairline. No brand color on tabs (2026-10-02,
-  Fahim: the teal underline and grey idle tabs looked dated).
+  content area, `16px 24px`, one `#F0F0F0` hairline under it. Row 1: the
+  22px mark in Petrol (a link to Home), then the page's name as the `h1`
+  (15/600): "Home", "AI apps", "Analytics" on a module page, "Welcome" on
+  first run. No "Saddle /" breadcrumb (#309): the mark says whose page it is.
+  On the right, the notices bell and the **AI switch**: a pill reading
+  "AI on" (green dot) or "Paused" (amber dot) that opens a small panel with
+  what the state means and one button, "Pause all apps" or "Resume". The
+  switch lives here, on every page, and nowhere else. While paused, a strip
+  under the header says "AI is paused. No app can read or change this site
+  until you resume." with Resume, on every Saddle page. Row 2, when a page
+  has two or more tabs (no core page does since #309; modules may): the kit
+  `Tabs` in Jetpack AI's (WordPress 7's minimal) style: 48px tall, 13px
+  regular, every tab `#1E1E1E`, a 1.5px `#6E6E6E` line under the active one.
+  No brand color on tabs (2026-10-02, Fahim: the teal underline and grey idle
+  tabs looked dated).
   **No description sentence** under the title.
-- **Page:** the `#FCFCFC` canvas, one centered 960px column.
+- **Page:** the `#FCFCFC` canvas, one centered 960px column (Home: 1040px,
+  for its two columns).
 - **Footer strip:** a hairline, then mark · "Saddle 1.5.0" (and the module's
   product and version on a module page) · Docs · Rate Saddle, in 13px grey.
 
 Never draw the frame while the app is loading: WordPress's `common.js` moves
 every `.notice` after the first `.wrap h1`, and the header's `h1` would pull the
 quarantined notices back into view.
+
+## Home (#309)
+
+Home replaced the Dashboard on 2026-10-02 (Fahim: "not a boring page … clean
+and action homepage"). It is an action page, top to bottom:
+
+- **The week at a glance**, across both columns: one block of four numbers,
+  Changes and Blocked in the last 7 days, Waiting for you, Apps.
+- Left column: **Needs your OK** while something waits; **one line from
+  Saddle** with the single next setup step (it replaced the Setup checklist,
+  and can be hidden); **Try asking**: three prompts built from what Saddle
+  found on the site (missing alt text, missing search descriptions, updates
+  waiting, then safe everyday ones), each a card with "Copy prompt", none
+  changing anything before the app shows the owner; then the **activity
+  feed** by day, filters beside its heading, the app's logo on each row,
+  "Show older" at the end.
+- Right column: **Apps** (each with its access, "Connect another app"),
+  **Works with** (plugins on this site the apps have tools for, linking to
+  Services), the connection warning when there is one, and **Modules**.
+
+No tabs and no "View all": the old Activity tab is Home's feed (`#activity`).
+
+## The welcome (#309)
+
+First run is a conversation, titled "Welcome": Saddle's lines beside its
+28px mark (a following line hides the mark, as a chat groups them), typing
+dots between lines, the owner's answers as right-aligned grey bubbles, quick
+replies as pills, and the access choice as three option buttons with their
+hints. It reads at **15px**, one step above the admin's 13, because the
+conversation is the page; it is the only place body text is 15. One sentence
+about the site replaces stat tiles and check rows (Fahim: the Pages / Posts /
+Media strip "not feel chat"; "onboarding should not like it setup").
 
 ## Type: three sizes (Jetpack AI's, 2026-10-02)
 
