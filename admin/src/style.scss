@@ -2264,141 +2264,134 @@ body.saddle-admin-page,
 }
 
 /* ---------- Services (#291) ---------- */
-// Sections of rows from the kit; a row opens a drawer. The tile is a neutral
-// letter, never a brand colour.
-.saddle-svc__logo {
-	display: inline-grid;
-	place-items: center;
-	inline-size: 28px;
-	block-size: 28px;
-	border-radius: var(--s-radius);
-	background: var(--s-surface-2);
-	border: 1px solid var(--s-border);
-	color: var(--s-fg-muted);
-	font-size: var( --s-text );
-	font-weight: 600;
+// One row per service: its name and one status line. "Add key" is the only
+// button a row carries; any other row is itself the button that opens the
+// drawer, with a chevron at its end.
+.saddle-svc__row.pp-rowlist__row--clickable:focus-visible {
+	// The block clips anything outside a row, so the ring sits inside it.
+	outline: 2px solid var( --s-focus );
+	outline-offset: -2px;
+	box-shadow: none;
 }
 
+.saddle-svc__line {
+	display: flex;
+	align-items: center;
+	gap: var( --pp-space-3 );
+	min-width: 0;
+}
+
+.saddle-svc__name {
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	gap: var( --pp-space-05 );
+	min-width: 0;
+}
+
+.saddle-svc__go {
+	flex: 0 0 auto;
+	color: var( --s-fg-subtle );
+}
+
+.saddle-svc__empty {
+	margin: 0;
+	color: var( --s-fg-subtle );
+	font-size: var( --s-text );
+}
+
+// The drawer: the key form or the switch, then the tools, folded. Its one
+// line of what the service is lives in the drawer's head.
 .saddle-svc__detail {
 	display: grid;
-	gap: var(--pp-space-5);
+	gap: var( --pp-space-5 );
 	min-width: 0;
 }
 
-.saddle-svc__block {
+.saddle-svc__key {
 	display: grid;
-	gap: var(--pp-space-2);
+	gap: var( --pp-space-2 );
 	min-width: 0;
 }
 
-.saddle-svc__h {
-	margin: 0;
-	font-size: var( --s-text );
+// A key that is set: "Your key ····abcd", then Change and Remove at the end.
+.saddle-svc__key-row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var( --pp-space-3 );
+
+	code {
+		margin: 0;
+		padding: 2px 6px;
+		background: var( --s-surface-2 );
+		border-radius: var( --s-radius );
+		font-size: var( --s-text-sm );
+	}
+
+	.saddle-svc__actions {
+		margin-inline-start: auto;
+	}
+}
+
+.saddle-svc__key-label {
 	font-weight: 600;
 }
 
-.saddle-svc__text,
-.saddle-svc__note {
+.saddle-svc__get {
 	margin: 0;
-	color: var(--s-fg-muted);
-}
-
-.saddle-svc__note {
 	font-size: var( --s-text );
 }
 
 .saddle-svc__actions {
 	display: flex;
 	align-items: center;
-	gap: 8px;
-}
-
-.saddle-svc__key {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: var(--pp-space-3);
-	padding: 8px 12px;
-	border: 1px solid var(--s-border);
-	border-radius: var(--s-radius-lg);
-
-	code {
-		font-size: var( --s-text-sm );
-	}
+	gap: var( --pp-space-2 );
 }
 
 .saddle-svc__switch {
 	display: flex;
 	align-items: center;
-	gap: 10px;
+	gap: var( --pp-space-2 );
+	font-size: var( --s-text );
 }
 
-// What leaves the site, and the tools: two small bordered lists.
-.saddle-svc__sends,
-.saddle-svc__tools {
+// The drawer is portaled outside the app root, where Saddle's focus rule
+// does not reach, and the kit draws no ring on this trigger.
+.saddle-svc__tools .pp-collapsible__trigger:focus-visible {
+	outline: 2px solid var( --s-focus );
+	outline-offset: 2px;
+	border-radius: var( --s-radius );
+}
+
+// The tools: a small bordered list, each tool's name and the role it needs.
+// The tool's id is its tooltip.
+.saddle-svc__tool-list {
 	display: grid;
 	margin: 0;
 	padding: 0;
 	list-style: none;
-	border: 1px solid var(--s-border);
-	border-radius: var(--s-radius-lg);
+	border: 1px solid var( --s-border );
+	border-radius: var( --s-radius-lg );
 	overflow: hidden;
+	font-size: var( --s-text );
 
 	li {
-		padding: 8px 12px;
+		display: grid;
+		grid-template-columns: minmax( 0, 1fr ) auto;
+		gap: var( --pp-space-3 );
+		margin: 0;
+		padding: var( --pp-space-2 ) var( --pp-space-3 );
 	}
 
 	li + li {
-		border-block-start: 1px solid var(--s-border);
-	}
-
-	// Host names and tool names are plain monospace text: no grey bar
-	// (wp-admin paints every code element), no full-width stretch.
-	code {
-		justify-self: start;
-		display: block;
-		margin: 0;
-		padding: 0;
-		background: none;
-		font-size: var( --s-text-sm );
-	}
-}
-
-.saddle-svc__tools code {
-	color: var(--s-fg-subtle);
-}
-
-.saddle-svc__sends li {
-	display: grid;
-
-	span {
-		color: var(--s-fg-muted);
-		font-size: var( --s-text );
-	}
-}
-
-.saddle-svc__tools li {
-	display: grid;
-	grid-template-columns: minmax(0, 1fr) auto;
-	gap: var(--pp-space-3);
-
-	> span:first-child {
-		display: grid;
-		min-width: 0;
+		border-block-start: 1px solid var( --s-border );
 	}
 }
 
 .saddle-svc__role {
-	color: var(--s-fg-muted);
-	font-size: var( --s-text );
+	color: var( --s-fg-muted );
 	white-space: nowrap;
-}
-
-.saddle-svc__links {
-	display: flex;
-	flex-wrap: wrap;
-	gap: var(--pp-space-4);
-	font-size: var( --s-text );
 }
 
 /* ---------- Settings (#285) ---------- */
