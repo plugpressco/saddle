@@ -136,4 +136,35 @@ class Saddle_MCP_Adapter_Coexistence_Test extends WP_UnitTestCase {
 		$this->assertSame( count( $before['/saddle/v1/mcp'] ), count( $server->get_routes( 'saddle/v1' )['/saddle/v1/mcp'] ) );
 		$this->assertFalse( Saddle_MCP::fell_back() );
 	}
+
+	/**
+	 * WooCommerce 11 autoloads MCP Adapter 0.1.0 on every request. Saddle
+	 * handed it the route, called McpPrompt::fromArray(), which that copy does
+	 * not have, and every REST request on the site was a fatal error. An
+	 * adapter that old is now not "available": the built-in transport serves.
+	 */
+	public function test_an_adapter_older_than_0_5_is_not_handed_the_route() {
+		$this->assertFalse( Saddle::adapter_is_current( 'Saddle_Test_Adapter_010_Prompt' ) );
+	}
+
+	/**
+	 * The other half: the copy this suite runs (0.6.1, the one Gravity Forms
+	 * sites run) still gets the route, so the probe did not switch the
+	 * adapter path off for everyone.
+	 */
+	public function test_the_current_adapter_is_still_handed_the_route() {
+		$this->assertTrue( Saddle::adapter_is_current() );
+		$this->assertTrue( Saddle::adapter_available() );
+	}
+}
+
+/**
+ * The shape of MCP Adapter 0.1.0's McpPrompt: a snake_case from_array() and
+ * no fromArray().
+ */
+class Saddle_Test_Adapter_010_Prompt {
+
+	public static function from_array( array $data ) {
+		return $data;
+	}
 }

@@ -332,8 +332,9 @@ class Saddle_MCP {
 	 * When the adapter's classes are present Saddle hands the route to it and
 	 * skips its own. That hand-off can fail in ways Saddle never hears about:
 	 * the adapter never initializes (a plugin that bundles it without starting
-	 * it), `mcp_adapter_init` passes something older with a different
-	 * create_server() (MCP Adapter 0.1.0), or create_server() refuses. Each one
+	 * it), or create_server() refuses. (A copy older than 0.5.0, such as the
+	 * 0.1.0 one WooCommerce 11 bundles, is never handed the route at all; see
+	 * Saddle::adapter_is_current().) Each one
 	 * used to end in a 404. Now the built-in transport takes the route instead.
 	 * The tier and approval gate live in the abilities, so they hold either way.
 	 *

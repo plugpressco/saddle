@@ -612,6 +612,12 @@ class Saddle_MCP_Diagnostics {
 			$source = 'unknown';
 		}
 
+		// Too old to be handed the route at all (Saddle::adapter_is_current()),
+		// such as the 0.1.0 copy WooCommerce 11 bundles.
+		if ( ! Saddle::adapter_is_current() ) {
+			return sprintf( 'Saddle built-in JSON-RPC (MCP Adapter %s from %s is loaded but too old to serve Saddle)', $version, $source );
+		}
+
 		// Present is not serving: when the adapter never put our server on the
 		// route, the built-in transport took it (Saddle_MCP::ensure_route()),
 		// and a support reply needs to know which one answered.
