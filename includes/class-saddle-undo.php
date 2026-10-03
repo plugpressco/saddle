@@ -134,7 +134,10 @@ class Saddle_Undo {
 					$reasons[] = $problem;
 					continue;
 				}
-				$report['steps'][] = Saddle_Undo_Steps::describe( $item );
+				$step = Saddle_Undo_Steps::describe( $item );
+				if ( '' !== $step ) {
+					$report['steps'][] = $step;
+				}
 			}
 		}
 

@@ -754,7 +754,16 @@ class Saddle_Capabilities {
 	 * @return string[] The sanitized, stored value.
 	 */
 	public static function set_disabled_abilities( array $short_names ) {
-		$clean = array_values( array_unique( array_map( 'sanitize_key', $short_names ) ) );
+		// Accept "saddle/list-posts" as well as "list-posts": sanitize_key()
+		// would otherwise strip the slash and save "saddlelist-posts", a name
+		// that turns nothing off.
+		$short_names = array_map(
+			static function ( $name ) {
+				return preg_replace( '#^saddle/#', '', (string) $name );
+			},
+			$short_names
+		);
+		$clean       = array_values( array_unique( array_map( 'sanitize_key', $short_names ) ) );
 		update_option( self::DISABLED_OPTION, $clean );
 		return $clean;
 	}
