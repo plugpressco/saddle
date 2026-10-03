@@ -34,6 +34,7 @@ import Tour from './components/Tour';
 import AuthTrouble from './components/AuthTrouble';
 import Frame from './components/Frame';
 import { pickSlot } from './notices';
+import { drillHeader } from './frame-logic';
 import Screen from './screens';
 import { showFirstRun, tourDue } from './onboarding-logic';
 import {
@@ -119,6 +120,14 @@ export default function App() {
 	const setTabState = useCallback(
 		( next ) => setRoute( { tab: next, view: '', args: {} } ),
 		[]
+	);
+	// A module screen's drill-in (K4): the title it set for this tab and
+	// view. The header handed to the screen is bound to them, so the title
+	// ends with the view; the screen's unmount clears it too.
+	const [ drill, setDrill ] = useState( null );
+	const header = useMemo(
+		() => drillHeader( setDrill, tab, routeView ),
+		[ tab, routeView ]
 	);
 	const [ tier, setTier ] = useState( null );
 	const [ caps, setCaps ] = useState( [] );
@@ -582,7 +591,9 @@ export default function App() {
 				area={ area }
 				tab={ tab }
 				view={ routeView }
+				drill={ drill }
 				onTab={ setTab }
+				onBack={ () => setTab( tab ) }
 				status={ { paused, pausing, onToggle: togglePause } }
 				notices={ ! wizardOpen }
 				notice={ slotNotice }
@@ -601,6 +612,7 @@ export default function App() {
 						view={ routeView }
 						args={ routeArgs }
 						navigate={ navigate }
+						header={ header }
 						tier={ tier }
 						caps={ caps }
 						clients={ clients }

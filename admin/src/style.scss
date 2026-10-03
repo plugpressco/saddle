@@ -238,9 +238,10 @@ body.saddle-admin-page {
 		line-height: 1;
 		cursor: pointer;
 
+		// The bell: Iconoir at the header's 20px.
 		svg {
-			width: 14px;
-			height: 14px;
+			width: 20px;
+			height: 20px;
 		}
 
 		&:hover {
@@ -354,6 +355,30 @@ body.saddle-admin-page {
 		}
 	}
 
+	// A drill-in (K4): back icon and the tab's label, a slash, the item's
+	// title. The way back is as quiet as the mark beside it.
+	&__back {
+		--pp-accent-text: var( --s-fg-muted );
+		--pp-accent-hover: var( --s-fg );
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		text-decoration: none;
+
+		svg {
+			flex: none;
+		}
+
+		&:hover span,
+		&:focus span {
+			text-decoration: underline;
+		}
+	}
+
+	&__sep {
+		color: var( --s-fg-subtle );
+	}
+
 	&__actions {
 		display: flex;
 		align-items: center;
@@ -379,13 +404,20 @@ body.saddle-admin-page {
 			border-block-end: 0;
 		}
 
+		// Each tab: its 16px icon, 6px, its label. The icon takes the
+		// label's colour.
 		.pp-tabs__tab {
+			gap: 6px;
 			min-block-size: 48px;
 			padding-block: 0;
 			font-size: var( --s-text );
 			font-weight: 400;
 			letter-spacing: normal;
 			color: var( --s-fg );
+
+			.saddle-nav-icon {
+				flex: none;
+			}
 		}
 
 		.pp-tabs__indicator {
