@@ -123,6 +123,13 @@ dry-run, no diff and no revert.
   confines Saddle keys to the MCP route, and OAuth tokens only resolve there.
   `uninstall.php` removes the block. Nothing joins this exception; a second
   file write is a signal to redesign, not a second exception.
+  WordPress's own file work is not Saddle writing files, and the readme says
+  so in one line: media uploads go through core's sideload and upload
+  handlers, updates through core's updater (below), and a permalink change
+  through `update-option` (admin tier, gated) runs `flush_rewrite_rules()`,
+  which lets WordPress rewrite its own `.htaccess` block exactly as Settings →
+  Permalinks does. A soft flush would leave Apache without rules after a move
+  off plain permalinks, so it stays a hard flush.
 - **Updates are applied only through WordPress's own updater, and only for
   what WordPress already offers.** `saddle/update-plugin` and
   `saddle/update-theme` (admin tier, gated, at most 10 items) queue a
