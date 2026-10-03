@@ -263,7 +263,7 @@ export default function Apps( {
 				nameOf( c )
 			),
 			description: __(
-				'The current key stops working the moment you confirm, and a fresh one is issued under the same name. You’ll paste the new setup into the app right after — until then it can’t connect.',
+				'The current key stops working when you confirm, and a new one is issued under the same name. The app can’t connect until you paste the new setup into it.',
 				'saddle'
 			),
 			danger: true,
@@ -298,11 +298,11 @@ export default function Apps( {
 			),
 			description: isKey
 				? __(
-						'Its sign-in key stops working the moment you confirm — the app loses access to this site immediately. You can always connect the app again with a fresh key.',
+						'Its key stops working when you confirm, and the app loses access to this site. You can connect it again later with a new key.',
 						'saddle'
 				  )
 				: __(
-						'It loses access the moment you confirm — no waiting for anything to expire. To use it again you’ll approve it once more.',
+						'It loses access when you confirm. To use it again, you approve it once more.',
 						'saddle'
 				  ),
 			danger: true,
@@ -620,11 +620,11 @@ export function ConnectionDetails() {
 						<HelpTip>
 							{ saddleData.adapter
 								? __(
-										'Saddle is using the MCP Adapter plugin, which is active on this site. Your tools, access levels and approvals are unchanged — this only affects how requests are carried.',
+										'Saddle is using the MCP Adapter plugin, which is active on this site. It changes only how requests are carried, not your tools, access levels or approvals.',
 										'saddle'
 								  )
 								: __(
-										'Saddle speaks MCP itself, so there is nothing else to install. If you ever add the separate MCP Adapter plugin, Saddle will use it automatically; your tools, access levels and approvals stay the same either way.',
+										'Saddle speaks MCP itself, so there is nothing else to install. If you add the MCP Adapter plugin, Saddle uses it, and your tools, access levels and approvals stay the same.',
 										'saddle'
 								  ) }
 						</HelpTip>

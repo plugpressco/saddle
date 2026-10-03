@@ -501,7 +501,7 @@ export default function ConnectWizard( {
 					className="saddle-wizard__oauth-gate"
 					title={ __( 'Turn on sign-in for apps', 'saddle' ) }
 					description={ __(
-						'With sign-in on, an app needs only this site’s address. It opens your browser and you approve it here — no key to copy, nothing to install. It’s off by default; you can always use a key instead.',
+						'With sign-in on, an app needs only this site’s address. You approve it here when your browser opens, with no key to copy. Keys still work.',
 						'saddle'
 					) }
 				>
@@ -554,14 +554,14 @@ export default function ConnectWizard( {
 			<CalloutCard
 				className="saddle-wizard__trouble"
 				tone="warning"
-				title={ __( 'Taking longer than expected?', 'saddle' ) }
+				title={ __( 'Still waiting', 'saddle' ) }
 			>
 				<ul>
 					<li>
 						{ sprintf(
 							/* translators: %s: the app name. */
 							__(
-								'Make sure you saved the setup and %s was restarted or reloaded after pasting.',
+								'Save the setup, then restart or reload %s.',
 								'saddle'
 							),
 							activeApp.label
@@ -569,7 +569,7 @@ export default function ConnectWizard( {
 					</li>
 					<li>
 						{ __(
-							'The app only connects when it’s actually used — ask it something about your site.',
+							'The app connects only when you use it. Ask it something about your site.',
 							'saddle'
 						) }
 					</li>
@@ -578,7 +578,7 @@ export default function ConnectWizard( {
 							{ sprintf(
 								/* translators: %s: the app name. */
 								__(
-									'If %s says it can’t fetch the sign-in details, a page cache may be serving old pages — clear your site’s cache and add the server again.',
+									'If %s can’t fetch the sign-in details, a page cache may be serving old pages. Clear your site’s cache and add the server again.',
 									'saddle'
 								),
 								activeApp.label
@@ -588,7 +588,7 @@ export default function ConnectWizard( {
 					{ byAddress && 'slow' === oauthState?.discovery && (
 						<li>
 							{ __(
-								'This site is answering too slowly for some apps to finish connecting — they wait only a few seconds, then report that the site doesn’t support signing in. Turn on page caching or move to a faster host, then add the server again.',
+								'This site answers too slowly for some apps. They wait a few seconds, then report that the site doesn’t support sign-in. Turn on page caching or move to a faster host, then add the server again.',
 								'saddle'
 							) }
 						</li>
@@ -596,7 +596,7 @@ export default function ConnectWizard( {
 					{ IS_LOCAL && (
 						<li>
 							{ __(
-								'This is a local site — the app must run on this same computer.',
+								'This is a local site. The app must run on this computer.',
 								'saddle'
 							) }
 						</li>
@@ -671,11 +671,11 @@ export default function ConnectWizard( {
 					<p className="saddle-wizard__lead">
 						{ wantsAddress
 							? __(
-									'Every app gets the same address. Pick yours to see exactly where it goes.',
+									'Every app gets the same address. Pick yours to see where it goes.',
 									'saddle'
 							  )
 							: __(
-									'When you pick an app, WordPress creates a sign-in key just for it and Saddle prepares the whole setup. If you leave before using the key, it’s removed automatically — nothing is left behind.',
+									'WordPress creates a sign-in key for the app you pick, and Saddle prepares the setup. If you leave before using the key, it is removed.',
 									'saddle'
 							  ) }
 					</p>
@@ -686,11 +686,11 @@ export default function ConnectWizard( {
 						<Notice tone="warning">
 							{ saddleData.ssl
 								? __(
-										'Application Passwords appear to be turned off — often by a security plugin. Enable them under Users → Profile before connecting.',
+										'Application Passwords seem to be off, often because of a security plugin. Turn them on under Users → Profile before connecting.',
 										'saddle'
 								  )
 								: __(
-										'WordPress turns off app connections on sites that aren’t served over HTTPS (like http://localhost), so this won’t work until then.',
+										'WordPress turns off app connections on sites without HTTPS, such as http://localhost. They work once the site uses HTTPS.',
 										'saddle'
 								  ) }
 						</Notice>
@@ -709,11 +709,11 @@ export default function ConnectWizard( {
 							description={
 								duplicateOf.existing.last_used
 									? __(
-											'That connection has been used. Replacing its key issues a fresh one and the old key stops working instantly — you just paste the new setup into the app. Add a separate connection only for a second computer.',
+											'That connection has been used. Replacing its key stops the old one at once, then you paste the new setup into the app. Add a separate connection only for a second computer.',
 											'saddle'
 									  )
 									: __(
-											'That connection has never been used — it probably didn’t finish setup. Replacing its key is the clean way to try again; nothing extra is left behind.',
+											'That connection was never used, so its setup probably didn’t finish. Replace its key to try again without leaving an extra key behind.',
 											'saddle'
 									  )
 							}
@@ -744,7 +744,7 @@ export default function ConnectWizard( {
 									onClick={ () => setDuplicateOf( null ) }
 									disabled={ !! creating }
 								>
-									{ __( 'Never mind', 'saddle' ) }
+									{ __( 'Cancel', 'saddle' ) }
 								</Button>
 							</div>
 						</CalloutCard>
@@ -817,7 +817,7 @@ export default function ConnectWizard( {
 								description={ sprintf(
 									/* translators: %s: the app name. */
 									__(
-										'%s signs in through your WordPress instead of using a pasted key, and that sign-in is currently off (it’s off by default). Turn it on and the app can ask to connect — you’ll still approve it on screen before it gets any access.',
+										'%s signs in through your WordPress instead of a pasted key, and that sign-in is off. Turn it on, and the app gets no access until you approve it here.',
 										'saddle'
 									),
 									activeApp.label
@@ -853,7 +853,7 @@ export default function ConnectWizard( {
 								description={
 									oauthState.permalinks
 										? __(
-												'This needs your site to be served over HTTPS first — a sign-in token sent over plain HTTP can be read in transit.',
+												'This needs HTTPS first. A sign-in token sent over plain HTTP can be read in transit.',
 												'saddle'
 										  )
 										: __(
@@ -891,7 +891,7 @@ export default function ConnectWizard( {
 							} }
 						>
 							{ configCopied
-								? __( 'Copied ✓', 'saddle' )
+								? __( 'Copied', 'saddle' )
 								: __( 'Copy setup', 'saddle' ) }
 						</Button>
 					</div>
@@ -905,7 +905,7 @@ export default function ConnectWizard( {
 								{ sprintf(
 									/* translators: %s: the app name. */
 									__(
-										'Or skip the paste: %s opens with the server filled in, and you confirm it there.',
+										'Or open %s with the server filled in, and confirm it there.',
 										'saddle'
 									),
 									activeApp.label
@@ -929,7 +929,7 @@ export default function ConnectWizard( {
 					{ byAddress && activeApp.viaKey && (
 						<p className="saddle-wizard__hint">
 							{ __(
-								'Prefer a pasted key, or connecting from a script?',
+								'A key also works, including from a script.',
 								'saddle'
 							) }{ ' ' }
 							<Button
@@ -944,7 +944,7 @@ export default function ConnectWizard( {
 					{ ! byAddress && activeApp.viaAddress && signInOn && (
 						<p className="saddle-wizard__hint">
 							{ __(
-								'This app can also connect with just the address and a sign-in screen.',
+								'This app can also connect with the address and a sign-in screen.',
 								'saddle'
 							) }{ ' ' }
 							<Button variant="link" onClick={ switchToAddress }>
@@ -967,7 +967,7 @@ export default function ConnectWizard( {
 								{ sprintf(
 									/* translators: %s: the app name. */
 									__(
-										'%s signs in with your approval — you’ll see a consent screen here before it gets any access, and disconnecting it ends that access instantly.',
+										'%s gets access only after you approve it on a consent screen here. Disconnecting it ends that access at once.',
 										'saddle'
 									),
 									activeApp.label
@@ -977,13 +977,13 @@ export default function ConnectWizard( {
 							<>
 								<p className="saddle-wizard__cando-note">
 									{ __(
-										'Its sign-in key works only for this app, only on this site, and only through Saddle — it can’t touch the rest of WordPress. Disconnect it anytime and access ends instantly. Go back without copying and the key is discarded.',
+										'Its key works only for this app, on this site, through Saddle. It can’t reach the rest of WordPress. Disconnecting it ends access at once. If you go back without copying, the key is deleted.',
 										'saddle'
 									) }
 								</p>
 								<p className="saddle-wizard__cando-note">
 									{ __(
-										'The key appears only this once, inside the setup above. Saddle keeps just its name and last four characters — never the key itself.',
+										'The key is shown once, in the setup above. Saddle keeps only its name and last four characters.',
 										'saddle'
 									) }
 								</p>
@@ -1023,7 +1023,7 @@ export default function ConnectWizard( {
 									{ sprintf(
 										/* translators: %s: the app name. */
 										__(
-											'Waiting for %s. This moves on by itself the moment it connects.',
+											'Waiting for %s. This step moves on when it connects.',
 											'saddle'
 										),
 										activeApp.label
@@ -1078,10 +1078,7 @@ export default function ConnectWizard( {
 						<LiveIndicator>
 							{ sprintf(
 								/* translators: %s: the app name. */
-								__(
-									'Listening for %s — this updates by itself the moment it connects.',
-									'saddle'
-								),
+								__( 'Waiting for %s to connect.', 'saddle' ),
 								activeApp.label
 							) }
 						</LiveIndicator>
@@ -1098,15 +1095,12 @@ export default function ConnectWizard( {
 								? sprintf(
 										/* translators: %s: the app name. */
 										__(
-											'Close — it’ll appear here after you approve it in %s',
+											'Close and approve it in %s',
 											'saddle'
 										),
 										activeApp.label
 								  )
-								: __(
-										'Finish later — it’ll connect on first use',
-										'saddle'
-								  ) }
+								: __( 'Finish later', 'saddle' ) }
 						</Button>
 					</div>
 				</div>
@@ -1134,17 +1128,17 @@ export default function ConnectWizard( {
 					<p className="saddle-wizard__lead">
 						{ byAddress
 							? __(
-									'You approved it, and it’s connected. It starts at Read only — change that anytime on the AI apps page.',
+									'You approved it. It starts at Read only.',
 									'saddle'
 							  )
 							: __(
-									'It just made its first request. It starts at Read only — change that anytime on the AI apps page.',
+									'It made its first request. It starts at Read only.',
 									'saddle'
 							  ) }
 					</p>
 					<p className="saddle-wizard__lead saddle-wizard__lead--muted">
 						{ __(
-							'Manage or disconnect it anytime on the AI apps page.',
+							'Change its access or disconnect it on the AI apps page.',
 							'saddle'
 						) }
 					</p>
