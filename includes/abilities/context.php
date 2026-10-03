@@ -26,7 +26,7 @@ function saddle_register_context_abilities() {
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => (object) array(),
+				'properties' => array(),
 			),
 			'execute_callback'    => array( 'Saddle_Context_Abilities', 'context_bundle' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'context-bundle' ),
@@ -43,7 +43,7 @@ function saddle_register_context_abilities() {
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => (object) array(),
+				'properties' => array(),
 			),
 			'execute_callback'    => array( 'Saddle_Context_Abilities', 'list_skills' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'list-skills' ),

@@ -31,7 +31,7 @@ function saddle_register_divi_design_abilities() {
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => (object) array(),
+				'properties' => array(),
 			),
 			'execute_callback'    => array( 'Saddle_Divi_Design', 'list_global_colors' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'divi-list-global-colors' ),
@@ -48,7 +48,7 @@ function saddle_register_divi_design_abilities() {
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => (object) array(),
+				'properties' => array(),
 			),
 			'execute_callback'    => array( 'Saddle_Divi_Design', 'get_global_fonts' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'divi-get-global-fonts' ),
@@ -65,7 +65,7 @@ function saddle_register_divi_design_abilities() {
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => (object) array(),
+				'properties' => array(),
 			),
 			'execute_callback'    => array( 'Saddle_Divi_Design', 'list_variables' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'divi-list-variables' ),

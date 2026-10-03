@@ -92,7 +92,7 @@ function saddle_register_site_editor_abilities() {
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => (object) array(),
+				'properties' => array(),
 			),
 			'execute_callback'    => array( 'Saddle_Site_Editor_Abilities', 'get_global_styles' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'get-global-styles' ),
