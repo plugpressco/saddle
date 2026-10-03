@@ -43,6 +43,38 @@ class Saddle_Connection {
 	const ISSUED_META = 'saddle_issued_credentials';
 
 	/**
+	 * The request a tool is dispatching in-process right now, if any.
+	 *
+	 * @var WP_REST_Request|null
+	 */
+	private static $internal_request = null;
+
+	/**
+	 * Dispatch a REST request that a tool built itself, as the current user.
+	 *
+	 * A Saddle-issued key is confined to the MCP route, so a tool that saves
+	 * through one of core's routes (the templates controller, say) would be
+	 * refused by scope_credentials() although the agent never named that
+	 * route. Only this exact request object passes, only while this call
+	 * runs: not a request it triggers, and not one the agent sends. The
+	 * route's own permission_callback still runs as the current user, after
+	 * the tool's tier and gate. The route must be fixed in code; never build
+	 * it from agent input beyond an id that was already looked up.
+	 *
+	 * @param WP_REST_Request $request A request the calling tool built.
+	 * @return WP_REST_Response
+	 */
+	public static function dispatch_internal( WP_REST_Request $request ) {
+		$previous               = self::$internal_request;
+		self::$internal_request = $request;
+		try {
+			return rest_do_request( $request );
+		} finally {
+			self::$internal_request = $previous;
+		}
+	}
+
+	/**
 	 * Scope Saddle-issued credentials to Saddle's own REST surface.
 	 *
 	 * A core Application Password authenticates the ENTIRE REST API as its
@@ -70,6 +102,11 @@ class Saddle_Connection {
 	public static function scope_credentials( $response, $handler, $request ) {
 		if ( null !== $response ) {
 			return $response; // Another callback already decided this request.
+		}
+
+		// The one request a tool is dispatching itself (see dispatch_internal()).
+		if ( null !== self::$internal_request && $request === self::$internal_request ) {
+			return $response;
 		}
 
 		/**

@@ -412,6 +412,10 @@ class Saddle_Site_Editor_Writes {
 	/**
 	 * Call one of core's REST routes in-process, as the current user.
 	 *
+	 * Through Saddle_Connection::dispatch_internal(), so an app connected with
+	 * a key reaches the route this tool chose; a plain rest_do_request() is
+	 * refused for a Saddle key (found in the 1.5.0 release QA).
+	 *
 	 * @param string $method HTTP method.
 	 * @param string $route  Route.
 	 * @param array  $params Parameters.
@@ -422,7 +426,7 @@ class Saddle_Site_Editor_Writes {
 		foreach ( $params as $key => $value ) {
 			$request->set_param( $key, $value );
 		}
-		$response = rest_do_request( $request );
+		$response = Saddle_Connection::dispatch_internal( $request );
 		if ( $response->is_error() ) {
 			return $response->as_error();
 		}
