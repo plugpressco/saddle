@@ -241,6 +241,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 * Fixed: On a Divi shop, your AI app can use Divi's WooCommerce modules, such as the products grid. They were missing from the module list.
 * Fixed: On Divi 5 sites, the design summary your AI app receives includes the site's heading and body fonts, and the Divi guide gives the right address for a page's first section.
 * Fixed: The design check no longer counts a dark tinted background, such as slate or a near-black green, as a second accent color.
+* Fixed: Removing a block or a Divi module with a confirmation that was already used could remove the block that had moved into its place. A used or out-of-date confirmation is now refused.
 * Fixed: Editing a list's items with a single block edit left an empty list followed by the old items. The new items now replace the old ones inside the list, and the page check flags any block whose inner blocks render outside it.
 * Fixed: With Saddle active, Gravity Forms' "Site MCP" mode and other plugins that share the MCP Adapter's default server lost their MCP connection. Saddle now leaves that server running when another plugin uses it, and keeps its own tools off it.
 * Fixed: The connection check could not tell whether your server passes sign-in headers through, and always said "unknown". It now gives a real answer.
