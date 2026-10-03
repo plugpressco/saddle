@@ -54,6 +54,7 @@ class Saddle_Modules {
 			'home'        => array(
 				'slug'  => 'saddle',
 				'title' => __( 'Home', 'saddle' ),
+				'icon'  => 'home-simple-door',
 				'tabs'  => array(
 					'overview' => __( 'Home', 'saddle' ),
 				),
@@ -61,6 +62,7 @@ class Saddle_Modules {
 			'connections' => array(
 				'slug'  => 'saddle-connections',
 				'title' => __( 'AI apps', 'saddle' ),
+				'icon'  => 'sparks',
 				'tabs'  => array(
 					'apps' => __( 'AI apps', 'saddle' ),
 				),
@@ -68,6 +70,7 @@ class Saddle_Modules {
 			'services'    => array(
 				'slug'  => 'saddle-services',
 				'title' => __( 'Services', 'saddle' ),
+				'icon'  => 'puzzle',
 				'tabs'  => array(
 					'overview' => __( 'Services', 'saddle' ),
 				),
@@ -75,6 +78,7 @@ class Saddle_Modules {
 			'context'     => array(
 				'slug'  => 'saddle-context',
 				'title' => __( 'Context', 'saddle' ),
+				'icon'  => 'brain',
 				'tabs'  => array(
 					'overview' => __( 'Context', 'saddle' ),
 				),
@@ -82,6 +86,7 @@ class Saddle_Modules {
 			'settings'    => array(
 				'slug'  => 'saddle-settings',
 				'title' => __( 'Settings', 'saddle' ),
+				'icon'  => 'settings',
 				'tabs'  => array(
 					'general' => __( 'General', 'saddle' ),
 				),
@@ -97,6 +102,32 @@ class Saddle_Modules {
 	public static function modules() {
 		/**
 		 * Register a module: a sibling plugin with a page under Saddle.
+		 *
+		 * A descriptor, keyed by the module's integration key:
+		 *
+		 *     'title'     => 'Analytics',         // The menu label and the page name.
+		 *     'icon'      => 'graph-up',          // The menu item's icon.
+		 *     'tabs'      => array( 'overview' => 'Overview', 'reports' => 'Reports' ),
+		 *     'tab_icons' => array( 'reports' => 'reports' ), // Tab key => icon.
+		 *
+		 * plus `product`, `version`, `summary`, `order`, `nav`, `capability`,
+		 * `script`, `content` and the `status`, `setup` and `settings`
+		 * callables.
+		 *
+		 * `icon` and `tab_icons` name Iconoir icons by file name. The allowlist
+		 * is the files in Saddle's assets/icons/ (Saddle_Nav_Icons::names()). A
+		 * name outside it draws no icon and is never an error. A tab with no
+		 * icon of its own gets one by key: `overview` is dashboard-dots and
+		 * `settings` is settings. Labels stay plain strings in `tabs`; an icon
+		 * never goes there. Older Core ignores both keys, so a module can ship
+		 * them first.
+		 *
+		 * A screen gets `props.header`. While a `&view=` is open inside a tab,
+		 * the screen may call `props.header?.drillIn?.( { title } )`. The header
+		 * then hides the tab row and shows a back link (the tab's label, to the
+		 * tab with no view) and the title. Core clears it when the view closes,
+		 * the tab changes or the screen unmounts. A screen that never calls it
+		 * keeps the tab row.
 		 *
 		 * @param array $modules Descriptors keyed by the module's integration key.
 		 */
@@ -144,6 +175,8 @@ class Saddle_Modules {
 				'nav'        => ! isset( $module['nav'] ) || (bool) $module['nav'],
 				'capability' => isset( $module['capability'] ) && is_string( $module['capability'] ) && '' !== $module['capability'] ? $module['capability'] : 'manage_options',
 				'tabs'       => $tabs,
+				'icon'       => Saddle_Nav_Icons::pick( isset( $module['icon'] ) ? $module['icon'] : '' ),
+				'tab_icons'  => Saddle_Nav_Icons::tab_icons( $tabs, isset( $module['tab_icons'] ) ? $module['tab_icons'] : array() ),
 				'script'     => isset( $module['script'] ) ? sanitize_key( (string) $module['script'] ) : '',
 				'content'    => isset( $module['content'] ) && 'mount' === $module['content'] ? 'mount' : 'screens',
 			);
@@ -164,7 +197,8 @@ class Saddle_Modules {
 	 * Context, Settings.
 	 *
 	 * @return array<string,array> Keyed by area; each has `slug`, `title`,
-	 *                             `tabs`, `nav`, `capability`, `module`.
+	 *                             `tabs`, `nav`, `capability`, `module`,
+	 *                             `icon` and `tab_icons`.
 	 */
 	public static function areas() {
 		$core  = self::core_areas();
@@ -185,6 +219,8 @@ class Saddle_Modules {
 					'nav'        => true,
 					'capability' => 'manage_options',
 					'module'     => ! isset( $core[ $key ] ),
+					'icon'       => '',
+					'tab_icons'  => Saddle_Nav_Icons::tab_icons( $area['tabs'], array() ),
 				),
 				$area
 			);
