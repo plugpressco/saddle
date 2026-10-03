@@ -117,7 +117,7 @@ function saddle_register_site_abilities() {
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => (object) array(),
+				'properties' => array(),
 			),
 			'execute_callback'    => array( 'Saddle_Site_Abilities', 'list_themes' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'admin', 'switch_themes', 'list-themes' ),
@@ -243,7 +243,7 @@ function saddle_register_site_abilities() {
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => (object) array(),
+				'properties' => array(),
 			),
 			'execute_callback'    => array( 'Saddle_Site_Abilities', 'flush_cache' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'admin', 'manage_options', 'flush-cache' ),

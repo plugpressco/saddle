@@ -86,7 +86,7 @@ function saddle_register_block_abilities() {
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => (object) array(),
+				'properties' => array(),
 			),
 			'execute_callback'    => array( 'Saddle_Blocks_Abilities', 'get_design_tokens' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'get-design-tokens' ),
@@ -133,7 +133,7 @@ function saddle_register_block_abilities() {
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => (object) array(),
+				'properties' => array(),
 			),
 			'execute_callback'    => array( 'Saddle_Blocks_Abilities', 'list_section_recipes' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'list-section-recipes' ),
@@ -172,7 +172,7 @@ function saddle_register_block_abilities() {
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => (object) array(),
+				'properties' => array(),
 			),
 			'execute_callback'    => array( 'Saddle_Blocks_Abilities', 'get_design_system' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'get-design-system' ),

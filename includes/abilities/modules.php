@@ -22,7 +22,7 @@ function saddle_register_module_abilities() {
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => (object) array(),
+				'properties' => array(),
 			),
 			'execute_callback'    => array( 'Saddle_Module_Abilities', 'list_modules' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'manage_options', 'list-modules' ),

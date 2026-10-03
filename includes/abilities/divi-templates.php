@@ -28,7 +28,7 @@ function saddle_register_divi_template_abilities() {
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => (object) array(),
+				'properties' => array(),
 			),
 			'execute_callback'    => array( 'Saddle_Divi_Templates', 'list_library_items' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'divi-list-library-items' ),
@@ -45,7 +45,7 @@ function saddle_register_divi_template_abilities() {
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => (object) array(),
+				'properties' => array(),
 			),
 			'execute_callback'    => array( 'Saddle_Divi_Templates', 'list_tb_templates' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'divi-list-theme-builder-templates' ),
@@ -62,7 +62,7 @@ function saddle_register_divi_template_abilities() {
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => (object) array(),
+				'properties' => array(),
 			),
 			'execute_callback'    => array( 'Saddle_Divi_Templates', 'list_tb_conditions' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'divi-list-theme-builder-conditions' ),

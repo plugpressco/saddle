@@ -24,7 +24,7 @@ function saddle_register_divi_bundle_abilities() {
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => (object) array(),
+				'properties' => array(),
 			),
 			'execute_callback'    => array( 'Saddle_Divi_Bundle_Abilities', 'context_bundle' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'divi-context-bundle' ),

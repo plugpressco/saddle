@@ -72,7 +72,7 @@ function saddle_register_abilities() {
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => (object) array(),
+				'properties' => array(),
 			),
 			'execute_callback'    => array( 'Saddle_Abilities', 'get_site_info' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'get-site-info' ),
@@ -89,7 +89,7 @@ function saddle_register_abilities() {
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => (object) array(),
+				'properties' => array(),
 			),
 			'execute_callback'    => array( 'Saddle_MCP_Diagnostics', 'agent_self_check' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'self-check' ),
@@ -106,7 +106,7 @@ function saddle_register_abilities() {
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => (object) array(),
+				'properties' => array(),
 			),
 			'execute_callback'    => array( 'Saddle_Abilities', 'get_instructions' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'get-instructions' ),

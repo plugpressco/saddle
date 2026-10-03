@@ -52,7 +52,7 @@ function saddle_register_divi_abilities() {
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => (object) array(),
+				'properties' => array(),
 			),
 			'execute_callback'    => array( 'Saddle_Divi_Abilities', 'list_modules' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'divi-list-modules' ),
@@ -348,7 +348,7 @@ function saddle_register_divi_abilities() {
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => (object) array(),
+				'properties' => array(),
 			),
 			'execute_callback'    => array( 'Saddle_Divi_Abilities', 'list_loop_query_types' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'divi-list-loop-query-types' ),
@@ -490,7 +490,7 @@ function saddle_register_divi_abilities() {
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => (object) array(),
+				'properties' => array(),
 			),
 			'execute_callback'    => array( 'Saddle_Divi_Abilities', 'list_dynamic_sources' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'divi-list-dynamic-sources' ),
@@ -602,7 +602,7 @@ function saddle_register_divi_abilities() {
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => (object) array(),
+				'properties' => array(),
 			),
 			'execute_callback'    => array( 'Saddle_Divi_Abilities', 'list_condition_types' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'divi-list-condition-types' ),
