@@ -6,16 +6,21 @@
  * also the allowlist for a module descriptor’s `icon` and `tab_icons`.
  */
 import { ReactComponent as Activity } from '../../../assets/icons/activity.svg';
+import { ReactComponent as Archive } from '../../../assets/icons/archive.svg';
 import { ReactComponent as ArrowLeft } from '../../../assets/icons/arrow-left.svg';
 import { ReactComponent as ArrowRight } from '../../../assets/icons/arrow-right.svg';
 import { ReactComponent as ArrowSeparate } from '../../../assets/icons/arrow-separate.svg';
 import { ReactComponent as ArrowUpRight } from '../../../assets/icons/arrow-up-right.svg';
 import { ReactComponent as Bell } from '../../../assets/icons/bell.svg';
 import { ReactComponent as Brain } from '../../../assets/icons/brain.svg';
+import { ReactComponent as Calendar } from '../../../assets/icons/calendar.svg';
+import { ReactComponent as ChatLines } from '../../../assets/icons/chat-lines.svg';
 import { ReactComponent as Check } from '../../../assets/icons/check.svg';
 import { ReactComponent as CheckCircle } from '../../../assets/icons/check-circle.svg';
+import { ReactComponent as ClipboardCheck } from '../../../assets/icons/clipboard-check.svg';
 import { ReactComponent as Clock } from '../../../assets/icons/clock.svg';
 import { ReactComponent as Copy } from '../../../assets/icons/copy.svg';
+import { ReactComponent as Cpu } from '../../../assets/icons/cpu.svg';
 import { ReactComponent as DashboardDots } from '../../../assets/icons/dashboard-dots.svg';
 import { ReactComponent as Download } from '../../../assets/icons/download.svg';
 import { ReactComponent as Drag } from '../../../assets/icons/drag.svg';
@@ -29,15 +34,18 @@ import { ReactComponent as GraphUp } from '../../../assets/icons/graph-up.svg';
 import { ReactComponent as Group } from '../../../assets/icons/group.svg';
 import { ReactComponent as HelpCircle } from '../../../assets/icons/help-circle.svg';
 import { ReactComponent as HomeSimpleDoor } from '../../../assets/icons/home-simple-door.svg';
+import { ReactComponent as Import } from '../../../assets/icons/import.svg';
 import { ReactComponent as InfoCircle } from '../../../assets/icons/info-circle.svg';
 import { ReactComponent as Key } from '../../../assets/icons/key.svg';
 import { ReactComponent as Link } from '../../../assets/icons/link.svg';
+import { ReactComponent as LinkXmark } from '../../../assets/icons/link-xmark.svg';
 import { ReactComponent as List } from '../../../assets/icons/list.svg';
 import { ReactComponent as Lock } from '../../../assets/icons/lock.svg';
 import { ReactComponent as MagicWand } from '../../../assets/icons/magic-wand.svg';
 import { ReactComponent as Mail } from '../../../assets/icons/mail.svg';
 import { ReactComponent as MailIn } from '../../../assets/icons/mail-in.svg';
 import { ReactComponent as MailOut } from '../../../assets/icons/mail-out.svg';
+import { ReactComponent as MediaImage } from '../../../assets/icons/media-image.svg';
 import { ReactComponent as Minus } from '../../../assets/icons/minus.svg';
 import { ReactComponent as MoreHoriz } from '../../../assets/icons/more-horiz.svg';
 import { ReactComponent as MoreVert } from '../../../assets/icons/more-vert.svg';
@@ -49,11 +57,14 @@ import { ReactComponent as NavArrowUp } from '../../../assets/icons/nav-arrow-up
 import { ReactComponent as OpenBook } from '../../../assets/icons/open-book.svg';
 import { ReactComponent as OpenNewWindow } from '../../../assets/icons/open-new-window.svg';
 import { ReactComponent as Page } from '../../../assets/icons/page.svg';
+import { ReactComponent as PageEdit } from '../../../assets/icons/page-edit.svg';
 import { ReactComponent as PlugTypeA } from '../../../assets/icons/plug-type-a.svg';
 import { ReactComponent as Plus } from '../../../assets/icons/plus.svg';
 import { ReactComponent as Puzzle } from '../../../assets/icons/puzzle.svg';
+import { ReactComponent as QuoteMessage } from '../../../assets/icons/quote-message.svg';
 import { ReactComponent as Refresh } from '../../../assets/icons/refresh.svg';
 import { ReactComponent as RefreshDouble } from '../../../assets/icons/refresh-double.svg';
+import { ReactComponent as Repeat } from '../../../assets/icons/repeat.svg';
 import { ReactComponent as Reports } from '../../../assets/icons/reports.svg';
 import { ReactComponent as Search } from '../../../assets/icons/search.svg';
 import { ReactComponent as SearchEngine } from '../../../assets/icons/search-engine.svg';
@@ -61,6 +72,7 @@ import { ReactComponent as SearchWindow } from '../../../assets/icons/search-win
 import { ReactComponent as Send } from '../../../assets/icons/send.svg';
 import { ReactComponent as SendMail } from '../../../assets/icons/send-mail.svg';
 import { ReactComponent as Settings } from '../../../assets/icons/settings.svg';
+import { ReactComponent as ShareAndroid } from '../../../assets/icons/share-android.svg';
 import { ReactComponent as Shield } from '../../../assets/icons/shield.svg';
 import { ReactComponent as ShieldCheck } from '../../../assets/icons/shield-check.svg';
 import { ReactComponent as Sparks } from '../../../assets/icons/sparks.svg';
@@ -70,6 +82,7 @@ import { ReactComponent as Trash } from '../../../assets/icons/trash.svg';
 import { ReactComponent as Upload } from '../../../assets/icons/upload.svg';
 import { ReactComponent as User } from '../../../assets/icons/user.svg';
 import { ReactComponent as ViewGrid } from '../../../assets/icons/view-grid.svg';
+import { ReactComponent as Walking } from '../../../assets/icons/walking.svg';
 import { ReactComponent as WarningCircle } from '../../../assets/icons/warning-circle.svg';
 import { ReactComponent as WarningTriangle } from '../../../assets/icons/warning-triangle.svg';
 import { ReactComponent as Xmark } from '../../../assets/icons/xmark.svg';
@@ -78,16 +91,21 @@ import { ReactComponent as XmarkCircle } from '../../../assets/icons/xmark-circl
 // Every icon, by its Iconoir name.
 export const byName = {
 	activity: Activity,
+	archive: Archive,
 	'arrow-left': ArrowLeft,
 	'arrow-right': ArrowRight,
 	'arrow-separate': ArrowSeparate,
 	'arrow-up-right': ArrowUpRight,
 	bell: Bell,
 	brain: Brain,
+	calendar: Calendar,
+	'chat-lines': ChatLines,
 	check: Check,
 	'check-circle': CheckCircle,
+	'clipboard-check': ClipboardCheck,
 	clock: Clock,
 	copy: Copy,
+	cpu: Cpu,
 	'dashboard-dots': DashboardDots,
 	download: Download,
 	drag: Drag,
@@ -101,15 +119,18 @@ export const byName = {
 	group: Group,
 	'help-circle': HelpCircle,
 	'home-simple-door': HomeSimpleDoor,
+	import: Import,
 	'info-circle': InfoCircle,
 	key: Key,
 	link: Link,
+	'link-xmark': LinkXmark,
 	list: List,
 	lock: Lock,
 	'magic-wand': MagicWand,
 	mail: Mail,
 	'mail-in': MailIn,
 	'mail-out': MailOut,
+	'media-image': MediaImage,
 	minus: Minus,
 	'more-horiz': MoreHoriz,
 	'more-vert': MoreVert,
@@ -121,11 +142,14 @@ export const byName = {
 	'open-book': OpenBook,
 	'open-new-window': OpenNewWindow,
 	page: Page,
+	'page-edit': PageEdit,
 	'plug-type-a': PlugTypeA,
 	plus: Plus,
 	puzzle: Puzzle,
+	'quote-message': QuoteMessage,
 	refresh: Refresh,
 	'refresh-double': RefreshDouble,
+	repeat: Repeat,
 	reports: Reports,
 	search: Search,
 	'search-engine': SearchEngine,
@@ -133,6 +157,7 @@ export const byName = {
 	send: Send,
 	'send-mail': SendMail,
 	settings: Settings,
+	'share-android': ShareAndroid,
 	shield: Shield,
 	'shield-check': ShieldCheck,
 	sparks: Sparks,
@@ -142,6 +167,7 @@ export const byName = {
 	upload: Upload,
 	user: User,
 	'view-grid': ViewGrid,
+	walking: Walking,
 	'warning-circle': WarningCircle,
 	'warning-triangle': WarningTriangle,
 	xmark: Xmark,
