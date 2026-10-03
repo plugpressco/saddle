@@ -132,6 +132,7 @@ Every feature in this free plugin stays free.
 = Credits =
 
 * Iconoir icons (MIT): [iconoir.com](https://iconoir.com)
+* AI app logos from LobeHub Icons (MIT): [github.com/lobehub/lobe-icons](https://github.com/lobehub/lobe-icons). Each logo belongs to its owner.
 
 == Installation ==
 
