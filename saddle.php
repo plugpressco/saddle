@@ -179,6 +179,7 @@ require_once SADDLE_DIR . 'includes/admin/class-saddle-services-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-onboarding-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-modules-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-nav-icons.php';
+require_once SADDLE_DIR . 'includes/admin/class-saddle-module-nav.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-settings.php';
 
 /*

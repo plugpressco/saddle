@@ -74,13 +74,15 @@ class Saddle_Modules_REST_Test extends WP_UnitTestCase {
 		$this->assertSame( 'ready', $area['state'] );
 		$this->assertSame( 'All good', $area['line'] );
 		$this->assertStringContainsString( 'page=saddle-demo', $area['admin_url'] );
-		$this->assertSame( array( 'key', 'label', 'admin_url' ), array_keys( $area['tabs'][0] ) );
+		$this->assertSame( array( 'key', 'label', 'admin_url', 'subtabs' ), array_keys( $area['tabs'][0] ) );
+		$this->assertSame( array(), $area['tabs'][0]['subtabs'] );
 		$this->assertSame( array( 'overview', 'settings' ), wp_list_pluck( $area['tabs'], 'key' ) );
 
 		$this->assertSame( 1, $area['setup']['done'] );
 		$this->assertSame( 2, $area['setup']['total'] );
 		$this->assertSame( array( 'id', 'title', 'done', 'line', 'waiting', 'after', 'action' ), array_keys( $area['setup']['tasks'][1] ) );
-		$this->assertSame( array( 'label', 'url', 'external' ), array_keys( $area['setup']['tasks'][1]['action'] ) );
+		$this->assertSame( array( 'label', 'url', 'external', 'route' ), array_keys( $area['setup']['tasks'][1]['action'] ) );
+		$this->assertSame( array( 'tab', 'sub', 'view', 'args' ), array_keys( $area['setup']['tasks'][1]['action']['route'] ) );
 
 		$this->assertSame(
 			array(

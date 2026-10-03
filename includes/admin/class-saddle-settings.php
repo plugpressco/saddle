@@ -11,10 +11,12 @@ defined( 'ABSPATH' ) || exit;
  * Registers the Saddle menu and its pages, and enqueues the built React assets
  * onto them.
  *
- * Saddle is one top-level menu. Every page is a submenu under it: Dashboard, the
- * installed modules, AI apps, Context and Settings (see Saddle_Modules). WordPress's
- * own left menu is the only navigation; inside the page there is a header and,
- * where a page has them, one row of tabs.
+ * Saddle is one top-level menu. Every page is a submenu under it: Home, the
+ * installed modules, AI apps, Services, Context and Settings (see
+ * Saddle_Modules). The submenu picks the page. Every page has a header whose
+ * breadcrumb reads "Saddle / Page". A module's page adds a left sidebar of
+ * its sections (`&tab=`) and, in a section with pages, an icon tab row
+ * (`&sub=`); a drill-in (`&view=`) opens one item (planning/MODULE-LAYOUT.md).
  */
 class Saddle_Settings {
 
@@ -285,15 +287,18 @@ class Saddle_Settings {
 	}
 
 	/**
-	 * The area and tab of the current request: which page this is, and which
-	 * of its tabs. An unknown tab falls back to the page's first one.
+	 * The area, tab and page of the current request: which page this is,
+	 * which of its sections, and which page inside the section. An unknown
+	 * tab falls back to the first one, and an empty or unknown page to the
+	 * section's first ('' when the section has no pages).
 	 *
-	 * @return array{0:string,1:string,2:string} Area, tab, and the view inside the tab ('' for none).
+	 * @return array{0:string,1:string,2:string,3:string} Area, tab, page, and the view inside it ('' for none).
 	 */
 	private static function current_route() {
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Reading which page to draw; nothing is changed.
 		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( (string) $_GET['page'] ) ) : self::PAGE_SLUG;
 		$tab  = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( (string) $_GET['tab'] ) ) : '';
+		$sub  = isset( $_GET['sub'] ) ? sanitize_key( wp_unslash( (string) $_GET['sub'] ) ) : '';
 		$view = isset( $_GET['view'] ) ? sanitize_key( wp_unslash( (string) $_GET['view'] ) ) : '';
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
@@ -302,25 +307,30 @@ class Saddle_Settings {
 			$area = 'home';
 		}
 
-		return array( $area, Saddle_Modules::resolve_tab( $area, $tab ), $view );
+		$tab = Saddle_Modules::resolve_tab( $area, $tab );
+
+		return array( $area, $tab, Saddle_Modules::resolve_sub( $area, $tab, $sub ), $view );
 	}
 
 	/**
-	 * Render the mount point for the React app, naming the page and tab.
+	 * Render the mount point for the React app, naming the page, tab and
+	 * page inside the tab.
 	 */
 	public static function render_page() {
-		list( $area, $tab, $view ) = self::current_route();
+		list( $area, $tab, $sub, $view ) = self::current_route();
 
 		printf(
-			'<div class="wrap"><div id="saddle-root" data-area="%s" data-tab="%s" data-view="%s"></div></div>',
+			'<div class="wrap"><div id="saddle-root" data-area="%s" data-tab="%s" data-sub="%s" data-view="%s"></div></div>',
 			esc_attr( $area ),
 			esc_attr( $tab ),
+			esc_attr( $sub ),
 			esc_attr( $view )
 		);
 	}
 
 	/**
-	 * The pages, as the admin app needs them: labels, icons, URLs and tabs.
+	 * The pages, as the admin app needs them: labels, icons, URLs, tabs and
+	 * each tab's pages (`subtabs`, `[]` when it has none).
 	 *
 	 * @return array[]
 	 */
@@ -330,10 +340,11 @@ class Saddle_Settings {
 			$tabs = array();
 			foreach ( $area['tabs'] as $tab => $label ) {
 				$tabs[] = array(
-					'key'   => $tab,
-					'label' => $label,
-					'url'   => esc_url_raw( Saddle_Modules::url( $key, $tab ) ),
-					'icon'  => isset( $area['tab_icons'][ $tab ] ) ? $area['tab_icons'][ $tab ] : '',
+					'key'     => $tab,
+					'label'   => $label,
+					'url'     => esc_url_raw( Saddle_Module_Nav::url( $area, $tab ) ),
+					'icon'    => isset( $area['tab_icons'][ $tab ] ) ? $area['tab_icons'][ $tab ] : '',
+					'subtabs' => Saddle_Module_Nav::for_app( $area, $tab ),
 				);
 			}
 
@@ -341,7 +352,7 @@ class Saddle_Settings {
 				'key'     => $key,
 				'title'   => $area['title'],
 				'icon'    => $area['icon'],
-				'url'     => esc_url_raw( Saddle_Modules::url( $key ) ),
+				'url'     => esc_url_raw( Saddle_Module_Nav::url( $area ) ),
 				'nav'     => (bool) $area['nav'],
 				'module'  => (bool) $area['module'],
 				'product' => isset( $area['product'] ) ? $area['product'] : '',
@@ -365,7 +376,7 @@ class Saddle_Settings {
 			return;
 		}
 
-		list( $area, $tab, $view ) = self::current_route();
+		list( $area, $tab, $sub, $view ) = self::current_route();
 
 		$areas = Saddle_Modules::areas();
 		$setup = ! empty( $areas[ $area ]['module'] ) ? Saddle_Modules::setup( $area ) : null;
@@ -486,7 +497,7 @@ class Saddle_Settings {
 					// Offered when the dashboard's own REST calls come back 401 —
 					// one cause is simply an expired session, and signing in again
 					// is the whole fix. Returns to this screen afterwards.
-					'loginUrl'     => esc_url_raw( wp_login_url( Saddle_Modules::url( $area, $tab ) ) ),
+					'loginUrl'     => esc_url_raw( wp_login_url( Saddle_Modules::url( $area, $tab, $sub ) ) ),
 					// Header chrome: plugin version + outbound links. Both point at
 					// the plugin's WordPress.org listing rather than a vendor site:
 					// that is where a free .org-hosted plugin's docs and reviews
@@ -503,6 +514,7 @@ class Saddle_Settings {
 					// and the page can never disagree.
 					'area'         => $area,
 					'tab'          => $tab,
+					'sub'          => $sub,
 					'view'         => $view,
 					// A module's setup tasks, cleaned; Core draws the
 					// unfinished ones above the module's first tab.
