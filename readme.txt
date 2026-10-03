@@ -129,6 +129,10 @@ Apps can also connect with a pasted key. Saddle uses WordPress Application Passw
 
 Every feature in this free plugin stays free.
 
+= Credits =
+
+* Iconoir icons (MIT): [iconoir.com](https://iconoir.com)
+
 == Installation ==
 
 1. Install and activate Saddle from **Plugins → Add New**.
@@ -201,6 +205,8 @@ The WordPress.org version never checks for its own updates. The version from plu
 == Changelog ==
 
 = Unreleased =
+* Changed: Each page in the Saddle menu and each tab on a page has an icon. When a plugin such as Saddle Analytics adds a page, a thin line separates it from AI apps, Services, Context and Settings.
+* New: For plugin developers: a module can name icons for its menu item and tabs, and a module screen can show the item it opened in the page header, with a link back to its tab.
 * Fixed: First run sees an app that connects before the waiting line first checks. Reloading after the app connected goes on to Try it instead of offering to replace the key you just set up.
 * Fixed: Changing an app's access no longer fails on servers that do not decode the colon in its address, such as WordPress Playground.
 * Improved: Activity names the app that made each change, such as "via Claude Code", and keeps the name after you disconnect the app.

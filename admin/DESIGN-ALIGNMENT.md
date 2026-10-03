@@ -147,6 +147,141 @@ computed style or by grep:
   `pp-scope` or `pp-app` class, so nothing else on it changes, including
   other plugins' kit widgets.
 
+## Navigation (2026-10-03)
+
+Fahim: "wordpress has sidebar we consider that ... each plugin have their sub
+heading". WordPress's admin menu is the rail and the sidebar. There is no
+second sidebar inside a page.
+
+- **The menu.** Saddle → Home, then the products (Analytics, SEO, CRM), then
+  a hairline, then AI apps, Services, Context and Settings. Every item has
+  its Iconoir icon before its label. The hairline is drawn only when at least
+  one product is there: `Saddle_Settings::order_submenu()` gives the first of
+  Core's pages after the products the `saddle-menu-group` class, and one
+  `admin_head` stylesheet (printed only for users who can see the menu) draws
+  `box-shadow: inset 0 1px 0 rgba(128,128,128,.3)` with 6px above and inside.
+  Page titles (`<title>`) stay plain text.
+- **One tab row per page.** Each tab shows its icon and its label. The first
+  tab is the landing page: Overview for Analytics and SEO, Campaigns for CRM.
+  Settings is always last. At most 6 tabs. A page with one screen draws no
+  tab row.
+- **A third level is a drill-in (K4).** A module opens it with `&view=`
+  inside a tab and names it with `props.header?.drillIn?.( { title } )`. The
+  header then shows the back icon, the tab's label as a link, a `/` and the
+  item's title. There is no tab row and no third nav. The back link is a real
+  link, so a middle click opens a new tab; a plain click stays in the app, so
+  the screen unmounts and can save what the owner typed. Core clears the
+  title when the view closes, the tab changes or the screen unmounts.
+  Drill-ins are opt-in: a screen that never calls it keeps the tab row, and
+  on older Core a module keeps its own back button. The logic is
+  `admin/src/frame-logic.js`.
+- **Filters inside a tab are not tabs.** Filtering a list uses `FilterTabs`,
+  with counts. Switching a mode (range, size, grouping) uses
+  `SegmentedControl`. Neither carries icons.
+- **The right column is Home's only.** No search, no command palette, no
+  assistant box, no upsell.
+- **Licence is a section on Saddle → Settings.** There is no Licence tab, and
+  Pro never gets a menu item.
+
+## Icons (2026-10-03)
+
+Fahim: "for sidebar and tab icons ... use https://iconoir.com/ svg icons".
+Iconoir 7.12.1 (MIT) is the family's one icon set: regular style, stroke
+1.5, `currentColor`.
+
+- **Sizes:** 16px in the menu and the tabs, 20px in the header, a 6px gap to
+  the label.
+- **Colour:** never Petrol. An icon is the colour of the text beside it.
+- **Labels:** no icon without a label. The one exception is an icon button
+  with a tooltip and an `aria-label`.
+- **One meaning, one icon:** Overview `dashboard-dots`, Settings `settings`,
+  Back `nav-arrow-left`.
+- **No emoji and no check-mark characters in any UI string.**
+- **Logos are not icons.** App and vendor logos (LobeHub, Simple Icons,
+  flags, Rank's company marks) keep their own colours and stay.
+
+| Item | Menu icon | Tabs and their icons |
+|---|---|---|
+| Home | `home-simple-door` | none |
+| Analytics | `graph-up` | Overview `dashboard-dots` · Reports `reports` · Settings `settings` |
+| SEO | `search-engine` | Overview `dashboard-dots` · AI visibility `eye` · Search appearance `search-window` · Content `multiple-pages` · Links `link` · Settings `settings` |
+| CRM | `send-mail` | Campaigns `mail-out` · Contacts `group` · Settings `settings` |
+| AI apps | `sparks` | none |
+| Services | `puzzle` | none |
+| Context | `brain` | none |
+| Settings | `settings` | General (one tab, no row) |
+| Header | back `nav-arrow-left`, notices `bell` | |
+
+**The pipeline and the allowlist (K2).** `npm run icons`
+(`scripts/icons.mjs`) holds the manifest. It copies each icon from
+`node_modules/iconoir/icons/regular/` to `assets/icons/<name>.svg` with
+`width` and `height` removed (svgr's svgo preset drops the viewBox when both
+are present) and with any child `stroke-width` that repeats the root's
+removed (so a `strokeWidth` prop reaches every stroke). It also writes
+`admin/src/icons/iconoir.js`: one svgr import per file, `byName`, `uiNames`
+and `NavIcon( { name, size = 16 } )`, which draws nothing for an unknown
+name. Both outputs are committed, and a second run changes nothing. The
+files in `assets/icons/` are the allowlist; PHP reads them through
+`Saddle_Nav_Icons` (`names()`, `svg( $name, $size )`). To add an icon, check
+the name exists in `iconoir@7.12.1/icons/regular/`, add it to the manifest,
+run the script and commit both outputs. A sibling asks Core for a new one.
+
+**Descriptor icons (K1).** In `saddle_modules`, `'icon' => 'graph-up'` is
+the menu item's icon and `'tab_icons' => array( 'reports' => 'reports' )`
+maps tab keys to icons. Core fills the defaults by key: `overview` is
+`dashboard-dots`, `settings` is `settings`. A name outside the allowlist
+draws no icon and is never an error. `tabs` stays `key => label`; an icon
+never goes inside it. Older Core ignores both keys, so a sibling can ship
+them first.
+
+**`ui.icons` (K3).** The 59 keys the kit's icon set had, plus `Grid` and
+`ArrowLeftRight`, each drawn with Iconoir (`admin/src/icons/kit.js`; the
+mapping is `UI` in `scripts/icons.mjs`). Each takes the kit's props: `size`
+(default 18), `strokeWidth` (default 1.5), `color`, `className` and
+`aria-label` (without one the icon is hidden from assistive technology).
+Refs are not forwarded: wrap the icon in an element when, for example, a
+Tooltip needs one. A key never disappears (Analytics has no fallback for a
+missing one); keys are added on request. Core's own screens use the same
+set: `NavIcon` beside a label, `icons.X` and friends everywhere else.
+
+## Copy (2026-10-03, K5)
+
+Fahim: "no ai slop in copy and no emdash ... clear to the point copy each
+plugins admin ui". These rules hold for every admin-facing string in Core,
+Analytics, CRM, Rank and Pro.
+
+1. No em-dash or en-dash as a pause. Split the sentence. Use a colon only
+   for "label: value".
+2. No dash as an empty value. Show nothing, "None" or "0".
+3. One idea per sentence, 12 words or fewer where possible. A notice has at
+   most two sentences.
+4. No sentence under a heading unless it states a fact the reader needs
+   there. No captions under numbers. Never restate the heading.
+5. Banned:
+   - easily, simply, just (as filler), seamless, powerful, instantly,
+     effortless, unlock, supercharge, magic;
+   - "Great news", "Nice", "Nice work", "Please wait", "successfully", "Here
+     you can", "This page lets you", "Don't worry";
+   - exclamation marks, emoji and check-mark characters;
+   - rhetorical questions, jargon asides ("The industry calls this"),
+     metaphors ("the real lever", "an island") and sales lines ("Install
+     Saddle (free) to see ...", "light up").
+6. Buttons are a verb and an object ("Add key", "Review and send"). A toast
+   states the result ("Saved", "Key added").
+7. An error says what failed, then what to do. No apology.
+8. Use the names on screen today: Saddle → Services, Saddle → Settings,
+   Writing assistant, Anthropic key. One word per thing across the family:
+   "Visitors" not "Users", "and" not "&".
+9. Exact numbers. Never "100+".
+10. Keep sprintf placeholders and their order, and `_n()` plurals. Update the
+    `/* translators: */` comment with the string.
+11. Out of scope: agent-facing text (ability and tool descriptions, skills,
+    playbooks, context sections, AI prompts), CLI output, front-end output
+    (such as Rank's SEO title format for archives), readme.txt and
+    changelogs, log rows and stored data, option keys, slugs and REST field
+    names, code comments, and `.pot` files. If unsure whether text reaches
+    the owner's screen, trace it. If it reaches only an agent, leave it.
+
 ## Home (#309, v2 the same day)
 
 Home replaced the Dashboard on 2026-10-02. The first build had captioned stat
@@ -251,8 +386,8 @@ the pill stays for badges, dots and switches. Blocks carry one faint shadow
 3. **Say nothing rather than say nothing.** A tile reading `—` is worse than no
    tile.
 4. **Plain, task-first names.** WordPress's Saddle submenu is the nav:
-   Dashboard, each installed module, then AI apps, Context and Settings. There
-   is no sidebar inside the page.
+   Home, each installed module, then AI apps, Services, Context and Settings
+   (see "Navigation"). There is no sidebar inside the page.
 5. **A choice explains itself where it is made.** An option list carries one
    line per option (the access list on AI apps) instead of a separate "what
    each option means" section.
