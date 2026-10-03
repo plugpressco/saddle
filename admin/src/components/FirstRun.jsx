@@ -491,11 +491,6 @@ function Choose( { app, connectionId, tier, onTierSaved, onChosen } ) {
 					>
 						<strong>{ r.label }</strong>
 						<span>{ r.hint }</span>
-						{ 'write' === r.key && 'read' === current && (
-							<small>
-								{ __( 'Most people pick this', 'saddle' ) }
-							</small>
-						) }
 						{ r.key === current && 'read' !== current && (
 							<small>{ __( 'Now', 'saddle' ) }</small>
 						) }
