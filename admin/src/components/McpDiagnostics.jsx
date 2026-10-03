@@ -84,7 +84,7 @@ export default function McpDiagnostics() {
 			<CardHeader
 				title={ __( 'Client traffic', 'saddle' ) }
 				description={ __(
-					'If a connected app says it can’t see any tools, record its next attempt here — this shows what it asked for and what Saddle sent back.',
+					'If an app can’t see any tools, record its next attempt. You’ll see what it asked for and what Saddle sent back.',
 					'saddle'
 				) }
 			/>
@@ -98,7 +98,7 @@ export default function McpDiagnostics() {
 						: sprintf(
 								/* translators: 1: number of tools that loaded, 2: number installed. */
 								__(
-									'%1$d of the %2$d tools installed here loaded correctly. How many an app is offered depends on its access level — the requests below show that number.',
+									'%1$d of the %2$d installed tools loaded. The requests below show how many each app was offered, which depends on its access level.',
 									'saddle'
 								),
 								health.registered,
@@ -166,7 +166,7 @@ export default function McpDiagnostics() {
 				{ state.recording && (
 					<p className="saddle-mcp-diag__hint">
 						{ __(
-							'Recording. Now ask the app to refresh its actions, or run any request from it — then come back here.',
+							'Recording. Ask the app to refresh its actions or run any request, then come back here.',
 							'saddle'
 						) }
 					</p>
@@ -203,9 +203,7 @@ export default function McpDiagnostics() {
 									<td>
 										{ ( entry.methods || [] ).join(
 											', '
-										) ||
-											entry.method ||
-											'—' }
+										) || entry.method }
 									</td>
 									<td>
 										{ /* The column that answers "was it
@@ -220,7 +218,7 @@ export default function McpDiagnostics() {
 												) }
 											</Badge>
 										) : (
-											entry.scheme || '—'
+											entry.scheme
 										) }
 									</td>
 									<td>
@@ -251,7 +249,7 @@ export default function McpDiagnostics() {
 											</Badge>
 										) }
 									</td>
-									<td>{ entry.client || '—' }</td>
+									<td>{ entry.client }</td>
 								</tr>
 							) ) }
 						</tbody>

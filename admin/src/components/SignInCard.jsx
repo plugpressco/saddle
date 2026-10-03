@@ -72,7 +72,7 @@ const DISCOVERY_NOTE = ( state ) => {
 
 	if ( 'slow' === state ) {
 		return __(
-			'This site answers too slowly for some apps to finish connecting. The sign-in details are correct and in the right place, but ChatGPT gives up after a few seconds and then reports that this site doesn’t support signing in. A page cache or a faster host usually fixes it.',
+			'This site answers too slowly for some apps. The sign-in details are correct, but ChatGPT gives up after a few seconds and reports that the site doesn’t support sign-in. A page cache or a faster host usually fixes it.',
 			'saddle'
 		);
 	}
@@ -135,7 +135,7 @@ export default function SignInCard( { oauth, saving, error, save } ) {
 				title={
 					<Labelled
 						help={ __(
-							'With this on, an app needs only this site’s address: it opens your browser and you approve it here, the same way “Sign in with Google” works. Claude, ChatGPT, Claude Code, Codex, Cursor, VS Code and Gemini CLI all connect this way, and ChatGPT can connect no other way. Off by default; pasted keys keep working either way.',
+							'With this on, an app needs only this site’s address. It opens your browser and you approve it here, like “Sign in with Google”. Claude, ChatGPT, Claude Code, Codex, Cursor, VS Code and Gemini CLI connect this way, and ChatGPT connects no other way. Pasted keys keep working.',
 							'saddle'
 						) }
 					>
