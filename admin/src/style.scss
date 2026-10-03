@@ -1405,9 +1405,13 @@ body.saddle-admin-page {
 	gap: var( --pp-space-6 );
 	align-items: start;
 
+	// The inner track is minmax( 0, 1fr ) too: an implicit auto track grows to
+	// fit a long unwrapped Activity line and slid the column under the side
+	// column, covering Approve (1.5.0 release QA).
 	&__main,
 	&__side {
 		display: grid;
+		grid-template-columns: minmax( 0, 1fr );
 		gap: var( --pp-space-6 );
 		min-width: 0;
 	}
