@@ -15,7 +15,14 @@ defined( 'ABSPATH' ) || exit;
  * same key it uses for `saddle_integrations`, and gets a submenu page at
  * `admin.php?page=saddle-{key}` with Core's frame around its content. A
  * sibling detects Core with `class_exists( 'Saddle_Modules' )`, never with a
- * version number, and keeps its own top-level menu when Core is absent.
+ * version number. Every sibling declares `Requires Plugins: saddle`; if Core
+ * is still missing, its admin is one "Install Saddle" page while its
+ * front-end work (tracking, SEO output, unsubscribe links) keeps running.
+ *
+ * A module ships no tokens, no accent file and no chrome; Core paints it.
+ * Use the `ui` prop, never a copy of the kit. Pages outside the frame call
+ * `enqueue_palette()`. (The family rules: admin/DESIGN-ALIGNMENT.md, "The
+ * family".)
  *
  * A descriptor may carry three callables: `status`, `setup` and `settings`.
  * They are resolved here, server-side, and the browser never receives one. A
@@ -219,6 +226,75 @@ class Saddle_Modules {
 		$tabs = $areas[ $area ]['tabs'];
 
 		return isset( $tabs[ $tab ] ) ? $tab : (string) array_key_first( $tabs );
+	}
+
+	/**
+	 * Whether the body-class filter for the palette is already hooked.
+	 *
+	 * @var bool
+	 */
+	private static $palette_classes = false;
+
+	/**
+	 * Register the tokens-only palette stylesheet (`saddle-palette`).
+	 *
+	 * Hooked on `admin_enqueue_scripts` at priority 1, so it exists on every
+	 * admin screen and a sibling can enqueue it at any later point. It only
+	 * registers: nothing is sent to a page until `enqueue_palette()` is called.
+	 *
+	 * @return bool True when the stylesheet is registered; false when the
+	 *              build is missing.
+	 */
+	public static function register_palette() {
+		if ( wp_style_is( 'saddle-palette', 'registered' ) ) {
+			return true;
+		}
+
+		$file = SADDLE_DIR . 'admin/build/palette.css';
+		if ( ! file_exists( $file ) ) {
+			return false;
+		}
+
+		wp_register_style(
+			'saddle-palette',
+			SADDLE_URL . 'admin/build/palette.css',
+			array(),
+			SADDLE_VERSION . '.' . filemtime( $file )
+		);
+		return true;
+	}
+
+	/**
+	 * Give a page outside the Saddle frame Saddle's palette: every `--pp-*`,
+	 * `--saddle-brand*`, `--s-*` and `--saddle-chart-*` token, and nothing
+	 * else (no component, frame or wp-admin rules). The tokens sit under
+	 * `body.saddle-palette` alone and inherit from the body; the page gets no
+	 * `pp-scope` or `pp-app` class, so another plugin's kit widgets on the
+	 * same screen keep their own palette.
+	 *
+	 * Safe to call on `admin_enqueue_scripts` on any admin screen. A sibling
+	 * probes it with `method_exists( 'Saddle_Modules', 'enqueue_palette' )`.
+	 *
+	 * @return bool False when the build is missing, so a caller can fall back
+	 *              to its own plain colours.
+	 */
+	public static function enqueue_palette() {
+		if ( ! self::register_palette() ) {
+			return false;
+		}
+
+		wp_enqueue_style( 'saddle-palette' );
+
+		if ( ! self::$palette_classes ) {
+			self::$palette_classes = true;
+			add_filter(
+				'admin_body_class',
+				static function ( $classes ) {
+					return $classes . ' saddle-palette';
+				}
+			);
+		}
+		return true;
 	}
 
 	/**

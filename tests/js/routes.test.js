@@ -7,6 +7,8 @@ import {
 	areaUrl,
 	legacyUrl,
 	placeFor,
+	readRoute,
+	routeUrl,
 	resolveTab,
 	servicesSectionUrl,
 	withArg,
@@ -161,5 +163,51 @@ describe( 'tabs and places', () => {
 		const added = withArg( url, 'add', '1' );
 		expect( added ).toBe( `${ BASE }?page=saddle-connections&add=1` );
 		expect( withArg( added, 'add', null ) ).toBe( url );
+	} );
+} );
+
+describe( 'views', () => {
+	it( 'reads tab, view and the module’s own arguments from the address', () => {
+		expect(
+			readRoute(
+				'?page=saddle-crm&tab=campaigns&view=review&campaign=12'
+			)
+		).toEqual( {
+			tab: 'campaigns',
+			view: 'review',
+			args: { campaign: '12' },
+		} );
+		expect( readRoute( '?page=saddle' ) ).toEqual( {
+			tab: '',
+			view: '',
+			args: {},
+		} );
+		expect( readRoute( '?view=%22%3E%3Cscript%3E' ).view ).toBe( 'script' );
+	} );
+
+	it( 'builds the address of a view with its arguments', () => {
+		expect(
+			routeUrl( AREAS, 'home', 'overview', 'report', { campaign: 12 } )
+		).toBe( `${ BASE }?page=saddle&view=report&campaign=12` );
+		expect( routeUrl( AREAS, 'home', 'overview' ) ).toBe(
+			`${ BASE }?page=saddle`
+		);
+		expect( routeUrl( AREAS, 'nowhere', 'x' ) ).toBe( '' );
+	} );
+
+	it( 'carries a view and args through placeFor only when named', () => {
+		expect( placeFor( { tab: 'contacts' } ) ).toEqual( {
+			area: '',
+			tab: 'contacts',
+		} );
+		expect(
+			placeFor( { view: 'setup', args: { campaign: '3' } } )
+		).toEqual( {
+			area: '',
+			tab: '',
+			view: 'setup',
+			args: { campaign: '3' },
+		} );
+		expect( placeFor( {} ) ).toBeNull();
 	} );
 } );

@@ -166,6 +166,10 @@ module.exports = function ( grunt ) {
 							'!includes/class-saddle-ecosystem.php',
 							// Dev caches.
 							'!.phpunit.result.cache',
+							// The palette sheet is built from a webpack entry that
+							// carries no script; only palette.css is ever loaded.
+							'!admin/build/palette.js',
+							'!admin/build/palette.asset.php',
 							// Self-hosted updater — see the `channel` task below.
 							// Excluded by DEFAULT so the .org-safe artifact is what
 							// you get if you forget to think about it; the

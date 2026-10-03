@@ -25,7 +25,7 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 	public function tear_down() {
 		remove_all_filters( 'saddle_modules' );
 		$this->reset_menus();
-		unset( $_GET['page'], $_GET['tab'] );
+		unset( $_GET['page'], $_GET['tab'], $_GET['view'] );
 		delete_option( Saddle_Onboarding::OPTION );
 		delete_option( 'saddle_onboarded' );
 		wp_dequeue_script( 'saddle-admin' );
@@ -193,6 +193,98 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'id="saddle-root"', $html );
 		$this->assertStringContainsString( 'data-area="' . $area . '"', $html );
 		$this->assertStringContainsString( 'data-tab="' . $expected_tab . '"', $html );
+	}
+
+	public function test_the_view_reaches_the_root_and_the_app() {
+		$_GET['page'] = 'saddle';
+		$_GET['view'] = 'Review"><b>';
+
+		ob_start();
+		Saddle_Settings::render_page();
+		$html = ob_get_clean();
+
+		$this->assertStringContainsString( 'data-view="reviewb"', $html );
+		unset( $_GET['view'] );
+
+		ob_start();
+		Saddle_Settings::render_page();
+		$this->assertStringContainsString( 'data-view=""', ob_get_clean() );
+	}
+
+	/* ---------------------------------------------------------- setup tasks */
+
+	public function test_a_modules_setup_tasks_reach_its_page() {
+		add_filter(
+			'saddle_modules',
+			static function ( $modules ) {
+				$modules['analytics'] = array(
+					'title' => 'Analytics',
+					'tabs'  => array( 'overview' => 'Overview' ),
+					'setup' => static function () {
+						return array(
+							array(
+								'id'     => 'tracker',
+								'title'  => 'Turn tracking on',
+								'done'   => false,
+								'line'   => 'No visit counted yet.',
+								'action' => array(
+									'label' => 'Open settings',
+									'tab'   => 'settings',
+								),
+							),
+						);
+					},
+				);
+				return $modules;
+			}
+		);
+		$this->build_menu();
+		$_GET['page'] = 'saddle-analytics';
+		Saddle_Settings::enqueue_assets( get_plugin_page_hookname( 'saddle-analytics', 'saddle' ) );
+
+		$data = implode( "\n", wp_scripts()->get_data( 'saddle-admin', 'before' ) );
+		preg_match( '/window\.saddleData = (\{.*\});/s', $data, $match );
+		$saddle = json_decode( $match[1], true );
+
+		$this->assertSame( 'tracker', $saddle['setup'][0]['id'] );
+		$this->assertFalse( $saddle['setup'][0]['done'] );
+		$this->assertSame( 'No visit counted yet.', $saddle['setup'][0]['line'] );
+		wp_deregister_script( 'saddle-admin' );
+	}
+
+	public function test_core_pages_carry_no_setup_tasks() {
+		$this->build_menu();
+		$_GET['page'] = 'saddle';
+		Saddle_Settings::enqueue_assets( get_plugin_page_hookname( 'saddle', 'saddle' ) );
+		$data = implode( "\n", wp_scripts()->get_data( 'saddle-admin', 'before' ) );
+		preg_match( '/window\.saddleData = (\{.*\});/s', $data, $match );
+		$this->assertSame( array(), json_decode( $match[1], true )['setup'] );
+		wp_deregister_script( 'saddle-admin' );
+	}
+
+	/* -------------------------------------------------------------- palette */
+
+	public function test_the_palette_is_registered_but_not_enqueued_until_asked() {
+		Saddle_Modules::register_palette();
+		$this->assertTrue( wp_style_is( 'saddle-palette', 'registered' ) );
+		$this->assertFalse( wp_style_is( 'saddle-palette', 'enqueued' ) );
+	}
+
+	public function test_enqueue_palette_adds_the_sheet_and_the_body_classes() {
+		$this->assertTrue( Saddle_Modules::enqueue_palette() );
+		$this->assertTrue( wp_style_is( 'saddle-palette', 'enqueued' ) );
+
+		set_current_screen( 'dashboard' );
+		$classes = apply_filters( 'admin_body_class', '' );
+		$this->assertStringContainsString( 'saddle-palette', $classes );
+		$this->assertStringNotContainsString( 'pp-scope', $classes, 'Another plugin kit widgets must keep their own palette.' );
+		// Only the tokens: no frame rules, no wp-admin overrides.
+		$css = file_get_contents( SADDLE_DIR . 'admin/build/palette.css' );
+		$this->assertStringContainsString( '--saddle-chart-ink', $css );
+		$this->assertStringNotContainsString( '#wpcontent', $css );
+		$this->assertStringNotContainsString( '.saddle-header', $css );
+		$this->assertStringNotContainsString( '.pp-scope', $css );
+		$this->assertStringNotContainsString( '.pp-app', $css );
 	}
 
 	public static function routes() {

@@ -30,6 +30,7 @@ import SettingsPage from './components/SettingsPage';
 import { useOauthSettings } from './components/SignInCard';
 import ConnectWizard from './components/ConnectWizard';
 import SectionHeader from './components/SectionHeader';
+import ModuleSetup from './components/ModuleSetup';
 import {
 	collectCards,
 	collectSettingsCards,
@@ -84,10 +85,15 @@ function MountSlot( { module, tab } ) {
  * @param {Object}   props
  * @param {Object}   props.area     The module's page.
  * @param {string}   props.tab      The tab.
+ * @param {string}   props.view     The view inside the tab, or ''.
+ * @param {Object}   props.args     The module's own query arguments.
  * @param {Function} props.navigate Navigation helper.
  */
-function ModuleScreen( { area, tab, navigate } ) {
+function ModuleScreen( { area, tab, view, args, navigate } ) {
 	const screens = useMemo( collectScreens, [] );
+
+	// Core draws the module's unfinished setup tasks above its first tab.
+	const firstTab = area.tabs[ 0 ] && area.tabs[ 0 ].key === tab;
 
 	if ( area.content === 'mount' ) {
 		return <MountSlot module={ area.key } tab={ tab } />;
@@ -117,15 +123,20 @@ function ModuleScreen( { area, tab, navigate } ) {
 	}
 
 	return (
-		<entry.Component
-			ui={ ui }
-			kit={ kit }
-			module={ area.key }
-			tab={ tab }
-			navigate={ navigate }
-			api={ api }
-			shellVersion={ SHELL_VERSION }
-		/>
+		<>
+			{ firstTab && ! view && <ModuleSetup tasks={ saddleData.setup } /> }
+			<entry.Component
+				ui={ ui }
+				kit={ kit }
+				module={ area.key }
+				tab={ tab }
+				view={ view || '' }
+				args={ args || {} }
+				navigate={ navigate }
+				api={ api }
+				shellVersion={ SHELL_VERSION }
+			/>
+		</>
 	);
 }
 
@@ -254,6 +265,8 @@ export default function Screen( props ) {
 	const {
 		area,
 		tab,
+		view,
+		args,
 		navigate,
 		tier,
 		caps,
@@ -279,7 +292,15 @@ export default function Screen( props ) {
 	const extTabs = useMemo( collectTabs, [] );
 
 	if ( area.module ) {
-		return <ModuleScreen area={ area } tab={ tab } navigate={ navigate } />;
+		return (
+			<ModuleScreen
+				area={ area }
+				tab={ tab }
+				view={ view }
+				args={ args }
+				navigate={ navigate }
+			/>
+		);
 	}
 
 	switch ( `${ area.key }/${ tab }` ) {

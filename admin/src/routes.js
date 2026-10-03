@@ -119,8 +119,22 @@ export function servicesSectionUrl( area, areas, search ) {
  * @return {{area:string, tab:string}|null} Place, or null when unknown.
  */
 export function placeFor( target ) {
-	if ( target && typeof target === 'object' && target.area ) {
-		return { area: target.area, tab: target.tab || '' };
+	if ( target && typeof target === 'object' ) {
+		// `area` may be left out: the request is for the page we are on.
+		if ( ! target.area && ! target.tab && ! target.view && ! target.args ) {
+			return null;
+		}
+		const place = { area: target.area || '', tab: target.tab || '' };
+		// `view` and `args` (a module's deep screens) ride along only when the
+		// caller named them, so a plain tab switch still clears both.
+		if ( 'view' in target || 'args' in target ) {
+			place.view = typeof target.view === 'string' ? target.view : '';
+			place.args =
+				target.args && typeof target.args === 'object'
+					? target.args
+					: {};
+		}
+		return place;
 	}
 	const legacy = Object.prototype.hasOwnProperty.call( LEGACY, target )
 		? LEGACY[ target ]
@@ -146,4 +160,60 @@ export function withArg( url, name, value ) {
 	return next.origin === 'http://placeholder.invalid'
 		? next.pathname + next.search + next.hash
 		: next.toString();
+}
+
+/**
+ * The tab, view and extra query arguments an address names.
+ *
+ * `page`, `tab` and `view` are Core's; every other argument is the module's
+ * own (`&campaign=12`) and comes back untouched as strings.
+ *
+ * @param {string} search `window.location.search`.
+ * @return {{tab:string, view:string, args:Object}} The route.
+ */
+export function readRoute( search ) {
+	const params = new URLSearchParams( search || '' );
+	const args = {};
+	params.forEach( ( value, name ) => {
+		if ( ! [ 'page', 'tab', 'view' ].includes( name ) ) {
+			args[ name ] = value;
+		}
+	} );
+	return {
+		tab: String( params.get( 'tab' ) || '' ),
+		view: String( params.get( 'view' ) || '' )
+			.replace( /[^a-z0-9_-]/gi, '' )
+			.toLowerCase(),
+		args,
+	};
+}
+
+/**
+ * The URL of a page's tab with a view and the module's own arguments.
+ *
+ * @param {Array}  areas Pages from saddleData.areas.
+ * @param {string} key   Area key.
+ * @param {string} tab   Tab key.
+ * @param {string} view  View (optional).
+ * @param {Object} args  Extra query arguments (optional).
+ * @return {string} URL, or '' for an unknown page.
+ */
+export function routeUrl( areas, key, tab, view = '', args = {} ) {
+	let url = areaUrl( areas, key, tab );
+	if ( ! url ) {
+		return '';
+	}
+	if ( view ) {
+		url = withArg( url, 'view', view );
+	}
+	Object.keys( args || {} ).forEach( ( name ) => {
+		if (
+			! [ 'page', 'tab', 'view' ].includes( name ) &&
+			null !== args[ name ] &&
+			undefined !== args[ name ]
+		) {
+			url = withArg( url, name, String( args[ name ] ) );
+		}
+	} );
+	return url;
 }

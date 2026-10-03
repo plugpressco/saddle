@@ -61,7 +61,8 @@ text; its red `#D63638` (4.73) is too thin for text, so text uses `#B32D2E`.
 
 **Only:** the mark in the header band · primary
 buttons (`--pp-action`) · switches, radios and checkboxes when on · the
-selected role (its tick and tint) in an app's access list on AI apps.
+selected role (its tick and tint) in an app's access list on AI apps · chart
+ink, through `--saddle-chart-ink` (the one data series; see "The family").
 
 **Never:** links (WordPress blue), focus rings (WordPress's theme color), text,
 headings, borders, icons, backgrounds of blocks or bands. If a screen seems to
@@ -101,6 +102,50 @@ Every Saddle page, module pages and first run included, is drawn by
 Never draw the frame while the app is loading: WordPress's `common.js` moves
 every `.notice` after the first `.wrap h1`, and the header's `h1` would pull the
 quarantined notices back into view.
+
+## The family (2026-10-02)
+
+Analytics, SEO (Rank), CRM, Blocks and Pro look like Core because Core paints
+them. A module brings content, not paint. The rules, F1 to F11, are checked by
+computed style or by grep:
+
+- **F1 One palette, one owner.** Tokens live in `admin/src/_tokens.scss` and
+  nowhere else. A module defines no `--pp-*` and no `--saddle-brand*`, and
+  imports no `tokens/accents/*` file.
+- **F2 One frame.** `Frame.jsx` draws the header band, the paused strip, the
+  tabs, the canvas and the footer. A module draws no header, top bar, rail,
+  wordmark, breadcrumb, description sentence, footer, toaster or tooltip
+  provider.
+- **F3 One kit, through Core.** Primitives and icons come from the `ui` prop
+  (`ui.icons` for icons). A module bundles no copy of `@plugpress/ui`, no
+  Tailwind, no icon, toast or font library, and no `@wordpress/components` on
+  an admin screen (a block-editor sidebar or a full-screen editor may).
+- **F4 One nav.** WordPress's Saddle submenu is the nav; a module is
+  Saddle → Name; its tabs are `&tab=` and its deep screens `&view=` with its
+  own `&args`. No hash router, no inner nav pills, no settings sidebar.
+- **F5 Three type sizes.** 15 for titles, 13 for everything, 12 for badges,
+  counts and chips, and 20/600 for a stat value. Use the `--pp-text-*` tokens.
+- **F6 Structure and register.** Page → tab → section → block → row. One idea
+  per block, no sentence under a heading unless it carries a fact, no captions
+  under numbers, never a "—" tile, say a thing once.
+- **F7 Petrol in the places listed above, and in charts only as ink.** The one
+  data series is `--saddle-chart-ink`, the comparison series
+  `--saddle-chart-compare` dashed, grid `--saddle-chart-grid`, labels
+  `--saddle-chart-text`. A vendor's bar keeps the vendor's colour; an unknown
+  vendor is `#707070`, never the brand.
+- **F8 Marks and names.** Inside the frame the mark is Core's and the name is
+  the job word (Analytics, SEO, CRM).
+- **F9 Status and notices through Core.** A module's state is its `status`
+  callable, its setup is `setup` tasks (Core draws the unfinished ones above
+  the first tab), its warnings are `saddle_notices`. No `admin_notices` on a
+  Saddle page, no welcome dialog, no first-run flags of its own.
+- **F10 Settings through the schema.** A module's settings are a `settings`
+  callable; Core draws the form and exposes the module tools.
+- **F11 Pages outside the frame** (a full-screen editor, a Dashboard widget)
+  call `Saddle_Modules::enqueue_palette()`: tokens only, under
+  `body.saddle-palette` and inherited from the body. The page gets no
+  `pp-scope` or `pp-app` class, so nothing else on it changes, including
+  other plugins' kit widgets.
 
 ## Home (#309, v2 the same day)
 
