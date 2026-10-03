@@ -97,7 +97,7 @@ export default function Memory( { onChanged } ) {
 			description: sprintf(
 				/* translators: %d: entry count. */
 				__(
-					'Delete all %d AI-written memory entries? Your own entries are kept.',
+					'This deletes %d AI-written entries. Your own entries are kept.',
 					'saddle'
 				),
 				count
@@ -126,7 +126,7 @@ export default function Memory( { onChanged } ) {
 						{ __( 'Memory', 'saddle' ) }
 						<HelpTip>
 							{ __(
-								'Things worth knowing between sessions, saved by you here or noted by your AI as it works. Pin an entry so every session is told it.',
+								'Notes kept between sessions, saved by you or by your AI. Pin an entry to tell every session.',
 								'saddle'
 							) }
 						</HelpTip>
@@ -166,7 +166,7 @@ export default function Memory( { onChanged } ) {
 										}
 										rows={ 3 }
 										placeholder={ __(
-											'e.g. The pricing page is “Plans” (page 42) — update it, never create a new one.',
+											'e.g. The pricing page is “Plans” (page 42). Update it, never create a new one.',
 											'saddle'
 										) }
 									/>
@@ -322,7 +322,7 @@ export default function Memory( { onChanged } ) {
 								) }
 								<HelpTip>
 									{ __(
-										'Your own and pinned entries are told to every new session. Entries an AI saved on its own are only found when it searches, unless you pin them or turn this on; off is safest, so pin the ones worth keeping. Memory never changes what an app is allowed to do.',
+										'Your own and pinned entries go to every new session. An entry an AI saved is found only when it searches, unless you pin it or turn this on. Off is safest, so pin the entries worth keeping. Memory never changes what an app may do.',
 										'saddle'
 									) }
 								</HelpTip>

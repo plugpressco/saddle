@@ -52,7 +52,7 @@ function stopsFor() {
 				visible( document.getElementById( 'toplevel_page_saddle' ) ),
 			title: __( 'Everything else is in the Saddle menu', 'saddle' ),
 			description: __(
-				'Your modules, AI apps, Context and Settings are all here.',
+				'Modules, AI apps, Context and Settings.',
 				'saddle'
 			),
 			side: 'right',
@@ -64,7 +64,7 @@ function stopsFor() {
 				visible( document.querySelector( '#activity h2, #activity' ) ),
 			title: __( 'Every change shows up here', 'saddle' ),
 			description: __(
-				'What your AI changed, and what Saddle blocked, newest first.',
+				'Changes your AI made and what Saddle blocked, newest first.',
 				'saddle'
 			),
 			side: 'top',

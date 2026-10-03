@@ -160,11 +160,11 @@ export default function Activity( { caps = [], title, hideEmpty = false } ) {
 					description={
 						filter === 'denied'
 							? __(
-									'When an app tries something outside its permissions, the attempt shows up here.',
+									'Attempts outside an app’s access appear here.',
 									'saddle'
 							  )
 							: __(
-									'Once a connected app makes a change, it shows up here. Reading is never logged.',
+									'Changes your apps make appear here. Reading is not logged.',
 									'saddle'
 							  )
 					}

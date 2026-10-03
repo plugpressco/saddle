@@ -168,7 +168,7 @@ const errorText = ( e ) =>
 	// like a site fault; name the likely actor.
 	'invalid_json' === e.code
 		? __(
-				'A security layer at your host answered instead of WordPress. Reload and try again — if it keeps happening, ask your host to allow the WordPress REST API for signed-in administrators.',
+				'A security layer at your host answered instead of WordPress. Reload, and if it keeps happening, ask your host to allow the WordPress REST API for signed-in administrators.',
 				'saddle'
 		  )
 		: e.message;
@@ -758,7 +758,7 @@ export default function FirstRun( {
 							<p>
 								{ sprintf(
 									/* translators: %s: the app name. */
-									__( 'Nice. Let’s connect %s.', 'saddle' ),
+									__( 'Let’s connect %s.', 'saddle' ),
 									label
 								) }
 							</p>
