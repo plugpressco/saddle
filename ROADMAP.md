@@ -113,7 +113,10 @@ the issue and the rule is revisited there.
   rule).
 - **Divi 4 → 5 conversion.** Divi ships its own converter.
 - **Filesystem writes in free, ever.** A theme-export addon is the only place that
-  belongs, and CSS or code writing anywhere waits until that addon exists.
+  belongs, and CSS or code writing anywhere waits until that addon exists. The
+  one exception is owner-only and predates this rule: the connection check's
+  "Fix it for me" button adds Saddle's marked `.htaccess` block through core's
+  `insert_with_markers()`. No app can reach it (#271).
 - **Admin UI redesigns.** The re-brand landed 2026-08-25. One exception, approved
   2026-09-07: a *consolidation* pass (#184) — same components, same styling, fewer
   places for the same fact. Still no re-styling. A second, on Fahim's request

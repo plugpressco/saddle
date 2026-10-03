@@ -108,7 +108,7 @@ These tools stay off until you give an app Manage the site.
 * Undo: Ask your AI to undo a logged change. It restores a page's earlier version, untrashes what was trashed, and puts settings back. A change that someone edited again since is left alone. Permanent deletes and plugin updates cannot be undone.
 * Protected settings: The site URL, security keys, user roles and admin email cannot be changed.
 
-Saddle never runs code from the AI. It has no shell access and does not write files.
+Saddle never runs code from the AI and has no shell access. Your AI app cannot write files. The one file Saddle may change is .htaccess, and only when you click Fix it for me in the connection check. That adds one marked block so your server passes sign-in headers to WordPress, the same way WordPress saves permalink rules. Uninstalling Saddle removes it.
 
 = Connecting an app =
 

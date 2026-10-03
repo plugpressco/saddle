@@ -20,7 +20,7 @@ relay. The buyer is a developer or agency already driving WordPress from Claude
 Code or Codex; Saddle's job is to make the page *judgeable*, not to do the
 judging.
 
-Free Saddle **1.3.0** is the build live on WordPress.org; `main` is numbered 1.4.0, but that build only ever reached staging, so the next release takes a new number. (1.1.0 is skipped on purpose: a different 1.1.0 was published on GitHub on 2026-08-02 and withdrawn, and two builds must never share a number.) **Saddle Pro** is a
+Free Saddle **1.3.0** is the build live on WordPress.org; `main` is numbered **1.5.0**. 1.4.0 only ever reached staging, so it was skipped and its changelog folds into 1.5.0. (1.1.0 is skipped on purpose: a different 1.1.0 was published on GitHub on 2026-08-02 and withdrawn, and two builds must never share a number.) **Saddle Pro** is a
 separate plugin, sold commercially. Free never contains license or upsell code.
 
 **The split (decided 2026-09-26, reversing "no builder code in free"):** free
@@ -111,8 +111,18 @@ dry-run, no diff and no revert.
 - No `eval()`, `exec()`, `shell_exec()`, `proc_open()`, `passthru()`, `system()`.
   Grep for all six before every release; the tree is currently clean.
 - No WP-CLI passthrough, no shelling out, no arbitrary SQL.
-- **No filesystem writes.** The only `fwrite` in the tree is inside the vendored
-  MCP adapter's stdio bridge. Saddle writes to the database, never to disk.
+- **No filesystem writes from an agent.** No ability, and no route a
+  Saddle-issued credential can reach, writes to disk. Saddle's data lives in
+  the database. The only `fwrite` in the tree is inside the vendored MCP
+  adapter's stdio bridge. **One owner-only exception** (#271, decided
+  2026-10-04 on Fahim's "fix all", taking FOCUS-CORE-PRO D2): the connection
+  check's "Fix it for me" button (`POST /saddle/v1/fix-auth-header`,
+  `manage_options`) adds one marked block to `.htaccess` through core's
+  `insert_with_markers()`, the way the Permalinks screen writes its rules.
+  An app cannot reach that route: `Saddle_Connection::scope_credentials()`
+  confines Saddle keys to the MCP route, and OAuth tokens only resolve there.
+  `uninstall.php` removes the block. Nothing joins this exception; a second
+  file write is a signal to redesign, not a second exception.
 - **Updates are applied only through WordPress's own updater, and only for
   what WordPress already offers.** `saddle/update-plugin` and
   `saddle/update-theme` (admin tier, gated, at most 10 items) queue a
