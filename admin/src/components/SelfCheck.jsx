@@ -56,9 +56,9 @@ export default function SelfCheck( {
 		<CalloutCard
 			className="saddle-selfcheck"
 			tone="warning"
-			title={ __( 'Taking longer than expected?', 'saddle' ) }
+			title={ __( 'Still waiting', 'saddle' ) }
 			description={ __(
-				'Nothing has reached this site from the app yet. These are the usual reasons.',
+				'Nothing has reached this site from the app yet.',
 				'saddle'
 			) }
 		>
@@ -77,7 +77,7 @@ export default function SelfCheck( {
 
 			<p className="saddle-wizard__hint">
 				{ __(
-					'The app only connects when it is used, so ask it something about your site once you have added Saddle.',
+					'The app connects only when you use it. Once you add Saddle, ask it something about your site.',
 					'saddle'
 				) }
 			</p>

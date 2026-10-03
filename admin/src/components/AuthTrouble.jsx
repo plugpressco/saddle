@@ -25,7 +25,7 @@ const ADVICE = {
 		tone: 'warning',
 		title: __( 'Your host is removing a WordPress header', 'saddle' ),
 		body: __(
-			'Something on your hosting — usually a security or firewall layer — strips the X-WP-Nonce header from requests before WordPress sees them. Saddle sends its sign-in token a second way to work around this, so reloading may be all you need. If this keeps happening, ask your host to let that header through.',
+			'A security or firewall layer on your hosting strips the X-WP-Nonce header before WordPress sees it. Saddle also sends its sign-in token another way, so reloading may fix this. If it keeps happening, ask your host to let that header through.',
 			'saddle'
 		),
 		forHost: __(
@@ -40,7 +40,7 @@ const ADVICE = {
 			'saddle'
 		),
 		body: __(
-			'The sign-in token WordPress uses for admin requests isn’t reaching it — not as a header, and not in the address either. Saddle can’t work around that from here; your host needs to stop filtering these requests.',
+			'The sign-in token WordPress uses for admin requests isn’t reaching it, as a header or in the address. Saddle can’t work around that. Your host needs to stop filtering these requests.',
 			'saddle'
 		),
 		forHost: __(
@@ -52,7 +52,7 @@ const ADVICE = {
 		tone: 'danger',
 		title: __( 'Your login isn’t reaching WordPress', 'saddle' ),
 		body: __(
-			'Your WordPress login cookie is being dropped from requests to the site’s API, usually by a caching or security layer. Nothing in Saddle can work around that — the requests arrive as if nobody is signed in.',
+			'A caching or security layer is dropping your WordPress login cookie from requests to the site’s API. The requests arrive as if nobody is signed in, and Saddle can’t work around that.',
 			'saddle'
 		),
 		forHost: __(
@@ -64,7 +64,7 @@ const ADVICE = {
 		tone: 'warning',
 		title: __( 'Your sign-in has expired', 'saddle' ),
 		body: __(
-			'Your credentials reached WordPress, but it no longer recognises them. This normally means the session timed out — or that this site was copied from another one, which changes the keys WordPress signs sessions with. Signing in again fixes it.',
+			'Your credentials reached WordPress, but it no longer recognises them. The session may have timed out, or the site was copied from another one, which changes the keys WordPress signs sessions with. Sign in again to fix it.',
 			'saddle'
 		),
 		forHost: '',
@@ -73,7 +73,7 @@ const ADVICE = {
 		tone: 'warning',
 		title: __( 'Something else refused the request', 'saddle' ),
 		body: __(
-			'Your sign-in reached WordPress intact and it recognises you, so the refusal came from somewhere else — most often another security plugin filtering the site’s API. Try deactivating security plugins one at a time.',
+			'Your sign-in reached WordPress and it recognises you. The usual cause is a security plugin filtering the site’s API. Deactivate security plugins one at a time to find it.',
 			'saddle'
 		),
 		forHost: '',

@@ -565,7 +565,7 @@ class Saddle_Capabilities {
 		switch ( $reason ) {
 			case 'paused':
 				/* translators: %s: tool name. */
-				$summary = sprintf( __( 'Blocked: Saddle is paused — "%s" was refused.', 'saddle' ), $tool );
+				$summary = sprintf( __( 'Blocked: Saddle is paused, so "%s" was refused.', 'saddle' ), $tool );
 				break;
 			case 'capability':
 				/* translators: %s: tool name. */
@@ -577,7 +577,7 @@ class Saddle_Capabilities {
 				break;
 			case 'domain':
 				/* translators: %s: tool name. */
-				$summary = sprintf( __( 'Blocked: the site domain changed since write access was granted — "%s" is refused until the access level is re-confirmed.', 'saddle' ), $tool );
+				$summary = sprintf( __( 'Blocked: the site domain changed after write access was granted. "%s" is refused until the access level is confirmed again.', 'saddle' ), $tool );
 				break;
 			case 'tier':
 			default:

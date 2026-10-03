@@ -129,7 +129,7 @@ export const shortLabel = ( entry ) => {
 		const at = entry.target ? ` #${ entry.target }` : '';
 		return `${ VERBS[ m[ 1 ] ] } ${ m[ 2 ] }${ at }`;
 	}
-	return entry.summary || entry.action || '—';
+	return entry.summary || entry.action || '';
 };
 
 const TIER_NAMES = {
@@ -166,7 +166,7 @@ export const actionLabel = ( entry, caps ) => {
 		name = plain.charAt( 0 ).toUpperCase() + plain.slice( 1 );
 	}
 	if ( ! name ) {
-		return entry.summary || '—';
+		return entry.summary || '';
 	}
 
 	if ( entry.type === 'denied' ) {

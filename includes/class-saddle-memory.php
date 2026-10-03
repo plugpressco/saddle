@@ -106,7 +106,7 @@ class Saddle_Memory {
 				'saddle_memory_too_large',
 				sprintf(
 					/* translators: %d: maximum characters. */
-					__( 'A memory entry is capped at %d characters — split it, or store only the durable part.', 'saddle' ),
+					__( 'A memory entry can hold at most %d characters. Split it, or keep only the lasting part.', 'saddle' ),
 					self::MAX_TEXT
 				),
 				array( 'status' => 400 )

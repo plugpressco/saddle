@@ -132,7 +132,7 @@ class Saddle_Approval {
 				if ( is_wp_error( $result ) ) {
 					$summary = sprintf(
 						/* translators: 1: original summary, 2: error message. */
-						__( '%1$s — FAILED after confirmation: %2$s', 'saddle' ),
+						__( '%1$s. Failed after confirmation: %2$s', 'saddle' ),
 						$summary,
 						$result->get_error_message()
 					);

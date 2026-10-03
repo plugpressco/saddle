@@ -514,7 +514,7 @@ class Saddle_REST_Admin {
 		if ( ! Saddle_OAuth_Store::revoke_grant( $id ) ) {
 			return new WP_Error(
 				'saddle_oauth_unknown_connection',
-				__( 'That connection no longer exists — it may already have been disconnected.', 'saddle' ),
+				__( 'That connection no longer exists. It may already be disconnected.', 'saddle' ),
 				array( 'status' => 404 )
 			);
 		}
@@ -544,7 +544,7 @@ class Saddle_REST_Admin {
 		if ( ! $grant ) {
 			return new WP_Error(
 				'saddle_oauth_unknown_connection',
-				__( 'That connection no longer exists — it may already have been disconnected.', 'saddle' ),
+				__( 'That connection no longer exists. It may already be disconnected.', 'saddle' ),
 				array( 'status' => 404 )
 			);
 		}
@@ -561,10 +561,10 @@ class Saddle_REST_Admin {
 					'action'  => 'oauth-level-changed',
 					'target'  => (string) $grant['client_id'],
 					'summary' => sprintf(
-						/* translators: 1: connected app name, 2: the access level it now has. */
-						__( 'Changed %1$s to the “%2$s” access level', 'saddle' ),
+						/* translators: 1: app name, 2: its new access, e.g. "Edit content". */
+						__( 'Set %1$s to “%2$s”', 'saddle' ),
 						'' !== (string) $grant['client_name'] ? (string) $grant['client_name'] : (string) $grant['client_id'],
-						$level
+						Saddle_Access::labels()[ $level ]
 					),
 				)
 			);
@@ -1169,10 +1169,10 @@ class Saddle_REST_Admin {
 		// Built in: tools Saddle ships itself, shown only while their plugin is
 		// detected (a Yoast row on a site without Yoast would be a lie).
 		$natives = array(
-			'yoast'     => array( __( 'Yoast SEO', 'saddle' ), __( 'Yoast’s own SEO fields — titles, descriptions, robots — edited natively.', 'saddle' ), array( 'Saddle_Yoast', 'is_active' ) ),
-			'rank-math' => array( __( 'Rank Math', 'saddle' ), __( 'Rank Math’s own SEO fields, edited natively.', 'saddle' ), array( 'Saddle_Rank_Math', 'is_active' ) ),
-			'aioseo'    => array( __( 'AIOSEO', 'saddle' ), __( 'AIOSEO’s own SEO fields, edited natively.', 'saddle' ), array( 'Saddle_Aioseo', 'is_active' ) ),
-			'wc'        => array( __( 'WooCommerce', 'saddle' ), __( 'Products and orders, handled natively.', 'saddle' ), array( 'Saddle_WC', 'is_active' ) ),
+			'yoast'     => array( __( 'Yoast SEO', 'saddle' ), __( 'Reads and edits Yoast’s own SEO fields.', 'saddle' ), array( 'Saddle_Yoast', 'is_active' ) ),
+			'rank-math' => array( __( 'Rank Math', 'saddle' ), __( 'Reads and edits Rank Math’s own SEO fields.', 'saddle' ), array( 'Saddle_Rank_Math', 'is_active' ) ),
+			'aioseo'    => array( __( 'AIOSEO', 'saddle' ), __( 'Reads and edits AIOSEO’s own SEO fields.', 'saddle' ), array( 'Saddle_Aioseo', 'is_active' ) ),
+			'wc'        => array( __( 'WooCommerce', 'saddle' ), __( 'Products and orders.', 'saddle' ), array( 'Saddle_WC', 'is_active' ) ),
 			'unsplash'  => array( __( 'Unsplash', 'saddle' ), __( 'Stock-photo search and import, built into Saddle. Needs an Access Key under Saddle → Services.', 'saddle' ), null ),
 		);
 		foreach ( $natives as $slug => $native ) {
@@ -1264,7 +1264,7 @@ class Saddle_REST_Admin {
 		}
 
 		if ( ! wp_is_application_passwords_available_for_user( $user ) ) {
-			return new WP_Error( 'saddle_app_passwords_unavailable', __( 'Application Passwords are turned off on this site — often because it isn’t served over HTTPS, or a security plugin disabled them.', 'saddle' ), array( 'status' => 400 ) );
+			return new WP_Error( 'saddle_app_passwords_unavailable', __( 'Application Passwords are off on this site. Serve the site over HTTPS, or turn them back on in your security plugin.', 'saddle' ), array( 'status' => 400 ) );
 		}
 
 		$name = sanitize_text_field( (string) $request->get_param( 'name' ) );

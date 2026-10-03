@@ -347,7 +347,7 @@ export default function Guidance() {
 					title={
 						<Heading
 							help={ __(
-								'Playbook files (.md) that teach your AI specific jobs on this site — “how we publish a post”, “our SEO checklist.” Every connected AI sees the list and reads one when a task matches. Only you can add them, and a skill can never give an app more access than you set for it.',
+								'Playbook files (.md) that teach your AI a job on this site, such as “how we publish a post” or “our SEO checklist”. Every connected app sees the list and reads a skill when a task matches. Only you can add skills, and a skill never gives an app more access than you set.',
 								'saddle'
 							) }
 						>
@@ -458,7 +458,7 @@ export default function Guidance() {
 					title={
 						<Heading
 							help={ __(
-								'Saddle writes this from your site and its active plugins and keeps it current: its pages, design, plugins and what each app may do. It’s shown for transparency; you don’t edit it here.',
+								'Saddle writes this from your site’s pages, design and plugins, and from what each app may do. It stays current on its own, and you can’t edit it here.',
 								'saddle'
 							) }
 						>

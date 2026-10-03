@@ -73,7 +73,7 @@ export default function SetupGuideDrawer( {
 					<CalloutCard
 						title={ __( 'Connects by address', 'saddle' ) }
 						description={ __(
-							'There is no key for this connection. The app registers itself and you approve it on screen; disconnecting it here ends its access.',
+							'This connection has no key. The app registers itself and you approve it on screen. Disconnect it here to end its access.',
 							'saddle'
 						) }
 					/>
@@ -81,7 +81,7 @@ export default function SetupGuideDrawer( {
 				{ ! byAddress && password && (
 					<Notice tone="warning">
 						{ __(
-							'This fresh key appears only this once — paste it into the app before closing. Saddle keeps just its last four characters.',
+							'This key is shown once, so paste it into the app before closing. Saddle keeps only its last four characters.',
 							'saddle'
 						) }
 					</Notice>
@@ -90,7 +90,7 @@ export default function SetupGuideDrawer( {
 					<CalloutCard
 						title={ __( 'Keys are shown only once', 'saddle' ) }
 						description={ __(
-							'This guide uses a placeholder where the key goes. To get a real, ready-to-paste setup, use “Rotate key” on the connection — the old key stops working and a fresh one appears here.',
+							'This guide shows a placeholder for the key. “Rotate key” on the connection replaces the old key and shows a ready-to-paste setup here.',
 							'saddle'
 						) }
 					/>
@@ -110,7 +110,7 @@ export default function SetupGuideDrawer( {
 							live
 								? __( 'Ready to paste', 'saddle' )
 								: __(
-										'Template — replace the placeholder with your key',
+										'Template: replace the placeholder with your key',
 										'saddle'
 								  )
 						}
@@ -122,7 +122,7 @@ export default function SetupGuideDrawer( {
 							onClick={ () => copy( config ) }
 						>
 							{ copied
-								? __( 'Copied ✓', 'saddle' )
+								? __( 'Copied', 'saddle' )
 								: __( 'Copy setup', 'saddle' ) }
 						</Button>
 					) }

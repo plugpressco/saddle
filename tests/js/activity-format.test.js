@@ -64,17 +64,17 @@ describe( 'actionLabel', () => {
 			actionLabel(
 				{
 					action: 'oauth-authorized',
-					summary: 'Connected an app with OAuth — Claude',
+					summary: 'Connected Claude (Read only)',
 				},
 				caps
 			)
-		).toBe( 'Connected an app with OAuth — Claude' );
+		).toBe( 'Connected Claude (Read only)' );
 	} );
 
 	it( 'falls back to the summary when there is no action', () => {
 		expect(
 			actionLabel( { action: '', summary: 'Something' }, caps )
 		).toBe( 'Something' );
-		expect( actionLabel( {}, caps ) ).toBe( '—' );
+		expect( actionLabel( {}, caps ) ).toBe( '' );
 	} );
 } );

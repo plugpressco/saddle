@@ -124,7 +124,7 @@ export const LEVELS = [
 	{
 		key: 'read',
 		icon: 'read',
-		title: __( 'Just reading', 'saddle' ),
+		title: __( 'Read only', 'saddle' ),
 		one: __(
 			'Your AI can read your content, but can’t change or delete anything.',
 			'saddle'
@@ -138,7 +138,7 @@ export const LEVELS = [
 	{
 		key: 'write',
 		icon: 'write',
-		title: __( 'Reading & writing', 'saddle' ),
+		title: __( 'Edit content', 'saddle' ),
 		one: __(
 			'Your AI can create and edit content. Deleting always asks you first.',
 			'saddle'
@@ -152,7 +152,7 @@ export const LEVELS = [
 	{
 		key: 'admin',
 		icon: 'admin',
-		title: __( 'Managing the site', 'saddle' ),
+		title: __( 'Manage the site', 'saddle' ),
 		one: __(
 			'Your AI can also manage plugins, themes, and settings. Overwrites and deletions always ask you first.',
 			'saddle'

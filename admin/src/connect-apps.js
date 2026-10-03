@@ -45,7 +45,7 @@ export const APPS = [
 	{
 		key: 'claude',
 		label: __( 'Claude', 'saddle' ),
-		kind: __( 'Web & desktop app', 'saddle' ),
+		kind: __( 'Web and desktop app', 'saddle' ),
 		viaAddress: true,
 		viaKey: true,
 		howAddress: __(
@@ -226,7 +226,7 @@ export const APPS = [
 		// ChatGPT, it takes the address path only.
 		key: 'grok',
 		label: __( 'Grok', 'saddle' ),
-		kind: __( 'Web & mobile app', 'saddle' ),
+		kind: __( 'Web and mobile app', 'saddle' ),
 		viaAddress: true,
 		viaKey: false,
 		howAddress: __(
@@ -249,7 +249,7 @@ export const APPS = [
 			'saddle'
 		),
 		how: __(
-			'Most AI apps accept this standard setup — look for “Add MCP server” in their settings and paste it there.',
+			'Most AI apps accept this standard setup. Find “Add MCP server” in your app’s settings and paste it there.',
 			'saddle'
 		),
 		next: __( 'Open your app and ask it about your site.', 'saddle' ),

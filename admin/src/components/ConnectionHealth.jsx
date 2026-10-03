@@ -72,11 +72,11 @@ export default function ConnectionHealth() {
 			<p className="saddle-health saddle-health--ok">
 				{ fixOutcome === 'fixed'
 					? __(
-							'✓ Fixed — sign-in details now reach WordPress. Your AI apps can connect.',
+							'Fixed. Sign-in details now reach WordPress, so your AI apps can connect.',
 							'saddle'
 					  )
 					: __(
-							'✓ Server check passed — sign-in details reach WordPress correctly.',
+							'Server check passed. Sign-in details reach WordPress.',
 							'saddle'
 					  ) }
 			</p>
@@ -87,7 +87,7 @@ export default function ConnectionHealth() {
 		return (
 			<p className="saddle-health saddle-health--muted">
 				{ __(
-					'We couldn’t verify your server automatically. If AI apps report “unauthorized” even with the right password, ask your host to pass the Authorization header through to WordPress.',
+					'Saddle couldn’t check your server. If AI apps report “unauthorized” with the right password, ask your host to pass the Authorization header through to WordPress.',
 					'saddle'
 				) }
 			</p>
@@ -109,7 +109,7 @@ export default function ConnectionHealth() {
 					'saddle'
 				) }
 				description={ __(
-					'Something on your hosting — usually a security or firewall layer — strips the X-WP-Nonce header from requests. Saddle works around it, so this dashboard is fine. But the same layer may interfere with other plugins’ settings screens, so it’s worth asking your host to let that header through.',
+					'A security or firewall layer on your hosting strips the X-WP-Nonce header from requests. Saddle works around it, but other plugins’ settings screens may break. Ask your host to let that header through.',
 					'saddle'
 				) }
 			>
@@ -147,11 +147,11 @@ export default function ConnectionHealth() {
 			description={
 				bearerOnly
 					? __(
-							'Apps you connect with a pasted key are fine. But apps that sign in through Saddle — ChatGPT is the one that can only connect this way — send a different kind of sign-in header, and your web server removes it before WordPress sees it. Those apps will finish signing in and then report that the site has no actions they can use. The rule below lets that header through.',
+							'Apps connected with a pasted key work. Apps that sign in through Saddle, such as ChatGPT, send a different header. Your web server removes it before WordPress sees it. Those apps finish signing in, then report that the site has no actions. The rule below lets that header through.',
 							'saddle'
 					  )
 					: __(
-							'When an AI app connects, it sends its password in a sign-in header. Your web server removes that header before WordPress can see it, so every connection will fail as “unauthorized” — even with the right password. (The test above can still pass, because your browser signs in a different way.)',
+							'An AI app sends its password in a sign-in header. Your web server removes that header before WordPress sees it. Every connection then fails as “unauthorized”, even with the right password. The test above can still pass, because your browser signs in another way.',
 							'saddle'
 					  )
 			}
@@ -182,7 +182,7 @@ export default function ConnectionHealth() {
 			{ fixOutcome === 'still_stripped' && (
 				<p className="saddle-health__body">
 					{ __(
-						'Saddle added the rule, but the header still isn’t arriving — something earlier in the chain (a proxy or your host’s own config) is removing it. Send the rule below to your hosting support and ask them to allow the Authorization header.',
+						'Saddle added the rule, but the header still isn’t arriving. A proxy or your host’s own configuration removes it first. Send the rule below to your host and ask them to allow the Authorization header.',
 						'saddle'
 					) }
 				</p>
@@ -211,7 +211,7 @@ export default function ConnectionHealth() {
 						<CodeBlock
 							dark
 							label={ __(
-								'Apache / LiteSpeed — add to .htaccess',
+								'Apache or LiteSpeed: add to .htaccess',
 								'saddle'
 							) }
 							code={ snippets.apache }
@@ -221,7 +221,7 @@ export default function ConnectionHealth() {
 						<CodeBlock
 							dark
 							label={ __(
-								'nginx — add to the PHP location block',
+								'nginx: add to the PHP location block',
 								'saddle'
 							) }
 							code={ snippets.nginx }

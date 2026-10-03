@@ -603,7 +603,7 @@ class Saddle_Unsplash {
 
 	/**
 	 * Render the Source column cell: "Unsplash · photographer" linked to the
-	 * photo's page, or core's em-dash for media from anywhere else.
+	 * photo's page, or an empty cell (screen-reader text only) for other media.
 	 *
 	 * @param string $column_name Current column.
 	 * @param int    $post_id     Attachment ID.
@@ -615,7 +615,7 @@ class Saddle_Unsplash {
 
 		$url = self::photo_page_url( $post_id );
 		if ( '' === $url ) {
-			echo '<span aria-hidden="true">&#8212;</span><span class="screen-reader-text">' . esc_html__( 'Uploaded directly', 'saddle' ) . '</span>';
+			echo '<span class="screen-reader-text">' . esc_html__( 'Uploaded directly', 'saddle' ) . '</span>';
 			return;
 		}
 

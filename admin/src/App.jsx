@@ -506,14 +506,11 @@ export default function App() {
 						id: 'domain-drift',
 						severity: 'warning',
 						message: __(
-							'This site’s address has changed since AI write access was turned on — often a sign of a staging clone or a migration carrying over live credentials. If that wasn’t intentional, review your connected apps and revoke anything unexpected.',
+							'This site’s address changed after AI write access was turned on, which can mean a copy or migration carried over live credentials. If you didn’t expect that, review your AI apps and disconnect any you don’t recognise.',
 							'saddle'
 						),
 						action: {
-							label: __(
-								'This is expected — clear this warning',
-								'saddle'
-							),
+							label: __( 'Mark as expected', 'saddle' ),
 							onClick: clearDomainWarning,
 						},
 					},

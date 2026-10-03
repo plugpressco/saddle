@@ -60,7 +60,7 @@ export default function SetupBlock( {
 	if ( 'try' === step.id ) {
 		text = sprintf(
 			/* translators: %s: the app name. */
-			__( 'Want to try %s on this site? It takes a minute.', 'saddle' ),
+			__( 'Try %s on this site. It takes a minute.', 'saddle' ),
 			label
 		);
 		// The welcome reopens at "try it", for this app.
@@ -81,7 +81,7 @@ export default function SetupBlock( {
 		text = sprintf(
 			/* translators: %s: the app name. */
 			__(
-				'%s can only look right now. Want it to edit content too?',
+				'%s can only look right now. You can let it edit content too.',
 				'saddle'
 			),
 			label
