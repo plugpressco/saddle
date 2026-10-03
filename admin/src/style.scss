@@ -285,6 +285,41 @@ body.saddle-admin-page {
 }
 
 /* ---------- The frame: header band, page, footer (#274, #280) ---------- */
+// Jetpack AI's (WordPress 7's minimal) tabs: 48px tall, 13px regular, every
+// tab in the text color, a 16px icon 6px before the label (the icon takes the
+// label's colour), and a thin grey line under the active one. Core's header
+// row and a module section's icon tab row share them.
+@mixin saddle-minimal-tabs {
+	--pp-tabs-gap: 0;
+
+	.pp-tabs {
+		gap: 16px;
+		margin: 0;
+		border-block-end: 0;
+	}
+
+	.pp-tabs__tab {
+		gap: 6px;
+		min-block-size: 48px;
+		padding-block: 0;
+		font-size: var( --s-text );
+		font-weight: 400;
+		letter-spacing: normal;
+		color: var( --s-fg );
+		white-space: nowrap;
+
+		.saddle-nav-icon {
+			flex: none;
+		}
+	}
+
+	.pp-tabs__indicator {
+		height: 1.5px;
+		border-radius: 0;
+		background: #6e6e6e;
+	}
+}
+
 // One column the full height of the screen, so the footer sits at the bottom
 // of a short page.
 .saddle-app--frame {
@@ -314,13 +349,16 @@ body.saddle-admin-page {
 	}
 
 	// Two classes, to beat wp-admin's `.wrap h1` (23px/400 with padding).
-	// The mark and the page's name (#309): no "Saddle /" breadcrumb, the
-	// mark already says whose page this is.
+	// The breadcrumb (MODULE-LAYOUT.md): `[mark] Saddle / Page`, Home reads
+	// `[mark] Saddle`, a drill-in `Saddle / CRM / Campaigns / Spring sale`.
+	// The parts before the current one are quiet grey links; the current one
+	// is the text colour at 600, and gives way first when space runs out.
 	.saddle-app &__title {
 		display: flex;
 		align-items: center;
 		flex-wrap: wrap;
 		gap: 10px;
+		min-width: 0;
 		margin: 0;
 		padding: 0;
 		font-size: var( --s-text-title );
@@ -328,14 +366,38 @@ body.saddle-admin-page {
 		line-height: 1.4;
 		color: var( --s-fg-muted );
 
-		> [aria-current] {
+		[aria-current] {
 			font-weight: 600;
 			color: var( --s-fg );
 		}
 	}
 
+	&__crumb {
+		display: inline-flex;
+		align-items: center;
+		gap: 10px;
+		min-width: 0;
+
+		> [aria-current] {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+	}
+
 	// The kit colors every link from --pp-accent-text through an ID-strength
 	// selector, so the quiet grey is set on that token here, not on `color`.
+	&__link {
+		--pp-accent-text: var( --s-fg-muted );
+		--pp-accent-hover: var( --s-fg );
+		text-decoration: none;
+
+		&:hover,
+		&:focus {
+			text-decoration: underline;
+		}
+	}
+
 	&__home {
 		--pp-accent-text: var( --s-fg-muted );
 		--pp-accent-hover: var( --s-fg );
@@ -343,6 +405,11 @@ body.saddle-admin-page {
 		align-items: center;
 		gap: 8px;
 		text-decoration: none;
+
+		&:is( a ):hover span,
+		&:is( a ):focus span {
+			text-decoration: underline;
+		}
 
 		// The brand mark is a single `currentColor` path shared with the
 		// wp-admin menu icon, so it is recolored HERE rather than in the SVG:
@@ -352,26 +419,6 @@ body.saddle-admin-page {
 			width: 22px;
 			height: 22px;
 			color: var( --s-brand );
-		}
-	}
-
-	// A drill-in (K4): back icon and the tab's label, a slash, the item's
-	// title. The way back is as quiet as the mark beside it.
-	&__back {
-		--pp-accent-text: var( --s-fg-muted );
-		--pp-accent-hover: var( --s-fg );
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		text-decoration: none;
-
-		svg {
-			flex: none;
-		}
-
-		&:hover span,
-		&:focus span {
-			text-decoration: underline;
 		}
 	}
 
@@ -386,45 +433,112 @@ body.saddle-admin-page {
 		gap: 10px;
 	}
 
-	// The tabs sit on the band's bottom hairline; the band draws the line, so
-	// the tab row's own border goes. Scrolls sideways when a module has many.
-	// Jetpack AI's (WordPress 7's minimal) tabs: 48px tall, 13px regular, every
-	// tab in the text color, and a thin grey line under the active one.
+	// A Core page's tabs sit on the band's bottom hairline; the band draws
+	// the line, so the tab row's own border goes. Scrolls sideways when there
+	// are many. (No Core page has two tabs today; a module's pages are the
+	// icon tab row below.)
 	&__tabs {
+		@include saddle-minimal-tabs;
 		margin-block-start: 8px;
 		margin-inline: -4px;
 		padding-inline: 4px;
 		overflow-x: auto;
 		overflow-y: visible;
-		--pp-tabs-gap: 0;
+	}
+}
 
-		.pp-tabs {
-			gap: 16px;
+/* ---------- A module's page: sidebar, icon tab row (MODULE-LAYOUT.md) ---------- */
+// Two columns under the header: the sections on the canvas with a hairline
+// on their right, and the content. The sidebar runs the full height, so its
+// hairline does too; its list stays in view under the admin bar.
+.saddle-module {
+	display: flex;
+	flex: 1 0 auto;
+	align-items: stretch;
+	min-width: 0;
+}
+
+.saddle-sections {
+	flex: 0 0 200px;
+	width: 200px;
+	border-inline-end: 1px solid var( --s-border );
+	background: var( --s-canvas );
+
+	&__list {
+		position: sticky;
+		inset-block-start: 32px;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		margin: 0;
+		padding: 16px 12px;
+		list-style: none;
+
+		> li {
 			margin: 0;
-			border-block-end: 0;
+		}
+	}
+
+	// Each section: a 16px icon and its 13px label, 32px tall, 6px corners.
+	// The text colour throughout, never the brand.
+	&__item {
+		--pp-accent-text: var( --s-fg );
+		--pp-accent-hover: var( --s-fg );
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		min-block-size: 32px;
+		padding-inline: 10px;
+		border-radius: 6px;
+		color: var( --s-fg );
+		font-size: var( --s-text );
+		line-height: 1.4;
+		text-decoration: none;
+		transition: background var( --s-dur ) var( --s-ease );
+
+		.saddle-nav-icon {
+			flex: none;
+			width: 16px;
+			height: 16px;
 		}
 
-		// Each tab: its 16px icon, 6px, its label. The icon takes the
-		// label's colour.
-		.pp-tabs__tab {
-			gap: 6px;
-			min-block-size: 48px;
-			padding-block: 0;
-			font-size: var( --s-text );
-			font-weight: 400;
-			letter-spacing: normal;
-			color: var( --s-fg );
-
-			.saddle-nav-icon {
-				flex: none;
-			}
+		&:hover {
+			background: var( --s-surface-2 );
 		}
 
-		.pp-tabs__indicator {
-			height: 1.5px;
-			border-radius: 0;
-			background: #6e6e6e;
+		&.is-active {
+			background: var( --pp-n-300 );
+			font-weight: 600;
 		}
+	}
+
+	// Settings comes last, after a hairline.
+	&__rule {
+		height: 1px;
+		margin: 8px 10px;
+		background: var( --s-border );
+	}
+}
+
+.saddle-module__body {
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	min-width: 0;
+}
+
+// A section's pages: a white band at the top of the content column, the
+// same hairline as the header, its tabs lined up with the content below.
+.saddle-subtabs {
+	@include saddle-minimal-tabs;
+	padding-inline: var( --pp-space-5 );
+	background: var( --s-bg );
+	border-block-end: 1px solid var( --s-border );
+	overflow-x: auto;
+
+	.pp-tabs {
+		max-width: 880px;
+		margin-inline: auto;
 	}
 }
 
@@ -565,6 +679,46 @@ body.saddle-admin-page {
 		padding-inline: 16px;
 	}
 
+	// The sidebar becomes one row that scrolls sideways above the content,
+	// held under the admin bar (46px tall here).
+	.saddle-module {
+		flex-direction: column;
+	}
+
+	.saddle-sections {
+		position: sticky;
+		inset-block-start: 46px;
+		z-index: 2;
+		flex: none;
+		width: auto;
+		border-inline-end: 0;
+		border-block-end: 1px solid var( --s-border );
+
+		&__list {
+			position: static;
+			flex-direction: row;
+			align-items: center;
+			gap: 4px;
+			padding: 8px 16px;
+			overflow-x: auto;
+		}
+
+		&__item {
+			white-space: nowrap;
+		}
+
+		&__rule {
+			flex: none;
+			width: 1px;
+			height: 20px;
+			margin: 0 4px;
+		}
+	}
+
+	.saddle-subtabs {
+		padding-inline: 16px;
+	}
+
 	.saddle-header__row {
 		flex-wrap: wrap;
 	}
@@ -575,6 +729,14 @@ body.saddle-admin-page {
 
 	.saddle-footer {
 		padding-inline: 16px;
+	}
+}
+
+// Below 600px WordPress lets the admin bar scroll away, so the row sticks to
+// the top.
+@media (max-width: 600px) {
+	.saddle-sections {
+		inset-block-start: 0;
 	}
 }
 

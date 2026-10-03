@@ -10,16 +10,17 @@
  * - Services: Accounts, Plugins and Add-ons, each row opening a drawer
  * - Settings: one page, in sections
  *
- * A module's page shows the screen its own bundle registered for the tab
- * (`saddle.admin.screens`), or mounts its app into a slot
- * (`saddle.admin.mount`).
+ * A module's page shows the screen its own bundle registered for the tab, or
+ * for the page inside it (`saddle.admin.screens`, most specific first), or
+ * mounts its app into a slot (`saddle.admin.mount`).
  */
 import { useMemo, useEffect, useRef } from '@wordpress/element';
 import { doAction } from '@wordpress/hooks';
 import { Button, Drawer, Notice } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { api, saddleData } from './api';
-import { findArea, withArg } from './routes';
+import { findScreen } from './frame-logic';
+import { findArea, subtabsOf, withArg } from './routes';
 import Home from './components/Home';
 import Context from './components/Guidance';
 import ConnectApps from './components/ConnectApps';
@@ -80,17 +81,18 @@ function MountSlot( { module, tab } ) {
 }
 
 /**
- * A module's content for one tab.
+ * A module's content for one tab, or one page inside it.
  *
  * @param {Object}   props
  * @param {Object}   props.area     The module's page.
- * @param {string}   props.tab      The tab.
- * @param {string}   props.view     The view inside the tab, or ''.
+ * @param {string}   props.tab      The tab (a section).
+ * @param {string}   props.sub      The page inside the tab, or ''.
+ * @param {string}   props.view     The view inside the page, or ''.
  * @param {Object}   props.args     The module's own query arguments.
  * @param {Function} props.navigate Navigation helper.
  * @param {Object}   props.header   The drill-in header (K4), from App.
  */
-function ModuleScreen( { area, tab, view, args, navigate, header } ) {
+function ModuleScreen( { area, tab, sub, view, args, navigate, header } ) {
 	const screens = useMemo( collectScreens, [] );
 
 	// The screen sees `header.drillIn` only. Leaving it (another view or
@@ -101,16 +103,19 @@ function ModuleScreen( { area, tab, view, args, navigate, header } ) {
 	);
 	useEffect( () => () => header && header.clear(), [ header ] );
 
-	// Core draws the module's unfinished setup tasks above its first tab.
-	const firstTab = area.tabs[ 0 ] && area.tabs[ 0 ].key === tab;
+	// Core draws the module's unfinished setup tasks above its first tab's
+	// first page.
+	const pages = subtabsOf( area, tab );
+	const firstTab =
+		area.tabs[ 0 ] &&
+		area.tabs[ 0 ].key === tab &&
+		( ! pages.length || pages[ 0 ].key === sub );
 
 	if ( area.content === 'mount' ) {
 		return <MountSlot module={ area.key } tab={ tab } />;
 	}
 
-	const entry = screens.find(
-		( s ) => s.module === area.key && s.tab === tab
-	);
+	const entry = findScreen( screens, area.key, tab, sub );
 	if ( ! entry && 'settings' === tab ) {
 		// Core appends a Settings tab to a module that has settings; when the
 		// module drew nothing there, the schema draws it.
@@ -133,12 +138,15 @@ function ModuleScreen( { area, tab, view, args, navigate, header } ) {
 
 	return (
 		<>
-			{ firstTab && ! view && <ModuleSetup tasks={ saddleData.setup } /> }
+			{ firstTab && ! view && (
+				<ModuleSetup tasks={ saddleData.setup } navigate={ navigate } />
+			) }
 			<entry.Component
 				ui={ ui }
 				kit={ kit }
 				module={ area.key }
 				tab={ tab }
+				sub={ sub || '' }
 				view={ view || '' }
 				args={ args || {} }
 				navigate={ navigate }
@@ -275,6 +283,7 @@ export default function Screen( props ) {
 	const {
 		area,
 		tab,
+		sub,
 		view,
 		args,
 		navigate,
@@ -307,6 +316,7 @@ export default function Screen( props ) {
 			<ModuleScreen
 				area={ area }
 				tab={ tab }
+				sub={ sub }
 				view={ view }
 				args={ args }
 				navigate={ navigate }

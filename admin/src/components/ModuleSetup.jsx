@@ -6,8 +6,13 @@
  * Saddle_Modules::setup(). One block of rows: the task's title, its `line` as
  * the meta, its action as a button (a tab or a URL). Nothing at all once every
  * task is done, and no status chip in the header.
+ *
+ * An action that names a tab (and maybe a page, a view and args) carries them
+ * as `route`. Its button is still a real link; a plain click opens it in the
+ * app, without a reload.
  */
 import { Button, Row, RowList } from '@plugpress/ui';
+import { isPlainClick } from '../frame-logic';
 
 /**
  * The tasks still to do.
@@ -22,10 +27,11 @@ export function pendingTasks( tasks ) {
 }
 
 /**
- * @param {Object} props
- * @param {?Array} props.tasks Tasks from saddleData.setup.
+ * @param {Object}    props
+ * @param {?Array}    props.tasks    Tasks from saddleData.setup.
+ * @param {Function=} props.navigate The app's navigate, for in-app actions.
  */
-export default function ModuleSetup( { tasks } ) {
+export default function ModuleSetup( { tasks, navigate } ) {
 	const pending = pendingTasks( tasks );
 	if ( ! pending.length ) {
 		return null;
@@ -44,6 +50,18 @@ export default function ModuleSetup( { tasks } ) {
 								variant="secondary"
 								size="sm"
 								href={ task.action.url }
+								onClick={
+									task.action.route && navigate
+										? ( event ) => {
+												if ( isPlainClick( event ) ) {
+													event.preventDefault();
+													navigate( {
+														...task.action.route,
+													} );
+												}
+										  }
+										: undefined
+								}
 								target={
 									task.action.external ? '_blank' : undefined
 								}

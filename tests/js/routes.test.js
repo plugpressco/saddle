@@ -9,7 +9,9 @@ import {
 	placeFor,
 	readRoute,
 	routeUrl,
+	resolveSub,
 	resolveTab,
+	subtabsOf,
 	servicesSectionUrl,
 	withArg,
 } from '../../admin/src/routes';
@@ -174,11 +176,13 @@ describe( 'views', () => {
 			)
 		).toEqual( {
 			tab: 'campaigns',
+			sub: '',
 			view: 'review',
 			args: { campaign: '12' },
 		} );
 		expect( readRoute( '?page=saddle' ) ).toEqual( {
 			tab: '',
+			sub: '',
 			view: '',
 			args: {},
 		} );
@@ -187,12 +191,17 @@ describe( 'views', () => {
 
 	it( 'builds the address of a view with its arguments', () => {
 		expect(
-			routeUrl( AREAS, 'home', 'overview', 'report', { campaign: 12 } )
+			routeUrl( AREAS, 'home', {
+				tab: 'overview',
+				view: 'report',
+				args: { campaign: 12 },
+			} )
 		).toBe( `${ BASE }?page=saddle&view=report&campaign=12` );
-		expect( routeUrl( AREAS, 'home', 'overview' ) ).toBe(
+		expect( routeUrl( AREAS, 'home', { tab: 'overview' } ) ).toBe(
 			`${ BASE }?page=saddle`
 		);
-		expect( routeUrl( AREAS, 'nowhere', 'x' ) ).toBe( '' );
+		expect( routeUrl( AREAS, 'home' ) ).toBe( `${ BASE }?page=saddle` );
+		expect( routeUrl( AREAS, 'nowhere', { tab: 'x' } ) ).toBe( '' );
 	} );
 
 	it( 'carries a view and args through placeFor only when named', () => {
@@ -209,5 +218,137 @@ describe( 'views', () => {
 			args: { campaign: '3' },
 		} );
 		expect( placeFor( {} ) ).toBeNull();
+	} );
+} );
+
+// A module with pages inside a section, as areas_for_app() sends it.
+const RANK = {
+	key: 'rank',
+	url: `${ BASE }?page=saddle-rank`,
+	tabs: [
+		{
+			key: 'overview',
+			url: `${ BASE }?page=saddle-rank`,
+			subtabs: [
+				{ key: 'summary', url: `${ BASE }?page=saddle-rank` },
+				{ key: 'audit', url: `${ BASE }?page=saddle-rank&sub=audit` },
+			],
+		},
+		{
+			key: 'visibility',
+			url: `${ BASE }?page=saddle-rank&tab=visibility`,
+			subtabs: [
+				{
+					key: 'answers',
+					url: `${ BASE }?page=saddle-rank&tab=visibility`,
+				},
+				{
+					key: 'traffic',
+					url: `${ BASE }?page=saddle-rank&tab=visibility&sub=traffic`,
+				},
+			],
+		},
+		{
+			key: 'links',
+			url: `${ BASE }?page=saddle-rank&tab=links`,
+			subtabs: [],
+		},
+	],
+};
+const WITH_RANK = [ ...AREAS, RANK ];
+
+describe( 'pages inside a tab', () => {
+	it( 'reads the page from the address, cleaned', () => {
+		expect(
+			readRoute(
+				'?page=saddle-rank&tab=visibility&sub=Traffic&view=bot&bot=gpt'
+			)
+		).toEqual( {
+			tab: 'visibility',
+			sub: 'traffic',
+			view: 'bot',
+			args: { bot: 'gpt' },
+		} );
+		expect( readRoute( '?sub=%22%3E%3Cb%3E' ).sub ).toBe( 'b' );
+	} );
+
+	it( 'lists a tab’s pages, or none', () => {
+		expect( subtabsOf( RANK, 'visibility' ).map( ( p ) => p.key ) ).toEqual(
+			[ 'answers', 'traffic' ]
+		);
+		expect( subtabsOf( RANK, 'links' ) ).toEqual( [] );
+		expect( subtabsOf( RANK, 'gone' ) ).toEqual( [] );
+		expect( subtabsOf( AREAS[ 0 ], 'overview' ) ).toEqual( [] );
+		expect( subtabsOf( null, 'x' ) ).toEqual( [] );
+	} );
+
+	it( 'resolves an empty or unknown page to the first, and none without pages', () => {
+		expect( resolveSub( RANK, 'visibility', 'traffic' ) ).toBe( 'traffic' );
+		expect( resolveSub( RANK, 'visibility', '' ) ).toBe( 'answers' );
+		expect( resolveSub( RANK, 'visibility', 'nope' ) ).toBe( 'answers' );
+		expect( resolveSub( RANK, 'links', 'broken' ) ).toBe( '' );
+		expect( resolveSub( AREAS[ 0 ], 'overview', 'x' ) ).toBe( '' );
+	} );
+
+	it( 'builds the address of a page, with a view and args', () => {
+		expect( areaUrl( WITH_RANK, 'rank', 'visibility', 'traffic' ) ).toBe(
+			`${ BASE }?page=saddle-rank&tab=visibility&sub=traffic`
+		);
+		expect( areaUrl( WITH_RANK, 'rank', 'visibility', 'answers' ) ).toBe(
+			`${ BASE }?page=saddle-rank&tab=visibility`
+		);
+		expect( areaUrl( WITH_RANK, 'rank', 'visibility', 'nope' ) ).toBe(
+			`${ BASE }?page=saddle-rank&tab=visibility`
+		);
+		expect(
+			routeUrl( WITH_RANK, 'rank', {
+				tab: 'visibility',
+				sub: 'traffic',
+				view: 'bot',
+				args: { bot: 'gpt', sub: 'evil', page: 'evil' },
+			} )
+		).toBe(
+			`${ BASE }?page=saddle-rank&tab=visibility&sub=traffic&view=bot&bot=gpt`
+		);
+		expect( routeUrl( WITH_RANK, 'rank', { sub: 'audit' } ) ).toBe(
+			`${ BASE }?page=saddle-rank`
+		);
+		expect(
+			routeUrl( WITH_RANK, 'rank', { tab: 'overview', sub: 'audit' } )
+		).toBe( `${ BASE }?page=saddle-rank&sub=audit` );
+	} );
+
+	it( 'carries a page through placeFor, with view and args cleared unless named', () => {
+		expect( placeFor( { sub: 'groups' } ) ).toEqual( {
+			area: '',
+			tab: '',
+			sub: 'groups',
+			view: '',
+			args: {},
+		} );
+		expect(
+			placeFor( {
+				tab: 'contacts',
+				sub: 'contacts',
+				view: '',
+				args: { status: 'subscribed' },
+			} )
+		).toEqual( {
+			area: '',
+			tab: 'contacts',
+			sub: 'contacts',
+			view: '',
+			args: { status: 'subscribed' },
+		} );
+		expect( placeFor( { tab: 'contacts' } ) ).toEqual( {
+			area: '',
+			tab: 'contacts',
+		} );
+		expect( placeFor( { view: '' } ) ).toEqual( {
+			area: '',
+			tab: '',
+			view: '',
+			args: {},
+		} );
 	} );
 } );

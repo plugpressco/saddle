@@ -1,140 +1,204 @@
 /**
- * The drill-in header (K4): what the frame draws for each state, the header
- * a screen gets, and which clicks on the back link stay in the app.
+ * The frame's header and layout (M4 in planning/MODULE-LAYOUT.md, K4): the
+ * breadcrumb for each page and state, when the sidebar and the icon tab row
+ * show, the header a screen gets, which screen draws a page, and which
+ * clicks on a link stay in the app.
  */
 import {
 	drillHeader,
+	findScreen,
 	frameHeader,
+	sidebarItems,
 	tabsHaveIcons,
 	isPlainClick,
 } from '../../admin/src/frame-logic';
 
+const HOME = { label: 'Saddle', url: 'admin.php?page=saddle' };
+
 const crm = {
 	key: 'crm',
 	title: 'CRM',
+	module: true,
 	url: 'admin.php?page=saddle-crm',
 	tabs: [
 		{
 			key: 'campaigns',
 			label: 'Campaigns',
 			url: 'admin.php?page=saddle-crm',
+			subtabs: [],
 		},
 		{
 			key: 'contacts',
 			label: 'Contacts',
 			url: 'admin.php?page=saddle-crm&tab=contacts',
+			subtabs: [
+				{
+					key: 'contacts',
+					label: 'Contacts',
+					url: 'admin.php?page=saddle-crm&tab=contacts',
+					icon: 'user',
+				},
+				{
+					key: 'groups',
+					label: 'Groups',
+					url: 'admin.php?page=saddle-crm&tab=contacts&sub=groups',
+					icon: 'group',
+				},
+			],
+		},
+		{
+			key: 'settings',
+			label: 'Settings',
+			url: 'admin.php?page=saddle-crm&tab=settings',
 		},
 	],
 };
 
-const onePage = {
+const context = {
 	key: 'context',
 	title: 'Context',
+	module: false,
 	url: 'admin.php?page=saddle-context',
 	tabs: [
 		{
 			key: 'overview',
 			label: 'Context',
 			url: 'admin.php?page=saddle-context',
+			subtabs: [],
 		},
 	],
 };
 
-describe( 'frameHeader', () => {
-	it( 'draws the tab row and the page title with no drill-in', () => {
-		expect(
-			frameHeader( {
-				area: crm,
-				tab: 'campaigns',
-				view: '',
-				drill: null,
-			} )
-		).toEqual( { showTabs: true, back: null, title: 'CRM' } );
+const home = {
+	key: 'home',
+	title: 'Home',
+	module: false,
+	url: 'admin.php?page=saddle',
+	tabs: [ { key: 'overview', label: 'Home', url: 'admin.php?page=saddle' } ],
+};
+
+const labels = ( head ) => head.crumbs.map( ( c ) => c.label );
+
+describe( 'frameHeader: the breadcrumb', () => {
+	it( 'reads just Saddle on Home, as the current page', () => {
+		const head = frameHeader( { area: home, tab: 'overview', home: HOME } );
+		expect( head.crumbs ).toEqual( [
+			{ key: 'home', label: 'Saddle', url: '' },
+		] );
+		expect( head.title ).toBe( 'Saddle' );
 	} );
 
-	it( 'draws no tab row for a one-screen page', () => {
-		expect(
-			frameHeader( {
-				area: onePage,
-				tab: 'overview',
-				view: '',
-				drill: null,
-			} )
-		).toEqual( { showTabs: false, back: null, title: 'Context' } );
-	} );
-
-	it( 'keeps the tab row in a view the screen did not name', () => {
-		expect(
-			frameHeader( {
-				area: crm,
-				tab: 'campaigns',
-				view: 'setup',
-				drill: null,
-			} )
-		).toEqual( { showTabs: true, back: null, title: 'CRM' } );
-	} );
-
-	it( 'drills in: back to the tab, then the title, no tab row', () => {
-		expect(
-			frameHeader( {
-				area: crm,
-				tab: 'campaigns',
-				view: 'setup',
-				drill: {
-					title: 'Spring sale',
-					tab: 'campaigns',
-					view: 'setup',
-				},
-			} )
-		).toEqual( {
-			showTabs: false,
-			back: { label: 'Campaigns', url: 'admin.php?page=saddle-crm' },
-			title: 'Spring sale',
+	it( 'reads Saddle / Page on a Core page, Saddle a link to Home', () => {
+		const head = frameHeader( {
+			area: context,
+			tab: 'overview',
+			home: HOME,
 		} );
+		expect( head.crumbs ).toEqual( [
+			{ key: 'home', label: 'Saddle', url: 'admin.php?page=saddle' },
+			{ key: 'current', label: 'Context', url: '' },
+		] );
 	} );
 
-	it( 'goes back to the current tab, not the first one', () => {
+	it( 'reads Saddle / Module on a module page, whatever the section', () => {
+		expect(
+			labels(
+				frameHeader( {
+					area: crm,
+					tab: 'contacts',
+					sub: 'groups',
+					home: HOME,
+				} )
+			)
+		).toEqual( [ 'Saddle', 'CRM' ] );
+	} );
+
+	it( 'names first run as Welcome', () => {
+		const head = frameHeader( {
+			area: home,
+			tab: 'setup',
+			crumb: 'Welcome',
+			home: HOME,
+		} );
+		expect( labels( head ) ).toEqual( [ 'Saddle', 'Welcome' ] );
+		expect( head.crumbs[ 0 ].url ).toBe( 'admin.php?page=saddle' );
+		expect( head.showSidebar ).toBe( false );
+	} );
+
+	it( 'drills in: Saddle / Module / Section / title, all but the last links', () => {
+		const head = frameHeader( {
+			area: crm,
+			tab: 'campaigns',
+			view: 'setup',
+			drill: {
+				title: 'Spring sale',
+				tab: 'campaigns',
+				sub: '',
+				view: 'setup',
+			},
+			home: HOME,
+		} );
+		expect( head.crumbs ).toEqual( [
+			{ key: 'home', label: 'Saddle', url: 'admin.php?page=saddle' },
+			{ key: 'module', label: 'CRM', url: 'admin.php?page=saddle-crm' },
+			{
+				key: 'section',
+				label: 'Campaigns',
+				url: 'admin.php?page=saddle-crm',
+			},
+			{ key: 'current', label: 'Spring sale', url: '' },
+		] );
+		expect( head.title ).toBe( 'Spring sale' );
+		expect( head.drilled ).toBe( true );
+	} );
+
+	it( 'sends the section crumb back to the page the item was opened from', () => {
 		const head = frameHeader( {
 			area: crm,
 			tab: 'contacts',
-			view: 'person',
-			drill: { title: 'Ada', tab: 'contacts', view: 'person' },
+			sub: 'groups',
+			view: 'group',
+			drill: {
+				title: 'VIP',
+				tab: 'contacts',
+				sub: 'groups',
+				view: 'group',
+			},
+			home: HOME,
 		} );
-		expect( head.back ).toEqual( {
+		expect( head.crumbs[ 2 ] ).toEqual( {
+			key: 'section',
 			label: 'Contacts',
-			url: 'admin.php?page=saddle-crm&tab=contacts',
+			url: 'admin.php?page=saddle-crm&tab=contacts&sub=groups',
 		} );
 	} );
 
 	it( 'ignores a drill-in once the view is closed', () => {
-		expect(
-			frameHeader( {
-				area: crm,
-				tab: 'campaigns',
-				view: '',
-				drill: {
-					title: 'Spring sale',
-					tab: 'campaigns',
-					view: 'setup',
-				},
-			} )
-		).toEqual( { showTabs: true, back: null, title: 'CRM' } );
+		const head = frameHeader( {
+			area: crm,
+			tab: 'campaigns',
+			view: '',
+			drill: { title: 'Spring sale', tab: 'campaigns', view: 'setup' },
+			home: HOME,
+		} );
+		expect( labels( head ) ).toEqual( [ 'Saddle', 'CRM' ] );
+		expect( head.drilled ).toBe( false );
 	} );
 
-	it( 'ignores a drill-in from another tab or view', () => {
-		const drill = { title: 'Spring sale', tab: 'campaigns', view: 'setup' };
-		expect(
-			frameHeader( { area: crm, tab: 'contacts', view: 'setup', drill } )
-				.back
-		).toBeNull();
-		expect(
-			frameHeader( {
-				area: crm,
-				tab: 'campaigns',
-				view: 'review',
-				drill,
-			} ).back
-		).toBeNull();
+	it( 'ignores a drill-in from another tab, page or view', () => {
+		const drill = {
+			title: 'VIP',
+			tab: 'contacts',
+			sub: 'groups',
+			view: 'group',
+		};
+		const at = ( tab, sub, view ) =>
+			frameHeader( { area: crm, tab, sub, view, drill, home: HOME } )
+				.drilled;
+		expect( at( 'contacts', 'groups', 'group' ) ).toBe( true );
+		expect( at( 'campaigns', 'groups', 'group' ) ).toBe( false );
+		expect( at( 'contacts', 'contacts', 'group' ) ).toBe( false );
+		expect( at( 'contacts', 'groups', 'other' ) ).toBe( false );
 	} );
 
 	it( 'ignores an empty or non-string title', () => {
@@ -146,35 +210,158 @@ describe( 'frameHeader', () => {
 						tab: 'campaigns',
 						view: 'setup',
 						drill,
-					} ).back
-				).toBeNull()
+						home: HOME,
+					} ).drilled
+				).toBe( false )
 		);
 	} );
 
-	it( 'falls back to the page when the tab is unknown', () => {
-		expect(
-			frameHeader( {
-				area: crm,
-				tab: 'gone',
-				view: 'x',
-				drill: { title: 'Item' },
-			} )
-		).toEqual( {
-			showTabs: false,
-			back: { label: 'CRM', url: 'admin.php?page=saddle-crm' },
-			title: 'Item',
+	it( 'falls back to the module when the tab is unknown', () => {
+		const head = frameHeader( {
+			area: crm,
+			tab: 'gone',
+			view: 'x',
+			drill: { title: 'Item' },
+			home: HOME,
+		} );
+		expect( head.crumbs[ 2 ] ).toEqual( {
+			key: 'section',
+			label: 'CRM',
+			url: 'admin.php?page=saddle-crm',
 		} );
 	} );
 
-	it( 'survives a page with no tabs', () => {
+	it( 'survives a page with no tabs and no home', () => {
+		const head = frameHeader( { area: { title: 'X' }, tab: '' } );
+		expect( labels( head ) ).toEqual( [ '', 'X' ] );
+		expect( head.showTabs ).toBe( false );
+		expect( head.showSidebar ).toBe( false );
+		expect( head.showSubtabs ).toBe( false );
+	} );
+} );
+
+describe( 'frameHeader: sidebar and tab rows', () => {
+	it( 'gives a module the sidebar and no header tab row', () => {
+		const head = frameHeader( { area: crm, tab: 'campaigns', home: HOME } );
+		expect( head.showSidebar ).toBe( true );
+		expect( head.showTabs ).toBe( false );
+		expect( head.showSubtabs ).toBe( false );
+	} );
+
+	it( 'draws the icon tab row in a section with two or more pages', () => {
+		const head = frameHeader( {
+			area: crm,
+			tab: 'contacts',
+			sub: 'contacts',
+			home: HOME,
+		} );
+		expect( head.showSubtabs ).toBe( true );
+	} );
+
+	it( 'hides the icon tab row in a drill-in, and keeps the sidebar', () => {
+		const head = frameHeader( {
+			area: crm,
+			tab: 'contacts',
+			sub: 'groups',
+			view: 'group',
+			drill: {
+				title: 'VIP',
+				tab: 'contacts',
+				sub: 'groups',
+				view: 'group',
+			},
+			home: HOME,
+		} );
+		expect( head.showSubtabs ).toBe( false );
+		expect( head.showSidebar ).toBe( true );
+	} );
+
+	it( 'keeps a Core page with two tabs on its header row, no sidebar', () => {
+		const twoTabs = {
+			...context,
+			tabs: [
+				...context.tabs,
+				{ key: 'more', label: 'More', url: 'x', subtabs: [] },
+			],
+		};
+		const head = frameHeader( {
+			area: twoTabs,
+			tab: 'overview',
+			home: HOME,
+		} );
+		expect( head.showTabs ).toBe( true );
+		expect( head.showSidebar ).toBe( false );
+	} );
+
+	it( 'draws no tab row for a one-screen Core page', () => {
+		const head = frameHeader( {
+			area: context,
+			tab: 'overview',
+			home: HOME,
+		} );
+		expect( head.showTabs ).toBe( false );
+		expect( head.showSidebar ).toBe( false );
+	} );
+} );
+
+describe( 'sidebarItems', () => {
+	it( 'keeps the module order and moves Settings last', () => {
+		const { items, settings } = sidebarItems( [
+			{ key: 'overview' },
+			{ key: 'settings' },
+			{ key: 'links' },
+		] );
+		expect( items.map( ( t ) => t.key ) ).toEqual( [
+			'overview',
+			'links',
+		] );
+		expect( settings ).toEqual( { key: 'settings' } );
+	} );
+
+	it( 'has no Settings when the module has none', () => {
+		expect( sidebarItems( [ { key: 'overview' } ] ).settings ).toBeNull();
+		expect( sidebarItems( null ) ).toEqual( { items: [], settings: null } );
+	} );
+} );
+
+describe( 'findScreen', () => {
+	const A = () => null;
+	const B = () => null;
+	const C = () => null;
+	const screens = [
+		{ module: 'rank', tab: 'visibility', Component: A },
+		{ module: 'rank', tab: 'visibility', sub: 'traffic', Component: B },
+		{ module: 'rank', tab: 'overview', sub: 'audit', Component: C },
+		{ module: 'crm', tab: 'visibility', sub: 'answers', Component: C },
+	];
+
+	it( 'picks module, tab and page first', () => {
 		expect(
-			frameHeader( {
-				area: { title: 'X' },
-				tab: '',
-				view: '',
-				drill: null,
-			} )
-		).toEqual( { showTabs: false, back: null, title: 'X' } );
+			findScreen( screens, 'rank', 'visibility', 'traffic' ).Component
+		).toBe( B );
+	} );
+
+	it( 'falls back to the screen for the whole tab', () => {
+		expect(
+			findScreen( screens, 'rank', 'visibility', 'answers' ).Component
+		).toBe( A );
+		expect(
+			findScreen( screens, 'rank', 'visibility', '' ).Component
+		).toBe( A );
+	} );
+
+	it( 'never uses a screen registered for another page', () => {
+		expect(
+			findScreen( screens, 'rank', 'overview', 'summary' )
+		).toBeNull();
+		expect( findScreen( screens, 'rank', 'overview', '' ) ).toBeNull();
+		expect(
+			findScreen( screens, 'rank', 'overview', 'audit' ).Component
+		).toBe( C );
+	} );
+
+	it( 'survives no screens', () => {
+		expect( findScreen( null, 'rank', 'overview', '' ) ).toBeNull();
 	} );
 } );
 
@@ -196,8 +383,26 @@ describe( 'drillHeader', () => {
 		expect( s.value ).toEqual( {
 			title: 'Spring sale',
 			tab: 'campaigns',
+			sub: '',
 			view: 'setup',
 		} );
+	} );
+
+	it( 'binds the title to the page as well', () => {
+		const s = store();
+		const groups = drillHeader( s.set, 'contacts', 'group', 'groups' );
+		const segments = drillHeader( s.set, 'contacts', 'group', 'segments' );
+		groups.drillIn( { title: 'VIP' } );
+		expect( s.value ).toEqual( {
+			title: 'VIP',
+			tab: 'contacts',
+			sub: 'groups',
+			view: 'group',
+		} );
+		segments.clear();
+		expect( s.value.title ).toBe( 'VIP' );
+		groups.clear();
+		expect( s.value ).toBeNull();
 	} );
 
 	it( 'keeps the same object when the title has not changed', () => {
@@ -237,6 +442,7 @@ describe( 'drillHeader', () => {
 		expect( s.value ).toEqual( {
 			title: 'Spring sale',
 			tab: 'campaigns',
+			sub: '',
 			view: 'review',
 		} );
 	} );
@@ -257,8 +463,9 @@ describe( 'drillHeader', () => {
 			tab: 'campaigns',
 			view: 'setup',
 			drill: s.value,
+			home: HOME,
 		} );
-		expect( head.showTabs ).toBe( false );
+		expect( head.drilled ).toBe( true );
 		expect( head.title ).toBe( 'Spring sale' );
 	} );
 } );
