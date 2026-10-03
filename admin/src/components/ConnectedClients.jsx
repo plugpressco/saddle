@@ -624,7 +624,7 @@ export function ConnectionDetails() {
 										'saddle'
 								  )
 								: __(
-										'Saddle speaks MCP itself, so there is nothing else to install. If you add the MCP Adapter plugin, Saddle uses it, and your tools, access levels and approvals stay the same.',
+										'Saddle speaks MCP itself, so there is nothing else to install. If you add the MCP Adapter plugin, Saddle uses it. Your tools, access levels and approvals stay the same.',
 										'saddle'
 								  ) }
 						</HelpTip>

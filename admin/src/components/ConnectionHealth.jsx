@@ -147,11 +147,11 @@ export default function ConnectionHealth() {
 			description={
 				bearerOnly
 					? __(
-							'Apps connected with a pasted key work. Apps that sign in through Saddle, such as ChatGPT, send a different header, and your web server removes it before WordPress sees it. Those apps finish signing in, then report that the site has no actions. The rule below lets that header through.',
+							'Apps connected with a pasted key work. Apps that sign in through Saddle, such as ChatGPT, send a different header. Your web server removes it before WordPress sees it. Those apps finish signing in, then report that the site has no actions. The rule below lets that header through.',
 							'saddle'
 					  )
 					: __(
-							'An AI app sends its password in a sign-in header. Your web server removes that header before WordPress sees it, so every connection fails as “unauthorized”, even with the right password. The test above can still pass, because your browser signs in another way.',
+							'An AI app sends its password in a sign-in header. Your web server removes that header before WordPress sees it. Every connection then fails as “unauthorized”, even with the right password. The test above can still pass, because your browser signs in another way.',
 							'saddle'
 					  )
 			}
