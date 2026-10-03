@@ -54,7 +54,7 @@ class Saddle_Settings {
 				self::PAGE_SLUG,
 				/* translators: %s: page name, such as Dashboard or AI apps. */
 				sprintf( __( '%s ‹ Saddle', 'saddle' ), $area['title'] ),
-				Saddle_Nav_Icons::svg( $area['icon'] ) . esc_html( $area['title'] ),
+				Saddle_Nav_Icons::menu_slot( $area['icon'] ) . esc_html( $area['title'] ),
 				$area['capability'],
 				$area['slug'],
 				array( __CLASS__, 'render_page' )
