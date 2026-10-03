@@ -26,7 +26,7 @@ import {
 	toast,
 } from '@plugpress/ui';
 import SectionHeader from './SectionHeader';
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { api } from '../api';
 
 export default function Memory( { onChanged } ) {
@@ -95,9 +95,11 @@ export default function Memory( { onChanged } ) {
 		const ok = await confirm( {
 			title: __( 'Clear AI-written memory?', 'saddle' ),
 			description: sprintf(
-				/* translators: %d: entry count. */
-				__(
+				/* translators: %d: how many AI-written memory entries will be deleted. */
+				_n(
+					'This deletes %d AI-written entry. Your own entries are kept.',
 					'This deletes %d AI-written entries. Your own entries are kept.',
+					count,
 					'saddle'
 				),
 				count

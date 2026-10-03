@@ -21,7 +21,7 @@ import {
 	CardHeader,
 	CardContent,
 } from '@plugpress/ui';
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { api } from '../api';
 
 export default function McpDiagnostics() {
@@ -227,9 +227,11 @@ export default function McpDiagnostics() {
 											<Badge tone="success">
 												{ entry.tools !== undefined
 													? sprintf(
-															/* translators: %d: number of tools sent. */
-															__(
+															/* translators: %d: how many tools Saddle sent the app. */
+															_n(
+																'%d tool sent',
 																'%d tools sent',
+																entry.tools,
 																'saddle'
 															),
 															entry.tools
