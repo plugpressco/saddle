@@ -78,24 +78,27 @@ Every Saddle page, module pages and first run included, is drawn by
 `admin/src/components/Frame.jsx`:
 
 - **Header band:** white over the `#FCFCFC` canvas, full width of wp-admin's
-  content area, `16px 24px`, one `#F0F0F0` hairline under it. Row 1: the
-  22px mark in Petrol (a link to Home), then the page's name as the `h1`
-  (15/600): "Home", "AI apps", "Analytics" on a module page, "Welcome" on
-  first run. No "Saddle /" breadcrumb (#309): the mark says whose page it is.
-  On the right, the notices bell and the **AI switch**: a pill reading
-  "AI on" (green dot) or "Paused" (amber dot) that opens a small panel with
-  what the state means and one button, "Pause all apps" or "Resume". The
-  switch lives here, on every page, and nowhere else. While paused, a strip
-  under the header says "AI is paused. No app can read or change this site
-  until you resume." with Resume, on every Saddle page. Row 2, when a page
-  has two or more tabs (no core page does since #309; modules may): the kit
-  `Tabs` in Jetpack AI's (WordPress 7's minimal) style: 48px tall, 13px
-  regular, every tab `#1E1E1E`, a 1.5px `#6E6E6E` line under the active one.
-  No brand color on tabs (2026-10-02, Fahim: the teal underline and grey idle
-  tabs looked dated).
-  **No description sentence** under the title.
-- **Page:** the `#FCFCFC` canvas, one centered 960px column (Home: 1040px,
-  for its two columns).
+  content area, `16px 24px`, one `#F0F0F0` hairline under it. Row 1 is the
+  breadcrumb in the `h1` (15px): the 22px mark in Petrol and "Saddle", then
+  `/` and the page's name. Home reads `[mark] Saddle`; every other page
+  `[mark] Saddle / Page` ("Saddle / AI apps", "Saddle / Rank", "Saddle /
+  Welcome" on first run). The parts before the last are grey links (Saddle
+  goes to Home); the last is `#1E1E1E` at 600. See "Navigation" for a
+  drill-in. On the right, the notices bell and the **AI switch**: a pill
+  reading "AI on" (green dot) or "Paused" (amber dot) that opens a small
+  panel with what the state means and one button, "Pause all apps" or
+  "Resume". The switch lives here, on every page, and nowhere else. While
+  paused, a strip under the header says "AI is paused. No app can read or
+  change this site until you resume." with Resume, on every Saddle page.
+  Row 2, on a Core page with two or more tabs (none today): the minimal
+  tabs below. **No description sentence** under the title.
+- **Minimal tabs** (Jetpack AI's, WordPress 7's): the kit `Tabs`, 48px tall,
+  13px regular, every tab `#1E1E1E` with its 16px icon, a 1.5px `#6E6E6E`
+  line under the active one. No brand color on tabs (2026-10-02, Fahim: the
+  teal underline and grey idle tabs looked dated).
+- **Page:** the `#FCFCFC` canvas. A Core page is one centered 960px column
+  (Home: 1040px, for its two columns). A module page has two columns: the
+  sidebar and the content, 880px (see "Navigation").
 - **Footer strip:** a hairline, then mark · "Saddle 1.5.0" (and the module's
   product and version on a module page) · Docs · Rate Saddle, in 13px grey.
 
@@ -112,17 +115,20 @@ computed style or by grep:
 - **F1 One palette, one owner.** Tokens live in `admin/src/_tokens.scss` and
   nowhere else. A module defines no `--pp-*` and no `--saddle-brand*`, and
   imports no `tokens/accents/*` file.
-- **F2 One frame.** `Frame.jsx` draws the header band, the paused strip, the
-  tabs, the canvas and the footer. A module draws no header, top bar, rail,
-  wordmark, breadcrumb, description sentence, footer, toaster or tooltip
-  provider.
+- **F2 One frame.** `Frame.jsx` draws the header band and its breadcrumb, the
+  paused strip, a module's sidebar and icon tab row, the canvas and the
+  footer. A module draws no header, top bar, rail, sidebar, wordmark,
+  breadcrumb, description sentence, footer, toaster or tooltip provider.
 - **F3 One kit, through Core.** Primitives and icons come from the `ui` prop
   (`ui.icons` for icons). A module bundles no copy of `@plugpress/ui`, no
   Tailwind, no icon, toast or font library, and no `@wordpress/components` on
   an admin screen (a block-editor sidebar or a full-screen editor may).
-- **F4 One nav.** WordPress's Saddle submenu is the nav; a module is
-  Saddle → Name; its tabs are `&tab=` and its deep screens `&view=` with its
-  own `&args`. No hash router, no inner nav pills, no settings sidebar.
+- **F4 One nav, four levels.** WordPress's Saddle submenu picks the module
+  (Saddle → Name). Core draws the rest from the descriptor: the sections
+  (`tabs`, `&tab=`) as the sidebar, a section's pages (`subtabs`, `&sub=`)
+  as the icon tab row, and one item (`&view=` with the module's own
+  `&args`) as a drill-in. No hash router, no inner nav pills, no nav of the
+  module's own.
 - **F5 Three type sizes.** 15 for titles, 13 for everything, 12 for badges,
   counts and chips, and 20/600 for a stat value. Use the `--pp-text-*` tokens.
 - **F6 Structure and register.** Page → tab → section → block → row. One idea
@@ -134,7 +140,7 @@ computed style or by grep:
   `--saddle-chart-text`. A vendor's bar keeps the vendor's colour; an unknown
   vendor is `#707070`, never the brand.
 - **F8 Marks and names.** Inside the frame the mark is Core's and the name is
-  the job word (Analytics, SEO, CRM).
+  the job word (Analytics, Rank, CRM).
 - **F9 Status and notices through Core.** A module's state is its `status`
   callable, its setup is `setup` tasks (Core draws the unfinished ones above
   the first tab), its warnings are `saddle_notices`. No `admin_notices` on a
@@ -147,39 +153,73 @@ computed style or by grep:
   `pp-scope` or `pp-app` class, so nothing else on it changes, including
   other plugins' kit widgets.
 
-## Navigation (2026-10-03)
+## Navigation (2026-10-04, MODULE-LAYOUT.md)
 
-Fahim: "wordpress has sidebar we consider that ... each plugin have their sub
-heading". WordPress's admin menu is the rail and the sidebar. There is no
-second sidebar inside a page.
+Fahim: "saddle should clear header each, also a sidebar not sub menu", "for
+big modular like seo and rank there many menu and sub tab, so need clear
+view and easy user", "icon saddle / rank or icon saddle / crm". This
+replaces the 2026-10-03 rule that a page had one tab row and no sidebar.
+The plan and the section maps for Rank, CRM and Analytics are in
+`planning/MODULE-LAYOUT.md`.
 
-- **The menu.** Saddle → Home, then the products (Analytics, SEO, CRM), then
-  a hairline, then AI apps, Services, Context and Settings. Every item has
-  its Iconoir icon before its label. The hairline is drawn only when at least
-  one product is there: `Saddle_Settings::order_submenu()` gives the first of
-  Core's pages after the products the `saddle-menu-group` class, and one
-  `admin_head` stylesheet (printed only for users who can see the menu) draws
-  `box-shadow: inset 0 1px 0 rgba(128,128,128,.3)` with 6px above and inside.
-  Page titles (`<title>`) stay plain text.
-- **One tab row per page.** Each tab shows its icon and its label. The first
-  tab is the landing page: Overview for Analytics and SEO, Campaigns for CRM.
-  Settings is always last. At most 6 tabs. A page with one screen draws no
-  tab row.
-- **A third level is a drill-in (K4).** A module opens it with `&view=`
-  inside a tab and names it with `props.header?.drillIn?.( { title } )`. The
-  header then shows the back icon, the tab's label as a link, a `/` and the
-  item's title. There is no tab row and no third nav. The back link is a real
-  link, so a middle click opens a new tab; a plain click stays in the app, so
-  the screen unmounts and can save what the owner typed. Core clears the
-  title when the view closes, the tab changes or the screen unmounts.
-  Drill-ins are opt-in: a screen that never calls it keeps the tab row, and
-  on older Core a module keeps its own back button. The logic is
-  `admin/src/frame-logic.js`.
-- **Filters inside a tab are not tabs.** Filtering a list uses `FilterTabs`,
-  with counts. Switching a mode (range, size, grouping) uses
-  `SegmentedControl`. Neither carries icons.
+- **Four levels, one control each.**
+
+  | Level | Control | Address |
+  |---|---|---|
+  | Module | WordPress's Saddle submenu | `admin.php?page=saddle-{key}` |
+  | Section | The module's left sidebar | `&tab=` |
+  | Page | The icon tab row | `&sub=` |
+  | Single item | The drill-in | `&view=` and the module's `&args` |
+
+  The first section and a section's first page are the defaults and are
+  left out of the address. An unknown `&tab=` or `&sub=` lands on the
+  first. A filter over a list stays `FilterTabs`, with counts; a mode
+  switch (range, size, grouping) stays `SegmentedControl`. Neither carries
+  icons.
+- **The menu.** Saddle → Home, then the products (Analytics, Rank, CRM),
+  then a hairline, then AI apps, Services, Context and Settings. Every item
+  has its Iconoir icon before its label. The hairline is drawn only when at
+  least one product is there: `Saddle_Settings::order_submenu()` gives the
+  first of Core's pages after the products the `saddle-menu-group` class,
+  and one `admin_head` stylesheet (printed only for users who can see the
+  menu) draws `box-shadow: inset 0 1px 0 rgba(128,128,128,.3)` with 6px
+  above and inside. Page titles (`<title>`) stay plain text.
+- **The header is a breadcrumb on every page** (see "The frame"). A drill-in
+  reads `Saddle / CRM / Campaigns / Spring sale`: the module part goes to
+  the module's first section, the section part to the section and page the
+  item was opened from, with no view. Both are real links (a middle click
+  opens a new tab); a plain click stays in the app, so the screen unmounts
+  and can save what the owner typed.
+- **The sidebar is for modules only.** Every module page has one
+  (`components/SectionNav.jsx`); Core's pages keep the header and their tab
+  row, if they have one.
+  - 200px wide, on the canvas `#FCFCFC`, a `#F0F0F0` hairline on its right
+    edge, running the full height. Its list sticks under the admin bar
+    (32px; 46px below 782px).
+  - Each item: a 16px Iconoir icon, 8px, a 13px label; 32px tall, 6px
+    corners, `#1E1E1E`. Active: `#F0F0F0` fill, weight 600, `aria-current`.
+    Hover: `#F5F5F5`.
+  - The module's sections in its order, Settings last after a hairline.
+  - No Petrol, no badges, no module name (the header names it).
+  - Items are real links; a plain click navigates in place.
+- **The icon tab row** is a section's pages: a white band with a `#F0F0F0`
+  hairline at the top of the content column, the minimal tabs (48px, 13px,
+  16px icon, 1.5px `#6E6E6E` indicator), lined up with the 880px content
+  under it. Drawn only when a section has two or more pages; aim for five
+  at most. Icons show only when every page has one.
+- **A drill-in (K4).** A module opens one item with `&view=` inside a page
+  and names it with `props.header?.drillIn?.( { title } )`. The breadcrumb
+  then ends with the title and the icon tab row steps aside; the sidebar
+  stays. Core clears the title when the view closes, the page or section
+  changes, or the screen unmounts. Drill-ins are opt-in: a screen that never
+  calls it keeps the icon tab row. The logic is `admin/src/frame-logic.js`.
+- **Phone, below 782px.** The sidebar becomes one horizontally scrolling row
+  above the content, sticky under the admin bar; the icon tab row scrolls
+  too, and both bring the active item into view. WordPress folds its own
+  menu into the hamburger.
+- **Content width.** 880px inside a module; Core pages 960px, Home 1040px.
 - **The right column is Home's only.** No search, no command palette, no
-  assistant box, no upsell.
+  assistant box, no upsell, no right panel or bottom bar.
 - **Licence is a section on Saddle → Settings.** There is no Licence tab, and
   Pro never gets a menu item.
 
@@ -200,17 +240,19 @@ Iconoir 7.12.1 (MIT) is the family's one icon set: regular style, stroke
 - **Logos are not icons.** App and vendor logos (LobeHub, Simple Icons,
   flags, Rank's company marks) keep their own colours and stay.
 
-| Item | Menu icon | Tabs and their icons |
+| Item | Menu icon | Sections and pages |
 |---|---|---|
 | Home | `home-simple-door` | none |
-| Analytics | `graph-up` | Overview `dashboard-dots` · Reports `reports` · Settings `settings` |
-| SEO | `search-engine` | Overview `dashboard-dots` · AI visibility `eye` · Search appearance `search-window` · Content `multiple-pages` · Links `link` · Settings `settings` |
-| CRM | `send-mail` | Campaigns `mail-out` · Contacts `group` · Settings `settings` |
+| Analytics | `graph-up` | The map in `planning/MODULE-LAYOUT.md` |
+| Rank | `search-engine` | The map in `planning/MODULE-LAYOUT.md` |
+| CRM | `send-mail` | The map in `planning/MODULE-LAYOUT.md` |
 | AI apps | `sparks` | none |
 | Services | `puzzle` | none |
 | Context | `brain` | none |
 | Settings | `settings` | General (one tab, no row) |
-| Header | back `nav-arrow-left`, notices `bell` | |
+| Header | notices `bell` | |
+
+Every section and page icon in those maps is in the allowlist.
 
 **The pipeline and the allowlist (K2).** `npm run icons`
 (`scripts/icons.mjs`) holds the manifest. It copies each icon from
@@ -227,12 +269,24 @@ the name exists in `iconoir@7.12.1/icons/regular/`, add it to the manifest,
 run the script and commit both outputs. A sibling asks Core for a new one.
 
 **Descriptor icons (K1).** In `saddle_modules`, `'icon' => 'graph-up'` is
-the menu item's icon and `'tab_icons' => array( 'reports' => 'reports' )`
-maps tab keys to icons. Core fills the defaults by key: `overview` is
-`dashboard-dots`, `settings` is `settings`. A name outside the allowlist
-draws no icon and is never an error. `tabs` stays `key => label`; an icon
-never goes inside it. Older Core ignores both keys, so a sibling can ship
-them first.
+the menu item's icon, `'tab_icons' => array( 'reports' => 'reports' )` maps
+section keys to icons, and `'subtab_icons' => array( 'reports' => array(
+'sources' => 'globe' ) )` maps each section's pages to icons. Core fills the
+defaults by key: `overview` is `dashboard-dots`, `settings` is `settings`.
+A name outside the allowlist draws no icon and is never an error. `tabs`
+and `subtabs` stay `key => label`; an icon never goes inside them. Older
+Core ignores all three, so a sibling can ship them first.
+
+**Pages (M1 to M3).** `'subtabs' => array( 'reports' => array( 'sources' =>
+'Sources', 'pages' => 'Pages' ) )` names the pages inside a section.
+`Saddle_Module_Nav` cleans them: keys through `sanitize_key`, non-empty
+string labels, known sections only, and a section keeps its pages only
+when two or more survive. A screen registers per page with `{ module, tab,
+sub, Component }`; Core picks module, tab and sub first, then the screen
+for the whole section, and passes `sub` (the resolved page, or '' for a
+section with no pages). A module registers per-page screens only when
+`window.saddleShell?.has?.( 'subtabs' )`, and today's section screens
+otherwise.
 
 **`ui.icons` (K3).** The 59 keys the kit's icon set had, plus `Grid` and
 `ArrowLeftRight`, each drawn with Iconoir (`admin/src/icons/kit.js`; the
@@ -347,7 +401,7 @@ Media strip "not feel chat"; "onboarding should not like it setup").
 
 | Token | Size | Use |
 |---|---|---|
-| `--s-text-title` | 15 / 600 | page (header breadcrumb), section heading |
+| `--s-text-title` | 15 / 600 | the header breadcrumb (its links at 400), section heading |
 | `--s-text` | 13 | everything you read: body, row titles (600), descriptions, meta, hints, buttons, tabs, footer |
 | `--s-text-sm` | 12 | badges, counts, code chips, the uppercase day label |
 | (numbers) | 20 / 600 | stat card values only |
@@ -385,9 +439,10 @@ the pill stays for badges, dots and switches. Blocks carry one faint shadow
    hairlines, not from more panels.
 3. **Say nothing rather than say nothing.** A tile reading `—` is worse than no
    tile.
-4. **Plain, task-first names.** WordPress's Saddle submenu is the nav:
-   Home, each installed module, then AI apps, Services, Context and Settings
-   (see "Navigation"). There is no sidebar inside the page.
+4. **Plain, task-first names.** WordPress's Saddle submenu picks the page:
+   Home, each installed module, then AI apps, Services, Context and
+   Settings. Inside a module, its sidebar picks the section and the icon tab
+   row the page (see "Navigation").
 5. **A choice explains itself where it is made.** An option list carries one
    line per option (the access list on AI apps) instead of a separate "what
    each option means" section.
@@ -396,9 +451,11 @@ the pill stays for badges, dots and switches. Blocks carry one faint shadow
 
 - UI primitives come from `@plugpress/ui` only — no `@wordpress/components`, no
   Tailwind, no styled-components, no second UI kit.
-- One Core React root per Saddle page: `#saddle-root`, carrying `data-area` and
-  `data-tab`. No second root on a page and no hash routing; tabs are `&tab=`
-  URLs. `data-saddle-screen` stays on `<main>` (browser agents rely on it).
+- One Core React root per Saddle page: `#saddle-root`, carrying `data-area`,
+  `data-tab`, `data-sub` and `data-view`. No second root on a page and no
+  hash routing; sections are `&tab=` and pages `&sub=` URLs.
+  `data-saddle-screen="area/tab[/sub][/view]"` stays on `<main>` (browser
+  agents rely on it).
 - Don't regress accessibility: labels, focus rings, `role`/`aria-*` semantics and
   `prefers-reduced-motion` must survive any restyling. Every text pair above
   clears AA.
@@ -426,7 +483,9 @@ Kept together in one block of `style.scss`:
 - block titles at 13/600 and row titles at 600;
 - field edges and the off switch at `#949494`; row icons without the grey
   square; no focus ring on a `Select` option (the highlight is the position);
-- the header's tab row drops its own border (the band draws it).
+- the header's tab row and the icon tab row drop their own border (the band
+  draws it), and the active line sits inside the row, which scrolls
+  sideways and would clip it.
 - row lists get the card's shadow (the kit draws them flat), and a block
   nested in a card or in Advanced stays flat.
 
