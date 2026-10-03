@@ -138,6 +138,20 @@ class Saddle_Nav_Icons {
 	}
 
 	/**
+	 * The icon slot before a menu label: the icon, or an empty box of the
+	 * same size when the area names none (a module from before icons), so
+	 * every label in the Saddle menu starts at the same edge.
+	 *
+	 * @param string $name Icon name.
+	 * @return string Markup.
+	 */
+	public static function menu_slot( $name ) {
+		$svg = self::svg( $name );
+
+		return '' !== $svg ? $svg : '<span class="saddle-nav-icon" aria-hidden="true"></span>';
+	}
+
+	/**
 	 * The menu's stylesheet: the icon beside each label, and the hairline
 	 * between the products and Core's configuration pages.
 	 *

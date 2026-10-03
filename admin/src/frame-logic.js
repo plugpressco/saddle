@@ -49,6 +49,24 @@ export function frameHeader( { area, tab, view, drill } ) {
 }
 
 /**
+ * Whether a tab row draws its icons. A row is all icons or none: a module
+ * that names icons for some tabs only (or an older one that names none) gets
+ * plain labels, so the row never mixes the two.
+ *
+ * @param {Array} tabs The page's tabs: `[ { key, label, icon } ]`.
+ * @return {boolean} True when every tab has an icon.
+ */
+export function tabsHaveIcons( tabs ) {
+	return (
+		Array.isArray( tabs ) &&
+		tabs.length > 0 &&
+		tabs.every(
+			( t ) => !! t && 'string' === typeof t.icon && '' !== t.icon
+		)
+	);
+}
+
+/**
  * The `header` a screen gets, bound to the tab and view it was drawn for.
  *
  * `drillIn( { title } )` records the title for this tab and view;

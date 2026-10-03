@@ -73,6 +73,12 @@ class Saddle_Nav_Icons_Test extends WP_UnitTestCase {
 		}
 	}
 
+	public function test_a_menu_slot_keeps_the_label_edge_without_an_icon() {
+		$this->assertStringStartsWith( '<svg class="saddle-nav-icon"', Saddle_Nav_Icons::menu_slot( 'settings' ) );
+		$this->assertSame( '<span class="saddle-nav-icon" aria-hidden="true"></span>', Saddle_Nav_Icons::menu_slot( '' ) );
+		$this->assertSame( '<span class="saddle-nav-icon" aria-hidden="true"></span>', Saddle_Nav_Icons::menu_slot( 'no-such-icon' ) );
+	}
+
 	public function test_pick_cleans_the_name() {
 		$this->assertSame( 'graph-up', Saddle_Nav_Icons::pick( 'Graph-Up' ) );
 		$this->assertSame( 'graph-up', Saddle_Nav_Icons::pick( 'graph-up' ) );

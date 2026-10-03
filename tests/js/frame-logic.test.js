@@ -5,6 +5,7 @@
 import {
 	drillHeader,
 	frameHeader,
+	tabsHaveIcons,
 	isPlainClick,
 } from '../../admin/src/frame-logic';
 
@@ -290,5 +291,29 @@ describe( 'isPlainClick', () => {
 			false
 		);
 		expect( isPlainClick( null ) ).toBe( false );
+	} );
+} );
+
+describe( 'tabsHaveIcons', () => {
+	it( 'is true only when every tab names an icon', () => {
+		expect(
+			tabsHaveIcons( [
+				{ key: 'overview', icon: 'dashboard-dots' },
+				{ key: 'settings', icon: 'settings' },
+			] )
+		).toBe( true );
+		expect(
+			tabsHaveIcons( [
+				{ key: 'overview', icon: 'dashboard-dots' },
+				{ key: 'content', icon: '' },
+				{ key: 'settings', icon: 'settings' },
+			] )
+		).toBe( false );
+		expect( tabsHaveIcons( [ { key: 'overview' } ] ) ).toBe( false );
+	} );
+
+	it( 'is false for no tabs', () => {
+		expect( tabsHaveIcons( null ) ).toBe( false );
+		expect( tabsHaveIcons( [] ) ).toBe( false );
 	} );
 } );

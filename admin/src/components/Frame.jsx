@@ -21,7 +21,7 @@ import { useState, useEffect, useCallback, useRef } from '@wordpress/element';
 import { AppContent, Button, Tabs, Popover, SkipLink } from '@plugpress/ui';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { saddleData } from '../api';
-import { frameHeader, isPlainClick } from '../frame-logic';
+import { frameHeader, isPlainClick, tabsHaveIcons } from '../frame-logic';
 import { NavIcon } from '../icons/iconoir';
 import { icons } from '../icons/kit';
 import { BrandMark } from './icons';
@@ -292,6 +292,7 @@ export default function Frame( {
 	const home = ( saddleData.areas || [] ).find( ( a ) => a.key === 'home' );
 	const head = frameHeader( { area, tab, view, drill } );
 	const tabs = showTabs && head.showTabs ? area.tabs : null;
+	const tabIcons = tabsHaveIcons( tabs );
 	const back = crumb ? null : head.back;
 
 	// The back link is a real link, so a middle click or "Copy link" works. A
@@ -364,11 +365,13 @@ export default function Frame( {
 							aria-label={ area.title }
 							items={ tabs.map( ( t ) => ( {
 								value: t.key,
-								label: (
+								label: tabIcons ? (
 									<>
 										<NavIcon name={ t.icon } />
 										{ t.label }
 									</>
+								) : (
+									t.label
 								),
 							} ) ) }
 						/>
