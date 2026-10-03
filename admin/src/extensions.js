@@ -31,8 +31,9 @@
  *
  * - `saddle.admin.settingsCards` — a Card on Settings → General.
  * - `saddle.admin.tabs` (v1) — was a whole page with a nav entry. Shell v2
- *   has no in-page nav (WordPress's Saddle submenu is the nav, #274), so each
- *   entry renders as a section on Settings → General, under its label:
+ *   has no in-page nav on Core's pages (WordPress's Saddle submenu picks the
+ *   page, #274; only a module's page has a sidebar), so each entry renders as
+ *   a section on Settings → General, under its label:
  *
  *   addFilter( 'saddle.admin.tabs', 'my-addon/page', ( tabs ) => [
  *       ...tabs,
