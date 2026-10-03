@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-03T21:30:52+00:00\n"
+"POT-Creation-Date: 2026-10-03T23:20:56+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -158,7 +158,7 @@ msgstr ""
 #: includes/abilities/aioseo.php:233
 #: includes/abilities/core-content.php:2228
 #: includes/abilities/divi.php:670
-#: includes/abilities/divi.php:1504
+#: includes/abilities/divi.php:1512
 #: includes/abilities/rank-math.php:244
 #: includes/abilities/rank-math.php:271
 #: includes/abilities/rank-math.php:294
@@ -485,84 +485,96 @@ msgid "Added %1$s to post #%2$d at %3$s."
 msgstr ""
 
 #: includes/abilities/blocks.php:938
-#: includes/abilities/blocks.php:1120
-#: includes/abilities/blocks.php:1267
+#: includes/abilities/blocks.php:1123
+#: includes/abilities/blocks.php:1285
 msgid "Addresses shift after edits — re-read the page before addressing other nodes."
 msgstr ""
 
-#: includes/abilities/blocks.php:973
+#. translators: %s: block address, such as 0.1.
+#: includes/abilities/blocks.php:968
+#: includes/abilities/blocks.php:1077
+#: includes/abilities/blocks.php:1092
+#: includes/abilities/blocks.php:1150
+#: includes/abilities/blocks.php:1381
+#, php-format
+msgid "No block at address %s."
+msgstr ""
+
+#: includes/abilities/blocks.php:974
 msgid "Provide \"content\" and/or \"attrs\" to change."
 msgstr ""
 
 #. translators: 1: block type, 2: address, 3: post ID.
-#: includes/abilities/blocks.php:1031
+#: includes/abilities/blocks.php:1032
 #, php-format
 msgid "Edited %1$s at %2$s on post #%3$d."
 msgstr ""
 
-#: includes/abilities/blocks.php:1066
+#: includes/abilities/blocks.php:1067
 #: includes/abilities/divi.php:1111
 msgid "Provide \"from_address\"."
 msgstr ""
 
-#: includes/abilities/blocks.php:1069
+#: includes/abilities/blocks.php:1070
 msgid "A block cannot be moved into its own subtree."
 msgstr ""
 
 #. translators: 1: block type, 2: old address, 3: new address, 4: post ID.
-#: includes/abilities/blocks.php:1108
+#: includes/abilities/blocks.php:1111
 #, php-format
 msgid "Moved %1$s from %2$s to %3$s on post #%4$d."
 msgstr ""
 
-#: includes/abilities/blocks.php:1162
+#: includes/abilities/blocks.php:1166
 msgid "Recoverable from the post's revisions. Addresses shift — re-read the page."
 msgstr ""
 
 #. translators: 1: block type, 2: address, 3: post ID.
-#: includes/abilities/blocks.php:1176
+#: includes/abilities/blocks.php:1185
 #, php-format
 msgid "Removed %1$s at %2$s from post #%3$d."
 msgstr ""
 
-#. translators: 1: block type, 2: child count, 3: address, 4: post ID.
-#: includes/abilities/blocks.php:1192
+#. translators: 1: block type, 2: number of blocks inside it, 3: address, 4: post ID.
+#: includes/abilities/blocks.php:1205
 #, php-format
-msgid "Remove %1$s and the %2$d blocks inside it at %3$s on post #%4$d. Recoverable from revisions."
-msgstr ""
+msgid "Remove %1$s and the %2$d block inside it at %3$s on post #%4$d. Recoverable from revisions."
+msgid_plural "Remove %1$s and the %2$d blocks inside it at %3$s on post #%4$d. Recoverable from revisions."
+msgstr[0] ""
+msgstr[1] ""
 
 #. translators: 1: pattern name, 2: post ID, 3: address.
-#: includes/abilities/blocks.php:1256
+#: includes/abilities/blocks.php:1274
 #, php-format
 msgid "Inserted pattern \"%1$s\" into post #%2$d at %3$s."
 msgstr ""
 
 #. translators: 1: post ID, 2: builder name.
-#: includes/abilities/blocks.php:1314
+#: includes/abilities/blocks.php:1332
 #, php-format
 msgid "Post #%1$d is built with %2$s, so the native block tools do not apply to it. "
 msgstr ""
 
-#: includes/abilities/blocks.php:1318
+#: includes/abilities/blocks.php:1336
 msgid "Use the saddle/divi-* tools for this page instead."
 msgstr ""
 
-#: includes/abilities/blocks.php:1319
+#: includes/abilities/blocks.php:1337
 msgid "Its layout is edited with the builder's own editor — tell the site owner instead of forcing the edit."
 msgstr ""
 
-#: includes/abilities/blocks.php:1334
+#: includes/abilities/blocks.php:1352
 #: includes/abilities/core-content.php:2234
-#: includes/abilities/divi.php:1318
-#: includes/abilities/divi.php:1419
+#: includes/abilities/divi.php:1326
+#: includes/abilities/divi.php:1427
 #: includes/abilities/render.php:160
 #: includes/builders/divi/class-saddle-divi.php:114
 msgid "No post or page with that ID."
 msgstr ""
 
-#: includes/abilities/blocks.php:1337
-#: includes/abilities/divi.php:1321
-#: includes/abilities/divi.php:1422
+#: includes/abilities/blocks.php:1355
+#: includes/abilities/divi.php:1329
+#: includes/abilities/divi.php:1430
 #: includes/builders/divi/class-saddle-divi.php:117
 msgid "You cannot edit this post."
 msgstr ""
@@ -1166,7 +1178,7 @@ msgid "This site is set to drafts-only: the requested publication or schedule wa
 msgstr ""
 
 #: includes/abilities/core-content.php:2194
-#: includes/abilities/divi.php:1507
+#: includes/abilities/divi.php:1515
 msgid "You cannot read this post."
 msgstr ""
 
@@ -1726,7 +1738,7 @@ msgstr ""
 #: includes/abilities/divi.php:1036
 #: includes/abilities/divi.php:1120
 #: includes/abilities/divi.php:1218
-#: includes/abilities/divi.php:2017
+#: includes/abilities/divi.php:2025
 #: includes/builders/divi/class-saddle-divi-tree.php:47
 #, php-format
 msgid "No module at address %s."
@@ -1761,246 +1773,248 @@ msgid "Recoverable from the post’s revisions. Addresses shift — re-read the 
 msgstr ""
 
 #. translators: 1: module type, 2: address, 3: post ID.
-#: includes/abilities/divi.php:1252
+#: includes/abilities/divi.php:1255
 #, php-format
 msgid "Removed %1$s at %2$s from Divi page #%3$d."
 msgstr ""
 
-#. translators: 1: module type, 2: child count, 3: address, 4: post ID.
-#: includes/abilities/divi.php:1274
+#. translators: 1: module type, 2: number of modules inside it, 3: address, 4: post ID.
+#: includes/abilities/divi.php:1277
 #, php-format
-msgid "Remove %1$s and the %2$d modules inside it at %3$s on Divi page #%4$d. Recoverable from revisions."
-msgstr ""
+msgid "Remove %1$s and the %2$d module inside it at %3$s on Divi page #%4$d. Recoverable from revisions."
+msgid_plural "Remove %1$s and the %2$d modules inside it at %3$s on Divi page #%4$d. Recoverable from revisions."
+msgstr[0] ""
+msgstr[1] ""
 
-#: includes/abilities/divi.php:1313
+#: includes/abilities/divi.php:1321
 msgid "Divi 5 is not active on this site, so its page settings would do nothing."
 msgstr ""
 
-#: includes/abilities/divi.php:1328
+#: includes/abilities/divi.php:1336
 msgid "This post is built with legacy Divi 4 shortcodes, which Saddle does not edit."
 msgstr ""
 
-#: includes/abilities/divi.php:1331
+#: includes/abilities/divi.php:1339
 msgid "This post is not a Divi page, so Divi page settings would not apply to it."
 msgstr ""
 
 #. translators: %s: comma-separated list of accepted values.
-#: includes/abilities/divi.php:1351
+#: includes/abilities/divi.php:1359
 #, php-format
 msgid "Unknown layout. Use one of: %s."
 msgstr ""
 
-#: includes/abilities/divi.php:1414
+#: includes/abilities/divi.php:1422
 msgid "Divi 5 is not active on this site, so a Divi layout would not render. Use the regular content tools instead."
 msgstr ""
 
-#: includes/abilities/divi.php:1429
-#: includes/abilities/divi.php:1515
+#: includes/abilities/divi.php:1437
+#: includes/abilities/divi.php:1523
 msgid "This post is built with legacy Divi 4 shortcodes, which Saddle does not edit. Leave its content untouched."
 msgstr ""
 
-#: includes/abilities/divi.php:1432
+#: includes/abilities/divi.php:1440
 msgid "This post already has non-Divi content. Building a Divi layout would overwrite it — edit it with update-post/update-page instead, or use an empty page."
 msgstr ""
 
-#: includes/abilities/divi.php:1437
+#: includes/abilities/divi.php:1445
 msgid "Provide at least one section node."
 msgstr ""
 
 #. translators: 1: post ID, 2: module count.
-#: includes/abilities/divi.php:1455
+#: includes/abilities/divi.php:1463
 #, php-format
 msgid "Built Divi layout for post #%1$d (%2$d modules). Previous layout kept as a revision."
 msgstr ""
 
-#: includes/abilities/divi.php:1480
+#: includes/abilities/divi.php:1488
 msgid "The page is NOT published (drafts 404 for visitors) — publish it with update-page status=publish when ready."
 msgstr ""
 
-#: includes/abilities/divi.php:1482
+#: includes/abilities/divi.php:1490
 msgid "The previous layout is recoverable from the post's revisions."
 msgstr ""
 
-#: includes/abilities/divi.php:1516
+#: includes/abilities/divi.php:1524
 msgid "This post is not built with Divi. Use the regular content tools instead."
 msgstr ""
 
-#: includes/abilities/divi.php:1575
+#: includes/abilities/divi.php:1583
 msgid "Posts of the post types named in sub_types (e.g. [\"post\"], [\"page\", \"product\"])."
 msgstr ""
 
-#: includes/abilities/divi.php:1579
+#: includes/abilities/divi.php:1587
 msgid "Terms attached to the current post, from the taxonomies in sub_types."
 msgstr ""
 
-#: includes/abilities/divi.php:1583
+#: includes/abilities/divi.php:1591
 msgid "All terms of the taxonomies in sub_types (e.g. [\"category\"])."
 msgstr ""
 
-#: includes/abilities/divi.php:1587
+#: includes/abilities/divi.php:1595
 msgid "Site users."
 msgstr ""
 
-#: includes/abilities/divi.php:1591
+#: includes/abilities/divi.php:1599
 msgid "Users holding the roles in sub_types (e.g. [\"author\"])."
 msgstr ""
 
-#: includes/abilities/divi.php:1595
+#: includes/abilities/divi.php:1603
 msgid "Items of the navigation menus in sub_types."
 msgstr ""
 
-#: includes/abilities/divi.php:1599
+#: includes/abilities/divi.php:1607
 msgid "Inside a loop-enabled module, bind per-item values with apply-dynamic-content and loop_* sources (see divi-list-dynamic-sources)."
 msgstr ""
 
-#: includes/abilities/divi.php:1639
+#: includes/abilities/divi.php:1647
 msgid "This module has no loop to edit. Use divi-enable-loop first."
 msgstr ""
 
-#: includes/abilities/divi.php:1674
+#: includes/abilities/divi.php:1682
 msgid "Unknown loop query_type. Call divi-list-loop-query-types for the valid values."
 msgstr ""
 
 #. translators: 1: address, 2: post ID.
-#: includes/abilities/divi.php:1688
+#: includes/abilities/divi.php:1696
 #, php-format
 msgid "Enabled a loop on the module at %1$s on Divi page #%2$d."
 msgstr ""
 
 #. translators: 1: address, 2: post ID.
-#: includes/abilities/divi.php:1688
+#: includes/abilities/divi.php:1696
 #, php-format
 msgid "Edited the loop on the module at %1$s on Divi page #%2$d."
 msgstr ""
 
-#: includes/abilities/divi.php:1711
+#: includes/abilities/divi.php:1719
 msgid "This module has no loop to disable."
 msgstr ""
 
 #. translators: 1: address, 2: post ID.
-#: includes/abilities/divi.php:1725
+#: includes/abilities/divi.php:1733
 #, php-format
 msgid "Disabled the loop on the module at %1$s on Divi page #%2$d."
 msgstr ""
 
-#: includes/abilities/divi.php:1758
+#: includes/abilities/divi.php:1766
 msgid "Inside a loop-enabled module, the post_* sources resolve per loop item; menu loops use the loop_menu_* sources."
 msgstr ""
 
-#: includes/abilities/divi.php:1761
+#: includes/abilities/divi.php:1769
 msgid "Bind with apply-dynamic-content: field = the attribute path from divi-get-module-schema (e.g. \"title.innerContent\"), source = a name above. post_meta_key needs settings.key."
 msgstr ""
 
 #. translators: %s: settings context, e.g. "dynamic content".
-#: includes/abilities/divi.php:1787
+#: includes/abilities/divi.php:1795
 #, php-format
 msgid "Too many %s settings (max 30 keys)."
 msgstr ""
 
 #. translators: %s: settings context.
-#: includes/abilities/divi.php:1801
+#: includes/abilities/divi.php:1809
 #, php-format
 msgid "Invalid %s settings key: keys must be non-empty strings under 64 characters."
 msgstr ""
 
 #. translators: 1: settings context, 2: key name.
-#: includes/abilities/divi.php:1813
+#: includes/abilities/divi.php:1821
 #, php-format
 msgid "The %1$s setting \"%2$s\" must be a scalar value, not a nested structure."
 msgstr ""
 
 #. translators: 1: settings context, 2: key name.
-#: includes/abilities/divi.php:1827
+#: includes/abilities/divi.php:1835
 #, php-format
 msgid "The %1$s setting \"%2$s\" is too long (max 2000 characters)."
 msgstr ""
 
-#: includes/abilities/divi.php:1863
+#: includes/abilities/divi.php:1871
 msgid "Provide the dynamic \"source\" name. Call divi-list-dynamic-sources for options."
 msgstr ""
 
 #. translators: 1: written segment, 2: module type, 3: attribute list.
-#: includes/abilities/divi.php:1879
+#: includes/abilities/divi.php:1887
 #, php-format
 msgid "\"%1$s\" is not an attribute of %2$s, so this binding would never render. Module attributes: %3$s — use the path from divi-get-module-schema (e.g. \"title.innerContent\")."
 msgstr ""
 
-#: includes/abilities/divi.php:1907
+#: includes/abilities/divi.php:1915
 msgid "The bound meta key is protected (starts with \"_\") — its value would become publicly visible on the page, so Saddle refuses it. A site owner can allow a specific key via the \"saddle_dynamic_meta_allowlist\" filter."
 msgstr ""
 
-#: includes/abilities/divi.php:1913
+#: includes/abilities/divi.php:1921
 msgid "dynamic content"
 msgstr ""
 
 #. translators: 1: source, 2: address, 3: post ID.
-#: includes/abilities/divi.php:1939
+#: includes/abilities/divi.php:1947
 #, php-format
 msgid "Bound %1$s to a module field at %2$s on Divi page #%3$d."
 msgstr ""
 
 #. translators: 1: address, 2: post ID.
-#: includes/abilities/divi.php:1987
+#: includes/abilities/divi.php:1995
 #, php-format
 msgid "Cleared a dynamic binding on the module at %1$s on Divi page #%2$d."
 msgstr ""
 
-#: includes/abilities/divi.php:2033
+#: includes/abilities/divi.php:2041
 msgid "Provide the field's attribute path from divi-get-module-schema, e.g. \"title.innerContent\"."
 msgstr ""
 
-#: includes/abilities/divi.php:2160
+#: includes/abilities/divi.php:2168
 msgid "Provide the \"preset_id\" from divi-list-global-presets."
 msgstr ""
 
 #. translators: 1: preset id, 2: address, 3: post ID.
-#: includes/abilities/divi.php:2174
+#: includes/abilities/divi.php:2182
 #, php-format
 msgid "Applied preset %1$s to the module at %2$s on Divi page #%3$d."
 msgstr ""
 
-#: includes/abilities/divi.php:2198
+#: includes/abilities/divi.php:2206
 msgid "settings.roles = list of role slugs."
 msgstr ""
 
-#: includes/abilities/divi.php:2202
+#: includes/abilities/divi.php:2210
 msgid "settings.postTypes = list of post type slugs."
 msgstr ""
 
-#: includes/abilities/divi.php:2206
+#: includes/abilities/divi.php:2214
 msgid "settings.categories = list of category ids."
 msgstr ""
 
-#: includes/abilities/divi.php:2210
+#: includes/abilities/divi.php:2218
 msgid "settings.tags = list of tag ids."
 msgstr ""
 
-#: includes/abilities/divi.php:2214
+#: includes/abilities/divi.php:2222
 msgid "settings.authors = list of author ids."
 msgstr ""
 
-#: includes/abilities/divi.php:2226
+#: includes/abilities/divi.php:2234
 msgid "settings for view count + window."
 msgstr ""
 
-#: includes/abilities/divi.php:2229
+#: includes/abilities/divi.php:2237
 msgid "Set with divi-set-display-conditions: each condition is {conditionName, displayRule, settings?, operator?}. operator OR/AND joins multiple. conditionSettings vary per type — this is the common set, not exhaustive."
 msgstr ""
 
-#: includes/abilities/divi.php:2248
+#: includes/abilities/divi.php:2256
 msgid "Provide \"conditions\" as a list (empty to clear)."
 msgstr ""
 
-#: includes/abilities/divi.php:2254
+#: includes/abilities/divi.php:2262
 msgid "Each condition needs a string \"conditionName\". See divi-list-condition-types."
 msgstr ""
 
-#: includes/abilities/divi.php:2257
+#: includes/abilities/divi.php:2265
 msgid "display condition"
 msgstr ""
 
 #. translators: 1: count, 2: address, 3: post ID.
-#: includes/abilities/divi.php:2283
+#: includes/abilities/divi.php:2291
 #, php-format
 msgid "Set %1$d display condition(s) on the module at %2$s on Divi page #%3$d."
 msgstr ""
@@ -2297,19 +2311,23 @@ msgstr ""
 msgid "No menu item with that id. saddle/get-menu lists them."
 msgstr ""
 
-#: includes/abilities/menus.php:568
+#: includes/abilities/menus.php:569
+msgid "That link is not allowed in a menu. Use a web address such as https://example.com or a path such as /about."
+msgstr ""
+
+#: includes/abilities/menus.php:572
 msgid "A custom item needs both \"url\" and \"title\"."
 msgstr ""
 
-#: includes/abilities/menus.php:579
+#: includes/abilities/menus.php:583
 msgid "No post, page or other content item with that object_id."
 msgstr ""
 
-#: includes/abilities/menus.php:591
+#: includes/abilities/menus.php:595
 msgid "No category, tag or other term with that object_id."
 msgstr ""
 
-#: includes/abilities/menus.php:600
+#: includes/abilities/menus.php:604
 msgid "\"type\" must be custom, post or term."
 msgstr ""
 
@@ -2679,7 +2697,7 @@ msgstr ""
 msgid "Pass the blocks as \"nodes\" or as block markup in \"content\"."
 msgstr ""
 
-#: includes/abilities/site-editor-writes.php:451
+#: includes/abilities/site-editor-writes.php:455
 msgid "This site does not use a block theme, so it has no block templates or template parts to change. Its header and footer live in the theme's PHP files, which Saddle does not edit."
 msgstr ""
 
@@ -4483,24 +4501,24 @@ msgstr ""
 msgid "Blocked: \"%s\" needs a higher access level than is enabled."
 msgstr ""
 
-#: includes/class-saddle-connection.php:116
+#: includes/class-saddle-connection.php:153
 msgid "This sign-in key was issued by Saddle and works only with Saddle’s endpoint — the rest of the WordPress REST API is off limits to it by design. Use the Saddle tools instead."
 msgstr ""
 
-#: includes/class-saddle-connection.php:152
+#: includes/class-saddle-connection.php:189
 msgid "Saddle sign-in keys cannot be used over XML-RPC."
 msgstr ""
 
-#: includes/class-saddle-connection.php:386
+#: includes/class-saddle-connection.php:423
 #: includes/class-saddle-mcp.php:580
 msgid "Your sign-in key was rejected — it was most likely revoked or removed. Reconnect the app from Saddle to issue a fresh key."
 msgstr ""
 
-#: includes/class-saddle-connection.php:742
+#: includes/class-saddle-connection.php:779
 msgid "Saddle can’t edit this server’s configuration automatically. Add the rule shown below by hand or send it to your host."
 msgstr ""
 
-#: includes/class-saddle-connection.php:762
+#: includes/class-saddle-connection.php:799
 msgid "Saddle could not write to .htaccess. Check file permissions, or add the rule by hand."
 msgstr ""
 
@@ -5625,10 +5643,22 @@ msgstr ""
 msgid "Rehearsed %1$s on #%2$d (%3$s). Nothing was saved."
 msgstr ""
 
+#. translators: 1: tool name, 2: post id.
+#: includes/class-saddle-rehearsal.php:157
+#, php-format
+msgid "Rehearsed %1$s on #%2$d. Nothing was saved."
+msgstr ""
+
 #. translators: 1: tool name, 2: comma-separated field names.
-#: includes/class-saddle-rehearsal.php:156
+#: includes/class-saddle-rehearsal.php:161
 #, php-format
 msgid "Rehearsed %1$s (%2$s). Nothing was saved."
+msgstr ""
+
+#. translators: %s: tool name.
+#: includes/class-saddle-rehearsal.php:164
+#, php-format
+msgid "Rehearsed %s. Nothing was saved."
 msgstr ""
 
 #: includes/class-saddle-service-sources.php:29
@@ -5806,114 +5836,114 @@ msgid "The plugin %s is no longer installed."
 msgstr ""
 
 #. translators: 1: post label, 2: post status.
-#: includes/class-saddle-undo-steps.php:99
+#: includes/class-saddle-undo-steps.php:100
 #, php-format
 msgid "Restore %1$s to its earlier version and set its status back to %2$s."
 msgstr ""
 
 #. translators: %s: post label.
-#: includes/class-saddle-undo-steps.php:102
+#: includes/class-saddle-undo-steps.php:103
 #, php-format
 msgid "Restore %s to its earlier version."
 msgstr ""
 
 #. translators: %s: post label.
-#: includes/class-saddle-undo-steps.php:105
+#: includes/class-saddle-undo-steps.php:106
 #, php-format
 msgid "Move %s, which this change created, to the trash."
 msgstr ""
 
 #. translators: 1: field name, 2: post label.
-#: includes/class-saddle-undo-steps.php:108
+#: includes/class-saddle-undo-steps.php:115
 #, php-format
 msgid "Restore the %1$s field on %2$s."
 msgstr ""
 
 #. translators: 1: taxonomy, 2: post label.
-#: includes/class-saddle-undo-steps.php:111
+#: includes/class-saddle-undo-steps.php:118
 #, php-format
 msgid "Restore the %1$s on %2$s."
 msgstr ""
 
 #. translators: %s: term label.
-#: includes/class-saddle-undo-steps.php:114
+#: includes/class-saddle-undo-steps.php:121
 #, php-format
 msgid "Delete %s, which this change created."
 msgstr ""
 
 #. translators: 1: option name, 2: value.
-#: includes/class-saddle-undo-steps.php:118
+#: includes/class-saddle-undo-steps.php:125
 #, php-format
 msgid "Set %1$s back to “%2$s”."
 msgstr ""
 
 #. translators: %s: option name.
-#: includes/class-saddle-undo-steps.php:120
+#: includes/class-saddle-undo-steps.php:127
 #, php-format
 msgid "Remove %s, which this change added."
 msgstr ""
 
 #. translators: %s: theme name.
-#: includes/class-saddle-undo-steps.php:123
+#: includes/class-saddle-undo-steps.php:130
 #, php-format
 msgid "Switch the theme back to %s."
 msgstr ""
 
 #. translators: %s: plugin file.
-#: includes/class-saddle-undo-steps.php:127
+#: includes/class-saddle-undo-steps.php:134
 #, php-format
 msgid "Reactivate the plugin %s."
 msgstr ""
 
 #. translators: %s: plugin file.
-#: includes/class-saddle-undo-steps.php:129
+#: includes/class-saddle-undo-steps.php:136
 #, php-format
 msgid "Deactivate the plugin %s."
 msgstr ""
 
 #. translators: %s: object label.
-#: includes/class-saddle-undo-steps.php:259
+#: includes/class-saddle-undo-steps.php:266
 #, php-format
 msgid "Reversing %s needs the admin level, and a WordPress account that manages the site."
 msgstr ""
 
 #. translators: %s: object label.
-#: includes/class-saddle-undo-steps.php:261
+#: includes/class-saddle-undo-steps.php:268
 #, php-format
 msgid "This WordPress account may not change %s."
 msgstr ""
 
 #. translators: 1: post title, 2: post id.
-#: includes/class-saddle-undo-steps.php:329
-#: includes/class-saddle-undo-steps.php:355
+#: includes/class-saddle-undo-steps.php:336
+#: includes/class-saddle-undo-steps.php:362
 #, php-format
 msgid "“%1$s” (#%2$d)"
 msgstr ""
 
 #. translators: 1: taxonomy, 2: term name.
-#: includes/class-saddle-undo-steps.php:333
+#: includes/class-saddle-undo-steps.php:340
 #, php-format
 msgid "the %1$s “%2$s”"
 msgstr ""
 
 #. translators: %s: option name.
-#: includes/class-saddle-undo-steps.php:336
+#: includes/class-saddle-undo-steps.php:343
 #, php-format
 msgid "the setting %s"
 msgstr ""
 
-#: includes/class-saddle-undo-steps.php:338
+#: includes/class-saddle-undo-steps.php:345
 msgid "the active theme"
 msgstr ""
 
 #. translators: %s: plugin file.
-#: includes/class-saddle-undo-steps.php:341
+#: includes/class-saddle-undo-steps.php:348
 #, php-format
 msgid "the plugin %s"
 msgstr ""
 
 #. translators: %s: object label.
-#: includes/class-saddle-undo-steps.php:389
+#: includes/class-saddle-undo-steps.php:396
 #, php-format
 msgid "WordPress would not restore %s."
 msgstr ""
@@ -5937,7 +5967,7 @@ msgid "This change touched more than %d things, too many to record for undo."
 msgstr ""
 
 #. translators: %s: date and time.
-#: includes/class-saddle-undo.php:147
+#: includes/class-saddle-undo.php:150
 #, php-format
 msgid "Already undone on %s."
 msgstr ""
@@ -6760,7 +6790,7 @@ msgid "This persisted attribute does nothing — rewrite it on a path the block 
 msgstr ""
 
 #. translators: %s: minimum WordPress version.
-#: saddle.php:547
+#: saddle.php:548
 #, php-format
 msgid "Saddle requires WordPress %s or later (the core Abilities API). The MCP server is disabled until you upgrade."
 msgstr ""
