@@ -289,7 +289,7 @@ class Saddle_Approval_Test extends WP_UnitTestCase {
 		$this->assertWPError( $result );
 		$log = Saddle_Log::query( 100, 1 );
 		$this->assertSame( $before + 1, $log['total'], 'A failed confirmed destructive call must be logged.' );
-		$this->assertStringContainsString( 'FAILED after confirmation', $log['entries'][0]['summary'] );
+		$this->assertStringContainsString( 'Failed after confirmation', $log['entries'][0]['summary'] );
 		$this->assertStringContainsString( 'Exploded halfway.', $log['entries'][0]['summary'] );
 	}
 

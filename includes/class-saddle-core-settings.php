@@ -292,8 +292,8 @@ class Saddle_Core_Settings {
 			return new WP_Error(
 				'saddle_oauth_not_ready',
 				$readiness['permalinks']
-					? __( 'Sign-in with OAuth needs your site to be served over HTTPS — an access token sent over plain HTTP can be read in transit.', 'saddle' )
-					: __( 'Sign-in with OAuth needs pretty permalinks. Go to Settings → Permalinks and choose any option other than Plain, then try again.', 'saddle' ),
+					? __( 'Sign-in for apps needs HTTPS. An access token sent over plain HTTP can be read in transit.', 'saddle' )
+					: __( 'Sign-in for apps needs pretty permalinks. Choose any option but Plain in Settings → Permalinks, then try again.', 'saddle' ),
 				array( 'status' => 409 )
 			);
 		}

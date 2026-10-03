@@ -589,7 +589,9 @@ class Saddle_Unsplash_Test extends WP_UnitTestCase {
 		$plain = self::factory()->attachment->create_object( 'plain2.jpg', 0, array( 'post_mime_type' => 'image/jpeg' ) );
 		ob_start();
 		Saddle_Unsplash::render_source_column( 'saddle_source', $plain );
-		$this->assertStringContainsString( '&#8212;', ob_get_clean() );
+		$plain_cell = ob_get_clean();
+		$this->assertStringContainsString( 'Uploaded directly', $plain_cell );
+		$this->assertStringNotContainsString( '&#8212;', $plain_cell, 'An empty Source cell shows nothing, not a dash.' );
 	}
 
 	public function test_photo_page_url_falls_back_to_id_for_legacy_imports() {

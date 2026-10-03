@@ -156,7 +156,7 @@ class Saddle_Connections_REST {
 			}
 		}
 		if ( ! $found ) {
-			return new WP_Error( 'saddle_unknown_connection', __( 'That connection no longer exists — it may already have been disconnected.', 'saddle' ), array( 'status' => 404 ) );
+			return new WP_Error( 'saddle_unknown_connection', __( 'That connection no longer exists. It may already be disconnected.', 'saddle' ), array( 'status' => 404 ) );
 		}
 
 		$done = Saddle_Access::set_role( $id, $role );

@@ -1859,7 +1859,7 @@ class Saddle_Abilities {
 				'target'  => (string) $id,
 				'summary' => sprintf(
 					/* translators: 1: attachment id, 2: title. */
-					__( 'Permanently delete media #%1$d "%2$s" and its files. Media has no trash — this cannot be undone.', 'saddle' ),
+					__( 'Permanently delete media #%1$d "%2$s" and its files. Media has no trash, so this cannot be undone.', 'saddle' ),
 					$id,
 					$post->post_title
 				),

@@ -115,7 +115,7 @@ class Saddle_OAuth_Consent {
 				'<code>' . esc_html( (string) $pending['client_id'] ) . '</code>'
 			);
 		} else {
-			esc_html_e( 'This app registered itself with your site. Saddle could not verify who it is — only connect it if you started this yourself, just now.', 'saddle' );
+			esc_html_e( 'This app registered itself with your site, and Saddle could not verify who it is. Connect it only if you started this yourself just now.', 'saddle' );
 		}
 		echo '</p>';
 
@@ -132,7 +132,7 @@ class Saddle_OAuth_Consent {
 		// some — ChatGPT among them — ask for nothing at all. Either way this
 		// screen decides, and read is the pre-selected answer.
 		echo '<h2>' . esc_html__( 'What it will be able to do', 'saddle' ) . '</h2>';
-		echo '<p>' . esc_html__( 'You choose. This is the most this app will ever be able to do, and you can change it later from Saddle → AI apps.', 'saddle' ) . '</p>';
+		echo '<p>' . esc_html__( 'This is the most this app can do. You can change it later on Saddle → AI apps.', 'saddle' ) . '</p>';
 
 		echo '<ul style="list-style:none;margin:0 0 1.5em">';
 		foreach ( self::level_choices() as $tier => $choice ) {
@@ -186,15 +186,15 @@ class Saddle_OAuth_Consent {
 	private static function level_choices() {
 		$all = array(
 			'read'  => array(
-				'title'   => __( 'Just reading', 'saddle' ),
+				'title'   => __( 'Read only', 'saddle' ),
 				'summary' => __( 'Reads posts, pages, media, and site information. Changes nothing.', 'saddle' ),
 			),
 			'write' => array(
-				'title'   => __( 'Reading & writing', 'saddle' ),
+				'title'   => __( 'Edit content', 'saddle' ),
 				'summary' => __( 'Also creates and edits posts, pages, and media. Every deletion previews and asks first.', 'saddle' ),
 			),
 			'admin' => array(
-				'title'   => __( 'Managing the site', 'saddle' ),
+				'title'   => __( 'Manage the site', 'saddle' ),
 				'summary' => __( 'Also manages settings, plugins, and themes. Overwrites and deletions ask first.', 'saddle' ),
 			),
 		);
@@ -224,7 +224,15 @@ class Saddle_OAuth_Consent {
 		$decision = isset( $_POST['decision'] ) ? sanitize_text_field( wp_unslash( (string) $_POST['decision'] ) ) : 'deny';
 
 		if ( 'allow' !== $decision ) {
-			self::log( $pending, 'oauth-denied', __( 'Declined to connect an app', 'saddle' ) );
+			self::log(
+				$pending,
+				'oauth-denied',
+				sprintf(
+					/* translators: %s: the app's name. */
+					__( 'Declined to connect %s', 'saddle' ),
+					self::app_name( $pending )
+				)
+			);
 			self::bounce_back(
 				$pending,
 				array(
@@ -285,9 +293,10 @@ class Saddle_OAuth_Consent {
 			$pending,
 			'oauth-authorized',
 			sprintf(
-				/* translators: %s: the access level granted (read, write, or admin). */
-				__( 'Connected an app with OAuth at the “%s” level', 'saddle' ),
-				$level
+				/* translators: 1: the app's name, 2: the access it was given, e.g. "Read only". */
+				__( 'Connected %1$s (%2$s)', 'saddle' ),
+				self::app_name( $pending ),
+				Saddle_Access::labels()[ $level ]
 			)
 		);
 
@@ -336,7 +345,7 @@ class Saddle_OAuth_Consent {
 	 *
 	 * @param array  $pending Pending request record.
 	 * @param string $action  Log action key.
-	 * @param string $summary One-line description.
+	 * @param string $summary One-line description, naming the app.
 	 */
 	private static function log( array $pending, $action, $summary ) {
 		if ( ! class_exists( 'Saddle_Log' ) ) {
@@ -347,8 +356,18 @@ class Saddle_OAuth_Consent {
 			array(
 				'action'  => $action,
 				'target'  => (string) $pending['client_id'],
-				'summary' => $summary . ' — ' . ( '' !== (string) $pending['client_name'] ? (string) $pending['client_name'] : (string) $pending['client_id'] ),
+				'summary' => $summary,
 			)
 		);
+	}
+
+	/**
+	 * The app's name as it introduced itself, or its client id.
+	 *
+	 * @param array $pending Pending request record.
+	 * @return string
+	 */
+	private static function app_name( array $pending ) {
+		return '' !== (string) $pending['client_name'] ? (string) $pending['client_name'] : (string) $pending['client_id'];
 	}
 }

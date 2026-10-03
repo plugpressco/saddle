@@ -63,10 +63,10 @@ class Saddle_Service_Sources {
 	 */
 	public static function natives() {
 		$defs = array(
-			'yoast'     => array( 'Yoast SEO', __( 'Yoast’s own SEO fields, edited natively.', 'saddle' ), 'Saddle_Yoast' ),
-			'rank-math' => array( 'Rank Math', __( 'Rank Math’s own SEO fields, edited natively.', 'saddle' ), 'Saddle_Rank_Math' ),
-			'aioseo'    => array( 'AIOSEO', __( 'AIOSEO’s own SEO fields, edited natively.', 'saddle' ), 'Saddle_Aioseo' ),
-			'wc'        => array( 'WooCommerce', __( 'Products and orders, handled natively.', 'saddle' ), 'Saddle_WC' ),
+			'yoast'     => array( 'Yoast SEO', __( 'Reads and edits Yoast’s own SEO fields.', 'saddle' ), 'Saddle_Yoast' ),
+			'rank-math' => array( 'Rank Math', __( 'Reads and edits Rank Math’s own SEO fields.', 'saddle' ), 'Saddle_Rank_Math' ),
+			'aioseo'    => array( 'AIOSEO', __( 'Reads and edits AIOSEO’s own SEO fields.', 'saddle' ), 'Saddle_Aioseo' ),
+			'wc'        => array( 'WooCommerce', __( 'Products and orders.', 'saddle' ), 'Saddle_WC' ),
 		);
 
 		$records = array();
