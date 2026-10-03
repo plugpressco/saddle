@@ -9,7 +9,8 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * The AREA body behind `GET /modules`, `GET /modules/{key}` and
- * `saddle/list-modules`: the registry's pages with their tabs, status line,
+ * `saddle/list-modules`: the registry's pages with their tabs (and each tab's
+ * pages, `subtabs`), status line,
  * setup progress, tool counts and settings summary, every callable already
  * resolved. One builder, so the admin screens and an agent read the same
  * thing.
@@ -47,10 +48,20 @@ class Saddle_Modules_View {
 
 		$tabs = array();
 		foreach ( $area['tabs'] as $tab => $label ) {
+			$pages = array();
+			foreach ( Saddle_Module_Nav::pages( $area, $tab ) as $sub => $page ) {
+				$pages[] = array(
+					'key'       => $sub,
+					'label'     => $page,
+					'admin_url' => Saddle_Module_Nav::url( $area, $tab, $sub ),
+				);
+			}
+
 			$tabs[] = array(
 				'key'       => $tab,
 				'label'     => $label,
-				'admin_url' => Saddle_Modules::url( $key, $tab ),
+				'admin_url' => Saddle_Module_Nav::url( $area, $tab ),
+				'subtabs'   => $pages,
 			);
 		}
 

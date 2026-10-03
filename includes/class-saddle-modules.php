@@ -105,29 +105,46 @@ class Saddle_Modules {
 		 *
 		 * A descriptor, keyed by the module's integration key:
 		 *
-		 *     'title'     => 'Analytics',         // The menu label and the page name.
-		 *     'icon'      => 'graph-up',          // The menu item's icon.
-		 *     'tabs'      => array( 'overview' => 'Overview', 'reports' => 'Reports' ),
-		 *     'tab_icons' => array( 'reports' => 'reports' ), // Tab key => icon.
+		 *     'title'        => 'Analytics',         // The menu label and the page name.
+		 *     'icon'         => 'graph-up',          // The menu item's icon.
+		 *     'tabs'         => array( 'overview' => 'Overview', 'reports' => 'Reports' ),
+		 *     'tab_icons'    => array( 'reports' => 'reports' ), // Tab key => icon.
+		 *     'subtabs'      => array( 'reports' => array( 'sources' => 'Sources', 'pages' => 'Pages' ) ),
+		 *     'subtab_icons' => array( 'reports' => array( 'sources' => 'globe', 'pages' => 'page' ) ),
 		 *
 		 * plus `product`, `version`, `summary`, `order`, `nav`, `capability`,
 		 * `script`, `content` and the `status`, `setup` and `settings`
 		 * callables.
 		 *
-		 * `icon` and `tab_icons` name Iconoir icons by file name. The allowlist
-		 * is the files in Saddle's assets/icons/ (Saddle_Nav_Icons::names()). A
-		 * name outside it draws no icon and is never an error. A tab with no
-		 * icon of its own gets one by key: `overview` is dashboard-dots and
-		 * `settings` is settings. Labels stay plain strings in `tabs`; an icon
-		 * never goes there. Older Core ignores both keys, so a module can ship
-		 * them first.
+		 * A module page has four levels, one control each: the Saddle submenu
+		 * picks the module; the left sidebar picks a section (`tabs`, `&tab=`);
+		 * the icon tab row picks a page inside the section (`subtabs`,
+		 * `&sub=`); a drill-in opens one item (`&view=`). Settings is the
+		 * sidebar's last item. A section has pages only when it names two or
+		 * more; the first is its default and is left out of the address
+		 * (Saddle_Module_Nav cleans and resolves them). An unknown `&sub=`
+		 * lands on the first page.
 		 *
-		 * A screen gets `props.header`. While a `&view=` is open inside a tab,
-		 * the screen may call `props.header?.drillIn?.( { title } )`. The header
-		 * then hides the tab row and shows a back link (the tab's label, to the
-		 * tab with no view) and the title. Core clears it when the view closes,
-		 * the tab changes or the screen unmounts. A screen that never calls it
-		 * keeps the tab row.
+		 * `icon`, `tab_icons` and `subtab_icons` name Iconoir icons by file
+		 * name. The allowlist is the files in Saddle's assets/icons/
+		 * (Saddle_Nav_Icons::names()). A name outside it draws no icon and is
+		 * never an error. A tab or page with no icon of its own gets one by
+		 * key: `overview` is dashboard-dots and `settings` is settings. Labels
+		 * stay plain strings in `tabs` and `subtabs`; an icon never goes there.
+		 * Older Core ignores all three keys, so a module can ship them first.
+		 *
+		 * A screen registers for a tab, or for one page of it:
+		 * `{ module, tab, sub, Component }` through `saddle.admin.screens`.
+		 * Core picks the most specific match (module, tab and sub, then module
+		 * and tab) and passes `sub` as a prop: the resolved page, or '' for a
+		 * section with no pages. A module registers per-page screens only when
+		 * `window.saddleShell?.has?.( 'subtabs' )`.
+		 *
+		 * A screen gets `props.header`. While a `&view=` is open, the screen may
+		 * call `props.header?.drillIn?.( { title } )`. The header's breadcrumb
+		 * then reads "Saddle / Module / Section / title", and the icon tab row
+		 * steps aside. Core clears it when the view closes, the page or tab
+		 * changes or the screen unmounts.
 		 *
 		 * @param array $modules Descriptors keyed by the module's integration key.
 		 */
@@ -165,20 +182,26 @@ class Saddle_Modules {
 				}
 			}
 
+			// Pages are cleaned after the Settings tab is added, so a module
+			// can split the Settings Core added for it.
+			$subtabs = Saddle_Module_Nav::subtabs( $tabs, isset( $module['subtabs'] ) ? $module['subtabs'] : array() );
+
 			$modules[ $key ] = $callables + array(
-				'slug'       => 'saddle-' . $key,
-				'title'      => (string) $module['title'],
-				'product'    => isset( $module['product'] ) ? (string) $module['product'] : '',
-				'version'    => isset( $module['version'] ) ? (string) $module['version'] : '',
-				'summary'    => isset( $module['summary'] ) ? (string) $module['summary'] : '',
-				'order'      => isset( $module['order'] ) ? (int) $module['order'] : 50,
-				'nav'        => ! isset( $module['nav'] ) || (bool) $module['nav'],
-				'capability' => isset( $module['capability'] ) && is_string( $module['capability'] ) && '' !== $module['capability'] ? $module['capability'] : 'manage_options',
-				'tabs'       => $tabs,
-				'icon'       => Saddle_Nav_Icons::pick( isset( $module['icon'] ) ? $module['icon'] : '' ),
-				'tab_icons'  => Saddle_Nav_Icons::tab_icons( $tabs, isset( $module['tab_icons'] ) ? $module['tab_icons'] : array() ),
-				'script'     => isset( $module['script'] ) ? sanitize_key( (string) $module['script'] ) : '',
-				'content'    => isset( $module['content'] ) && 'mount' === $module['content'] ? 'mount' : 'screens',
+				'slug'         => 'saddle-' . $key,
+				'title'        => (string) $module['title'],
+				'product'      => isset( $module['product'] ) ? (string) $module['product'] : '',
+				'version'      => isset( $module['version'] ) ? (string) $module['version'] : '',
+				'summary'      => isset( $module['summary'] ) ? (string) $module['summary'] : '',
+				'order'        => isset( $module['order'] ) ? (int) $module['order'] : 50,
+				'nav'          => ! isset( $module['nav'] ) || (bool) $module['nav'],
+				'capability'   => isset( $module['capability'] ) && is_string( $module['capability'] ) && '' !== $module['capability'] ? $module['capability'] : 'manage_options',
+				'tabs'         => $tabs,
+				'icon'         => Saddle_Nav_Icons::pick( isset( $module['icon'] ) ? $module['icon'] : '' ),
+				'tab_icons'    => Saddle_Nav_Icons::tab_icons( $tabs, isset( $module['tab_icons'] ) ? $module['tab_icons'] : array() ),
+				'subtabs'      => $subtabs,
+				'subtab_icons' => Saddle_Module_Nav::icons( $subtabs, isset( $module['subtab_icons'] ) ? $module['subtab_icons'] : array() ),
+				'script'       => isset( $module['script'] ) ? sanitize_key( (string) $module['script'] ) : '',
+				'content'      => isset( $module['content'] ) && 'mount' === $module['content'] ? 'mount' : 'screens',
 			);
 		}
 
@@ -198,7 +221,8 @@ class Saddle_Modules {
 	 *
 	 * @return array<string,array> Keyed by area; each has `slug`, `title`,
 	 *                             `tabs`, `nav`, `capability`, `module`,
-	 *                             `icon` and `tab_icons`.
+	 *                             `icon`, `tab_icons`, `subtabs` and
+	 *                             `subtab_icons`.
 	 */
 	public static function areas() {
 		$core  = self::core_areas();
@@ -216,11 +240,13 @@ class Saddle_Modules {
 		foreach ( $areas as $key => $area ) {
 			$areas[ $key ] = array_merge(
 				array(
-					'nav'        => true,
-					'capability' => 'manage_options',
-					'module'     => ! isset( $core[ $key ] ),
-					'icon'       => '',
-					'tab_icons'  => Saddle_Nav_Icons::tab_icons( $area['tabs'], array() ),
+					'nav'          => true,
+					'capability'   => 'manage_options',
+					'module'       => ! isset( $core[ $key ] ),
+					'icon'         => '',
+					'tab_icons'    => Saddle_Nav_Icons::tab_icons( $area['tabs'], array() ),
+					'subtabs'      => array(),
+					'subtab_icons' => array(),
 				),
 				$area
 			);
@@ -262,6 +288,21 @@ class Saddle_Modules {
 		$tabs = $areas[ $area ]['tabs'];
 
 		return isset( $tabs[ $tab ] ) ? $tab : (string) array_key_first( $tabs );
+	}
+
+	/**
+	 * A page of a section (`&sub=`). An empty or unknown page falls back to
+	 * the section's first one; a section with no pages has none ('').
+	 *
+	 * @param string $area Area key.
+	 * @param string $tab  Section key, already resolved.
+	 * @param string $sub  Requested page.
+	 * @return string
+	 */
+	public static function resolve_sub( $area, $tab, $sub ) {
+		$areas = self::areas();
+
+		return isset( $areas[ $area ] ) ? Saddle_Module_Nav::resolve( $areas[ $area ], $tab, $sub ) : '';
 	}
 
 	/**
@@ -334,25 +375,22 @@ class Saddle_Modules {
 	}
 
 	/**
-	 * The admin URL of an area, and of a tab in it. The first tab has no
-	 * `&tab=`, so each page has one canonical address.
+	 * The admin URL of an area, of a tab in it, and of a page in that tab.
+	 * The first tab has no `&tab=` and the first page no `&sub=`, so each
+	 * screen has one canonical address.
 	 *
 	 * @param string $area Area key.
 	 * @param string $tab  Tab key.
+	 * @param string $sub  Page key, inside the tab.
 	 * @return string
 	 */
-	public static function url( $area, $tab = '' ) {
+	public static function url( $area, $tab = '', $sub = '' ) {
 		$areas = self::areas();
 		if ( ! isset( $areas[ $area ] ) ) {
 			return admin_url( 'admin.php?page=saddle' );
 		}
 
-		$args = array( 'page' => $areas[ $area ]['slug'] );
-		if ( '' !== $tab && array_key_first( $areas[ $area ]['tabs'] ) !== $tab && isset( $areas[ $area ]['tabs'][ $tab ] ) ) {
-			$args['tab'] = $tab;
-		}
-
-		return add_query_arg( $args, admin_url( 'admin.php' ) );
+		return Saddle_Module_Nav::url( $areas[ $area ], (string) $tab, (string) $sub );
 	}
 
 	/**
@@ -383,7 +421,9 @@ class Saddle_Modules {
 
 	/**
 	 * A module's setup tasks, each cleaned and its `tab` resolved to a URL.
-	 * Null when there are none or the callable misbehaves.
+	 * An action may also name a page (`sub`), a `view` and the module's own
+	 * `args`; a tab action carries them as `route` too, so Core can open it
+	 * without a reload. Null when there are none or the callable misbehaves.
 	 *
 	 * @param string $key Module key.
 	 * @return array[]|null
@@ -408,11 +448,22 @@ class Saddle_Modules {
 			$action = null;
 			$raw    = isset( $task['action'] ) && is_array( $task['action'] ) ? $task['action'] : array();
 			if ( ! empty( $raw['label'] ) && is_string( $raw['label'] ) ) {
-				$url = '';
+				$url   = '';
+				$route = null;
 				if ( ! empty( $raw['url'] ) && is_string( $raw['url'] ) ) {
 					$url = esc_url_raw( $raw['url'] );
 				} elseif ( ! empty( $raw['tab'] ) && is_string( $raw['tab'] ) ) {
-					$url = esc_url_raw( self::url( $key, sanitize_key( $raw['tab'] ) ) );
+					$route = array(
+						'tab'  => sanitize_key( $raw['tab'] ),
+						'sub'  => isset( $raw['sub'] ) && is_string( $raw['sub'] ) ? sanitize_key( $raw['sub'] ) : '',
+						'view' => isset( $raw['view'] ) && is_string( $raw['view'] ) ? sanitize_key( $raw['view'] ) : '',
+						'args' => Saddle_Module_Nav::clean_args( isset( $raw['args'] ) ? $raw['args'] : array() ),
+					);
+					$query = $route['args'];
+					if ( '' !== $route['view'] ) {
+						$query = array( 'view' => $route['view'] ) + $query;
+					}
+					$url = esc_url_raw( add_query_arg( array_map( 'rawurlencode', $query ), self::url( $key, $route['tab'], $route['sub'] ) ) );
 				}
 				if ( '' !== $url ) {
 					$action = array(
@@ -420,6 +471,9 @@ class Saddle_Modules {
 						'url'      => $url,
 						'external' => ! empty( $raw['external'] ),
 					);
+					if ( $route ) {
+						$action['route'] = $route;
+					}
 				}
 			}
 

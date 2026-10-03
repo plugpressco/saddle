@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-03T03:07:37+00:00\n"
+"POT-Creation-Date: 2026-10-03T21:30:52+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -17,11 +17,11 @@ msgstr ""
 #. Plugin Name of the plugin
 #: saddle.php
 #: includes/abilities/core-content.php:50
-#: includes/admin/class-saddle-settings.php:33
-#: includes/admin/class-saddle-settings.php:34
+#: includes/admin/class-saddle-settings.php:35
+#: includes/admin/class-saddle-settings.php:36
 #: includes/class-saddle-core-settings.php:40
 #: admin/build/index.js:77
-#: admin/src/components/Frame.jsx:322
+#: admin/src/components/Frame.jsx:412
 msgid "Saddle"
 msgstr ""
 
@@ -2318,7 +2318,7 @@ msgid "List Saddle pages and modules"
 msgstr ""
 
 #: includes/abilities/modules.php:20
-msgid "Lists every page of the owner's Saddle admin (Home, AI apps, Services, Context, Settings) and every installed Saddle module (for example Analytics), in menu order. Each entry has a one-sentence \"summary\" you can repeat to the owner, its \"state\" and status \"line\" where a module reports one, setup progress with each unfinished task, the \"admin_url\" of the page and of each tab, how many tools it owns and how many of those you can call now, and which of its settings you may change (\"agent_writable\"). Use it first when the owner asks what is installed, what is left to set up, or where something lives. When you point the owner somewhere, give them the \"admin_url\" instead of describing clicks. Read-only. A Saddle module is an add-on plugin with its own page in the Saddle menu, such as Analytics; it is not a Divi module or a block on a page, which the saddle-divi-* and block tools handle."
+msgid "Lists every page of the owner's Saddle admin (Home, AI apps, Services, Context, Settings) and every installed Saddle module (for example Analytics), in menu order. Each entry has a one-sentence \"summary\" you can repeat to the owner, its \"state\" and status \"line\" where a module reports one, setup progress with each unfinished task, the \"admin_url\" of the page, of each tab and of each page inside a tab (\"subtabs\"), how many tools it owns and how many of those you can call now, and which of its settings you may change (\"agent_writable\"). Use it first when the owner asks what is installed, what is left to set up, or where something lives. When you point the owner somewhere, give them the \"admin_url\" instead of describing clicks. Read-only. A Saddle module is an add-on plugin with its own page in the Saddle menu, such as Analytics; it is not a Divi module or a block on a page, which the saddle-divi-* and block tools handle."
 msgstr ""
 
 #: includes/abilities/modules.php:36
@@ -3713,25 +3713,25 @@ msgid "No service with that key."
 msgstr ""
 
 #. translators: %s: page name, such as Dashboard or AI apps.
-#: includes/admin/class-saddle-settings.php:56
+#: includes/admin/class-saddle-settings.php:58
 #, php-format
 msgid "%s ‹ Saddle"
 msgstr ""
 
-#: includes/admin/class-saddle-settings.php:185
+#: includes/admin/class-saddle-settings.php:187
 #: includes/class-saddle-modules.php:88
-#: includes/class-saddle-modules.php:164
+#: includes/class-saddle-modules.php:181
 msgid "Settings"
 msgstr ""
 
-#: includes/admin/class-saddle-settings.php:186
+#: includes/admin/class-saddle-settings.php:188
 #: includes/class-saddle-notices.php:60
 #: includes/class-saddle-recipes.php:77
 #: includes/class-saddle-recipes.php:124
 msgid "Get started"
 msgstr ""
 
-#: includes/admin/class-saddle-settings.php:398
+#: includes/admin/class-saddle-settings.php:409
 msgid "Saddle: the admin UI has not been built yet. Run \"npm install && npm run build\" in the plugin folder."
 msgstr ""
 
@@ -5200,28 +5200,28 @@ msgstr ""
 msgid "Site memory"
 msgstr ""
 
-#: includes/class-saddle-modules-view.php:94
+#: includes/class-saddle-modules-view.php:105
 msgid "Whether AI access is on, what your connected apps have been doing, and what is left to set up."
 msgstr ""
 
-#: includes/class-saddle-modules-view.php:95
+#: includes/class-saddle-modules-view.php:106
 msgid "The AI apps connected to this site: connect another, and choose what each may do."
 msgstr ""
 
-#: includes/class-saddle-modules-view.php:96
+#: includes/class-saddle-modules-view.php:107
 msgid "The outside accounts and plugins your apps can use, like Unsplash, and what each one sends off your site."
 msgstr ""
 
-#: includes/class-saddle-modules-view.php:97
+#: includes/class-saddle-modules-view.php:108
 msgid "What every connected app knows about this site: your instructions, skills and memory."
 msgstr ""
 
-#: includes/class-saddle-modules-view.php:98
+#: includes/class-saddle-modules-view.php:109
 msgid "Safety switches, single tools, sign-in and the connection check."
 msgstr ""
 
 #. translators: %s: module name.
-#: includes/class-saddle-modules-view.php:104
+#: includes/class-saddle-modules-view.php:115
 #, php-format
 msgid "%s is installed."
 msgstr ""
@@ -5229,8 +5229,8 @@ msgstr ""
 #: includes/class-saddle-modules.php:56
 #: includes/class-saddle-modules.php:59
 #: admin/build/index.js:117
-#: admin/src/App.jsx:59
-#: admin/src/App.jsx:61
+#: admin/src/App.jsx:62
+#: admin/src/App.jsx:64
 msgid "Home"
 msgstr ""
 
@@ -5255,7 +5255,7 @@ msgstr ""
 msgid "General"
 msgstr ""
 
-#: includes/class-saddle-modules.php:151
+#: includes/class-saddle-modules.php:168
 msgid "Overview"
 msgstr ""
 
@@ -6760,7 +6760,7 @@ msgid "This persisted attribute does nothing — rewrite it on a path the block 
 msgstr ""
 
 #. translators: %s: minimum WordPress version.
-#: saddle.php:546
+#: saddle.php:547
 #, php-format
 msgid "Saddle requires WordPress %s or later (the core Abilities API). The MCP server is disabled until you upgrade."
 msgstr ""
@@ -8127,7 +8127,7 @@ msgstr ""
 #: admin/src/components/ConnectedClients.jsx:363
 #: admin/src/components/Home.jsx:201
 #: admin/src/onboarding-logic.js:610
-#: admin/src/screens.jsx:196
+#: admin/src/screens.jsx:204
 msgid "Connect an app"
 msgstr ""
 
@@ -8395,7 +8395,7 @@ msgstr ""
 
 #: admin/build/index.js:64
 #: admin/build/index.js:118
-#: admin/src/App.jsx:567
+#: admin/src/App.jsx:586
 #: admin/src/components/FirstRun.jsx:727
 msgid "Welcome"
 msgstr ""
@@ -8605,52 +8605,57 @@ msgid "Sign in again"
 msgstr ""
 
 #: admin/build/index.js:74
-#: admin/src/components/Frame.jsx:61
+#: admin/src/components/SectionNav.jsx:80
+msgid "Sections"
+msgstr ""
+
+#: admin/build/index.js:74
+#: admin/src/components/Frame.jsx:169
 msgid "Paused"
 msgstr ""
 
 #: admin/build/index.js:74
-#: admin/src/components/Frame.jsx:62
+#: admin/src/components/Frame.jsx:170
 msgid "AI on"
 msgstr ""
 
 #: admin/build/index.js:74
-#: admin/src/components/Frame.jsx:70
+#: admin/src/components/Frame.jsx:178
 msgid "AI is paused"
 msgstr ""
 
 #: admin/build/index.js:74
-#: admin/src/components/Frame.jsx:71
+#: admin/src/components/Frame.jsx:179
 msgid "AI is on"
 msgstr ""
 
 #: admin/build/index.js:74
 #: admin/build/index.js:77
-#: admin/src/components/Frame.jsx:75
-#: admin/src/components/Frame.jsx:382
+#: admin/src/components/Frame.jsx:183
+#: admin/src/components/Frame.jsx:510
 msgid "No app can read or change this site until you resume."
 msgstr ""
 
 #: admin/build/index.js:74
-#: admin/src/components/Frame.jsx:79
+#: admin/src/components/Frame.jsx:187
 msgid "Your apps can work on this site, each within the access you gave it."
 msgstr ""
 
 #: admin/build/index.js:74
 #: admin/build/index.js:77
-#: admin/src/components/Frame.jsx:95
-#: admin/src/components/Frame.jsx:394
+#: admin/src/components/Frame.jsx:203
+#: admin/src/components/Frame.jsx:522
 msgid "Resume"
 msgstr ""
 
 #: admin/build/index.js:74
-#: admin/src/components/Frame.jsx:96
+#: admin/src/components/Frame.jsx:204
 msgid "Pause all apps"
 msgstr ""
 
 #. translators: %d: number of notices.
 #: admin/build/index.js:75
-#: admin/src/components/Frame.jsx:157
+#: admin/src/components/Frame.jsx:265
 #, js-format
 msgid "%d notice from other plugins"
 msgid_plural "%d notices from other plugins"
@@ -8659,7 +8664,7 @@ msgstr[1] ""
 
 #. translators: %d: number of notices.
 #: admin/build/index.js:76
-#: admin/src/components/Frame.jsx:168
+#: admin/src/components/Frame.jsx:276
 #, js-format
 msgid "%d notice"
 msgid_plural "%d notices"
@@ -8667,34 +8672,34 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: admin/build/index.js:76
-#: admin/src/components/Frame.jsx:193
+#: admin/src/components/Frame.jsx:301
 msgid "From Saddle"
 msgstr ""
 
 #. translators: %s: plugin version.
 #: admin/build/index.js:77
-#: admin/src/components/Frame.jsx:228
+#: admin/src/components/Frame.jsx:336
 #, js-format
 msgid "Saddle %s"
 msgstr ""
 
 #: admin/build/index.js:77
-#: admin/src/components/Frame.jsx:246
+#: admin/src/components/Frame.jsx:354
 msgid "Docs"
 msgstr ""
 
 #: admin/build/index.js:77
-#: admin/src/components/Frame.jsx:251
+#: admin/src/components/Frame.jsx:359
 msgid "Rate Saddle"
 msgstr ""
 
 #: admin/build/index.js:77
-#: admin/src/components/Frame.jsx:310
+#: admin/src/components/Frame.jsx:476
 msgid "Skip to content"
 msgstr ""
 
 #: admin/build/index.js:77
-#: admin/src/components/Frame.jsx:381
+#: admin/src/components/Frame.jsx:509
 msgid "AI is paused."
 msgstr ""
 
@@ -9804,30 +9809,30 @@ msgstr ""
 
 #. translators: %s: module name, such as Saddle Analytics.
 #: admin/build/index.js:117
-#: admin/src/screens.jsx:124
+#: admin/src/screens.jsx:129
 #, js-format
 msgid "%s did not add this screen. Updating it may add it."
 msgstr ""
 
 #: admin/build/index.js:117
-#: admin/src/screens.jsx:261
+#: admin/src/screens.jsx:269
 msgid "Run setup again"
 msgstr ""
 
 #. translators: %s: error message.
 #: admin/build/index.js:118
-#: admin/src/App.jsx:287
+#: admin/src/App.jsx:306
 #, js-format
 msgid "Couldn’t refresh the connections list: %s"
 msgstr ""
 
 #: admin/build/index.js:118
-#: admin/src/App.jsx:508
+#: admin/src/App.jsx:527
 msgid "This site’s address changed after AI write access was turned on, which can mean a copy or migration carried over live credentials. If you didn’t expect that, review your AI apps and disconnect any you don’t recognise."
 msgstr ""
 
 #: admin/build/index.js:118
-#: admin/src/App.jsx:513
+#: admin/src/App.jsx:532
 msgid "Mark as expected"
 msgstr ""
 

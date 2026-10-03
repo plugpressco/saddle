@@ -1,16 +1,22 @@
 /**
- * The frame Core draws on every Saddle page (#274, #280).
+ * The frame Core draws on every Saddle page (#274, #280,
+ * planning/MODULE-LAYOUT.md).
  *
- * A white header band across the full width: the mark and the page's name,
- * the notices bell, and the AI switch (#309): "AI on" or "Paused", which
- * opens a small panel to pause or resume every app. While paused, a strip
- * under the header says so on every Saddle page. A page with more than one
- * tab draws them inside the band, each with its icon. While a module's screen
- * has drilled into an item (K4, frame-logic.js), the tab row gives way to a
- * back link to the tab and the item's title.
- * Then the page, and a quiet footer. WordPress's own left menu is the
- * navigation: there is no sidebar inside the page. A module's content sits in
- * the same frame, so every Saddle page reads as one product.
+ * A white header band across the full width: the breadcrumb
+ * `[mark] Saddle / Page` (Home reads `[mark] Saddle`), the notices bell, and
+ * the AI switch (#309): "AI on" or "Paused", which opens a small panel to
+ * pause or resume every app. While paused, a strip under the header says so
+ * on every Saddle page.
+ *
+ * Four levels, one control each. WordPress's Saddle submenu picks the page.
+ * A module's page has two columns: a left sidebar of its sections
+ * (SectionNav, `&tab=`), and the content with an icon tab row of the
+ * section's pages on top (`&sub=`, drawn when a section has two or more).
+ * A drill-in (`&view=`) opens one item: the breadcrumb reads
+ * `Saddle / Module / Section / title` and the icon tab row steps aside.
+ * Core's pages keep one column and their header tab row, if they have one.
+ * Then a quiet footer. A module's content sits in the same frame, so every
+ * Saddle page reads as one product. The logic is frame-logic.js.
  *
  * Never draw the frame while the app is still loading: WordPress's common.js
  * moves every `.notice` to just after the first `.wrap h1` once the page has
@@ -26,11 +32,113 @@ import { NavIcon } from '../icons/iconoir';
 import { icons } from '../icons/kit';
 import { BrandMark } from './icons';
 import NoticeItem from './NoticeItem';
+import SectionNav, { revealActive } from './SectionNav';
 
 // One content width for every page: sparse pages don't feel empty and the
-// column never resizes between tabs. Home is wider, for its two columns.
+// column never resizes between tabs. Home is wider, for its two columns; a
+// module's column is narrower, beside its sidebar.
 const PAGE_WIDTH = 960;
 const HOME_WIDTH = 1040;
+const MODULE_WIDTH = 880;
+
+/**
+ * A row of tabs in the minimal style, each with its icon when every tab has
+ * one: Core's header row and a module section's pages.
+ *
+ * @param {Object}   props
+ * @param {Array}    props.items    `[ { key, label, icon } ]`.
+ * @param {string}   props.value    The active key.
+ * @param {Function} props.onChange Called with a key.
+ * @param {string}   props.label    The row's accessible name.
+ */
+function TabRow( { items, value, onChange, label } ) {
+	const withIcons = tabsHaveIcons( items );
+	return (
+		<Tabs
+			value={ value }
+			onChange={ onChange }
+			aria-label={ label }
+			items={ items.map( ( t ) => ( {
+				value: t.key,
+				label: withIcons ? (
+					<>
+						<NavIcon name={ t.icon } />
+						{ t.label }
+					</>
+				) : (
+					t.label
+				),
+			} ) ) }
+		/>
+	);
+}
+
+/**
+ * The breadcrumb in the header's h1. Every part but the last is a link: the
+ * mark and "Saddle" go to Home; a module's name to its first section; a
+ * section to itself with no item open. Those last two stay in the app on a
+ * plain click, so the screen unmounts and can save what the owner typed.
+ *
+ * @param {Object}   props
+ * @param {Array}    props.crumbs  From frameHeader().
+ * @param {Function} props.onCrumb Called with a crumb's key on a plain click;
+ *                                 returns true when it navigated in the app.
+ */
+function Breadcrumb( { crumbs, onCrumb } ) {
+	const [ first, ...rest ] = crumbs;
+	const homeInner = (
+		<>
+			<BrandMark />
+			<span>{ first.label }</span>
+		</>
+	);
+
+	return (
+		<h1 className="saddle-header__title">
+			{ first.url ? (
+				<a className="saddle-header__home" href={ first.url }>
+					{ homeInner }
+				</a>
+			) : (
+				<span
+					className="saddle-header__home"
+					aria-current={ rest.length ? undefined : 'page' }
+				>
+					{ homeInner }
+				</span>
+			) }
+			{ rest.map( ( crumb, i ) => (
+				<span
+					key={ `${ crumb.key }-${ i }` }
+					className="saddle-header__crumb"
+				>
+					<span className="saddle-header__sep" aria-hidden="true">
+						/
+					</span>
+					{ crumb.url ? (
+						<a
+							className="saddle-header__link"
+							href={ crumb.url }
+							onClick={ ( event ) => {
+								if (
+									onCrumb &&
+									isPlainClick( event ) &&
+									onCrumb( crumb.key )
+								) {
+									event.preventDefault();
+								}
+							} }
+						>
+							{ crumb.label }
+						</a>
+					) : (
+						<span aria-current="page">{ crumb.label }</span>
+					) }
+				</span>
+			) ) }
+		</h1>
+	);
+}
 
 /**
  * The AI switch, on every Saddle page: "AI on" or "Paused". It opens a small
@@ -258,11 +366,13 @@ function Footer( { area } ) {
 /**
  * @param {Object}   props
  * @param {Object}   props.area            The page, from saddleData.areas.
- * @param {string}   props.tab             The active tab.
- * @param {string}   props.view            The module's view inside the tab, or ''.
- * @param {?Object}  props.drill           The screen's drill-in, `{ title, tab, view }`.
+ * @param {string}   props.tab             The active tab (a module's section).
+ * @param {string}   props.sub             The active page inside the tab, or ''.
+ * @param {string}   props.view            The module's view inside the page, or ''.
+ * @param {?Object}  props.drill           The screen's drill-in, `{ title, tab, sub, view }`.
  * @param {Function} props.onTab           Called with a tab key.
- * @param {Function} props.onBack          Leaves the drill-in for its tab, in the app.
+ * @param {Function} props.onSub           Called with a page key.
+ * @param {Function} props.onBack          Leaves the drill-in for its page, in the app.
  * @param {Object}   props.status          { paused, pausing, onToggle }.
  * @param {boolean}  props.notices         Show the notices bell.
  * @param {boolean}  props.showTabs        Draw the page's tabs (first run doesn't).
@@ -276,9 +386,11 @@ function Footer( { area } ) {
 export default function Frame( {
 	area,
 	tab,
+	sub = '',
 	view = '',
 	drill = null,
 	onTab,
+	onSub,
 	onBack,
 	status,
 	notices = true,
@@ -290,20 +402,73 @@ export default function Frame( {
 	children,
 } ) {
 	const home = ( saddleData.areas || [] ).find( ( a ) => a.key === 'home' );
-	const head = frameHeader( { area, tab, view, drill } );
+	const head = frameHeader( {
+		area,
+		tab,
+		sub,
+		view,
+		drill,
+		crumb,
+		home: { label: __( 'Saddle', 'saddle' ), url: home ? home.url : '' },
+	} );
 	const tabs = showTabs && head.showTabs ? area.tabs : null;
-	const tabIcons = tabsHaveIcons( tabs );
-	const back = crumb ? null : head.back;
+	const current = ( area.tabs || [] ).find( ( t ) => t.key === tab );
+	const pages = head.showSubtabs && current ? current.subtabs : null;
+	const pagesRef = useRef( null );
+	useEffect(
+		() =>
+			revealActive(
+				pagesRef.current,
+				'[role="tab"][data-state="active"]'
+			),
+		[ tab, sub, pages ]
+	);
 
-	// The back link is a real link, so a middle click or "Copy link" works. A
-	// plain click stays in the app, so the screen unmounts and can save what
-	// the owner typed before the view closes.
-	const goBack = ( event ) => {
-		if ( onBack && isPlainClick( event ) ) {
-			event.preventDefault();
-			onBack();
+	// A module crumb opens the first section, a section crumb closes the
+	// item; both in the app. Any other link loads its page.
+	const onCrumb = ( key ) => {
+		if ( 'module' === key && onTab && area.tabs && area.tabs[ 0 ] ) {
+			onTab( area.tabs[ 0 ].key );
+			return true;
 		}
+		if ( 'section' === key && onBack ) {
+			onBack();
+			return true;
+		}
+		return false;
 	};
+
+	let width = PAGE_WIDTH;
+	if ( head.showSidebar ) {
+		width = MODULE_WIDTH;
+	} else if ( 'home' === area.key && 'overview' === tab ) {
+		width = HOME_WIDTH;
+	}
+
+	const content = (
+		<main
+			id="pp-main"
+			className="saddle-frame"
+			data-saddle-screen={ [ area.key, tab, sub, view ]
+				.filter( Boolean )
+				.join( '/' ) }
+		>
+			<AppContent width={ width }>
+				{ notice && (
+					<NoticeItem
+						className="saddle-frame__notice"
+						notice={ notice }
+						onDismiss={
+							notice.dismiss && onDismissNotice
+								? onDismissNotice
+								: undefined
+						}
+					/>
+				) }
+				{ children }
+			</AppContent>
+		</main>
+	);
 
 	return (
 		<div className="pp-app saddle-app saddle-app--frame">
@@ -316,37 +481,7 @@ export default function Frame( {
 				}` }
 			>
 				<div className="saddle-header__row">
-					<h1 className="saddle-header__title">
-						<a
-							className="saddle-header__home"
-							href={ home ? home.url : undefined }
-							aria-label={ __( 'Saddle', 'saddle' ) }
-						>
-							<BrandMark />
-						</a>
-						{ back && (
-							<>
-								<a
-									className="saddle-header__back"
-									href={ back.url }
-									onClick={ goBack }
-								>
-									<NavIcon
-										name="nav-arrow-left"
-										size={ 20 }
-									/>
-									<span>{ back.label }</span>
-								</a>
-								<span
-									className="saddle-header__sep"
-									aria-hidden="true"
-								>
-									/
-								</span>
-							</>
-						) }
-						<span aria-current="page">{ crumb || head.title }</span>
-					</h1>
+					<Breadcrumb crumbs={ head.crumbs } onCrumb={ onCrumb } />
 					<div className="saddle-header__actions">
 						{ notices && (
 							<ForeignNotices
@@ -359,21 +494,11 @@ export default function Frame( {
 				</div>
 				{ tabs && (
 					<div className="saddle-header__tabs">
-						<Tabs
+						<TabRow
+							items={ tabs }
 							value={ tab }
 							onChange={ onTab }
-							aria-label={ area.title }
-							items={ tabs.map( ( t ) => ( {
-								value: t.key,
-								label: tabIcons ? (
-									<>
-										<NavIcon name={ t.icon } />
-										{ t.label }
-									</>
-								) : (
-									t.label
-								),
-							} ) ) }
+							label={ area.title }
 						/>
 					</div>
 				) }
@@ -398,34 +523,26 @@ export default function Frame( {
 					</Button>
 				</div>
 			) }
-			<main
-				id="pp-main"
-				className="saddle-frame"
-				data-saddle-screen={ `${ area.key }/${ tab }${
-					view ? `/${ view }` : ''
-				}` }
-			>
-				<AppContent
-					width={
-						'home' === area.key && 'overview' === tab
-							? HOME_WIDTH
-							: PAGE_WIDTH
-					}
-				>
-					{ notice && (
-						<NoticeItem
-							className="saddle-frame__notice"
-							notice={ notice }
-							onDismiss={
-								notice.dismiss && onDismissNotice
-									? onDismissNotice
-									: undefined
-							}
-						/>
-					) }
-					{ children }
-				</AppContent>
-			</main>
+			{ head.showSidebar ? (
+				<div className="saddle-module">
+					<SectionNav area={ area } tab={ tab } onSection={ onTab } />
+					<div className="saddle-module__body">
+						{ pages && (
+							<div className="saddle-subtabs" ref={ pagesRef }>
+								<TabRow
+									items={ pages }
+									value={ sub }
+									onChange={ onSub }
+									label={ current.label }
+								/>
+							</div>
+						) }
+						{ content }
+					</div>
+				</div>
+			) : (
+				content
+			) }
 			<Footer area={ area } />
 		</div>
 	);

@@ -205,6 +205,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 == Changelog ==
 
 = Unreleased =
+* Changed: The header on every Saddle page reads "Saddle / Page", with Saddle linking to Home. A module page, such as Saddle Rank, has a sidebar of its sections, and a row of icon tabs when a section has more than one page. Each section and page has its own address.
 * Changed: Each page in the Saddle menu and each tab on a page has an icon. When a plugin such as Saddle Analytics adds a page, a thin line separates it from AI apps, Services, Context and Settings.
 * New: For plugin developers: a module can name icons for its menu item and tabs, and a module screen can show the item it opened in the page header, with a link back to its tab.
 * Fixed: First run sees an app that connects before the waiting line first checks. Reloading after the app connected goes on to Try it instead of offering to replace the key you just set up.

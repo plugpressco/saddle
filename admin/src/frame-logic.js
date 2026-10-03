@@ -1,51 +1,135 @@
 /**
- * The frame's header as plain logic (K4, the drill-in), so it can be tested
- * without React.
+ * The frame's header and layout as plain logic, so they can be tested
+ * without React (planning/MODULE-LAYOUT.md, M4).
  *
- * A module screen opens a third level with `&view=` inside a tab. While it is
- * open, the screen may call `props.header.drillIn( { title } )`. The header
- * then hides the tab row and reads: back icon, the tab's label as a link to
- * the tab with no view, `/`, the title. The drill-in belongs to the tab and
- * view it was set on, so it ends on its own when the view closes or the tab
- * changes; Core also clears it when the screen unmounts.
+ * Every Saddle page has a breadcrumb header: `[mark] Saddle / Page`, and Home
+ * reads `[mark] Saddle`. A module's page adds a left sidebar of its sections
+ * (`&tab=`) and, in a section with two or more pages, an icon tab row
+ * (`&sub=`). Core's pages keep their header tab row instead.
+ *
+ * A module screen opens one item with `&view=`. While it is open, the screen
+ * may call `props.header.drillIn( { title } )`: the breadcrumb then reads
+ * `Saddle / Module / Section / title` and the icon tab row steps aside. The
+ * drill-in belongs to the tab, page and view it was set on, so it ends on its
+ * own when the view closes or the page or tab changes; Core also clears it
+ * when the screen unmounts.
  */
 
 /**
- * What the header draws.
+ * What the frame draws.
  *
  * @param {Object}  props
- * @param {Object}  props.area  The page: `{ title, url, tabs: [ { key, label, url } ] }`.
+ * @param {Object}  props.area  The page: `{ key, title, url, module, tabs: [ { key, label, url, subtabs } ] }`.
  * @param {string}  props.tab   The active tab.
- * @param {string}  props.view  The view inside the tab, or ''.
- * @param {?Object} props.drill What the screen asked for: `{ title, tab, view }`
+ * @param {string}  props.sub   The active page inside the tab, or ''.
+ * @param {string}  props.view  The view inside the page, or ''.
+ * @param {?Object} props.drill What the screen asked for: `{ title, tab, sub, view }`
  *                              (as `drillHeader()` records it), or null.
- * @return {{showTabs: boolean, back: ?{label: string, url: string}, title: string}} The header.
+ * @param {Object}  props.home  The first crumb: `{ label, url }` (Saddle, to Home).
+ * @param {string=} props.crumb The page's name when it is not the area's title
+ *                              (first run's "Welcome").
+ * @return {{crumbs: Array, title: string, drilled: boolean, showTabs: boolean, showSidebar: boolean, showSubtabs: boolean}}
+ *         The header. Each crumb is `{ key, label, url }`; `key` is `home`,
+ *         `module`, `section` or `current`, and the last one has no url.
  */
-export function frameHeader( { area, tab, view, drill } ) {
+export function frameHeader( {
+	area,
+	tab,
+	sub = '',
+	view = '',
+	drill = null,
+	home = { label: '', url: '' },
+	crumb = '',
+} ) {
 	const tabs = area && Array.isArray( area.tabs ) ? area.tabs : [];
 	const title = ( area && area.title ) || '';
+	const module = !! ( area && area.module ) && ! crumb;
+	const current = tabs.find( ( t ) => t.key === tab );
+	const pages =
+		current && Array.isArray( current.subtabs ) ? current.subtabs : [];
 
 	const drilled =
+		! crumb &&
 		!! view &&
 		!! drill &&
 		typeof drill.title === 'string' &&
 		'' !== drill.title &&
 		( undefined === drill.tab || drill.tab === tab ) &&
+		( undefined === drill.sub || drill.sub === sub ) &&
 		( undefined === drill.view || drill.view === view );
 
-	if ( ! drilled ) {
-		return { showTabs: tabs.length > 1, back: null, title };
+	const homeCrumb = {
+		key: 'home',
+		label: home.label,
+		url: home.url || '',
+	};
+	let crumbs;
+	if ( crumb ) {
+		crumbs = [ homeCrumb, { key: 'current', label: crumb, url: '' } ];
+	} else if ( area && 'home' === area.key ) {
+		crumbs = [ { ...homeCrumb, url: '' } ];
+	} else if ( drilled ) {
+		const page = sub && pages.find( ( p ) => p.key === sub );
+		crumbs = [
+			homeCrumb,
+			{ key: 'module', label: title, url: ( area && area.url ) || '' },
+			{
+				key: 'section',
+				label: current && current.label ? current.label : title,
+				url:
+					( page && page.url ) ||
+					( current && current.url ) ||
+					( area && area.url ) ||
+					'',
+			},
+			{ key: 'current', label: drill.title, url: '' },
+		];
+	} else {
+		crumbs = [ homeCrumb, { key: 'current', label: title, url: '' } ];
 	}
 
-	const current = tabs.find( ( t ) => t.key === tab );
 	return {
-		showTabs: false,
-		back: {
-			label: current && current.label ? current.label : title,
-			url: ( current && current.url ) || ( area && area.url ) || '',
-		},
-		title: drill.title,
+		crumbs,
+		title: crumbs[ crumbs.length - 1 ].label,
+		drilled,
+		showTabs: ! module && ! drilled && tabs.length > 1,
+		showSidebar: module && tabs.length > 0,
+		showSubtabs: module && ! drilled && pages.length > 1,
 	};
+}
+
+/**
+ * The sidebar's items: the module's sections in its order, Settings moved
+ * last (the sidebar draws a hairline above it).
+ *
+ * @param {Array} tabs The module's tabs: `[ { key, label, url, icon } ]`.
+ * @return {{items: Array, settings: ?Object}} The sections, and Settings.
+ */
+export function sidebarItems( tabs ) {
+	const list = Array.isArray( tabs ) ? tabs.filter( Boolean ) : [];
+	return {
+		items: list.filter( ( t ) => 'settings' !== t.key ),
+		settings: list.find( ( t ) => 'settings' === t.key ) || null,
+	};
+}
+
+/**
+ * The screen a module registered for a tab and page: the most specific
+ * match first (module, tab and page), then the module's screen for the
+ * whole tab (registered without a page).
+ *
+ * @param {Array}  screens Entries from `saddle.admin.screens`.
+ * @param {string} module  Module key.
+ * @param {string} tab     Tab key.
+ * @param {string} sub     Page key, or ''.
+ * @return {?Object} The entry, or null.
+ */
+export function findScreen( screens, module, tab, sub ) {
+	const mine = ( Array.isArray( screens ) ? screens : [] ).filter(
+		( s ) => s && s.module === module && s.tab === tab
+	);
+	const exact = sub ? mine.find( ( s ) => s.sub === sub ) : null;
+	return exact || mine.find( ( s ) => ! s.sub ) || null;
 }
 
 /**
@@ -67,21 +151,26 @@ export function tabsHaveIcons( tabs ) {
 }
 
 /**
- * The `header` a screen gets, bound to the tab and view it was drawn for.
+ * The `header` a screen gets, bound to the tab, page and view it was drawn
+ * for.
  *
- * `drillIn( { title } )` records the title for this tab and view;
+ * `drillIn( { title } )` records the title for this tab, page and view;
  * `drillIn()` with no title, and `clear()`, remove it. Neither touches a
- * drill-in another tab or view recorded, so a screen that unmounts after its
- * successor mounted cannot erase the successor's title.
+ * drill-in another tab, page or view recorded, so a screen that unmounts
+ * after its successor mounted cannot erase the successor's title.
  *
  * @param {Function} set  A state setter that takes an updater, like React's.
  * @param {string}   tab  The tab the screen is drawn for.
  * @param {string}   view The view the screen is drawn for, or ''.
+ * @param {string}   sub  The page inside the tab, or ''.
  * @return {{drillIn: Function, clear: Function}} The header.
  */
-export function drillHeader( set, tab, view ) {
+export function drillHeader( set, tab, view, sub = '' ) {
 	const mine = ( drill ) =>
-		!! drill && drill.tab === tab && drill.view === view;
+		!! drill &&
+		drill.tab === tab &&
+		drill.view === view &&
+		( drill.sub || '' ) === sub;
 	const clear = () => set( ( prev ) => ( mine( prev ) ? null : prev ) );
 
 	const drillIn = ( options ) => {
@@ -95,7 +184,9 @@ export function drillHeader( set, tab, view ) {
 			return;
 		}
 		set( ( prev ) =>
-			mine( prev ) && prev.title === title ? prev : { title, tab, view }
+			mine( prev ) && prev.title === title
+				? prev
+				: { title, tab, sub, view }
 		);
 	};
 

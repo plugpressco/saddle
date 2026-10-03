@@ -1,12 +1,14 @@
 /**
  * Saddle admin: one app, mounted on each Saddle page (#274).
  *
- * Every page is a real wp-admin submenu page under the Saddle menu: Dashboard,
- * the installed modules, AI apps, Context and Settings. The server says which page and
- * tab this is (`saddleData.area`, `saddleData.tab`) and lists every page
- * (`saddleData.areas`). Frame draws the header, the AI on / Paused pill and the tabs;
- * screens.jsx draws the content. Switching tabs updates `&tab=` in place, so a
- * reload or a shared link lands on the same tab and Back steps between tabs.
+ * Every page is a real wp-admin submenu page under the Saddle menu: Home,
+ * the installed modules, AI apps, Services, Context and Settings. The server
+ * says which page, tab and page inside the tab this is (`saddleData.area`,
+ * `.tab`, `.sub`) and lists every page (`saddleData.areas`). Frame draws the
+ * header, the AI on / Paused pill, a module's sidebar and its icon tab row;
+ * screens.jsx draws the content. Switching a tab (`&tab=`), a page inside it
+ * (`&sub=`) or an item (`&view=`) updates the address in place, so a reload
+ * or a shared link lands on the same screen and Back steps between them.
  * Switching pages is an ordinary WordPress page load.
  *
  * First run (#269, #277) replaces the Dashboard until the owner finishes or skips it,
@@ -45,6 +47,7 @@ import {
 	routeUrl,
 	servicesSectionUrl,
 	placeFor,
+	resolveSub,
 	resolveTab,
 	withArg,
 } from './routes';
@@ -103,31 +106,41 @@ export default function App() {
 		}
 	}, [ redirect ] );
 
-	// Where we are: the tab, a view inside it and the module's own query
-	// arguments. Read from the address, not from the server's copy, so a
-	// module that rewrote an old `#/…` link with replaceState before mount
+	// Where we are: the tab, the page inside it, a view and the module's own
+	// query arguments. Read from the address, not from the server's copy, so
+	// a module that rewrote an old `#/…` link with replaceState before mount
 	// lands on the right screen. A page without the argument falls back to
-	// what the server resolved.
+	// what the server resolved. An empty or unknown page is the tab's first.
 	const [ route, setRoute ] = useState( () => {
 		const here = readRoute( window.location.search );
+		const first = resolveTab( area, here.tab || saddleData.tab );
+		const serverSub =
+			first === saddleData.tab && ! here.tab ? saddleData.sub : '';
 		return {
-			tab: resolveTab( area, here.tab || saddleData.tab ),
+			tab: first,
+			sub: resolveSub( area, first, here.sub || serverSub || '' ),
 			view: here.view,
 			args: here.args,
 		};
 	} );
-	const { tab, view: routeView, args: routeArgs } = route;
+	const { tab, sub, view: routeView, args: routeArgs } = route;
 	const setTabState = useCallback(
-		( next ) => setRoute( { tab: next, view: '', args: {} } ),
-		[]
+		( next ) =>
+			setRoute( {
+				tab: next,
+				sub: resolveSub( area, next, '' ),
+				view: '',
+				args: {},
+			} ),
+		[ area ]
 	);
-	// A module screen's drill-in (K4): the title it set for this tab and
-	// view. The header handed to the screen is bound to them, so the title
-	// ends with the view; the screen's unmount clears it too.
+	// A module screen's drill-in (K4): the title it set for this tab, page
+	// and view. The header handed to the screen is bound to them, so the
+	// title ends with the view; the screen's unmount clears it too.
 	const [ drill, setDrill ] = useState( null );
 	const header = useMemo(
-		() => drillHeader( setDrill, tab, routeView ),
-		[ tab, routeView ]
+		() => drillHeader( setDrill, tab, routeView, sub ),
+		[ tab, routeView, sub ]
 	);
 	const [ tier, setTier ] = useState( null );
 	const [ caps, setCaps ] = useState( [] );
@@ -178,37 +191,43 @@ export default function App() {
 		[ area, setTabState ]
 	);
 
-	// A module's deep screen on this page: `&view=` and its own arguments,
-	// no reload. The tab stays unless one is named.
+	// A page inside a tab (`&sub=`), or a module's deep screen (`&view=` and
+	// its own arguments), with no reload. The tab stays unless one is named;
+	// the page stays unless one is named or the tab changes. A view and args
+	// last only while named, so changing the page closes the view.
 	const goRoute = useCallback(
 		( next ) => {
 			const resolved = resolveTab( area, next.tab || route.tab );
-			setRoute( {
+			let wanted = '';
+			if ( 'sub' in next ) {
+				wanted = next.sub || '';
+			} else if ( resolved === route.tab ) {
+				wanted = route.sub;
+			}
+			const target = {
 				tab: resolved,
+				sub: resolveSub( area, resolved, wanted ),
 				view: next.view || '',
 				args: next.args || {},
-			} );
+			};
+			setRoute( target );
 			setWizardOpen( false );
-			const url = routeUrl(
-				AREAS,
-				area.key,
-				resolved,
-				next.view || '',
-				next.args || {}
-			);
+			const url = routeUrl( AREAS, area.key, target );
 			if ( url && window.history && window.history.pushState ) {
 				window.history.pushState( {}, '', url );
 			}
 		},
-		[ area, route.tab ]
+		[ area, route.tab, route.sub ]
 	);
 
-	// Back and Forward between tabs of this page.
+	// Back and Forward between tabs, pages and views of this page.
 	useEffect( () => {
 		const onPop = () => {
 			const here = readRoute( window.location.search );
+			const resolved = resolveTab( area, here.tab );
 			setRoute( {
-				tab: resolveTab( area, here.tab ),
+				tab: resolved,
+				sub: resolveSub( area, resolved, here.sub ),
 				view: here.view,
 				args: here.args,
 			} );
@@ -220,9 +239,9 @@ export default function App() {
 		return () => window.removeEventListener( 'popstate', onPop );
 	}, [ area ] );
 
-	// Go somewhere a page component asked for: a tab here, or another page.
-	// Components still speak the old section names ('connect', 'activity');
-	// routes.js maps them.
+	// Go somewhere a page component asked for: a tab, a page or a view here,
+	// or another page. Components still speak the old section names
+	// ('connect', 'activity'); routes.js maps them.
 	const navigate = useCallback(
 		( target ) => {
 			const place = placeFor( target );
@@ -237,7 +256,7 @@ export default function App() {
 				}
 				return;
 			}
-			const url = areaUrl( AREAS, place.area, place.tab );
+			const url = routeUrl( AREAS, place.area, place );
 			if ( url ) {
 				window.location.assign( url );
 			}
@@ -587,10 +606,12 @@ export default function App() {
 			<Frame
 				area={ area }
 				tab={ tab }
+				sub={ sub }
 				view={ routeView }
 				drill={ drill }
 				onTab={ setTab }
-				onBack={ () => setTab( tab ) }
+				onSub={ ( next ) => goRoute( { sub: next } ) }
+				onBack={ () => goRoute( { sub } ) }
 				status={ { paused, pausing, onToggle: togglePause } }
 				notices={ ! wizardOpen }
 				notice={ slotNotice }
@@ -606,6 +627,7 @@ export default function App() {
 					<Screen
 						area={ area }
 						tab={ tab }
+						sub={ sub }
 						view={ routeView }
 						args={ routeArgs }
 						navigate={ navigate }

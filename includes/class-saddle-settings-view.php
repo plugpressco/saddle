@@ -30,7 +30,8 @@ class Saddle_Settings_View {
 	}
 
 	/**
-	 * The page and tab that draw a field, anchored on the field.
+	 * The page, tab and page inside the tab that draw a field, anchored on
+	 * the field. A field's `screen` is `area/tab` or `area/tab/sub`.
 	 *
 	 * @param string $scope Scope.
 	 * @param string $key   Field key.
@@ -39,9 +40,9 @@ class Saddle_Settings_View {
 	 */
 	public static function admin_url( $scope, $key, array $field ) {
 		$screen = '' !== $field['screen'] ? $field['screen'] : $scope . '/settings';
-		$parts  = explode( '/', $screen, 2 );
+		$parts  = explode( '/', $screen, 3 );
 
-		return Saddle_Modules::url( $parts[0], isset( $parts[1] ) ? $parts[1] : '' ) . '#saddle-field-' . $scope . '-' . $key;
+		return Saddle_Modules::url( $parts[0], isset( $parts[1] ) ? $parts[1] : '', isset( $parts[2] ) ? $parts[2] : '' ) . '#saddle-field-' . $scope . '-' . $key;
 	}
 
 	/**

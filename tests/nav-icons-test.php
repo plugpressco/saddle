@@ -55,6 +55,19 @@ class Saddle_Nav_Icons_Test extends WP_UnitTestCase {
 		}
 	}
 
+	/**
+	 * Every section and page icon in planning/MODULE-LAYOUT.md's maps (Rank,
+	 * CRM, Analytics) is in the allowlist, so no module needs an icon Core
+	 * lacks.
+	 */
+	public function test_the_module_layout_icons_are_in_the_allowlist() {
+		$names = Saddle_Nav_Icons::names();
+		$map   = array( 'dashboard-dots', 'clipboard-check', 'eye', 'quote-message', 'activity', 'chat-lines', 'shield-check', 'page', 'search-window', 'home-simple-door', 'share-android', 'view-grid', 'archive', 'check-circle', 'multiple-pages', 'media-image', 'link', 'link-xmark', 'warning-triangle', 'repeat', 'settings', 'calendar', 'import', 'mail-out', 'group', 'user', 'filter', 'send', 'page-edit', 'sparks', 'lock', 'reports', 'globe', 'walking', 'cpu' );
+		foreach ( $map as $name ) {
+			$this->assertContains( $name, $names );
+		}
+	}
+
 	public function test_svg_is_sized_hidden_and_classed() {
 		$svg = Saddle_Nav_Icons::svg( 'graph-up' );
 

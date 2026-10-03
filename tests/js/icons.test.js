@@ -120,6 +120,46 @@ describe( 'byName', () => {
 			'bell',
 		].forEach( ( name ) => expect( byName[ name ] ).toBeDefined() );
 	} );
+
+	it( 'holds every section and page icon in the module layout maps', () => {
+		[
+			'dashboard-dots',
+			'clipboard-check',
+			'eye',
+			'quote-message',
+			'activity',
+			'chat-lines',
+			'shield-check',
+			'page',
+			'search-window',
+			'home-simple-door',
+			'share-android',
+			'view-grid',
+			'archive',
+			'check-circle',
+			'multiple-pages',
+			'media-image',
+			'link',
+			'link-xmark',
+			'warning-triangle',
+			'repeat',
+			'settings',
+			'calendar',
+			'import',
+			'mail-out',
+			'group',
+			'user',
+			'filter',
+			'send',
+			'page-edit',
+			'sparks',
+			'lock',
+			'reports',
+			'globe',
+			'walking',
+			'cpu',
+		].forEach( ( name ) => expect( byName[ name ] ).toBeDefined() );
+	} );
 } );
 
 describe( 'NavIcon', () => {

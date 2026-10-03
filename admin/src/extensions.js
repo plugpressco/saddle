@@ -31,8 +31,9 @@
  *
  * - `saddle.admin.settingsCards` — a Card on Settings → General.
  * - `saddle.admin.tabs` (v1) — was a whole page with a nav entry. Shell v2
- *   has no in-page nav (WordPress's Saddle submenu is the nav, #274), so each
- *   entry renders as a section on Settings → General, under its label:
+ *   has no in-page nav on Core's pages (WordPress's Saddle submenu picks the
+ *   page, #274; only a module's page has a sidebar), so each entry renders as
+ *   a section on Settings → General, under its label:
  *
  *   addFilter( 'saddle.admin.tabs', 'my-addon/page', ( tabs ) => [
  *       ...tabs,
@@ -43,21 +44,37 @@
  * Shell v2 adds, for modules registered with the `saddle_modules` PHP filter
  * (Saddle_Modules):
  *
- * - `saddle.admin.screens` — a module's content for one of its tabs:
- *   `{ module: 'analytics', tab: 'overview', Component }`. The Component gets
- *   `{ ui, kit, module, tab, view, args, navigate, header, api, shellVersion }`.
- *   `view` ('' when absent) and `args` (the other query args, strings) come
- *   from `admin.php?page=saddle-{key}&tab={tab}&view={view}&campaign=12`.
- *   `navigate( { tab, view, args } )` inside the module changes the address
- *   with pushState and no reload (Back works); `navigate( { tab } )` clears
- *   view and args; `navigate( { view, args } )` keeps the tab. Feature `view`.
+ * - `saddle.admin.screens` — a module's content for one of its tabs, or for
+ *   one page inside a tab: `{ module: 'analytics', tab: 'overview', Component }`
+ *   or `{ module: 'analytics', tab: 'reports', sub: 'sources', Component }`.
+ *   Core picks the most specific match: module, tab and sub, then the entry
+ *   for the tab with no sub. The Component gets `{ ui, kit, module, tab, sub,
+ *   view, args, navigate, header, api, shellVersion }`. `sub` is the page
+ *   (the tab's first when the address names none or an unknown one; '' for
+ *   a tab with no pages), `view` ('' when absent) and `args` (the other query
+ *   args, strings) come from
+ *   `admin.php?page=saddle-{key}&tab={tab}&sub={sub}&view={view}&campaign=12`.
+ *   `navigate( { tab, sub, view, args } )` inside the module changes the
+ *   address with pushState and no reload (Back works). `navigate( { tab } )`
+ *   opens the tab's first page and clears view and args; `navigate( { sub } )`
+ *   opens a page of this tab and clears the view; `navigate( { view, args } )`
+ *   keeps the tab and the page. A view and args last only while named.
+ *   Feature `view`.
+ * - Pages inside a tab (feature `subtabs`): the descriptor's `subtabs` and
+ *   `subtab_icons` (see Saddle_Modules::modules()). Core draws the module's
+ *   tabs as a left sidebar and a tab's pages as an icon tab row. A module
+ *   registers per-page screens only when `saddleShell.has( 'subtabs' )`;
+ *   otherwise it registers one screen per tab. The pane is keyed by tab and
+ *   view, not by page: one Component shared by a tab's pages keeps its state
+ *   and gets the new `sub`; different Components remount.
  * - `header.drillIn( { title } )` (feature `drill-in`, K4): while a `&view=`
- *   is open, a screen names the item it shows. The header hides the tab row
- *   and reads: back icon, the tab's label, `/`, the title. The back link is
- *   a real link; a plain click navigates in the app, so the screen unmounts
- *   and can save on unmount. Core clears the title when the view closes, the
- *   tab changes or the screen unmounts. Call it as
- *   `props.header?.drillIn?.( { title } )`; older Core has no `header`.
+ *   is open, a screen names the item it shows. The breadcrumb then reads
+ *   `Saddle / Module / Section / title`, and the icon tab row steps aside.
+ *   The module and section parts are real links; a plain click navigates in
+ *   the app, so the screen unmounts and can save on unmount. Core clears the
+ *   title when the view closes, the page or tab changes or the screen
+ *   unmounts. Call it as `props.header?.drillIn?.( { title } )`; older Core
+ *   has no `header`.
  * - `ui.icons`: Iconoir icons under the kit's old names
  *   and props (`size`, `strokeWidth`, `color`, `className`, `aria-label`).
  *   See icons/kit.js; the names come from scripts/icons.mjs.
@@ -161,8 +178,8 @@ export { icons };
 //
 // PageHeader stays in this contract (shell v1 addons may use it), but a module
 // screen should not draw one: Core's header band already names the page
-// ("Saddle / Analytics") and holds its tabs (#280). Start a screen with its
-// first section instead.
+// ("Saddle / Analytics") and Core draws its sections and pages. Start a screen
+// with its first block instead.
 export const ui = {
 	ApplyBar,
 	Badge,
@@ -247,6 +264,7 @@ const FEATURES = [
 	'ui-wide',
 	'view',
 	'drill-in',
+	'subtabs',
 ];
 
 // What this shell supports, for addons that feature-detect. Set when the
@@ -311,7 +329,7 @@ export function collectTabs() {
 }
 
 /**
- * A module's screens: `{ module, tab, Component }`.
+ * A module's screens: `{ module, tab, sub, Component }` (`sub` optional).
  *
  * @return {Array} Validated entries.
  */
@@ -327,6 +345,7 @@ export function collectScreens() {
 			entry &&
 			typeof entry.module === 'string' &&
 			typeof entry.tab === 'string' &&
+			( undefined === entry.sub || typeof entry.sub === 'string' ) &&
 			entry.Component
 	);
 }
