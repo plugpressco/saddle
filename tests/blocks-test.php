@@ -468,6 +468,99 @@ class Saddle_Blocks_Test extends WP_UnitTestCase {
 		$this->assertSame( '', trim( get_post( $id )->post_content ) );
 	}
 
+	/**
+	 * Found in the 1.5.0 release QA: a leaf was removed at once even when the
+	 * call carried a confirm_token, so a retried confirm (a used token) removed
+	 * whichever block had shifted into the address.
+	 */
+	public function test_a_reused_remove_token_never_removes_the_block_that_shifted_in() {
+		$id = $this->page();
+		$this->run_ability(
+			'set-blocks',
+			array(
+				'post_id' => $id,
+				'nodes'   => array(
+					array(
+						'type'     => 'core/group',
+						'children' => array(
+							array(
+								'type'    => 'core/paragraph',
+								'content' => 'Inside',
+							),
+						),
+					),
+					array(
+						'type'    => 'core/paragraph',
+						'content' => 'Shifts up',
+					),
+				),
+			)
+		);
+
+		$input   = array(
+			'post_id' => $id,
+			'address' => '0',
+		);
+		$preview = $this->run_ability( 'remove-block', $input );
+		$this->assertNotWPError( $this->run_ability( 'remove-block', $input + array( 'confirm_token' => $preview['confirm_token'] ) ) );
+		$this->assertStringContainsString( 'Shifts up', get_post( $id )->post_content );
+
+		$replay = $this->run_ability( 'remove-block', $input + array( 'confirm_token' => $preview['confirm_token'] ) );
+		$this->assertWPError( $replay, 'A used token must be refused, even when the address now holds a leaf.' );
+		$this->assertStringContainsString( 'Shifts up', get_post( $id )->post_content );
+	}
+
+	public function test_a_remove_token_is_refused_after_the_page_changes() {
+		$id = $this->page();
+		$this->run_ability(
+			'set-blocks',
+			array(
+				'post_id' => $id,
+				'nodes'   => array(
+					array(
+						'type'     => 'core/group',
+						'children' => array(
+							array(
+								'type'    => 'core/paragraph',
+								'content' => 'Inside',
+							),
+						),
+					),
+				),
+			)
+		);
+
+		$preview = $this->run_ability(
+			'remove-block',
+			array(
+				'post_id' => $id,
+				'address' => '0',
+			)
+		);
+		$this->run_ability(
+			'add-block',
+			array(
+				'post_id'        => $id,
+				'parent_address' => '0',
+				'node'           => array(
+					'type'    => 'core/paragraph',
+					'content' => 'Added after the preview',
+				),
+			)
+		);
+
+		$stale = $this->run_ability(
+			'remove-block',
+			array(
+				'post_id'       => $id,
+				'address'       => '0',
+				'confirm_token' => $preview['confirm_token'],
+			)
+		);
+		$this->assertWPError( $stale, 'The preview no longer describes the page.' );
+		$this->assertStringContainsString( 'Added after the preview', get_post( $id )->post_content );
+	}
+
 	/* -------- guards -------- */
 
 	public function test_block_writes_refuse_builder_built_posts() {

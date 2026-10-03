@@ -964,7 +964,8 @@ class Saddle_Blocks_Abilities {
 		$tree    = Saddle_Blocks_Tree::parse( $post->post_content );
 		$node    = '' !== $address ? Saddle_Blocks_Tree::get( $tree, $address ) : null;
 		if ( ! $node ) {
-			return new WP_Error( 'saddle_bad_address', sprintf( 'No block at address %s.', $address ) );
+			/* translators: %s: block address, such as 0.1. */
+			return new WP_Error( 'saddle_bad_address', sprintf( __( 'No block at address %s.', 'saddle' ), $address ) );
 		}
 
 		$has_content = array_key_exists( 'content', $input );
@@ -1072,7 +1073,8 @@ class Saddle_Blocks_Abilities {
 		$tree = Saddle_Blocks_Tree::parse( $post->post_content );
 		$node = Saddle_Blocks_Tree::get( $tree, $from );
 		if ( ! $node ) {
-			return new WP_Error( 'saddle_bad_address', sprintf( 'No block at address %s.', $from ) );
+			/* translators: %s: block address, such as 0.1. */
+			return new WP_Error( 'saddle_bad_address', sprintf( __( 'No block at address %s.', 'saddle' ), $from ) );
 		}
 
 		$without = Saddle_Blocks_Tree::remove( $tree, $from );
@@ -1086,7 +1088,8 @@ class Saddle_Blocks_Abilities {
 
 		$at = self::resolve_position( $without, $dest, $position );
 		if ( is_wp_error( $at ) ) {
-			return new WP_Error( 'saddle_bad_address', sprintf( 'No block at address %s.', $to_parent ) );
+			/* translators: %s: block address, such as 0.1. */
+			return new WP_Error( 'saddle_bad_address', sprintf( __( 'No block at address %s.', 'saddle' ), $to_parent ) );
 		}
 
 		$next = Saddle_Blocks_Tree::insert( $without, $dest, $at, $node );
@@ -1143,7 +1146,8 @@ class Saddle_Blocks_Abilities {
 		$tree    = Saddle_Blocks_Tree::parse( $post->post_content );
 		$node    = '' !== $address ? Saddle_Blocks_Tree::get( $tree, $address ) : null;
 		if ( ! $node ) {
-			return new WP_Error( 'saddle_bad_address', sprintf( 'No block at address %s.', $address ) );
+			/* translators: %s: block address, such as 0.1. */
+			return new WP_Error( 'saddle_bad_address', sprintf( __( 'No block at address %s.', 'saddle' ), $address ) );
 		}
 
 		$execute = static function () use ( $post, $tree, $address ) {
@@ -1164,8 +1168,13 @@ class Saddle_Blocks_Abilities {
 		};
 
 		$child_count = count( $node['innerBlocks'] );
+		$token       = isset( $input['confirm_token'] ) && is_string( $input['confirm_token'] ) ? trim( $input['confirm_token'] ) : '';
 
-		if ( 0 === $child_count ) {
+		// Leaf: immediate, revision-recoverable, logged. A call that carries a
+		// confirm_token always goes through the gate below, so a retried or
+		// reused confirm is refused instead of removing whatever block has
+		// shifted into the address since.
+		if ( 0 === $child_count && '' === $token ) {
 			$result = $execute();
 			if ( ! is_wp_error( $result ) ) {
 				Saddle_Log::record_action(
@@ -1183,13 +1192,22 @@ class Saddle_Blocks_Abilities {
 			return $result;
 		}
 
+		// The bind stamps the page's content and the block's identity. Addresses
+		// are positional, so a token previewed before another edit is refused
+		// rather than removing whatever now sits at the address.
 		return Saddle_Approval::gate(
 			array(
 				'action'  => 'remove-block',
 				'target'  => $post->ID . ':' . $address,
+				'bind'    => md5( (string) $post->post_content ) . '|' . md5( (string) wp_json_encode( array( $address, (string) $node['blockName'], $child_count ) ) ),
 				'summary' => sprintf(
-					/* translators: 1: block type, 2: child count, 3: address, 4: post ID. */
-					__( 'Remove %1$s and the %2$d blocks inside it at %3$s on post #%4$d. Recoverable from revisions.', 'saddle' ),
+					/* translators: 1: block type, 2: number of blocks inside it, 3: address, 4: post ID. */
+					_n(
+						'Remove %1$s and the %2$d block inside it at %3$s on post #%4$d. Recoverable from revisions.',
+						'Remove %1$s and the %2$d blocks inside it at %3$s on post #%4$d. Recoverable from revisions.',
+						$child_count,
+						'saddle'
+					),
 					(string) $node['blockName'],
 					$child_count,
 					$address,
@@ -1359,7 +1377,8 @@ class Saddle_Blocks_Abilities {
 		} else {
 			$parent_node = Saddle_Blocks_Tree::get( $tree, $parent_address );
 			if ( ! $parent_node ) {
-				return new WP_Error( 'saddle_bad_address', sprintf( 'No block at address %s.', $parent_address ) );
+				/* translators: %s: block address, such as 0.1. */
+				return new WP_Error( 'saddle_bad_address', sprintf( __( 'No block at address %s.', 'saddle' ), $parent_address ) );
 			}
 			$sibling_count = count( $parent_node['innerBlocks'] );
 		}
