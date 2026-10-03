@@ -45,12 +45,22 @@
  *
  * - `saddle.admin.screens` — a module's content for one of its tabs:
  *   `{ module: 'analytics', tab: 'overview', Component }`. The Component gets
- *   `{ ui, kit, module, tab, view, args, navigate, api, shellVersion }`.
+ *   `{ ui, kit, module, tab, view, args, navigate, header, api, shellVersion }`.
  *   `view` ('' when absent) and `args` (the other query args, strings) come
  *   from `admin.php?page=saddle-{key}&tab={tab}&view={view}&campaign=12`.
  *   `navigate( { tab, view, args } )` inside the module changes the address
  *   with pushState and no reload (Back works); `navigate( { tab } )` clears
  *   view and args; `navigate( { view, args } )` keeps the tab. Feature `view`.
+ * - `header.drillIn( { title } )` (feature `drill-in`, K4): while a `&view=`
+ *   is open, a screen names the item it shows. The header hides the tab row
+ *   and reads: back icon, the tab's label, `/`, the title. The back link is
+ *   a real link; a plain click navigates in the app, so the screen unmounts
+ *   and can save on unmount. Core clears the title when the view closes, the
+ *   tab changes or the screen unmounts. Call it as
+ *   `props.header?.drillIn?.( { title } )`; older Core has no `header`.
+ * - `ui.icons`: Iconoir icons under the kit's old names
+ *   and props (`size`, `strokeWidth`, `color`, `className`, `aria-label`).
+ *   See icons/kit.js; the names come from scripts/icons.mjs.
  * - `saddle.admin.homeCards` — a card on Dashboard → Overview: `{ id, order,
  *   Component }`.
  * - `saddle.admin.connectionCards` — a card on AI apps.
@@ -130,135 +140,18 @@ import {
 	Tooltip,
 	useConfirm,
 	VisuallyHidden,
-	ActivityIcon,
-	AlertCircleIcon,
-	AlertTriangleIcon,
-	ArrowLeftIcon,
-	ArrowRightIcon,
-	ArrowUpRightIcon,
-	BarChartIcon,
-	BellIcon,
-	BookOpenIcon,
-	CheckIcon,
-	CheckCircleIcon,
-	ChevronDownIcon,
-	ChevronLeftIcon,
-	ChevronRightIcon,
-	ChevronUpIcon,
-	ClockIcon,
-	CopyIcon,
-	DownloadIcon,
-	ExternalLinkIcon,
-	EyeIcon,
-	EyeOffIcon,
-	FileTextIcon,
-	FilterIcon,
-	GlobeIcon,
-	GripIcon,
-	HelpIcon,
-	HomeIcon,
-	InboxIcon,
-	InfoIcon,
-	KeyIcon,
-	LinkIcon,
-	ListIcon,
-	LoaderIcon,
-	LockIcon,
-	MailIcon,
-	MinusIcon,
-	MoreHorizontalIcon,
-	MoreVerticalIcon,
-	PencilIcon,
-	PlugIcon,
-	PlusIcon,
-	RefreshIcon,
-	SearchIcon,
-	SendIcon,
-	SettingsIcon,
-	ShieldIcon,
-	ShieldCheckIcon,
-	SparklesIcon,
-	StarIcon,
-	TrashIcon,
-	TrendingUpIcon,
-	UploadIcon,
-	UserIcon,
-	UsersIcon,
-	WandIcon,
-	XIcon,
-	XCircleIcon,
-	ZapIcon,
-	DashboardIcon,
 } from '@plugpress/ui';
 import SectionHeader from './components/SectionHeader';
 import SettingsForm from './components/SettingsForm';
 import WaitingLine from './components/WaitingLine';
+import { icons } from './icons/kit';
 
 export const SHELL_VERSION = 2;
 
-// The kit's icon set, keyed without the `Icon` suffix: `ui.icons.ChevronRight`.
-// A module takes its icons from here, never from lucide or its own copy.
-export const icons = {
-	Activity: ActivityIcon,
-	AlertCircle: AlertCircleIcon,
-	AlertTriangle: AlertTriangleIcon,
-	ArrowLeft: ArrowLeftIcon,
-	ArrowRight: ArrowRightIcon,
-	ArrowUpRight: ArrowUpRightIcon,
-	BarChart: BarChartIcon,
-	Bell: BellIcon,
-	BookOpen: BookOpenIcon,
-	Check: CheckIcon,
-	CheckCircle: CheckCircleIcon,
-	ChevronDown: ChevronDownIcon,
-	ChevronLeft: ChevronLeftIcon,
-	ChevronRight: ChevronRightIcon,
-	ChevronUp: ChevronUpIcon,
-	Clock: ClockIcon,
-	Copy: CopyIcon,
-	Download: DownloadIcon,
-	ExternalLink: ExternalLinkIcon,
-	Eye: EyeIcon,
-	EyeOff: EyeOffIcon,
-	FileText: FileTextIcon,
-	Filter: FilterIcon,
-	Globe: GlobeIcon,
-	Grip: GripIcon,
-	Help: HelpIcon,
-	Home: HomeIcon,
-	Inbox: InboxIcon,
-	Info: InfoIcon,
-	Key: KeyIcon,
-	Link: LinkIcon,
-	List: ListIcon,
-	Loader: LoaderIcon,
-	Lock: LockIcon,
-	Mail: MailIcon,
-	Minus: MinusIcon,
-	MoreHorizontal: MoreHorizontalIcon,
-	MoreVertical: MoreVerticalIcon,
-	Pencil: PencilIcon,
-	Plug: PlugIcon,
-	Plus: PlusIcon,
-	Refresh: RefreshIcon,
-	Search: SearchIcon,
-	Send: SendIcon,
-	Settings: SettingsIcon,
-	Shield: ShieldIcon,
-	ShieldCheck: ShieldCheckIcon,
-	Sparkles: SparklesIcon,
-	Star: StarIcon,
-	Trash: TrashIcon,
-	TrendingUp: TrendingUpIcon,
-	Upload: UploadIcon,
-	User: UserIcon,
-	Users: UsersIcon,
-	Wand: WandIcon,
-	X: XIcon,
-	XCircle: XCircleIcon,
-	Zap: ZapIcon,
-	Dashboard: DashboardIcon,
-};
+// `ui.icons`: Iconoir icons under the kit's old names (`ui.icons.ChevronRight`),
+// with the kit's props. A module takes its icons from here, never from lucide
+// or its own copy. The keys never disappear; new ones are added on request.
+export { icons };
 
 // The design-system primitives an addon may use. Every symbol here is one
 // this bundle already imports for itself, so exposing it costs nothing. The
@@ -353,6 +246,7 @@ const FEATURES = [
 	'waiting-line',
 	'ui-wide',
 	'view',
+	'drill-in',
 ];
 
 // What this shell supports, for addons that feature-detect. Set when the

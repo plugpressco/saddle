@@ -12,11 +12,12 @@
  * state (`nextStep()`), never stored. Hiding it hides setup for good
  * (`setup.hide`); it is gone by itself once everything is done.
  */
-import { Button, IconButton, XIcon } from '@plugpress/ui';
+import { Button, IconButton } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { nextStep, setupBlock } from '../onboarding-logic';
 import { APPS } from '../connect-apps';
 import { BrandMark } from './icons';
+import { icons } from '../icons/kit';
 import { withArg } from '../routes';
 
 /**
@@ -108,7 +109,7 @@ export default function SetupBlock( {
 				aria-label={ __( 'Hide this', 'saddle' ) }
 				onClick={ onHide }
 			>
-				<XIcon size={ 16 } />
+				<icons.X size={ 16 } />
 			</IconButton>
 		</div>
 	);
