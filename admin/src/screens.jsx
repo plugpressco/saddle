@@ -88,9 +88,18 @@ function MountSlot( { module, tab } ) {
  * @param {string}   props.view     The view inside the tab, or ''.
  * @param {Object}   props.args     The module's own query arguments.
  * @param {Function} props.navigate Navigation helper.
+ * @param {Object}   props.header   The drill-in header (K4), from App.
  */
-function ModuleScreen( { area, tab, view, args, navigate } ) {
+function ModuleScreen( { area, tab, view, args, navigate, header } ) {
 	const screens = useMemo( collectScreens, [] );
+
+	// The screen sees `header.drillIn` only. Leaving it (another view or
+	// tab) clears the title it set.
+	const screenHeader = useMemo(
+		() => ( header ? { drillIn: header.drillIn } : undefined ),
+		[ header ]
+	);
+	useEffect( () => () => header && header.clear(), [ header ] );
 
 	// Core draws the module's unfinished setup tasks above its first tab.
 	const firstTab = area.tabs[ 0 ] && area.tabs[ 0 ].key === tab;
@@ -133,6 +142,7 @@ function ModuleScreen( { area, tab, view, args, navigate } ) {
 				view={ view || '' }
 				args={ args || {} }
 				navigate={ navigate }
+				header={ screenHeader }
 				api={ api }
 				shellVersion={ SHELL_VERSION }
 			/>
@@ -268,6 +278,7 @@ export default function Screen( props ) {
 		view,
 		args,
 		navigate,
+		header,
 		tier,
 		caps,
 		clients,
@@ -299,6 +310,7 @@ export default function Screen( props ) {
 				view={ view }
 				args={ args }
 				navigate={ navigate }
+				header={ header }
 			/>
 		);
 	}

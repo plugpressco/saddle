@@ -28,7 +28,6 @@ import {
 	DropdownItem,
 	DropdownSeparator,
 	IconButton,
-	MoreHorizontalIcon,
 	CopyButton,
 	useConfirm,
 	toast,
@@ -42,6 +41,7 @@ import ConnectionHealth from './ConnectionHealth';
 import McpDiagnostics from './McpDiagnostics';
 import SetupGuideDrawer from './SetupGuideDrawer';
 import { AppLogo, appKeyFromLabel } from './icons';
+import { icons } from '../icons/kit';
 
 const MCP_URL = saddleData.mcpUrl || '';
 
@@ -425,7 +425,7 @@ export default function Apps( {
 														nameOf( c )
 													) }
 												>
-													<MoreHorizontalIcon
+													<icons.MoreHorizontal
 														size={ 16 }
 													/>
 												</IconButton>

@@ -11,6 +11,7 @@
 		"lint:js": "wp-scripts lint-js admin/src tests/js",
 		"test:js": "wp-scripts test-unit-js tests/js",
 		"format": "wp-scripts format admin/src",
+		"icons": "node scripts/icons.mjs",
 		"package": "npm run build && grunt release",
 		"package:patch": "npm run build && grunt release:patch",
 		"package:minor": "npm run build && grunt release:minor",
@@ -22,7 +23,8 @@
 		"grunt": "^1.6.1",
 		"grunt-contrib-clean": "^2.0.1",
 		"grunt-contrib-compress": "^2.0.0",
-		"grunt-contrib-copy": "^1.0.0"
+		"grunt-contrib-copy": "^1.0.0",
+		"iconoir": "7.12.1"
 	},
 	"dependencies": {
 		"@plugpress/ui": "^0.12.0"

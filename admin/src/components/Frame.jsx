@@ -5,7 +5,9 @@
  * the notices bell, and the AI switch (#309): "AI on" or "Paused", which
  * opens a small panel to pause or resume every app. While paused, a strip
  * under the header says so on every Saddle page. A page with more than one
- * tab draws them inside the band.
+ * tab draws them inside the band, each with its icon. While a module's screen
+ * has drilled into an item (K4, frame-logic.js), the tab row gives way to a
+ * back link to the tab and the item's title.
  * Then the page, and a quiet footer. WordPress's own left menu is the
  * navigation: there is no sidebar inside the page. A module's content sits in
  * the same frame, so every Saddle page reads as one product.
@@ -16,17 +18,13 @@
  * view.
  */
 import { useState, useEffect, useCallback, useRef } from '@wordpress/element';
-import {
-	AppContent,
-	Button,
-	ChevronDownIcon,
-	Tabs,
-	Popover,
-	SkipLink,
-} from '@plugpress/ui';
+import { AppContent, Button, Tabs, Popover, SkipLink } from '@plugpress/ui';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { saddleData } from '../api';
-import { BrandMark, IconBell } from './icons';
+import { frameHeader, isPlainClick, tabsHaveIcons } from '../frame-logic';
+import { NavIcon } from '../icons/iconoir';
+import { icons } from '../icons/kit';
+import { BrandMark } from './icons';
 import NoticeItem from './NoticeItem';
 
 // One content width for every page: sparse pages don't feel empty and the
@@ -63,7 +61,7 @@ function AiSwitch( { paused, pausing, onToggle } ) {
 							? __( 'Paused', 'saddle' )
 							: __( 'AI on', 'saddle' ) }
 					</span>
-					<ChevronDownIcon size={ 12 } />
+					<icons.ChevronDown size={ 12 } />
 				</button>
 			}
 		>
@@ -184,7 +182,7 @@ function ForeignNotices( { extra = [], onDismiss } ) {
 					className="saddle-foreign__button"
 					aria-label={ label }
 				>
-					<IconBell />
+					<NavIcon name="bell" size={ 20 } />
 					<span>{ total }</span>
 				</button>
 			}
@@ -262,7 +260,9 @@ function Footer( { area } ) {
  * @param {Object}   props.area            The page, from saddleData.areas.
  * @param {string}   props.tab             The active tab.
  * @param {string}   props.view            The module's view inside the tab, or ''.
+ * @param {?Object}  props.drill           The screen's drill-in, `{ title, tab, view }`.
  * @param {Function} props.onTab           Called with a tab key.
+ * @param {Function} props.onBack          Leaves the drill-in for its tab, in the app.
  * @param {Object}   props.status          { paused, pausing, onToggle }.
  * @param {boolean}  props.notices         Show the notices bell.
  * @param {boolean}  props.showTabs        Draw the page's tabs (first run doesn't).
@@ -277,7 +277,9 @@ export default function Frame( {
 	area,
 	tab,
 	view = '',
+	drill = null,
 	onTab,
+	onBack,
 	status,
 	notices = true,
 	showTabs = true,
@@ -288,7 +290,20 @@ export default function Frame( {
 	children,
 } ) {
 	const home = ( saddleData.areas || [] ).find( ( a ) => a.key === 'home' );
-	const tabs = showTabs && area.tabs.length > 1 ? area.tabs : null;
+	const head = frameHeader( { area, tab, view, drill } );
+	const tabs = showTabs && head.showTabs ? area.tabs : null;
+	const tabIcons = tabsHaveIcons( tabs );
+	const back = crumb ? null : head.back;
+
+	// The back link is a real link, so a middle click or "Copy link" works. A
+	// plain click stays in the app, so the screen unmounts and can save what
+	// the owner typed before the view closes.
+	const goBack = ( event ) => {
+		if ( onBack && isPlainClick( event ) ) {
+			event.preventDefault();
+			onBack();
+		}
+	};
 
 	return (
 		<div className="pp-app saddle-app saddle-app--frame">
@@ -309,7 +324,28 @@ export default function Frame( {
 						>
 							<BrandMark />
 						</a>
-						<span aria-current="page">{ crumb || area.title }</span>
+						{ back && (
+							<>
+								<a
+									className="saddle-header__back"
+									href={ back.url }
+									onClick={ goBack }
+								>
+									<NavIcon
+										name="nav-arrow-left"
+										size={ 20 }
+									/>
+									<span>{ back.label }</span>
+								</a>
+								<span
+									className="saddle-header__sep"
+									aria-hidden="true"
+								>
+									/
+								</span>
+							</>
+						) }
+						<span aria-current="page">{ crumb || head.title }</span>
 					</h1>
 					<div className="saddle-header__actions">
 						{ notices && (
@@ -329,7 +365,14 @@ export default function Frame( {
 							aria-label={ area.title }
 							items={ tabs.map( ( t ) => ( {
 								value: t.key,
-								label: t.label,
+								label: tabIcons ? (
+									<>
+										<NavIcon name={ t.icon } />
+										{ t.label }
+									</>
+								) : (
+									t.label
+								),
 							} ) ) }
 						/>
 					</div>

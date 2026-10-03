@@ -1,10 +1,10 @@
 /**
- * Small inline SVG icons — monochrome, currentColor, stroke-based — plus the
- * AI app brand logos from @lobehub/icons-static-svg (MIT).
+ * The Saddle brand mark and the AI app logos from @lobehub/icons-static-svg
+ * (MIT). Logos are logos, not icons: they keep their own colours.
  *
- * The UI icons stay local rather than pulling @wordpress/icons: that package
- * isn't reliably enqueued in every wp-admin context, and inline SVGs give a
- * consistent, restrained, premium look we fully control.
+ * Interface icons are Iconoir (MIT): `NavIcon` in icons/iconoir.js for the
+ * menu, tabs and header, and `icons` in icons/kit.js (the same set modules
+ * get as `ui.icons`) everywhere else.
  */
 import ClaudeCodeLogo from '@lobehub/icons-static-svg/icons/claudecode-color.svg';
 import ClaudeLogo from '@lobehub/icons-static-svg/icons/claude-color.svg';
@@ -20,19 +20,6 @@ import OpenClawLogo from '@lobehub/icons-static-svg/icons/openclaw-color.svg';
 import GrokLogo from '@lobehub/icons-static-svg/icons/grok.svg';
 import { ReactComponent as Mark } from '../../../assets/brand/mark.svg';
 
-const base = {
-	width: 20,
-	height: 20,
-	viewBox: '0 0 24 24',
-	fill: 'none',
-	stroke: 'currentColor',
-	strokeWidth: 1.6,
-	strokeLinecap: 'round',
-	strokeLinejoin: 'round',
-	'aria-hidden': true,
-	focusable: false,
-};
-
 // The Saddle brand mark (a saddle draped over the horse's back, knocked out
 // of a filled disc — the PlugPress portfolio motif), single-sourced from
 // assets/brand/mark.svg — the PHP admin-menu icon reads the same file, so
@@ -46,27 +33,6 @@ export function BrandMark( props ) {
 			focusable="false"
 			{ ...props }
 		/>
-	);
-}
-
-// Bell — other plugins' notices, parked in the top bar.
-export function IconBell( props ) {
-	return (
-		<svg { ...base } { ...props }>
-			<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
-			<path d="M13.7 21a2 2 0 0 1-3.4 0" />
-		</svg>
-	);
-}
-
-// Plug — connecting an app.
-export function IconConnect( props ) {
-	return (
-		<svg { ...base } { ...props }>
-			<path d="M9 2v6M15 2v6" />
-			<path d="M7 8h10v3a5 5 0 0 1-10 0V8Z" />
-			<path d="M12 16v6" />
-		</svg>
 	);
 }
 

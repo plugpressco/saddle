@@ -13,7 +13,6 @@
 import { useState, useEffect, useMemo } from '@wordpress/element';
 import {
 	Button,
-	ChevronRightIcon,
 	Collapsible,
 	Drawer,
 	ErrorText,
@@ -29,6 +28,7 @@ import {
 import { __, sprintf } from '@wordpress/i18n';
 import { api } from '../api';
 import SectionHeader from './SectionHeader';
+import { icons } from '../icons/kit';
 import {
 	groupServices,
 	keyLink,
@@ -346,7 +346,7 @@ function ServiceRow( { record, onOpen } ) {
 						</span>
 					) }
 				</span>
-				<ChevronRightIcon size={ 16 } className="saddle-svc__go" />
+				<icons.ChevronRight size={ 16 } className="saddle-svc__go" />
 			</span>
 		</Row>
 	);

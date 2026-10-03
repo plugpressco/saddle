@@ -47,12 +47,14 @@ class Saddle_Settings {
 			}
 
 			// The first submenu shares the menu's slug, which is what renames
-			// WordPress's automatic "Saddle" item to "Home".
+			// WordPress's automatic "Saddle" item to "Home". WordPress prints a
+			// submenu title as HTML (wp-admin/menu-header.php), so the label is
+			// escaped here, after the icon. The page title stays plain text.
 			$hook = add_submenu_page(
 				self::PAGE_SLUG,
 				/* translators: %s: page name, such as Dashboard or AI apps. */
 				sprintf( __( '%s ‹ Saddle', 'saddle' ), $area['title'] ),
-				$area['title'],
+				Saddle_Nav_Icons::menu_slot( $area['icon'] ) . esc_html( $area['title'] ),
 				$area['capability'],
 				$area['slug'],
 				array( __CLASS__, 'render_page' )
@@ -64,6 +66,19 @@ class Saddle_Settings {
 		}
 
 		add_action( 'in_admin_header', array( __CLASS__, 'setup_notice_quarantine' ) );
+		add_action( 'admin_head', array( __CLASS__, 'menu_styles' ) );
+	}
+
+	/**
+	 * The menu's icons and hairline, on every admin screen where the Saddle
+	 * menu shows. Printed only for users who can see the menu.
+	 */
+	public static function menu_styles() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		echo '<style id="saddle-menu-css">' . Saddle_Nav_Icons::menu_css() . "</style>\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- A fixed stylesheet; no input reaches it.
 	}
 
 	/**
@@ -73,6 +88,10 @@ class Saddle_Settings {
 	 * lands after whatever is already there. The modules belong between Dashboard
 	 * and Core's configuration pages, so those move to the end once every
 	 * plugin has had its turn.
+	 *
+	 * When a product sits under Home, the first of Core's pages after it
+	 * carries `saddle-menu-group`, which draws a hairline between the two
+	 * groups (see menu_styles()).
 	 */
 	public static function order_submenu() {
 		global $submenu;
@@ -96,7 +115,17 @@ class Saddle_Settings {
 		}
 
 		ksort( $tail );
-		$submenu[ self::PAGE_SLUG ] = array_merge( $head, array_values( $tail ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Reordering our own menu's items, after every plugin has added to it.
+		$items = array_merge( $head, array_values( $tail ) );
+
+		$first = count( $head );
+		if ( $first > 1 && isset( $items[ $first ] ) ) {
+			$classes = isset( $items[ $first ][4] ) ? trim( (string) $items[ $first ][4] ) : '';
+			if ( ! in_array( 'saddle-menu-group', explode( ' ', $classes ), true ) ) {
+				$items[ $first ][4] = trim( $classes . ' saddle-menu-group' );
+			}
+		}
+
+		$submenu[ self::PAGE_SLUG ] = $items; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Reordering our own menu's items, after every plugin has added to it.
 	}
 
 	/**
@@ -291,7 +320,7 @@ class Saddle_Settings {
 	}
 
 	/**
-	 * The pages, as the admin app needs them: labels, URLs and tabs.
+	 * The pages, as the admin app needs them: labels, icons, URLs and tabs.
 	 *
 	 * @return array[]
 	 */
@@ -304,12 +333,14 @@ class Saddle_Settings {
 					'key'   => $tab,
 					'label' => $label,
 					'url'   => esc_url_raw( Saddle_Modules::url( $key, $tab ) ),
+					'icon'  => isset( $area['tab_icons'][ $tab ] ) ? $area['tab_icons'][ $tab ] : '',
 				);
 			}
 
 			$out[] = array(
 				'key'     => $key,
 				'title'   => $area['title'],
+				'icon'    => $area['icon'],
 				'url'     => esc_url_raw( Saddle_Modules::url( $key ) ),
 				'nav'     => (bool) $area['nav'],
 				'module'  => (bool) $area['module'],

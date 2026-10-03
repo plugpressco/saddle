@@ -42,7 +42,8 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * The Saddle submenu as [ slug => label ], in order.
+	 * The Saddle submenu as [ slug => label ], in order. A title is an icon
+	 * and the label; the label is what is left without the markup.
 	 *
 	 * @return array
 	 */
@@ -51,7 +52,23 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 
 		$items = array();
 		foreach ( isset( $submenu['saddle'] ) ? $submenu['saddle'] : array() as $item ) {
-			$items[ $item[2] ] = $item[0];
+			$items[ $item[2] ] = wp_strip_all_tags( $item[0] );
+		}
+
+		return $items;
+	}
+
+	/**
+	 * The Saddle submenu's raw items, keyed by slug.
+	 *
+	 * @return array
+	 */
+	private function saddle_items() {
+		global $submenu;
+
+		$items = array();
+		foreach ( isset( $submenu['saddle'] ) ? $submenu['saddle'] : array() as $item ) {
+			$items[ $item[2] ] = $item;
 		}
 
 		return $items;
@@ -125,6 +142,85 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 			array( 'saddle', 'saddle-rank', 'saddle-connections', 'saddle-services', 'saddle-context', 'saddle-settings' ),
 			array_keys( $this->saddle_submenu() )
 		);
+	}
+
+	/* ------------------------------------------------- icons and the hairline */
+
+	public function test_each_menu_title_is_an_icon_and_the_label() {
+		$this->analytics_module( array( 'icon' => 'graph-up' ) );
+		$this->build_menu();
+
+		$icons = array(
+			'saddle'             => 'home-simple-door',
+			'saddle-analytics'   => 'graph-up',
+			'saddle-connections' => 'sparks',
+			'saddle-services'    => 'puzzle',
+			'saddle-context'     => 'brain',
+			'saddle-settings'    => 'settings',
+		);
+		foreach ( $this->saddle_items() as $slug => $item ) {
+			$this->assertSame( Saddle_Nav_Icons::svg( $icons[ $slug ] ), substr( $item[0], 0, strlen( Saddle_Nav_Icons::svg( $icons[ $slug ] ) ) ), $slug );
+			$this->assertStringStartsWith( '<svg class="saddle-nav-icon"', $item[0], $slug );
+			$this->assertStringNotContainsString( '<svg', $item[3], 'The page title stays plain text: ' . $slug );
+		}
+		$this->assertSame( 'Analytics ‹ Saddle', $this->saddle_items()['saddle-analytics'][3] );
+	}
+
+	public function test_a_label_is_escaped_after_the_icon() {
+		$this->analytics_module( array( 'title' => 'Q&A <b>' ) );
+		$this->build_menu();
+
+		$title = $this->saddle_items()['saddle-analytics'][0];
+		$this->assertStringEndsWith( 'Q&amp;A &lt;b&gt;', $title );
+		$this->assertStringNotContainsString( '<svg', $title, 'A module without an icon gets none.' );
+	}
+
+	public function test_the_group_line_needs_a_product_under_home() {
+		$this->build_menu();
+		foreach ( $this->saddle_items() as $slug => $item ) {
+			$this->assertFalse( isset( $item[4] ) && false !== strpos( (string) $item[4], 'saddle-menu-group' ), $slug );
+		}
+
+		$this->reset_menus();
+		$this->analytics_module();
+		$this->build_menu();
+		$items = $this->saddle_items();
+		$this->assertSame( 'saddle-menu-group', $items['saddle-connections'][4], 'The first of Core\'s pages after the products.' );
+		foreach ( array( 'saddle', 'saddle-analytics', 'saddle-services', 'saddle-context', 'saddle-settings' ) as $slug ) {
+			$this->assertArrayNotHasKey( 4, $items[ $slug ], $slug );
+		}
+
+		// Settled twice (another plugin re-running the order), the class is
+		// still there once.
+		Saddle_Settings::order_submenu();
+		$this->assertSame( 'saddle-menu-group', $this->saddle_items()['saddle-connections'][4] );
+	}
+
+	public function test_a_siblings_own_item_also_draws_the_line() {
+		Saddle_Settings::register_menu();
+		add_submenu_page( 'saddle', 'SEO', 'SEO', 'manage_options', 'saddle-rank', '__return_null' );
+		Saddle_Settings::order_submenu();
+
+		$this->assertSame( 'saddle-menu-group', $this->saddle_items()['saddle-connections'][4] );
+	}
+
+	public function test_the_menu_stylesheet_is_printed_for_the_menus_users_only() {
+		ob_start();
+		Saddle_Settings::menu_styles();
+		$css = ob_get_clean();
+		$this->assertStringContainsString( '<style id="saddle-menu-css">', $css );
+		$this->assertStringContainsString( 'li.saddle-menu-group', $css );
+
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'editor' ) ) );
+		ob_start();
+		Saddle_Settings::menu_styles();
+		$this->assertSame( '', ob_get_clean() );
+	}
+
+	public function test_register_menu_hooks_the_stylesheet() {
+		remove_all_actions( 'admin_head' );
+		$this->build_menu();
+		$this->assertSame( 10, has_action( 'admin_head', array( 'Saddle_Settings', 'menu_styles' ) ) );
 	}
 
 	public function test_a_module_without_nav_gets_no_page() {
@@ -344,6 +440,50 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		$this->assertSame( 'AI apps', $connections['title'] );
 		$this->assertSame( array( 'overview' ), array_column( $saddle['areas'][0]['tabs'], 'key' ) );
 		$this->assertSame( 'Home', $saddle['areas'][0]['title'] );
+		$this->assertSame(
+			array( 'home-simple-door', 'sparks', 'puzzle', 'brain', 'settings' ),
+			array_column( $saddle['areas'], 'icon' )
+		);
+	}
+
+	public function test_the_app_gets_an_icon_per_page_and_per_tab() {
+		wp_deregister_script( 'saddle-admin' );
+		$this->analytics_module(
+			array(
+				'icon'      => 'graph-up',
+				'tabs'      => array(
+					'overview' => 'Overview',
+					'reports'  => 'Reports',
+					'people'   => 'People',
+					'settings' => 'Settings',
+				),
+				'tab_icons' => array(
+					'reports' => 'reports',
+					'people'  => 'no-such-icon',
+				),
+			)
+		);
+		$this->build_menu();
+		$_GET['page'] = 'saddle-analytics';
+		Saddle_Settings::enqueue_assets( get_plugin_page_hookname( 'saddle-analytics', 'saddle' ) );
+
+		preg_match( '/window\.saddleData = (\{.*\});/s', implode( "\n", wp_scripts()->get_data( 'saddle-admin', 'before' ) ), $match );
+		$saddle    = json_decode( $match[1], true );
+		$analytics = $saddle['areas'][1];
+
+		$this->assertSame( 'analytics', $analytics['key'] );
+		$this->assertSame( 'graph-up', $analytics['icon'] );
+		$this->assertSame(
+			array(
+				'overview' => 'dashboard-dots',
+				'reports'  => 'reports',
+				'people'   => '',
+				'settings' => 'settings',
+			),
+			array_combine( array_column( $analytics['tabs'], 'key' ), array_column( $analytics['tabs'], 'icon' ) )
+		);
+		$this->assertSame( array( 'Overview', 'Reports', 'People', 'Settings' ), array_column( $analytics['tabs'], 'label' ) );
+		wp_deregister_script( 'saddle-admin' );
 	}
 
 	public function test_a_modules_own_script_loads_on_its_page() {
