@@ -313,7 +313,10 @@ body.saddle-admin-page {
 		}
 	}
 
+	// On the row's bottom edge, inside it: the row scrolls sideways, so
+	// anything below its box is clipped.
 	.pp-tabs__indicator {
+		bottom: 0;
 		height: 1.5px;
 		border-radius: 0;
 		background: #6e6e6e;

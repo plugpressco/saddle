@@ -9,9 +9,31 @@
  * badges and no module name: the header already names the module. Below
  * 782px the list becomes one row that scrolls sideways above the content.
  */
+import { useEffect, useRef } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { isPlainClick, sidebarItems } from '../frame-logic';
 import { NavIcon } from '../icons/iconoir';
+
+/**
+ * In a row that scrolls sideways (the sidebar and the icon tab row below
+ * 782px), bring the active item into view, so the owner sees where they are.
+ * Does nothing when the row does not scroll.
+ *
+ * @param {?Element} row      The scrolling element.
+ * @param {string}   selector The active item, inside it.
+ */
+export function revealActive( row, selector ) {
+	if ( ! row || row.scrollWidth <= row.clientWidth ) {
+		return;
+	}
+	const active = row.querySelector( selector );
+	if ( active ) {
+		row.scrollLeft +=
+			active.getBoundingClientRect().left -
+			row.getBoundingClientRect().left -
+			16;
+	}
+}
 
 /**
  * @param {Object}   props
@@ -21,6 +43,8 @@ import { NavIcon } from '../icons/iconoir';
  */
 export default function SectionNav( { area, tab, onSection } ) {
 	const { items, settings } = sidebarItems( area.tabs );
+	const listRef = useRef( null );
+	useEffect( () => revealActive( listRef.current, '.is-active' ), [ tab ] );
 
 	const item = ( t ) => {
 		const active = t.key === tab;
@@ -55,7 +79,7 @@ export default function SectionNav( { area, tab, onSection } ) {
 			className="saddle-sections"
 			aria-label={ area.title || __( 'Sections', 'saddle' ) }
 		>
-			<ul className="saddle-sections__list">
+			<ul className="saddle-sections__list" ref={ listRef }>
 				{ items.map( item ) }
 				{ settings && items.length > 0 && (
 					<li className="saddle-sections__rule" aria-hidden="true" />

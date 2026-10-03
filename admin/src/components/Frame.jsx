@@ -32,7 +32,7 @@ import { NavIcon } from '../icons/iconoir';
 import { icons } from '../icons/kit';
 import { BrandMark } from './icons';
 import NoticeItem from './NoticeItem';
-import SectionNav from './SectionNav';
+import SectionNav, { revealActive } from './SectionNav';
 
 // One content width for every page: sparse pages don't feel empty and the
 // column never resizes between tabs. Home is wider, for its two columns; a
@@ -414,6 +414,15 @@ export default function Frame( {
 	const tabs = showTabs && head.showTabs ? area.tabs : null;
 	const current = ( area.tabs || [] ).find( ( t ) => t.key === tab );
 	const pages = head.showSubtabs && current ? current.subtabs : null;
+	const pagesRef = useRef( null );
+	useEffect(
+		() =>
+			revealActive(
+				pagesRef.current,
+				'[role="tab"][data-state="active"]'
+			),
+		[ tab, sub, pages ]
+	);
 
 	// A module crumb opens the first section, a section crumb closes the
 	// item; both in the app. Any other link loads its page.
@@ -519,7 +528,7 @@ export default function Frame( {
 					<SectionNav area={ area } tab={ tab } onSection={ onTab } />
 					<div className="saddle-module__body">
 						{ pages && (
-							<div className="saddle-subtabs">
+							<div className="saddle-subtabs" ref={ pagesRef }>
 								<TabRow
 									items={ pages }
 									value={ sub }
