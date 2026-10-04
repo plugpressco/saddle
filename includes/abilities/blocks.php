@@ -731,7 +731,7 @@ class Saddle_Blocks_Abilities {
 			$sizes[] = array(
 				'slug' => $slug,
 				/* translators: %d: the font size in pixels. */
-				'name' => sprintf( __( 'Brand %dpx', 'saddle' ), $px ),
+				'name' => sprintf( _x( 'Brand %dpx', 'font size preset name', 'saddle' ), $px ),
 				'size' => $px . 'px',
 			);
 			++$added['sizes'];
@@ -751,7 +751,7 @@ class Saddle_Blocks_Abilities {
 			$steps[] = array(
 				'slug' => $slug,
 				/* translators: %d: the spacing step in pixels. */
-				'name' => sprintf( __( 'Brand %dpx', 'saddle' ), $px ),
+				'name' => sprintf( _x( 'Brand %dpx', 'spacing preset name', 'saddle' ), $px ),
 				'size' => $px . 'px',
 			);
 			++$added['spacing'];

@@ -258,6 +258,35 @@ class Saddle_Owner_Undo_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'permanently deleted', implode( ' ', $plan['entries'][0]['reasons'] ) );
 	}
 
+	/**
+	 * The owner's browser has no app, so the access level it reads is the
+	 * old site-wide one, Read only by default. That level must not stop the
+	 * owner undoing a setting an app changed; WordPress capabilities still
+	 * apply. Found while joining the owner Undo to Activity (1.5.0).
+	 */
+	public function test_the_owner_can_undo_a_setting_whatever_the_old_site_level() {
+		Saddle_Capabilities::set_tier( 'admin' );
+		update_option( 'blogdescription', 'Before' );
+		$input  = array(
+			'name'  => 'blogdescription',
+			'value' => 'After',
+		);
+		$result = $this->run_ability( 'update-option', $input );
+		if ( is_array( $result ) && ! empty( $result['confirm_token'] ) ) {
+			$result = $this->run_ability( 'update-option', $input + array( 'confirm_token' => $result['confirm_token'] ) );
+		}
+		$this->assertNotWPError( $result );
+		$this->assertSame( 'After', get_option( 'blogdescription' ) );
+		$entry = $this->newest_entry();
+
+		Saddle_Capabilities::set_tier( 'read' );
+		$plan = $this->preview( array( $entry ) );
+		$this->assertSame( 1, $plan['ready'], 'The owner may undo a setting change.' );
+
+		$this->assertSame( 200, $this->undo( array( $entry ), $plan['confirm_token'] )->get_status() );
+		$this->assertSame( 'Before', get_option( 'blogdescription' ) );
+	}
+
 	public function test_a_plugin_update_is_refused_with_the_reason() {
 		Saddle_Log::record_action( 'update-plugin', 'akismet/akismet.php', 'Queued an update.' );
 

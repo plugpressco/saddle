@@ -227,6 +227,36 @@ class Saddle_Undo_Steps {
 	}
 
 	/**
+	 * Whether the site owner is undoing from wp-admin right now (as_owner()).
+	 *
+	 * @var bool
+	 */
+	private static $owner = false;
+
+	/**
+	 * Run an undo as the site owner in wp-admin.
+	 *
+	 * The access level is an app's. The owner's browser has no app, so
+	 * tier_allows() falls back to the old site-wide level (Read only by
+	 * default) and refused the owner's own undo of a setting, the theme or a
+	 * plugin. Only Saddle_REST_Admin::owner_undo() calls this, after it has
+	 * refused any app connection. WordPress capabilities still apply to every
+	 * step.
+	 *
+	 * @param callable $run What to run.
+	 * @return mixed What it returns.
+	 */
+	public static function as_owner( callable $run ) {
+		$previous    = self::$owner;
+		self::$owner = true;
+		try {
+			return $run();
+		} finally {
+			self::$owner = $previous;
+		}
+	}
+
+	/**
 	 * The refusal for an item the current user or tier may not reverse, or ''.
 	 *
 	 * @param array $item Journal item.
@@ -247,13 +277,13 @@ class Saddle_Undo_Steps {
 				$ok = current_user_can( 'delete_term', $id );
 				break;
 			case 'option':
-				$ok = current_user_can( 'manage_options' ) && Saddle_Capabilities::tier_allows( 'admin' );
+				$ok = current_user_can( 'manage_options' ) && ( self::$owner || Saddle_Capabilities::tier_allows( 'admin' ) );
 				break;
 			case 'theme':
-				$ok = current_user_can( 'switch_themes' ) && Saddle_Capabilities::tier_allows( 'admin' );
+				$ok = current_user_can( 'switch_themes' ) && ( self::$owner || Saddle_Capabilities::tier_allows( 'admin' ) );
 				break;
 			case 'plugin':
-				$ok = current_user_can( 'activate_plugins' ) && Saddle_Capabilities::tier_allows( 'admin' );
+				$ok = current_user_can( 'activate_plugins' ) && ( self::$owner || Saddle_Capabilities::tier_allows( 'admin' ) );
 				break;
 			default:
 				$ok = false;

@@ -458,6 +458,13 @@ class Saddle_Integration_Engine {
 							'' !== $target ? "#{$target}" : __( 'the given input', 'saddle' ),
 							$title
 						),
+						'done'    => sprintf(
+							/* translators: 1: tool label, 2: target, 3: plugin name. */
+							__( 'Ran "%1$s" on %2$s via the %3$s integration.', 'saddle' ),
+							$source->get_label(),
+							'' !== $target ? "#{$target}" : __( 'the given input', 'saddle' ),
+							$title
+						),
 						'preview' => array(
 							'tool'  => $name,
 							'input' => $input,

@@ -222,6 +222,9 @@ class Saddle_Log {
 			$user      = $post->post_author ? get_userdata( $post->post_author ) : null;
 			$type      = (string) get_post_meta( $post->ID, '_saddle_type', true );
 			$entries[] = array(
+				'id'        => (int) $post->ID,
+				// Whether the owner's Undo can offer this entry (Activity feed).
+				'undo'      => ! in_array( $type, self::NOT_CHANGES, true ) && class_exists( 'Saddle_Undo' ) ? Saddle_Undo::availability( $post->ID ) : '',
 				'date'      => $post->post_date_gmt,
 				'action'    => (string) get_post_meta( $post->ID, '_saddle_action', true ),
 				'target'    => (string) get_post_meta( $post->ID, '_saddle_target', true ),

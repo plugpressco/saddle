@@ -1604,7 +1604,13 @@ class Saddle_REST_Admin {
 			return new WP_Error( 'saddle_empty', __( 'Choose at least one change to undo.', 'saddle' ), array( 'status' => 400 ) );
 		}
 
-		$plan    = Saddle_Undo::plan( $ids );
+		// As the owner: a setting, theme or plugin change is the owner's to
+		// undo here, whatever the old site-wide access level says.
+		$plan    = Saddle_Undo_Steps::as_owner(
+			static function () use ( $ids ) {
+				return Saddle_Undo::plan( $ids );
+			}
+		);
 		$unknown = array_values( array_diff( $ids, wp_list_pluck( $plan, 'id' ) ) );
 		$ready   = count( wp_list_filter( $plan, array( 'status' => 'ready' ) ) );
 		$token   = trim( (string) $request->get_param( 'confirm_token' ) );
@@ -1632,7 +1638,11 @@ class Saddle_REST_Admin {
 		$undone = array();
 		Saddle_Journal::open( 'saddle/undo-changes' );
 		try {
-			$done   = Saddle_Undo::apply( $ids );
+			$done   = Saddle_Undo_Steps::as_owner(
+				static function () use ( $ids ) {
+					return Saddle_Undo::apply( $ids );
+				}
+			);
 			$undone = array_values( wp_list_filter( $done, array( 'status' => 'undone' ) ) );
 			if ( $undone ) {
 				Saddle_Log::record(

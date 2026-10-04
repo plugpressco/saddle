@@ -555,6 +555,21 @@ class Saddle_Capabilities {
 		if ( class_exists( 'Saddle_Services' ) ) {
 			$account = Saddle_Services::unavailable_account( $short );
 			if ( '' !== $account ) {
+				// Name the access level too when it also falls short, so the
+				// owner fixes both at once instead of meeting them in turn.
+				$level = $gate ? (string) $gate['level'] : '';
+				if ( '' !== $level && ! self::tier_allows( $level ) ) {
+					return array(
+						'code'    => 'saddle_service_not_set_up',
+						'message' => sprintf(
+							/* translators: 1: service name, such as Unsplash, 2: required access level, 3: this app's access level. */
+							__( '%1$s is not set up, and this tool also needs the "%2$s" access level, but this app only has "%3$s" access. Ask the owner to add a key under Saddle → Services and to change this app\'s access on Saddle → AI apps. Do not retry until they have.', 'saddle' ),
+							$account,
+							$level,
+							self::get_tier()
+						),
+					);
+				}
 				return array(
 					'code'    => 'saddle_service_not_set_up',
 					'message' => sprintf(
