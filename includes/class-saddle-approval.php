@@ -604,12 +604,7 @@ class Saddle_Approval {
 				array(
 					'action'  => $approved ? 'owner-approved' : 'owner-rejected',
 					'target'  => (string) get_post_meta( $id, '_saddle_target', true ),
-					'summary' => sprintf(
-						/* translators: 1: what was asked, 2: app name. */
-						$approved ? __( 'Owner approved: %1$s (%2$s)', 'saddle' ) : __( 'Owner rejected: %1$s (%2$s)', 'saddle' ),
-						(string) get_post_meta( $id, self::META_SUMMARY, true ),
-						(string) get_post_meta( $id, self::META_APP, true )
-					),
+					'summary' => self::decision_line( $id, $approved ),
 				)
 			);
 		}
@@ -618,5 +613,35 @@ class Saddle_Approval {
 			'id'       => $id,
 			'decision' => $decision,
 		);
+	}
+
+	/**
+	 * The owner's decision as the activity log says it: "You approved Claude
+	 * Code’s request: Publish post #18 …". The log is the owner's own record,
+	 * so it speaks to them, and it names the app that asked.
+	 *
+	 * @param int  $id       Token post id.
+	 * @param bool $approved Whether the owner approved.
+	 * @return string
+	 */
+	private static function decision_line( $id, $approved ) {
+		$asked = (string) get_post_meta( $id, self::META_SUMMARY, true );
+
+		// A request made with no app behind it came from a signed-in browser.
+		if ( '' === (string) get_post_meta( $id, self::META_CONNECTION, true ) ) {
+			return $approved
+				/* translators: %s: what was asked, such as "Publish post #18". */
+				? sprintf( __( 'You approved a request made in a browser: %s', 'saddle' ), $asked )
+				/* translators: %s: what was asked, such as "Publish post #18". */
+				: sprintf( __( 'You rejected a request made in a browser: %s', 'saddle' ), $asked );
+		}
+
+		$app = (string) get_post_meta( $id, self::META_APP, true );
+
+		return $approved
+			/* translators: 1: app name, such as Claude Code, 2: what it asked, such as "Publish post #18". */
+			? sprintf( __( 'You approved %1$s’s request: %2$s', 'saddle' ), $app, $asked )
+			/* translators: 1: app name, such as Claude Code, 2: what it asked, such as "Publish post #18". */
+			: sprintf( __( 'You rejected %1$s’s request: %2$s', 'saddle' ), $app, $asked );
 	}
 }

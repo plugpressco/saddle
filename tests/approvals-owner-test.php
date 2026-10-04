@@ -203,16 +203,62 @@ class Saddle_Approvals_Owner_Test extends WP_UnitTestCase {
 		$this->assertSame( 'saddle_invalid_token', $again->get_error_code() );
 
 		$log = Saddle_Log::query( 10, 1 );
-		$this->assertStringContainsString( 'Owner rejected: Publish “Spring sale”', $log['entries'][0]['summary'] );
+		$this->assertSame( 'You rejected a request made in a browser: Publish “Spring sale”', $log['entries'][0]['summary'] );
 	}
 
+	/**
+	 * The owner's own record speaks to them and names the app. Regression:
+	 * it read "Owner approved: Approve publication of post #18 … (Claude)".
+	 */
 	public function test_approval_is_logged_with_the_app_name() {
 		$this->as_key( $this->key( 'Claude' ) );
 		Saddle_Approval::gate( $this->args( $calls ) );
 		$this->decide( $this->pending()[0]['id'], 'approve' );
 
 		$log = Saddle_Log::query( 10, 1 );
-		$this->assertSame( 'Owner approved: Publish “Spring sale” (Claude)', $log['entries'][0]['summary'] );
+		$this->assertSame( 'You approved Claude’s request: Publish “Spring sale”', $log['entries'][0]['summary'] );
+	}
+
+	public function test_rejection_is_logged_with_the_app_name() {
+		$this->as_key( $this->key( 'Claude Code' ) );
+		Saddle_Approval::gate( $this->args( $calls ) );
+		$this->decide( $this->pending()[0]['id'], 'reject' );
+
+		$log = Saddle_Log::query( 10, 1 );
+		$this->assertSame( 'You rejected Claude Code’s request: Publish “Spring sale”', $log['entries'][0]['summary'] );
+	}
+
+	/** A publish under drafts-only asks plainly, so the decision line reads plainly too. */
+	public function test_a_publish_request_reads_as_the_request() {
+		update_option( Saddle_Capabilities::DRAFTS_ONLY_OPTION, true );
+		Saddle_Capabilities::set_tier( 'write' );
+		$id = self::factory()->post->create(
+			array(
+				'post_title'  => 'Spring sale',
+				'post_status' => 'draft',
+			)
+		);
+		$this->as_key( $this->key( 'Claude Code' ) );
+		Saddle_Access::set_role( 'key:' . $GLOBALS['wp_rest_application_password_uuid'], 'write' );
+
+		$preview = wp_get_ability( 'saddle/update-post' )->execute(
+			array(
+				'id'     => $id,
+				'status' => 'publish',
+			)
+		);
+		$this->assertSame( sprintf( 'Publish post #%d "Spring sale", with any other edits in the same request.', $id ), $preview['summary'] );
+
+		$this->decide( $this->pending()[0]['id'], 'approve' );
+		$log = Saddle_Log::query( 1, 1 );
+		$this->assertSame(
+			sprintf( 'You approved Claude Code’s request: Publish post #%d "Spring sale", with any other edits in the same request.', $id ),
+			$log['entries'][0]['summary']
+		);
+
+		delete_option( Saddle_Capabilities::DRAFTS_ONLY_OPTION );
+		delete_option( Saddle_Capabilities::OPTION );
+		delete_option( Saddle_Access::KEY_ROLES_OPTION );
 	}
 
 	public function test_undecided_agent_confirm_still_works() {

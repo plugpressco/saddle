@@ -1132,13 +1132,23 @@ class Saddle_Abilities {
 				'action'  => 'publish_' . $type,
 				'target'  => (string) $id,
 				'bind'    => $bind,
-				'summary' => sprintf(
-					/* translators: 1: type, 2: id, 3: title. */
-					__( 'Approve publication of %1$s #%2$d "%3$s", including any requested schedule and edits.', 'saddle' ),
-					$type,
-					$id,
-					$existing->post_title
-				),
+				// Says what the app asks to do, so the owner's decision reads
+				// "You approved Claude Code's request: Publish post #18 …".
+				'summary' => 'future' === $status
+					? sprintf(
+						/* translators: 1: type, 2: id, 3: title. */
+						__( 'Schedule %1$s #%2$d "%3$s" to publish later, with any other edits in the same request.', 'saddle' ),
+						$type,
+						$id,
+						$existing->post_title
+					)
+					: sprintf(
+						/* translators: 1: type, 2: id, 3: title. */
+						__( 'Publish %1$s #%2$d "%3$s", with any other edits in the same request.', 'saddle' ),
+						$type,
+						$id,
+						$existing->post_title
+					),
 				'preview' => array(
 					'id'             => $id,
 					'type'           => $type,
