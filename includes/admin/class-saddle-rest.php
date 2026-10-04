@@ -355,6 +355,11 @@ class Saddle_REST_Admin {
 						'minimum'           => 0,
 						'sanitize_callback' => 'absint',
 					),
+					// Home's "Changes" counts only what apps did.
+					'by'    => array(
+						'type' => 'string',
+						'enum' => array( 'app' ),
+					),
 				),
 			)
 		);
@@ -1504,9 +1509,10 @@ class Saddle_REST_Admin {
 		$type     = (string) $request->get_param( 'type' );
 		$type     = in_array( $type, array( 'executed', 'denied', 'rehearsed' ), true ) ? $type : '';
 		$since    = absint( $request->get_param( 'since' ) );
+		$by       = 'app' === $request->get_param( 'by' ) ? 'app' : '';
 
 		$result = class_exists( 'Saddle_Log' )
-			? Saddle_Log::query( $per_page, $page, $type, $since )
+			? Saddle_Log::query( $per_page, $page, $type, $since, $by )
 			: array(
 				'entries'     => array(),
 				'total'       => 0,

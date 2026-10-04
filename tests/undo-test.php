@@ -80,6 +80,24 @@ class Saddle_Undo_Test extends WP_UnitTestCase {
 
 	/* -------- the sequence -------- */
 
+	/**
+	 * Found in the 1.5.0 release QA: undoing a trash listed WordPress's own
+	 * bookkeeping ("Restore the _wp_trash_meta_status field…") to the app and
+	 * on Needs your OK. It is still restored, just not listed.
+	 */
+	public function test_undoing_a_trash_lists_no_wordpress_bookkeeping() {
+		list( $id, $entries ) = $this->create_edit_trash();
+
+		$preview = $this->run_ability( 'undo-changes', array( 'entries' => array( $entries[0] ) ) );
+		$steps   = implode( "\n", $preview['preview']['entries'][0]['steps'] );
+		$this->assertNotSame( '', $steps );
+		$this->assertStringNotContainsString( '_wp_', $steps );
+
+		$this->undo( array( $entries[0] ) );
+		$this->assertSame( 'publish', get_post_status( $id ) );
+		$this->assertSame( '', (string) get_post_meta( $id, '_wp_trash_meta_status', true ), 'The bookkeeping is still restored.' );
+	}
+
 	public function test_create_edit_trash_undoes_step_by_step() {
 		list( $id, $entries ) = $this->create_edit_trash();
 

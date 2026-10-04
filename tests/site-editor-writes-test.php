@@ -31,7 +31,67 @@ class Saddle_Site_Editor_Writes_Test extends WP_UnitTestCase {
 	public function tear_down() {
 		switch_theme( $this->previous_theme );
 		Saddle_Capabilities::set_tier( 'read' );
+		remove_filter( 'wp_is_application_passwords_available', '__return_true' );
+		remove_filter( 'application_password_is_api_request', '__return_true' );
+		$GLOBALS['wp_rest_application_password_uuid'] = null;
 		parent::tear_down();
+	}
+
+	/**
+	 * Sign the request in with a Saddle-issued key at Edit content, the way a
+	 * real app connects on a site without OAuth.
+	 */
+	private function connect_with_a_saddle_key() {
+		add_filter( 'wp_is_application_passwords_available', '__return_true' );
+		add_filter( 'application_password_is_api_request', '__return_true' );
+
+		$admin   = get_current_user_id();
+		$created = WP_Application_Passwords::create_new_application_password( $admin, array( 'name' => Saddle_Connections::KEY_PREFIX . 'Claude Code' ) );
+		$this->assertNotWPError( $created );
+
+		$user = wp_authenticate_application_password( null, get_userdata( $admin )->user_login, $created[0] );
+		$this->assertInstanceOf( 'WP_User', $user );
+		wp_set_current_user( $user->ID );
+		$this->assertTrue( Saddle_Connection::is_saddle_issued( $user->ID, rest_get_authenticated_app_password() ) );
+		$this->assertTrue( Saddle_Access::set_role( 'key:' . $created[1]['uuid'], 'write' ) );
+	}
+
+	/**
+	 * Found in the 1.5.0 release QA: an app connected with a key could not
+	 * save a template or a part. The save is a nested REST request to core's
+	 * templates routes, and scope_credentials() refused it ("works only with
+	 * Saddle's endpoint"), so the confirm burned its token and saved nothing.
+	 * A key is the only way to connect on a site without HTTPS.
+	 */
+	public function test_an_app_connected_with_a_key_can_save_templates_and_parts() {
+		$this->connect_with_a_saddle_key();
+
+		$input   = array(
+			'id'    => 'saddle-block-fixture//header',
+			'type'  => 'part',
+			'nodes' => $this->header_nodes( 'From a key' ),
+		);
+		$preview = $this->run_ability( 'set-template', $input );
+		$this->assertTrue( $preview['requires_confirmation'] );
+
+		$result = $this->run_ability( 'set-template', $input + array( 'confirm_token' => $preview['confirm_token'] ) );
+		$this->assertNotWPError( $result );
+		$this->assertStringContainsString( 'From a key', get_block_template( 'saddle-block-fixture//header', 'wp_template_part' )->content );
+
+		$part = $this->run_ability(
+			'create-template-part',
+			array(
+				'slug'  => 'key-strip',
+				'title' => 'Key strip',
+				'nodes' => $this->header_nodes( 'Made with a key' ),
+			)
+		);
+		$this->assertNotWPError( $part );
+		$this->assertNotNull( get_block_template( 'saddle-block-fixture//key-strip', 'wp_template_part' ) );
+
+		// The key is still confined: core's routes stay closed to it directly.
+		$direct = rest_do_request( new WP_REST_Request( 'GET', '/wp/v2/template-parts' ) );
+		$this->assertSame( 'saddle_credential_scope', $direct->as_error()->get_error_code() );
 	}
 
 	private function run_ability( $name, array $input = array() ) {

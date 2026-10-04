@@ -56,7 +56,8 @@ class Saddle_WC_Abilities_Test extends WP_UnitTestCase {
 			'saddle/wc-check-setup'   => array( 'read', false ),
 			'saddle/wc-list-products' => array( 'read', false ),
 			'saddle/wc-get-product'   => array( 'read', false ),
-			'saddle/wc-list-orders'   => array( 'read', false ),
+			// Customer names and emails: Edit content, not Read only (#321).
+			'saddle/wc-list-orders'   => array( 'write', false ),
 		);
 
 		foreach ( $expect as $name => list( $tier, $destructive ) ) {
@@ -149,5 +150,105 @@ class Saddle_WC_Abilities_Test extends WP_UnitTestCase {
 		$done = wp_get_ability( 'saddle/wc-list-orders' )->execute( array( 'status' => 'completed' ) );
 		$this->assertSame( 1, $done['total'] );
 		$this->assertSame( 2, $done['orders'][0]['id'] );
+	}
+
+	/* -------- customer data needs Edit content (#321) -------- */
+
+	public function test_list_orders_is_refused_at_read_only_with_the_tier_message() {
+		WC_Order::seed(
+			array(
+				array( 'id' => 1, 'status' => 'processing', 'total' => '30.00', 'email' => 'a@x.test', 'first_name' => 'Ann', 'last_name' => 'Lee' ),
+			)
+		);
+		Saddle_Capabilities::set_tier( 'read' );
+
+		$result = wp_get_ability( 'saddle/wc-list-orders' )->execute( array() );
+
+		$this->assertWPError( $result, 'Order rows carry customer names and emails; Read only must not reach them.' );
+		$this->assertSame( 'ability_invalid_permissions', $result->get_error_code() );
+
+		$reason = Saddle_Capabilities::denial_reason( 'saddle/wc-list-orders' );
+		$this->assertSame( 'saddle_tier_denied', $reason['code'] );
+		$this->assertStringContainsString( '"write"', $reason['message'] );
+		$this->assertStringContainsString( 'Saddle → AI apps', $reason['message'] );
+	}
+
+	public function test_list_orders_works_at_edit_content() {
+		WC_Order::seed(
+			array(
+				array( 'id' => 1, 'status' => 'processing', 'total' => '30.00', 'email' => 'a@x.test', 'first_name' => 'Ann', 'last_name' => 'Lee' ),
+			)
+		);
+		Saddle_Capabilities::set_tier( 'write' );
+
+		$result = wp_get_ability( 'saddle/wc-list-orders' )->execute( array() );
+
+		$this->assertNotWPError( $result );
+		$this->assertSame( 'a@x.test', $result['orders'][0]['customer']['email'] );
+		$this->assertNull( Saddle_Capabilities::denial_reason( 'saddle/wc-list-orders' ) );
+	}
+
+	public function test_product_reads_stay_at_read_only() {
+		$id = $this->product( 'Hoodie', array( 'regular_price' => '25' ) );
+		Saddle_Capabilities::set_tier( 'read' );
+
+		$this->assertNotWPError( wp_get_ability( 'saddle/wc-check-setup' )->execute( array() ) );
+		$this->assertNotWPError( wp_get_ability( 'saddle/wc-list-products' )->execute( array() ) );
+		$this->assertNotWPError( wp_get_ability( 'saddle/wc-get-product' )->execute( array( 'product_id' => $id ) ) );
+	}
+
+	/**
+	 * Saddle Pro 1.6.1 and older register saddle/wc-list-orders themselves, at
+	 * Read only and at priority 20, before free's priority-30 registration.
+	 * Free must replace that copy, or the older add-on keeps customer data at
+	 * Read only on every site that still runs it.
+	 */
+	public function test_an_older_add_on_copy_at_read_only_is_replaced() {
+		global $wp_filter;
+
+		WP_Abilities_Registry::get_instance();
+		wp_unregister_ability( 'saddle/wc-list-orders' );
+
+		$add_on = array(
+			'label'               => 'Add-on copy',
+			'description'         => 'Older add-on registration.',
+			'category'            => 'saddle',
+			'input_schema'        => array(
+				'type'       => 'object',
+				'default'    => (object) array(),
+				'properties' => (object) array(),
+			),
+			'execute_callback'    => '__return_empty_array',
+			'permission_callback' => Saddle_Capabilities::permission( 'read', 'edit_shop_orders', 'wc-list-orders' ),
+			'meta'                => saddle_ability_meta( true, false, true, 'read' ),
+		);
+
+		// Fire wp_abilities_api_init with only these two callbacks, so the rest
+		// of the registry is not registered a second time.
+		$saved = isset( $wp_filter['wp_abilities_api_init'] ) ? $wp_filter['wp_abilities_api_init'] : null;
+		unset( $wp_filter['wp_abilities_api_init'] );
+		try {
+			add_action(
+				'wp_abilities_api_init',
+				static function () use ( $add_on ) {
+					wp_register_ability( 'saddle/wc-list-orders', $add_on );
+				},
+				20
+			);
+			add_action( 'wp_abilities_api_init', 'saddle_register_wc_abilities', 30 );
+			do_action( 'wp_abilities_api_init' );
+		} finally {
+			unset( $wp_filter['wp_abilities_api_init'] );
+			if ( null !== $saved ) {
+				$wp_filter['wp_abilities_api_init'] = $saved;
+			}
+		}
+
+		$ability = wp_get_ability( 'saddle/wc-list-orders' );
+		$this->assertSame( 'List WooCommerce orders', $ability->get_label(), 'Free\'s copy must win over the older add-on\'s.' );
+		$this->assertSame( 'write', $ability->get_meta()['saddle']['tier'] );
+
+		Saddle_Capabilities::set_tier( 'read' );
+		$this->assertWPError( $ability->execute( array() ), 'The replaced copy must refuse Read only.' );
 	}
 }

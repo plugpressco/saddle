@@ -13,7 +13,9 @@
  * key setup opens in the connect wizard, which makes and manages the key.
  *
  * While an app is picked on the address path, a line watches
- * `/connections/pulse` and says the moment that app connects.
+ * `/connections/pulse` and says the moment that app connects. Until the
+ * sign-in setting is known, an app that can use either path shows a
+ * spinner rather than a path it may not take.
  */
 import { useState, useEffect, useRef } from '@wordpress/element';
 import {
@@ -21,6 +23,7 @@ import {
 	CodeBlock,
 	CopyButton,
 	KeyValueList,
+	Spinner,
 	StatusDot,
 } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
@@ -34,7 +37,8 @@ import {
 	installLinks,
 } from '../connect-apps';
 import { AppLogo } from './icons';
-import { areaUrl } from '../routes';
+import { areaUrl, withArg } from '../routes';
+import { usedAppKeys } from '../apps-logic';
 
 // A site on this computer: web apps (their servers) cannot reach it.
 const IS_LOCAL = /(?:localhost|127\.0\.0\.1|\.test|\.local)(?::|\/|$)/i.test(
@@ -131,7 +135,8 @@ function usePulse( active, onConnected ) {
  *
  * @param {Object}   props
  * @param {Function} props.onPick    Called with an app key.
- * @param {Set}      props.connected App keys that already have a connection.
+ * @param {Set}      props.connected App keys that have connected and been
+ *                                   used (a key never used does not count).
  */
 export function AppGrid( { onPick, connected = new Set() } ) {
 	return (
@@ -216,6 +221,9 @@ export default function ConnectApps( {
 	const app = APPS.find( ( a ) => a.key === selected ) || null;
 	const signInOn = !! ( oauth && oauth.enabled );
 	const byAddress = !! app && signInOn && app.viaAddress;
+	// The sign-in setting is still loading: which path this app takes is
+	// not known yet, so neither is offered.
+	const deciding = !! app && ! oauth && app.viaAddress;
 	const unreachable = !! app && IS_LOCAL && WEB_APPS.includes( app.key );
 
 	const arrived = usePulse( byAddress && ! unreachable, () => {
@@ -225,10 +233,15 @@ export default function ConnectApps( {
 		}
 	} );
 
-	// The sign-in switch lives in Settings → Advanced.
-	const settingsUrl = areaUrl( saddleData.areas || [], 'settings' );
+	// The sign-in switch lives in Settings → Advanced, collapsed:
+	// `&section=signin` opens it and scrolls to it.
+	const settingsPage = areaUrl( saddleData.areas || [], 'settings' );
+	const settingsUrl = settingsPage
+		? withArg( settingsPage, 'section', 'signin' )
+		: '';
 
-	const connectedApps = new Set( connections.map( ( c ) => c.app ) );
+	// A key made but never used has not connected: no green dot for it.
+	const connectedApps = usedAppKeys( connections );
 
 	const config = byAddress ? buildConfig( app.key, null, 'address' ) : '';
 	const links = byAddress ? installLinks( app.key, null, 'address' ) : [];
@@ -274,7 +287,7 @@ export default function ConnectApps( {
 										),
 										app.label
 								  ) }
-							{ oauth.ready && (
+							{ oauth.ready && settingsUrl && (
 								<>
 									{ ' ' }
 									<a href={ settingsUrl }>
@@ -298,7 +311,13 @@ export default function ConnectApps( {
 						</p>
 					) }
 
-					{ byAddress ? (
+					{ deciding && (
+						<p className="saddle-connect__waiting">
+							<Spinner label={ __( 'Loading', 'saddle' ) } />
+						</p>
+					) }
+
+					{ byAddress && (
 						<ol className="saddle-connect__list">
 							<li>
 								<p>{ app.howAddress }</p>
@@ -385,7 +404,9 @@ export default function ConnectApps( {
 								<p>{ app.next }</p>
 							</li>
 						</ol>
-					) : (
+					) }
+
+					{ ! deciding && ! byAddress && (
 						<div className="saddle-connect__key">
 							{ app.viaKey && (
 								<Button

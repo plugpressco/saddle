@@ -159,6 +159,25 @@ class Saddle_Menus_Test extends WP_UnitTestCase {
 		$this->assertNotNull( get_post( $a1 ) );
 	}
 
+	/**
+	 * Found in the 1.5.0 release QA: a javascript: link was refused (good) with
+	 * "A custom item needs both url and title", which sent the agent looking
+	 * for a missing field.
+	 */
+	public function test_a_refused_link_says_the_link_is_not_allowed() {
+		$result = $this->run_ability(
+			'add-menu-item',
+			array(
+				'menu'  => $this->menu,
+				'type'  => 'custom',
+				'title' => 'Click',
+				'url'   => 'javascript:alert(1)',
+			)
+		);
+		$this->assertWPError( $result );
+		$this->assertStringContainsString( 'not allowed', $result->get_error_message() );
+	}
+
 	public function test_locations_list_and_assign() {
 		$result = $this->run_ability(
 			'set-menu-location',

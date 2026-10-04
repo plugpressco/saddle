@@ -563,7 +563,11 @@ class Saddle_Menu_Abilities {
 		$id    = isset( $input['object_id'] ) ? (int) $input['object_id'] : 0;
 
 		if ( 'custom' === $type ) {
-			$url = isset( $input['url'] ) ? esc_url_raw( (string) $input['url'] ) : '';
+			$raw = isset( $input['url'] ) ? trim( (string) $input['url'] ) : '';
+			$url = '' !== $raw ? esc_url_raw( $raw ) : '';
+			if ( '' !== $raw && '' === $url ) {
+				return new WP_Error( 'saddle_bad_item', __( 'That link is not allowed in a menu. Use a web address such as https://example.com or a path such as /about.', 'saddle' ), array( 'status' => 400 ) );
+			}
 			if ( '' === $url || '' === $title ) {
 				return new WP_Error( 'saddle_bad_item', __( 'A custom item needs both "url" and "title".', 'saddle' ), array( 'status' => 400 ) );
 			}

@@ -37,6 +37,6 @@ Manual fallback, if ever needed:
     cp .wordpress.org/icon* .wordpress.org/banner* .wordpress.org/screenshot-* saddle/assets/
     svn add saddle/assets/* && svn ci -m "Listing assets"
 
-Screenshots (`screenshot-N.png` + captions in readme.txt) are still to be
-captured from a live wp-admin. Drop them in this folder and they ship with the
-next release.
+Screenshots (`screenshot-N.png` + captions in readme.txt) were taken for 1.5.0
+from the built zip on WordPress Playground (#294), on a demo site at 1280×900.
+Retake them when a page they show changes; they ship with the next release.

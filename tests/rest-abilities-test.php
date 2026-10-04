@@ -49,6 +49,19 @@ class Saddle_REST_Abilities_Test extends WP_UnitTestCase {
 		$this->assertSame( array( 'delete-media', 'delete-post' ), Saddle_Capabilities::disabled_abilities() );
 	}
 
+	/**
+	 * Found in the 1.5.0 release QA: a full name ("saddle/list-posts") was
+	 * saved as "saddlelist-posts", which turned nothing off.
+	 */
+	public function test_a_full_ability_name_turns_the_tool_off() {
+		$req = new WP_REST_Request( 'POST', '/saddle/v1/abilities' );
+		$req->set_param( 'disabled', array( 'saddle/list-posts' ) );
+
+		$data = Saddle_REST_Admin::update_disabled_abilities( $req )->get_data();
+
+		$this->assertSame( array( 'list-posts' ), $data['disabled'] );
+	}
+
 	public function test_update_disabled_abilities_can_clear_the_list() {
 		Saddle_Capabilities::set_disabled_abilities( array( 'delete-media' ) );
 

@@ -35,14 +35,17 @@ class Saddle_Site_Test extends WP_UnitTestCase {
 	}
 
 	public function tear_down() {
-		if ( is_plugin_active( $this->dummy_file ) ) {
-			deactivate_plugins( $this->dummy_file, true );
-		}
-		if ( file_exists( $this->dummy_path . '/saddle-dummy.php' ) ) {
-			unlink( $this->dummy_path . '/saddle-dummy.php' );
-		}
-		if ( is_dir( $this->dummy_path ) ) {
-			rmdir( $this->dummy_path );
+		foreach ( array( 'saddle-dummy-addon', 'saddle-dummy' ) as $slug ) {
+			$file = $slug . '/' . $slug . '.php';
+			if ( is_plugin_active( $file ) ) {
+				deactivate_plugins( $file, true );
+			}
+			if ( file_exists( WP_PLUGIN_DIR . '/' . $file ) ) {
+				unlink( WP_PLUGIN_DIR . '/' . $file );
+			}
+			if ( is_dir( WP_PLUGIN_DIR . '/' . $slug ) ) {
+				rmdir( WP_PLUGIN_DIR . '/' . $slug );
+			}
 		}
 		wp_cache_delete( 'plugins', 'plugins' );
 
@@ -74,18 +77,257 @@ class Saddle_Site_Test extends WP_UnitTestCase {
 		$this->assertContains( $this->dummy_file, $files, 'The dummy plugin must appear in the listing.' );
 	}
 
-	/* -------- plugins: activate / deactivate round trip -------- */
+	/* -------- plugins: activate / deactivate, gated (#320) -------- */
+
+	/**
+	 * Run a gated ability through preview and confirm, the way an agent does.
+	 *
+	 * @param string $name  Ability name.
+	 * @param array  $input Input without the token.
+	 * @return array|WP_Error The confirmed call's result.
+	 */
+	private function confirmed( $name, array $input ) {
+		$preview = $this->ability( $name )->execute( $input );
+		$this->assertIsArray( $preview );
+		$this->assertTrue( $preview['requires_confirmation'], 'Expected a preview first.' );
+
+		return $this->ability( $name )->execute( $input + array( 'confirm_token' => $preview['confirm_token'] ) );
+	}
+
+	/**
+	 * A second header-only plugin whose "Requires Plugins" names saddle-dummy.
+	 *
+	 * @return string Its plugin file.
+	 */
+	private function make_addon() {
+		wp_mkdir_p( WP_PLUGIN_DIR . '/saddle-dummy-addon' );
+		file_put_contents(
+			WP_PLUGIN_DIR . '/saddle-dummy-addon/saddle-dummy-addon.php',
+			"<?php\n/**\n * Plugin Name: Saddle Dummy Addon\n * Version: 2.0.0\n * Requires Plugins: saddle-dummy\n */\n"
+		);
+		wp_cache_delete( 'plugins', 'plugins' );
+
+		return 'saddle-dummy-addon/saddle-dummy-addon.php';
+	}
+
+	/** How many executed activity-log entries name this action. */
+	private function logged( $action ) {
+		$entries = Saddle_Log::query( 100, 1, 'executed' )['entries'];
+
+		return count( wp_list_filter( $entries, array( 'action' => $action ) ) );
+	}
 
 	public function test_activate_then_deactivate_plugin_by_slug() {
-		$activated = $this->ability( 'saddle/activate-plugin' )->execute( array( 'plugin' => 'saddle-dummy' ) );
+		$activated = $this->confirmed( 'saddle/activate-plugin', array( 'plugin' => 'saddle-dummy' ) );
 		$this->assertNotWPError( $activated );
-		$this->assertTrue( $activated['activated'] );
+		$this->assertSame(
+			array(
+				'activated' => true,
+				'plugin'    => $this->dummy_file,
+			),
+			$activated,
+			'The confirmed call keeps the one-step return shape.'
+		);
 		$this->assertTrue( is_plugin_active( $this->dummy_file ), 'The plugin must actually be active.' );
 
-		$deactivated = $this->ability( 'saddle/deactivate-plugin' )->execute( array( 'plugin' => $this->dummy_file ) );
+		$deactivated = $this->confirmed( 'saddle/deactivate-plugin', array( 'plugin' => $this->dummy_file ) );
 		$this->assertNotWPError( $deactivated );
-		$this->assertTrue( $deactivated['deactivated'] );
+		$this->assertSame(
+			array(
+				'deactivated' => true,
+				'plugin'      => $this->dummy_file,
+			),
+			$deactivated
+		);
 		$this->assertFalse( is_plugin_active( $this->dummy_file ), 'The plugin must actually be inactive.' );
+	}
+
+	public function test_plugin_tools_are_declared_destructive_admin_tools_with_a_token() {
+		foreach ( array( 'saddle/activate-plugin', 'saddle/deactivate-plugin' ) as $name ) {
+			$ability = $this->ability( $name );
+			$meta    = $ability->get_meta();
+			$this->assertTrue( $meta['annotations']['destructive'], "{$name} must be declared destructive." );
+			$this->assertSame( 'admin', $meta['saddle']['tier'], "{$name} tier" );
+			$this->assertArrayHasKey( 'confirm_token', $ability->get_input_schema()['properties'], "{$name} must accept the token." );
+			$this->assertStringContainsString( 'confirm_token', $ability->get_description(), "{$name} must tell the agent about the two steps." );
+		}
+	}
+
+	public function test_activate_plugin_without_a_token_previews_and_changes_nothing() {
+		$before  = $this->logged( 'activate-plugin' );
+		$preview = $this->ability( 'saddle/activate-plugin' )->execute( array( 'plugin' => 'saddle-dummy' ) );
+
+		$this->assertNotWPError( $preview );
+		$this->assertTrue( $preview['requires_confirmation'] );
+		$this->assertNotEmpty( $preview['confirm_token'] );
+		$this->assertSame( 'activate-plugin', $preview['action'] );
+		$this->assertSame( $this->dummy_file, $preview['preview']['plugin'] );
+		$this->assertSame( 'Saddle Dummy', $preview['preview']['plugin_name'] );
+		$this->assertSame( '1.0.0', $preview['preview']['version'] );
+		$this->assertStringContainsString( 'Activate the plugin Saddle Dummy 1.0.0.', $preview['summary'] );
+
+		$this->assertFalse( is_plugin_active( $this->dummy_file ), 'A preview must not activate anything.' );
+		$this->assertSame( $before, $this->logged( 'activate-plugin' ), 'A preview is not a change and is not logged as one.' );
+	}
+
+	public function test_activate_plugin_token_runs_once_and_a_reused_token_is_refused() {
+		$preview = $this->ability( 'saddle/activate-plugin' )->execute( array( 'plugin' => 'saddle-dummy' ) );
+		$input   = array(
+			'plugin'        => 'saddle-dummy',
+			'confirm_token' => $preview['confirm_token'],
+		);
+
+		$before = $this->logged( 'activate-plugin' );
+		$done   = $this->ability( 'saddle/activate-plugin' )->execute( $input );
+		$this->assertNotWPError( $done );
+		$this->assertTrue( $done['activated'] );
+		$this->assertTrue( is_plugin_active( $this->dummy_file ) );
+		$this->assertSame( $before + 1, $this->logged( 'activate-plugin' ), 'The confirmed activation is logged exactly once.' );
+
+		// The plugin is active now, so a no-op answer would also look harmless;
+		// the used token must still be refused as used.
+		$again = $this->ability( 'saddle/activate-plugin' )->execute( $input );
+		$this->assertWPError( $again );
+		$this->assertSame( 'saddle_invalid_token', $again->get_error_code() );
+		$this->assertSame( $before + 1, $this->logged( 'activate-plugin' ), 'A refused token logs nothing.' );
+	}
+
+	public function test_deactivate_plugin_without_a_token_previews_and_changes_nothing() {
+		activate_plugin( $this->dummy_file );
+
+		$preview = $this->ability( 'saddle/deactivate-plugin' )->execute( array( 'plugin' => $this->dummy_file ) );
+
+		$this->assertNotWPError( $preview );
+		$this->assertTrue( $preview['requires_confirmation'] );
+		$this->assertSame( 'deactivate-plugin', $preview['action'] );
+		$this->assertSame( 'Saddle Dummy', $preview['preview']['plugin_name'] );
+		$this->assertArrayNotHasKey( 'required_by', $preview['preview'], 'Nothing active requires it.' );
+		$this->assertStringContainsString( 'Deactivate the plugin Saddle Dummy 1.0.0.', $preview['summary'] );
+		$this->assertTrue( is_plugin_active( $this->dummy_file ), 'A preview must not deactivate anything.' );
+	}
+
+	public function test_deactivate_plugin_token_runs_once_and_a_reused_token_is_refused() {
+		activate_plugin( $this->dummy_file );
+		$preview = $this->ability( 'saddle/deactivate-plugin' )->execute( array( 'plugin' => $this->dummy_file ) );
+		$input   = array(
+			'plugin'        => $this->dummy_file,
+			'confirm_token' => $preview['confirm_token'],
+		);
+
+		$done = $this->ability( 'saddle/deactivate-plugin' )->execute( $input );
+		$this->assertNotWPError( $done );
+		$this->assertTrue( $done['deactivated'] );
+		$this->assertFalse( is_plugin_active( $this->dummy_file ) );
+
+		$again = $this->ability( 'saddle/deactivate-plugin' )->execute( $input );
+		$this->assertWPError( $again );
+		$this->assertSame( 'saddle_invalid_token', $again->get_error_code() );
+	}
+
+	public function test_deactivate_preview_names_the_active_plugins_that_require_it() {
+		$addon = $this->make_addon();
+		update_option( 'active_plugins', array( $this->dummy_file, $addon ) );
+
+		$preview = $this->ability( 'saddle/deactivate-plugin' )->execute( array( 'plugin' => 'saddle-dummy' ) );
+
+		$this->assertSame( array( 'Saddle Dummy Addon' ), $preview['preview']['required_by'] );
+		$this->assertStringContainsString( 'may stop working: Saddle Dummy Addon.', $preview['summary'] );
+		$this->assertTrue( is_plugin_active( $this->dummy_file ) );
+	}
+
+	public function test_an_already_active_plugin_answers_at_once_without_a_token() {
+		activate_plugin( $this->dummy_file );
+		$pending = count( Saddle_Approval::pending() );
+
+		$result = $this->ability( 'saddle/activate-plugin' )->execute( array( 'plugin' => 'saddle-dummy' ) );
+
+		$this->assertFalse( $result['activated'] );
+		$this->assertArrayNotHasKey( 'confirm_token', $result, 'Nothing to change, so nothing to confirm.' );
+		$this->assertCount( $pending, Saddle_Approval::pending(), 'No request waits on the owner for a no-op.' );
+	}
+
+	public function test_the_token_is_bound_to_the_plugin() {
+		$addon   = $this->make_addon();
+		$preview = $this->ability( 'saddle/activate-plugin' )->execute( array( 'plugin' => 'saddle-dummy' ) );
+
+		$swapped = $this->ability( 'saddle/activate-plugin' )->execute(
+			array(
+				'plugin'        => $addon,
+				'confirm_token' => $preview['confirm_token'],
+			)
+		);
+
+		$this->assertWPError( $swapped );
+		$this->assertSame( 'saddle_token_target_mismatch', $swapped->get_error_code() );
+		$this->assertFalse( is_plugin_active( $addon ) );
+		$this->assertFalse( is_plugin_active( $this->dummy_file ) );
+	}
+
+	public function test_the_token_is_bound_to_what_the_preview_showed() {
+		$preview = $this->ability( 'saddle/activate-plugin' )->execute( array( 'plugin' => 'saddle-dummy' ) );
+
+		// The plugin changes under the preview: the owner was shown 1.0.0.
+		file_put_contents(
+			$this->dummy_path . '/saddle-dummy.php',
+			"<?php\n/**\n * Plugin Name: Saddle Dummy\n * Version: 1.0.1\n */\n"
+		);
+		wp_cache_delete( 'plugins', 'plugins' );
+
+		$result = $this->ability( 'saddle/activate-plugin' )->execute(
+			array(
+				'plugin'        => 'saddle-dummy',
+				'confirm_token' => $preview['confirm_token'],
+			)
+		);
+
+		$this->assertWPError( $result );
+		$this->assertSame( 'saddle_token_bind_mismatch', $result->get_error_code() );
+		$this->assertFalse( is_plugin_active( $this->dummy_file ) );
+	}
+
+	public function test_plugin_tools_are_refused_below_the_admin_tier() {
+		activate_plugin( $this->dummy_file );
+		Saddle_Capabilities::set_tier( 'write' );
+		$pending = count( Saddle_Approval::pending() );
+
+		$off = $this->ability( 'saddle/deactivate-plugin' )->execute( array( 'plugin' => $this->dummy_file ) );
+		$this->assertWPError( $off );
+		$this->assertSame( 'ability_invalid_permissions', $off->get_error_code() );
+		$this->assertTrue( is_plugin_active( $this->dummy_file ) );
+
+		deactivate_plugins( $this->dummy_file, true );
+		$on = $this->ability( 'saddle/activate-plugin' )->execute( array( 'plugin' => $this->dummy_file ) );
+		$this->assertWPError( $on );
+		$this->assertFalse( is_plugin_active( $this->dummy_file ) );
+
+		$this->assertCount( $pending, Saddle_Approval::pending(), 'A refused call issues no token.' );
+		$reason = Saddle_Capabilities::denial_reason( 'saddle/activate-plugin' );
+		$this->assertSame( 'saddle_tier_denied', $reason['code'] );
+	}
+
+	public function test_a_plugin_preview_waits_under_needs_your_ok() {
+		$this->ability( 'saddle/activate-plugin' )->execute( array( 'plugin' => 'saddle-dummy' ) );
+
+		$rows = wp_list_filter( Saddle_Approval::pending(), array( 'tool' => 'activate-plugin' ) );
+		$this->assertCount( 1, $rows, 'Every gated preview is listed for the owner, with no list to join.' );
+		$row = reset( $rows );
+		$this->assertSame( $this->dummy_file, $row['target'] );
+		$this->assertStringContainsString( 'Saddle Dummy 1.0.0', $row['summary'] );
+	}
+
+	public function test_a_confirmed_activation_can_be_undone() {
+		$this->confirmed( 'saddle/activate-plugin', array( 'plugin' => 'saddle-dummy' ) );
+		$this->assertTrue( is_plugin_active( $this->dummy_file ) );
+
+		$changes = $this->ability( 'saddle/recall-changes' )->execute( array( 'limit' => 1 ) );
+		$entry   = $changes['changes'][0];
+		$this->assertSame( 'activate-plugin', $entry['action'] );
+		$this->assertSame( 'available', $entry['undo'], 'The gate\'s log entry must carry the journal.' );
+
+		$undone = $this->confirmed( 'saddle/undo-changes', array( 'entries' => array( $entry['id'] ) ) );
+		$this->assertNotWPError( $undone );
+		$this->assertSame( 1, $undone['undone'] );
+		$this->assertFalse( is_plugin_active( $this->dummy_file ), 'Undo puts the plugin back to inactive.' );
 	}
 
 	public function test_activate_unknown_plugin_is_404() {
@@ -95,17 +337,33 @@ class Saddle_Site_Test extends WP_UnitTestCase {
 	}
 
 	public function test_saddle_cannot_deactivate_itself() {
-		$self   = plugin_basename( SADDLE_FILE );
-		$result = $this->ability( 'saddle/deactivate-plugin' )->execute( array( 'plugin' => $self ) );
+		$self = plugin_basename( SADDLE_FILE );
 
-		// Either way Saddle is refused: if it resolves as an installed plugin
-		// (production), the self-guard fires; if the harness doesn't expose it as
-		// a plugin file, the resolver 404s first. Both safely decline.
+		// The harness loads Saddle from outside the plugins folder, so make the
+		// resolver see it the way a real install does: as an installed plugin.
+		$plugins          = Saddle_Context::get_plugins_quietly();
+		$plugins[ $self ] = array(
+			'Name'            => 'Saddle',
+			'Version'         => SADDLE_VERSION,
+			'RequiresPlugins' => '',
+		);
+		wp_cache_set( 'plugins', array( '' => $plugins ), 'plugins' );
+		$pending = count( Saddle_Approval::pending() );
+
+		$result = $this->ability( 'saddle/deactivate-plugin' )->execute( array( 'plugin' => $self ) );
 		$this->assertWPError( $result );
-		if ( 'saddle_plugin_not_found' === $result->get_error_code() ) {
-			$this->markTestSkipped( 'Saddle is not a resolvable installed plugin file in this harness; self-guard unexercisable.' );
-		}
 		$this->assertSame( 'saddle_self_deactivate', $result->get_error_code() );
+
+		// Refused before any preview: no token, nothing waiting on the owner,
+		// and a token in the call changes nothing.
+		$this->assertCount( $pending, Saddle_Approval::pending() );
+		$forged = $this->ability( 'saddle/deactivate-plugin' )->execute(
+			array(
+				'plugin'        => $self,
+				'confirm_token' => str_repeat( 'a', 32 ),
+			)
+		);
+		$this->assertSame( 'saddle_self_deactivate', $forged->get_error_code() );
 	}
 
 	/* -------- themes -------- */

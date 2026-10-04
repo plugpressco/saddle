@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Saddle
  * Plugin URI:        https://saddle.to
- * Description:       Connect AI agents to your WordPress site through MCP. Manage posts, pages, and media.
+ * Description:       Let Claude, ChatGPT and Cursor work on your site through MCP. Each app starts read-only, and every delete asks you first.
  * Version:           1.5.0
  * Requires at least: 6.9
  * Requires PHP:      7.4
@@ -146,9 +146,10 @@ require_once SADDLE_DIR . 'includes/class-saddle-mcp-diagnostics.php';
 require_once SADDLE_DIR . 'includes/class-saddle-connections.php';
 require_once SADDLE_DIR . 'includes/class-saddle-connection-apps.php';
 
-// Adapter-only, and absent from the WordPress.org build along with the library
-// itself — file_exists() is what makes that build .org-safe, exactly as it is
-// for class-saddle-updater.php. Both degrade to no-ops.
+// Adapter-only. class-saddle-bundled-adapter.php is absent from every zip along
+// with the library itself, so file_exists() makes it a no-op there, exactly as
+// for class-saddle-updater.php. class-saddle-mcp-compat.php ships on purpose
+// (#111): a site may run the official MCP Adapter plugin, which it patches.
 foreach ( array( 'class-saddle-bundled-adapter.php', 'class-saddle-mcp-compat.php' ) as $saddle_adapter_file ) {
 	if ( file_exists( SADDLE_DIR . 'includes/' . $saddle_adapter_file ) ) {
 		require_once SADDLE_DIR . 'includes/' . $saddle_adapter_file;
@@ -579,6 +580,10 @@ final class Saddle {
 		// A queued update run must not fire while Saddle is inactive. The run
 		// records stay (uninstall removes them).
 		wp_clear_scheduled_hook( Saddle_Update_Runner::HOOK );
+
+		// Nothing confines Saddle's keys while it is off, so they go now and
+		// apps connect again after reactivation (#319).
+		Saddle_Connection::revoke_issued_keys();
 	}
 }
 

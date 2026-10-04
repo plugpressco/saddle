@@ -148,11 +148,19 @@ class Saddle_Rehearsal {
 	private static function summary( $short, array $input ) {
 		$id     = self::target_id( $input );
 		$fields = implode( ', ', array_diff( array_keys( $input ), array( 'id', 'post_id', 'page_id' ) ) );
-		if ( $id ) {
+		if ( $id && '' !== $fields ) {
 			/* translators: 1: tool name, 2: post id, 3: comma-separated field names. */
 			return sprintf( __( 'Rehearsed %1$s on #%2$d (%3$s). Nothing was saved.', 'saddle' ), $short, $id, $fields );
 		}
-		/* translators: 1: tool name, 2: comma-separated field names. */
-		return sprintf( __( 'Rehearsed %1$s (%2$s). Nothing was saved.', 'saddle' ), $short, $fields );
+		if ( $id ) {
+			/* translators: 1: tool name, 2: post id. */
+			return sprintf( __( 'Rehearsed %1$s on #%2$d. Nothing was saved.', 'saddle' ), $short, $id );
+		}
+		if ( '' !== $fields ) {
+			/* translators: 1: tool name, 2: comma-separated field names. */
+			return sprintf( __( 'Rehearsed %1$s (%2$s). Nothing was saved.', 'saddle' ), $short, $fields );
+		}
+		/* translators: %s: tool name. */
+		return sprintf( __( 'Rehearsed %s. Nothing was saved.', 'saddle' ), $short );
 	}
 }

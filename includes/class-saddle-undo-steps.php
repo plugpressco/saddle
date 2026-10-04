@@ -84,7 +84,8 @@ class Saddle_Undo_Steps {
 	}
 
 	/**
-	 * What reversing an item does, in a sentence.
+	 * What reversing an item does, in a sentence, or '' for a step the owner
+	 * need not see.
 	 *
 	 * @param array $item Journal item.
 	 * @return string
@@ -104,6 +105,12 @@ class Saddle_Undo_Steps {
 				/* translators: %s: post label. */
 				return sprintf( __( 'Move %s, which this change created, to the trash.', 'saddle' ), $label );
 			case 'meta':
+				// WordPress's own bookkeeping (the trash status and time, the
+				// slug it held back) comes back with the post. Naming those keys
+				// tells the owner nothing, so the step is restored but not listed.
+				if ( 0 === strpos( (string) $item['key'], '_wp_' ) ) {
+					return '';
+				}
 				/* translators: 1: field name, 2: post label. */
 				return sprintf( __( 'Restore the %1$s field on %2$s.', 'saddle' ), $item['key'], self::post_label( (int) $item['id'] ) );
 			case 'terms':

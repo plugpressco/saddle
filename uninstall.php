@@ -2,9 +2,10 @@
 /**
  * Uninstall cleanup for Saddle.
  *
- * Removes the access-tier option and any leftover approval tokens. Application
- * Passwords are intentionally NOT deleted here — they are core user data the
- * user may want to keep or revoke deliberately.
+ * Removes every option, private post type entry and scheduled event Saddle
+ * created, and the Application Passwords Saddle issued: without Saddle nothing
+ * confines them, and each would open the whole REST API for its user (#319).
+ * A key the owner made by hand is not Saddle's and stays.
  *
  * @package Saddle
  */
@@ -48,6 +49,13 @@ foreach ( $saddle_options as $saddle_option ) {
 	delete_option( $saddle_option );
 }
 
+// The keys Saddle issued, found through the issued-credential markers, so
+// this runs before those markers are deleted below.
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-saddle-connection.php';
+if ( class_exists( 'Saddle_Connection' ) ) {
+	Saddle_Connection::revoke_issued_keys();
+}
+
 // Per-user data: the admin theme preference older versions stored, dismissed
 // notices, credential last-4 hints, and the issued-credential markers scoping
 // keys on.
@@ -57,6 +65,18 @@ delete_metadata( 'user', 0, 'saddle_ui', '', true ); // Saddle_Onboarding: the t
 delete_metadata( 'user', 0, 'saddle_client_hints', '', true );
 delete_metadata( 'user', 0, 'saddle_issued_credentials', '', true );
 
+// Saddle's cached reads (the Divi module index, refusal notes and the like)
+// expire on their own, but uninstall leaves nothing behind. Only names that
+// start with saddle_ are touched.
+global $wpdb;
+$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- One-time cleanup on uninstall; transients have no API to list by prefix.
+	$wpdb->prepare(
+		"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
+		$wpdb->esc_like( '_transient_saddle_' ) . '%',
+		$wpdb->esc_like( '_transient_timeout_saddle_' ) . '%'
+	)
+);
+
 // Clear scheduled GC, and any update run still queued.
 $saddle_gc_timestamp = wp_next_scheduled( 'saddle_gc_tokens' );
 if ( $saddle_gc_timestamp ) {
@@ -65,7 +85,6 @@ if ( $saddle_gc_timestamp ) {
 wp_clear_scheduled_hook( 'saddle_apply_updates' ); // Saddle_Update_Runner::HOOK.
 
 // Remove the managed .htaccess block the connection self-check may have added.
-require_once plugin_dir_path( __FILE__ ) . 'includes/class-saddle-connection.php';
 if ( class_exists( 'Saddle_Connection' ) ) {
 	Saddle_Connection::remove_htaccess_fix();
 }

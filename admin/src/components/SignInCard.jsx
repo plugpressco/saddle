@@ -132,16 +132,11 @@ export default function SignInCard( { oauth, saving, error, save } ) {
 	return (
 		<section className="saddle-section" id="saddle-signin">
 			<SectionHeader
-				title={
-					<Labelled
-						help={ __(
-							'With this on, an app needs only this site’s address. It opens your browser and you approve it here, like “Sign in with Google”. Claude, ChatGPT, Claude Code, Codex, Cursor, VS Code and Gemini CLI connect this way, and ChatGPT connects no other way. Pasted keys keep working.',
-							'saddle'
-						) }
-					>
-						{ __( 'Sign-in for apps', 'saddle' ) }
-					</Labelled>
-				}
+				title={ __( 'Sign-in for apps', 'saddle' ) }
+				help={ __(
+					'With this on, an app needs only this site’s address. It opens your browser and you approve it here, like “Sign in with Google”. Claude, ChatGPT, Claude Code, Codex, Cursor, VS Code and Gemini CLI connect this way, and ChatGPT connects no other way. Pasted keys keep working.',
+					'saddle'
+				) }
 			/>
 
 			<RowList>
@@ -156,10 +151,8 @@ export default function SignInCard( { oauth, saving, error, save } ) {
 							onChange={ () =>
 								save( { enabled: ! oauth.enabled } )
 							}
-							aria-label={ __(
-								'Allow apps to sign in with your WordPress account',
-								'saddle'
-							) }
+							// The visible label, so speech input can say it.
+							aria-label={ __( 'Let apps sign in', 'saddle' ) }
 						/>
 					}
 				/>

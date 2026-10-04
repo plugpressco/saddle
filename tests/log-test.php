@@ -147,6 +147,45 @@ class Saddle_Log_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Found in the 1.5.0 release QA: Home's "Changes" counted the owner's
+	 * own approvals, rejections and role changes. `by=app` keeps only what an
+	 * app made, and an entry names its person by display name.
+	 */
+	public function test_by_app_leaves_out_the_owners_own_steps() {
+		$before = Saddle_Log::query( 1, 1, 'executed', 0, 'app' )['total'];
+
+		Saddle_Log::record(
+			array(
+				'action'  => 'owner-approved',
+				'summary' => 'Owner approved something',
+			)
+		);
+		Saddle_Log::record(
+			array(
+				'action'  => 'update-post',
+				'summary' => 'An app changed a post',
+			)
+		);
+		$newest = get_posts(
+			array(
+				'post_type'   => Saddle_Log::CPT,
+				'post_status' => 'publish',
+				'numberposts' => 1,
+				'orderby'     => 'ID',
+				'order'       => 'DESC',
+				'fields'      => 'ids',
+			)
+		);
+		update_post_meta( $newest[0], '_saddle_app', 'Claude Code' );
+
+		$this->assertSame( $before + 1, Saddle_Log::query( 1, 1, 'executed', 0, 'app' )['total'] );
+		$this->assertSame( 'Claude Code', Saddle_Log::query( 1, 1, 'executed', 0, 'app' )['entries'][0]['app'] );
+
+		$latest = Saddle_Log::query( 1, 1 )['entries'][0];
+		$this->assertArrayHasKey( 'user_name', $latest );
+	}
+
+	/**
 	 * Home's "This week" reads `total` with `since`, so the count is exact:
 	 * an entry from before the window must not be counted, of either type.
 	 */

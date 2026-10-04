@@ -1,7 +1,7 @@
 /**
  * Human action names for the Home activity preview (#281).
  */
-import { actionLabel } from '../../admin/src/activity-format';
+import { actionLabel, madeBy } from '../../admin/src/activity-format';
 
 const caps = [
 	{ short: 'update-option', label: 'Update option', tier: 'admin' },
@@ -76,5 +76,38 @@ describe( 'actionLabel', () => {
 			actionLabel( { action: '', summary: 'Something' }, caps )
 		).toBe( 'Something' );
 		expect( actionLabel( {}, caps ) ).toBe( '' );
+	} );
+} );
+
+// QA 1.5.0 P2: the owner's own lines read "via admin", as if an app were
+// named after the WordPress login.
+describe( 'madeBy', () => {
+	it( 'names the app that made a change', () => {
+		expect( madeBy( { app: 'Claude Code', user: 'admin' }, 'admin' ) ).toBe(
+			'via Claude Code'
+		);
+	} );
+
+	it( 'says "by you" for the person looking', () => {
+		expect( madeBy( { app: '', user: 'admin' }, 'admin' ) ).toBe(
+			'by you'
+		);
+	} );
+
+	it( 'names another WordPress user by login, never as "via"', () => {
+		const line = madeBy( { app: '', user: 'jane' }, 'admin' );
+		expect( line ).toBe( 'by jane' );
+		expect( line ).not.toMatch( /^via/ );
+	} );
+
+	it( 'uses the display name when the log has one', () => {
+		expect(
+			madeBy( { app: '', user: 'jane', user_name: 'Jane Doe' }, 'admin' )
+		).toBe( 'by Jane Doe' );
+	} );
+
+	it( 'is empty when no one is named', () => {
+		expect( madeBy( { app: '', user: '' }, 'admin' ) ).toBe( '' );
+		expect( madeBy( null, 'admin' ) ).toBe( '' );
 	} );
 } );

@@ -133,7 +133,7 @@ class Saddle_Approval {
 					$summary = sprintf(
 						/* translators: 1: original summary, 2: error message. */
 						__( '%1$s. Failed after confirmation: %2$s', 'saddle' ),
-						$summary,
+						rtrim( $summary, '. ' ),
 						$result->get_error_message()
 					);
 				}
@@ -349,11 +349,13 @@ class Saddle_Approval {
 
 		// A token previewed for a reversible action (e.g. move to trash) must not
 		// be replayed to confirm an irreversible one (permanent delete). The
-		// recoverability-relevant parameter is part of the bound identity.
+		// recoverability-relevant parameter is part of the bound identity, and
+		// some tools also bind what they previewed (a page's content), so a
+		// mismatch can also mean the item changed since the preview.
 		if ( $stored_bind !== (string) $bind ) {
 			return new WP_Error(
 				'saddle_token_bind_mismatch',
-				__( 'This confirmation token was issued for a less destructive version of this action (for example, moving to trash rather than permanently deleting). Preview the exact action you intend, then confirm with the token it returns.', 'saddle' ),
+				__( 'This confirmation token no longer matches the request. Either the item changed since the preview, or this call asks for more than the preview showed (for example, a permanent delete after a preview of moving to trash). Preview the exact action again, then confirm with the token it returns.', 'saddle' ),
 				array( 'status' => 403 )
 			);
 		}

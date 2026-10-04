@@ -215,3 +215,33 @@ export const groupByDay = ( entries ) => {
 	} );
 	return groups;
 };
+
+/**
+ * Who made an entry, in words: "via Claude Code" for an app; "by you" for
+ * the person looking, who acted in wp-admin (an approval, a new role); "by
+ * Jane" for another WordPress user, by display name when the log has it.
+ *
+ * @param {Object} entry Audit-log entry.
+ * @param {string} me    The login of the person looking (saddleData.user).
+ * @return {string} The line, or '' when the entry names no one.
+ */
+export const madeBy = ( entry, me = '' ) => {
+	if ( entry && entry.app ) {
+		return sprintf(
+			/* translators: %s: the app that made the change, such as "Claude Code". */
+			__( 'via %s', 'saddle' ),
+			entry.app
+		);
+	}
+	if ( ! entry || ! entry.user ) {
+		return '';
+	}
+	if ( me && entry.user === me ) {
+		return __( 'by you', 'saddle' );
+	}
+	return sprintf(
+		/* translators: %s: the name of the person who made the change. */
+		__( 'by %s', 'saddle' ),
+		entry.user_name || entry.user
+	);
+};

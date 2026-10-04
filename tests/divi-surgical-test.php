@@ -479,6 +479,40 @@ class Saddle_Divi_Surgical_Test extends WP_UnitTestCase {
 		$this->assertWPError( $again );
 	}
 
+	/**
+	 * Found in the 1.5.0 release QA: a leaf was removed at once even when the
+	 * call carried a confirm_token, so a used token aimed at a leaf removed it.
+	 */
+	public function test_a_used_token_never_removes_a_leaf() {
+		$page    = $this->make_page();
+		$preview = $this->run_ability(
+			'divi-remove-module',
+			array( 'post_id' => $page, 'address' => '0.0.0.0' ) // column with heading + text.
+		);
+		$this->assertNotWPError(
+			$this->run_ability(
+				'divi-remove-module',
+				array(
+					'post_id'       => $page,
+					'address'       => '0.0.0.0',
+					'confirm_token' => $preview['confirm_token'],
+				)
+			)
+		);
+		$after = get_post( $page )->post_content;
+
+		$replay = $this->run_ability(
+			'divi-remove-module',
+			array(
+				'post_id'       => $page,
+				'address'       => '0.0.0.0.0', // the button, a leaf, now first.
+				'confirm_token' => $preview['confirm_token'],
+			)
+		);
+		$this->assertWPError( $replay );
+		$this->assertSame( $after, get_post( $page )->post_content, 'The button must stay.' );
+	}
+
 	public function test_remove_token_is_refused_after_the_tree_shifts() {
 		$page = $this->make_page();
 

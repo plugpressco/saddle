@@ -24,7 +24,15 @@
  * view.
  */
 import { useState, useEffect, useCallback, useRef } from '@wordpress/element';
-import { AppContent, Button, Tabs, Popover, SkipLink } from '@plugpress/ui';
+import {
+	AppContent,
+	Button,
+	Popover,
+	SkipLink,
+	TabsList,
+	TabsRoot,
+	TabsTrigger,
+} from '@plugpress/ui';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { saddleData } from '../api';
 import { frameHeader, isPlainClick, tabsHaveIcons } from '../frame-logic';
@@ -41,6 +49,14 @@ const PAGE_WIDTH = 960;
 const HOME_WIDTH = 1040;
 const MODULE_WIDTH = 880;
 
+// A page shows at most one tab row (Core's header row or a module
+// section's pages), and its tabs swap the one content column. So every tab
+// controls that column, the tab panel, and the panel is named by the active
+// tab. Kit tabs on their own point each tab at a panel of its own that
+// Saddle never draws (QA 1.5.0 S5).
+const PANEL_ID = 'saddle-tabpanel';
+const tabId = ( key ) => `saddle-tab-${ key }`;
+
 /**
  * A row of tabs in the minimal style, each with its icon when every tab has
  * one: Core's header row and a module section's pages.
@@ -54,22 +70,25 @@ const MODULE_WIDTH = 880;
 function TabRow( { items, value, onChange, label } ) {
 	const withIcons = tabsHaveIcons( items );
 	return (
-		<Tabs
+		<TabsRoot
 			value={ value }
 			onChange={ onChange }
-			aria-label={ label }
-			items={ items.map( ( t ) => ( {
-				value: t.key,
-				label: withIcons ? (
-					<>
-						<NavIcon name={ t.icon } />
+			style={ { display: 'contents' } }
+		>
+			<TabsList aria-label={ label }>
+				{ items.map( ( t ) => (
+					<TabsTrigger
+						key={ t.key }
+						value={ t.key }
+						id={ tabId( t.key ) }
+						aria-controls={ PANEL_ID }
+					>
+						{ withIcons && <NavIcon name={ t.icon } /> }
 						{ t.label }
-					</>
-				) : (
-					t.label
-				),
-			} ) ) }
-		/>
+					</TabsTrigger>
+				) ) }
+			</TabsList>
+		</TabsRoot>
 	);
 }
 
@@ -438,6 +457,23 @@ export default function Frame( {
 		return false;
 	};
 
+	// The tab row's active key, when this page draws one: the content column
+	// is then its tab panel.
+	let active = '';
+	if ( tabs ) {
+		active = tab;
+	} else if ( pages ) {
+		active = sub;
+	}
+	const panel = active
+		? {
+				role: 'tabpanel',
+				id: PANEL_ID,
+				'aria-labelledby': tabId( active ),
+				tabIndex: 0,
+		  }
+		: {};
+
 	let width = PAGE_WIDTH;
 	if ( head.showSidebar ) {
 		width = MODULE_WIDTH;
@@ -453,7 +489,7 @@ export default function Frame( {
 				.filter( Boolean )
 				.join( '/' ) }
 		>
-			<AppContent width={ width }>
+			<AppContent width={ width } { ...panel }>
 				{ notice && (
 					<NoticeItem
 						className="saddle-frame__notice"

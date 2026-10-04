@@ -123,17 +123,11 @@ export default function Memory( { onChanged } ) {
 		<section className="saddle-section saddle-memory">
 			<SectionHeader
 				id="memory"
-				title={
-					<span className="saddle-memory__title">
-						{ __( 'Memory', 'saddle' ) }
-						<HelpTip>
-							{ __(
-								'Notes kept between sessions, saved by you or by your AI. Pin an entry to tell every session.',
-								'saddle'
-							) }
-						</HelpTip>
-					</span>
-				}
+				title={ __( 'Memory', 'saddle' ) }
+				help={ __(
+					'Notes kept between sessions, saved by you or by your AI. Pin an entry to tell every session.',
+					'saddle'
+				) }
 				actions={
 					<Button
 						variant="secondary"

@@ -34,17 +34,6 @@ import { api } from '../api';
 import { FIELDS, parseFields, serializeFields } from '../context-fields';
 import Memory from './Memory';
 import SectionHeader from './SectionHeader';
-// A card title with an optional "?" help affordance beside it — keeps the long
-// explanation off the page while staying one hover/tap away. Rides the DS
-// HelpTip (content via children; 14px icon).
-function Heading( { children, help } ) {
-	return (
-		<span className="saddle-guide__heading">
-			{ children }
-			{ help && <HelpTip>{ help }</HelpTip> }
-		</span>
-	);
-}
 
 // Render the auto-generated context (lightweight markdown: `# headings`,
 // `- bullets`, paragraphs) as a readable document instead of raw monospace, so
@@ -317,6 +306,12 @@ export default function Guidance() {
 		return <Spinner />;
 	}
 
+	const systemRegion = {
+		role: 'region',
+		tabIndex: 0,
+		'aria-label': __( 'What your AI is told', 'saddle' ),
+	};
+
 	return (
 		<div className="saddle-guide saddle-context">
 			{ loadError && <Notice tone="danger">{ loadError }</Notice> }
@@ -344,16 +339,11 @@ export default function Guidance() {
 			{ /* Skills — named playbooks agents load on demand */ }
 			<section className="saddle-section">
 				<SectionHeader
-					title={
-						<Heading
-							help={ __(
-								'Playbook files (.md) that teach your AI a job on this site, such as “how we publish a post” or “our SEO checklist”. Every connected app sees the list and reads a skill when a task matches. Only you can add skills, and a skill never gives an app more access than you set.',
-								'saddle'
-							) }
-						>
-							{ __( 'Skills', 'saddle' ) }
-						</Heading>
-					}
+					title={ __( 'Skills', 'saddle' ) }
+					help={ __(
+						'Playbook files (.md) that teach your AI a job on this site, such as “how we publish a post” or “our SEO checklist”. Every connected app sees the list and reads a skill when a task matches. Only you can add skills, and a skill never gives an app more access than you set.',
+						'saddle'
+					) }
 					actions={
 						<Button
 							variant="secondary"
@@ -455,28 +445,31 @@ export default function Guidance() {
 			     reads this one. */ }
 			<section className="saddle-section">
 				<SectionHeader
-					title={
-						<Heading
-							help={ __(
-								'Saddle writes this from your site’s pages, design and plugins, and from what each app may do. It stays current on its own, and you can’t edit it here.',
-								'saddle'
-							) }
-						>
-							{ __( 'What apps see', 'saddle' ) }
-						</Heading>
-					}
+					title={ __( 'What apps see', 'saddle' ) }
+					help={ __(
+						'Saddle writes this from your site’s pages, design and plugins, and from what each app may do. It stays current on its own, and you can’t edit it here.',
+						'saddle'
+					) }
 				/>
 				<Collapsible
 					className="saddle-guide__reveal"
 					trigger={ __( 'Show what your AI is told', 'saddle' ) }
 				>
+					{ /* A box that scrolls: a keyboard reaches it as one
+					     named stop, so it scrolls with the arrow keys. The
+					     exact text wraps, so nothing inside scrolls sideways. */ }
 					{ showRaw ? (
 						<CodeBlock
 							className="saddle-guide__system"
 							code={ system }
+							wrap
+							{ ...systemRegion }
 						/>
 					) : (
-						<div className="saddle-doc saddle-guide__system">
+						<div
+							className="saddle-doc saddle-guide__system"
+							{ ...systemRegion }
+						>
 							{ renderContext( system ) }
 						</div>
 					) }
@@ -498,12 +491,20 @@ export default function Guidance() {
 				open={ !! drawerSkill }
 				onOpenChange={ ( open ) => ! open && setDrawerSkill( null ) }
 				title={ drawerSkill?.name }
+				// Mounted while closed too; the kit wants a name either way.
+				aria-label={ drawerSkill ? undefined : __( 'Skill', 'saddle' ) }
 				description={ drawerSkill?.description }
 				size="lg"
 			>
 				{ drawerSkill && (
 					<>
-						<CodeBlock code={ drawerSkill.body } copy={ false } />
+						{ /* Wrapped: a line wider than the drawer would
+						     scroll sideways where no keyboard can reach. */ }
+						<CodeBlock
+							code={ drawerSkill.body }
+							copy={ false }
+							wrap
+						/>
 						{ ! drawerSkill.builtin && (
 							<Button
 								variant="link"

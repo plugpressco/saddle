@@ -52,7 +52,7 @@ function saddle_register_divi_abilities() {
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => (object) array(),
+				'properties' => array(),
 			),
 			'execute_callback'    => array( 'Saddle_Divi_Abilities', 'list_modules' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'divi-list-modules' ),
@@ -348,7 +348,7 @@ function saddle_register_divi_abilities() {
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => (object) array(),
+				'properties' => array(),
 			),
 			'execute_callback'    => array( 'Saddle_Divi_Abilities', 'list_loop_query_types' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'divi-list-loop-query-types' ),
@@ -490,7 +490,7 @@ function saddle_register_divi_abilities() {
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => (object) array(),
+				'properties' => array(),
 			),
 			'execute_callback'    => array( 'Saddle_Divi_Abilities', 'list_dynamic_sources' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'divi-list-dynamic-sources' ),
@@ -602,7 +602,7 @@ function saddle_register_divi_abilities() {
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => (object) array(),
+				'properties' => array(),
 			),
 			'execute_callback'    => array( 'Saddle_Divi_Abilities', 'list_condition_types' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'divi-list-condition-types' ),
@@ -1239,9 +1239,12 @@ class Saddle_Divi_Abilities {
 		};
 
 		$child_count = count( $node['innerBlocks'] );
+		$token       = isset( $input['confirm_token'] ) && is_string( $input['confirm_token'] ) ? trim( $input['confirm_token'] ) : '';
 
-		// Leaf: immediate, revision-recoverable, logged.
-		if ( 0 === $child_count ) {
+		// Leaf: immediate, revision-recoverable, logged. A call that carries a
+		// confirm_token always goes through the gate below, so a reused token
+		// is refused instead of removing the leaf that now sits at the address.
+		if ( 0 === $child_count && '' === $token ) {
 			$result = $execute();
 			if ( ! is_wp_error( $result ) ) {
 				self::log(
@@ -1270,8 +1273,13 @@ class Saddle_Divi_Abilities {
 				'target'  => $post->ID . ':' . $address,
 				'bind'    => Saddle_Divi_View::version( $post ) . '|' . md5( wp_json_encode( array( $address, (string) $node['blockName'], $child_count ) ) ),
 				'summary' => sprintf(
-					/* translators: 1: module type, 2: child count, 3: address, 4: post ID. */
-					__( 'Remove %1$s and the %2$d modules inside it at %3$s on Divi page #%4$d. Recoverable from revisions.', 'saddle' ),
+					/* translators: 1: module type, 2: number of modules inside it, 3: address, 4: post ID. */
+					_n(
+						'Remove %1$s and the %2$d module inside it at %3$s on Divi page #%4$d. Recoverable from revisions.',
+						'Remove %1$s and the %2$d modules inside it at %3$s on Divi page #%4$d. Recoverable from revisions.',
+						$child_count,
+						'saddle'
+					),
 					(string) $node['blockName'],
 					$child_count,
 					$address,

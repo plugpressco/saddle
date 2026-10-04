@@ -87,7 +87,7 @@ function saddle_register_wc_abilities() {
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => (object) array(),
+				'properties' => array(),
 			),
 			'execute_callback'    => array( 'Saddle_WC_Abilities', 'check_setup' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'wc-check-setup' ),
@@ -146,11 +146,20 @@ function saddle_register_wc_abilities() {
 		)
 	);
 
+	// Order rows are customer personal data, so they need Edit content
+	// (#321). An add-on from before the 2026-09-26 split (Saddle Pro 1.6.1
+	// and older) registers this name itself at Read only, at priority 20, and
+	// saddle_register_ability_once() would keep that copy. Replace it, so the
+	// stricter level holds on every site; the code behind it is the same.
+	if ( function_exists( 'wp_unregister_ability' ) && function_exists( 'wp_has_ability' ) && wp_has_ability( 'saddle/wc-list-orders' ) ) {
+		wp_unregister_ability( 'saddle/wc-list-orders' );
+	}
+
 	saddle_register_ability_once(
 		'saddle/wc-list-orders',
 		array(
 			'label'               => __( 'List WooCommerce orders', 'saddle' ),
-			'description'         => __( 'Lists orders as compact rows (id, status, date, total, customer, item count), filterable by status. Paginated, HPOS-native. Read-only — order rows include customer name and email.', 'saddle' ),
+			'description'         => __( 'Lists orders as compact rows (id, status, date, total, customer, item count), filterable by status. Paginated, HPOS-native. Changes nothing, but each row carries the customer\'s name and email, so this tool needs the Edit content access level, not Read only.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -171,8 +180,11 @@ function saddle_register_wc_abilities() {
 				),
 			),
 			'execute_callback'    => array( 'Saddle_WC_Abilities', 'list_orders' ),
-			'permission_callback' => Saddle_Capabilities::permission( 'read', 'edit_shop_orders', 'wc-list-orders' ),
-			'meta'                => saddle_ability_meta( true, false, true, 'read' ),
+			// Customer personal data (#321): names and emails need Edit content,
+			// not the Read only level every new app starts at. Still read-only
+			// in what it does, so the annotation stays readonly.
+			'permission_callback' => Saddle_Capabilities::permission( 'write', 'edit_shop_orders', 'wc-list-orders' ),
+			'meta'                => saddle_ability_meta( true, false, true, 'write' ),
 		)
 	);
 }
