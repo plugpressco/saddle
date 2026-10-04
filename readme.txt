@@ -194,7 +194,8 @@ The WordPress.org version never checks for its own updates. The version from plu
 * With OAuth on, it also stores approved apps and a one-way hash of their tokens.
 * For each connected app, it stores the name the app reports, when it connected and last called, and the names of its last five tools. It stores no tool inputs or results.
 * Saddle sends no personal data off your site.
-* Uninstalling removes all Saddle data. Remove Application Passwords yourself under **Users → Profile**.
+* Deactivating or deleting Saddle deletes the app keys it made, because nothing limits them while Saddle is off. Apps that connected with a key need to connect again after you turn Saddle back on. Keys you made yourself stay.
+* Uninstalling removes all Saddle data.
 
 == Screenshots ==
 
@@ -236,6 +237,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 * Changed: Saddle Analytics, Saddle Rank and Saddle CRM, PlugPress's own plugins, are trusted like Waggle: their tools work as soon as they are active, with no switch to turn on. Saddle Rank is Waggle's new name, and any Waggle tool you switched off stays off after the rename.
 * New: For plugin developers: the saddle_modules filter adds a page under the Saddle menu with its own icon, a sidebar of sections, icon tabs and an address for each page. Describe a module's settings once, and Saddle draws the form, serves it over the REST API and offers it to agents. A full-screen page outside the Saddle frame can load Saddle's colors.
 * Removed: The unused dark and light theme setting. The Saddle screens have one light theme.
+* Fixed: Deactivating or deleting Saddle now deletes the app keys it made. Before, a key still worked on the rest of the WordPress REST API while Saddle was off, without Saddle's limits. Apps that connected with a key need to connect again after you turn Saddle back on.
 * Fixed: An AI app that passed an argument to a tool that takes none, such as listing Divi modules with a search word, caused a critical error on the site. It now gets a normal answer.
 * Fixed: On Divi 5 sites, styling body text on a text module and similar modules now works. Saddle gave your AI app a path Divi does not read, so the color and size saved but never showed.
 * Fixed: On a Divi shop, your AI app can use Divi's WooCommerce modules, such as the products grid. They were missing from the module list.

@@ -75,6 +75,45 @@ class Saddle_Connection {
 	}
 
 	/**
+	 * Delete every key Saddle issued, for every user.
+	 *
+	 * While Saddle runs, scope_credentials() confines its keys to the MCP
+	 * route. Once Saddle is deactivated or deleted nothing does, and each key
+	 * is a full Application Password for its user across the whole REST API,
+	 * with no access level, pause, gate or log (#319). So the keys go with
+	 * Saddle: on deactivation and on uninstall. A key the owner made by hand
+	 * is not Saddle's and stays. Runs without the rest of Saddle loaded, from
+	 * uninstall.php.
+	 *
+	 * @return int How many keys were deleted.
+	 */
+	public static function revoke_issued_keys() {
+		if ( ! class_exists( 'WP_Application_Passwords' ) ) {
+			return 0;
+		}
+
+		$users = get_users(
+			array(
+				'meta_key' => WP_Application_Passwords::USERMETA_KEY_APPLICATION_PASSWORDS, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Once, on deactivation or uninstall.
+				'fields'   => 'ID',
+			)
+		);
+
+		$deleted = 0;
+		foreach ( $users as $user_id ) {
+			foreach ( WP_Application_Passwords::get_user_application_passwords( (int) $user_id ) as $item ) {
+				if ( self::is_saddle_issued( (int) $user_id, (string) $item['uuid'] )
+					&& true === WP_Application_Passwords::delete_application_password( (int) $user_id, (string) $item['uuid'] ) ) {
+					++$deleted;
+				}
+			}
+			delete_user_meta( (int) $user_id, self::ISSUED_META );
+		}
+
+		return $deleted;
+	}
+
+	/**
 	 * Scope Saddle-issued credentials to Saddle's own REST surface.
 	 *
 	 * A core Application Password authenticates the ENTIRE REST API as its

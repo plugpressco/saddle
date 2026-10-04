@@ -2,9 +2,10 @@
 /**
  * Uninstall cleanup for Saddle.
  *
- * Removes the access-tier option and any leftover approval tokens. Application
- * Passwords are intentionally NOT deleted here — they are core user data the
- * user may want to keep or revoke deliberately.
+ * Removes every option, private post type entry and scheduled event Saddle
+ * created, and the Application Passwords Saddle issued: without Saddle nothing
+ * confines them, and each would open the whole REST API for its user (#319).
+ * A key the owner made by hand is not Saddle's and stays.
  *
  * @package Saddle
  */
@@ -48,6 +49,13 @@ foreach ( $saddle_options as $saddle_option ) {
 	delete_option( $saddle_option );
 }
 
+// The keys Saddle issued, found through the issued-credential markers, so
+// this runs before those markers are deleted below.
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-saddle-connection.php';
+if ( class_exists( 'Saddle_Connection' ) ) {
+	Saddle_Connection::revoke_issued_keys();
+}
+
 // Per-user data: the admin theme preference older versions stored, dismissed
 // notices, credential last-4 hints, and the issued-credential markers scoping
 // keys on.
@@ -65,7 +73,6 @@ if ( $saddle_gc_timestamp ) {
 wp_clear_scheduled_hook( 'saddle_apply_updates' ); // Saddle_Update_Runner::HOOK.
 
 // Remove the managed .htaccess block the connection self-check may have added.
-require_once plugin_dir_path( __FILE__ ) . 'includes/class-saddle-connection.php';
 if ( class_exists( 'Saddle_Connection' ) ) {
 	Saddle_Connection::remove_htaccess_fix();
 }

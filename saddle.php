@@ -580,6 +580,10 @@ final class Saddle {
 		// A queued update run must not fire while Saddle is inactive. The run
 		// records stay (uninstall removes them).
 		wp_clear_scheduled_hook( Saddle_Update_Runner::HOOK );
+
+		// Nothing confines Saddle's keys while it is off, so they go now and
+		// apps connect again after reactivation (#319).
+		Saddle_Connection::revoke_issued_keys();
 	}
 }
 
