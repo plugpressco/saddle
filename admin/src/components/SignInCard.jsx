@@ -57,11 +57,12 @@ export function useOauthSettings() {
 				toast.success( __( 'Saved.', 'saddle' ) );
 			} )
 			.catch( ( err ) => {
-				setOauth( before );
-				setError(
+				const message =
 					err?.message ||
-						__( 'Could not save that setting.', 'saddle' )
-				);
+					__( 'Could not save that setting.', 'saddle' );
+				setOauth( before );
+				setError( message );
+				toast.error( message );
 			} )
 			.finally( () => setSaving( false ) );
 	}, [] );
@@ -130,10 +131,9 @@ const Labelled = ( { children, help } ) => (
 /**
  * @param {Object}   props
  * @param {Object}   props.oauth The settings from useOauthSettings().
- * @param {string}   props.error Last error.
  * @param {Function} props.save  Saves `{ enabled, dcr, cimd }` changes.
  */
-export default function SignInCard( { oauth, error, save } ) {
+export default function SignInCard( { oauth, save } ) {
 	// Until the setting arrives, the row says nothing it doesn't know: no
 	// "Off" and no switch, a placeholder and a spinner instead (R3).
 	let state = null;
@@ -269,8 +269,6 @@ export default function SignInCard( { oauth, error, save } ) {
 					</RowList>
 				</Collapsible>
 			) }
-
-			{ error && <p className="saddle-settings__note">{ error }</p> }
 		</div>
 	);
 }
