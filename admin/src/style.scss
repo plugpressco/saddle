@@ -1037,8 +1037,8 @@ body.saddle-admin-page {
 }
 
 // `&key=<app>` on AI apps: the drawer's steps on the page, about as wide as
-// the steps read in the drawer.
-.saddle-connect-page .saddle-connect {
+// they read in the drawer, with Done at the end of their own line.
+.saddle-connect-page {
 	max-width: 640px;
 }
 
