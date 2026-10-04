@@ -144,9 +144,12 @@ class Saddle_Log {
 	 * @param int    $since    Optional Unix timestamp (UTC): only entries at or
 	 *                         after it. 0 means no limit. Home's "This week"
 	 *                         reads `total` with it, so the count is exact.
+	 * @param string $by       Optional: 'app' keeps only entries an app made,
+	 *                         leaving out the owner's own steps (approvals,
+	 *                         rejections, new roles).
 	 * @return array{entries:array[],total:int,total_pages:int,page:int}
 	 */
-	public static function query( $per_page = 20, $page = 1, $type = '', $since = 0 ) {
+	public static function query( $per_page = 20, $page = 1, $type = '', $since = 0, $by = '' ) {
 		$per_page = max( 1, min( 100, (int) $per_page ) );
 		$page     = max( 1, (int) $page );
 		$since    = max( 0, (int) $since );
@@ -197,6 +200,21 @@ class Saddle_Log {
 			);
 		}
 
+		if ( 'app' === $by ) {
+			$made_by_app        = array(
+				'key'     => '_saddle_app',
+				'value'   => '',
+				'compare' => '!=',
+			);
+			$args['meta_query'] = isset( $args['meta_query'] ) // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- Bounded private CPT (GC'd at 1000 rows).
+				? array(
+					'relation' => 'AND',
+					$args['meta_query'],
+					$made_by_app,
+				)
+				: array( $made_by_app );
+		}
+
 		$q = new WP_Query( $args );
 
 		$entries = array();
@@ -204,14 +222,15 @@ class Saddle_Log {
 			$user      = $post->post_author ? get_userdata( $post->post_author ) : null;
 			$type      = (string) get_post_meta( $post->ID, '_saddle_type', true );
 			$entries[] = array(
-				'date'    => $post->post_date_gmt,
-				'action'  => (string) get_post_meta( $post->ID, '_saddle_action', true ),
-				'target'  => (string) get_post_meta( $post->ID, '_saddle_target', true ),
-				'summary' => $post->post_title,
-				'user'    => $user ? $user->user_login : '',
-				'app'     => (string) get_post_meta( $post->ID, '_saddle_app', true ),
+				'date'      => $post->post_date_gmt,
+				'action'    => (string) get_post_meta( $post->ID, '_saddle_action', true ),
+				'target'    => (string) get_post_meta( $post->ID, '_saddle_target', true ),
+				'summary'   => $post->post_title,
+				'user'      => $user ? $user->user_login : '',
+				'user_name' => $user ? $user->display_name : '',
+				'app'       => (string) get_post_meta( $post->ID, '_saddle_app', true ),
 				// Entries predating the type field are executed mutations.
-				'type'    => in_array( $type, self::NOT_CHANGES, true ) ? $type : 'executed',
+				'type'      => in_array( $type, self::NOT_CHANGES, true ) ? $type : 'executed',
 			);
 		}
 
