@@ -162,6 +162,34 @@ describe( 'buildConfig', () => {
 		expect( setup ).not.toContain( '--auth oauth' );
 	} );
 
+	it( 'puts only "Basic …" in a JSON key config’s Authorization header', () => {
+		// The symptom: Cursor, VS Code, Windsurf and "Any MCP app" got
+		// "Authorization": "Authorization: Basic …", so the app sent the
+		// header name twice and every call was refused.
+		const { buildConfig, buildGuideConfig } = load( site );
+		const basic = `Basic ${ btoa( 'admin:abcdEFGH' ) }`;
+		const server = ( app, root = 'mcpServers' ) =>
+			JSON.parse( buildConfig( app, 'abcd EFGH', 'key' ) )[ root ][
+				'saddle-example'
+			];
+
+		expect( server( 'cursor' ).headers.Authorization ).toBe( basic );
+		expect( server( 'other' ).headers.Authorization ).toBe( basic );
+		expect( server( 'windsurf' ).headers.Authorization ).toBe( basic );
+		expect( server( 'vscode', 'servers' ).headers.Authorization ).toBe(
+			basic
+		);
+		expect(
+			JSON.parse( buildGuideConfig( 'cursor', 'key' ) ).mcpServers[
+				'saddle-example'
+			].headers.Authorization
+		).toBe( 'Basic PASTE-YOUR-KEY-HERE' );
+		// The command-line apps name the header themselves.
+		expect( buildConfig( 'claude-code', 'abcd EFGH', 'key' ) ).toContain(
+			`--header "Authorization: ${ basic }"`
+		);
+	} );
+
 	it( 'gives Grok the connector form lines', () => {
 		const { buildConfig } = load( site );
 		const setup = buildConfig( 'grok', null, 'address' );
@@ -257,10 +285,29 @@ describe( 'connectPath: which path the connect wizard takes', () => {
 		expect( connectPath( meta( APPS, 'chatgpt' ), args ) ).toBe(
 			'address'
 		);
-		// Turned on by the owner, the address stays the lead as before.
+	} );
+
+	it( 'keeps Claude on its desktop bridge on a local site with sign-in on (P7)', () => {
+		// The symptom: with sign-in on, a local site led Claude with the
+		// connector address, which Claude's servers can never reach. Only
+		// the desktop bridge (a key) works there, whatever the owner prefers.
+		const { APPS, connectPath } = load( site );
+		const claude = meta( APPS, 'claude' );
+
+		expect( connectPath( claude, { signIn: on, local: true } ) ).toBe(
+			'key'
+		);
 		expect(
-			connectPath( meta( APPS, 'claude' ), { ...args, signIn: on } )
+			connectPath( claude, { signIn: on, local: true, prefer: true } )
+		).toBe( 'key' );
+		expect(
+			connectPath( meta( APPS, 'claude-code' ), {
+				signIn: on,
+				local: true,
+			} )
 		).toBe( 'address' );
+		// Online, Claude's connector leads as before.
+		expect( connectPath( claude, { signIn: on } ) ).toBe( 'address' );
 	} );
 
 	it( 'follows the switch before an app is picked', () => {
@@ -286,5 +333,129 @@ describe( 'APP_GROUPS', () => {
 				.filter( ( k ) => 'other' !== k )
 				.sort()
 		);
+	} );
+} );
+
+describe( 'a site on this computer (P7)', () => {
+	it( 'knows a local address', () => {
+		const { isLocalAddress } = load( site );
+
+		[
+			'http://localhost:8080/wp-json/saddle/v1/mcp',
+			'http://127.0.0.1:9420/wp-json/saddle/v1/mcp',
+			'https://shop.test/wp-json/saddle/v1/mcp',
+			'http://my-site.local/wp-json/saddle/v1/mcp',
+		].forEach( ( url ) => expect( isLocalAddress( url ) ).toBe( true ) );
+		[
+			MCP_URL,
+			'https://localhosting.example/wp-json/saddle/v1/mcp',
+			'',
+			null,
+		].forEach( ( url ) => expect( isLocalAddress( url ) ).toBe( false ) );
+	} );
+
+	it( 'reads the page’s own address once', () => {
+		expect( load( site ).IS_LOCAL ).toBe( false );
+		expect(
+			load( {
+				...site,
+				mcpUrl: 'http://localhost:8080/wp-json/saddle/v1/mcp',
+			} ).IS_LOCAL
+		).toBe( true );
+	} );
+
+	it( 'says only web apps can’t reach it', () => {
+		const { APPS, WEB_APPS, LOCAL_APPS, unreachableHere } = load( site );
+
+		APPS.forEach( ( app ) =>
+			expect( unreachableHere( app, true ) ).toBe(
+				WEB_APPS.includes( app.key )
+			)
+		);
+		APPS.forEach( ( app ) =>
+			expect( unreachableHere( app, false ) ).toBe( false )
+		);
+		expect( unreachableHere( null, true ) ).toBe( false );
+		// What the drawer offers instead runs on this computer.
+		LOCAL_APPS.forEach( ( key ) =>
+			expect( WEB_APPS ).not.toContain( key )
+		);
+	} );
+
+	it( 'tells Claude where the bridge goes on a local site', () => {
+		const { APPS, howFor } = load( site );
+		const claude = APPS.find( ( a ) => a.key === 'claude' );
+		const cursor = APPS.find( ( a ) => a.key === 'cursor' );
+
+		expect( howFor( claude, 'key', true ) ).toBe( claude.howLocal );
+		expect( howFor( claude, 'key', true ) ).not.toMatch( /Older/ );
+		expect( howFor( claude, 'key' ) ).toBe( claude.how );
+		expect( howFor( claude, 'address', true ) ).toBe( claude.howAddress );
+		expect( howFor( cursor, 'key', true ) ).toBe( cursor.how );
+	} );
+} );
+
+describe( 'existingKey: an older key for the same app', () => {
+	const appOf = ( name ) =>
+		( { 'Claude Code': 'claude-code', Cursor: 'cursor' } )[ name ] || '';
+
+	it( 'finds the newest key for the app, by app or by name', () => {
+		const { existingKey } = load( site );
+		const rows = [
+			{
+				id: 'key:old',
+				kind: 'key',
+				app: 'claude-code',
+				created_at: 100,
+			},
+			{
+				id: 'key:new',
+				kind: 'key',
+				name: 'Claude Code',
+				created_at: 300,
+			},
+			{
+				id: 'oauth:7',
+				kind: 'oauth',
+				app: 'claude-code',
+				created_at: 500,
+			},
+			{ id: 'key:cur', kind: 'key', app: 'cursor', created_at: 900 },
+		];
+
+		expect( existingKey( rows, 'claude-code', appOf ).id ).toBe(
+			'key:new'
+		);
+		expect( existingKey( rows, 'cursor', appOf ).id ).toBe( 'key:cur' );
+	} );
+
+	it( 'finds none for a sign-in, another app, or "Any MCP app"', () => {
+		const { existingKey } = load( site );
+		const rows = [
+			{ id: 'oauth:1', kind: 'oauth', app: 'claude' },
+			{ id: 'key:x', kind: 'key', app: 'other', name: 'AI app' },
+		];
+
+		expect( existingKey( rows, 'claude', appOf ) ).toBeNull();
+		expect( existingKey( rows, 'other', appOf ) ).toBeNull();
+		expect( existingKey( null, 'cursor' ) ).toBeNull();
+	} );
+} );
+
+describe( 'a key made on this screen and not yet copied (R1)', () => {
+	beforeEach( () => window.sessionStorage.clear() );
+
+	it( 'is remembered across a reload, and forgotten once kept', () => {
+		const { rememberPendingKey, pendingKey, forgetPendingKey } =
+			load( site );
+
+		expect( pendingKey() ).toBe( '' );
+		rememberPendingKey( 'abc-1' );
+		expect( pendingKey() ).toBe( 'abc-1' );
+		// Another key's clean-up leaves this one alone.
+		forgetPendingKey( 'zzz-9' );
+		expect( pendingKey() ).toBe( 'abc-1' );
+		forgetPendingKey( 'abc-1' );
+		expect( pendingKey() ).toBe( '' );
 	} );
 } );
