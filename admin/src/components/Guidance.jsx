@@ -32,6 +32,7 @@ import {
 import { __, sprintf } from '@wordpress/i18n';
 import { api } from '../api';
 import { FIELDS, parseFields, serializeFields } from '../context-fields';
+import { skillMarkdown, skillToReplace } from '../skills-logic';
 import Memory from './Memory';
 import SectionHeader from './SectionHeader';
 
@@ -206,6 +207,9 @@ export default function Guidance() {
 	const [ showRaw, setShowRaw ] = useState( false );
 	const [ skills, setSkills ] = useState( [] );
 	const [ drawerSkill, setDrawerSkill ] = useState( null );
+	// The open skill's text while the owner edits it in the drawer, or null.
+	const [ skillDraft, setSkillDraft ] = useState( null );
+	const [ skillSaving, setSkillSaving ] = useState( false );
 	const fileInput = useRef( null );
 
 	useEffect( () => {
@@ -228,19 +232,79 @@ export default function Guidance() {
 			.then( ( res ) => setSystem( res.system || '' ) )
 			.catch( () => {} );
 
-	const installSkillFile = ( file ) => {
+	// A file whose skill name is already installed asks first (P14): saving
+	// it replaces that skill's text, or stands in for a built-in one.
+	const installSkillFile = async ( file ) => {
 		if ( ! file ) {
 			return;
 		}
-		file.text().then( ( md ) => {
-			api( 'skills', { method: 'POST', data: { md } } )
-				.then( ( res ) => {
-					setSkills( res.skills || [] );
-					toast.success( __( 'Skill installed.', 'saddle' ) );
-					refreshContext();
-				} )
-				.catch( ( e ) => toast.error( e.message ) );
-		} );
+		const md = await file.text();
+		const existing = skillToReplace( skills, md );
+		if ( existing ) {
+			const ok = await confirm( {
+				title: sprintf(
+					/* translators: %s: skill name. */
+					__( 'Replace the skill “%s”?', 'saddle' ),
+					existing.name
+				),
+				description: existing.builtin
+					? __(
+							'Apps will read this file instead of the built-in skill.',
+							'saddle'
+					  )
+					: __(
+							'This file replaces the text you have now.',
+							'saddle'
+					  ),
+				confirmLabel: __( 'Replace', 'saddle' ),
+				cancelLabel: __( 'Cancel', 'saddle' ),
+			} );
+			if ( ! ok ) {
+				return;
+			}
+		}
+		api( 'skills', { method: 'POST', data: { md } } )
+			.then( ( res ) => {
+				setSkills( res.skills || [] );
+				toast.success(
+					existing
+						? __( 'Skill replaced.', 'saddle' )
+						: __( 'Skill installed.', 'saddle' )
+				);
+				refreshContext();
+			} )
+			.catch( ( e ) => toast.error( e.message ) );
+	};
+
+	const openSkill = ( skill ) => {
+		setSkillDraft( null );
+		setDrawerSkill( skill );
+	};
+
+	// Edit in place: the skill keeps its name and description, and its text
+	// is saved through the same route an upload uses (P14).
+	const saveSkillText = () => {
+		if ( ! drawerSkill || null === skillDraft ) {
+			return;
+		}
+		setSkillSaving( true );
+		api( 'skills', {
+			method: 'POST',
+			data: { md: skillMarkdown( drawerSkill, skillDraft ) },
+		} )
+			.then( ( res ) => {
+				const list = res.skills || [];
+				setSkills( list );
+				setDrawerSkill(
+					list.find( ( s ) => s.name === drawerSkill.name ) ||
+						drawerSkill
+				);
+				setSkillDraft( null );
+				toast.success( __( 'Saved.', 'saddle' ) );
+				refreshContext();
+			} )
+			.catch( ( e ) => toast.error( e.message ) )
+			.finally( () => setSkillSaving( false ) );
 	};
 
 	const toggleSkill = ( skill ) => {
@@ -420,7 +484,7 @@ export default function Guidance() {
 												variant="link"
 												size="sm"
 												onClick={ () =>
-													setDrawerSkill( skill )
+													openSkill( skill )
 												}
 											>
 												{ __( 'View', 'saddle' ) }
@@ -495,14 +559,55 @@ export default function Guidance() {
 			     owner opened — keeps long bodies out of the list. */ }
 			<Drawer
 				open={ !! drawerSkill }
-				onOpenChange={ ( open ) => ! open && setDrawerSkill( null ) }
+				onOpenChange={ ( open ) => {
+					if ( ! open && ! skillSaving ) {
+						setDrawerSkill( null );
+						setSkillDraft( null );
+					}
+				} }
 				title={ drawerSkill?.name }
 				// Mounted while closed too; the kit wants a name either way.
 				aria-label={ drawerSkill ? undefined : __( 'Skill', 'saddle' ) }
 				description={ drawerSkill?.description }
 				size="lg"
 			>
-				{ drawerSkill && (
+				{ drawerSkill && null !== skillDraft && (
+					<div className="saddle-guide__edit">
+						<Textarea
+							value={ skillDraft }
+							onChange={ ( e ) =>
+								setSkillDraft( e.target.value )
+							}
+							rows={ 18 }
+							aria-label={ __( 'Skill text', 'saddle' ) }
+							spellCheck={ false }
+						/>
+						<div className="saddle-guide__edit-actions">
+							<Button
+								variant="secondary"
+								size="sm"
+								onClick={ saveSkillText }
+								loading={ skillSaving }
+								disabled={
+									skillSaving ||
+									! skillDraft.trim() ||
+									skillDraft === drawerSkill.body
+								}
+							>
+								{ __( 'Save', 'saddle' ) }
+							</Button>
+							<Button
+								variant="ghost"
+								size="sm"
+								onClick={ () => setSkillDraft( null ) }
+								disabled={ skillSaving }
+							>
+								{ __( 'Cancel', 'saddle' ) }
+							</Button>
+						</div>
+					</div>
+				) }
+				{ drawerSkill && null === skillDraft && (
 					<>
 						{ /* Wrapped: a line wider than the drawer would
 						     scroll sideways where no keyboard can reach. */ }
@@ -511,14 +616,27 @@ export default function Guidance() {
 							copy={ false }
 							wrap
 						/>
+						{ /* A built-in skill comes with a plugin and is not
+						     stored, so it has no edit or delete. */ }
 						{ ! drawerSkill.builtin && (
-							<Button
-								variant="link"
-								className="saddle-link-danger saddle-guide__delete"
-								onClick={ () => removeSkill( drawerSkill ) }
-							>
-								{ __( 'Delete this skill', 'saddle' ) }
-							</Button>
+							<div className="saddle-guide__skill-actions">
+								<Button
+									variant="secondary"
+									size="sm"
+									onClick={ () =>
+										setSkillDraft( drawerSkill.body || '' )
+									}
+								>
+									{ __( 'Edit', 'saddle' ) }
+								</Button>
+								<Button
+									variant="link"
+									className="saddle-link-danger saddle-guide__delete"
+									onClick={ () => removeSkill( drawerSkill ) }
+								>
+									{ __( 'Delete this skill', 'saddle' ) }
+								</Button>
+							</div>
 						) }
 					</>
 				) }

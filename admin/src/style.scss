@@ -1718,8 +1718,38 @@ body.saddle-admin-page {
 	margin-top: 10px;
 }
 
+// Under an owner skill's text: Edit, then Delete on the far side.
+.saddle-guide__skill-actions {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var( --pp-space-3 );
+	margin-top: var( --pp-space-3 );
+
+	.saddle-guide__delete {
+		margin-top: 0;
+	}
+}
+
 .saddle-guide__delete {
 	margin-top: var(--pp-space-3);
+}
+
+// Editing a skill in place: its text in a plain textarea, then Save.
+.saddle-guide__edit {
+	display: grid;
+	gap: var( --pp-space-3 );
+
+	textarea {
+		font-family: var( --pp-font-mono, monospace );
+		font-size: var( --s-text );
+		line-height: 1.55;
+	}
+}
+
+.saddle-guide__edit-actions {
+	display: flex;
+	gap: 8px;
 }
 
 .saddle-guide__system {
