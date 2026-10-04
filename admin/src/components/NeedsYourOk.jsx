@@ -130,6 +130,10 @@ export default function NeedsYourOk( { onChange } ) {
 				open={ !! review }
 				onOpenChange={ ( open ) => ! open && setReview( null ) }
 				title={ review ? requestTitle( review ) : '' }
+				// Mounted while closed too; the kit wants a name either way.
+				aria-label={
+					review ? undefined : __( 'Review a request', 'saddle' )
+				}
 				size="md"
 			>
 				{ review && (

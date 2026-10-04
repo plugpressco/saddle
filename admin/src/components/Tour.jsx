@@ -52,7 +52,7 @@ function stopsFor() {
 				visible( document.getElementById( 'toplevel_page_saddle' ) ),
 			title: __( 'Everything else is in the Saddle menu', 'saddle' ),
 			description: __(
-				'Modules, AI apps, Context and Settings.',
+				'Modules, AI apps, Services, Context and Settings.',
 				'saddle'
 			),
 			side: 'right',

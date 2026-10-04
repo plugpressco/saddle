@@ -404,6 +404,8 @@ export default function Services() {
 				open={ !! open }
 				onOpenChange={ ( next ) => ! next && setOpenKey( null ) }
 				title={ open ? open.name : '' }
+				// Mounted while closed too; the kit wants a name either way.
+				aria-label={ open ? undefined : __( 'Service', 'saddle' ) }
 				description={ open ? summaryOf( open ) : undefined }
 				closeLabel={ __( 'Close', 'saddle' ) }
 				size="md"

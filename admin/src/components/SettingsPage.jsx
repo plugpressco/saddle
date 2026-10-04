@@ -4,10 +4,12 @@
  * - Safety: three switches that save the moment they are flipped.
  * - Advanced: rarely used things, each collapsed — single tools, sign-in for
  *   apps, memory limits, recent changes, the connection check.
+ *   `&section=signin` (the connect drawer's "Turn it on") opens Sign-in for
+ *   apps and scrolls to it.
  *
  * Who may do what is chosen per app on AI apps, not here.
  */
-import { useState, useEffect, useMemo } from '@wordpress/element';
+import { useState, useEffect, useMemo, useRef } from '@wordpress/element';
 import {
 	Collapsible,
 	HelpTip,
@@ -245,6 +247,15 @@ function SignIn() {
 	return <SignInCard { ...signIn } />;
 }
 
+/**
+ * Whether the address asks for one Advanced section (`&section=signin`).
+ *
+ * @param {string} name Section name.
+ * @return {boolean} True when `section` names it.
+ */
+const wantsSection = ( name ) =>
+	name === new URLSearchParams( window.location.search ).get( 'section' );
+
 // The memory limits and the recent-changes list, from the settings schema.
 const MEMORY_KEYS = [ 'memory_max_entries', 'memory_core_budget' ];
 const RECENT_KEYS = [ 'memory_recent_changes', 'memory_recent_limit' ];
@@ -263,6 +274,26 @@ export default function SettingsPage( {
 	onRehearsalChanged,
 	children,
 } ) {
+	const [ signInAsked ] = useState( () => wantsSection( 'signin' ) );
+	const signInRef = useRef( null );
+
+	// Bring Sign-in for apps into view. Safety above loads its own data and
+	// grows, so the jump repeats as the page settles, as App does for an
+	// anchor.
+	useEffect( () => {
+		if ( ! signInAsked ) {
+			return undefined;
+		}
+		const timers = [ 0, 400, 1200 ].map( ( delay ) =>
+			setTimeout( () => {
+				if ( signInRef.current ) {
+					signInRef.current.scrollIntoView( { block: 'start' } );
+				}
+			}, delay )
+		);
+		return () => timers.forEach( clearTimeout );
+	}, [ signInAsked ] );
+
 	return (
 		<>
 			<Safety onRehearsalChanged={ onRehearsalChanged } />
@@ -279,7 +310,12 @@ export default function SettingsPage( {
 					>
 						<ToolSwitches caps={ caps } onChanged={ loadCaps } />
 					</Collapsible>
-					<Collapsible trigger={ __( 'Sign-in for apps', 'saddle' ) }>
+					<Collapsible
+						ref={ signInRef }
+						id="saddle-adv-signin"
+						defaultOpen={ signInAsked }
+						trigger={ __( 'Sign-in for apps', 'saddle' ) }
+					>
 						<div className="saddle-adv__signin">
 							<SignIn />
 						</div>

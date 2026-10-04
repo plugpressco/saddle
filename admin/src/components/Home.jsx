@@ -69,12 +69,16 @@ function roleLabel( c ) {
 /**
  * How many log entries of one type the week holds, from `total`.
  *
- * @param {string} type 'executed' or 'denied'.
+ * @param {string}  type  'executed' or 'denied'.
+ * @param {boolean} byApp Count only what apps did, leaving out the owner's
+ *                        own steps (approvals, rejections, new roles).
  * @return {Promise<number|null>} The count, or null when it failed.
  */
-function weekTotal( type ) {
+function weekTotal( type, byApp = false ) {
 	return api(
-		`audit-log?per_page=1&type=${ type }&since=${ weekStart() }`
+		`audit-log?per_page=1&type=${ type }&since=${ weekStart() }${
+			byApp ? '&by=app' : ''
+		}`
 	).then(
 		( res ) => ( Number.isInteger( res.total ) ? res.total : null ),
 		() => null
@@ -137,7 +141,7 @@ export default function Home( {
 		}
 		let alive = true;
 		Promise.all( [
-			weekTotal( 'executed' ),
+			weekTotal( 'executed', true ),
 			weekTotal( 'denied' ),
 			api( 'approvals' ).then(
 				( res ) => ( res.approvals || [] ).length,

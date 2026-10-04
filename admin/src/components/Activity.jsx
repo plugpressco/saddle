@@ -4,7 +4,8 @@
  *
  * Every executed change and every blocked attempt, newest first, grouped by
  * day. Each row is one line: the logo of the app that did it (a dot when no
- * app did), what happened, and the time; who did it is the row's tooltip.
+ * app did), what happened, and the time; who did it ("via Claude Code", or
+ * "by you" for the owner's own steps) is the row's tooltip.
  * Filterable to just changes or just blocked attempts, and to rehearsals when
  * the first page holds one; pages in with "Show older". Reads are never
  * logged (see Saddle_Log); the empty state says so.
@@ -18,29 +19,20 @@ import {
 	EmptyState,
 	VisuallyHidden,
 } from '@plugpress/ui';
-import { __, sprintf } from '@wordpress/i18n';
-import { api } from '../api';
-import { actionLabel, clock, groupByDay } from '../activity-format';
+import { __ } from '@wordpress/i18n';
+import { api, saddleData } from '../api';
+import { actionLabel, clock, groupByDay, madeBy } from '../activity-format';
 import { AppLogo, appKeyFromLabel } from './icons';
 
 const PER_PAGE = 25;
 
 /**
- * Who made an entry, for the row's tooltip: the app, else the user's login.
+ * Who made an entry, for the row's tooltip: "via Claude Code", "by you".
  *
  * @param {Object} e Audit-log entry.
- * @return {string|undefined} "via Claude Code", or undefined.
+ * @return {string|undefined} The line, or undefined when no one is named.
  */
-function via( e ) {
-	const who = e.app || e.user;
-	return who
-		? sprintf(
-				/* translators: %s: the app that made the change ("Claude Code"), or the user login when no app did. */
-				__( 'via %s', 'saddle' ),
-				who
-		  )
-		: undefined;
-}
+const via = ( e ) => madeBy( e, saddleData.user || '' ) || undefined;
 
 /**
  * @param {Object}   props

@@ -759,6 +759,14 @@ body.saddle-admin-page {
 		line-height: 1.4;
 	}
 
+	// A heading with its "?" beside it, outside the h2.
+	&__name {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 6px;
+	}
+
 	&__desc {
 		margin: 2px 0 0;
 		color: var(--s-fg-subtle);
@@ -784,8 +792,7 @@ body.saddle-admin-page {
 	min-width: 0;
 }
 
-// A heading that carries a "?" beside it.
-.saddle-guide__heading,
+// A label that carries a "?" beside it.
 .saddle-settings__label,
 .saddle-signin__label,
 .saddle-memory__title {
@@ -952,14 +959,24 @@ body.saddle-admin-page {
 		gap: 8px;
 	}
 
-	// A command or config wraps instead of clipping in the drawer's width.
+	// A command or config wraps instead of clipping in the drawer's width:
+	// at spaces and after hyphens, and inside a word only when the word is
+	// wider than the line on its own.
 	&__config {
 		min-width: 0;
 
 		pre,
 		code {
 			white-space: pre-wrap;
-			overflow-wrap: anywhere;
+			overflow-wrap: break-word;
+		}
+
+		// wp-admin paints every `code` grey with padding, which inside a
+		// code block draws a strip on each wrapped line and steals width.
+		code {
+			margin: 0;
+			padding: 0;
+			background: none;
 		}
 	}
 
@@ -2431,6 +2448,11 @@ body.saddle-admin-page {
 
 	> .pp-collapsible + .pp-collapsible {
 		border-block-start: 1px solid var(--s-border);
+	}
+
+	// `&section=signin` scrolls a disclosure to the top: clear the admin bar.
+	> .pp-collapsible {
+		scroll-margin-block-start: calc( var( --wp-admin--admin-bar--height, 32px ) + var( --pp-space-4 ) );
 	}
 
 	// Label on the left, chevron on the right (the kit draws the chevron

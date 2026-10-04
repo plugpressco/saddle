@@ -72,8 +72,8 @@ describe( 'previewRows', () => {
 			} )
 		).toEqual( [
 			{ label: 'Title', value: 'Spring sale' },
-			{ label: 'Current status', value: 'draft' },
-			{ label: 'Recoverable', value: 'Yes' },
+			{ label: 'Status now', value: 'Draft' },
+			{ label: 'Can be restored', value: 'Yes' },
 			{ label: 'Tags', value: 'a, b' },
 		] );
 	} );
@@ -83,7 +83,60 @@ describe( 'previewRows', () => {
 				before: { status: 'draft', title: 'Sale' },
 				after: { status: 'publish', title: 'Sale' },
 			} )
-		).toEqual( [ { label: 'Status', before: 'draft', value: 'publish' } ] );
+		).toEqual( [
+			{ label: 'Status', before: 'Draft', value: 'Published' },
+		] );
+	} );
+	// QA 1.5.0 P4: the Review drawer read "Id 6", "Type post", "Current
+	// status publish", "Will delete permanently No".
+	it( 'reads a delete preview in plain words, without its id', () => {
+		expect(
+			previewRows( {
+				id: 6,
+				type: 'post',
+				title: 'Our new rye starter',
+				current_status: 'publish',
+				will_delete_permanently: false,
+				recoverable: true,
+			} )
+		).toEqual( [
+			{ label: 'Type', value: 'Post' },
+			{ label: 'Title', value: 'Our new rye starter' },
+			{ label: 'Status now', value: 'Published' },
+			{ label: 'Can be restored', value: 'Yes' },
+		] );
+	} );
+	it( 'keeps "permanently" when nothing else says it', () => {
+		expect( previewRows( { will_delete_permanently: true } ) ).toEqual( [
+			{ label: 'Will delete permanently', value: 'Yes' },
+		] );
+	} );
+	it( 'names the fields a publish changes, not their contents', () => {
+		expect(
+			previewRows( {
+				id: 9,
+				type: 'page',
+				current_status: 'draft',
+				new_status: 'future',
+				changes: { status: 'future', post_content: '<p>Long</p>' },
+			} )
+		).toEqual( [
+			{ label: 'Type', value: 'Page' },
+			{ label: 'Status now', value: 'Draft' },
+			{ label: 'New status', value: 'Scheduled' },
+			{ label: 'What changes', value: 'status, post content' },
+		] );
+	} );
+	it( 'keeps a status or type it does not know as stored', () => {
+		expect(
+			previewRows( {
+				type: 'core/paragraph',
+				current_status: 'wc-on-hold',
+			} )
+		).toEqual( [
+			{ label: 'Type', value: 'core/paragraph' },
+			{ label: 'Status now', value: 'wc-on-hold' },
+		] );
 	} );
 	it( 'gives nothing for a preview that is not an object', () => {
 		expect( previewRows( null ) ).toEqual( [] );
