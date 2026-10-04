@@ -17,15 +17,19 @@
 // This is a consumer-side override, not a library edit. Never change anything
 // under node_modules/@plugpress/ui (see the consumer agent guide).
 //
-// The surfaces are Jetpack's (its Modules screen, measured 2026-10-02, #307):
-// a #fcfcfc page under a white header band, white blocks with a #f0f0f0
-// hairline, 8px corners and one faint shadow. The greys are WordPress 7's,
-// and links use the admin color scheme's own blue.
+// Palette v3 (2026-10-04): wp-admin's own greys. The page is wp-admin's
+// #f0f0f1, so a Saddle screen sits in the admin like a core screen and white
+// blocks stand off it (1.14:1; the old #fcfcfc was 1.03). Blocks are white
+// with a #dcdcde edge you can see, 8px corners and one faint shadow. The
+// greys are WordPress 7's (the @wordpress/base-styles gray scale), and links
+// use the admin color scheme's own blue.
 //
-// Contrast, measured (WCAG 2.x) on white: text #1e1e1e 16.67, #5e5e5e 6.58,
-// #717171 4.84; field edges #949494 3.03; white on the brand 6.84; every
-// status text on its tint 5.6 or more. Links follow --wp-admin-theme-color
-// (fresh #2271b1 5.17, modern #3858e9 5.36).
+// Contrast, measured (WCAG 2.x), on white / the page / #f6f7f7:
+// text #1d2327 15.89 / 13.95 / 14.80; the one grey #646970 5.53 / 4.86 /
+// 5.15; field edges #8c8f94 3.24 on white (fields sit on blocks); white on
+// the brand 6.84; every status text on its tint 4.75 or more, and 4.54 or
+// more on the page. Links follow --wp-admin-theme-color (fresh #2271b1 5.17
+// on white, 4.54 on the page).
 // ---------------------------------------------------------------------------
 // `.pp-scope` is on every portaled layer (drawers, lists, menus, tooltips)
 // and the DS re-declares its own tokens there, so it is named here too:
@@ -39,23 +43,24 @@
 	--saddle-brand-tint: #e2f1f2;
 	--saddle-brand-soft: #c5e4e7;
 
-	// WordPress 7's neutral greys (the @wordpress/components gray scale).
-	--pp-n-50: #f5f5f5;
-	--pp-n-100: #f0f0f0;
-	--pp-n-200: #f5f5f5; // -> --pp-surface-alt (code chips, sub-panels)
-	--pp-n-300: #f0f0f0; // -> --pp-border: block edges and row dividers
-	--pp-n-400: #cccccc; // -> --pp-border-strong
-	--pp-n-500: #a0a0a0;
-	// One secondary grey for every description, meta line and hint, as on
-	// Jetpack AI: 4.95 on white, 4.83 on the canvas, 4.54 on --pp-n-200.
-	--pp-n-600: #707070; // -> --pp-text-muted
-	--pp-n-700: #707070; // -> --pp-text-secondary
-	--pp-n-800: #2f2f2f;
-	--pp-n-900: #232323;
-	--pp-n-950: #1e1e1e; // -> --pp-text, 16.67
-	--pp-canvas: #fcfcfc; // the page; the header band and blocks are white
+	// wp-admin's greys, light to dark, one step each.
+	--pp-n-50: #f6f7f7; // gray-0
+	--pp-n-100: #f0f0f1; // the page, wp-admin's body
+	--pp-n-200: #f6f7f7; // -> --pp-surface-alt (code chips, sub-panels)
+	--pp-n-300: #dcdcde; // -> --pp-border: block edges and row dividers
+	--pp-n-400: #c3c4c7; // -> --pp-border-strong
+	--pp-n-500: #a7aaad; // disabled marks, typing dots
+	// One secondary grey for every description, meta line and hint (the rule
+	// from 2026-10-02 stays): WordPress's description grey, 5.53 on white,
+	// 4.86 on the page, 5.15 on #f6f7f7.
+	--pp-n-600: #646970; // -> --pp-text-muted
+	--pp-n-700: #646970; // -> --pp-text-secondary
+	--pp-n-800: #3c434a;
+	--pp-n-900: #2c3338;
+	--pp-n-950: #1d2327; // -> --pp-text, 15.89
+	--pp-canvas: #f0f0f1; // the page; the header band and blocks are white
 	--pp-surface: #ffffff;
-	--pp-surface-hover: #f5f5f5;
+	--pp-surface-hover: #f6f7f7;
 
 	// Links, focus, badges and spinners: the admin color scheme's own blue
 	// (WordPress sets it per scheme), so Saddle's links match the rest of
@@ -92,10 +97,10 @@
 	--pp-r: 4px;
 	--pp-r-lg: 8px;
 
-	// A block sits on the canvas with a soft hairline and one faint shadow,
-	// Jetpack's values. Buttons stay flat; overlays keep the DS's md/lg.
-	--pp-shadow-xs: 0 1px 2px rgba( 0, 0, 0, 0.05 );
-	--pp-shadow-sm: 0 1px 2px rgba( 0, 0, 0, 0.05 );
+	// A block sits on the page with a visible edge and one faint shadow.
+	// Buttons stay flat; overlays keep the DS's md/lg.
+	--pp-shadow-xs: 0 1px 2px rgba( 0, 0, 0, 0.04 );
+	--pp-shadow-sm: 0 1px 2px rgba( 0, 0, 0, 0.04 );
 	--pp-shadow-btn: none;
 	--pp-shadow-btn-hover: none;
 
@@ -150,7 +155,17 @@
 
 	--s-focus: var( --pp-focus );
 
-	--s-code-bg: #1e1e1e;
+	// Colours that used to be written out in style.scss.
+	--s-field-edge: #8c8f94; // inputs and the off switch: 3.24 on white
+	--s-tab-indicator: #50575e; // the quiet tabs' underline: 7.33 on white
+	--s-nav-hover: #e8e8ea; // a module sidebar item under the pointer, on the page
+	--s-overlay: #1d2327; // tooltips, toasts, coachmarks, apply and bulk bars
+	--s-overlay-hover: #101517;
+	--s-paused-mark: #b26200; // the AI switch's dot while paused (a mark, not text)
+	--s-paused-edge: #f5e1c0; // the paused strip's lower edge
+	--s-typing: var( --pp-n-500 );
+
+	--s-code-bg: #1d2327;
 
 	--s-shadow-sm: var( --pp-shadow-sm );
 	--s-shadow-md: var( --pp-shadow-md );

@@ -32,21 +32,26 @@ wp-admin like a core screen.
 | **Brand** (Petrol) | `#0B6470` | white on it 6.84; on white 6.84 |
 | Brand hover / press | `#08505A` / `#063F47` | white 9.11 / 11.60 |
 | Brand tint / soft | `#E2F1F2` / `#C5E4E7` | brand on tint 5.89 |
-| Canvas (page) | `#FCFCFC` | |
-| Header band | `#FFFFFF`, `#F0F0F0` hairline under it | |
-| Surface (blocks) | `#FFFFFF`, `#F0F0F0` hairline, 8px corners, `0 1px 2px rgba(0,0,0,.05)` | |
-| Surface 2 (row hover, code chips, sub-panels) | `#F5F5F5` | |
-| Border / border 2 | `#F0F0F0` / `#CCCCCC` | block edges and row dividers, decorative |
-| Field edge, switch off | `#949494` | 3.03 on white |
-| Text / secondary | `#1E1E1E` / `#707070` (one grey for every description, meta line, hint and footer, as on Jetpack AI) | 16.67 / 4.95 (4.83 on the canvas) |
-| Links, focus | `var(--wp-admin-theme-color)` (Default `#2271B1` 5.17, Modern `#3858E9` 5.36) | follows the owner's admin color scheme |
+| Canvas (page) | `#F0F0F1`, wp-admin's own body grey (palette v3) | white blocks on it 1.14:1 |
+| Header band | `#FFFFFF`, `#DCDCDE` hairline under it | |
+| Surface (blocks) | `#FFFFFF`, `#DCDCDE` edge, 8px corners, `0 1px 2px rgba(0,0,0,.04)` | |
+| Surface 2 (row hover, code chips, sub-panels) | `#F6F7F7` | |
+| Border / border 2 | `#DCDCDE` / `#C3C4C7` | block edges and row dividers, decorative |
+| Field edge, switch off | `#8C8F94` (`--s-field-edge`) | 3.24 on white; fields sit on blocks |
+| Text / secondary | `#1D2327` / `#646970`, one grey for every description, meta line, hint and footer | 15.89 / 5.53 on white, 13.95 / 4.86 on the page |
+| Tab underline | `#50575E` (`--s-tab-indicator`) | 7.33 |
+| Module sidebar | the page itself, no edge; hover `#E8E8EA` (`--s-nav-hover`); the current section is a white card with a `#DCDCDE` ring and a faint shadow ("raised") | |
+| Dark overlays, code panels | `#1D2327` (`--s-overlay`, `--s-code-bg`) | |
+| Links, focus | `var(--wp-admin-theme-color)` (Default `#2271B1` 5.17 on white, 4.54 on the page; Modern `#3858E9` 5.36) | follows the owner's admin color scheme |
 | Success | `#007017` on `#EDFAEF` | 5.86 |
 | Warning | `#8A4F00` on `#FEF8EE` | 6.21 |
 | Danger | `#B32D2E` on `#FCF0F1` | 5.67 |
 | Info | `#2271B1` on `#F0F6FC` | 4.75 |
 
-It lives in `admin/src/style.scss` as consumer-side `--pp-*` overrides (the
-brand as `--saddle-brand*`). **Never in `@plugpress/ui`**: the library is
+It lives in `admin/src/_tokens.scss` as consumer-side `--pp-*` overrides (the
+brand as `--saddle-brand*`), and `style.scss` writes no colour of its own: every
+value is a token, so one file recolours Core, every module and the siblings'
+full-screen pages. **Never in `@plugpress/ui`**: the library is
 off-limits from a plugin task, and the DS defines its tokens inside `:where()`
 (zero specificity), so a plain class selector wins with no `!important`. The
 selector names `.pp-app`, the body class **and `.pp-scope`**: portaled layers
@@ -69,7 +74,7 @@ headings, borders, icons, backgrounds of blocks or bands. If a screen seems to
 need more teal, it needs less of something else.
 
 The dark overlays (tooltip, toast, coachmark, apply bar, bulk bar) read their
-ground from `--pp-action` in the kit, so `style.scss` pins them to `#1D2327`;
+ground from `--pp-action` in the kit, so `style.scss` pins them to `--s-overlay` (`#1D2327`);
 code panels are pinned the same way. Both are kit seams.
 
 ## The frame
@@ -502,6 +507,17 @@ Kept together in one block of `style.scss`:
 ---
 
 ## History
+
+> **DECIDED (2026-10-04, Fahim): palette v3.** "the --pp-canvas is very close
+> white.. redefine all colors make sure it look nice." The page moves from
+> Jetpack AI's `#FCFCFC` to wp-admin's own `#F0F0F1`, blocks get a visible
+> `#DCDCDE` edge, and every grey is WordPress's (`#1D2327` text, `#646970` the
+> one secondary grey, `#8C8F94` field edges). He chose "WordPress native" over
+> cool slate and warm stone, and for the module sidebar "raised" (B) over a
+> white rail and a Petrol active item; mockup
+> https://claude.ai/artifact/JFDVNG5GZhWsRMm13CNhh8. The brand, links, status
+> colours and the one-grey rule are unchanged. Supersedes the 2026-10-02
+> `#FCFCFC` canvas and `#F0F0F0` hairline.
 
 > **SUPERSEDED (2026-10-01):** olive `#4D6410` (2026-09-26, matching saddle.to)
 > and the 85/15 split with the accent on links, focus and nav. Before that,
