@@ -269,7 +269,7 @@ function saddle_register_abilities() {
 		'saddle/delete-post',
 		array(
 			'label'               => __( 'Delete post', 'saddle' ),
-			'description'         => __( 'Deletes a post. DESTRUCTIVE — runs through a two-step confirmation: the first call returns a preview and a confirm_token without changing anything; call again with confirm_token to execute. Without "force" the post is trashed (recoverable); with force=true it is permanently deleted (not recoverable). A post already in the trash answers at once, with no preview; pass force=true to delete it for good. For an item of a custom content type, pass its post_type.', 'saddle' ),
+			'description'         => __( 'Deletes a post. DESTRUCTIVE: it runs through a two-step confirmation. The first call returns a preview and a confirm_token without changing anything; call again with confirm_token to execute. Without "force" the post is trashed (recoverable); with force=true it is permanently deleted (not recoverable). A post already in the trash answers at once, with no preview; pass force=true to delete it for good. For an item of a custom content type, pass its post_type.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => saddle_with_post_type( saddle_delete_schema( __( 'The post ID to delete.', 'saddle' ), true ) ),
 			'execute_callback'    => array( 'Saddle_Abilities', 'delete_post' ),
@@ -380,7 +380,7 @@ function saddle_register_abilities() {
 		'saddle/delete-page',
 		array(
 			'label'               => __( 'Delete page', 'saddle' ),
-			'description'         => __( 'Deletes a page. DESTRUCTIVE — two-step confirmation required (preview + confirm_token). Without "force" the page is trashed (recoverable); with force=true it is permanently deleted. A page already in the trash answers at once, with no preview; pass force=true to delete it for good.', 'saddle' ),
+			'description'         => __( 'Deletes a page. DESTRUCTIVE: it needs a two-step confirmation (preview + confirm_token). Without "force" the page is trashed (recoverable); with force=true it is permanently deleted. A page already in the trash answers at once, with no preview; pass force=true to delete it for good.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => saddle_delete_schema( __( 'The page ID to delete.', 'saddle' ), true ),
 			'execute_callback'    => array( 'Saddle_Abilities', 'delete_page' ),
