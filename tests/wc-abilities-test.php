@@ -134,6 +134,34 @@ class Saddle_WC_Abilities_Test extends WP_UnitTestCase {
 		$this->assertWPError( $missing );
 	}
 
+	public function test_get_product_accepts_id_as_well_as_product_id() {
+		$id = $this->product( 'Hoodie', array( 'regular_price' => '25' ) );
+
+		// The content tools call it `id`, so that is an agent's first try.
+		$by_id = wp_get_ability( 'saddle/wc-get-product' )->execute( array( 'id' => $id ) );
+		$this->assertNotWPError( $by_id );
+		$this->assertSame( 'Hoodie', $by_id['name'] );
+
+		// product_id stays the documented name (R4).
+		$schema = wp_get_ability( 'saddle/wc-get-product' )->get_input_schema();
+		$this->assertArrayHasKey( 'product_id', $schema['properties'] );
+		$this->assertSame( 'Hoodie', wp_get_ability( 'saddle/wc-get-product' )->execute( array( 'product_id' => $id ) )['name'] );
+		$this->assertSame( 'Hoodie', wp_get_ability( 'saddle/wc-get-product' )->execute( array( 'product_id' => $id, 'id' => $id ) )['name'] );
+	}
+
+	public function test_get_product_refuses_no_id_and_two_different_ids() {
+		$a = $this->product( 'Hoodie' );
+		$b = $this->product( 'Mug' );
+
+		$none = wp_get_ability( 'saddle/wc-get-product' )->execute( array() );
+		$this->assertWPError( $none );
+		$this->assertStringContainsString( 'product_id', $none->get_error_message() );
+
+		$both = wp_get_ability( 'saddle/wc-get-product' )->execute( array( 'product_id' => $a, 'id' => $b ) );
+		$this->assertWPError( $both );
+		$this->assertSame( 'saddle_ambiguous_product', $both->get_error_code() );
+	}
+
 	public function test_list_orders_rows_and_status_filter() {
 		WC_Order::seed(
 			array(

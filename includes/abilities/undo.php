@@ -92,6 +92,17 @@ class Saddle_Undo_Abilities {
 					_n( 'Undo %d logged change.', 'Undo %d logged changes.', $ready, 'saddle' ),
 					$ready
 				),
+				'done'    => static function ( $result ) {
+					$undone = is_array( $result ) && isset( $result['undone'] ) ? (int) $result['undone'] : 0;
+					if ( ! $undone ) {
+						return __( 'Undo ran, but nothing could be reversed. Each entry was skipped.', 'saddle' );
+					}
+					return sprintf(
+						/* translators: %d: number of log entries. */
+						_n( 'Undid %d logged change.', 'Undid %d logged changes.', $undone, 'saddle' ),
+						$undone
+					);
+				},
 				'preview' => array(
 					'entries' => $plan,
 					'unknown' => $unknown,

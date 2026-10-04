@@ -1,20 +1,31 @@
 /**
  * Settings — one page, no tabs (#285).
  *
- * - Safety: three switches that save the moment they are flipped.
+ * - Safety: three switches that save the moment they are flipped. A switch
+ *   moves at once, says "Saved." when the server agrees, and moves back if it
+ *   doesn't (R9, P16).
  * - Advanced: rarely used things, each collapsed — single tools, sign-in for
  *   apps, memory limits, recent changes, the connection check.
  *   `&section=signin` (the connect drawer's "Turn it on") opens Sign-in for
- *   apps and scrolls to it.
+ *   apps and scrolls to it. The connection check runs only once opened: it
+ *   calls the site back, which on a one-request-at-a-time server would hold
+ *   the rest of the page.
  *
  * Who may do what is chosen per app on AI apps, not here.
  */
-import { useState, useEffect, useMemo, useRef } from '@wordpress/element';
+import {
+	useState,
+	useEffect,
+	useMemo,
+	useRef,
+	useCallback,
+} from '@wordpress/element';
 import {
 	Collapsible,
 	HelpTip,
 	Row,
 	RowList,
+	Skeleton,
 	Switch,
 	Tooltip,
 	toast,
@@ -22,6 +33,7 @@ import {
 import { __, sprintf } from '@wordpress/i18n';
 import { api } from '../api';
 import { disabledSet, flipTool, groupTools } from '../tools-list';
+import { runnableTools, safetyPrefs } from '../settings-logic';
 import SectionHeader from './SectionHeader';
 import SettingsForm from './SettingsForm';
 import SignInCard, { useOauthSettings } from './SignInCard';
@@ -46,46 +58,46 @@ const Labelled = ( { children, help } ) => (
  */
 function Safety( { onRehearsalChanged } ) {
 	const [ prefs, setPrefs ] = useState( null );
-	const [ saving, setSaving ] = useState( '' );
+	// How many flips of each switch are on their way, so an answer to an
+	// older flip never moves a switch the owner has flipped again since.
+	const pending = useRef( {} );
 
 	useEffect( () => {
 		api( 'preferences' )
-			.then( ( res ) =>
-				setPrefs( {
-					drafts_only: !! res.drafts_only,
-					rehearsal: !! res.rehearsal,
-					domain_enforced: !! res.domain?.enforced,
-				} )
-			)
-			.catch( () =>
-				setPrefs( {
-					drafts_only: false,
-					rehearsal: false,
-					domain_enforced: false,
-				} )
-			);
+			.then( ( res ) => setPrefs( safetyPrefs( res ) ) )
+			.catch( () => setPrefs( safetyPrefs( {} ) ) );
 	}, [] );
 
+	// Optimistic: the switch moves at once and stays usable (R9). The server's
+	// answer confirms it with "Saved." (P16) or puts it back with the error.
 	const flip = ( key ) => {
-		setSaving( key );
+		const next = ! prefs[ key ];
+		pending.current[ key ] = ( pending.current[ key ] || 0 ) + 1;
+		setPrefs( ( p ) => ( { ...p, [ key ]: next } ) );
 		api( 'preferences', {
 			method: 'POST',
-			data: { [ key ]: ! prefs[ key ] },
+			data: { [ key ]: next },
 		} )
 			.then( ( res ) => {
-				setPrefs( {
-					drafts_only: !! res.drafts_only,
-					rehearsal: !! res.rehearsal,
-					domain_enforced: !! res.domain?.enforced,
-				} );
-				if ( 'rehearsal' === key && onRehearsalChanged ) {
-					onRehearsalChanged( !! res.rehearsal );
+				pending.current[ key ] -= 1;
+				if ( pending.current[ key ] === 0 ) {
+					const saved = safetyPrefs( res );
+					setPrefs( ( p ) => ( { ...p, [ key ]: saved[ key ] } ) );
+					if ( 'rehearsal' === key && onRehearsalChanged ) {
+						onRehearsalChanged( saved.rehearsal );
+					}
 				}
+				toast.success( __( 'Saved.', 'saddle' ) );
 			} )
-			.catch( () =>
-				toast.error( __( 'Could not save that setting.', 'saddle' ) )
-			)
-			.finally( () => setSaving( '' ) );
+			.catch( ( e ) => {
+				pending.current[ key ] -= 1;
+				if ( pending.current[ key ] === 0 ) {
+					setPrefs( ( p ) => ( { ...p, [ key ]: ! next } ) );
+				}
+				toast.error(
+					e?.message || __( 'Could not save that setting.', 'saddle' )
+				);
+			} );
 	};
 
 	const row = ( { key, id, title, help, meta, label } ) => (
@@ -96,13 +108,18 @@ function Safety( { onRehearsalChanged } ) {
 			}
 			description={ meta }
 			actions={
-				<Switch
-					id={ id }
-					checked={ !! prefs?.[ key ] }
-					disabled={ ! prefs || saving === key }
-					onChange={ () => flip( key ) }
-					aria-label={ label || title }
-				/>
+				prefs ? (
+					<Switch
+						id={ id }
+						checked={ !! prefs[ key ] }
+						onChange={ () => flip( key ) }
+						aria-label={ label || title }
+					/>
+				) : (
+					// Its state is not known yet: a placeholder, not a
+					// switch that reads Off.
+					<Skeleton round width={ 32 } height={ 18 } />
+				)
 			}
 		/>
 	);
@@ -156,44 +173,56 @@ function Safety( { onRehearsalChanged } ) {
 }
 
 /**
- * Turn off single tools: a search, then every tool as a row with a switch,
- * grouped by area. A switch saves at once (the whole switched-off set goes to
- * `POST /abilities`); off stays off for every app.
+ * Turn off single tools: a search, then every tool that can run on this site
+ * as a row with a switch, grouped by area. A switch moves at once and saves
+ * (the whole switched-off set goes to `POST /abilities`); off stays off for
+ * every app. A tool for a plugin that isn't active is left out of the list,
+ * and its own on or off is kept.
  *
  * @param {Object}   props
- * @param {Array}    props.caps      The tools, from `GET /capabilities`.
+ * @param {Array}    props.caps      Every tool, from `GET /capabilities`.
+ * @param {Array}    props.listed    The tools to list (runnableTools()).
  * @param {Function} props.onChanged Reloads the tools.
  */
-function ToolSwitches( { caps, onChanged } ) {
+function ToolSwitches( { caps, listed, onChanged } ) {
 	const [ query, setQuery ] = useState( '' );
 	const [ off, setOff ] = useState( () => disabledSet( caps ) );
-	const [ busy, setBusy ] = useState( false );
+	// Saves on their way. The tools reload only when the last one is back,
+	// so a reload never shows a switch from before a newer flip.
+	const pending = useRef( 0 );
 
 	// The server's answer wins whenever the tools reload.
 	useEffect( () => setOff( disabledSet( caps ) ), [ caps ] );
 
 	const groups = useMemo(
-		() => groupTools( caps, query, __( 'Other', 'saddle' ) ),
-		[ caps, query ]
+		() => groupTools( listed, query, __( 'Other', 'saddle' ) ),
+		[ listed, query ]
 	);
 
+	const settle = useCallback( () => {
+		pending.current -= 1;
+		if ( 0 === pending.current && onChanged ) {
+			onChanged();
+		}
+	}, [ onChanged ] );
+
 	const flip = ( short ) => {
-		const before = off;
 		const next = flipTool( off, short );
 		setOff( next );
-		setBusy( true );
+		pending.current += 1;
 		api( 'abilities', {
 			method: 'POST',
 			data: { disabled: [ ...next ] },
 		} )
-			.then( () => onChanged && onChanged() )
+			.then( () => toast.success( __( 'Saved.', 'saddle' ) ) )
 			.catch( ( e ) => {
-				setOff( before );
+				// Put back this one switch; any other flip stands.
+				setOff( ( now ) => flipTool( now, short ) );
 				toast.error(
 					e?.message || __( 'Could not save that change.', 'saddle' )
 				);
 			} )
-			.finally( () => setBusy( false ) );
+			.finally( settle );
 	};
 
 	return (
@@ -226,7 +255,6 @@ function ToolSwitches( { caps, onChanged } ) {
 								actions={
 									<Switch
 										checked={ ! off.has( tool.short ) }
-										disabled={ busy }
 										onChange={ () => flip( tool.short ) }
 										aria-label={ tool.label }
 									/>
@@ -240,8 +268,8 @@ function ToolSwitches( { caps, onChanged } ) {
 	);
 }
 
-// Sign-in for apps: the one control, drawn by SignInCard. Its own heading is
-// hidden here (the disclosure says it).
+// Sign-in for apps: the one control, drawn by SignInCard. The disclosure
+// names it, so SignInCard draws no heading of its own (#293).
 function SignIn() {
 	const signIn = useOauthSettings();
 	return <SignInCard { ...signIn } />;
@@ -276,6 +304,9 @@ export default function SettingsPage( {
 } ) {
 	const [ signInAsked ] = useState( () => wantsSection( 'signin' ) );
 	const signInRef = useRef( null );
+	// The connection check mounts when first opened and stays after.
+	const [ checkOpened, setCheckOpened ] = useState( false );
+	const tools = useMemo( () => runnableTools( caps ), [ caps ] );
 
 	// Bring Sign-in for apps into view. Safety above loads its own data and
 	// grows, so the jump repeats as the page settles, as App does for an
@@ -305,10 +336,14 @@ export default function SettingsPage( {
 						trigger={ sprintf(
 							/* translators: %d: number of tools. */
 							__( 'Turn off single tools (%d)', 'saddle' ),
-							caps.length
+							tools.length
 						) }
 					>
-						<ToolSwitches caps={ caps } onChanged={ loadCaps } />
+						<ToolSwitches
+							caps={ caps }
+							listed={ tools }
+							onChanged={ loadCaps }
+						/>
 					</Collapsible>
 					<Collapsible
 						ref={ signInRef }
@@ -336,11 +371,18 @@ export default function SettingsPage( {
 							bare
 						/>
 					</Collapsible>
-					<Collapsible trigger={ __( 'Connection check', 'saddle' ) }>
-						<div className="saddle-adv__check">
-							<ConnectionHealth />
-							<McpDiagnostics />
-						</div>
+					<Collapsible
+						trigger={ __( 'Connection check', 'saddle' ) }
+						onOpenChange={ ( open ) =>
+							open && setCheckOpened( true )
+						}
+					>
+						{ checkOpened && (
+							<div className="saddle-adv__check">
+								<ConnectionHealth />
+								<McpDiagnostics />
+							</div>
+						) }
 					</Collapsible>
 				</div>
 			</section>

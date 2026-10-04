@@ -27,7 +27,6 @@ import {
 	ConfirmProvider,
 	Toaster,
 	toast,
-	Spinner,
 } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { api, saddleData } from './api';
@@ -36,8 +35,8 @@ import Tour from './components/Tour';
 import AuthTrouble from './components/AuthTrouble';
 import Frame from './components/Frame';
 import { pickSlot } from './notices';
-import { drillHeader } from './frame-logic';
-import Screen from './screens';
+import { canonicalSearch, drillHeader } from './frame-logic';
+import Screen, { ScreenSkeleton } from './screens';
 import { showFirstRun, tourDue } from './onboarding-logic';
 import {
 	areaUrl,
@@ -219,6 +218,25 @@ export default function App() {
 		},
 		[ area, route.tab, route.sub ]
 	);
+
+	// An address that named an unknown tab or page shows the first one; the
+	// address drops the bad value too (P20), once, as the page opens.
+	useEffect( () => {
+		if ( redirect || ! window.history || ! window.history.replaceState ) {
+			return;
+		}
+		const fixed = canonicalSearch( window.location.search, route );
+		if ( null !== fixed ) {
+			window.history.replaceState(
+				window.history.state,
+				'',
+				window.location.pathname + fixed + window.location.hash
+			);
+		}
+		// Only the address the page was opened with; every later move writes
+		// a resolved address itself.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [] );
 
 	// Back and Forward between tabs, pages and views of this page.
 	useEffect( () => {
@@ -548,8 +566,9 @@ export default function App() {
 	const firstRunOpen = onboarding
 		? showFirstRun( onboarding.first_run, setupForced )
 		: ! onboarded || setupForced;
-	// Asked for again on a finished site, it starts from the top unless the
-	// address names a step (the Dashboard's Setup block sends `step=try&app=…`).
+	// The stored run, with the step the address names applied (Home's next
+	// step sends `&step=try&app=…`). Where it opens is FirstRun's choice
+	// (openingStep): a finished run asked for again starts at the top.
 	const firstRunStart = ( () => {
 		const base = onboarding
 			? onboarding.first_run
@@ -568,10 +587,19 @@ export default function App() {
 	if ( redirect ) {
 		view = null;
 	} else if ( loading ) {
+		// The frame's shape and the page's, not a lone spinner (P12).
 		view = (
-			<div className="pp-app saddle-app saddle-app--loading">
-				<Spinner />
-			</div>
+			<Frame
+				area={ area }
+				tab={ tab }
+				sub={ sub }
+				view={ routeView }
+				onTab={ setTab }
+				onSub={ ( next ) => goRoute( { sub: next } ) }
+				loading
+			>
+				<ScreenSkeleton area={ area } tab={ tab } />
+			</Frame>
 		);
 	} else if ( authError ) {
 		view = <AuthTrouble onRetry={ () => window.location.reload() } />;

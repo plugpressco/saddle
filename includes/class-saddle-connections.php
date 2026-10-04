@@ -36,6 +36,12 @@ class Saddle_Connections {
 	const OPTION = 'saddle_connections';
 
 	/**
+	 * User meta holding each Saddle key's last four characters, by uuid. The
+	 * admin REST layer writes it when it issues or rotates a key.
+	 */
+	const HINTS_META = 'saddle_client_hints';
+
+	/**
 	 * How many records are kept. The least recently seen goes first.
 	 */
 	const MAX_RECORDS = 50;
@@ -132,16 +138,38 @@ class Saddle_Connections {
 	}
 
 	/**
-	 * Core's `wp_delete_application_password` action.
+	 * Core's `wp_delete_application_password` action: the key's record and its
+	 * last-four hint go with it, wherever it was deleted from.
 	 *
 	 * @param int   $user_id User the key belonged to.
 	 * @param array $item    The deleted key.
 	 */
 	public static function forget_key( $user_id, $item ) {
-		unset( $user_id );
+		if ( ! is_array( $item ) || empty( $item['uuid'] ) ) {
+			return;
+		}
 
-		if ( is_array( $item ) && ! empty( $item['uuid'] ) ) {
-			self::forget( 'key:' . $item['uuid'] );
+		self::forget( 'key:' . $item['uuid'] );
+		self::forget_hint( (int) $user_id, (string) $item['uuid'] );
+	}
+
+	/**
+	 * Drop the last-four hint Saddle stored for one key.
+	 *
+	 * @param int    $user_id User the key belonged to.
+	 * @param string $uuid    Key uuid.
+	 */
+	private static function forget_hint( $user_id, $uuid ) {
+		$hints = get_user_meta( $user_id, self::HINTS_META, true );
+		if ( ! is_array( $hints ) || ! isset( $hints[ $uuid ] ) ) {
+			return;
+		}
+
+		unset( $hints[ $uuid ] );
+		if ( $hints ) {
+			update_user_meta( $user_id, self::HINTS_META, $hints );
+		} else {
+			delete_user_meta( $user_id, self::HINTS_META );
 		}
 	}
 

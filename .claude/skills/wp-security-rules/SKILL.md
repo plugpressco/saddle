@@ -53,9 +53,12 @@ it. *e.g.* a destructive ability that calls `Saddle_Approval::gate()` but passes
 no `bind`, so preview-swap is possible in principle.
 
 **NOTE** — hardening; the control is present and correct, the concern is blast
-radius. *e.g.* `saddle/activate-theme` (`includes/abilities/site.php:129`) is
-ungated because switching a theme is reversible, which fits the stated gate
-criterion — but it changes every page on the site in one agent call.
+radius. *e.g.* `saddle/remove-block` removes a block with no inner blocks in one
+call, because revisions recover it, which fits the stated gate criterion. The
+hardening (1.5.0) is that a call carrying a `confirm_token` always goes through
+the gate, so a retried confirm can't remove the block that shifted into the
+address. (`activate-theme`, `activate-plugin` and `deactivate-plugin` were the
+old example here; all three are gated since 1.5.0, #320.)
 
 ---
 
@@ -97,7 +100,10 @@ return self::$levels[ self::get_tier() ] >= self::$levels[ $required ];
 
 ## 3. `destructive => true` implies `gate()`, and `gate()` needs `bind` — HIGH
 
-All 7 destructive abilities gate today; keep the correspondence 1:1 both ways.
+Every destructive ability gates today, including `activate-plugin`,
+`deactivate-plugin` and `activate-theme` since 1.5.0 (#320); keep the
+correspondence 1:1 both ways. A gate passes `done` (what happened, in the past
+tense) for the activity log; the `summary` stays the preview sentence.
 
 `bind` is the non-obvious half. The token binds *action* and *target* but not the
 payload, so a token issued for one preview is otherwise replayable with different

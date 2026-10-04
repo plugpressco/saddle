@@ -344,6 +344,37 @@ describe( 'the self-check after three minutes', () => {
 		expect( rows.find( ( r ) => r.key === 'https' ).hint ).toBe( '' );
 	} );
 
+	it( 'lists only what can stop a key on the key path (R2)', () => {
+		// The symptom: on the key path for an app on this computer, "The
+		// site uses HTTPS" and "This is a local site" showed as To do, and
+		// neither stops a key.
+		const rows = selfCheckFindings( {
+			ssl: false,
+			permalinks: false,
+			local: true,
+			app: 'claude-code',
+			authHeader: 'ok',
+			path: 'key',
+		} );
+		expect( keys( rows ) ).toEqual( [ 'header', 'firewall' ] );
+		expect( rows.filter( ( r ) => false === r.ok ) ).toEqual( [] );
+	} );
+
+	it( 'names a local site only for apps that connect from the web', () => {
+		const base = {
+			ssl: true,
+			permalinks: true,
+			local: true,
+			authHeader: 'unknown',
+		};
+		expect(
+			keys( selfCheckFindings( { ...base, app: 'claude-code' } ) )
+		).not.toContain( 'local' );
+		expect(
+			keys( selfCheckFindings( { ...base, app: 'claude' } ) )
+		).toContain( 'local' );
+	} );
+
 	it( 'skips the header row when the probe could not say', () => {
 		const rows = selfCheckFindings( {
 			ssl: true,

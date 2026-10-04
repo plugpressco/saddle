@@ -24,6 +24,11 @@ defined( 'ABSPATH' ) || exit;
 class Saddle_HTTP {
 
 	/**
+	 * Redirects fetch_own_page() follows, each one checked to stay on the site.
+	 */
+	const OWN_PAGE_REDIRECTS = 3;
+
+	/**
 	 * Whether a URL resolves somewhere it is safe to fetch from.
 	 *
 	 * Resolves the host and refuses if any resulting address is private or
@@ -189,46 +194,92 @@ class Saddle_HTTP {
 	 * a private IP, which is most of them behind a load balancer. No cookies are
 	 * sent, so what comes back is what a visitor (and a page cache) serves.
 	 *
+	 * A permalink may redirect (a trailing slash, http to https), so up to
+	 * three redirects are followed, but by hand: each one must stay on this
+	 * site, and the first that leaves it ends the fetch. Core would follow a
+	 * redirect anywhere.
+	 *
 	 * @param string $url       Absolute URL on this site.
 	 * @param int    $max_bytes Response size cap.
 	 * @return array|WP_Error { @type int $status, @type string $body }
 	 */
 	public static function fetch_own_page( $url, $max_bytes = 2097152 ) {
-		$home = wp_parse_url( home_url() );
-		$want = wp_parse_url( (string) $url );
-
-		if ( ! is_array( $home ) || ! is_array( $want )
-			|| empty( $want['host'] ) || empty( $home['host'] )
-			|| strtolower( $want['host'] ) !== strtolower( $home['host'] )
-			|| strtolower( (string) ( isset( $want['scheme'] ) ? $want['scheme'] : '' ) ) !== strtolower( (string) ( isset( $home['scheme'] ) ? $home['scheme'] : '' ) )
-			|| ( isset( $want['port'] ) ? (int) $want['port'] : 0 ) !== ( isset( $home['port'] ) ? (int) $home['port'] : 0 )
-		) {
+		if ( ! self::is_own_address( (string) $url, false ) ) {
 			return new WP_Error( 'saddle_http_not_own_site', __( 'Only this site\'s own pages can be fetched this way.', 'saddle' ) );
 		}
 
-		$response = wp_remote_get(
-			(string) $url,
-			array(
-				'timeout'             => 10,
-				// A permalink may redirect (trailing slash, http→https), but only
-				// a little; the body is read, never trusted as a target.
-				'redirection'         => 3,
-				// Local and staging sites often serve a self-signed certificate,
-				// and this reads our own public HTML, as the connection probe does.
-				'sslverify'           => false,
-				'cookies'             => array(),
-				'limit_response_size' => (int) $max_bytes,
-			)
-		);
+		$current = (string) $url;
+		for ( $hop = 0; $hop <= self::OWN_PAGE_REDIRECTS; $hop++ ) {
+			$response = wp_remote_get(
+				$current,
+				array(
+					'timeout'             => 10,
+					'redirection'         => 0,
+					// Local and staging sites often serve a self-signed certificate,
+					// and this reads our own public HTML, as the connection probe does.
+					'sslverify'           => false,
+					'cookies'             => array(),
+					'limit_response_size' => (int) $max_bytes,
+				)
+			);
 
-		if ( is_wp_error( $response ) ) {
-			return $response;
+			if ( is_wp_error( $response ) ) {
+				return $response;
+			}
+
+			$status   = (int) wp_remote_retrieve_response_code( $response );
+			$location = (string) wp_remote_retrieve_header( $response, 'location' );
+			if ( $status < 300 || $status >= 400 || '' === $location ) {
+				return array(
+					'status' => $status,
+					'body'   => (string) wp_remote_retrieve_body( $response ),
+				);
+			}
+
+			$next = WP_Http::make_absolute_url( $location, $current );
+			if ( ! self::is_own_address( $next, true ) ) {
+				$host = (string) wp_parse_url( $next, PHP_URL_HOST );
+				return new WP_Error(
+					'saddle_http_offsite_redirect',
+					sprintf(
+						/* translators: %s: the other site's host name. */
+						__( 'The public page redirects to another site (%s), so Saddle did not follow it.', 'saddle' ),
+						'' !== $host ? $host : $next
+					)
+				);
+			}
+			$current = $next;
 		}
 
-		return array(
-			'status' => (int) wp_remote_retrieve_response_code( $response ),
-			'body'   => (string) wp_remote_retrieve_body( $response ),
+		return new WP_Error(
+			'saddle_http_too_many_redirects',
+			__( 'The public page redirected more than three times, so Saddle stopped.', 'saddle' )
 		);
+	}
+
+	/**
+	 * Whether a URL points at this site: the same host and port as home_url().
+	 *
+	 * @param string $url        Absolute URL.
+	 * @param bool   $any_scheme True to accept http or https, as a redirect
+	 *                           between them stays on the site; false to
+	 *                           require home_url()'s own scheme.
+	 * @return bool
+	 */
+	private static function is_own_address( $url, $any_scheme ) {
+		$home = wp_parse_url( home_url() );
+		$want = wp_parse_url( (string) $url );
+
+		if ( ! is_array( $home ) || ! is_array( $want ) || empty( $want['host'] ) || empty( $home['host'] ) ) {
+			return false;
+		}
+
+		$scheme = strtolower( isset( $want['scheme'] ) ? (string) $want['scheme'] : '' );
+		$wanted = $any_scheme ? array( 'http', 'https' ) : array( strtolower( isset( $home['scheme'] ) ? (string) $home['scheme'] : '' ) );
+
+		return strtolower( $want['host'] ) === strtolower( $home['host'] )
+			&& in_array( $scheme, $wanted, true )
+			&& ( isset( $want['port'] ) ? (int) $want['port'] : 0 ) === ( isset( $home['port'] ) ? (int) $home['port'] : 0 );
 	}
 
 	/**

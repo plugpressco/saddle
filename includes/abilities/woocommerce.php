@@ -130,13 +130,20 @@ function saddle_register_wc_abilities() {
 			'label'               => __( 'Get WooCommerce product', 'saddle' ),
 			'description'         => __( 'Returns one product in full: prices, stock, visibility, categories, tags — and for a variable product, its variations with their attributes and prices. Read-only.', 'saddle' ),
 			'category'            => 'saddle',
+			// product_id is the name (R4). `id` is accepted too, because the
+			// content tools call it that and agents try it first; the callback
+			// requires one of the two.
 			'input_schema'        => array(
 				'type'       => 'object',
-				'required'   => array( 'product_id' ),
+				'default'    => (object) array(),
 				'properties' => array(
 					'product_id' => array(
 						'type'        => 'integer',
-						'description' => __( 'The product ID to read.', 'saddle' ),
+						'description' => __( 'The product ID to read. Required.', 'saddle' ),
+					),
+					'id'         => array(
+						'type'        => 'integer',
+						'description' => __( 'The same product ID, under the name the content tools use. Give product_id or id.', 'saddle' ),
 					),
 				),
 			),
@@ -266,6 +273,37 @@ class Saddle_WC_Abilities {
 	}
 
 	/**
+	 * The product to read: `product_id`, or `id` when that is what was sent.
+	 *
+	 * @param mixed $input Ability input.
+	 * @return int|WP_Error
+	 */
+	private static function product_id_from( $input ) {
+		$input = is_array( $input ) ? $input : array();
+		$named = isset( $input['product_id'] ) ? (int) $input['product_id'] : 0;
+		$alias = isset( $input['id'] ) ? (int) $input['id'] : 0;
+
+		if ( $named > 0 && $alias > 0 && $named !== $alias ) {
+			return new WP_Error(
+				'saddle_ambiguous_product',
+				__( 'product_id and id name different products. Send one of them.', 'saddle' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		$id = $named > 0 ? $named : $alias;
+		if ( $id < 1 ) {
+			return new WP_Error(
+				'saddle_missing_product_id',
+				__( 'Send the product\'s ID as product_id.', 'saddle' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		return $id;
+	}
+
+	/**
 	 * saddle/wc-get-product.
 	 *
 	 * @param array $input Ability input.
@@ -276,7 +314,12 @@ class Saddle_WC_Abilities {
 			return Saddle_WC::not_active_error();
 		}
 
-		$product = wc_get_product( isset( $input['product_id'] ) ? (int) $input['product_id'] : 0 );
+		$product_id = self::product_id_from( $input );
+		if ( is_wp_error( $product_id ) ) {
+			return $product_id;
+		}
+
+		$product = wc_get_product( $product_id );
 		if ( ! $product ) {
 			return new WP_Error( 'saddle_not_found', __( 'No product with that ID.', 'saddle' ) );
 		}

@@ -143,3 +143,37 @@ describe( 'previewRows', () => {
 		expect( previewRows( 'text' ) ).toEqual( [] );
 	} );
 } );
+
+describe( 'previewRows for plugins and themes (R4)', () => {
+	it( 'names the plugin, not its file', () => {
+		expect(
+			previewRows( {
+				plugin: 'hello.php',
+				plugin_name: 'Hello Dolly',
+				version: '1.7.2',
+			} )
+		).toEqual( [
+			{ label: 'Plugin', value: 'Hello Dolly' },
+			{ label: 'Version', value: '1.7.2' },
+		] );
+	} );
+
+	it( 'keeps the file when there is no name to show instead', () => {
+		expect( previewRows( { plugin: 'hello.php', version: '' } ) ).toEqual( [
+			{ label: 'Plugin', value: 'hello.php' },
+		] );
+	} );
+
+	it( 'names the theme, not its folder', () => {
+		expect(
+			previewRows( {
+				stylesheet: 'twentytwentyfive',
+				theme_name: 'Twenty Twenty-Five',
+				version: '1.2',
+			} )
+		).toEqual( [
+			{ label: 'Theme', value: 'Twenty Twenty-Five' },
+			{ label: 'Version', value: '1.2' },
+		] );
+	} );
+} );

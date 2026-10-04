@@ -72,6 +72,31 @@ class Saddle_Verify_Public_Test extends WP_UnitTestCase {
 		);
 	}
 
+	/**
+	 * The "public page" answers each request with the next of these, in order.
+	 *
+	 * @param array[] $responses Each { code, body?, location? }.
+	 */
+	private function public_page_answers( array $responses ) {
+		add_filter(
+			'pre_http_request',
+			function ( $pre, $args, $url ) use ( &$responses ) {
+				$this->requests[] = array(
+					'url'  => $url,
+					'args' => $args,
+				);
+				$next = array_shift( $responses );
+				return array(
+					'body'     => isset( $next['body'] ) ? $next['body'] : '',
+					'response' => array( 'code' => $next['code'] ),
+					'headers'  => isset( $next['location'] ) ? array( 'location' => $next['location'] ) : array(),
+				);
+			},
+			10,
+			3
+		);
+	}
+
 	private function verify( $id, $check_public = true ) {
 		$result = wp_get_ability( 'saddle/verify-page' )->execute(
 			array(
@@ -203,5 +228,86 @@ class Saddle_Verify_Public_Test extends WP_UnitTestCase {
 			'Userinfo that looks like this site is still another host.'
 		);
 		$this->assertSame( array(), $this->requests, 'Refused before any request is made.' );
+	}
+
+	public function test_the_fetch_stops_at_a_redirect_that_leaves_the_site() {
+		$id = $this->page( '<!-- wp:paragraph --><p>' . self::PASSAGE . '</p><!-- /wp:paragraph -->' );
+		$this->public_page_answers(
+			array(
+				array(
+					'code'     => 301,
+					'location' => 'https://evil.example/landing',
+				),
+				array(
+					'code' => 200,
+					'body' => '<p>' . self::PASSAGE . '</p>',
+				),
+			)
+		);
+
+		$fetched = Saddle_HTTP::fetch_own_page( get_permalink( $id ) );
+
+		$this->assertWPError( $fetched, 'An off-site redirect is not followed.' );
+		$this->assertSame( 'saddle_http_offsite_redirect', $fetched->get_error_code() );
+		$this->assertStringContainsString( 'evil.example', $fetched->get_error_message() );
+		$this->assertCount( 1, $this->requests, 'Nothing is requested from the other site.' );
+		$this->assertSame( 0, $this->requests[0]['args']['redirection'], 'Core must not follow redirects on its own.' );
+	}
+
+	public function test_verify_page_reports_an_off_site_redirect_as_unreachable() {
+		$id = $this->page( '<!-- wp:paragraph --><p>' . self::PASSAGE . '</p><!-- /wp:paragraph -->' );
+		$this->public_page_answers(
+			array(
+				array(
+					'code'     => 302,
+					'location' => 'https://evil.example/',
+				),
+			)
+		);
+
+		$public = $this->verify( $id )['public'];
+
+		$this->assertSame( 'unreachable', $public['status'] );
+		$this->assertStringContainsString( 'evil.example', $public['reason'] );
+	}
+
+	public function test_the_fetch_follows_a_redirect_within_the_site() {
+		$id   = $this->page( '<!-- wp:paragraph --><p>' . self::PASSAGE . '</p><!-- /wp:paragraph -->' );
+		$link = get_permalink( $id );
+		$this->public_page_answers(
+			array(
+				array(
+					'code'     => 301,
+					'location' => '/moved-here/',
+				),
+				array(
+					'code' => 200,
+					'body' => '<p>' . self::PASSAGE . '</p>',
+				),
+			)
+		);
+
+		$fetched = Saddle_HTTP::fetch_own_page( $link );
+
+		$this->assertNotWPError( $fetched );
+		$this->assertSame( 200, $fetched['status'] );
+		$this->assertCount( 2, $this->requests );
+		$this->assertSame( home_url( '/moved-here/' ), $this->requests[1]['url'], 'A path-only Location resolves against this site.' );
+	}
+
+	public function test_the_fetch_gives_up_after_three_redirects() {
+		$id   = $this->page( '<!-- wp:paragraph --><p>' . self::PASSAGE . '</p><!-- /wp:paragraph -->' );
+		$link = get_permalink( $id );
+		$hop  = array(
+			'code'     => 302,
+			'location' => $link,
+		);
+		$this->public_page_answers( array( $hop, $hop, $hop, $hop, $hop ) );
+
+		$fetched = Saddle_HTTP::fetch_own_page( $link );
+
+		$this->assertWPError( $fetched );
+		$this->assertSame( 'saddle_http_too_many_redirects', $fetched->get_error_code() );
+		$this->assertCount( 4, $this->requests, 'The page and three redirects, as before.' );
 	}
 }

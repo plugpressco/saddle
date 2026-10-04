@@ -143,6 +143,113 @@ class Saddle_Post_Types_Test extends WP_UnitTestCase {
 		$this->assertSame( 'saddle_not_found', $result->get_error_code() );
 	}
 
+	/**
+	 * get-post on a custom type's ID without post_type. Regression: it said
+	 * "No post with that ID.", which an agent reads as "it does not exist".
+	 */
+	public function test_an_id_of_another_type_says_which_type_it_is() {
+		register_post_type(
+			'qa_event',
+			array(
+				'public'       => true,
+				'show_ui'      => true,
+				'show_in_rest' => true,
+				'labels'       => array(
+					'name'          => 'Events',
+					'singular_name' => 'Event',
+				),
+			)
+		);
+		$event = self::factory()->post->create( array( 'post_type' => 'qa_event' ) );
+
+		$result = $this->run_ability( 'get-post', array( 'id' => $event ) );
+
+		$this->assertSame( 'saddle_not_found', $result->get_error_code() );
+		$this->assertSame(
+			sprintf( 'No post with that ID. ID %d belongs to the type Event ("qa_event"). Use the post tools with "post_type" set to "qa_event".', $event ),
+			$result->get_error_message()
+		);
+
+		$post = self::factory()->post->create();
+		$page = $this->run_ability( 'get-page', array( 'id' => $post ) );
+		$this->assertSame( sprintf( 'No page with that ID. ID %d belongs to the type Post ("post"). Use the post tools.', $post ), $page->get_error_message() );
+
+		_unregister_post_type( 'qa_event' );
+	}
+
+	/**
+	 * Gate summaries and log lines name a custom type by its label.
+	 * Regression: they used the slug, "Move qa_event #59 … to the trash".
+	 */
+	public function test_gate_summaries_name_the_type_by_its_label() {
+		register_post_type(
+			'qa_event',
+			array(
+				'public'       => true,
+				'show_ui'      => true,
+				'show_in_rest' => true,
+				'labels'       => array(
+					'name'          => 'Events',
+					'singular_name' => 'Event',
+				),
+			)
+		);
+		$event = self::factory()->post->create(
+			array(
+				'post_type'  => 'qa_event',
+				'post_title' => 'Launch',
+			)
+		);
+		$input = array(
+			'post_type' => 'qa_event',
+			'id'        => $event,
+		);
+
+		$preview = $this->run_ability( 'delete-post', $input );
+		$this->assertSame( sprintf( 'Move Event #%d "Launch" to the trash. It can be restored from Trash.', $event ), $preview['summary'] );
+		$this->assertSame( 'qa_event', $preview['preview']['type'], 'The structured preview keeps the type name.' );
+
+		$this->run_ability( 'delete-post', $input + array( 'confirm_token' => $preview['confirm_token'] ) );
+		$this->assertSame( sprintf( 'Moved Event #%d "Launch" to the trash.', $event ), Saddle_Log::query( 1, 1 )['entries'][0]['summary'] );
+
+		// A wrong-type ID on a write tool names both types by label.
+		$post   = self::factory()->post->create();
+		$update = $this->run_ability(
+			'update-post',
+			array(
+				'post_type' => 'qa_event',
+				'id'        => $post,
+				'title'     => 'x',
+			)
+		);
+		$this->assertSame( sprintf( 'No Event with that ID. ID %d belongs to the type Post ("post"). Use the post tools.', $post ), $update->get_error_message() );
+
+		// Built-in types keep their plain lowercase words.
+		$plain = $this->run_ability( 'delete-post', array( 'id' => $post ) );
+		$this->assertStringStartsWith( sprintf( 'Move post #%d ', $post ), $plain['summary'] );
+
+		_unregister_post_type( 'qa_event' );
+	}
+
+	/** The hint discloses nothing the caller could not read: an unmanaged type stays "not found". */
+	public function test_an_id_of_an_unmanaged_type_stays_not_found() {
+		$hidden = self::factory()->post->create( array( 'post_type' => 'hidden_thing' ) );
+
+		$result = $this->run_ability( 'get-post', array( 'id' => $hidden ) );
+
+		$this->assertSame( 'No post with that ID.', $result->get_error_message() );
+
+		// Nor does a managed type's item the caller cannot read.
+		$draft = self::factory()->post->create(
+			array(
+				'post_type'   => 'book',
+				'post_status' => 'draft',
+			)
+		);
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'subscriber' ) ) );
+		$this->assertSame( 'No post with that ID.', $this->run_ability( 'get-post', array( 'id' => $draft ) )->get_error_message() );
+	}
+
 	public function test_an_unmanaged_type_is_refused_by_name() {
 		$result = $this->run_ability(
 			'list-posts',

@@ -217,6 +217,122 @@ export const groupByDay = ( entries ) => {
 };
 
 /**
+ * The line a feed row shows: a blocked or rehearsed call as the tool's own
+ * name ("Blocked · Update option · needs Manage the site"), anything else as
+ * the summary the log stored.
+ *
+ * @param {Object}   entry Audit-log entry.
+ * @param {Object[]} caps  The capabilities list.
+ * @return {string} Text.
+ */
+export const rowText = ( entry, caps ) =>
+	'denied' === entry.type || 'rehearsed' === entry.type
+		? actionLabel( entry, caps )
+		: String( entry.summary || '' );
+
+/**
+ * A row's tooltip: the whole line, which the row may cut short, and who
+ * made it on the next line.
+ *
+ * @param {string} text The row's line.
+ * @param {string} who  From madeBy(), or ''.
+ * @return {string|undefined} The tooltip, or undefined when both are empty.
+ */
+export const rowTitle = ( text, who ) =>
+	[ text, who ].filter( Boolean ).join( '\n' ) || undefined;
+
+/**
+ * Whether the owner can undo an entry from the feed: a change that ran,
+ * with something recorded to put back. Reads the entry's log `id` and its
+ * `undo` state ('available', 'undone' or 'not-recorded') from GET /audit-log.
+ *
+ * @param {Object} entry Audit-log entry.
+ * @return {boolean} True when Undo applies.
+ */
+export const canUndo = ( entry ) =>
+	!! entry &&
+	'executed' === ( entry.type || 'executed' ) &&
+	'available' === entry.undo &&
+	Number.isInteger( entry.id ) &&
+	entry.id > 0;
+
+/**
+ * Whether an entry was undone already.
+ *
+ * @param {Object} entry Audit-log entry.
+ * @return {boolean} True when it was.
+ */
+export const wasUndone = ( entry ) => !! entry && 'undone' === entry.undo;
+
+/**
+ * What an undo preview (POST /undo without a token) says about one entry:
+ * what comes back, or why nothing can.
+ *
+ * @param {Object} res The preview.
+ * @param {number} id  The entry's log id.
+ * @return {{ready: boolean, steps: string[], reasons: string[], token: string}} The plan.
+ */
+export const undoPlan = ( res, id ) => {
+	const entries = res && Array.isArray( res.entries ) ? res.entries : [];
+	const report = entries.find( ( e ) => e && e.id === id );
+	if ( ! report ) {
+		return {
+			ready: false,
+			steps: [],
+			reasons: [
+				__( 'This change is no longer in the activity log.', 'saddle' ),
+			],
+			token: '',
+		};
+	}
+	const token = res && res.confirm_token ? String( res.confirm_token ) : '';
+	if ( 'ready' === report.status && token ) {
+		return {
+			ready: true,
+			steps: Array.isArray( report.steps ) ? report.steps : [],
+			reasons: [],
+			token,
+		};
+	}
+	const reasons = Array.isArray( report.reasons ) ? report.reasons : [];
+	return {
+		ready: false,
+		steps: [],
+		reasons: reasons.length
+			? reasons
+			: [
+					__(
+						'Nothing was recorded to undo for this change.',
+						'saddle'
+					),
+			  ],
+		token: '',
+	};
+};
+
+/**
+ * What a confirmed undo (POST /undo with the token) did: done, or the
+ * reason it stopped.
+ *
+ * @param {Object} res The answer.
+ * @return {{done: boolean, message: string}} The outcome.
+ */
+export const undoOutcome = ( res ) => {
+	if ( res && res.undone > 0 ) {
+		return { done: true, message: __( 'Change undone.', 'saddle' ) };
+	}
+	const report = ( ( res && res.entries ) || [] ).find(
+		( e ) => e && Array.isArray( e.reasons ) && e.reasons.length
+	);
+	return {
+		done: false,
+		message: report
+			? report.reasons[ 0 ]
+			: __( 'Nothing was undone. Try again.', 'saddle' ),
+	};
+};
+
+/**
  * Who made an entry, in words: "via Claude Code" for an app; "by you" for
  * the person looking, who acted in wp-admin (an approval, a new role); "by
  * Jane" for another WordPress user, by display name when the log has it.

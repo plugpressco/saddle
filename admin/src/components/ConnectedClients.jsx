@@ -13,7 +13,7 @@
  * endpoint test and server health checks are their own collapsed section
  * (ConnectionDetails), which Settings → Advanced shows.
  */
-import { useState, useEffect, useCallback } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import {
 	Button,
@@ -37,6 +37,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import { saddleData, api, connectionPath } from '../api';
 import { APPS, APP_GROUPS } from '../connect-apps';
 import { metaLine } from '../apps-logic';
+import { useConnections } from './ConnectApps';
 import ConnectionHealth from './ConnectionHealth';
 import McpDiagnostics from './McpDiagnostics';
 import SetupGuideDrawer from './SetupGuideDrawer';
@@ -207,16 +208,18 @@ export default function Apps( {
 	// The setup-guide drawer: { app, label, password? } — password only right
 	// after a rotation (shown once), otherwise placeholder mode.
 	const [ guide, setGuide ] = useState( null );
-	// null until the list arrives.
-	const [ rows, setRows ] = useState( null );
-
-	const refresh = useCallback(
-		() =>
-			api( 'connections' )
-				.then( ( res ) => setRows( res.connections || [] ) )
-				.catch( () => setRows( ( prev ) => prev || [] ) ),
-		[]
-	);
+	// The connect drawer reads the same cache, so it opens with this list's
+	// answer instead of fetching its own (R10).
+	const connections = useConnections();
+	const { refresh } = connections;
+	// null until the list arrives; an empty list if it can't.
+	let rows = null;
+	if ( Array.isArray( connections.data ) ) {
+		rows = connections.data;
+	} else if ( 'error' === connections.phase ) {
+		rows = [];
+	}
+	const setRows = ( next ) => connections.mutate( next( rows || [] ) );
 
 	// A new key, a removed key, or the wizard closing changes `clients`.
 	useEffect( () => {

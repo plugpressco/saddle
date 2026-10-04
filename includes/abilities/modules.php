@@ -219,6 +219,12 @@ class Saddle_Module_Abilities {
 					$title,
 					implode( '; ', $sentences )
 				),
+				'done'    => sprintf(
+					/* translators: 1: module name, 2: the changes, in words. */
+					__( 'Changed %1$s settings: %2$s.', 'saddle' ),
+					$title,
+					implode( '; ', $sentences )
+				),
 				'preview' => array(
 					'module'  => $scope,
 					'title'   => $title,

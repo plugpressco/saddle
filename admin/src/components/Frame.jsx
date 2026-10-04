@@ -18,16 +18,18 @@
  * Then a quiet footer. A module's content sits in the same frame, so every
  * Saddle page reads as one product. The logic is frame-logic.js.
  *
- * Never draw the frame while the app is still loading: WordPress's common.js
- * moves every `.notice` to just after the first `.wrap h1` once the page has
- * loaded, and the header's h1 would pull the quarantined notices back into
- * view.
+ * While the app is still loading the frame draws its shape only (P12): the
+ * breadcrumb as plain text, a placeholder for the AI switch, and the page's
+ * skeleton. Never a heading then: WordPress's common.js moves every `.notice`
+ * to just after the first `.wrap h1` or `h2` once the page has loaded, and a
+ * heading would pull the quarantined notices back into view.
  */
 import { useState, useEffect, useCallback, useRef } from '@wordpress/element';
 import {
 	AppContent,
 	Button,
 	Popover,
+	Skeleton,
 	SkipLink,
 	TabsList,
 	TabsRoot,
@@ -98,12 +100,18 @@ function TabRow( { items, value, onChange, label } ) {
  * section to itself with no item open. Those last two stay in the app on a
  * plain click, so the screen unmounts and can save what the owner typed.
  *
+ * While the app loads it is a plain block, not a heading: WordPress's
+ * common.js moves every notice after the first `.wrap h1` or `h2` once the
+ * page is ready, and would pull the quarantined notices into view.
+ *
  * @param {Object}   props
  * @param {Array}    props.crumbs  From frameHeader().
  * @param {Function} props.onCrumb Called with a crumb's key on a plain click;
  *                                 returns true when it navigated in the app.
+ * @param {boolean}  props.plain   Draw a div instead of the h1.
  */
-function Breadcrumb( { crumbs, onCrumb } ) {
+function Breadcrumb( { crumbs, onCrumb, plain = false } ) {
+	const Title = plain ? 'div' : 'h1';
 	const [ first, ...rest ] = crumbs;
 	const homeInner = (
 		<>
@@ -113,7 +121,7 @@ function Breadcrumb( { crumbs, onCrumb } ) {
 	);
 
 	return (
-		<h1 className="saddle-header__title">
+		<Title className="saddle-header__title">
 			{ first.url ? (
 				<a className="saddle-header__home" href={ first.url }>
 					{ homeInner }
@@ -155,7 +163,7 @@ function Breadcrumb( { crumbs, onCrumb } ) {
 					) }
 				</span>
 			) ) }
-		</h1>
+		</Title>
 	);
 }
 
@@ -400,6 +408,9 @@ function Footer( { area } ) {
  * @param {Object=}  props.notice          The one notice shown under the header.
  * @param {Object[]} props.moreNotices     The rest, for the bell.
  * @param {Function} props.onDismissNotice Called with a dismissible notice.
+ * @param {boolean}  props.loading         The app is still loading: draw the
+ *                                         frame's shape (no heading, no bell,
+ *                                         no AI switch) around a skeleton.
  * @param {*}        props.children        The page content.
  */
 export default function Frame( {
@@ -418,6 +429,7 @@ export default function Frame( {
 	notice = null,
 	moreNotices = [],
 	onDismissNotice,
+	loading = false,
 	children,
 } ) {
 	const home = ( saddleData.areas || [] ).find( ( a ) => a.key === 'home' );
@@ -485,9 +497,14 @@ export default function Frame( {
 		<main
 			id="pp-main"
 			className="saddle-frame"
-			data-saddle-screen={ [ area.key, tab, sub, view ]
-				.filter( Boolean )
-				.join( '/' ) }
+			// Browser agents wait for this to know the screen is drawn, so it
+			// is left off while the skeleton shows.
+			data-saddle-screen={
+				loading
+					? undefined
+					: [ area.key, tab, sub, view ].filter( Boolean ).join( '/' )
+			}
+			aria-busy={ loading || undefined }
 		>
 			<AppContent width={ width } { ...panel }>
 				{ notice && (
@@ -517,15 +534,24 @@ export default function Frame( {
 				}` }
 			>
 				<div className="saddle-header__row">
-					<Breadcrumb crumbs={ head.crumbs } onCrumb={ onCrumb } />
+					<Breadcrumb
+						crumbs={ head.crumbs }
+						onCrumb={ onCrumb }
+						plain={ loading }
+					/>
 					<div className="saddle-header__actions">
-						{ notices && (
+						{ /* The bell moves other plugins' notices into itself
+						     once; it waits until the page is drawn for good. */ }
+						{ notices && ! loading && (
 							<ForeignNotices
 								extra={ moreNotices }
 								onDismiss={ onDismissNotice }
 							/>
 						) }
-						{ status && <AiSwitch { ...status } /> }
+						{ loading && (
+							<Skeleton round width={ 76 } height={ 30 } />
+						) }
+						{ status && ! loading && <AiSwitch { ...status } /> }
 					</div>
 				</div>
 				{ tabs && (

@@ -144,6 +144,21 @@ class Saddle_Services_Test extends WP_UnitTestCase {
 	}
 
 	/** A connection that holds a key with this role, as a connected app does. */
+	/**
+	 * Found in the 1.5.0 release QA: at Read only, unsplash-search said only
+	 * "Unsplash is not set up", so the owner met the access level next.
+	 */
+	public function test_unsplash_refusal_at_read_only_names_the_access_level_too() {
+		$this->sign_in_as_app( 'read' );
+		$reason = Saddle_Capabilities::denial_reason( 'saddle/unsplash-search' );
+		$this->assertSame( 'saddle_service_not_set_up', $reason['code'] );
+		$this->assertStringContainsString( 'Unsplash is not set up', $reason['message'] );
+		$this->assertStringContainsString( '"write" access level', $reason['message'] );
+
+		$this->sign_in_as_app( 'write' );
+		$this->assertStringStartsWith( 'Unsplash is not set up. Ask the owner', Saddle_Capabilities::denial_reason( 'saddle/unsplash-search' )['message'] );
+	}
+
 	private function sign_in_as_app( $role ) {
 		update_option( Saddle_Access::KEY_ROLES_OPTION, array( 'uuid-services-test' => $role ) );
 		$GLOBALS['wp_rest_application_password_uuid'] = 'uuid-services-test';
@@ -351,9 +366,10 @@ class Saddle_Services_Test extends WP_UnitTestCase {
 		$this->assertStringStartsWith( 'Unsplash is not set up. Ask the owner to add a key under Saddle → Services.', $reason['message'] );
 
 		$counts = Saddle_Capabilities::hidden_tool_counts();
-		$this->assertSame( 2, $counts['service'] );
 
 		Saddle_Unsplash::set_key( self::KEY );
+		// The two Unsplash tools; tools of absent plugins count here too (D3).
+		$this->assertSame( 2, $counts['service'] - Saddle_Capabilities::hidden_tool_counts()['service'] );
 		$this->assertTrue( Saddle_Services::has_tools_available( 'saddle/unsplash-search' ) );
 		$this->assertTrue( Saddle_Capabilities::is_callable_now( 'saddle/unsplash-search' ) );
 		$this->assertContains( 'saddle-unsplash-search', $this->tools_listed() );

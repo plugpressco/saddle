@@ -191,6 +191,14 @@ class Saddle_Memory_Abilities {
 					'action'  => 'forget',
 					'target'  => 'all-agent-memory',
 					'summary' => __( 'Delete EVERY agent-written memory entry on this site. Owner-authored entries are kept. Not recoverable.', 'saddle' ),
+					'done'    => static function ( $result ) {
+						$cleared = is_array( $result ) && isset( $result['cleared'] ) ? (int) $result['cleared'] : 0;
+						return sprintf(
+							/* translators: %d: number of memory entries deleted. */
+							_n( 'Deleted %d agent-written memory entry. Owner-authored entries were kept.', 'Deleted %d agent-written memory entries. Owner-authored entries were kept.', $cleared, 'saddle' ),
+							$cleared
+						);
+					},
 					'preview' => array( 'scope' => 'all agent-written memory' ),
 					'input'   => $input,
 					'execute' => static function () {

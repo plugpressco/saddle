@@ -879,6 +879,14 @@ body.saddle-admin-page {
 		white-space: nowrap;
 	}
 
+	// While the connections load, a placeholder the size of a tile, so no
+	// "Connected" dot pops in late (R10).
+	&__app-skeleton {
+		display: block;
+		width: 100%;
+		border-radius: var(--s-radius);
+	}
+
 	// The picked app's steps sit straight in the drawer: no box in a box.
 	&__steps {
 		display: grid;
@@ -1026,6 +1034,12 @@ body.saddle-admin-page {
 	to {
 		transform: rotate(360deg);
 	}
+}
+
+// `&key=<app>` on AI apps: the drawer's steps on the page, about as wide as
+// they read in the drawer, with Done at the end of their own line.
+.saddle-connect-page {
+	max-width: 640px;
 }
 
 /* ---------- Context (#274) ---------- */
@@ -1334,16 +1348,9 @@ body.saddle-admin-page {
 		line-height: 1.5;
 	}
 
-	// The connect step lives inside Saddle's message: the conversation already
-	// names the app and the choice comes later, so the wizard's own heading
-	// and its "what it will be able to do" card stay out of the thread.
+	// The connect step lives inside Saddle's message, at the thread's size.
 	.saddle-wizard--embedded {
 		font-size: var( --s-text );
-
-		.saddle-wizard__title,
-		.saddle-wizard__cando {
-			display: none;
-		}
 	}
 
 	@media ( max-width: 782px ) {
@@ -1396,20 +1403,6 @@ body.saddle-admin-page {
 	z-index: 0;
 }
 
-// The connect wizard inside first run: same steps, none of the card chrome.
-// Doubled class: .saddle-wizard is declared further down and would win.
-.saddle-wizard.saddle-wizard--embedded {
-	background: none;
-	border: 0;
-	box-shadow: none;
-	padding: 0;
-	min-height: 0;
-}
-
-.saddle-wizard__more {
-	margin-top: 12px;
-}
-
 /* ---------- Home ---------- */
 
 // The feed and what waits on the left, the apps on the right (#309). One
@@ -1439,6 +1432,13 @@ body.saddle-admin-page {
 	@media ( max-width: 1100px ) {
 		grid-template-columns: minmax( 0, 1fr );
 	}
+}
+
+// A page's shape while the app loads (P12): a heading's place, then a block
+// of rows.
+.saddle-skeleton {
+	display: grid;
+	gap: var( --pp-space-3 );
 }
 
 // No app connected: one sentence and one button, centred in one block.
@@ -1551,11 +1551,6 @@ body.saddle-admin-page {
 			width: 100%;
 		}
 	}
-}
-
-// The already-connected choice card on the wizard's pick step.
-.saddle-wizard__duplicate {
-	margin-bottom: 20px;
 }
 
 // Quiet destructive row action (e.g. Disconnect) — link button, danger ink.
@@ -1711,8 +1706,38 @@ body.saddle-admin-page {
 	margin-top: 10px;
 }
 
+// Under an owner skill's text: Edit, then Delete on the far side.
+.saddle-guide__skill-actions {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var( --pp-space-3 );
+	margin-top: var( --pp-space-3 );
+
+	.saddle-guide__delete {
+		margin-top: 0;
+	}
+}
+
 .saddle-guide__delete {
 	margin-top: var(--pp-space-3);
+}
+
+// Editing a skill in place: its text in a plain textarea, then Save.
+.saddle-guide__edit {
+	display: grid;
+	gap: var( --pp-space-3 );
+
+	textarea {
+		font-family: var( --pp-font-mono, monospace );
+		font-size: var( --s-text );
+		line-height: 1.55;
+	}
+}
+
+.saddle-guide__edit-actions {
+	display: flex;
+	gap: 8px;
 }
 
 .saddle-guide__system {
@@ -1909,29 +1934,11 @@ body.saddle-admin-page {
 	color: var(--s-fg-subtle);
 }
 
-
-.saddle-wizard__lead--muted {
-	color: var(--s-fg-subtle);
-	font-size: var( --s-text );
-}
-
-/* ---------- Connect wizard ---------- */
-
+/* ---------- The welcome's connect step ---------- */
+// It sits inside Saddle's message in the welcome, so it draws no box, no
+// step bar and no heading of its own.
 .saddle-wizard {
-	background: var(--s-bg);
-	border: 1px solid var(--s-border);
-	border-radius: var(--s-radius-lg);
-	box-shadow: var(--s-shadow-sm);
-	padding: 26px 32px 36px;
-	min-height: 420px;
-}
-
-.saddle-wizard__top {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 16px;
-	margin-bottom: 30px;
+	min-width: 0;
 }
 
 /* Each step slides gently into place. */
@@ -1952,12 +1959,6 @@ body.saddle-admin-page {
 	}
 }
 
-.saddle-wizard__title {
-	margin: 0 0 8px;
-	font-size: var( --s-text-title );
-	font-weight: 600;
-}
-
 .saddle-wizard__lead {
 	margin: 0 0 20px;
 	font-size: var( --s-text );
@@ -1965,11 +1966,6 @@ body.saddle-admin-page {
 	color: var(--s-fg-muted);
 	max-width: 60ch;
 	text-wrap: pretty;
-}
-
-// Lobe brand logos in the app picker size via font-size (1em square).
-.saddle-wizard__apps .pp-selcard__icon {
-	font-size: 24px;
 }
 
 /* The generated setup: DS CodeBlock + our own primary copy button below it. */
@@ -1981,17 +1977,6 @@ body.saddle-admin-page {
 	margin-top: 10px;
 }
 
-/* What this app will be able to do — always visible where the key is issued. */
-.saddle-wizard__cando {
-	margin: 0 0 16px;
-
-	&-note {
-		margin: 6px 0 0;
-		font-size: var( --s-text );
-		color: var(--s-fg-muted);
-	}
-}
-
 .saddle-wizard__hint {
 	margin: 0 0 16px;
 	font-size: var( --s-text );
@@ -2000,92 +1985,36 @@ body.saddle-admin-page {
 
 .saddle-wizard__actions {
 	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
 	justify-content: flex-end;
 	gap: 10px;
 	margin-top: 26px;
 
-	&--center {
-		justify-content: center;
-	}
-}
-
-.saddle-wizard__prompt {
-	margin-bottom: 6px;
-}
-
-.saddle-wizard__listening {
-	display: flex;
-	align-items: center;
-	margin-top: 22px;
-	font-size: var( --s-text );
-	color: var(--s-fg-muted);
-}
-
-.saddle-wizard__trouble {
-	margin-top: 22px;
-	animation: saddle-step-in 0.28s var(--s-ease) both;
-
-	ul {
-		margin: 0 0 10px;
-		padding-left: 18px;
-		font-size: var( --s-text );
-		line-height: 1.55;
-		color: var(--s-fg-muted);
-
-		li {
-			margin-bottom: 6px;
-		}
-	}
-
-	.saddle-health {
+	// A choice that answers the line above it starts under that line.
+	&--start {
+		justify-content: flex-start;
 		margin-top: 0;
-		margin-bottom: 12px;
 	}
 }
 
-/* Done — a drawn check, then quiet. */
-.saddle-wizard__step--done {
-	text-align: center;
-	padding-top: 26px;
-
-	.saddle-wizard__lead {
-		margin-left: auto;
-		margin-right: auto;
-		max-width: 46ch;
-	}
+// The sign-in switch: its button sits inside the callout, beside the words,
+// and the setup starts below the callout, not against it (R8).
+.saddle-wizard__oauth-gate {
+	margin: 0 0 16px;
 }
 
-.saddle-wizard__check {
-	display: inline-flex;
-	margin-bottom: 16px;
+// "Or open Claude with the server filled in" and its button on one line,
+// starting where the text starts (R8).
+.saddle-wizard__install {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 12px;
+	margin: 0 0 16px;
 
-	svg {
-		width: 64px;
-		height: 64px;
-		fill: none;
-		stroke: var(--s-safe-text);
-		stroke-width: 3;
-		stroke-linecap: round;
-		stroke-linejoin: round;
-	}
-
-	circle {
-		stroke-dasharray: 151;
-		stroke-dashoffset: 151;
-		animation: saddle-draw 0.5s var(--s-ease) forwards;
-	}
-
-	path {
-		stroke-dasharray: 36;
-		stroke-dashoffset: 36;
-		animation: saddle-draw 0.35s 0.4s var(--s-ease) forwards;
-	}
-}
-
-@keyframes saddle-draw {
-	to {
-		stroke-dashoffset: 0;
+	.saddle-wizard__hint {
+		margin: 0;
 	}
 }
 
@@ -2220,6 +2149,10 @@ body.saddle-admin-page {
 	}
 
 	&__summary {
+		// Positioned, so the visually hidden "by you" / "via …" inside it is
+		// clipped here too. Without it, a cut-off line scrolled Home sideways
+		// (1111px wide on a phone).
+		position: relative;
 		flex: 1 1 auto;
 		min-width: 0;
 		overflow: hidden;
@@ -2234,6 +2167,34 @@ body.saddle-admin-page {
 		font-size: var( --s-text );
 		color: var(--s-fg-subtle);
 		font-variant-numeric: tabular-nums;
+	}
+
+	// Undo sits quiet until the row is pointed at or reached by keyboard; on
+	// a touch screen, where nothing hovers, it always shows.
+	&__undo {
+		flex: 0 0 auto;
+		opacity: 0;
+		transition: opacity var( --s-dur ) var( --s-ease );
+
+		.saddle-activity__row:hover &,
+		.saddle-activity__row:focus-within &,
+		&[aria-busy='true'] {
+			opacity: 1;
+		}
+
+		@media ( hover: none ) {
+			opacity: 1;
+		}
+
+		@media ( prefers-reduced-motion: reduce ) {
+			transition: none;
+		}
+	}
+
+	&__undone {
+		flex: 0 0 auto;
+		font-size: var( --s-text-sm );
+		color: var( --s-fg-subtle );
 	}
 
 	&__more {
@@ -2470,28 +2431,17 @@ body.saddle-admin-page {
 		padding: 0 0 var(--pp-space-3);
 	}
 
-	// Sign-in for apps: the disclosure already names it.
-	&__signin .saddle-section-head {
-		display: none;
-	}
-
-	&__signin,
-	&__check,
-	.saddle-settings-form {
+	&__check {
 		padding-inline: var(--pp-space-4);
 	}
 
-	// The rows inside a disclosure sit in the block, not in boxes of their own.
+	// The rows inside a disclosure sit in the block, not in boxes of their
+	// own, and line up with the disclosure's label: Sign-in for apps (P15),
+	// Memory limits and Recent changes alike.
 	.pp-rowlist {
 		border: 0;
 		border-radius: 0;
 		background: transparent;
-	}
-
-	&__signin .pp-rowlist,
-	.saddle-settings-form .pp-rowlist {
-		border: 1px solid var(--s-border);
-		border-radius: var(--s-radius-lg);
 	}
 }
 
@@ -2604,6 +2554,19 @@ body.saddle-admin-page {
 	display: flex;
 	gap: 8px;
 	margin-top: 16px;
+}
+
+// On a phone a request reads as a sentence, so its buttons go under it
+// instead of squeezing it to a narrow column.
+@media ( max-width: 600px ) {
+	.saddle-needs-ok .pp-rowlist__row {
+		flex-wrap: wrap;
+	}
+
+	.saddle-needs-ok .pp-rowlist__actions {
+		flex-basis: 100%;
+		justify-content: flex-start;
+	}
 }
 
 // A module's unfinished setup tasks, above its first tab (K8). A block of

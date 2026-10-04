@@ -246,7 +246,7 @@ class Saddle_Settings_Registry {
 				return new WP_Error(
 					'saddle_invalid_setting',
 					/* translators: 1: setting label, 2: what is wrong. */
-					sprintf( __( '%1$s: %2$s', 'saddle' ), $field['label'], $valid->get_error_message() ),
+					sprintf( _x( '%1$s: %2$s', 'invalid setting', 'saddle' ), $field['label'], $valid->get_error_message() ),
 					array(
 						'status' => 400,
 						'field'  => $key,

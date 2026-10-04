@@ -364,6 +364,35 @@ class Saddle_REST_Admin {
 			)
 		);
 
+		// The owner's Undo on Home's Activity feed. The owner acts in wp-admin
+		// with their cookie and the REST nonce, so this is an admin route, not
+		// the agent's saddle/undo-changes. A call without a token previews and
+		// changes nothing; the token it returns confirms that preview once.
+		register_rest_route(
+			self::REST_NAMESPACE,
+			'/undo',
+			array(
+				'methods'             => 'POST',
+				'callback'            => array( __CLASS__, 'owner_undo' ),
+				'permission_callback' => array( __CLASS__, 'can_manage' ),
+				'args'                => array(
+					'entries'       => array(
+						'type'     => 'array',
+						'required' => true,
+						'minItems' => 1,
+						'maxItems' => Saddle_Undo::MAX_ENTRIES,
+						'items'    => array(
+							'type'    => 'integer',
+							'minimum' => 1,
+						),
+					),
+					'confirm_token' => array(
+						'type' => 'string',
+					),
+				),
+			)
+		);
+
 		register_rest_route(
 			self::REST_NAMESPACE,
 			'/oauth-settings',
@@ -1072,6 +1101,10 @@ class Saddle_REST_Admin {
 				'lane'        => $lane,
 				'category'    => self::category_for( $short, $name ),
 				'enabled'     => Saddle_Capabilities::is_ability_enabled( $short ),
+				// False when the tool cannot run on this site: its plugin is
+				// not active, or its service has no key. Such a tool is also
+				// left out of tools/list.
+				'available'   => Saddle_Services::has_tools_available( $short ),
 			);
 		}
 
@@ -1529,5 +1562,208 @@ class Saddle_REST_Admin {
 		$result['enabled'] = true;
 
 		return new WP_REST_Response( $result, 200 );
+	}
+
+	/**
+	 * How long the owner's undo preview can be confirmed, in seconds. The
+	 * same window an app's preview gets.
+	 */
+	const UNDO_TOKEN_TTL = 900;
+
+	/**
+	 * POST /undo — the owner undoes logged changes from Home's Activity feed.
+	 *
+	 * Uses the journal saddle/undo-changes uses (Saddle_Undo) and refuses what
+	 * it refuses, with its reasons: a change edited again since, a permanent
+	 * delete, a plugin or theme update. Without `confirm_token` it returns the
+	 * plan and, when something can come back, a token; nothing changes. With
+	 * the token it undoes exactly what that preview showed, once. The undo is
+	 * journaled and logged as the owner's own step, so Activity shows it and
+	 * it can be undone in turn.
+	 *
+	 * @param WP_REST_Request $request Request with `entries` and an optional `confirm_token`.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function owner_undo( WP_REST_Request $request ) {
+		// The owner's step only. An app undoes through its own tool, which is
+		// tiered and gated; a Saddle key never reaches this route anyway
+		// (Saddle_Connection::scope_credentials), and this holds if a filter
+		// widens that.
+		if ( '' !== Saddle_Access::current_connection() ) {
+			return new WP_Error(
+				'saddle_owner_only',
+				__( 'Only the site owner can undo from here. Apps use their own undo tool.', 'saddle' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		$ids = array_values( array_unique( array_filter( array_map( 'absint', (array) $request->get_param( 'entries' ) ) ) ) );
+		$ids = array_slice( $ids, 0, Saddle_Undo::MAX_ENTRIES );
+		sort( $ids );
+		if ( ! $ids ) {
+			return new WP_Error( 'saddle_empty', __( 'Choose at least one change to undo.', 'saddle' ), array( 'status' => 400 ) );
+		}
+
+		// As the owner: a setting, theme or plugin change is the owner's to
+		// undo here, whatever the old site-wide access level says.
+		$plan    = Saddle_Undo_Steps::as_owner(
+			static function () use ( $ids ) {
+				return Saddle_Undo::plan( $ids );
+			}
+		);
+		$unknown = array_values( array_diff( $ids, wp_list_pluck( $plan, 'id' ) ) );
+		$ready   = count( wp_list_filter( $plan, array( 'status' => 'ready' ) ) );
+		$token   = trim( (string) $request->get_param( 'confirm_token' ) );
+
+		if ( '' === $token ) {
+			$preview = array(
+				'entries' => $plan,
+				'unknown' => $unknown,
+				'ready'   => $ready,
+			);
+			if ( $ready ) {
+				$preview['confirm_token'] = self::issue_undo_token( $ids, $plan );
+				$preview['expires_in']    = self::UNDO_TOKEN_TTL;
+			}
+			return new WP_REST_Response( $preview, 200 );
+		}
+
+		$valid = self::consume_undo_token( $token, $ids, $plan );
+		if ( is_wp_error( $valid ) ) {
+			return $valid;
+		}
+
+		// Journaled like the tool's own undo, so this undo can be undone too.
+		$done   = array();
+		$undone = array();
+		Saddle_Journal::open( 'saddle/undo-changes' );
+		try {
+			$done   = Saddle_Undo_Steps::as_owner(
+				static function () use ( $ids ) {
+					return Saddle_Undo::apply( $ids );
+				}
+			);
+			$undone = array_values( wp_list_filter( $done, array( 'status' => 'undone' ) ) );
+			if ( $undone ) {
+				Saddle_Log::record(
+					array(
+						'action'  => 'undo-changes',
+						'target'  => implode( ',', $ids ),
+						'summary' => self::undo_summary( $undone ),
+					)
+				);
+			}
+		} finally {
+			Saddle_Journal::close( 'saddle/undo-changes' );
+		}
+
+		return new WP_REST_Response(
+			array(
+				'undone'  => count( $undone ),
+				'entries' => $done,
+				'unknown' => $unknown,
+			),
+			200
+		);
+	}
+
+	/**
+	 * The log line for the owner's undo: what came back.
+	 *
+	 * @param array[] $undone Reports with status `undone`.
+	 * @return string
+	 */
+	private static function undo_summary( array $undone ) {
+		if ( 1 === count( $undone ) ) {
+			return sprintf(
+				/* translators: %s: the change that was undone, as the activity log recorded it. */
+				__( 'Undid this change: %s', 'saddle' ),
+				$undone[0]['summary']
+			);
+		}
+		return sprintf(
+			/* translators: %d: number of changes undone. */
+			_n( 'Undid %d change.', 'Undid %d changes.', count( $undone ), 'saddle' ),
+			count( $undone )
+		);
+	}
+
+	/**
+	 * Issue the token that confirms one owner undo preview. One per owner at a
+	 * time: a new preview replaces the last. Bound to the entries and to what
+	 * the preview showed; only its hash is stored.
+	 *
+	 * @param int[]   $ids  Sorted entry ids.
+	 * @param array[] $plan Saddle_Undo::plan() for them.
+	 * @return string
+	 */
+	private static function issue_undo_token( array $ids, array $plan ) {
+		$token = wp_generate_password( 32, false, false );
+		set_transient(
+			self::undo_token_key(),
+			array(
+				'hash' => hash( 'sha256', $token ),
+				'ids'  => implode( ',', $ids ),
+				'plan' => self::plan_fingerprint( $plan ),
+			),
+			self::UNDO_TOKEN_TTL
+		);
+		return $token;
+	}
+
+	/**
+	 * Check and use up an owner undo token. Single use: it is gone after any
+	 * attempt, matched or not.
+	 *
+	 * @param string  $token Token from the preview.
+	 * @param int[]   $ids   Sorted entry ids.
+	 * @param array[] $plan  The plan now.
+	 * @return true|WP_Error
+	 */
+	private static function consume_undo_token( $token, array $ids, array $plan ) {
+		$stored = get_transient( self::undo_token_key() );
+		delete_transient( self::undo_token_key() );
+
+		if ( ! is_array( $stored ) || empty( $stored['hash'] ) || ! hash_equals( (string) $stored['hash'], hash( 'sha256', $token ) )
+			|| implode( ',', $ids ) !== (string) $stored['ids'] ) {
+			return new WP_Error(
+				'saddle_undo_token',
+				__( 'That preview has expired or was already used. Choose Undo again.', 'saddle' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		if ( ! hash_equals( (string) $stored['plan'], self::plan_fingerprint( $plan ) ) ) {
+			return new WP_Error(
+				'saddle_undo_changed',
+				__( 'Something changed since the preview. Choose Undo again to see what comes back.', 'saddle' ),
+				array( 'status' => 409 )
+			);
+		}
+
+		return true;
+	}
+
+	/**
+	 * What a preview showed, as a digest: each entry's status and steps.
+	 *
+	 * @param array[] $plan Saddle_Undo::plan().
+	 * @return string
+	 */
+	private static function plan_fingerprint( array $plan ) {
+		$shown = array();
+		foreach ( $plan as $report ) {
+			$shown[] = array( $report['id'], $report['status'], $report['steps'] );
+		}
+		return hash( 'sha256', (string) wp_json_encode( $shown ) );
+	}
+
+	/**
+	 * Where the current owner's undo token waits.
+	 *
+	 * @return string
+	 */
+	private static function undo_token_key() {
+		return 'saddle_owner_undo_' . get_current_user_id();
 	}
 }
