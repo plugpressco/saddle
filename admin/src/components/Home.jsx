@@ -111,6 +111,9 @@ export default function Home( {
 	const [ health, setHealth ] = useState( healthCache );
 	// Bumped after an approve or reject, so the feed and the counts show it.
 	const [ feedKey, setFeedKey ] = useState( 0 );
+	// Bumped after the owner undid a change in the feed, which reloads
+	// itself: only the counts need it.
+	const [ countKey, setCountKey ] = useState( 0 );
 	// This week: changes, blocked attempts, and what waits for the owner.
 	const [ week, setWeek ] = useState( null );
 	// The Services records, for "Works with".
@@ -154,7 +157,7 @@ export default function Home( {
 		return () => {
 			alive = false;
 		};
-	}, [ feedKey, connected ] );
+	}, [ feedKey, countKey, connected ] );
 
 	useEffect( () => {
 		api( 'connections' )
@@ -270,6 +273,7 @@ export default function Home( {
 						key={ feedKey }
 						caps={ caps }
 						title={ __( 'Activity', 'saddle' ) }
+						onChange={ () => setCountKey( ( k ) => k + 1 ) }
 					/>
 				</section>
 			</div>

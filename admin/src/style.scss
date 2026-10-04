@@ -2236,6 +2236,34 @@ body.saddle-admin-page {
 		font-variant-numeric: tabular-nums;
 	}
 
+	// Undo sits quiet until the row is pointed at or reached by keyboard; on
+	// a touch screen, where nothing hovers, it always shows.
+	&__undo {
+		flex: 0 0 auto;
+		opacity: 0;
+		transition: opacity var( --s-dur ) var( --s-ease );
+
+		.saddle-activity__row:hover &,
+		.saddle-activity__row:focus-within &,
+		&[aria-busy='true'] {
+			opacity: 1;
+		}
+
+		@media ( hover: none ) {
+			opacity: 1;
+		}
+
+		@media ( prefers-reduced-motion: reduce ) {
+			transition: none;
+		}
+	}
+
+	&__undone {
+		flex: 0 0 auto;
+		font-size: var( --s-text-sm );
+		color: var( --s-fg-subtle );
+	}
+
 	&__more {
 		display: flex;
 		justify-content: center;
