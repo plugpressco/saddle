@@ -9,14 +9,17 @@
  * on every Saddle page.
  *
  * Four levels, one control each. WordPress's Saddle submenu picks the page.
- * A module's page has two columns: a left sidebar of its sections
- * (SectionNav, `&tab=`), and the content with an icon tab row of the
- * section's pages on top (`&sub=`, drawn when a section has two or more).
- * A drill-in (`&view=`) opens one item: the breadcrumb reads
- * `Saddle / Module / Section / title` and the icon tab row steps aside.
- * Core's pages keep one column and their header tab row, if they have one.
- * Then a quiet footer. A module's content sits in the same frame, so every
- * Saddle page reads as one product. The logic is frame-logic.js.
+ * A page's tabs (a module's sections, `&tab=`) are the header's tab row, with
+ * Settings last. A module section with two or more pages (`&sub=`) starts its
+ * content with a row of page links (PageNav). A drill-in (`&view=`) opens one
+ * item: the breadcrumb reads `Saddle / Module / Section / title`, and the tab
+ * row and the page links step aside. No sidebar of Saddle's own sits beside
+ * WordPress's menu (Fahim, 2026-10-05: top tabs, like Kit).
+ *
+ * One column: the header's content, the page and the footer line up on the
+ * page's width (`--saddle-col`), so every row starts at the same edge. Then a
+ * quiet footer. A module's content sits in the same frame, so every Saddle
+ * page reads as one product. The logic is frame-logic.js.
  *
  * While the app is still loading the frame draws its shape only (P12): the
  * breadcrumb as plain text, a placeholder for the AI switch, and the page's
@@ -37,31 +40,34 @@ import {
 } from '@plugpress/ui';
 import { __, sprintf, _n } from '@wordpress/i18n';
 import { saddleData } from '../api';
-import { frameHeader, isPlainClick, tabsHaveIcons } from '../frame-logic';
+import {
+	frameHeader,
+	isPlainClick,
+	sectionTabs,
+	tabsHaveIcons,
+} from '../frame-logic';
 import { NavIcon } from '../icons/iconoir';
 import { icons } from '../icons/kit';
 import { BrandMark } from './icons';
 import NoticeItem from './NoticeItem';
-import SectionNav, { revealActive } from './SectionNav';
+import PageNav, { revealActive } from './PageNav';
 
 // One content width for every page: sparse pages don't feel empty and the
-// column never resizes between tabs. Home is wider, for its two columns; a
-// module's column is narrower, beside its sidebar.
+// column never resizes between tabs. Home is wider, for its two columns.
 const PAGE_WIDTH = 960;
 const HOME_WIDTH = 1040;
-const MODULE_WIDTH = 880;
 
-// A page shows at most one tab row (Core's header row or a module
-// section's pages), and its tabs swap the one content column. So every tab
-// controls that column, the tab panel, and the panel is named by the active
-// tab. Kit tabs on their own point each tab at a panel of its own that
-// Saddle never draws (QA 1.5.0 S5).
+// A page shows at most one tab row, the header's, and its tabs swap the one
+// content column. So every tab controls that column, the tab panel, and the
+// panel is named by the active tab. Kit tabs on their own point each tab at a
+// panel of its own that Saddle never draws (QA 1.5.0 S5). A section's pages
+// are links, not tabs.
 const PANEL_ID = 'saddle-tabpanel';
 const tabId = ( key ) => `saddle-tab-${ key }`;
 
 /**
  * A row of tabs in the minimal style, each with its icon when every tab has
- * one: Core's header row and a module section's pages.
+ * one: the header's row, a Core page's tabs or a module's sections.
  *
  * @param {Object}   props
  * @param {Array}    props.items    `[ { key, label, icon } ]`.
@@ -442,17 +448,17 @@ export default function Frame( {
 		crumb,
 		home: { label: __( 'Saddle', 'saddle' ), url: home ? home.url : '' },
 	} );
-	const tabs = showTabs && head.showTabs ? area.tabs : null;
+	const tabs = showTabs && head.showTabs ? sectionTabs( area.tabs ) : null;
 	const current = ( area.tabs || [] ).find( ( t ) => t.key === tab );
 	const pages = head.showSubtabs && current ? current.subtabs : null;
-	const pagesRef = useRef( null );
+	const tabsRef = useRef( null );
 	useEffect(
 		() =>
 			revealActive(
-				pagesRef.current,
+				tabsRef.current,
 				'[role="tab"][data-state="active"]'
 			),
-		[ tab, sub, pages ]
+		[ tab, tabs ]
 	);
 
 	// A module crumb opens the first section, a section crumb closes the
@@ -469,29 +475,18 @@ export default function Frame( {
 		return false;
 	};
 
-	// The tab row's active key, when this page draws one: the content column
-	// is then its tab panel.
-	let active = '';
-	if ( tabs ) {
-		active = tab;
-	} else if ( pages ) {
-		active = sub;
-	}
-	const panel = active
+	// When this page draws the tab row, the content column is its tab panel.
+	const panel = tabs
 		? {
 				role: 'tabpanel',
 				id: PANEL_ID,
-				'aria-labelledby': tabId( active ),
+				'aria-labelledby': tabId( tab ),
 				tabIndex: 0,
 		  }
 		: {};
 
-	let width = PAGE_WIDTH;
-	if ( head.showSidebar ) {
-		width = MODULE_WIDTH;
-	} else if ( 'home' === area.key && 'overview' === tab ) {
-		width = HOME_WIDTH;
-	}
+	const width =
+		'home' === area.key && 'overview' === tab ? HOME_WIDTH : PAGE_WIDTH;
 
 	const content = (
 		<main
@@ -507,6 +502,14 @@ export default function Frame( {
 			aria-busy={ loading || undefined }
 		>
 			<AppContent width={ width } { ...panel }>
+				{ pages && (
+					<PageNav
+						pages={ pages }
+						sub={ sub }
+						label={ current.label }
+						onPage={ onSub }
+					/>
+				) }
 				{ notice && (
 					<NoticeItem
 						className="saddle-frame__notice"
@@ -524,7 +527,10 @@ export default function Frame( {
 	);
 
 	return (
-		<div className="pp-app saddle-app saddle-app--frame">
+		<div
+			className="pp-app saddle-app saddle-app--frame"
+			style={ { '--saddle-col': `${ width }px` } }
+		>
 			<SkipLink href="#pp-main">
 				{ __( 'Skip to content', 'saddle' ) }
 			</SkipLink>
@@ -555,7 +561,7 @@ export default function Frame( {
 					</div>
 				</div>
 				{ tabs && (
-					<div className="saddle-header__tabs">
+					<div className="saddle-header__tabs" ref={ tabsRef }>
 						<TabRow
 							items={ tabs }
 							value={ tab }
@@ -585,26 +591,7 @@ export default function Frame( {
 					</Button>
 				</div>
 			) }
-			{ head.showSidebar ? (
-				<div className="saddle-module">
-					<SectionNav area={ area } tab={ tab } onSection={ onTab } />
-					<div className="saddle-module__body">
-						{ pages && (
-							<div className="saddle-subtabs" ref={ pagesRef }>
-								<TabRow
-									items={ pages }
-									value={ sub }
-									onChange={ onSub }
-									label={ current.label }
-								/>
-							</div>
-						) }
-						{ content }
-					</div>
-				</div>
-			) : (
-				content
-			) }
+			{ content }
 			<Footer area={ area } />
 		</div>
 	);

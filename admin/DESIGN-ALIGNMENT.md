@@ -40,7 +40,7 @@ wp-admin like a core screen.
 | Field edge, switch off | `#8C8F94` (`--s-field-edge`) | 3.24 on white; fields sit on blocks |
 | Text / secondary | `#1D2327` / `#646970`, one grey for every description, meta line, hint and footer | 15.89 / 5.53 on white, 13.95 / 4.86 on the page |
 | Tab underline | `#50575E` (`--s-tab-indicator`) | 7.33 |
-| Module sidebar | the page itself, no edge; hover `#E8E8EA` (`--s-nav-hover`); the current section is a white card with a `#DCDCDE` ring and a faint shadow ("raised") | |
+| Page links (a section's pages) | the page itself, no edge; hover `#E8E8EA` (`--s-nav-hover`); the current page is a white card with a `#DCDCDE` ring and a faint shadow ("raised") | |
 | Dark overlays, code panels | `#1D2327` (`--s-overlay`, `--s-code-bg`) | |
 | Links, focus | `var(--wp-admin-theme-color)` (Default `#2271B1` 5.17 on white, 4.54 on the page; Modern `#3858E9` 5.36) | follows the owner's admin color scheme |
 | Success | `#007017` on `#EDFAEF` | 5.86 |
@@ -83,7 +83,9 @@ Every Saddle page, module pages and first run included, is drawn by
 `admin/src/components/Frame.jsx`:
 
 - **Header band:** white over the `#FCFCFC` canvas, full width of wp-admin's
-  content area, `16px 24px`, one `#F0F0F0` hairline under it. Row 1 is the
+  content area, one `#F0F0F0` hairline under it. Its content is padded onto
+  the page's column (`max(24px, (100% - column) / 2)`, 16px below 782px), so
+  the breadcrumb and the tabs start where the page does. Row 1 is the
   breadcrumb in the `h1` (15px): the 22px mark in Petrol and "Saddle", then
   `/` and the page's name. Home reads `[mark] Saddle`; every other page
   `[mark] Saddle / Page` ("Saddle / AI apps", "Saddle / Rank", "Saddle /
@@ -95,17 +97,20 @@ Every Saddle page, module pages and first run included, is drawn by
   "Resume". The switch lives here, on every page, and nowhere else. While
   paused, a strip under the header says "AI is paused. No app can read or
   change this site until you resume." with Resume, on every Saddle page.
-  Row 2, on a Core page with two or more tabs (none today): the minimal
-  tabs below. **No description sentence** under the title.
+  Row 2, on a page with two or more tabs (a module's sections, Settings
+  last): the minimal tabs below. **No description sentence** under the
+  title.
 - **Minimal tabs** (Jetpack AI's, WordPress 7's): the kit `Tabs`, 48px tall,
   13px regular, every tab `#1E1E1E` with its 16px icon, a 1.5px `#6E6E6E`
   line under the active one. No brand color on tabs (2026-10-02, Fahim: the
   teal underline and grey idle tabs looked dated).
-- **Page:** the `#FCFCFC` canvas. A Core page is one centered 960px column
-  (Home: 1040px, for its two columns). A module page has two columns: the
-  sidebar and the content, 880px (see "Navigation").
+- **Page:** the `#FCFCFC` canvas, one centered column: 960px, Home 1040px
+  for its two columns. Frame sets it as `--saddle-col`. A module section with
+  two or more pages starts the column with its page links (see
+  "Navigation").
 - **Footer strip:** a hairline, then mark · "Saddle 1.5.0" (and the module's
-  product and version on a module page) · Docs · Rate Saddle, in 13px grey.
+  product and version on a module page) · Docs · Rate Saddle, in 13px grey,
+  on the same column.
 
 Never draw the frame while the app is loading: WordPress's `common.js` moves
 every `.notice` after the first `.wrap h1`, and the header's `h1` would pull the
@@ -121,7 +126,7 @@ computed style or by grep:
   nowhere else. A module defines no `--pp-*` and no `--saddle-brand*`, and
   imports no `tokens/accents/*` file.
 - **F2 One frame.** `Frame.jsx` draws the header band and its breadcrumb, the
-  paused strip, a module's sidebar and icon tab row, the canvas and the
+  paused strip, the tab row, a section's page links, the canvas and the
   footer. A module draws no header, top bar, rail, sidebar, wordmark,
   breadcrumb, description sentence, footer, toaster or tooltip provider.
 - **F3 One kit, through Core.** Primitives and icons come from the `ui` prop
@@ -130,9 +135,9 @@ computed style or by grep:
   an admin screen (a block-editor sidebar or a full-screen editor may).
 - **F4 One nav, four levels.** WordPress's Saddle submenu picks the module
   (Saddle → Name). Core draws the rest from the descriptor: the sections
-  (`tabs`, `&tab=`) as the sidebar, a section's pages (`subtabs`, `&sub=`)
-  as the icon tab row, and one item (`&view=` with the module's own
-  `&args`) as a drill-in. No hash router, no inner nav pills, no nav of the
+  (`tabs`, `&tab=`) as the header's tab row, a section's pages (`subtabs`,
+  `&sub=`) as the page links at the top of the content, and one item
+  (`&view=` with the module's own `&args`) as a drill-in. No hash router, no inner nav pills, no nav of the
   module's own.
 - **F5 Three type sizes.** 15 for titles, 13 for everything, 12 for badges,
   counts and chips, and 20/600 for a stat value. Use the `--pp-text-*` tokens.
@@ -158,22 +163,23 @@ computed style or by grep:
   `pp-scope` or `pp-app` class, so nothing else on it changes, including
   other plugins' kit widgets.
 
-## Navigation (2026-10-04, MODULE-LAYOUT.md)
+## Navigation (2026-10-05: top tabs)
 
-Fahim: "saddle should clear header each, also a sidebar not sub menu", "for
-big modular like seo and rank there many menu and sub tab, so need clear
-view and easy user", "icon saddle / rank or icon saddle / crm". This
-replaces the 2026-10-03 rule that a page had one tab row and no sidebar.
-The plan and the section maps for Rank, CRM and Analytics are in
-`planning/MODULE-LAYOUT.md`.
+Fahim, 2026-10-05, looking at CRM and Analytics: "sidebar make site ugly
+... why not we make nice", "see analytics.. how ugly". He chose top tabs,
+like Kit, over a blended left menu. A module's sections moved from its own
+left sidebar (2026-10-04, `planning/MODULE-LAYOUT.md`) into the header's
+tab row, and its pages from a white band of tabs to links at the top of the
+content. There is no sidebar of Saddle's own beside WordPress's menu. The
+section maps for Rank, CRM and Analytics in `MODULE-LAYOUT.md` still hold.
 
 - **Four levels, one control each.**
 
   | Level | Control | Address |
   |---|---|---|
   | Module | WordPress's Saddle submenu | `admin.php?page=saddle-{key}` |
-  | Section | The module's left sidebar | `&tab=` |
-  | Page | The icon tab row | `&sub=` |
+  | Section | The header's tab row | `&tab=` |
+  | Page | The page links at the top of the content | `&sub=` |
   | Single item | The drill-in | `&view=` and the module's `&args` |
 
   The first section and a section's first page are the defaults and are
@@ -195,34 +201,30 @@ The plan and the section maps for Rank, CRM and Analytics are in
   item was opened from, with no view. Both are real links (a middle click
   opens a new tab); a plain click stays in the app, so the screen unmounts
   and can save what the owner typed.
-- **The sidebar is for modules only.** Every module page has one
-  (`components/SectionNav.jsx`); Core's pages keep the header and their tab
-  row, if they have one.
-  - 200px wide, on the canvas `#FCFCFC`, a `#F0F0F0` hairline on its right
-    edge, running the full height. Its list sticks under the admin bar
-    (32px; 46px below 782px).
+- **The tab row** is a page's tabs: a module's sections in its order with
+  Settings last (`sectionTabs()`), or a Core page's tabs. The minimal tabs
+  (48px, 13px, 16px icon, 1.5px `#6E6E6E` indicator) on the header band's
+  hairline. Drawn when there are two or more. No Petrol, no badges.
+- **The page links** (`components/PageNav.jsx`) are a section's pages, at
+  the top of the content column. Drawn only when a section has two or more;
+  aim for five at most.
   - Each item: a 16px Iconoir icon, 8px, a 13px label; 32px tall, 6px
-    corners, `#1E1E1E`. Active: `#F0F0F0` fill, weight 600, `aria-current`.
-    Hover: `#F5F5F5`.
-  - The module's sections in its order, Settings last after a hairline.
-  - No Petrol, no badges, no module name (the header names it).
-  - Items are real links; a plain click navigates in place.
-- **The icon tab row** is a section's pages: a white band with a `#F0F0F0`
-  hairline at the top of the content column, the minimal tabs (48px, 13px,
-  16px icon, 1.5px `#6E6E6E` indicator), lined up with the 880px content
-  under it. Drawn only when a section has two or more pages; aim for five
-  at most. Icons show only when every page has one.
+    corners, `#1E1E1E`. Hover `--s-nav-hover`. The current page is raised:
+    white, a `#DCDCDE` ring, a faint shadow, weight 600, `aria-current`.
+  - Items are real links: a middle click opens a new tab, a plain click
+    navigates in place.
+  - They are links, not tabs, so they never look like a list's `FilterTabs`.
 - **A drill-in (K4).** A module opens one item with `&view=` inside a page
   and names it with `props.header?.drillIn?.( { title } )`. The breadcrumb
-  then ends with the title and the icon tab row steps aside; the sidebar
-  stays. Core clears the title when the view closes, the page or section
-  changes, or the screen unmounts. Drill-ins are opt-in: a screen that never
-  calls it keeps the icon tab row. The logic is `admin/src/frame-logic.js`.
-- **Phone, below 782px.** The sidebar becomes one horizontally scrolling row
-  above the content, sticky under the admin bar; the icon tab row scrolls
-  too, and both bring the active item into view. WordPress folds its own
-  menu into the hamburger.
-- **Content width.** 880px inside a module; Core pages 960px, Home 1040px.
+  then ends with the title, and the tab row and the page links step aside.
+  Core clears the title when the view closes, the page or section changes,
+  or the screen unmounts. Drill-ins are opt-in: a screen that never calls it
+  keeps both rows. The logic is `admin/src/frame-logic.js`.
+- **Phone, below 782px.** The tab row and the page links scroll sideways
+  and bring the active item into view. WordPress folds its own menu into
+  the hamburger.
+- **Content width.** 960px on every page, Home 1040px. The header, the
+  paused strip and the footer line up on it.
 - **The right column is Home's only.** No search, no command palette, no
   assistant box, no upsell, no right panel or bottom bar.
 - **Licence is a section on Saddle → Settings.** There is no Licence tab, and
@@ -456,8 +458,8 @@ the pill stays for badges, dots and switches. Blocks carry one faint shadow
    tile.
 4. **Plain, task-first names.** WordPress's Saddle submenu picks the page:
    Home, each installed module, then AI apps, Services, Context and
-   Settings. Inside a module, its sidebar picks the section and the icon tab
-   row the page (see "Navigation").
+   Settings. Inside a module, the header's tab row picks the section and the
+   page links the page (see "Navigation").
 5. **A choice explains itself where it is made.** An option list carries one
    line per option (the access list on AI apps) instead of a separate "what
    each option means" section.
@@ -498,15 +500,21 @@ Kept together in one block of `style.scss`:
 - block titles at 13/600 and row titles at 600;
 - field edges and the off switch at `#949494`; row icons without the grey
   square; no focus ring on a `Select` option (the highlight is the position);
-- the header's tab row and the icon tab row drop their own border (the band
-  draws it), and the active line sits inside the row, which scrolls
-  sideways and would clip it.
+- the header's tab row drops its own border (the band draws it), and the
+  active line sits inside the row, which scrolls sideways and would clip it.
 - row lists get the card's shadow (the kit draws them flat), and a block
   nested in a card or in Advanced stays flat.
 
 ---
 
 ## History
+
+> **DECIDED (2026-10-05, Fahim): top tabs.** "sidebar make site ugly ... why
+> not we make nice", with screenshots of CRM and Analytics: two menus side by
+> side and a gap before the content. A module's sections move into the
+> header's tab row, its pages become links at the top of the content, and
+> the header, page and footer share one 960px column. Chosen over a blended
+> left menu. Supersedes the 2026-10-04 module sidebar.
 
 > **DECIDED (2026-10-04, Fahim): palette v3.** "the --pp-canvas is very close
 > white.. redefine all colors make sure it look nice." The page moves from

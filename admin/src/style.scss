@@ -374,11 +374,17 @@ body.saddle-admin-page {
 	min-height: calc( 100vh - var( --wp-admin--admin-bar--height, 32px ) );
 }
 
+// The page's column (Frame sets `--saddle-col` to its width). The header,
+// the paused strip and the footer pad their content onto it, so the
+// breadcrumb, the tab row, the page and the footer share one left edge; the
+// page itself is the same width, centred, inside 24px of padding.
+$saddle-col-inline: max( 24px, calc( ( 100% - var( --saddle-col, 960px ) ) / 2 ) );
+
 // The header band: white, the full width of wp-admin's content area, one
 // hairline under it. The only place the brand shows besides buttons and
 // switches is here: the mark.
 .saddle-header {
-	padding: 16px 24px;
+	padding: 16px $saddle-col-inline;
 	background: var( --s-bg );
 	border-block-end: 1px solid var( --s-border );
 
@@ -479,10 +485,9 @@ body.saddle-admin-page {
 		gap: 10px;
 	}
 
-	// A Core page's tabs sit on the band's bottom hairline; the band draws
-	// the line, so the tab row's own border goes. Scrolls sideways when there
-	// are many. (No Core page has two tabs today; a module's pages are the
-	// icon tab row below.)
+	// A page's tabs (a module's sections) sit on the band's bottom hairline;
+	// the band draws the line, so the tab row's own border goes. Scrolls
+	// sideways when there are many.
 	&__tabs {
 		@include saddle-minimal-tabs;
 		margin-block-start: 8px;
@@ -493,47 +498,33 @@ body.saddle-admin-page {
 	}
 }
 
-/* ---------- A module's page: sidebar, icon tab row (MODULE-LAYOUT.md) ---------- */
-// Two columns under the header: the sections on the canvas with a hairline
-// on their right, and the content. The sidebar runs the full height, so its
-// hairline does too; its list stays in view under the admin bar.
-.saddle-module {
-	display: flex;
-	flex: 1 0 auto;
-	align-items: stretch;
-	min-width: 0;
-}
+/* ---------- A module section's pages (PageNav) ---------- */
+// A row of links at the top of the content: each a 16px icon and its 13px
+// label, 32px tall, 6px corners, the text colour throughout. The current
+// page lifts off the page as a small white card; the edge is an inset ring,
+// so the item keeps its size. Scrolls sideways when it is wider than the
+// column.
+.saddle-pages {
+	margin-block-end: var( --pp-space-4 );
 
-.saddle-sections {
-	flex: 0 0 200px;
-	width: 200px;
-	// Part of the page, with no edge of its own: the active item is what
-	// stands out (palette v3, "raised").
-	background: var( --s-canvas );
-
+	// The 2px padding keeps the active item's ring and shadow inside the
+	// scrolling box; the negative margin puts the first item on the column's
+	// edge.
 	&__list {
-		position: sticky;
-		inset-block-start: 32px;
 		display: flex;
-		flex-direction: column;
-		gap: 2px;
-		margin: 0;
-		padding: 16px 12px;
+		align-items: center;
+		gap: 4px;
+		margin: 0 -2px;
+		padding: 2px;
 		list-style: none;
+		overflow-x: auto;
 
 		> li {
+			flex: none;
 			margin: 0;
-		}
-
-		// The divider is an <li> too; this outranks the rule above so it keeps
-		// its inset and never touches the raised active item.
-		> .saddle-sections__rule {
-			margin: 8px 10px;
 		}
 	}
 
-	// Each section: a 16px icon and its 13px label, 32px tall, 6px corners.
-	// The text colour throughout, never the brand.
 	&__item {
 		--pp-accent-text: var( --s-fg );
 		--pp-accent-hover: var( --s-fg );
@@ -547,6 +538,7 @@ body.saddle-admin-page {
 		font-size: var( --s-text );
 		line-height: 1.4;
 		text-decoration: none;
+		white-space: nowrap;
 		transition: background var( --s-dur ) var( --s-ease );
 
 		.saddle-nav-icon {
@@ -559,8 +551,6 @@ body.saddle-admin-page {
 			background: var( --s-nav-hover );
 		}
 
-		// The current section lifts off the page as a small white card. The
-		// edge is an inset ring, so the item keeps its size.
 		&.is-active {
 			background: var( --s-bg );
 			box-shadow:
@@ -568,35 +558,6 @@ body.saddle-admin-page {
 				0 1px 2px rgba( 0, 0, 0, 0.06 );
 			font-weight: 600;
 		}
-	}
-
-	// Settings comes last, after a hairline.
-	&__rule {
-		height: 1px;
-		margin: 8px 10px;
-		background: var( --s-border );
-	}
-}
-
-.saddle-module__body {
-	display: flex;
-	flex: 1 1 auto;
-	flex-direction: column;
-	min-width: 0;
-}
-
-// A section's pages: a white band at the top of the content column, the
-// same hairline as the header, its tabs lined up with the content below.
-.saddle-subtabs {
-	@include saddle-minimal-tabs;
-	padding-inline: var( --pp-space-5 );
-	background: var( --s-bg );
-	border-block-end: 1px solid var( --s-border );
-	overflow-x: auto;
-
-	.pp-tabs {
-		max-width: 880px;
-		margin-inline: auto;
 	}
 }
 
@@ -616,7 +577,7 @@ body.saddle-admin-page {
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 8px 20px;
-	padding: 16px 24px;
+	padding: 16px $saddle-col-inline;
 	border-block-start: 1px solid var( --s-border );
 	color: var( --s-fg-subtle );
 	font-size: var( --s-text );
@@ -721,7 +682,7 @@ body.saddle-admin-page {
 	align-items: center;
 	justify-content: space-between;
 	gap: 12px;
-	padding: 10px 24px;
+	padding: 10px $saddle-col-inline;
 	background: var( --s-active-bg );
 	border-block-end: 1px solid var( --s-paused-edge );
 	color: var( --s-active-text );
@@ -737,47 +698,6 @@ body.saddle-admin-page {
 		padding-inline: 16px;
 	}
 
-	// The sidebar becomes one row that scrolls sideways above the content,
-	// held under the admin bar (46px tall here).
-	.saddle-module {
-		flex-direction: column;
-	}
-
-	.saddle-sections {
-		position: sticky;
-		inset-block-start: 46px;
-		z-index: 2;
-		flex: none;
-		width: auto;
-		border-inline-end: 0;
-		border-block-end: 1px solid var( --s-border );
-
-		&__list {
-			position: static;
-			flex-direction: row;
-			align-items: center;
-			gap: 4px;
-			padding: 8px 16px;
-			overflow-x: auto;
-		}
-
-		&__item {
-			white-space: nowrap;
-		}
-
-		&__rule,
-		&__list > .saddle-sections__rule {
-			flex: none;
-			width: 1px;
-			height: 20px;
-			margin: 0 6px;
-		}
-	}
-
-	.saddle-subtabs {
-		padding-inline: 16px;
-	}
-
 	.saddle-header__row {
 		flex-wrap: wrap;
 	}
@@ -786,16 +706,9 @@ body.saddle-admin-page {
 		padding: var(--pp-space-4) var(--pp-space-4) var(--pp-space-6);
 	}
 
+	.saddle-paused,
 	.saddle-footer {
 		padding-inline: 16px;
-	}
-}
-
-// Below 600px WordPress lets the admin bar scroll away, so the row sticks to
-// the top.
-@media (max-width: 600px) {
-	.saddle-sections {
-		inset-block-start: 0;
 	}
 }
 
