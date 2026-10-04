@@ -63,8 +63,8 @@ body.saddle-admin-page,
 .pp-coachmark,
 .pp-applybar,
 .pp-bulkbar {
-	--pp-action: #1e1e1e;
-	--pp-action-hover: #000000;
+	--pp-action: var( --s-overlay );
+	--pp-action-hover: var( --s-overlay-hover );
 }
 
 // A button that is a link (`<a class="pp-btn">`, e.g. "Add to Claude") gets
@@ -106,14 +106,14 @@ body.saddle-admin-page {
 		font-weight: 600;
 	}
 
-	// Field edges and the off switch need 3:1 against white; WordPress 7's
-	// #949494 is 3.03.
+	// Field edges and the off switch need 3:1 against white; wp-admin's
+	// #8c8f94 is 3.24.
 	.pp-control {
-		--pp-border: #949494;
+		--pp-border: var( --s-field-edge );
 	}
 
 	.pp-switch {
-		--pp-border-strong: #949494;
+		--pp-border-strong: var( --s-field-edge );
 	}
 
 	// A row's icon or status dot sits on the block itself, like the logos on
@@ -274,8 +274,8 @@ body.saddle-admin-page {
 		div.error {
 			position: relative;
 			margin: 0 0 8px;
-			background: #fff;
-			color: #1e1e1e;
+			background: var( --s-bg );
+			color: var( --s-fg );
 		}
 
 		> *:last-child {
@@ -319,7 +319,7 @@ body.saddle-admin-page {
 		bottom: 0;
 		height: 1.5px;
 		border-radius: 0;
-		background: #6e6e6e;
+		background: var( --s-tab-indicator );
 	}
 }
 
@@ -464,7 +464,8 @@ body.saddle-admin-page {
 .saddle-sections {
 	flex: 0 0 200px;
 	width: 200px;
-	border-inline-end: 1px solid var( --s-border );
+	// Part of the page, with no edge of its own: the active item is what
+	// stands out (palette v3, "raised").
 	background: var( --s-canvas );
 
 	&__list {
@@ -506,11 +507,16 @@ body.saddle-admin-page {
 		}
 
 		&:hover {
-			background: var( --s-surface-2 );
+			background: var( --s-nav-hover );
 		}
 
+		// The current section lifts off the page as a small white card. The
+		// edge is an inset ring, so the item keeps its size.
 		&.is-active {
-			background: var( --pp-n-300 );
+			background: var( --s-bg );
+			box-shadow:
+				inset 0 0 0 1px var( --s-border ),
+				0 1px 2px rgba( 0, 0, 0, 0.06 );
 			font-weight: 600;
 		}
 	}
@@ -612,7 +618,7 @@ body.saddle-admin-page {
 	transition: border-color var( --s-dur ) var( --s-ease );
 
 	&:hover {
-		border-color: #949494;
+		border-color: var( --s-field-edge );
 	}
 
 	svg {
@@ -628,7 +634,7 @@ body.saddle-admin-page {
 	}
 
 	&.is-paused &__dot {
-		background: #b26200;
+		background: var( --s-paused-mark );
 		box-shadow: 0 0 0 3px var( --s-active-bg );
 	}
 }
@@ -668,7 +674,7 @@ body.saddle-admin-page {
 	gap: 12px;
 	padding: 10px 24px;
 	background: var( --s-active-bg );
-	border-block-end: 1px solid #f5e1c0;
+	border-block-end: 1px solid var( --s-paused-edge );
 	color: var( --s-active-text );
 	font-size: var( --s-text );
 
@@ -1190,7 +1196,7 @@ body.saddle-admin-page {
 			width: 6px;
 			height: 6px;
 			border-radius: 50%;
-			background: #b8b8b8;
+			background: var( --s-typing );
 			animation: saddle-typing 1s infinite ease-in-out;
 
 			&:nth-child( 2 ) {
@@ -1217,7 +1223,10 @@ body.saddle-admin-page {
 		max-width: 80%;
 		padding: 8px 14px;
 		border-radius: 18px 18px 4px 18px;
-		background: #f0f0f0;
+		// White with an edge: the page is wp-admin's grey, so a grey bubble
+		// would vanish into it (palette v3).
+		border: 1px solid var( --s-border );
+		background: var( --s-bg );
 		font-size: var( --s-text-title );
 	}
 
@@ -1273,7 +1282,7 @@ body.saddle-admin-page {
 		transition: border-color var( --s-dur ) var( --s-ease );
 
 		&:hover {
-			border-color: #949494;
+			border-color: var( --s-field-edge );
 		}
 
 		&--more {
@@ -1308,7 +1317,7 @@ body.saddle-admin-page {
 		transition: border-color var( --s-dur ) var( --s-ease );
 
 		&:hover:not( :disabled ) {
-			border-color: #949494;
+			border-color: var( --s-field-edge );
 		}
 
 		&:disabled {
@@ -1862,7 +1871,7 @@ body.saddle-admin-page {
 		transition: border-color var( --s-dur ) var( --s-ease );
 
 		&:hover {
-			border-color: #949494;
+			border-color: var( --s-field-edge );
 		}
 
 		img {
