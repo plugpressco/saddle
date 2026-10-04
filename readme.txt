@@ -91,7 +91,7 @@ The SEO and WooCommerce tools work when that plugin is active.
 These tools stay off until you give an app Manage the site.
 
 * Settings: Change the site title, permalinks and reading options.
-* Plugins and themes: Activate and deactivate plugins after a preview, and switch the active theme.
+* Plugins and themes: Activate and deactivate plugins and switch the active theme, each after a preview.
 * Updates: See which plugin, theme and WordPress updates are waiting, apply plugin and theme updates through WordPress's own updater, and turn automatic updates on or off per plugin. WordPress keeps a backup and restores a plugin that breaks the site.
 * Site Health: Read the results of WordPress's own Site Health checks.
 * Cache: Clear the site cache.
@@ -99,13 +99,13 @@ These tools stay off until you give an app Manage the site.
 = Safety =
 
 * Access for each app: Choose Read only, Edit content or Manage the site for each connected app. New apps start at Read only.
-* Confirmation: Review a preview before anything is deleted or overwritten, or before a plugin is turned on or off.
+* Confirmation: Review a preview before anything is deleted or overwritten, a plugin is turned on or off, or the theme changes.
 * Drafts only: Save new posts as drafts until you publish them.
 * Rehearsal: Let an app try anything its level allows while nothing is saved. Each change it would have made shows in the activity log as rehearsed.
 * Tool switches: Turn off any single tool.
 * Pause: Block all AI requests with one switch.
 * Activity log: See every change and every blocked request.
-* Undo: Ask your AI to undo a logged change. It restores a page's earlier version, untrashes what was trashed, and puts settings back. A change that someone edited again since is left alone. Permanent deletes and plugin updates cannot be undone.
+* Undo: Ask your AI to undo a logged change, or click Undo on it in Home's Activity feed. It restores a page's earlier version, untrashes what was trashed, and puts settings back. A change that someone edited again since is left alone. Permanent deletes and plugin updates cannot be undone.
 * Protected settings: The site URL, security keys, user roles and admin email cannot be changed.
 
 Saddle never runs code from the AI and has no shell access. Your AI app cannot write or edit files on your server. WordPress itself still saves uploads, applies updates and saves permalink rules the way it always does. The one file Saddle changes is .htaccess, and only when you click Fix it for me in the connection check. That adds one marked block so your server passes sign-in headers to WordPress. Uninstalling Saddle removes it.
@@ -210,7 +210,8 @@ The WordPress.org version never checks for its own updates. The version from plu
 
 = 1.5.0 =
 * New: Each connected app has its own access. On AI apps, choose Read only, Edit content (posts, pages, media, menus and SEO) or Manage the site (also plugins, themes, updates and settings) for each app. A new app starts at Read only. Updating Saddle keeps what each existing app could already do and never widens it.
-* New: Needs your OK. When an app asks to make a big change, such as publishing or deleting, you can approve or reject it on Home as well as in the chat. The request shows what would change. Only the app that asked can confirm it.
+* New: Needs your OK. When an app asks to make a big change, such as publishing or deleting, you can approve or reject it on Home as well as in the chat. The request shows what would change. Only the app that asked can confirm it, and a request leaves the list once its app no longer has the access it needs.
+* New: Undo from Home. An Undo link on a change in the Activity feed shows what comes back, then asks you to confirm. A change edited since, a permanent delete or a plugin update says why it can't be undone.
 * New: Undo. Your AI app can reverse changes from the activity log: a page's earlier content and settings, trashed posts, created posts and tags, settings, the theme and plugin activation. It previews what comes back and waits for your approval. A change that was edited again since is skipped with the reason, and the undo can itself be undone.
 * New: Practice mode. Turn it on in Saddle > Settings and every tool that would change your site answers with what it would have done, and saves nothing. Reading works as usual, and each attempt shows in Activity as rehearsed. It is off by default.
 * New: Custom content types. Your AI app can list, read, create, edit and trash items of the custom post types your plugins and theme add, such as products, events or docs, and assign their own categories. Each type keeps its own permissions. Saddle manages the types that appear in wp-admin.
@@ -230,18 +231,31 @@ The WordPress.org version never checks for its own updates. The version from plu
 * Changed: Saddle is one menu in wp-admin with five pages: Home, AI apps, Services, Context and Settings. Each page and each tab has an icon. Every page has a header that reads "Saddle / Page" and a switch that pauses all apps at once.
 * Changed: Home shows anything waiting for your OK, what changed this week, recent activity, your connected apps and any modules. Until an app is connected, it shows one step: connect an app.
 * Changed: First run is a short conversation. It reads your site, helps you connect your AI app, and has you paste a read-only prompt to watch it work. It asks what the app may do only after the app connects, and skipping keeps it at Read only. If the app has not connected after two minutes, Saddle checks HTTPS, permalinks and the sign-in header, and offers a key instead. Settings > Run setup again opens it at any time.
-* Changed: AI apps lists your connected apps by the name each app reports, with its access and a menu to rotate its key or disconnect it. Connect an app opens a panel with the apps grouped as chat apps, agents and code editors.
+* Changed: AI apps lists your connected apps by the name each app reports, with its access and a menu to rotate its key or disconnect it. Connect an app opens a panel with the apps grouped as chat apps, agents and code editors. Making a key happens in the same panel, with the same short steps as the address, and a key you never copy is removed when you leave.
+* Changed: On a site that runs on your own computer, the Connect panel and the welcome point you to the apps that can reach it (Claude Code, Cursor and Codex), and Claude users to its desktop app.
 * Changed: Activity names the app that made each change, such as "via Claude Code", and keeps the name after you disconnect the app. Each action is in plain words, such as "Blocked · Update option · needs Manage the site".
 * Changed: The Services page replaces Integrations. It lists Unsplash, the SEO and shop plugins Saddle edits, and the plugins that add tools to Saddle. Each says what it sends off your site and which tools it gives your AI apps. Plugins from other developers still stay off until you switch them on.
 * Changed: Unsplash tools stay out of your AI app's tool list until you add a key under Services. Searching Unsplash needs Edit content access, because it uses your Unsplash quota. On WordPress 7.0 and later, the same key also appears under Settings > Connectors.
 * Changed: Settings is one page: Safety (publishing needs your OK, practice mode, stop writes if the site moves) and Advanced (turn off single tools, sign-in for apps, memory limits, recent changes and the connection check).
 * Changed: The Saddle screens look like WordPress's own pages, with its greys and form controls, links in your admin color scheme and one small set of text sizes. Saddle's own color, a deep teal, appears only on its logo, buttons and switches. Saddle shows at most one notice at the top of its pages and keeps the rest behind the bell.
-* Changed: Activating or deactivating a plugin shows a preview first, and nothing changes until your AI app confirms it. The request also waits for you under Needs your OK.
+* Changed: Activating or deactivating a plugin, or switching the theme, shows a preview first, and nothing changes until your AI app confirms it. The request also waits for you under Needs your OK.
+* Changed: Your AI app is no longer offered the tools for Divi 5, Yoast SEO, Rank Math, All in One SEO or WooCommerce when that plugin is not active. At Read only its tool list is about a third smaller, and the app is told which plugins are missing.
+* Changed: The activity log says what a confirmed change did, such as "Moved post #5 to the trash.", instead of repeating what the app asked. Your own approvals read "You approved Claude Code's request: …".
+* Improved: When an app tries a tool it may not use, it is told why: its access level, a tool you turned off, or Saddle being paused. It no longer gets a bare "Permission denied".
+* Improved: Skills. Uploading a skill with a name you already have asks before it replaces it, and you can edit your own skills in place on the Context page.
+* Improved: Settings switches save as soon as you flip them and say "Saved." "Turn off single tools" lists only the tools that can run on your site.
+* Improved: Saddle's pages show their layout while they load, instead of a blank page or a spinner.
+* Improved: Previews and the activity log name custom content types by their label, such as "Event". Asking for an item by the ID of another content type says which type it is.
 * Changed: Listing WooCommerce orders needs Edit content, because orders show customer names and emails. Products can still be read at Read only.
 * Changed: Saddle Analytics, Saddle Rank and Saddle CRM, PlugPress's own plugins, are trusted like Waggle: their tools work as soon as they are active, with no switch to turn on. Saddle Rank is Waggle's new name, and any Waggle tool you switched off stays off after the rename.
 * New: For plugin developers: the saddle_modules filter adds a page under the Saddle menu with its own icon, a sidebar of sections, icon tabs and an address for each page. Describe a module's settings once, and Saddle draws the form, serves it over the REST API and offers it to agents. A full-screen page outside the Saddle frame can load Saddle's colors.
 * Removed: The unused dark and light theme setting. The Saddle screens have one light theme.
 * Fixed: Deactivating or deleting Saddle now deletes the app keys it made. Before, a key still worked on the rest of the WordPress REST API while Saddle was off, without Saddle's limits. Apps that connected with a key need to connect again after you turn Saddle back on.
+* Fixed: An app whose key was revoked or deleted got WordPress's "invalid application password" message. It now gets Saddle's: the key was rejected, so reconnect the app.
+* Fixed: Trashing a post that is already in the trash says so instead of failing with an error.
+* Fixed: Moving a block to where it already is says nothing moved, and a position past the end says where the block went.
+* Fixed: The WooCommerce product tool also accepts the product's ID as "id", the name the post and page tools use.
+* Fixed: The button block's guide told AI apps never to set the link the way its own example did. It now says to give the link as the button's url.
 * Fixed: An AI app that passed an argument to a tool that takes none, such as listing Divi modules with a search word, caused a critical error on the site. It now gets a normal answer.
 * Fixed: On Divi 5 sites, styling body text on a text module and similar modules now works. Saddle gave your AI app a path Divi does not read, so the color and size saved but never showed.
 * Fixed: On a Divi shop, your AI app can use Divi's WooCommerce modules, such as the products grid. They were missing from the module list.
