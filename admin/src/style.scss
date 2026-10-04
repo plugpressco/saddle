@@ -2510,23 +2510,17 @@ body.saddle-admin-page {
 		display: none;
 	}
 
-	&__signin,
-	&__check,
-	.saddle-settings-form {
+	&__check {
 		padding-inline: var(--pp-space-4);
 	}
 
-	// The rows inside a disclosure sit in the block, not in boxes of their own.
+	// The rows inside a disclosure sit in the block, not in boxes of their
+	// own, and line up with the disclosure's label: Sign-in for apps (P15),
+	// Memory limits and Recent changes alike.
 	.pp-rowlist {
 		border: 0;
 		border-radius: 0;
 		background: transparent;
-	}
-
-	&__signin .pp-rowlist,
-	.saddle-settings-form .pp-rowlist {
-		border: 1px solid var(--s-border);
-		border-radius: var(--s-radius-lg);
 	}
 }
 
