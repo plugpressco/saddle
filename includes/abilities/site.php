@@ -392,6 +392,19 @@ class Saddle_Site_Abilities {
 					__( 'Activate the plugin %s. It starts running on this site right away.', 'saddle' ),
 					self::plugin_label( $preview )
 				),
+				'done'    => static function ( $result ) use ( $preview ) {
+					return empty( $result['activated'] )
+						? sprintf(
+							/* translators: %s: plugin name and version. */
+							__( 'The plugin %s was already active. Nothing changed.', 'saddle' ),
+							self::plugin_label( $preview )
+						)
+						: sprintf(
+							/* translators: %s: plugin name and version. */
+							__( 'Activated the plugin %s.', 'saddle' ),
+							self::plugin_label( $preview )
+						);
+				},
 				'preview' => $preview,
 				'input'   => is_array( $input ) ? $input : array(),
 				'execute' => static function () use ( $file, $already ) {
@@ -476,6 +489,26 @@ class Saddle_Site_Abilities {
 				'target'  => $file,
 				'bind'    => substr( hash( 'sha256', (string) wp_json_encode( $preview ) ), 0, 16 ),
 				'summary' => $summary,
+				'done'    => static function ( $result ) use ( $preview ) {
+					if ( empty( $result['deactivated'] ) ) {
+						return sprintf(
+							/* translators: %s: plugin name and version. */
+							__( 'The plugin %s was already inactive. Nothing changed.', 'saddle' ),
+							self::plugin_label( $preview )
+						);
+					}
+					return ! empty( $preview['network_active'] )
+						? sprintf(
+							/* translators: %s: plugin name and version. */
+							__( 'Deactivated the plugin %s on every site in the network.', 'saddle' ),
+							self::plugin_label( $preview )
+						)
+						: sprintf(
+							/* translators: %s: plugin name and version. */
+							__( 'Deactivated the plugin %s.', 'saddle' ),
+							self::plugin_label( $preview )
+						);
+				},
 				'preview' => $preview,
 				'input'   => is_array( $input ) ? $input : array(),
 				'execute' => static function () use ( $file, $already ) {
@@ -751,6 +784,23 @@ class Saddle_Site_Abilities {
 					self::scalarize( $current ),
 					self::scalarize( $value )
 				),
+				'done'    => static function ( $result ) use ( $name, $page, $current, $value ) {
+					return empty( $result['updated'] )
+						? sprintf(
+							/* translators: 1: option name, 2: the value it already held. */
+							__( '"%1$s" already held "%2$s". Nothing changed.', 'saddle' ),
+							$name,
+							self::scalarize( $value )
+						)
+						: sprintf(
+							/* translators: 1: option name, 2: settings page, 3: old value, 4: new value. */
+							__( 'Changed "%1$s" (Settings → %2$s) from "%3$s" to "%4$s".', 'saddle' ),
+							$name,
+							ucfirst( $page ),
+							self::scalarize( $current ),
+							self::scalarize( $value )
+						);
+				},
 				'preview' => array(
 					'name'          => $name,
 					'page'          => $page,

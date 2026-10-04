@@ -1147,11 +1147,58 @@ class Saddle_Abilities {
 					'new_status'     => $status,
 					'changes'        => $changes,
 				),
+				'done'    => static function () use ( $type, $id ) {
+					return self::published_line( $type, $id );
+				},
 				'input'   => $input,
 				'execute' => function () use ( $type, $id, $input ) {
 					return self::execute_update( $type, $id, $input, false );
 				},
 			)
+		);
+	}
+
+	/**
+	 * What a confirmed publish did, for the activity log: published, scheduled,
+	 * or (when the request set another status) updated.
+	 *
+	 * @param string $type Post type.
+	 * @param int    $id   Post id.
+	 * @return string
+	 */
+	private static function published_line( $type, $id ) {
+		$post = get_post( $id );
+		if ( ! $post ) {
+			return '';
+		}
+
+		if ( 'future' === $post->post_status ) {
+			return sprintf(
+				/* translators: 1: content type, 2: id, 3: title, 4: date and time it goes live. */
+				__( 'Scheduled %1$s #%2$d "%3$s" to publish on %4$s.', 'saddle' ),
+				$type,
+				$id,
+				$post->post_title,
+				mysql2date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $post->post_date )
+			);
+		}
+
+		if ( 'publish' === $post->post_status ) {
+			return sprintf(
+				/* translators: 1: content type, 2: id, 3: title. */
+				__( 'Published %1$s #%2$d "%3$s".', 'saddle' ),
+				$type,
+				$id,
+				$post->post_title
+			);
+		}
+
+		return sprintf(
+			/* translators: 1: post type, 2: id, 3: title. */
+			__( 'Updated %1$s #%2$d "%3$s"', 'saddle' ),
+			$type,
+			$id,
+			$post->post_title
 		);
 	}
 
@@ -1863,6 +1910,12 @@ class Saddle_Abilities {
 					$id,
 					$post->post_title
 				),
+				'done'    => sprintf(
+					/* translators: 1: attachment id, 2: title. */
+					__( 'Permanently deleted media #%1$d "%2$s" and its files.', 'saddle' ),
+					$id,
+					$post->post_title
+				),
 				'preview' => array(
 					'id'                      => $id,
 					'title'                   => $post->post_title,
@@ -2463,6 +2516,22 @@ class Saddle_Abilities {
 				$post->post_title
 			);
 
+		$done = $permanent
+			? sprintf(
+				/* translators: 1: type, 2: id, 3: title. */
+				__( 'Permanently deleted %1$s #%2$d "%3$s".', 'saddle' ),
+				$type,
+				$id,
+				$post->post_title
+			)
+			: sprintf(
+				/* translators: 1: type, 2: id, 3: title. */
+				__( 'Moved %1$s #%2$d "%3$s" to the trash.', 'saddle' ),
+				$type,
+				$id,
+				$post->post_title
+			);
+
 		return Saddle_Approval::gate(
 			array(
 				'action'  => $action,
@@ -2471,6 +2540,7 @@ class Saddle_Abilities {
 				// not be confirmable into a permanent, unrecoverable delete.
 				'bind'    => $permanent ? 'permanent' : 'trash',
 				'summary' => $summary,
+				'done'    => $done,
 				'preview' => array(
 					'id'                      => $id,
 					'type'                    => $type,

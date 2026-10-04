@@ -629,6 +629,9 @@ class Saddle_Blocks_Abilities {
 				'summary' => 'global-styles' === $store
 					? __( 'Seed a starter design system into this site\'s global styles: 6 brand colors (one accent), a 6-step type scale, and a 7-step 8px spacing scale. Existing tokens are not removed, and it will appear in Appearance → Editor → Styles.', 'saddle' )
 					: __( 'Seed a starter design system: 6 brand colors (one accent), a 6-step type scale, and a 7-step 8px spacing scale. Existing tokens are not removed.', 'saddle' ),
+				'done'    => 'global-styles' === $store
+					? __( 'Added a starter design system to this site\'s global styles: 6 brand colors, a type scale and a spacing scale. Existing tokens were kept.', 'saddle' )
+					: __( 'Added a starter design system: 6 brand colors, a type scale and a spacing scale. Existing tokens were kept.', 'saddle' ),
 				'preview' => array(
 					'store' => $store,
 					'spec'  => $spec,
@@ -1205,6 +1208,19 @@ class Saddle_Blocks_Abilities {
 					_n(
 						'Remove %1$s and the %2$d block inside it at %3$s on post #%4$d. Recoverable from revisions.',
 						'Remove %1$s and the %2$d blocks inside it at %3$s on post #%4$d. Recoverable from revisions.',
+						$child_count,
+						'saddle'
+					),
+					(string) $node['blockName'],
+					$child_count,
+					$address,
+					$post->ID
+				),
+				'done'    => sprintf(
+					/* translators: 1: block type, 2: number of blocks inside it, 3: address, 4: post ID. */
+					_n(
+						'Removed %1$s and the %2$d block inside it at %3$s from post #%4$d.',
+						'Removed %1$s and the %2$d blocks inside it at %3$s from post #%4$d.',
 						$child_count,
 						'saddle'
 					),

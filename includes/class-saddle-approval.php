@@ -92,6 +92,17 @@ class Saddle_Approval {
 	 *                             stays clean.
 	 *     @type string   $summary One-line plain-language description of the
 	 *                             effect, shown in the preview.
+	 *     @type string|callable $done Optional. What the confirmed call did,
+	 *                             in the past tense ("Moved post #5 to the
+	 *                             trash."). The activity log records it
+	 *                             instead of the summary once the change has
+	 *                             run. A callable receives the executor's
+	 *                             result and returns the line, for a result
+	 *                             that can differ from the preview (the item
+	 *                             was already in that state). Without it, or
+	 *                             when it returns '', the log keeps the
+	 *                             summary, so callers that predate it work
+	 *                             unchanged.
 	 *     @type array    $preview Structured detail of what will change.
 	 *     @type array    $input   The ability's input (read for `confirm_token`).
 	 *     @type callable $execute Zero-arg callable that performs the mutation
@@ -136,6 +147,9 @@ class Saddle_Approval {
 						rtrim( $summary, '. ' ),
 						$result->get_error_message()
 					);
+				} else {
+					$done    = self::done_line( isset( $args['done'] ) ? $args['done'] : null, $result );
+					$summary = '' !== $done ? $done : $summary;
 				}
 				Saddle_Log::record(
 					array(
@@ -254,6 +268,22 @@ class Saddle_Approval {
 	 */
 	private static function hash_token( $token ) {
 		return hash( 'sha256', (string) $token );
+	}
+
+	/**
+	 * The past-tense log line for a confirmed call, from the gate's `done`.
+	 *
+	 * @param string|callable|null $done   A line, or a callable that builds one
+	 *                                     from the executor's result.
+	 * @param mixed                $result What the executor returned.
+	 * @return string '' when there is no line, so the caller keeps the summary.
+	 */
+	private static function done_line( $done, $result ) {
+		if ( is_callable( $done ) && ! is_string( $done ) ) {
+			$done = call_user_func( $done, $result );
+		}
+
+		return is_string( $done ) ? trim( $done ) : '';
 	}
 
 	/**
