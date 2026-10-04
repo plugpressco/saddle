@@ -30,8 +30,9 @@ import { createPulse } from '../pulse';
 import {
 	connectPulseOptions,
 	connectStatus,
+	isBrowserPreview,
+	openingStep,
 	resumeConnect,
-	resumeStep,
 	stepAfter,
 	timeoutTip,
 	tryPrompt,
@@ -156,10 +157,15 @@ function lookLines( look ) {
 	return lines;
 }
 
-// How long the try-it step waits for a tool call before it offers a tip.
-const TRY_PATIENCE = 120000;
+// How long a waiting step waits before it offers help: the connect step its
+// checks, the try-it step a tip.
+const PATIENCE = 120000;
 // Once the first call lands, keep listening this long so the next ones show.
 const TRY_SETTLE = 6000;
+
+// WordPress.org's Live Preview runs the whole site in the visitor's browser,
+// where no AI app can reach it.
+const IN_PREVIEW = isBrowserPreview( window.location.hostname );
 
 const appMeta = ( key ) => APPS.find( ( a ) => a.key === key );
 
@@ -298,6 +304,9 @@ function TryIt( { app, look, onDone } ) {
 	const label = appMeta( app ).label;
 	const pulse = useRef( null );
 	const [ slow, setSlow ] = useState( false );
+	// A call has landed: the tip is no longer true, even while the line
+	// keeps listening for the next calls.
+	const [ arrived, setArrived ] = useState( false );
 
 	if ( ! pulse.current ) {
 		pulse.current = createPulse();
@@ -315,11 +324,17 @@ function TryIt( { app, look, onDone } ) {
 			<Snippet value={ tryPrompt( look ) } />
 			<WaitingLine
 				check={ () =>
-					pulse.current
-						.poll()
-						.then( ( { rows } ) =>
-							tryStatus( { rows, app, appLabel: label } )
-						)
+					pulse.current.poll().then( ( { rows } ) => {
+						const status = tryStatus( {
+							rows,
+							app,
+							appLabel: label,
+						} );
+						if ( 'done' === status.phase ) {
+							setArrived( true );
+						}
+						return status;
+					} )
 				}
 				initialText={ sprintf(
 					/* translators: %s: the app name. */
@@ -327,11 +342,11 @@ function TryIt( { app, look, onDone } ) {
 					label
 				) }
 				settleMs={ TRY_SETTLE }
-				timeoutMs={ TRY_PATIENCE }
+				timeoutMs={ PATIENCE }
 				onTimeout={ () => setSlow( true ) }
 				onDone={ ( status ) => onDone( status || null ) }
 			/>
-			{ slow && (
+			{ slow && ! arrived && (
 				<CalloutCard
 					tone="warning"
 					title={ __( 'Nothing has arrived yet', 'saddle' ) }
@@ -569,10 +584,14 @@ export default function FirstRun( {
 	const [ shown, setShown ] = useState( 0 );
 
 	// Where a reload resumes. The site read is always shown again, all at once.
+	// "Run setup again" starts at the top (openingStep).
 	const storedApp = appMeta( firstRun.app ) ? firstRun.app : '';
 	const resumed = useRef(
 		resumeConnect(
-			resumeStep( { ...firstRun, app: storedApp } ),
+			openingStep(
+				{ ...firstRun, app: storedApp },
+				window.location.search
+			),
 			storedApp,
 			clients,
 			appKeyFromLabel
@@ -674,36 +693,58 @@ export default function FirstRun( {
 	const label = app && appMeta( app ) ? appMeta( app ).label : '';
 	const role = ROLES.find( ( r ) => r.key === chosen );
 
-	const renderWaiting = ( { app: appKey, appLabel, keyId, connected } ) => {
+	const renderWaiting = ( {
+		app: appKey,
+		appLabel,
+		keyId,
+		connected,
+		onSlow,
+	} ) => {
+		// Nothing can arrive in the browser preview: no line to wait on.
+		if ( IN_PREVIEW ) {
+			return null;
+		}
 		// One pulse reader per attempt: a new key is a new baseline.
 		const id = keyId || 'address';
 		if ( ! pulseForConnect.current || pulseForConnect.current.id !== id ) {
 			pulseForConnect.current = {
 				id,
 				reader: createPulse( connectPulseOptions( keyId ) ),
+				phase: 'waiting',
 			};
 		}
-		const { reader } = pulseForConnect.current;
+		const attempt = pulseForConnect.current;
+		// The checks say nothing has reached the site. Once the app has asked
+		// to connect, that is no longer true.
+		const slow = () => {
+			if ( 'waiting' === attempt.phase && onSlow ) {
+				onSlow();
+			}
+		};
 
 		return (
 			<WaitingLine
 				key={ id }
 				check={ () =>
-					reader.poll().then( ( { rows, pending } ) =>
-						connectStatus( {
+					attempt.reader.poll().then( ( { rows, pending } ) => {
+						const status = connectStatus( {
 							rows,
 							pending,
 							app: appKey,
 							appLabel,
 							keyId,
-						} )
-					)
+						} );
+						attempt.phase = status.phase;
+						return status;
+					} )
 				}
 				initialText={ sprintf(
 					/* translators: %s: the app name. */
 					__( 'I’ll know the moment %s connects…', 'saddle' ),
 					appLabel
 				) }
+				timeoutMs={ PATIENCE }
+				onTimeout={ slow }
 				onDone={ connected }
 			/>
 		);
@@ -757,6 +798,25 @@ export default function FirstRun( {
 									label
 								) }
 							</p>
+							{ IN_PREVIEW && (
+								<CalloutCard
+									title={ __(
+										'This preview runs in your browser',
+										'saddle'
+									) }
+									description={ __(
+										'So no AI app can connect to it. To connect one, install Saddle on your own site.',
+										'saddle'
+									) }
+								>
+									<Button variant="primary" onClick={ skip }>
+										{ __(
+											'Skip and look around',
+											'saddle'
+										) }
+									</Button>
+								</CalloutCard>
+							) }
 							<ConnectWizard
 								embedded
 								presetApp={ app }

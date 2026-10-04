@@ -5,6 +5,8 @@
 import {
 	STEPS,
 	resumeStep,
+	openingStep,
+	isBrowserPreview,
 	resumeConnect,
 	stepAfter,
 	showFirstRun,
@@ -567,6 +569,65 @@ describe( 'the connect step pulse', () => {
 		expect( connectPulseOptions( null ) ).toEqual( {
 			ignoreExisting: true,
 		} );
+	} );
+} );
+
+describe( 'where the welcome opens (P18)', () => {
+	it( 'starts "Run setup again" at the top, not at the step a skipped run stopped at', () => {
+		// The symptom: &setup=1 on a run skipped at ChatGPT's connect step
+		// reopened that connect step instead of asking which AI.
+		expect(
+			openingStep(
+				{ state: 'skipped', step: 'connect', app: 'chatgpt' },
+				'?page=saddle&setup=1'
+			)
+		).toBe( 'read' );
+		expect(
+			openingStep(
+				{ state: 'done', step: '', app: 'claude' },
+				'?page=saddle&setup=1'
+			)
+		).toBe( 'read' );
+	} );
+
+	it( 'opens a finished run at the step the address names', () => {
+		expect(
+			openingStep(
+				{ state: 'done', step: 'try', app: 'claude' },
+				'?page=saddle&setup=1&step=try&app=claude'
+			)
+		).toBe( 'try' );
+	} );
+
+	it( 'resumes an unfinished run where it stopped', () => {
+		const run = { state: 'active', step: 'connect', app: 'claude' };
+		expect( openingStep( run, '?page=saddle' ) ).toBe( 'connect' );
+		expect( openingStep( run, '?page=saddle&setup=1' ) ).toBe( 'connect' );
+		expect( openingStep( { state: 'new', step: '' }, '' ) ).toBe( 'read' );
+		expect( openingStep( undefined, undefined ) ).toBe( 'read' );
+	} );
+} );
+
+describe( 'the browser preview', () => {
+	it( 'knows WordPress Playground’s Live Preview', () => {
+		expect( isBrowserPreview( 'playground.wordpress.net' ) ).toBe( true );
+		expect( isBrowserPreview( 'Playground.WordPress.net' ) ).toBe( true );
+	} );
+
+	it( 'is false for every other host', () => {
+		[
+			'example.com',
+			'wordpress.net',
+			'playground.wordpress.net.example.com',
+			'my-playground.wordpress.net',
+			'localhost',
+			'127.0.0.1',
+			'',
+			undefined,
+			null,
+		].forEach( ( host ) =>
+			expect( isBrowserPreview( host ) ).toBe( false )
+		);
 	} );
 } );
 

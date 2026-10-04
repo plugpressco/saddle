@@ -171,6 +171,110 @@ describe( 'buildConfig', () => {
 	} );
 } );
 
+describe( 'connectPath: which path the connect wizard takes', () => {
+	const off = { enabled: false, ready: true, permalinks: true };
+	const on = { enabled: true, ready: true, permalinks: true };
+	const noHttps = { enabled: false, ready: false, permalinks: true };
+	const plain = { enabled: false, ready: false, permalinks: false };
+	const meta = ( APPS, key ) => APPS.find( ( a ) => a.key === key );
+	const both = ( APPS ) => APPS.filter( ( a ) => a.viaKey && a.viaAddress );
+
+	it( 'gives an address-only app the address whatever the switch says', () => {
+		const { APPS, connectPath } = load( site );
+		[ null, off, on, noHttps, plain ].forEach( ( signIn ) => {
+			[ 'chatgpt', 'grok' ].forEach( ( key ) =>
+				expect(
+					connectPath( meta( APPS, key ), {
+						signIn,
+						offer: true,
+						prefer: false,
+					} )
+				).toBe( 'address' )
+			);
+		} );
+	} );
+
+	it( 'leads with the address once sign-in is on, and honours "Use a key instead"', () => {
+		const { APPS, connectPath } = load( site );
+		both( APPS ).forEach( ( app ) => {
+			expect( connectPath( app, { signIn: on } ) ).toBe( 'address' );
+			expect( connectPath( app, { signIn: on, prefer: false } ) ).toBe(
+				'key'
+			);
+		} );
+	} );
+
+	it( 'keeps AI apps’ key wizard on the key while sign-in is off', () => {
+		const { APPS, connectPath } = load( site );
+		both( APPS ).forEach( ( app ) =>
+			expect( connectPath( app, { signIn: off } ) ).toBe( 'key' )
+		);
+	} );
+
+	it( 'leads the welcome with the switch while sign-in can be turned on (S1)', () => {
+		// The symptom: picking Claude in the welcome with sign-in off made a
+		// key and showed the old desktop setup (mcp-remote, needs Node).
+		const { APPS, connectPath, buildConfig } = load( site );
+		both( APPS ).forEach( ( app ) => {
+			expect( connectPath( app, { signIn: off, offer: true } ) ).toBe(
+				'address'
+			);
+			expect(
+				connectPath( app, { signIn: off, offer: true, prefer: false } )
+			).toBe( 'key' );
+		} );
+		const claude = connectPath( meta( APPS, 'claude' ), {
+			signIn: off,
+			offer: true,
+		} );
+		expect( buildConfig( 'claude', null, claude ) ).not.toContain(
+			'mcp-remote'
+		);
+	} );
+
+	it( 'keeps the key as the only path where sign-in can’t work', () => {
+		const { APPS, connectPath } = load( site );
+		[ noHttps, plain, null ].forEach( ( signIn ) =>
+			both( APPS ).forEach( ( app ) => {
+				expect( connectPath( app, { signIn, offer: true } ) ).toBe(
+					'key'
+				);
+				expect(
+					connectPath( app, { signIn, offer: true, prefer: true } )
+				).toBe( 'key' );
+			} )
+		);
+	} );
+
+	it( 'keeps Claude on a key for a local site, which claude.ai can’t reach', () => {
+		const { APPS, connectPath } = load( site );
+		const args = { signIn: off, offer: true, local: true };
+
+		expect( connectPath( meta( APPS, 'claude' ), args ) ).toBe( 'key' );
+		expect( connectPath( meta( APPS, 'claude-code' ), args ) ).toBe(
+			'address'
+		);
+		expect( connectPath( meta( APPS, 'chatgpt' ), args ) ).toBe(
+			'address'
+		);
+		// Turned on by the owner, the address stays the lead as before.
+		expect(
+			connectPath( meta( APPS, 'claude' ), { ...args, signIn: on } )
+		).toBe( 'address' );
+	} );
+
+	it( 'follows the switch before an app is picked', () => {
+		const { connectPath } = load( site );
+
+		expect( connectPath( null, { signIn: on } ) ).toBe( 'address' );
+		expect( connectPath( null, { signIn: off } ) ).toBe( 'key' );
+		expect( connectPath( null, { signIn: off, offer: true } ) ).toBe(
+			'address'
+		);
+		expect( connectPath( null ) ).toBe( 'key' );
+	} );
+} );
+
 describe( 'APP_GROUPS', () => {
 	it( 'puts every app in exactly one group, and leaves "other" for the link', () => {
 		const { APPS, APP_GROUPS } = load( site );

@@ -257,6 +257,49 @@ export const APPS = [
 ];
 
 /**
+ * Apps that connect from their own servers, not from the owner's computer,
+ * so they can't reach a site that runs on this computer.
+ */
+export const WEB_APPS = [ 'claude', 'chatgpt', 'grok' ];
+
+/**
+ * Which path an app takes in the connect wizard.
+ *
+ * An app that takes only one path gets it. For the rest, the address leads
+ * once sign-in for apps is on. With `offer` (the welcome), it also leads
+ * while sign-in is off but the site can turn it on, the way ChatGPT always
+ * has: the owner sees the switch first, and a key is the fallback. The key
+ * stays the only path where sign-in can't work: no HTTPS, plain permalinks,
+ * or a local site that an app on the web can't reach.
+ *
+ * @param {Object|null}  app         An APPS entry, or null before one is picked.
+ * @param {Object}       args
+ * @param {Object|null}  args.signIn GET /oauth-settings, or null while it loads.
+ * @param {boolean}      args.offer  Lead with the switch while sign-in is off.
+ * @param {boolean}      args.local  The site runs on this computer.
+ * @param {boolean|null} args.prefer The owner's pick this session: true for the
+ *                                   address, false for a key, null for none.
+ * @return {string} 'address' or 'key'.
+ */
+export function connectPath(
+	app,
+	{ signIn = null, offer = false, local = false, prefer = null } = {}
+) {
+	if ( app && ! app.viaKey ) {
+		return 'address';
+	}
+	if ( app && ! app.viaAddress ) {
+		return 'key';
+	}
+	const on = !! ( signIn && signIn.enabled );
+	const canOffer =
+		offer &&
+		!! ( signIn && signIn.ready ) &&
+		! ( local && app && WEB_APPS.includes( app.key ) );
+	return ( on || canOffer ) && false !== prefer ? 'address' : 'key';
+}
+
+/**
  * How the picker groups the apps: by where you use the AI. Every key in
  * `APPS` except `other` appears once; `other` ("Any MCP app") sits under the
  * groups as a quiet link.

@@ -18,7 +18,10 @@
  *   can't sign in.
  *
  * Sign-in is off by default on purpose. The wizard surfaces the switch with
- * a labelled, one-click enable; it never flips it on its own.
+ * a labelled, one-click enable; it never flips it on its own. In the welcome
+ * (embedded), an app that can sign in by address opens on that path with the
+ * switch first and "Use a key instead" below it, whenever the site can turn
+ * sign-in on (`connectPath`).
  */
 import { useState, useEffect, useRef, useCallback } from '@wordpress/element';
 import {
@@ -41,6 +44,7 @@ import { AppLogo, appKeyFromLabel } from './icons';
 import {
 	APPS,
 	buildConfig,
+	connectPath,
 	installLinks,
 	MCP_URL,
 	HELLO_PROMPT,
@@ -83,8 +87,11 @@ const COMMON_APPS = [ 'claude', 'chatgpt', 'claude-code', 'cursor' ];
  * @param {Function} props.renderWaiting    First run: draws the waiting line
  *                                          and calls `connected()` when it sees
  *                                          the app. It replaces the wizard's
- *                                          own poll. Gets `{ app, appLabel,
- *                                          keyId, connected }`.
+ *                                          own poll and its clock: it calls
+ *                                          `onSlow()` once the wait has run
+ *                                          long, which shows the checks. Gets
+ *                                          `{ app, appLabel, keyId, connected,
+ *                                          onSlow }`.
  * @param {Function} props.onBack           First run: back to the tiles.
  */
 export default function ConnectWizard( {
@@ -125,26 +132,16 @@ export default function ConnectWizard( {
 	const [ oauthSettled, setOauthSettled ] = useState( false );
 
 	// Which path the user prefers this session. null = not chosen: follow the
-	// switch (address when sign-in is on, key otherwise). "Use a key instead"
-	// and "Use the address instead" set it explicitly.
+	// switch (address when sign-in is on, or in the welcome when it can be
+	// turned on; key otherwise). "Use a key instead" and "Use the address
+	// instead" set it explicitly.
 	const [ preferAddress, setPreferAddress ] = useState( null );
-	const signInOn = !! oauthState?.enabled;
-	const wantsAddress =
-		null === preferAddress ? signInOn : preferAddress && signInOn;
+	const pathArgs = { signIn: oauthState, offer: embedded, local: IS_LOCAL };
 
 	// The path a given app takes, honouring what it supports.
-	const modeFor = ( meta ) => {
-		if ( ! meta ) {
-			return wantsAddress ? 'address' : 'key';
-		}
-		if ( ! meta.viaKey ) {
-			return 'address';
-		}
-		if ( ! meta.viaAddress ) {
-			return 'key';
-		}
-		return wantsAddress ? 'address' : 'key';
-	};
+	const modeFor = ( meta, prefer = preferAddress ) =>
+		connectPath( meta || null, { ...pathArgs, prefer } );
+	const wantsAddress = 'address' === modeFor( null );
 
 	const activeApp = APPS.find( ( a ) => a.key === app );
 	const mode = modeFor( activeApp );
@@ -322,9 +319,13 @@ export default function ConnectWizard( {
 	/* ----- switching paths on step 2 ----- */
 
 	// "Use a key instead": mint a key for the same app and show the key setup.
+	// It goes by the first step, which waits while the key is made and is
+	// where an existing key for the app offers replace or add.
 	const switchToKey = () => {
 		setPreferAddress( false );
 		setEverCopied( false );
+		setPatienceUp( false );
+		setStep( 0 );
 		pickByKey( app );
 	};
 
@@ -333,7 +334,23 @@ export default function ConnectWizard( {
 		discardIfUntouched();
 		setCred( null );
 		setEverCopied( false );
+		setPatienceUp( false );
 		setPreferAddress( true );
+	};
+
+	// Cancel on "already connected". The welcome has no picker to fall back
+	// on: go back to the address the owner came from, or to its app choice.
+	const cancelDuplicate = () => {
+		setDuplicateOf( null );
+		if ( ! embedded ) {
+			return;
+		}
+		if ( app ) {
+			setPreferAddress( null );
+			setStep( 1 );
+			return;
+		}
+		backToPick();
 	};
 
 	/* ----- address path: a consent-list baseline ----- */
@@ -456,19 +473,25 @@ export default function ConnectWizard( {
 	}, [ embedded, step ] );
 
 	// Offer troubleshooting once the wait step has been up a while. Embedded,
-	// the setup step is the wait step.
+	// the setup step is the wait step. First run's waiting line keeps the time
+	// itself (`onSlow`): it starts only once there is something to wait for,
+	// so the checks never show while sign-in is still off.
 	const waiting = 2 === step || ( embedded && 1 === step );
+	const ownClock = ! ( embedded && renderWaiting );
 	useEffect( () => {
 		if ( ! waiting ) {
 			return undefined;
 		}
 		setPatienceUp( false );
+		if ( ! ownClock ) {
+			return undefined;
+		}
 		const t = window.setTimeout(
 			() => setPatienceUp( true ),
 			( embedded ? PATIENCE_EMBEDDED : PATIENCE ) * 1000
 		);
 		return () => window.clearTimeout( t );
-	}, [ step, waiting, embedded ] );
+	}, [ step, waiting, embedded, ownClock ] );
 
 	let config = '';
 	let links = [];
@@ -741,7 +764,7 @@ export default function ConnectWizard( {
 								</Button>
 								<Button
 									variant="ghost"
-									onClick={ () => setDuplicateOf( null ) }
+									onClick={ cancelDuplicate }
 									disabled={ !! creating }
 								>
 									{ __( 'Cancel', 'saddle' ) }
@@ -800,9 +823,10 @@ export default function ConnectWizard( {
 						{ howFor( activeApp, mode ) }
 					</p>
 
-					{ /* An address-only app (ChatGPT) with sign-in still off:
-					     surface the switch here with a labelled, one-click
-					     enable instead of pointing at a server that isn't there. */ }
+					{ /* The address path with sign-in still off (ChatGPT, or
+					     any app in the welcome): surface the switch here with a
+					     labelled, one-click enable instead of pointing at a
+					     server that isn't there. */ }
 					{ byAddress &&
 						oauthState &&
 						! oauthState.enabled &&
@@ -941,17 +965,25 @@ export default function ConnectWizard( {
 							</Button>
 						</p>
 					) }
-					{ ! byAddress && activeApp.viaAddress && signInOn && (
-						<p className="saddle-wizard__hint">
-							{ __(
-								'This app can also connect with the address and a sign-in screen.',
-								'saddle'
-							) }{ ' ' }
-							<Button variant="link" onClick={ switchToAddress }>
-								{ __( 'Use the address instead', 'saddle' ) }
-							</Button>
-						</p>
-					) }
+					{ ! byAddress &&
+						activeApp.viaAddress &&
+						'address' === modeFor( activeApp, true ) && (
+							<p className="saddle-wizard__hint">
+								{ __(
+									'This app can also connect with the address and a sign-in screen.',
+									'saddle'
+								) }{ ' ' }
+								<Button
+									variant="link"
+									onClick={ switchToAddress }
+								>
+									{ __(
+										'Use the address instead',
+										'saddle'
+									) }
+								</Button>
+							</p>
+						) }
 
 					<CalloutCard
 						className="saddle-wizard__cando"
@@ -1010,6 +1042,7 @@ export default function ConnectWizard( {
 							appLabel: activeApp.label,
 							keyId: cred ? `key:${ cred.uuid }` : null,
 							connected: markConnected,
+							onSlow: () => setPatienceUp( true ),
 						} ) }
 					{ embedded &&
 						! renderWaiting &&
@@ -1136,12 +1169,16 @@ export default function ConnectWizard( {
 									'saddle'
 							  ) }
 					</p>
-					<p className="saddle-wizard__lead saddle-wizard__lead--muted">
-						{ __(
-							'Change its access or disconnect it on the AI apps page.',
-							'saddle'
-						) }
-					</p>
+					{ /* On AI apps, Done leads back to the list that does
+					     both, so the pointer is only true anywhere else. */ }
+					{ 'connections' !== saddleData.area && (
+						<p className="saddle-wizard__lead saddle-wizard__lead--muted">
+							{ __(
+								'Change its access or disconnect it on the AI apps page.',
+								'saddle'
+							) }
+						</p>
+					) }
 					<div className="saddle-wizard__actions saddle-wizard__actions--center">
 						<Button
 							variant="primary"

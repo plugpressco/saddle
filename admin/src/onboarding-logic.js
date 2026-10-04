@@ -36,6 +36,44 @@ export function resumeStep( firstRun ) {
 }
 
 /**
+ * The step the welcome opens at.
+ *
+ * A finished run (done or skipped) shows again only when asked for with
+ * `&setup=1`. Settings → "Run setup again" sends just that, and it starts at
+ * the top: the step a skipped run stopped at is not where the owner wants to
+ * be. Only an address that names a step (Home's next step sends
+ * `&step=try&app=…`) opens a finished run part way through.
+ *
+ * @param {Object} firstRun `first_run` from GET /onboarding, with the step
+ *                          the address named, if any, already applied.
+ * @param {string} search   The address's query string.
+ * @return {string} `read` (the site read, then the tiles) or a stored step.
+ */
+export function openingStep( firstRun, search ) {
+	const run = firstRun || {};
+	const finished = 'done' === run.state || 'skipped' === run.state;
+	const named = new URLSearchParams( search || '' ).get( 'step' );
+	if ( finished && ! named ) {
+		return 'read';
+	}
+	return resumeStep( run );
+}
+
+/**
+ * Whether this page runs in WordPress Playground's in-browser preview, the
+ * Live Preview on WordPress.org. The whole site runs inside the visitor's
+ * browser there, so no AI app can ever reach it.
+ *
+ * @param {string} hostname `window.location.hostname`.
+ * @return {boolean} True on playground.wordpress.net.
+ */
+export function isBrowserPreview( hostname ) {
+	return (
+		'playground.wordpress.net' === String( hostname || '' ).toLowerCase()
+	);
+}
+
+/**
  * Where a reload on the connect step resumes.
  *
  * The connect step makes a key and waits for the app. Reloaded after the app
@@ -435,7 +473,7 @@ export function tryPrompt( look ) {
 }
 
 /**
- * The checks shown when a connection has not arrived after three minutes.
+ * The checks shown when a connection has not arrived after two minutes.
  * `ok` is true (fine), false (a likely cause) or null (nothing to say).
  *
  * @param {Object}  args
