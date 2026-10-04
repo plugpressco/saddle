@@ -46,10 +46,10 @@ import SectionNav, { revealActive } from './SectionNav';
 
 // One content width for every page: sparse pages don't feel empty and the
 // column never resizes between tabs. Home is wider, for its two columns; a
-// module's column is narrower, beside its sidebar.
+// module's column is narrower and starts on the left, beside its sidebar.
 const PAGE_WIDTH = 960;
 const HOME_WIDTH = 1040;
-const MODULE_WIDTH = 880;
+const MODULE_WIDTH = 920;
 
 // A page shows at most one tab row (Core's header row or a module
 // section's pages), and its tabs swap the one content column. So every tab

@@ -40,7 +40,7 @@ wp-admin like a core screen.
 | Field edge, switch off | `#8C8F94` (`--s-field-edge`) | 3.24 on white; fields sit on blocks |
 | Text / secondary | `#1D2327` / `#646970`, one grey for every description, meta line, hint and footer | 15.89 / 5.53 on white, 13.95 / 4.86 on the page |
 | Tab underline | `#50575E` (`--s-tab-indicator`) | 7.33 |
-| Module sidebar | the page itself, no edge; hover `#E8E8EA` (`--s-nav-hover`); the current section is a white card with a `#DCDCDE` ring and a faint shadow ("raised") | |
+| Module sidebar | a white panel with a `#DCDCDE` hairline on its right, joined to the header and the tab band; hover `#F6F7F7` (`--s-nav-hover`); the current section is the page grey `#F0F0F1`, weight 600 | |
 | Dark overlays, code panels | `#1D2327` (`--s-overlay`, `--s-code-bg`) | |
 | Links, focus | `var(--wp-admin-theme-color)` (Default `#2271B1` 5.17 on white, 4.54 on the page; Modern `#3858E9` 5.36) | follows the owner's admin color scheme |
 | Success | `#007017` on `#EDFAEF` | 5.86 |
@@ -101,9 +101,9 @@ Every Saddle page, module pages and first run included, is drawn by
   13px regular, every tab `#1E1E1E` with its 16px icon, a 1.5px `#6E6E6E`
   line under the active one. No brand color on tabs (2026-10-02, Fahim: the
   teal underline and grey idle tabs looked dated).
-- **Page:** the `#FCFCFC` canvas. A Core page is one centered 960px column
+- **Page:** the `#F0F0F1` canvas. A Core page is one centered 960px column
   (Home: 1040px, for its two columns). A module page has two columns: the
-  sidebar and the content, 880px (see "Navigation").
+  sidebar panel and the content, 920px from the left (see "Navigation").
 - **Footer strip:** a hairline, then mark · "Saddle 1.5.0" (and the module's
   product and version on a module page) · Docs · Rate Saddle, in 13px grey.
 
@@ -198,19 +198,21 @@ The plan and the section maps for Rank, CRM and Analytics are in
 - **The sidebar is for modules only.** Every module page has one
   (`components/SectionNav.jsx`); Core's pages keep the header and their tab
   row, if they have one.
-  - 200px wide, on the canvas `#FCFCFC`, a `#F0F0F0` hairline on its right
-    edge, running the full height. Its list sticks under the admin bar
+  - 220px wide, a white panel with a `#DCDCDE` hairline on its right edge,
+    running the full height, so it joins the white header above and the
+    icon tab row's white band beside it. Its list sticks under the admin bar
     (32px; 46px below 782px).
   - Each item: a 16px Iconoir icon, 8px, a 13px label; 32px tall, 6px
-    corners, `#1E1E1E`. Active: `#F0F0F0` fill, weight 600, `aria-current`.
-    Hover: `#F5F5F5`.
-  - The module's sections in its order, Settings last after a hairline.
+    corners, `#1D2327`. Active: the page grey `#F0F0F1`, weight 600,
+    `aria-current`; no ring, no shadow. Hover: `#F6F7F7`.
+  - The module's sections in its order, Settings last after a hairline the
+    items' full width.
   - No Petrol, no badges, no module name (the header names it).
   - Items are real links; a plain click navigates in place.
-- **The icon tab row** is a section's pages: a white band with a `#F0F0F0`
-  hairline at the top of the content column, the minimal tabs (48px, 13px,
-  16px icon, 1.5px `#6E6E6E` indicator), lined up with the 880px content
-  under it. Drawn only when a section has two or more pages; aim for five
+- **The icon tab row** is a section's pages: a white band with a `#DCDCDE`
+  hairline at the top of the content column, joining the sidebar's panel,
+  the minimal tabs (48px, 13px, 16px icon, 1.5px `#50575E` indicator), on
+  the content's left edge, 40px from the panel. Drawn only when a section has two or more pages; aim for five
   at most. Icons show only when every page has one.
 - **A drill-in (K4).** A module opens one item with `&view=` inside a page
   and names it with `props.header?.drillIn?.( { title } )`. The breadcrumb
@@ -222,7 +224,9 @@ The plan and the section maps for Rank, CRM and Analytics are in
   above the content, sticky under the admin bar; the icon tab row scrolls
   too, and both bring the active item into view. WordPress folds its own
   menu into the hamburger.
-- **Content width.** 880px inside a module; Core pages 960px, Home 1040px.
+- **Content width.** 920px inside a module, starting 40px after the
+  sidebar, on the left: centring it in the space left over opened a gap
+  that grew with the screen. Core pages 960px, Home 1040px.
 - **The right column is Home's only.** No search, no command palette, no
   assistant box, no upsell, no right panel or bottom bar.
 - **Licence is a section on Saddle → Settings.** There is no Licence tab, and
@@ -507,6 +511,16 @@ Kept together in one block of `style.scss`:
 ---
 
 ## History
+
+> **DECIDED (2026-10-05, Fahim): the module sidebar is a white panel.** On
+> the live CRM and Analytics pages he called the "raised" sidebar
+> "disgusting": the tab band started at the sidebar's edge, the content
+> centred itself and left a gap that grew with the screen, and the white
+> active item read as a text field. Of the page-grey fixes he said a small
+> sidebar with no background reads as a big empty space. He chose "D,
+> sidebar with background" over top tabs (saddle#328); mockup
+> https://claude.ai/artifact/MqHubsAeTUzwFjcdKWC2dN. Supersedes the
+> 2026-10-04 "raised" sidebar below.
 
 > **DECIDED (2026-10-04, Fahim): palette v3.** "the --pp-canvas is very close
 > white.. redefine all colors make sure it look nice." The page moves from

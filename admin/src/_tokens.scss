@@ -158,7 +158,7 @@
 	// Colours that used to be written out in style.scss.
 	--s-field-edge: #8c8f94; // inputs and the off switch: 3.24 on white
 	--s-tab-indicator: #50575e; // the quiet tabs' underline: 7.33 on white
-	--s-nav-hover: #e8e8ea; // a module sidebar item under the pointer, on the page
+	--s-nav-hover: var( --pp-surface-hover ); // a module sidebar item under the pointer, on its white panel
 	--s-overlay: #1d2327; // tooltips, toasts, coachmarks, apply and bulk bars
 	--s-overlay-hover: #101517;
 	--s-paused-mark: #b26200; // the AI switch's dot while paused (a mark, not text)
