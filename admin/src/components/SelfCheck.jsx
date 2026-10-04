@@ -1,5 +1,6 @@
 /**
- * What to look at when an app has not connected after three minutes (#277).
+ * What to look at when an app has not connected after a while (#277): two
+ * minutes in the welcome, the wizard's own clock on AI apps.
  *
  * It replaces the spinner in first run with the likely causes, in reading
  * order: HTTPS, permalinks, whether the Authorization header reaches PHP (with
