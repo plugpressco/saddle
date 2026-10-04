@@ -292,7 +292,7 @@ class Saddle_Capabilities {
 				if ( $logged_in ) {
 					self::log_denial( $short_name, 'paused' );
 				}
-				return false;
+				return self::refuse( $short_name );
 			}
 
 			if ( ! $logged_in ) {
@@ -301,26 +301,80 @@ class Saddle_Capabilities {
 
 			if ( $cap && ! current_user_can( $cap ) ) {
 				self::log_denial( $short_name, 'capability' );
-				return false;
+				return self::refuse( $short_name );
 			}
 
 			if ( $short_name && ! self::is_ability_enabled( $short_name ) ) {
 				self::log_denial( $short_name, 'disabled' );
-				return false;
+				return self::refuse( $short_name );
 			}
 
 			if ( 'read' !== $level && self::is_domain_enforced() && ! self::domain_matches_recorded() ) {
 				self::log_denial( $short_name, 'domain' );
-				return false;
+				return self::refuse( $short_name );
 			}
 
 			if ( ! self::tier_allows( $level ) ) {
 				self::log_denial( $short_name, 'tier' );
-				return false;
+				return self::refuse( $short_name );
 			}
 
 			return true;
 		};
+	}
+
+	/**
+	 * What a permission closure returns when it refuses (#292).
+	 *
+	 * False, as the closure always returned, for every caller but one: the MCP
+	 * adapter's tools/call. The adapter runs the permission check itself,
+	 * before the call reaches the ability, and answers a bare `false` with
+	 * "Permission denied", which names no gate and sends an agent into a
+	 * retry loop. Given a WP_Error, it passes the message on. So that caller
+	 * gets denial_reason() as a WP_Error.
+	 *
+	 * Everyone else keeps `false`. WP_Ability::execute() turns a WP_Error from
+	 * a permission check into a _doing_it_wrong() notice on every refused call
+	 * and then drops the message anyway, and direct check_permissions()
+	 * callers (Saddle Pro, the test suites) compare the result with false.
+	 *
+	 * @param string|null $short_name Ability id without the 'saddle/' prefix.
+	 * @return false|WP_Error
+	 */
+	private static function refuse( $short_name ) {
+		if ( ! $short_name || ! self::asked_by_mcp_tools() ) {
+			return false;
+		}
+
+		$reason = self::denial_reason( 'saddle/' . $short_name );
+
+		return $reason ? new WP_Error( $reason['code'], $reason['message'], array( 'status' => 403 ) ) : false;
+	}
+
+	/**
+	 * Whether the permission check running now was called by the MCP
+	 * adapter's tool layer: McpTool::check_permission() in the adapter Saddle
+	 * bundles (0.6), ToolsHandler::call_tool() in older ones. Core gives no
+	 * hook that tells this caller apart from WP_Ability::execute(), and the
+	 * adapter is vendored, so it reads the caller of check_permissions() from
+	 * the call stack. Runs only on a refusal, never on an allowed call.
+	 *
+	 * @return bool
+	 */
+	private static function asked_by_mcp_tools() {
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace -- Reads which class called check_permissions(); nothing is printed or logged.
+		$frames = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 12 );
+		$last   = count( $frames ) - 1;
+
+		for ( $i = 0; $i < $last; $i++ ) {
+			if ( isset( $frames[ $i ]['class'] ) && 'check_permissions' === $frames[ $i ]['function'] && is_a( $frames[ $i ]['class'], 'WP_Ability', true ) ) {
+				$caller = isset( $frames[ $i + 1 ]['class'] ) ? ltrim( (string) $frames[ $i + 1 ]['class'], '\\' ) : '';
+
+				return in_array( $caller, array( 'WP\\MCP\\Domain\\Tools\\McpTool', 'WP\\MCP\\Handlers\\Tools\\ToolsHandler' ), true );
+			}
+		}
+
+		return false;
 	}
 
 	/**
