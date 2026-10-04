@@ -177,7 +177,7 @@ class Saddle_Register_Once_Test extends WP_UnitTestCase {
 			'saddle/wc-check-setup'          => array( 'read', false ),
 			'saddle/wc-list-products'        => array( 'read', false ),
 			'saddle/wc-get-product'          => array( 'read', false ),
-			'saddle/wc-list-orders'          => array( 'read', false ),
+			'saddle/wc-list-orders'          => array( 'write', false ), // Customer data needs Edit content (#321).
 		);
 
 		foreach ( $expect as $name => list( $tier, $destructive ) ) {
