@@ -269,7 +269,7 @@ function saddle_register_abilities() {
 		'saddle/delete-post',
 		array(
 			'label'               => __( 'Delete post', 'saddle' ),
-			'description'         => __( 'Deletes a post. DESTRUCTIVE — runs through a two-step confirmation: the first call returns a preview and a confirm_token without changing anything; call again with confirm_token to execute. Without "force" the post is trashed (recoverable); with force=true it is permanently deleted (not recoverable). For an item of a custom content type, pass its post_type.', 'saddle' ),
+			'description'         => __( 'Deletes a post. DESTRUCTIVE — runs through a two-step confirmation: the first call returns a preview and a confirm_token without changing anything; call again with confirm_token to execute. Without "force" the post is trashed (recoverable); with force=true it is permanently deleted (not recoverable). A post already in the trash answers at once, with no preview; pass force=true to delete it for good. For an item of a custom content type, pass its post_type.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => saddle_with_post_type( saddle_delete_schema( __( 'The post ID to delete.', 'saddle' ), true ) ),
 			'execute_callback'    => array( 'Saddle_Abilities', 'delete_post' ),
@@ -380,7 +380,7 @@ function saddle_register_abilities() {
 		'saddle/delete-page',
 		array(
 			'label'               => __( 'Delete page', 'saddle' ),
-			'description'         => __( 'Deletes a page. DESTRUCTIVE — two-step confirmation required (preview + confirm_token). Without "force" the page is trashed (recoverable); with force=true it is permanently deleted.', 'saddle' ),
+			'description'         => __( 'Deletes a page. DESTRUCTIVE — two-step confirmation required (preview + confirm_token). Without "force" the page is trashed (recoverable); with force=true it is permanently deleted. A page already in the trash answers at once, with no preview; pass force=true to delete it for good.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => saddle_delete_schema( __( 'The page ID to delete.', 'saddle' ), true ),
 			'execute_callback'    => array( 'Saddle_Abilities', 'delete_page' ),
@@ -2511,6 +2511,28 @@ class Saddle_Abilities {
 		// outright, so the preview must not promise a recovery.
 		$permanent = $force || ! EMPTY_TRASH_DAYS;
 
+		// Already in the trash: nothing to move. Answered at once with no
+		// token, the way activate-plugin answers for an active plugin. A call
+		// that carries a token still goes through the gate, so a used token
+		// is refused as used rather than answered as a no-op.
+		$already   = array(
+			'deleted'    => false,
+			'id'         => $id,
+			'permanent'  => false,
+			'new_status' => 'trash',
+			'note'       => sprintf(
+				/* translators: 1: type, 2: id, 3: title. */
+				__( 'Already in the trash: %1$s #%2$d "%3$s". Nothing changed. To delete it for good, call again with "force" set to true.', 'saddle' ),
+				$type,
+				$id,
+				$post->post_title
+			),
+		);
+		$has_token = isset( $input['confirm_token'] ) && '' !== trim( (string) $input['confirm_token'] );
+		if ( ! $permanent && 'trash' === $post->post_status && ! $has_token ) {
+			return $already;
+		}
+
 		$summary = $permanent
 			? sprintf(
 				/* translators: 1: type, 2: id, 3: title. */
@@ -2551,7 +2573,17 @@ class Saddle_Abilities {
 				// not be confirmable into a permanent, unrecoverable delete.
 				'bind'    => $permanent ? 'permanent' : 'trash',
 				'summary' => $summary,
-				'done'    => $done,
+				'done'    => static function ( $result ) use ( $done, $type, $id, $post ) {
+					return empty( $result['deleted'] )
+						? sprintf(
+							/* translators: 1: type, 2: id, 3: title. */
+							__( 'Nothing changed: %1$s #%2$d "%3$s" was already in the trash.', 'saddle' ),
+							$type,
+							$id,
+							$post->post_title
+						)
+						: $done;
+				},
 				'preview' => array(
 					'id'                      => $id,
 					'type'                    => $type,
@@ -2561,7 +2593,14 @@ class Saddle_Abilities {
 					'recoverable'             => ! $permanent,
 				),
 				'input'   => $input,
-				'execute' => function () use ( $id, $permanent ) {
+				'execute' => function () use ( $id, $permanent, $already ) {
+					// Trashed since the preview (the owner did it in wp-admin):
+					// wp_trash_post() would return false, which read as a
+					// failure. Say it is already there instead.
+					if ( ! $permanent && 'trash' === get_post_status( $id ) ) {
+						return $already;
+					}
+
 					// wp_trash_post(), never wp_delete_post( $id, false ): core's
 					// delete only trashes posts and pages, and deletes every
 					// other type outright — a custom type's "move to trash"
