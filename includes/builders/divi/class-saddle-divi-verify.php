@@ -55,7 +55,7 @@ class Saddle_Divi_Verify {
 				'severity' => 'error',
 				'message'  => sprintf(
 					/* translators: 1: module type, 2: the structural problem. */
-					__( '%1$s: %2$s', 'saddle' ),
+					_x( '%1$s: %2$s', 'Divi structural finding', 'saddle' ),
 					isset( $violation['type'] ) ? (string) $violation['type'] : __( '(unknown module)', 'saddle' ),
 					isset( $violation['problem'] ) ? (string) $violation['problem'] : __( 'breaks the Divi containment contract.', 'saddle' )
 				),

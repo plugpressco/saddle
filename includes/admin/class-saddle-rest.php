@@ -1072,6 +1072,10 @@ class Saddle_REST_Admin {
 				'lane'        => $lane,
 				'category'    => self::category_for( $short, $name ),
 				'enabled'     => Saddle_Capabilities::is_ability_enabled( $short ),
+				// False when the tool cannot run on this site: its plugin is
+				// not active, or its service has no key. Such a tool is also
+				// left out of tools/list.
+				'available'   => Saddle_Services::has_tools_available( $short ),
 			);
 		}
 

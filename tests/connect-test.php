@@ -224,6 +224,25 @@ class Saddle_Connect_Test extends WP_UnitTestCase {
 		$this->assertTrue( ! is_array( $hints ) || ! isset( $hints[ $data['uuid'] ] ), 'Revoke must drop the stored hint.' );
 	}
 
+	public function test_a_key_deleted_outside_saddle_loses_its_hint() {
+		$req = new WP_REST_Request( 'POST', '/saddle/v1/clients' );
+		$req->set_param( 'name', 'Deleted From Profile' );
+		$gone = Saddle_REST_Admin::create_client( $req )->get_data();
+		$req->set_param( 'name', 'Still Here' );
+		$kept = Saddle_REST_Admin::create_client( $req )->get_data();
+
+		// Users → Profile → Application Passwords deletes through core, not
+		// through Saddle's revoke route.
+		$this->assertTrue( WP_Application_Passwords::delete_application_password( $this->admin, $gone['uuid'] ) );
+
+		$hints = get_user_meta( $this->admin, 'saddle_client_hints', true );
+		$this->assertArrayNotHasKey( $gone['uuid'], $hints, 'A deleted key keeps no hint.' );
+		$this->assertSame( $kept['hint'], $hints[ $kept['uuid'] ], 'Other keys keep theirs.' );
+
+		WP_Application_Passwords::delete_application_password( $this->admin, $kept['uuid'] );
+		$this->assertSame( '', get_user_meta( $this->admin, 'saddle_client_hints', true ), 'The last hint takes the meta row with it.' );
+	}
+
 	public function test_revoke_refuses_non_saddle_credentials() {
 		list( , $item ) = $this->issue_password( 'Not A Saddle Client' );
 

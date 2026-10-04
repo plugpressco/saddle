@@ -351,9 +351,10 @@ class Saddle_Services_Test extends WP_UnitTestCase {
 		$this->assertStringStartsWith( 'Unsplash is not set up. Ask the owner to add a key under Saddle → Services.', $reason['message'] );
 
 		$counts = Saddle_Capabilities::hidden_tool_counts();
-		$this->assertSame( 2, $counts['service'] );
 
 		Saddle_Unsplash::set_key( self::KEY );
+		// The two Unsplash tools; tools of absent plugins count here too (D3).
+		$this->assertSame( 2, $counts['service'] - Saddle_Capabilities::hidden_tool_counts()['service'] );
 		$this->assertTrue( Saddle_Services::has_tools_available( 'saddle/unsplash-search' ) );
 		$this->assertTrue( Saddle_Capabilities::is_callable_now( 'saddle/unsplash-search' ) );
 		$this->assertContains( 'saddle-unsplash-search', $this->tools_listed() );

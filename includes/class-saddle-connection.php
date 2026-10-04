@@ -437,11 +437,27 @@ class Saddle_Connection {
 	 * a header problem. Scoped to Saddle's own endpoint so no other REST auth error
 	 * is touched.
 	 *
+	 * Core decides a key on `determine_current_user` but only returns the
+	 * rejection from this filter at priority 90
+	 * (`rest_application_password_check_errors`). This runs at 20, so a
+	 * rejected key arrives here as null. Reading core's pending result from
+	 * `$wp_rest_application_password_status` is what lets the relabel happen
+	 * at all; it never did before, with or without WooCommerce, whose own
+	 * callbacks at 10, 15 and 20 hand the value on for routes outside `wc/`.
+	 *
 	 * @param WP_Error|null|true $errors Current authentication result.
 	 * @return WP_Error|null|true
 	 */
 	public static function explain_auth_error( $errors ) {
-		if ( ! is_wp_error( $errors ) ) {
+		$rejected = $errors;
+		$status   = 0;
+		if ( null === $errors && isset( $GLOBALS['wp_rest_application_password_status'] ) && is_wp_error( $GLOBALS['wp_rest_application_password_status'] ) ) {
+			// Core's own check turns this into a 401 at priority 90.
+			$rejected = $GLOBALS['wp_rest_application_password_status'];
+			$status   = 401;
+		}
+
+		if ( ! is_wp_error( $rejected ) ) {
 			return $errors;
 		}
 		// Only Basic reaches this hook as a core error — core's authenticator owns
@@ -451,8 +467,10 @@ class Saddle_Connection {
 			return $errors;
 		}
 
-		$data   = $errors->get_error_data();
-		$status = is_array( $data ) && isset( $data['status'] ) ? (int) $data['status'] : (int) $data;
+		if ( ! $status ) {
+			$data   = $rejected->get_error_data();
+			$status = is_array( $data ) && isset( $data['status'] ) ? (int) $data['status'] : (int) $data;
+		}
 		if ( 401 !== $status && 403 !== $status ) {
 			return $errors;
 		}

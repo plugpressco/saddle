@@ -80,15 +80,21 @@ class Saddle_Services {
 	}
 
 	/**
-	 * False only for a tool owned by an account that has no key yet. Feeds
-	 * Saddle_Capabilities::is_callable_now() and denial_reason(), so it stays
-	 * cheap: it runs once per tool on every tools/list.
+	 * False for a tool owned by an account that has no key yet, or by a
+	 * plugin Saddle edits natively that is not active here (D3). Feeds
+	 * Saddle_Capabilities::is_callable_now() and hidden_tool_counts(), so it
+	 * stays cheap: it runs once per tool on every tools/list.
+	 *
+	 * A tool hidden this way still refuses by name with its own reason:
+	 * denial_reason() asks unavailable_account(), and a native tool's own
+	 * callback says its plugin is not active.
 	 *
 	 * @param string $ability_name Full ability id or its short name.
 	 * @return bool
 	 */
 	public static function has_tools_available( $ability_name ) {
-		return '' === self::unavailable_account( $ability_name );
+		return '' === self::unavailable_account( $ability_name )
+			&& ( ! class_exists( 'Saddle_Integrations' ) || '' === Saddle_Integrations::absent_plugin( $ability_name ) );
 	}
 
 	/**

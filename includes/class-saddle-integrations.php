@@ -42,6 +42,23 @@ class Saddle_Integrations {
 	const APPROVED_OPTION = 'saddle_enabled_integrations';
 
 	/**
+	 * The plugins Saddle edits natively: tool prefix => { name, class whose
+	 * is_active() says whether the plugin is here }. Their tools register on
+	 * every site, and each refuses by name when its plugin is missing, but
+	 * they are offered only where the plugin is active (D3). Each prefix is a
+	 * reserved slug, so no enrolled plugin can claim it.
+	 *
+	 * @var array<string,string[]>
+	 */
+	const NATIVE_PLUGINS = array(
+		'divi'      => array( 'Divi 5', 'Saddle_Divi' ),
+		'yoast'     => array( 'Yoast SEO', 'Saddle_Yoast' ),
+		'rank-math' => array( 'Rank Math', 'Saddle_Rank_Math' ),
+		'aioseo'    => array( 'AIOSEO', 'Saddle_Aioseo' ),
+		'wc'        => array( 'WooCommerce', 'Saddle_WC' ),
+	);
+
+	/**
 	 * The shared engine, configured for the free catalog.
 	 *
 	 * @var Saddle_Integration_Engine|null
@@ -202,6 +219,90 @@ class Saddle_Integrations {
 	}
 
 	/**
+	 * The name of the plugin a native tool needs when that plugin is not
+	 * active here, or '' (the plugin is active, or the tool is not one of
+	 * the native integrations'). Feeds Saddle_Services::has_tools_available(),
+	 * so it runs once per tool on every tools/list: only a matching prefix
+	 * pays for the plugin check.
+	 *
+	 * @param string $ability_name Full ability id or its short name.
+	 * @return string
+	 */
+	public static function absent_plugin( $ability_name ) {
+		$short = 0 === strpos( (string) $ability_name, 'saddle/' ) ? substr( (string) $ability_name, 7 ) : (string) $ability_name;
+
+		foreach ( self::NATIVE_PLUGINS as $prefix => $plugin ) {
+			if ( 0 === strpos( $short, $prefix . '-' ) ) {
+				return self::native_is_active( $plugin[1] ) ? '' : $plugin[0];
+			}
+		}
+
+		return '';
+	}
+
+	/**
+	 * The native plugins that are not active here, by name.
+	 *
+	 * @return string[]
+	 */
+	public static function absent_plugins() {
+		$names = array();
+		foreach ( self::NATIVE_PLUGINS as $plugin ) {
+			if ( ! self::native_is_active( $plugin[1] ) ) {
+				$names[] = $plugin[0];
+			}
+		}
+
+		return $names;
+	}
+
+	/**
+	 * Whether a native plugin is active, asked of its own detection class.
+	 *
+	 * @param string $detector Class with a static is_active().
+	 * @return bool
+	 */
+	private static function native_is_active( $detector ) {
+		return is_callable( array( $detector, 'is_active' ) ) && (bool) call_user_func( array( $detector, 'is_active' ) );
+	}
+
+	/**
+	 * Say in the context which plugins' tools are hidden because the plugin
+	 * is not here. tools/list leaves them out (D3), and an agent asked for
+	 * one should say why instead of improvising. Added by context_section(),
+	 * which is what runs on `saddle_context_sections`.
+	 *
+	 * @param array[] $sections Sections so far.
+	 * @return array[]
+	 */
+	private static function absent_plugins_section( $sections ) {
+		$absent = self::absent_plugins();
+		if ( ! $absent ) {
+			return $sections;
+		}
+
+		$sections[] = array(
+			'id'       => 'absent-plugins',
+			'title'    => __( 'Plugins not on this site', 'saddle' ),
+			'lines'    => array(
+				'- ' . sprintf(
+					/* translators: %s: a list of plugin names, such as "Divi 5, Yoast SEO and WooCommerce". */
+					_n(
+						'Saddle has tools for %s, but that plugin is not active here, so its tools are not offered. If a request needs it, say it is not active on this site.',
+						'Saddle has tools for %s, but those plugins are not active here, so their tools are not offered. If a request needs one, say that plugin is not active on this site.',
+						count( $absent ),
+						'saddle'
+					),
+					wp_sprintf_l( '%l', $absent )
+				),
+			),
+			'priority' => 41,
+		);
+
+		return $sections;
+	}
+
+	/**
 	 * Register wrapper abilities for every discovered source ability of every
 	 * enabled integration. Hooked to `wp_abilities_api_init` at priority 30 —
 	 * after source plugins (10) register their own abilities.
@@ -230,7 +331,8 @@ class Saddle_Integrations {
 	 * Contributed as a section rather than appended as a string: this used to
 	 * emit a bare "First-party integrations:" line with no heading, in a
 	 * document where everything else is a `#` heading. Runs on
-	 * `saddle_context_sections`.
+	 * `saddle_context_sections`, and adds the section naming the native
+	 * plugins that are not here, whose tools tools/list leaves out.
 	 *
 	 * @param array[] $sections Sections so far.
 	 * @return array[]
@@ -258,17 +360,15 @@ class Saddle_Integrations {
 			);
 		}
 
-		if ( ! $lines ) {
-			return $sections;
+		if ( $lines ) {
+			$sections[] = array(
+				'id'       => 'first-party-integrations',
+				'title'    => __( 'Plugins connected to Saddle', 'saddle' ),
+				'lines'    => $lines,
+				'priority' => 40,
+			);
 		}
 
-		$sections[] = array(
-			'id'       => 'first-party-integrations',
-			'title'    => __( 'Plugins connected to Saddle', 'saddle' ),
-			'lines'    => $lines,
-			'priority' => 40,
-		);
-
-		return $sections;
+		return self::absent_plugins_section( $sections );
 	}
 }
