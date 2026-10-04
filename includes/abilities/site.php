@@ -62,21 +62,25 @@ function saddle_register_site_abilities() {
 		'saddle/activate-plugin',
 		array(
 			'label'               => __( 'Activate plugin', 'saddle' ),
-			'description'         => __( 'Activates an installed plugin. Provide its "plugin" file (e.g. "akismet/akismet.php") or its folder slug (e.g. "akismet"). Reversible with deactivate-plugin. Returns the plugin that was activated. A plugin that fatals on activation returns an error and stays inactive.', 'saddle' ),
+			'description'         => __( 'Activates an installed plugin. Provide its "plugin" file (e.g. "akismet/akismet.php") or its folder slug (e.g. "akismet"). It takes two calls. The first call changes nothing: it returns a preview naming the plugin and its version, and a "confirm_token". Call again with the same "plugin" and that token to activate it. The token works once and expires in 15 minutes, and the site owner can approve or refuse the request on their Saddle Home page until then. A plugin that is already active returns at once, with no preview. Reversible with deactivate-plugin. Returns the plugin that was activated. A plugin that fatals on activation returns an error and stays inactive.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
 				'required'   => array( 'plugin' ),
 				'properties' => array(
-					'plugin' => array(
+					'plugin'        => array(
 						'type'        => 'string',
 						'description' => __( 'Plugin file ("dir/file.php") or folder slug.', 'saddle' ),
+					),
+					'confirm_token' => array(
+						'type'        => 'string',
+						'description' => __( 'Token from the preview step, required to activate the plugin.', 'saddle' ),
 					),
 				),
 			),
 			'execute_callback'    => array( 'Saddle_Site_Abilities', 'activate_plugin' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'admin', 'activate_plugins', 'activate-plugin' ),
-			'meta'                => saddle_ability_meta( false, false, false, 'admin' ),
+			'meta'                => saddle_ability_meta( false, true, false, 'admin' ),
 		)
 	);
 
@@ -84,21 +88,25 @@ function saddle_register_site_abilities() {
 		'saddle/deactivate-plugin',
 		array(
 			'label'               => __( 'Deactivate plugin', 'saddle' ),
-			'description'         => __( 'Deactivates an active plugin. Provide its "plugin" file or folder slug. Reversible with activate-plugin. Refuses to deactivate Saddle itself. Returns the plugin that was deactivated.', 'saddle' ),
+			'description'         => __( 'Deactivates an active plugin. Provide its "plugin" file or folder slug. It takes two calls. The first call changes nothing: it returns a preview naming the plugin and its version, any active plugins that require it ("required_by"; they may stop working), whether it is network active on a multisite, and a "confirm_token". Call again with the same "plugin" and that token to deactivate it. The token works once and expires in 15 minutes, and the site owner can approve or refuse the request on their Saddle Home page until then. A plugin that is already inactive returns at once, with no preview. Refuses to deactivate Saddle itself. Reversible with activate-plugin. Returns the plugin that was deactivated.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
 				'required'   => array( 'plugin' ),
 				'properties' => array(
-					'plugin' => array(
+					'plugin'        => array(
 						'type'        => 'string',
 						'description' => __( 'Plugin file ("dir/file.php") or folder slug.', 'saddle' ),
+					),
+					'confirm_token' => array(
+						'type'        => 'string',
+						'description' => __( 'Token from the preview step, required to deactivate the plugin.', 'saddle' ),
 					),
 				),
 			),
 			'execute_callback'    => array( 'Saddle_Site_Abilities', 'deactivate_plugin' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'admin', 'activate_plugins', 'deactivate-plugin' ),
-			'meta'                => saddle_ability_meta( false, false, false, 'admin' ),
+			'meta'                => saddle_ability_meta( false, true, false, 'admin' ),
 		)
 	);
 
@@ -348,7 +356,11 @@ class Saddle_Site_Abilities {
 	}
 
 	/**
-	 * saddle/activate-plugin.
+	 * saddle/activate-plugin. Gated (#320): switching a plugin on runs its code
+	 * on every request, so the first call previews and the second, carrying
+	 * the token, activates. The token is bound to the plugin file and to
+	 * everything the preview showed. The gate logs the confirmed call, and that
+	 * log entry carries the journal undo-changes reverses.
 	 *
 	 * @param mixed $input Ability input.
 	 * @return array|WP_Error
@@ -359,31 +371,56 @@ class Saddle_Site_Abilities {
 			return $file;
 		}
 
-		if ( is_plugin_active( $file ) ) {
-			return array(
-				'activated' => false,
-				'plugin'    => $file,
-				'note'      => __( 'That plugin is already active.', 'saddle' ),
-			);
-		}
-
-		// activate_plugin() loads and runs the plugin's activation hooks; a fatal
-		// there surfaces as WP_Error rather than taking the request down.
-		$result = activate_plugin( $file, '', false, false );
-		if ( is_wp_error( $result ) ) {
-			return new WP_Error( 'saddle_activate_failed', $result->get_error_message(), array( 'status' => 500 ) );
-		}
-
-		Saddle_Log::record_action( 'activate-plugin', $file, sprintf( /* translators: %s: plugin file. */ __( 'Activated plugin %s.', 'saddle' ), $file ) );
-
-		return array(
-			'activated' => true,
+		$already = array(
+			'activated' => false,
 			'plugin'    => $file,
+			'note'      => __( 'That plugin is already active.', 'saddle' ),
+		);
+		if ( is_plugin_active( $file ) && ! self::has_confirm_token( $input ) ) {
+			return $already;
+		}
+
+		$preview = self::plugin_preview( $file );
+
+		return Saddle_Approval::gate(
+			array(
+				'action'  => 'activate-plugin',
+				'target'  => $file,
+				'bind'    => substr( hash( 'sha256', (string) wp_json_encode( $preview ) ), 0, 16 ),
+				'summary' => sprintf(
+					/* translators: %s: plugin name and version, e.g. "Akismet Anti-spam 5.3". */
+					__( 'Activate the plugin %s. It starts running on this site right away.', 'saddle' ),
+					self::plugin_label( $preview )
+				),
+				'preview' => $preview,
+				'input'   => is_array( $input ) ? $input : array(),
+				'execute' => static function () use ( $file, $already ) {
+					if ( is_plugin_active( $file ) ) {
+						return $already;
+					}
+
+					// activate_plugin() loads and runs the plugin's activation
+					// hooks; a fatal there surfaces as WP_Error rather than
+					// taking the request down.
+					$result = activate_plugin( $file, '', false, false );
+					if ( is_wp_error( $result ) ) {
+						return new WP_Error( 'saddle_activate_failed', $result->get_error_message(), array( 'status' => 500 ) );
+					}
+
+					return array(
+						'activated' => true,
+						'plugin'    => $file,
+					);
+				},
+			)
 		);
 	}
 
 	/**
-	 * saddle/deactivate-plugin.
+	 * saddle/deactivate-plugin. Gated like activate-plugin (#320). The preview
+	 * also names the active plugins that require this one, and says when it is
+	 * network active, because deactivate_plugins() then switches it off for
+	 * the whole network.
 	 *
 	 * @param mixed $input Ability input.
 	 * @return array|WP_Error
@@ -395,26 +432,140 @@ class Saddle_Site_Abilities {
 		}
 
 		// Never let an agent switch off the very plugin serving the request.
+		// Refused before any preview, so there is never a token to confirm.
 		if ( defined( 'SADDLE_FILE' ) && plugin_basename( SADDLE_FILE ) === $file ) {
 			return new WP_Error( 'saddle_self_deactivate', __( 'Saddle cannot deactivate itself.', 'saddle' ), array( 'status' => 400 ) );
 		}
 
-		if ( ! is_plugin_active( $file ) ) {
-			return array(
-				'deactivated' => false,
-				'plugin'      => $file,
-				'note'        => __( 'That plugin is already inactive.', 'saddle' ),
+		$already = array(
+			'deactivated' => false,
+			'plugin'      => $file,
+			'note'        => __( 'That plugin is already inactive.', 'saddle' ),
+		);
+		if ( ! is_plugin_active( $file ) && ! self::has_confirm_token( $input ) ) {
+			return $already;
+		}
+
+		$preview = self::plugin_preview( $file );
+		$summary = sprintf(
+			/* translators: %s: plugin name and version, e.g. "Akismet Anti-spam 5.3". */
+			__( 'Deactivate the plugin %s. It stops running on this site until someone activates it again.', 'saddle' ),
+			self::plugin_label( $preview )
+		);
+
+		if ( is_multisite() ) {
+			$preview['network_active'] = is_plugin_active_for_network( $file );
+			if ( $preview['network_active'] ) {
+				$summary .= ' ' . __( 'It is network active, so this switches it off on every site in the network.', 'saddle' );
+			}
+		}
+
+		$required_by = self::active_dependents( $file );
+		if ( $required_by ) {
+			$preview['required_by'] = $required_by;
+			$summary               .= ' ' . sprintf(
+				/* translators: %s: comma-separated plugin names. */
+				__( 'These active plugins require it and may stop working: %s.', 'saddle' ),
+				implode( ', ', $required_by )
 			);
 		}
 
-		deactivate_plugins( $file, false );
+		return Saddle_Approval::gate(
+			array(
+				'action'  => 'deactivate-plugin',
+				'target'  => $file,
+				'bind'    => substr( hash( 'sha256', (string) wp_json_encode( $preview ) ), 0, 16 ),
+				'summary' => $summary,
+				'preview' => $preview,
+				'input'   => is_array( $input ) ? $input : array(),
+				'execute' => static function () use ( $file, $already ) {
+					if ( ! is_plugin_active( $file ) ) {
+						return $already;
+					}
 
-		Saddle_Log::record_action( 'deactivate-plugin', $file, sprintf( /* translators: %s: plugin file. */ __( 'Deactivated plugin %s.', 'saddle' ), $file ) );
+					deactivate_plugins( $file, false );
+
+					return array(
+						'deactivated' => true,
+						'plugin'      => $file,
+					);
+				},
+			)
+		);
+	}
+
+	/**
+	 * Whether the call carries a confirm token. A call that does goes through
+	 * the gate even when there is nothing left to change, so a used token is
+	 * refused as used rather than answered as a no-op.
+	 *
+	 * @param mixed $input Ability input.
+	 * @return bool
+	 */
+	private static function has_confirm_token( $input ) {
+		return is_array( $input )
+			&& isset( $input['confirm_token'] )
+			&& is_string( $input['confirm_token'] )
+			&& '' !== trim( $input['confirm_token'] );
+	}
+
+	/**
+	 * What a plugin preview shows: the file, and the name and version from
+	 * the plugin's header. The whole array is bound into the confirm token.
+	 *
+	 * @param string $file Plugin file.
+	 * @return array
+	 */
+	private static function plugin_preview( $file ) {
+		$all  = Saddle_Context::get_plugins_quietly();
+		$data = isset( $all[ $file ] ) ? $all[ $file ] : array();
 
 		return array(
-			'deactivated' => true,
 			'plugin'      => $file,
+			'plugin_name' => ! empty( $data['Name'] ) ? (string) $data['Name'] : $file,
+			'version'     => isset( $data['Version'] ) ? (string) $data['Version'] : '',
 		);
+	}
+
+	/**
+	 * "Akismet Anti-spam 5.3", or the name alone when the header has no version.
+	 *
+	 * @param array $preview A plugin_preview() array.
+	 * @return string
+	 */
+	private static function plugin_label( array $preview ) {
+		return trim( $preview['plugin_name'] . ' ' . $preview['version'] );
+	}
+
+	/**
+	 * Names of the active plugins whose "Requires Plugins" header names this
+	 * one, matched the way WordPress matches it: by folder name, or by file
+	 * name for a single-file plugin. Read from the headers directly, because
+	 * WP_Plugin_Dependencies only loads its data on the Plugins screens.
+	 *
+	 * @param string $file Plugin file.
+	 * @return string[] Sorted names; empty when nothing active requires it.
+	 */
+	private static function active_dependents( $file ) {
+		if ( 'hello.php' === $file ) {
+			$slug = 'hello-dolly';
+		} else {
+			$slug = false !== strpos( $file, '/' ) ? dirname( $file ) : basename( $file, '.php' );
+		}
+
+		$names = array();
+		foreach ( Saddle_Context::get_plugins_quietly() as $other => $data ) {
+			if ( $other === $file || empty( $data['RequiresPlugins'] ) || ! is_plugin_active( $other ) ) {
+				continue;
+			}
+			$requires = array_map( 'trim', explode( ',', (string) $data['RequiresPlugins'] ) );
+			if ( in_array( $slug, $requires, true ) ) {
+				$names[] = ! empty( $data['Name'] ) ? (string) $data['Name'] : $other;
+			}
+		}
+		sort( $names );
+
+		return $names;
 	}
 
 	/*
