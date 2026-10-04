@@ -1,18 +1,18 @@
 /**
  * The frame's header and layout as plain logic, so they can be tested
- * without React (planning/MODULE-LAYOUT.md, M4).
+ * without React (planning/MODULE-LAYOUT.md, M4; top tabs from 2026-10-05).
  *
  * Every Saddle page has a breadcrumb header: `[mark] Saddle / Page`, and Home
- * reads `[mark] Saddle`. A module's page adds a left sidebar of its sections
- * (`&tab=`) and, in a section with two or more pages, an icon tab row
- * (`&sub=`). Core's pages keep their header tab row instead.
+ * reads `[mark] Saddle`. A page with two or more tabs (a module's sections,
+ * `&tab=`) draws them as the header's tab row. In a module section with two
+ * or more pages (`&sub=`), a row of page links sits at the top of the content.
  *
  * A module screen opens one item with `&view=`. While it is open, the screen
  * may call `props.header.drillIn( { title } )`: the breadcrumb then reads
- * `Saddle / Module / Section / title` and the icon tab row steps aside. The
- * drill-in belongs to the tab, page and view it was set on, so it ends on its
- * own when the view closes or the page or tab changes; Core also clears it
- * when the screen unmounts.
+ * `Saddle / Module / Section / title`, and the tab row and the page links step
+ * aside. The drill-in belongs to the tab, page and view it was set on, so it
+ * ends on its own when the view closes or the page or tab changes; Core also
+ * clears it when the screen unmounts.
  */
 
 /**
@@ -28,7 +28,7 @@
  * @param {Object}  props.home  The first crumb: `{ label, url }` (Saddle, to Home).
  * @param {string=} props.crumb The page's name when it is not the area's title
  *                              (first run's "Welcome").
- * @return {{crumbs: Array, title: string, drilled: boolean, showTabs: boolean, showSidebar: boolean, showSubtabs: boolean}}
+ * @return {{crumbs: Array, title: string, drilled: boolean, showTabs: boolean, showSubtabs: boolean}}
  *         The header. Each crumb is `{ key, label, url }`; `key` is `home`,
  *         `module`, `section` or `current`, and the last one has no url.
  */
@@ -92,25 +92,23 @@ export function frameHeader( {
 		crumbs,
 		title: crumbs[ crumbs.length - 1 ].label,
 		drilled,
-		showTabs: ! module && ! drilled && tabs.length > 1,
-		showSidebar: module && tabs.length > 0,
+		showTabs: ! drilled && tabs.length > 1,
 		showSubtabs: module && ! drilled && pages.length > 1,
 	};
 }
 
 /**
- * The sidebar's items: the module's sections in its order, Settings moved
- * last (the sidebar draws a hairline above it).
+ * The tab row's tabs: the page's tabs in their order, Settings moved last.
  *
- * @param {Array} tabs The module's tabs: `[ { key, label, url, icon } ]`.
- * @return {{items: Array, settings: ?Object}} The sections, and Settings.
+ * @param {Array} tabs The page's tabs: `[ { key, label, url, icon } ]`.
+ * @return {Array} The tabs, Settings last.
  */
-export function sidebarItems( tabs ) {
+export function sectionTabs( tabs ) {
 	const list = Array.isArray( tabs ) ? tabs.filter( Boolean ) : [];
-	return {
-		items: list.filter( ( t ) => 'settings' !== t.key ),
-		settings: list.find( ( t ) => 'settings' === t.key ) || null,
-	};
+	return [
+		...list.filter( ( t ) => 'settings' !== t.key ),
+		...list.filter( ( t ) => 'settings' === t.key ),
+	];
 }
 
 /**

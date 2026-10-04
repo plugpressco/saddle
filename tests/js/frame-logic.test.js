@@ -1,15 +1,15 @@
 /**
- * The frame's header and layout (M4 in planning/MODULE-LAYOUT.md, K4): the
- * breadcrumb for each page and state, when the sidebar and the icon tab row
- * show, the header a screen gets, which screen draws a page, and which
- * clicks on a link stay in the app.
+ * The frame's header and layout (M4 in planning/MODULE-LAYOUT.md, K4; top
+ * tabs from 2026-10-05): the breadcrumb for each page and state, when the
+ * tab row and a section's page links show, the header a screen gets, which
+ * screen draws a page, and which clicks on a link stay in the app.
  */
 import {
 	canonicalSearch,
 	drillHeader,
 	findScreen,
 	frameHeader,
-	sidebarItems,
+	sectionTabs,
 	tabsHaveIcons,
 	isPlainClick,
 } from '../../admin/src/frame-logic';
@@ -124,7 +124,7 @@ describe( 'frameHeader: the breadcrumb', () => {
 		} );
 		expect( labels( head ) ).toEqual( [ 'Saddle', 'Welcome' ] );
 		expect( head.crumbs[ 0 ].url ).toBe( 'admin.php?page=saddle' );
-		expect( head.showSidebar ).toBe( false );
+		expect( head.showSubtabs ).toBe( false );
 	} );
 
 	it( 'drills in: Saddle / Module / Section / title, all but the last links', () => {
@@ -237,20 +237,18 @@ describe( 'frameHeader: the breadcrumb', () => {
 		const head = frameHeader( { area: { title: 'X' }, tab: '' } );
 		expect( labels( head ) ).toEqual( [ '', 'X' ] );
 		expect( head.showTabs ).toBe( false );
-		expect( head.showSidebar ).toBe( false );
 		expect( head.showSubtabs ).toBe( false );
 	} );
 } );
 
-describe( 'frameHeader: sidebar and tab rows', () => {
-	it( 'gives a module the sidebar and no header tab row', () => {
+describe( 'frameHeader: the tab row and the page links', () => {
+	it( "draws a module's sections as the header tab row", () => {
 		const head = frameHeader( { area: crm, tab: 'campaigns', home: HOME } );
-		expect( head.showSidebar ).toBe( true );
-		expect( head.showTabs ).toBe( false );
+		expect( head.showTabs ).toBe( true );
 		expect( head.showSubtabs ).toBe( false );
 	} );
 
-	it( 'draws the icon tab row in a section with two or more pages', () => {
+	it( 'draws the page links in a section with two or more pages', () => {
 		const head = frameHeader( {
 			area: crm,
 			tab: 'contacts',
@@ -260,7 +258,7 @@ describe( 'frameHeader: sidebar and tab rows', () => {
 		expect( head.showSubtabs ).toBe( true );
 	} );
 
-	it( 'hides the icon tab row in a drill-in, and keeps the sidebar', () => {
+	it( 'hides the tab row and the page links in a drill-in', () => {
 		const head = frameHeader( {
 			area: crm,
 			tab: 'contacts',
@@ -275,10 +273,10 @@ describe( 'frameHeader: sidebar and tab rows', () => {
 			home: HOME,
 		} );
 		expect( head.showSubtabs ).toBe( false );
-		expect( head.showSidebar ).toBe( true );
+		expect( head.showTabs ).toBe( false );
 	} );
 
-	it( 'keeps a Core page with two tabs on its header row, no sidebar', () => {
+	it( 'draws a Core page with two tabs on its header row', () => {
 		const twoTabs = {
 			...context,
 			tabs: [
@@ -292,7 +290,7 @@ describe( 'frameHeader: sidebar and tab rows', () => {
 			home: HOME,
 		} );
 		expect( head.showTabs ).toBe( true );
-		expect( head.showSidebar ).toBe( false );
+		expect( head.showSubtabs ).toBe( false );
 	} );
 
 	it( 'draws no tab row for a one-screen Core page', () => {
@@ -302,27 +300,37 @@ describe( 'frameHeader: sidebar and tab rows', () => {
 			home: HOME,
 		} );
 		expect( head.showTabs ).toBe( false );
-		expect( head.showSidebar ).toBe( false );
+	} );
+
+	it( 'draws no tab row for a module with one section', () => {
+		const head = frameHeader( {
+			area: { ...crm, tabs: [ crm.tabs[ 0 ] ] },
+			tab: 'campaigns',
+			home: HOME,
+		} );
+		expect( head.showTabs ).toBe( false );
 	} );
 } );
 
-describe( 'sidebarItems', () => {
+describe( 'sectionTabs', () => {
 	it( 'keeps the module order and moves Settings last', () => {
-		const { items, settings } = sidebarItems( [
-			{ key: 'overview' },
-			{ key: 'settings' },
-			{ key: 'links' },
-		] );
-		expect( items.map( ( t ) => t.key ) ).toEqual( [
-			'overview',
-			'links',
-		] );
-		expect( settings ).toEqual( { key: 'settings' } );
+		expect(
+			sectionTabs( [
+				{ key: 'overview' },
+				{ key: 'settings' },
+				{ key: 'links' },
+			] ).map( ( t ) => t.key )
+		).toEqual( [ 'overview', 'links', 'settings' ] );
 	} );
 
-	it( 'has no Settings when the module has none', () => {
-		expect( sidebarItems( [ { key: 'overview' } ] ).settings ).toBeNull();
-		expect( sidebarItems( null ) ).toEqual( { items: [], settings: null } );
+	it( 'keeps a list with no Settings as it is, and survives bad input', () => {
+		expect( sectionTabs( [ { key: 'overview' } ] ) ).toEqual( [
+			{ key: 'overview' },
+		] );
+		expect( sectionTabs( null ) ).toEqual( [] );
+		expect( sectionTabs( [ null, { key: 'a' } ] ) ).toEqual( [
+			{ key: 'a' },
+		] );
 	} );
 } );
 
