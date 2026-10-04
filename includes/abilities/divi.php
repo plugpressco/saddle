@@ -1285,6 +1285,19 @@ class Saddle_Divi_Abilities {
 					$address,
 					$post->ID
 				),
+				'done'    => sprintf(
+					/* translators: 1: module type, 2: number of modules inside it, 3: address, 4: post ID. */
+					_n(
+						'Removed %1$s and the %2$d module inside it at %3$s from Divi page #%4$d.',
+						'Removed %1$s and the %2$d modules inside it at %3$s from Divi page #%4$d.',
+						$child_count,
+						'saddle'
+					),
+					(string) $node['blockName'],
+					$child_count,
+					$address,
+					$post->ID
+				),
 				'preview' => array(
 					'address'  => $address,
 					'type'     => (string) $node['blockName'],

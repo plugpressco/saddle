@@ -44,6 +44,7 @@ class Saddle_Approval {
 	const META_DECISION   = '_saddle_decision';
 	const META_DECIDED_BY = '_saddle_decided_by';
 	const META_DECIDED_AT = '_saddle_decided_at';
+	const META_TIER       = '_saddle_tier';
 
 	const DECISION_APPROVED = 'approved';
 	const DECISION_REJECTED = 'rejected';
@@ -92,7 +93,23 @@ class Saddle_Approval {
 	 *                             stays clean.
 	 *     @type string   $summary One-line plain-language description of the
 	 *                             effect, shown in the preview.
+	 *     @type string|callable $done Optional. What the confirmed call did,
+	 *                             in the past tense ("Moved post #5 to the
+	 *                             trash."). The activity log records it
+	 *                             instead of the summary once the change has
+	 *                             run. A callable receives the executor's
+	 *                             result and returns the line, for a result
+	 *                             that can differ from the preview (the item
+	 *                             was already in that state). Without it, or
+	 *                             when it returns '', the log keeps the
+	 *                             summary, so callers that predate it work
+	 *                             unchanged.
 	 *     @type array    $preview Structured detail of what will change.
+	 *     @type string   $tool    Optional. The tool (ability short name) whose
+	 *                             call this is, when `action` is not its name.
+	 *                             Its access level is kept with the request, so
+	 *                             Needs your OK can leave out a request the app
+	 *                             can no longer run. Defaults to `action`.
 	 *     @type array    $input   The ability's input (read for `confirm_token`).
 	 *     @type callable $execute Zero-arg callable that performs the mutation
 	 *                             and returns the result (or WP_Error).
@@ -136,6 +153,9 @@ class Saddle_Approval {
 						rtrim( $summary, '. ' ),
 						$result->get_error_message()
 					);
+				} else {
+					$done    = self::done_line( isset( $args['done'] ) ? $args['done'] : null, $result );
+					$summary = '' !== $done ? $done : $summary;
 				}
 				Saddle_Log::record(
 					array(
@@ -157,6 +177,7 @@ class Saddle_Approval {
 			array(
 				'summary' => isset( $args['summary'] ) ? (string) $args['summary'] : '',
 				'preview' => isset( $args['preview'] ) ? $args['preview'] : null,
+				'tier'    => self::needed_tier( isset( $args['tool'] ) ? (string) $args['tool'] : $action ),
 			)
 		);
 		if ( is_wp_error( $new_token ) ) {
@@ -183,7 +204,8 @@ class Saddle_Approval {
 	 * @param string $bind   Confirmation-relevant parameter bound to the token
 	 *                       (e.g. permanent-vs-trash); '' when the action has none.
 	 * @param array  $detail Optional. `summary` and `preview`, kept so the owner
-	 *                       can decide on the Dashboard.
+	 *                       can decide on the Dashboard, and `tier`, the access
+	 *                       level the tool needs.
 	 * @return string|WP_Error 32-char hex token, or WP_Error on failure.
 	 */
 	private static function issue_token( $action, $target = '', $bind = '', array $detail = array() ) {
@@ -239,8 +261,42 @@ class Saddle_Approval {
 		$preview = wp_json_encode( isset( $detail['preview'] ) ? $detail['preview'] : null );
 		update_post_meta( $post_id, self::META_PREVIEW, wp_slash( false === $preview ? 'null' : $preview ) );
 		update_post_meta( $post_id, self::META_DECISION, '' );
+		update_post_meta( $post_id, self::META_TIER, isset( $detail['tier'] ) ? (string) $detail['tier'] : '' );
 
 		return $token;
+	}
+
+	/**
+	 * The access level a tool needs, as its permission callback enforces it.
+	 * Gate actions are mostly the tool's own name; the older ones use
+	 * underscores ("delete_post" for delete-post).
+	 *
+	 * @param string $tool Tool short name or gate action.
+	 * @return string Tier name, or '' when no tool by that name is registered.
+	 */
+	private static function needed_tier( $tool ) {
+		$tier = Saddle_Capabilities::required_level( $tool );
+
+		return '' !== $tier ? $tier : Saddle_Capabilities::required_level( str_replace( '_', '-', $tool ) );
+	}
+
+	/**
+	 * Whether the app behind a waiting request has lost the access level its
+	 * tool needs since it asked. Its confirm would be refused before the gate,
+	 * so approving the request cannot help. A request whose level is unknown
+	 * is never treated as out of reach.
+	 *
+	 * @param int $id Token post id.
+	 * @return bool
+	 */
+	private static function out_of_reach( $id ) {
+		$tier = (string) get_post_meta( $id, self::META_TIER, true );
+		if ( '' === $tier || ! class_exists( 'Saddle_Access' ) ) {
+			return false;
+		}
+		$role = Saddle_Access::role_for( (string) get_post_meta( $id, self::META_CONNECTION, true ) );
+
+		return Saddle_Capabilities::rank( $role ) < Saddle_Capabilities::rank( $tier );
 	}
 
 	/**
@@ -257,9 +313,27 @@ class Saddle_Approval {
 	}
 
 	/**
-	 * Validate and consume a token. Single-use: the token record is deleted on
-	 * lookup regardless of outcome, so even a mismatched/expired token cannot be
-	 * retried. The consumer must be the same user the preview was issued to.
+	 * The past-tense log line for a confirmed call, from the gate's `done`.
+	 *
+	 * @param string|callable|null $done   A line, or a callable that builds one
+	 *                                     from the executor's result.
+	 * @param mixed                $result What the executor returned.
+	 * @return string '' when there is no line, so the caller keeps the summary.
+	 */
+	private static function done_line( $done, $result ) {
+		if ( is_callable( $done ) && ! is_string( $done ) ) {
+			$done = call_user_func( $done, $result );
+		}
+
+		return is_string( $done ) ? trim( $done ) : '';
+	}
+
+	/**
+	 * Validate and consume a token. The consumer must be the user and the app
+	 * the preview was issued to; a token presented by anyone else is refused
+	 * and left in place for its owner. Once its owner presents it, it is spent
+	 * whatever the outcome, so a mismatched or expired token cannot be
+	 * retried, and only one of several concurrent requests can spend it.
 	 *
 	 * @param string      $token  Candidate token.
 	 * @param string      $action Action the token must be bound to.
@@ -310,9 +384,12 @@ class Saddle_Approval {
 		$stored_conn   = (string) get_post_meta( $post_id, self::META_CONNECTION, true );
 		$decision      = (string) get_post_meta( $post_id, self::META_DECISION, true );
 
-		// Single-use: burn the token now, before any further branching.
-		wp_delete_post( $post_id, true );
-
+		// Whose token is it? Answered BEFORE the token is spent. A token
+		// presented by any user or app other than the one it was issued to can
+		// never run anything: both checks refuse it, on this call and on every
+		// later one. So it is left for its owner. Spending it here let one
+		// app's refused confirm destroy another app's pending preview, which
+		// then could no longer be confirmed or approved.
 		if ( get_current_user_id() !== $stored_user ) {
 			return new WP_Error(
 				'saddle_token_user_mismatch',
@@ -331,6 +408,22 @@ class Saddle_Approval {
 			);
 		}
 
+		// Spend it, and only go on if THIS request spent it. Two requests from
+		// the owning app can both find the token above. wp_delete_post()
+		// returns false unless its own DELETE removed the row, and the database
+		// lets exactly one DELETE of a row succeed. So of any number of
+		// concurrent confirms, one gets the token and the rest are refused here,
+		// before anything runs. The token stays single-use under a race.
+		if ( ! wp_delete_post( $post_id, true ) ) {
+			return new WP_Error(
+				'saddle_invalid_token',
+				__( 'Invalid or already-used confirmation token. Request a new preview to get a fresh token.', 'saddle' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		// From here the token is spent whatever the outcome, so a mismatched,
+		// expired or refused token cannot be retried.
 		if ( $stored_action !== $action ) {
 			return new WP_Error(
 				'saddle_token_mismatch',
@@ -490,6 +583,8 @@ class Saddle_Approval {
 
 	/**
 	 * The requests waiting on the owner: unexpired, undecided, newest first.
+	 * A request whose app no longer has the access level its tool needs is
+	 * left out: approving it could not make it run.
 	 *
 	 * @return array[] `id`, `app`, `connection`, `tool`, `target`, `summary`,
 	 *                 `preview`, `created_at`, `expires_at`.
@@ -521,7 +616,7 @@ class Saddle_Approval {
 
 		$rows = array();
 		foreach ( $query->posts as $post ) {
-			if ( '' !== (string) get_post_meta( $post->ID, self::META_DECISION, true ) ) {
+			if ( '' !== (string) get_post_meta( $post->ID, self::META_DECISION, true ) || self::out_of_reach( $post->ID ) ) {
 				continue;
 			}
 			$expires = (int) get_post_meta( $post->ID, '_saddle_expires', true );
@@ -565,6 +660,24 @@ class Saddle_Approval {
 
 		$approved = 'approve' === $decision;
 
+		if ( $approved && self::out_of_reach( $id ) ) {
+			$labels = class_exists( 'Saddle_Access' ) ? Saddle_Access::labels() : array();
+			$tier   = (string) get_post_meta( $id, self::META_TIER, true );
+			$role   = Saddle_Access::role_for( (string) get_post_meta( $id, self::META_CONNECTION, true ) );
+
+			return new WP_Error(
+				'saddle_approval_out_of_reach',
+				sprintf(
+					/* translators: 1: app name, 2: access level the request needs, such as Edit content, 3: the app's access level now. */
+					__( '%1$s can no longer do this. It needs %2$s access and now has %3$s. Approving would not help.', 'saddle' ),
+					(string) get_post_meta( $id, self::META_APP, true ),
+					isset( $labels[ $tier ] ) ? $labels[ $tier ] : $tier,
+					isset( $labels[ $role ] ) ? $labels[ $role ] : $role
+				),
+				array( 'status' => 409 )
+			);
+		}
+
 		update_post_meta( $id, self::META_DECISION, $approved ? self::DECISION_APPROVED : self::DECISION_REJECTED );
 		update_post_meta( $id, self::META_DECIDED_BY, get_current_user_id() );
 		update_post_meta( $id, self::META_DECIDED_AT, time() );
@@ -574,12 +687,7 @@ class Saddle_Approval {
 				array(
 					'action'  => $approved ? 'owner-approved' : 'owner-rejected',
 					'target'  => (string) get_post_meta( $id, '_saddle_target', true ),
-					'summary' => sprintf(
-						/* translators: 1: what was asked, 2: app name. */
-						$approved ? __( 'Owner approved: %1$s (%2$s)', 'saddle' ) : __( 'Owner rejected: %1$s (%2$s)', 'saddle' ),
-						(string) get_post_meta( $id, self::META_SUMMARY, true ),
-						(string) get_post_meta( $id, self::META_APP, true )
-					),
+					'summary' => self::decision_line( $id, $approved ),
 				)
 			);
 		}
@@ -588,5 +696,35 @@ class Saddle_Approval {
 			'id'       => $id,
 			'decision' => $decision,
 		);
+	}
+
+	/**
+	 * The owner's decision as the activity log says it: "You approved Claude
+	 * Code’s request: Publish post #18 …". The log is the owner's own record,
+	 * so it speaks to them, and it names the app that asked.
+	 *
+	 * @param int  $id       Token post id.
+	 * @param bool $approved Whether the owner approved.
+	 * @return string
+	 */
+	private static function decision_line( $id, $approved ) {
+		$asked = (string) get_post_meta( $id, self::META_SUMMARY, true );
+
+		// A request made with no app behind it came from a signed-in browser.
+		if ( '' === (string) get_post_meta( $id, self::META_CONNECTION, true ) ) {
+			return $approved
+				/* translators: %s: what was asked, such as "Publish post #18". */
+				? sprintf( __( 'You approved a request made in a browser: %s', 'saddle' ), $asked )
+				/* translators: %s: what was asked, such as "Publish post #18". */
+				: sprintf( __( 'You rejected a request made in a browser: %s', 'saddle' ), $asked );
+		}
+
+		$app = (string) get_post_meta( $id, self::META_APP, true );
+
+		return $approved
+			/* translators: 1: app name, such as Claude Code, 2: what it asked, such as "Publish post #18". */
+			? sprintf( __( 'You approved %1$s’s request: %2$s', 'saddle' ), $app, $asked )
+			/* translators: 1: app name, such as Claude Code, 2: what it asked, such as "Publish post #18". */
+			: sprintf( __( 'You rejected %1$s’s request: %2$s', 'saddle' ), $app, $asked );
 	}
 }

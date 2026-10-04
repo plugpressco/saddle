@@ -89,11 +89,18 @@ class Saddle_Approvals_Owner_Test extends WP_UnitTestCase {
 		$this->assertWPError( $result );
 		$this->assertSame( 'saddle_token_connection_mismatch', $result->get_error_code() );
 		$this->assertSame( 0, $calls );
+		$this->assertCount( 1, $this->pending(), 'A refused foreign confirm leaves the request waiting.' );
 
-		// Burned: even the right app cannot use it now.
+		// Not burned: the app that asked can still confirm, exactly once.
+		// Regression: B's refused attempt spent A's token.
 		$this->as_key( $a );
+		$own = Saddle_Approval::gate( $this->args( $calls, array( 'confirm_token' => $token ) ) );
+		$this->assertSame( array( 'executed' => true ), $own );
+		$this->assertSame( 1, $calls );
+
 		$again = Saddle_Approval::gate( $this->args( $calls, array( 'confirm_token' => $token ) ) );
 		$this->assertSame( 'saddle_invalid_token', $again->get_error_code() );
+		$this->assertSame( 0, $calls );
 	}
 
 	public function test_browser_session_and_key_do_not_share_tokens() {
@@ -203,16 +210,62 @@ class Saddle_Approvals_Owner_Test extends WP_UnitTestCase {
 		$this->assertSame( 'saddle_invalid_token', $again->get_error_code() );
 
 		$log = Saddle_Log::query( 10, 1 );
-		$this->assertStringContainsString( 'Owner rejected: Publish “Spring sale”', $log['entries'][0]['summary'] );
+		$this->assertSame( 'You rejected a request made in a browser: Publish “Spring sale”', $log['entries'][0]['summary'] );
 	}
 
+	/**
+	 * The owner's own record speaks to them and names the app. Regression:
+	 * it read "Owner approved: Approve publication of post #18 … (Claude)".
+	 */
 	public function test_approval_is_logged_with_the_app_name() {
 		$this->as_key( $this->key( 'Claude' ) );
 		Saddle_Approval::gate( $this->args( $calls ) );
 		$this->decide( $this->pending()[0]['id'], 'approve' );
 
 		$log = Saddle_Log::query( 10, 1 );
-		$this->assertSame( 'Owner approved: Publish “Spring sale” (Claude)', $log['entries'][0]['summary'] );
+		$this->assertSame( 'You approved Claude’s request: Publish “Spring sale”', $log['entries'][0]['summary'] );
+	}
+
+	public function test_rejection_is_logged_with_the_app_name() {
+		$this->as_key( $this->key( 'Claude Code' ) );
+		Saddle_Approval::gate( $this->args( $calls ) );
+		$this->decide( $this->pending()[0]['id'], 'reject' );
+
+		$log = Saddle_Log::query( 10, 1 );
+		$this->assertSame( 'You rejected Claude Code’s request: Publish “Spring sale”', $log['entries'][0]['summary'] );
+	}
+
+	/** A publish under drafts-only asks plainly, so the decision line reads plainly too. */
+	public function test_a_publish_request_reads_as_the_request() {
+		update_option( Saddle_Capabilities::DRAFTS_ONLY_OPTION, true );
+		Saddle_Capabilities::set_tier( 'write' );
+		$id = self::factory()->post->create(
+			array(
+				'post_title'  => 'Spring sale',
+				'post_status' => 'draft',
+			)
+		);
+		$this->as_key( $this->key( 'Claude Code' ) );
+		Saddle_Access::set_role( 'key:' . $GLOBALS['wp_rest_application_password_uuid'], 'write' );
+
+		$preview = wp_get_ability( 'saddle/update-post' )->execute(
+			array(
+				'id'     => $id,
+				'status' => 'publish',
+			)
+		);
+		$this->assertSame( sprintf( 'Publish post #%d "Spring sale", with any other edits in the same request.', $id ), $preview['summary'] );
+
+		$this->decide( $this->pending()[0]['id'], 'approve' );
+		$log = Saddle_Log::query( 1, 1 );
+		$this->assertSame(
+			sprintf( 'You approved Claude Code’s request: Publish post #%d "Spring sale", with any other edits in the same request.', $id ),
+			$log['entries'][0]['summary']
+		);
+
+		delete_option( Saddle_Capabilities::DRAFTS_ONLY_OPTION );
+		delete_option( Saddle_Capabilities::OPTION );
+		delete_option( Saddle_Access::KEY_ROLES_OPTION );
 	}
 
 	public function test_undecided_agent_confirm_still_works() {
@@ -241,6 +294,43 @@ class Saddle_Approvals_Owner_Test extends WP_UnitTestCase {
 
 		$this->assertSame( 200, $this->decide( $id, 'approve' )->get_status() );
 		$this->assertSame( 409, $this->decide( $id, 'reject' )->get_status() );
+	}
+
+	/**
+	 * A request whose app has since lost the access level its tool needs is
+	 * left out of Needs your OK, and approving it is refused: the app's
+	 * confirm would be refused before the gate anyway. Regression: it stayed
+	 * listed and could be approved to no effect.
+	 */
+	public function test_a_request_the_app_can_no_longer_run_is_left_out() {
+		$uuid = $this->key( 'Claude Code' );
+		$conn = 'key:' . $uuid;
+		Saddle_Access::set_role( $conn, 'write' );
+		$post = self::factory()->post->create( array( 'post_title' => 'Old news' ) );
+
+		$this->as_key( $uuid );
+		$preview = wp_get_ability( 'saddle/delete-post' )->execute( array( 'id' => $post ) );
+		$this->assertTrue( $preview['requires_confirmation'] );
+		$rows = $this->pending();
+		$this->assertCount( 1, $rows );
+		$id = $rows[0]['id'];
+
+		Saddle_Access::set_role( $conn, 'read' );
+		$this->assertSame( array(), $this->pending(), 'Approving could not help, so the owner is not asked.' );
+		$ids = wp_list_pluck( Saddle_Notices::for_screen( 'saddle', 'settings/general' ), 'id' );
+		$this->assertNotContains( 'saddle-needs-ok', $ids, 'The bell does not count it either.' );
+
+		$response = $this->decide( $id, 'approve' );
+		$this->assertSame( 409, $response->get_status() );
+		$this->assertSame( 'saddle_approval_out_of_reach', $response->get_data()['code'] );
+		$this->assertSame( 'Claude Code can no longer do this. It needs Edit content access and now has Read only. Approving would not help.', $response->get_data()['message'] );
+		$this->assertSame( '', get_post_meta( $id, '_saddle_decision', true ), 'A refused approval records nothing.' );
+
+		// More access than the tool needs is enough.
+		Saddle_Access::set_role( $conn, 'admin' );
+		$this->assertCount( 1, $this->pending() );
+
+		delete_option( Saddle_Access::KEY_ROLES_OPTION );
 	}
 
 	public function test_the_bell_counts_pending_requests_everywhere_but_the_dashboard_list() {

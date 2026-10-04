@@ -430,6 +430,12 @@ class Saddle_Menu_Abilities {
 					$item->title,
 					$menu->name
 				),
+				'done'    => sprintf(
+					/* translators: 1: item label, 2: menu name. */
+					__( 'Removed “%1$s” from the menu “%2$s”.', 'saddle' ),
+					$item->title,
+					$menu->name
+				),
 				'preview' => array(
 					'id'               => $item->ID,
 					'title'            => $item->title,

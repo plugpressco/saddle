@@ -35,6 +35,8 @@ class Saddle_Site_Test extends WP_UnitTestCase {
 	}
 
 	public function tear_down() {
+		$this->restore_theme();
+
 		foreach ( array( 'saddle-dummy-addon', 'saddle-dummy' ) as $slug ) {
 			$file = $slug . '/' . $slug . '.php';
 			if ( is_plugin_active( $file ) ) {
@@ -375,9 +377,177 @@ class Saddle_Site_Test extends WP_UnitTestCase {
 	}
 
 	public function test_activate_current_theme_is_noop() {
+		$pending = count( Saddle_Approval::pending() );
+
 		$result = $this->ability( 'saddle/activate-theme' )->execute( array( 'stylesheet' => get_stylesheet() ) );
 		$this->assertNotWPError( $result );
 		$this->assertFalse( $result['activated'], 'Activating the already-active theme must be a no-op.' );
+		$this->assertArrayNotHasKey( 'confirm_token', $result, 'Nothing to change, so nothing to confirm.' );
+		$this->assertCount( $pending, Saddle_Approval::pending(), 'No request waits on the owner for a no-op.' );
+	}
+
+	/* -------- themes: activate, gated (#322) -------- */
+
+	/** The theme active before a test switched it. */
+	private $previous_theme = '';
+
+	/**
+	 * Make the fixture themes installable, so there is a second theme to
+	 * switch to whatever the host site has.
+	 *
+	 * @return string The fixture's stylesheet.
+	 */
+	private function other_theme() {
+		$this->previous_theme = get_stylesheet();
+		register_theme_directory( __DIR__ . '/fixtures/themes' );
+		delete_site_transient( 'theme_roots' );
+		wp_clean_themes_cache();
+		$this->assertTrue( wp_get_theme( 'saddle-classic-fixture' )->exists(), 'The fixture theme must be installed.' );
+
+		return 'saddle-classic-fixture';
+	}
+
+	/** Put the host's theme back. */
+	private function restore_theme() {
+		if ( '' !== $this->previous_theme && get_stylesheet() !== $this->previous_theme ) {
+			switch_theme( $this->previous_theme );
+		}
+	}
+
+	public function test_activate_theme_is_a_destructive_admin_tool_with_a_token() {
+		$ability = $this->ability( 'saddle/activate-theme' );
+		$meta    = $ability->get_meta();
+
+		$this->assertTrue( $meta['annotations']['destructive'] );
+		$this->assertSame( 'admin', $meta['saddle']['tier'] );
+		$this->assertArrayHasKey( 'confirm_token', $ability->get_input_schema()['properties'] );
+		$this->assertStringContainsString( 'confirm_token', $ability->get_description() );
+	}
+
+	/** Regression: activate-theme switched the whole site's theme in one call. */
+	public function test_activate_theme_without_a_token_previews_and_changes_nothing() {
+		$other   = $this->other_theme();
+		$before  = $this->logged( 'activate-theme' );
+		$current = wp_get_theme();
+
+		$preview = $this->ability( 'saddle/activate-theme' )->execute( array( 'stylesheet' => $other ) );
+
+		$this->assertNotWPError( $preview );
+		$this->assertTrue( $preview['requires_confirmation'] );
+		$this->assertNotEmpty( $preview['confirm_token'] );
+		$this->assertSame( 'activate-theme', $preview['action'] );
+		$this->assertSame( $other, $preview['preview']['stylesheet'] );
+		$this->assertSame( 'Saddle Classic Fixture', $preview['preview']['theme_name'] );
+		$this->assertSame( '1.0.0', $preview['preview']['version'] );
+		$this->assertSame( trim( $current->get( 'Name' ) . ' ' . $current->get( 'Version' ) ), $preview['preview']['current_theme'] );
+		$this->assertStringContainsString( 'to Saddle Classic Fixture 1.0.0. Every page on the site changes how it looks.', $preview['summary'] );
+
+		$this->assertSame( $this->previous_theme, get_stylesheet(), 'A preview must not switch the theme.' );
+		$this->assertSame( $before, $this->logged( 'activate-theme' ), 'A preview is not logged as a change.' );
+	}
+
+	public function test_activate_theme_token_runs_once_and_a_reused_token_is_refused() {
+		$other   = $this->other_theme();
+		$preview = $this->ability( 'saddle/activate-theme' )->execute( array( 'stylesheet' => $other ) );
+		$input   = array(
+			'stylesheet'    => $other,
+			'confirm_token' => $preview['confirm_token'],
+		);
+		$before  = $this->logged( 'activate-theme' );
+
+		$done = $this->ability( 'saddle/activate-theme' )->execute( $input );
+		$this->assertNotWPError( $done );
+		$this->assertSame(
+			array(
+				'activated'  => true,
+				'stylesheet' => $other,
+				'name'       => 'Saddle Classic Fixture',
+			),
+			$done,
+			'The confirmed call keeps the one-step return shape.'
+		);
+		$this->assertSame( $other, get_stylesheet() );
+		$this->assertSame( $before + 1, $this->logged( 'activate-theme' ), 'The switch is logged exactly once.' );
+		$this->assertStringStartsWith( 'Switched the active theme from ', Saddle_Log::query( 1, 1 )['entries'][0]['summary'] );
+
+		$again = $this->ability( 'saddle/activate-theme' )->execute( $input );
+		$this->assertWPError( $again );
+		$this->assertSame( 'saddle_invalid_token', $again->get_error_code() );
+		$this->assertSame( $before + 1, $this->logged( 'activate-theme' ) );
+	}
+
+	public function test_the_theme_token_is_bound_to_the_theme() {
+		$other   = $this->other_theme();
+		$preview = $this->ability( 'saddle/activate-theme' )->execute( array( 'stylesheet' => $other ) );
+
+		$swapped = $this->ability( 'saddle/activate-theme' )->execute(
+			array(
+				'stylesheet'    => 'saddle-block-fixture',
+				'confirm_token' => $preview['confirm_token'],
+			)
+		);
+
+		$this->assertWPError( $swapped );
+		$this->assertSame( 'saddle_token_target_mismatch', $swapped->get_error_code() );
+		$this->assertSame( $this->previous_theme, get_stylesheet() );
+	}
+
+	public function test_the_theme_token_is_bound_to_the_theme_active_at_preview() {
+		$other   = $this->other_theme();
+		$preview = $this->ability( 'saddle/activate-theme' )->execute( array( 'stylesheet' => $other ) );
+
+		// Someone switches theme between the preview and the confirm: the
+		// owner was shown "from" a theme that is no longer active.
+		switch_theme( 'saddle-block-fixture' );
+		$result = $this->ability( 'saddle/activate-theme' )->execute(
+			array(
+				'stylesheet'    => $other,
+				'confirm_token' => $preview['confirm_token'],
+			)
+		);
+
+		$this->assertWPError( $result );
+		$this->assertSame( 'saddle_token_bind_mismatch', $result->get_error_code() );
+		$this->assertSame( 'saddle-block-fixture', get_stylesheet() );
+	}
+
+	public function test_activate_theme_is_refused_below_the_admin_tier() {
+		$other = $this->other_theme();
+		Saddle_Capabilities::set_tier( 'write' );
+		$pending = count( Saddle_Approval::pending() );
+
+		$result = $this->ability( 'saddle/activate-theme' )->execute( array( 'stylesheet' => $other ) );
+
+		$this->assertWPError( $result );
+		$this->assertSame( 'ability_invalid_permissions', $result->get_error_code() );
+		$this->assertSame( $this->previous_theme, get_stylesheet() );
+		$this->assertCount( $pending, Saddle_Approval::pending(), 'A refused call issues no token.' );
+	}
+
+	public function test_a_theme_preview_waits_under_needs_your_ok() {
+		$other = $this->other_theme();
+		$this->ability( 'saddle/activate-theme' )->execute( array( 'stylesheet' => $other ) );
+
+		$rows = wp_list_filter( Saddle_Approval::pending(), array( 'tool' => 'activate-theme' ) );
+		$this->assertCount( 1, $rows );
+		$row = reset( $rows );
+		$this->assertSame( $other, $row['target'] );
+		$this->assertStringContainsString( 'Saddle Classic Fixture 1.0.0', $row['summary'] );
+	}
+
+	public function test_a_confirmed_theme_switch_can_be_undone() {
+		$other = $this->other_theme();
+		$this->confirmed( 'saddle/activate-theme', array( 'stylesheet' => $other ) );
+		$this->assertSame( $other, get_stylesheet() );
+
+		$entry = $this->ability( 'saddle/recall-changes' )->execute( array( 'limit' => 1 ) )['changes'][0];
+		$this->assertSame( 'activate-theme', $entry['action'] );
+		$this->assertSame( 'available', $entry['undo'], 'The gate\'s log entry must carry the journal.' );
+
+		$undone = $this->confirmed( 'saddle/undo-changes', array( 'entries' => array( $entry['id'] ) ) );
+		$this->assertNotWPError( $undone );
+		$this->assertSame( 1, $undone['undone'] );
+		$this->assertSame( $this->previous_theme, get_stylesheet(), 'Undo puts the previous theme back.' );
 	}
 
 	/* -------- options: allowlist + blocklist -------- */

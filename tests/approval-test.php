@@ -262,6 +262,38 @@ class Saddle_Approval_Test extends WP_UnitTestCase {
 		$this->assertWPError( $result );
 		$this->assertSame( 'saddle_token_user_mismatch', $result->get_error_code() );
 		$this->assertSame( 0, $calls, 'Another user must never confirm a token they did not preview.' );
+
+		// The refusal does not spend the issuer's token.
+		wp_set_current_user( $issuer );
+		$own = Saddle_Approval::gate( $this->gate_args( $calls, array( 'input' => array( 'confirm_token' => $token ) ) ) );
+		$this->assertSame( array( 'executed' => true ), $own );
+		$this->assertSame( 1, $calls );
+	}
+
+	/**
+	 * Two confirms with one token race: both find the token, and only the one
+	 * whose delete removes the row may run. Simulated by deleting the row from
+	 * under this request just before its own delete, as a concurrent request
+	 * that got there first would. Regression: the delete's result was ignored,
+	 * so the losing request ran the action a second time.
+	 */
+	public function test_a_token_spent_by_a_concurrent_request_does_not_run_again() {
+		$token   = Saddle_Approval::gate( $this->gate_args( $calls ) )['confirm_token'];
+		$post_id = $this->token_post_id( $token );
+
+		$winner = static function ( $id ) use ( $post_id ) {
+			global $wpdb;
+			if ( (int) $id === $post_id ) {
+				$wpdb->delete( $wpdb->posts, array( 'ID' => $post_id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Test: the concurrent request's DELETE.
+			}
+		};
+		add_action( 'delete_post', $winner );
+		$result = Saddle_Approval::gate( $this->gate_args( $calls, array( 'input' => array( 'confirm_token' => $token ) ) ) );
+		remove_action( 'delete_post', $winner );
+
+		$this->assertWPError( $result );
+		$this->assertSame( 'saddle_invalid_token', $result->get_error_code() );
+		$this->assertSame( 0, $calls, 'The request that lost the race must not run the action.' );
 	}
 
 	/* -------- audit logging -------- */
@@ -291,6 +323,96 @@ class Saddle_Approval_Test extends WP_UnitTestCase {
 		$this->assertSame( $before + 1, $log['total'], 'A failed confirmed destructive call must be logged.' );
 		$this->assertStringContainsString( 'Failed after confirmation', $log['entries'][0]['summary'] );
 		$this->assertStringContainsString( 'Exploded halfway.', $log['entries'][0]['summary'] );
+	}
+
+	/**
+	 * A confirmed call logs what happened, in the past tense, rather than the
+	 * preview's request ("Move post #5 to the trash"). Regression: the log
+	 * replayed the preview sentence for every confirmed change.
+	 */
+	public function test_confirmed_call_logs_the_done_line_not_the_preview() {
+		$args  = $this->gate_args( $calls, array( 'done' => 'Deleted post #42.' ) );
+		$token = Saddle_Approval::gate( $args )['confirm_token'];
+
+		$args['input'] = array( 'confirm_token' => $token );
+		Saddle_Approval::gate( $args );
+
+		$entry = Saddle_Log::query( 1, 1 )['entries'][0];
+		$this->assertSame( 'delete_post', $entry['action'] );
+		$this->assertSame( 'Deleted post #42.', $entry['summary'] );
+	}
+
+	/** A callable `done` reads the executor's result, for a result the preview could not know. */
+	public function test_a_callable_done_line_receives_the_result() {
+		$seen  = null;
+		$args  = $this->gate_args(
+			$calls,
+			array(
+				'done' => static function ( $result ) use ( &$seen ) {
+					$seen = $result;
+					return 'Nothing changed.';
+				},
+			)
+		);
+		$token = Saddle_Approval::gate( $args )['confirm_token'];
+
+		$args['input'] = array( 'confirm_token' => $token );
+		Saddle_Approval::gate( $args );
+
+		$this->assertSame( array( 'executed' => true ), $seen );
+		$this->assertSame( 'Nothing changed.', Saddle_Log::query( 1, 1 )['entries'][0]['summary'] );
+	}
+
+	/** Callers that predate `done` (Saddle Pro, the integrations) keep logging the summary. */
+	public function test_without_done_the_log_keeps_the_summary() {
+		$args  = $this->gate_args( $calls );
+		$token = Saddle_Approval::gate( $args )['confirm_token'];
+
+		$args['input'] = array( 'confirm_token' => $token );
+		Saddle_Approval::gate( $args );
+
+		$this->assertSame( 'Delete post #42', Saddle_Log::query( 1, 1 )['entries'][0]['summary'] );
+	}
+
+	/** A `done` string is a line of text, never a function name to call. */
+	public function test_a_done_string_is_never_called() {
+		$args  = $this->gate_args( $calls, array( 'done' => 'time' ) );
+		$token = Saddle_Approval::gate( $args )['confirm_token'];
+
+		$args['input'] = array( 'confirm_token' => $token );
+		Saddle_Approval::gate( $args );
+
+		$this->assertSame( 'time', Saddle_Log::query( 1, 1 )['entries'][0]['summary'] );
+	}
+
+	/** The preview still shows the request, not the past tense. */
+	public function test_the_preview_keeps_the_summary() {
+		$preview = Saddle_Approval::gate( $this->gate_args( $calls, array( 'done' => 'Deleted post #42.' ) ) );
+
+		$this->assertSame( 'Delete post #42', $preview['summary'] );
+		$this->assertArrayNotHasKey( 'done', $preview );
+	}
+
+	/** The real path: a confirmed trash logs "Moved post #N … to the trash." */
+	public function test_confirmed_trash_through_the_tool_logs_what_happened() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+		Saddle_Capabilities::set_tier( 'write' );
+		$id      = self::factory()->post->create( array( 'post_title' => 'Spring sale' ) );
+		$ability = wp_get_ability( 'saddle/delete-post' );
+
+		$preview = $ability->execute( array( 'id' => $id ) );
+		$this->assertStringContainsString( 'Move post', $preview['summary'] );
+		$ability->execute(
+			array(
+				'id'            => $id,
+				'confirm_token' => $preview['confirm_token'],
+			)
+		);
+
+		$entry = Saddle_Log::query( 1, 1 )['entries'][0];
+		$this->assertSame( sprintf( 'Moved post #%d "Spring sale" to the trash.', $id ), $entry['summary'] );
+
+		delete_option( Saddle_Capabilities::OPTION );
 	}
 
 	/* -------- garbage collection -------- */

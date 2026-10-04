@@ -330,7 +330,7 @@ function saddle_register_block_abilities() {
 		'saddle/move-block',
 		array(
 			'label'               => __( 'Move block', 'saddle' ),
-			'description'         => __( 'Moves an addressed block (with its subtree) to a new parent and position on the same post or page. Both addresses come from the same saddle/get-blocks read. Moving a block into its own subtree is refused; the result is validated before saving. Re-read the page afterwards: addresses shift.', 'saddle' ),
+			'description'         => __( 'Moves an addressed block (with its subtree) to a new parent and position on the same post or page. Both addresses come from the same saddle/get-blocks read. Moving a block into its own subtree is refused; the result is validated before saving. A position past the end puts the block last, and the reply says where it went. A move that would leave the block where it is changes nothing and is refused. Re-read the page afterwards: addresses shift.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -629,6 +629,9 @@ class Saddle_Blocks_Abilities {
 				'summary' => 'global-styles' === $store
 					? __( 'Seed a starter design system into this site\'s global styles: 6 brand colors (one accent), a 6-step type scale, and a 7-step 8px spacing scale. Existing tokens are not removed, and it will appear in Appearance → Editor → Styles.', 'saddle' )
 					: __( 'Seed a starter design system: 6 brand colors (one accent), a 6-step type scale, and a 7-step 8px spacing scale. Existing tokens are not removed.', 'saddle' ),
+				'done'    => 'global-styles' === $store
+					? __( 'Added a starter design system to this site\'s global styles: 6 brand colors, a type scale and a spacing scale. Existing tokens were kept.', 'saddle' )
+					: __( 'Added a starter design system: 6 brand colors, a type scale and a spacing scale. Existing tokens were kept.', 'saddle' ),
 				'preview' => array(
 					'store' => $store,
 					'spec'  => $spec,
@@ -1092,6 +1095,31 @@ class Saddle_Blocks_Abilities {
 			return new WP_Error( 'saddle_bad_address', sprintf( __( 'No block at address %s.', 'saddle' ), $to_parent ) );
 		}
 
+		// A position past the end is clamped to the end. Where the block lands
+		// is its address in the saved tree, which is what the reply and the log
+		// say. Landing where it started changes nothing, so it is refused
+		// rather than saved and logged as "moved from 1 to 1".
+		$new_address = '' === $dest ? (string) $at : $dest . '.' . $at;
+		$clamped     = $position > $at;
+		if ( $new_address === $from ) {
+			return new WP_Error(
+				'saddle_move_noop',
+				$clamped
+					? sprintf(
+						/* translators: 1: requested position, 2: block address, such as 0.1. */
+						__( 'Nothing moved. Position %1$d is past the end of that container, so the block would go last, and the block at %2$s is already last there.', 'saddle' ),
+						$position,
+						$from
+					)
+					: sprintf(
+						/* translators: %s: block address, such as 0.1. */
+						__( 'Nothing moved. The block at %s is already in that place.', 'saddle' ),
+						$from
+					),
+				array( 'status' => 400 )
+			);
+		}
+
 		$next = Saddle_Blocks_Tree::insert( $without, $dest, $at, $node );
 		if ( is_wp_error( $next ) ) {
 			return $next;
@@ -1102,7 +1130,6 @@ class Saddle_Blocks_Abilities {
 			return $count;
 		}
 
-		$new_address = '' === $dest ? (string) $at : $dest . '.' . $at;
 		Saddle_Log::record_action(
 			'move-block',
 			$post->ID,
@@ -1116,11 +1143,22 @@ class Saddle_Blocks_Abilities {
 			)
 		);
 
+		$note = __( 'Addresses shift after edits — re-read the page before addressing other nodes.', 'saddle' );
+		if ( $clamped ) {
+			$note = sprintf(
+				/* translators: 1: requested position, 2: block address it went to, 3: the note about addresses shifting. */
+				__( 'Position %1$d is past the end of that container, so the block went last, to %2$s. %3$s', 'saddle' ),
+				$position,
+				$new_address,
+				$note
+			);
+		}
+
 		return array(
 			'id'     => $post->ID,
 			'moved'  => $new_address,
 			'blocks' => $count,
-			'note'   => __( 'Addresses shift after edits — re-read the page before addressing other nodes.', 'saddle' ),
+			'note'   => $note,
 		);
 	}
 
@@ -1205,6 +1243,19 @@ class Saddle_Blocks_Abilities {
 					_n(
 						'Remove %1$s and the %2$d block inside it at %3$s on post #%4$d. Recoverable from revisions.',
 						'Remove %1$s and the %2$d blocks inside it at %3$s on post #%4$d. Recoverable from revisions.',
+						$child_count,
+						'saddle'
+					),
+					(string) $node['blockName'],
+					$child_count,
+					$address,
+					$post->ID
+				),
+				'done'    => sprintf(
+					/* translators: 1: block type, 2: number of blocks inside it, 3: address, 4: post ID. */
+					_n(
+						'Removed %1$s and the %2$d block inside it at %3$s from post #%4$d.',
+						'Removed %1$s and the %2$d blocks inside it at %3$s from post #%4$d.',
 						$child_count,
 						'saddle'
 					),

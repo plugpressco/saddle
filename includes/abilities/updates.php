@@ -271,18 +271,15 @@ class Saddle_Update_Abilities {
 						? __( 'An active plugin that causes a fatal error after updating is restored by WordPress.', 'saddle' )
 						: __( 'WordPress keeps a backup of the previous version but does not check themes for fatal errors.', 'saddle' ),
 				),
+				// The gate logs the confirmed call with this line, once.
+				'done'    => sprintf(
+					/* translators: %s: comma-separated "Name old → new" list. */
+					__( 'Queued update of %s.', 'saddle' ),
+					implode( ', ', $names )
+				),
 				'input'   => $input,
-				'execute' => static function () use ( $type, $items, $ids, $action, $names ) {
+				'execute' => static function () use ( $type, $items ) {
 					$run_id = Saddle_Update_Runner::queue( $type, $items );
-					Saddle_Log::record_action(
-						$action,
-						implode( ',', $ids ),
-						sprintf(
-							/* translators: %s: comma-separated "Name old → new" list. */
-							__( 'Queued update of %s.', 'saddle' ),
-							implode( ', ', $names )
-						)
-					);
 					return array(
 						'queued'     => true,
 						'run_id'     => $run_id,
@@ -336,6 +333,13 @@ class Saddle_Update_Abilities {
 					'enabled' => $enabled,
 					'note'    => $note,
 				),
+				// The gate logs the confirmed call with this line, once.
+				'done'    => sprintf(
+					/* translators: 1: "on" or "off", 2: plugin file or theme name. */
+					__( 'Turned automatic updates %1$s for %2$s.', 'saddle' ),
+					$enabled ? __( 'on', 'saddle' ) : __( 'off', 'saddle' ),
+					$id
+				),
 				'input'   => $input,
 				'execute' => static function () use ( $type, $id, $enabled, $option ) {
 					$list = array_values( array_unique( (array) get_site_option( $option, array() ) ) );
@@ -344,16 +348,6 @@ class Saddle_Update_Abilities {
 						$list[] = $id;
 					}
 					update_site_option( $option, $list );
-					Saddle_Log::record_action(
-						'set-auto-update',
-						$type . ':' . $id,
-						sprintf(
-							/* translators: 1: "on" or "off", 2: plugin file or theme name. */
-							__( 'Turned automatic updates %1$s for %2$s.', 'saddle' ),
-							$enabled ? __( 'on', 'saddle' ) : __( 'off', 'saddle' ),
-							$id
-						)
-					);
 					return array(
 						'type'    => $type,
 						'item'    => $id,

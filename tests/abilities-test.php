@@ -81,6 +81,67 @@ class Saddle_Abilities_Test extends WP_UnitTestCase {
 		$this->assertSame( 'trash', get_post( $id )->post_status, 'Without force, the post must be trashed, not deleted.' );
 	}
 
+	/**
+	 * The owner trashes the post in wp-admin between the preview and the
+	 * confirm. Regression: the confirm returned a 500, "WordPress could not
+	 * delete the item."
+	 */
+	public function test_confirming_the_trash_of_a_post_trashed_since_says_so() {
+		Saddle_Capabilities::set_tier( 'write' );
+		$id = self::factory()->post->create( array( 'post_title' => 'Old news' ) );
+
+		$token = $this->ability( 'saddle/delete-post' )->execute( array( 'id' => $id ) )['confirm_token'];
+		wp_trash_post( $id );
+		$result = $this->ability( 'saddle/delete-post' )->execute(
+			array(
+				'id'            => $id,
+				'confirm_token' => $token,
+			)
+		);
+
+		$this->assertNotWPError( $result );
+		$this->assertFalse( $result['deleted'] );
+		$this->assertSame( 'trash', $result['new_status'] );
+		$this->assertStringStartsWith( sprintf( 'Already in the trash: post #%d "Old news". Nothing changed.', $id ), $result['note'] );
+		$this->assertSame( 'trash', get_post( $id )->post_status );
+		$this->assertSame(
+			sprintf( 'Nothing changed: post #%d "Old news" was already in the trash.', $id ),
+			Saddle_Log::query( 1, 1 )['entries'][0]['summary']
+		);
+
+		$again = $this->ability( 'saddle/delete-post' )->execute(
+			array(
+				'id'            => $id,
+				'confirm_token' => $token,
+			)
+		);
+		$this->assertSame( 'saddle_invalid_token', $again->get_error_code(), 'The token was still spent.' );
+	}
+
+	/** Asking to trash a post that is in the trash answers at once, with no token. */
+	public function test_trashing_a_post_already_in_the_trash_answers_at_once() {
+		Saddle_Capabilities::set_tier( 'write' );
+		$id = self::factory()->post->create( array( 'post_title' => 'Old news' ) );
+		wp_trash_post( $id );
+		$pending = count( Saddle_Approval::pending() );
+
+		$result = $this->ability( 'saddle/delete-post' )->execute( array( 'id' => $id ) );
+
+		$this->assertFalse( $result['deleted'] );
+		$this->assertArrayNotHasKey( 'confirm_token', $result );
+		$this->assertStringContainsString( 'call again with "force" set to true', $result['note'] );
+		$this->assertCount( $pending, Saddle_Approval::pending(), 'No request waits on the owner for a no-op.' );
+
+		// Deleting it for good still previews and asks.
+		$forced = $this->ability( 'saddle/delete-post' )->execute(
+			array(
+				'id'    => $id,
+				'force' => true,
+			)
+		);
+		$this->assertTrue( $forced['requires_confirmation'] );
+	}
+
 	public function test_delete_force_removes_permanently() {
 		Saddle_Capabilities::set_tier( 'write' );
 		$id = self::factory()->post->create();

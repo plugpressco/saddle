@@ -181,6 +181,12 @@ class Saddle_Site_Editor_Writes {
 					$existing->title,
 					$id
 				),
+				'done'    => sprintf(
+					/* translators: 1: template title, 2: template id. */
+					__( 'Replaced the blocks of “%1$s” (%2$s). The theme\'s file was not touched.', 'saddle' ),
+					$existing->title,
+					$id
+				),
 				'preview' => array(
 					'id'         => $id,
 					'title'      => $existing->title,

@@ -15,9 +15,11 @@
  * (option values, installed inventory) sit at `admin` too, not `read` — the
  * inventory itself is sensitive. Option get/update is confined to an
  * allowlist; a hard blocklist (siteurl/home, auth keys/salts, active_plugins,
- * roles/registration) always wins, even over the extension filter. The one
- * irreversible operation — overwriting an option value — routes through the
- * approval gate, with the new value bound into the confirm token.
+ * roles/registration) always wins, even over the extension filter. Every
+ * change here routes through the approval gate except a cache flush:
+ * overwriting an option value (the new value bound into the confirm token),
+ * activating or deactivating a plugin (#320) and switching the theme, each
+ * bound to what its preview showed.
  *
  * @package Saddle
  */
@@ -137,21 +139,25 @@ function saddle_register_site_abilities() {
 		'saddle/activate-theme',
 		array(
 			'label'               => __( 'Activate theme', 'saddle' ),
-			'description'         => __( 'Switches the active theme. Provide its "stylesheet" (theme directory name, e.g. "twentytwentyfour"). Reversible by activating the previous theme. Refuses a broken theme (missing files). Returns the newly active theme.', 'saddle' ),
+			'description'         => __( 'Switches the active theme. Provide its "stylesheet" (theme directory name, e.g. "twentytwentyfour"). It takes two calls. The first call changes nothing: it returns a preview naming the theme to switch to and the theme active now, and a "confirm_token". Call again with the same "stylesheet" and that token to switch. The token works once and expires in 15 minutes, and the site owner can approve or refuse the request on their Saddle Home page until then. The theme that is already active returns at once, with no preview. Refuses a broken theme (missing files). Every page on the site changes how it looks. Reversible by activating the previous theme, or with undo-changes. Returns the newly active theme.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
 				'required'   => array( 'stylesheet' ),
 				'properties' => array(
-					'stylesheet' => array(
+					'stylesheet'    => array(
 						'type'        => 'string',
 						'description' => __( 'Theme directory name.', 'saddle' ),
+					),
+					'confirm_token' => array(
+						'type'        => 'string',
+						'description' => __( 'Token from the preview step, required to switch the theme.', 'saddle' ),
 					),
 				),
 			),
 			'execute_callback'    => array( 'Saddle_Site_Abilities', 'activate_theme' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'admin', 'switch_themes', 'activate-theme' ),
-			'meta'                => saddle_ability_meta( false, false, false, 'admin' ),
+			'meta'                => saddle_ability_meta( false, true, false, 'admin' ),
 		)
 	);
 
@@ -392,6 +398,19 @@ class Saddle_Site_Abilities {
 					__( 'Activate the plugin %s. It starts running on this site right away.', 'saddle' ),
 					self::plugin_label( $preview )
 				),
+				'done'    => static function ( $result ) use ( $preview ) {
+					return empty( $result['activated'] )
+						? sprintf(
+							/* translators: %s: plugin name and version. */
+							__( 'The plugin %s was already active. Nothing changed.', 'saddle' ),
+							self::plugin_label( $preview )
+						)
+						: sprintf(
+							/* translators: %s: plugin name and version. */
+							__( 'Activated the plugin %s.', 'saddle' ),
+							self::plugin_label( $preview )
+						);
+				},
 				'preview' => $preview,
 				'input'   => is_array( $input ) ? $input : array(),
 				'execute' => static function () use ( $file, $already ) {
@@ -476,6 +495,26 @@ class Saddle_Site_Abilities {
 				'target'  => $file,
 				'bind'    => substr( hash( 'sha256', (string) wp_json_encode( $preview ) ), 0, 16 ),
 				'summary' => $summary,
+				'done'    => static function ( $result ) use ( $preview ) {
+					if ( empty( $result['deactivated'] ) ) {
+						return sprintf(
+							/* translators: %s: plugin name and version. */
+							__( 'The plugin %s was already inactive. Nothing changed.', 'saddle' ),
+							self::plugin_label( $preview )
+						);
+					}
+					return ! empty( $preview['network_active'] )
+						? sprintf(
+							/* translators: %s: plugin name and version. */
+							__( 'Deactivated the plugin %s on every site in the network.', 'saddle' ),
+							self::plugin_label( $preview )
+						)
+						: sprintf(
+							/* translators: %s: plugin name and version. */
+							__( 'Deactivated the plugin %s.', 'saddle' ),
+							self::plugin_label( $preview )
+						);
+				},
 				'preview' => $preview,
 				'input'   => is_array( $input ) ? $input : array(),
 				'execute' => static function () use ( $file, $already ) {
@@ -599,7 +638,12 @@ class Saddle_Site_Abilities {
 	}
 
 	/**
-	 * saddle/activate-theme.
+	 * saddle/activate-theme. Gated like activate-plugin (#320): a theme change
+	 * changes every page on the site at once, so the first call previews and
+	 * the second, carrying the token, switches. The token is bound to the
+	 * theme and to everything the preview showed, the theme active now
+	 * included. The gate logs the confirmed call, and that log entry carries
+	 * the journal undo-changes reverses.
 	 *
 	 * @param mixed $input Ability input.
 	 * @return array|WP_Error
@@ -623,22 +667,67 @@ class Saddle_Site_Abilities {
 			return new WP_Error( 'saddle_theme_broken', __( 'That theme has errors and cannot be activated: ', 'saddle' ) . $errors->get_error_message(), array( 'status' => 400 ) );
 		}
 
-		if ( get_stylesheet() === $stylesheet ) {
-			return array(
-				'activated'  => false,
-				'stylesheet' => $stylesheet,
-				'note'       => __( 'That theme is already active.', 'saddle' ),
-			);
+		$already = array(
+			'activated'  => false,
+			'stylesheet' => $stylesheet,
+			'note'       => __( 'That theme is already active.', 'saddle' ),
+		);
+		if ( get_stylesheet() === $stylesheet && ! self::has_confirm_token( $input ) ) {
+			return $already;
 		}
 
-		switch_theme( $stylesheet );
+		$current = wp_get_theme();
+		$preview = array(
+			'stylesheet'    => $stylesheet,
+			'theme_name'    => (string) $theme->get( 'Name' ),
+			'version'       => (string) $theme->get( 'Version' ),
+			'current_theme' => trim( $current->get( 'Name' ) . ' ' . $current->get( 'Version' ) ),
+		);
+		$label   = trim( $preview['theme_name'] . ' ' . $preview['version'] );
 
-		Saddle_Log::record_action( 'activate-theme', $stylesheet, sprintf( /* translators: %s: theme name. */ __( 'Switched active theme to %s.', 'saddle' ), $theme->get( 'Name' ) ) );
+		return Saddle_Approval::gate(
+			array(
+				'action'  => 'activate-theme',
+				'target'  => $stylesheet,
+				// Binds the theme active now too: a preview that said "from X"
+				// must not confirm after someone switched to Y in between.
+				'bind'    => substr( hash( 'sha256', (string) wp_json_encode( $preview ) ), 0, 16 ),
+				'summary' => sprintf(
+					/* translators: 1: the active theme's name and version, 2: the new theme's name and version. */
+					__( 'Switch the active theme from %1$s to %2$s. Every page on the site changes how it looks.', 'saddle' ),
+					$preview['current_theme'],
+					$label
+				),
+				'done'    => static function ( $result ) use ( $preview, $label ) {
+					return empty( $result['activated'] )
+						? sprintf(
+							/* translators: %s: theme name and version. */
+							__( 'The theme %s was already active. Nothing changed.', 'saddle' ),
+							$label
+						)
+						: sprintf(
+							/* translators: 1: the previous theme's name and version, 2: the new theme's name and version. */
+							__( 'Switched the active theme from %1$s to %2$s.', 'saddle' ),
+							$preview['current_theme'],
+							$label
+						);
+				},
+				'preview' => $preview,
+				'input'   => $input,
+				'execute' => static function () use ( $stylesheet, $theme, $already ) {
+					if ( get_stylesheet() === $stylesheet ) {
+						return $already;
+					}
 
-		return array(
-			'activated'  => true,
-			'stylesheet' => $stylesheet,
-			'name'       => $theme->get( 'Name' ),
+					switch_theme( $stylesheet );
+
+					return array(
+						'activated'  => true,
+						'stylesheet' => $stylesheet,
+						'name'       => $theme->get( 'Name' ),
+					);
+				},
+			)
 		);
 	}
 
@@ -751,6 +840,23 @@ class Saddle_Site_Abilities {
 					self::scalarize( $current ),
 					self::scalarize( $value )
 				),
+				'done'    => static function ( $result ) use ( $name, $page, $current, $value ) {
+					return empty( $result['updated'] )
+						? sprintf(
+							/* translators: 1: option name, 2: the value it already held. */
+							__( '"%1$s" already held "%2$s". Nothing changed.', 'saddle' ),
+							$name,
+							self::scalarize( $value )
+						)
+						: sprintf(
+							/* translators: 1: option name, 2: settings page, 3: old value, 4: new value. */
+							__( 'Changed "%1$s" (Settings → %2$s) from "%3$s" to "%4$s".', 'saddle' ),
+							$name,
+							ucfirst( $page ),
+							self::scalarize( $current ),
+							self::scalarize( $value )
+						);
+				},
 				'preview' => array(
 					'name'          => $name,
 					'page'          => $page,
