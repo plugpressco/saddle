@@ -75,7 +75,7 @@ The SEO and WooCommerce tools work when that plugin is active.
 * Yoast SEO: Read and edit the SEO title, meta description, robots and schema type of posts, pages and terms.
 * Rank Math: Read and edit the SEO title, meta description and robots of posts, pages and terms.
 * All in One SEO: Read and edit the SEO title, meta description, robots and social fields of posts and pages.
-* WooCommerce: List and read products, variations and orders.
+* WooCommerce: List and read products and variations. Orders show customer names and emails, so listing them needs Edit content.
 * Unsplash: Find and import free stock photos. This needs your own Unsplash API key.
 * Other plugins: Any plugin can add its own tools to Saddle. Tools from other developers stay off until you switch them on under Saddle > Services.
 
@@ -91,7 +91,7 @@ The SEO and WooCommerce tools work when that plugin is active.
 These tools stay off until you give an app Manage the site.
 
 * Settings: Change the site title, permalinks and reading options.
-* Plugins and themes: Activate and deactivate plugins, and switch the active theme.
+* Plugins and themes: Activate and deactivate plugins after a preview, and switch the active theme.
 * Updates: See which plugin, theme and WordPress updates are waiting, apply plugin and theme updates through WordPress's own updater, and turn automatic updates on or off per plugin. WordPress keeps a backup and restores a plugin that breaks the site.
 * Site Health: Read the results of WordPress's own Site Health checks.
 * Cache: Clear the site cache.
@@ -99,7 +99,7 @@ These tools stay off until you give an app Manage the site.
 = Safety =
 
 * Access for each app: Choose Read only, Edit content or Manage the site for each connected app. New apps start at Read only.
-* Delete confirmation: Review a preview before anything is deleted or overwritten.
+* Confirmation: Review a preview before anything is deleted or overwritten, or before a plugin is turned on or off.
 * Drafts only: Save new posts as drafts until you publish them.
 * Rehearsal: Let an app try anything its level allows while nothing is saved. Each change it would have made shows in the activity log as rehearsed.
 * Tool switches: Turn off any single tool.
@@ -234,6 +234,8 @@ The WordPress.org version never checks for its own updates. The version from plu
 * Changed: Unsplash tools stay out of your AI app's tool list until you add a key under Services. Searching Unsplash needs Edit content access, because it uses your Unsplash quota. On WordPress 7.0 and later, the same key also appears under Settings > Connectors.
 * Changed: Settings is one page: Safety (publishing needs your OK, practice mode, stop writes if the site moves) and Advanced (turn off single tools, sign-in for apps, memory limits, recent changes and the connection check).
 * Changed: The Saddle screens look like WordPress's own pages, with its greys and form controls, links in your admin color scheme and one small set of text sizes. Saddle's own color, a deep teal, appears only on its logo, buttons and switches. Saddle shows at most one notice at the top of its pages and keeps the rest behind the bell.
+* Changed: Activating or deactivating a plugin shows a preview first, and nothing changes until your AI app confirms it. The request also waits for you under Needs your OK.
+* Changed: Listing WooCommerce orders needs Edit content, because orders show customer names and emails. Products can still be read at Read only.
 * Changed: Saddle Analytics, Saddle Rank and Saddle CRM, PlugPress's own plugins, are trusted like Waggle: their tools work as soon as they are active, with no switch to turn on. Saddle Rank is Waggle's new name, and any Waggle tool you switched off stays off after the rename.
 * New: For plugin developers: the saddle_modules filter adds a page under the Saddle menu with its own icon, a sidebar of sections, icon tabs and an address for each page. Describe a module's settings once, and Saddle draws the form, serves it over the REST API and offers it to agents. A full-screen page outside the Saddle frame can load Saddle's colors.
 * Removed: The unused dark and light theme setting. The Saddle screens have one light theme.
