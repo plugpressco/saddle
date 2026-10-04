@@ -199,7 +199,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 
 == Screenshots ==
 
-1. Home: see what your AI changed, what waits for your OK, and what each app may do.
+1. Home: see what your AI changed and undo it, what waits for your OK, and what each app may do.
 2. AI apps: connect Claude, ChatGPT, Claude Code, Cursor and other MCP apps.
 3. Needs your OK: deletes and plugin changes wait for you. See what an app wants, then approve or reject it.
 4. Context: tell every app about your site, its voice and its rules, and add Skills.
