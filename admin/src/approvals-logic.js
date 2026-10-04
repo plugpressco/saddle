@@ -137,7 +137,20 @@ const fieldLabels = () => ( {
 	module: __( 'Module', 'saddle' ),
 	items: __( 'Items', 'saddle' ),
 	note: __( 'Note', 'saddle' ),
+	plugin_name: __( 'Plugin', 'saddle' ),
+	theme_name: __( 'Theme', 'saddle' ),
+	version: __( 'Version', 'saddle' ),
 } );
+
+/**
+ * Fields that name the same thing as a friendlier field beside them: a
+ * plugin's file ("hello.php") next to its name ("Hello Dolly"), a theme's
+ * folder next to its name. The file is for the app (R4).
+ */
+const SHOWN_BY = {
+	plugin: 'plugin_name',
+	stylesheet: 'theme_name',
+};
 
 /**
  * Fields that are for the app, not the owner: ids, tool names, block
@@ -213,8 +226,9 @@ function readable( key, value ) {
 }
 
 /**
- * Whether a field is left out: an internal one, or the second way a delete
- * preview says it can't be undone ("Can be restored" already says it).
+ * Whether a field is left out: an internal one, a file name shown by its
+ * name, or the second way a delete preview says it can't be undone ("Can be
+ * restored" already says it).
  *
  * @param {Object} preview The flat preview.
  * @param {string} key     A field name.
@@ -224,10 +238,14 @@ function hidden( preview, key ) {
 	if ( HIDDEN.includes( key ) ) {
 		return true;
 	}
-	return (
-		'will_delete_permanently' === key &&
-		Object.prototype.hasOwnProperty.call( preview, 'recoverable' )
-	);
+	const has = ( k ) =>
+		Object.prototype.hasOwnProperty.call( preview, k ) &&
+		null !== preview[ k ] &&
+		'' !== preview[ k ];
+	if ( SHOWN_BY[ key ] && has( SHOWN_BY[ key ] ) ) {
+		return true;
+	}
+	return 'will_delete_permanently' === key && has( 'recoverable' );
 }
 
 /**

@@ -24,7 +24,6 @@ import {
 	Row,
 	RowList,
 	Select,
-	Spinner,
 	Switch,
 	toast,
 } from '@plugpress/ui';
@@ -346,7 +345,7 @@ export default function SettingsForm( { scope, screen, keys, bare } ) {
 				const all = res.fields || [];
 				setFields( all );
 				setDraft( startDraft( renderableFields( all, screen ) ) );
-				toast.success( __( 'Settings saved.', 'saddle' ) );
+				toast.success( __( 'Saved.', 'saddle' ) );
 			} )
 			.catch( ( e ) => {
 				const key = e?.data?.field;
@@ -372,7 +371,7 @@ export default function SettingsForm( { scope, screen, keys, bare } ) {
 	};
 
 	if ( null === fields ) {
-		return <Spinner />;
+		return <RowList loading loadingRows={ keys ? keys.length : 3 } />;
 	}
 
 	if ( loadError ) {

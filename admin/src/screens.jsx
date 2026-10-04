@@ -16,12 +16,19 @@
  */
 import { useMemo, useEffect, useRef } from '@wordpress/element';
 import { doAction } from '@wordpress/hooks';
-import { Button, Drawer, Notice } from '@plugpress/ui';
+import {
+	Button,
+	Drawer,
+	Notice,
+	RowList,
+	Skeleton,
+	VisuallyHidden,
+} from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { api, saddleData } from './api';
 import { findScreen } from './frame-logic';
 import { findArea, subtabsOf, withArg } from './routes';
-import Home from './components/Home';
+import Home, { HomeSkeleton } from './components/Home';
 import Context from './components/Guidance';
 import ConnectApps from './components/ConnectApps';
 import Apps from './components/ConnectedClients';
@@ -271,6 +278,27 @@ function SettingsScreen( { extTabs, caps, loadCaps, onRehearsalChanged } ) {
 				</div>
 			) }
 		</>
+	);
+}
+
+/**
+ * A page's shape while the app loads (P12): Home's columns, or a heading and
+ * a block of rows. No h1 or h2 (see Frame).
+ *
+ * @param {Object} props
+ * @param {Object} props.area The page.
+ * @param {string} props.tab  The tab.
+ */
+export function ScreenSkeleton( { area, tab } ) {
+	if ( 'home' === area.key && ( ! tab || 'overview' === tab ) ) {
+		return <HomeSkeleton />;
+	}
+	return (
+		<div className="saddle-skeleton">
+			<VisuallyHidden>{ __( 'Loading', 'saddle' ) }</VisuallyHidden>
+			<Skeleton height={ 15 } width={ 120 } aria-hidden="true" />
+			<RowList loading loadingRows={ 3 } aria-hidden="true" />
+		</div>
 	);
 }
 

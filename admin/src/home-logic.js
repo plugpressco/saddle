@@ -67,3 +67,18 @@ export function worksWith( records ) {
 		...list.filter( ( r ) => on( r ) && 'addon' === r.kind ),
 	];
 }
+
+/**
+ * Whether Home runs the connection self-check now (P12). The check calls the
+ * site back, so on a server that answers one request at a time it would hold
+ * everything sent after it: it waits until the week's numbers are in, which
+ * Home asks for together with Needs your OK and the feed. Its answer matters
+ * only once an app is connected.
+ *
+ * @param {boolean} connected Whether an app is connected.
+ * @param {?Object} week      The week's numbers, or null while they load.
+ * @return {boolean} True to run it.
+ */
+export function selfCheckDue( connected, week ) {
+	return !! connected && null !== week && undefined !== week;
+}

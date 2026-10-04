@@ -5,6 +5,7 @@
  * clicks on a link stay in the app.
  */
 import {
+	canonicalSearch,
 	drillHeader,
 	findScreen,
 	frameHeader,
@@ -12,6 +13,7 @@ import {
 	tabsHaveIcons,
 	isPlainClick,
 } from '../../admin/src/frame-logic';
+import { readRoute, resolveSub, resolveTab } from '../../admin/src/routes';
 
 const HOME = { label: 'Saddle', url: 'admin.php?page=saddle' };
 
@@ -522,5 +524,80 @@ describe( 'tabsHaveIcons', () => {
 	it( 'is false for no tabs', () => {
 		expect( tabsHaveIcons( null ) ).toBe( false );
 		expect( tabsHaveIcons( [] ) ).toBe( false );
+	} );
+} );
+
+describe( 'canonicalSearch (P20)', () => {
+	const area = {
+		key: 'fieldnotes',
+		tabs: [
+			{ key: 'overview', label: 'Overview' },
+			{
+				key: 'reports',
+				label: 'Reports',
+				subtabs: [
+					{ key: 'sources', label: 'Sources' },
+					{ key: 'pages', label: 'Pages' },
+				],
+			},
+		],
+	};
+
+	// What App draws for an address: the same three calls it makes.
+	const drawn = ( search ) => {
+		const here = readRoute( search );
+		const tab = resolveTab( area, here.tab );
+		return { tab, sub: resolveSub( area, tab, here.sub ) };
+	};
+	const fix = ( search ) => canonicalSearch( search, drawn( search ) );
+
+	it( 'leaves a good address alone', () => {
+		expect( fix( '?page=saddle-fieldnotes' ) ).toBeNull();
+		expect(
+			fix( '?page=saddle-fieldnotes&tab=reports&sub=pages' )
+		).toBeNull();
+		expect( fix( '?page=saddle-fieldnotes&tab=reports' ) ).toBeNull();
+	} );
+
+	it( 'drops an unknown page and keeps the tab', () => {
+		expect( fix( '?page=saddle-fieldnotes&tab=reports&sub=nope' ) ).toBe(
+			'?page=saddle-fieldnotes&tab=reports'
+		);
+	} );
+
+	it( 'drops an unknown tab, and a page the first tab doesn’t have', () => {
+		expect( fix( '?page=saddle-fieldnotes&tab=nope' ) ).toBe(
+			'?page=saddle-fieldnotes'
+		);
+		expect( fix( '?page=saddle-fieldnotes&tab=nope&sub=pages' ) ).toBe(
+			'?page=saddle-fieldnotes'
+		);
+		expect( fix( '?page=saddle-fieldnotes&tab=' ) ).toBe(
+			'?page=saddle-fieldnotes'
+		);
+	} );
+
+	it( 'writes a page the way the app read it', () => {
+		expect( fix( '?page=saddle-fieldnotes&tab=reports&sub=Pages' ) ).toBe(
+			'?page=saddle-fieldnotes&tab=reports&sub=pages'
+		);
+	} );
+
+	it( 'keeps every other argument', () => {
+		expect(
+			fix( '?page=saddle-fieldnotes&tab=nope&view=alpha&campaign=12' )
+		).toBe( '?page=saddle-fieldnotes&view=alpha&campaign=12' );
+		expect(
+			canonicalSearch( '?page=saddle&tab=bogus&setup=1', {
+				tab: 'overview',
+				sub: '',
+			} )
+		).toBe( '?page=saddle&setup=1' );
+	} );
+
+	it( 'drops a page on a tab that has none', () => {
+		expect( fix( '?page=saddle-fieldnotes&sub=pages' ) ).toBe(
+			'?page=saddle-fieldnotes'
+		);
 	} );
 } );

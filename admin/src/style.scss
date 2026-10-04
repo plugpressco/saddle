@@ -1441,6 +1441,13 @@ body.saddle-admin-page {
 	}
 }
 
+// A page's shape while the app loads (P12): a heading's place, then a block
+// of rows.
+.saddle-skeleton {
+	display: grid;
+	gap: var( --pp-space-3 );
+}
+
 // No app connected: one sentence and one button, centred in one block.
 .saddle-home__connect {
 	display: flex;
@@ -1706,8 +1713,38 @@ body.saddle-admin-page {
 	margin-top: 10px;
 }
 
+// Under an owner skill's text: Edit, then Delete on the far side.
+.saddle-guide__skill-actions {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var( --pp-space-3 );
+	margin-top: var( --pp-space-3 );
+
+	.saddle-guide__delete {
+		margin-top: 0;
+	}
+}
+
 .saddle-guide__delete {
 	margin-top: var(--pp-space-3);
+}
+
+// Editing a skill in place: its text in a plain textarea, then Save.
+.saddle-guide__edit {
+	display: grid;
+	gap: var( --pp-space-3 );
+
+	textarea {
+		font-family: var( --pp-font-mono, monospace );
+		font-size: var( --s-text );
+		line-height: 1.55;
+	}
+}
+
+.saddle-guide__edit-actions {
+	display: flex;
+	gap: 8px;
 }
 
 .saddle-guide__system {
@@ -2135,6 +2172,34 @@ body.saddle-admin-page {
 		font-variant-numeric: tabular-nums;
 	}
 
+	// Undo sits quiet until the row is pointed at or reached by keyboard; on
+	// a touch screen, where nothing hovers, it always shows.
+	&__undo {
+		flex: 0 0 auto;
+		opacity: 0;
+		transition: opacity var( --s-dur ) var( --s-ease );
+
+		.saddle-activity__row:hover &,
+		.saddle-activity__row:focus-within &,
+		&[aria-busy='true'] {
+			opacity: 1;
+		}
+
+		@media ( hover: none ) {
+			opacity: 1;
+		}
+
+		@media ( prefers-reduced-motion: reduce ) {
+			transition: none;
+		}
+	}
+
+	&__undone {
+		flex: 0 0 auto;
+		font-size: var( --s-text-sm );
+		color: var( --s-fg-subtle );
+	}
+
 	&__more {
 		display: flex;
 		justify-content: center;
@@ -2374,23 +2439,17 @@ body.saddle-admin-page {
 		display: none;
 	}
 
-	&__signin,
-	&__check,
-	.saddle-settings-form {
+	&__check {
 		padding-inline: var(--pp-space-4);
 	}
 
-	// The rows inside a disclosure sit in the block, not in boxes of their own.
+	// The rows inside a disclosure sit in the block, not in boxes of their
+	// own, and line up with the disclosure's label: Sign-in for apps (P15),
+	// Memory limits and Recent changes alike.
 	.pp-rowlist {
 		border: 0;
 		border-radius: 0;
 		background: transparent;
-	}
-
-	&__signin .pp-rowlist,
-	.saddle-settings-form .pp-rowlist {
-		border: 1px solid var(--s-border);
-		border-radius: var(--s-radius-lg);
 	}
 }
 

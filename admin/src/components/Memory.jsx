@@ -10,7 +10,6 @@
 import { useState, useEffect } from '@wordpress/element';
 import {
 	Button,
-	Spinner,
 	Badge,
 	Card,
 	CardContent,
@@ -114,7 +113,7 @@ export default function Memory( { onChanged } ) {
 	};
 
 	if ( loading ) {
-		return <Spinner />;
+		return <RowList loading loadingRows={ 2 } />;
 	}
 
 	const agentCount = entries.filter( ( e ) => e.source !== 'owner' ).length;

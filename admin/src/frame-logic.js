@@ -212,3 +212,44 @@ export function isPlainClick( event ) {
 		! event.altKey
 	);
 }
+
+/**
+ * The query string to show when the address named a tab or a page this
+ * screen doesn't have (P20). The app already fell back to the first one;
+ * this drops the bad value too, so a reload, a copied link or Back shows
+ * the address of what is on screen. The first tab and a tab's first page
+ * are left out of an address, so a bad value is removed, never rewritten.
+ * Every other argument stays as it was.
+ *
+ * @param {string} search   `window.location.search`.
+ * @param {Object} resolved `{ tab, sub }` the app drew ('' sub for a tab with no pages).
+ * @return {?string} The new query string with its `?`, or null when the address is fine.
+ */
+export function canonicalSearch( search, resolved ) {
+	const params = new URLSearchParams( search || '' );
+	const tab = ( resolved && resolved.tab ) || '';
+	const sub = ( resolved && resolved.sub ) || '';
+	let changed = false;
+	if ( params.has( 'tab' ) && params.get( 'tab' ) !== tab ) {
+		params.delete( 'tab' );
+		changed = true;
+	}
+	if ( params.has( 'sub' ) && params.get( 'sub' ) !== sub ) {
+		// The app reads a page the way sanitize_key does (routes.js), so
+		// `&sub=Pages` is the page `pages`: write it as such.
+		const asked = String( params.get( 'sub' ) )
+			.replace( /[^a-z0-9_-]/gi, '' )
+			.toLowerCase();
+		if ( sub && asked === sub ) {
+			params.set( 'sub', sub );
+		} else {
+			params.delete( 'sub' );
+		}
+		changed = true;
+	}
+	if ( ! changed ) {
+		return null;
+	}
+	const rest = params.toString();
+	return rest ? `?${ rest }` : '';
+}

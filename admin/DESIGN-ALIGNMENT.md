@@ -374,12 +374,14 @@ things". The v2 plan is `planning/HOME-APPS-SERVICES-V2.md`. Home is now:
 
 ## Services (#309 v2)
 
-- No section notes. No section heading when only one kind has records; with
-  two or more, "Accounts" / "Plugins" / "Add-ons" and nothing under them.
+- No section notes. Every section is named, "Accounts" / "Plugins" /
+  "Add-ons", even when it is the only one (1.5.0 QA P23: a page of one
+  unnamed list doesn't say what the list is), and nothing under the name.
 - Rows: the name and one status word ("Not set up" · "Ready" · "Active" ·
-  "Off"). No letter avatar, no description, no tool count. "Add key"
-  (secondary) only for `needs_key`; every other row is the button that opens
-  the drawer, with a chevron.
+  "Off"). An outside account says what it is for first ("Stock photos · Not
+  set up"), because its name alone may not; a plugin's name says it. No
+  letter avatar, no tool count. "Add key" (secondary) only for `needs_key`;
+  every other row is the button that opens the drawer, with a chevron.
 - The drawer: the service's one-line summary under its name, the key form
   or the on/off switch, "Get a key from <service>", **"Sends to <hosts>"**
   (the one privacy fact an owner needs; never remove it), and the tools as a
@@ -405,6 +407,14 @@ Media strip "not feel chat"; "onboarding should not like it setup").
 | `--s-text` | 13 | everything you read: body, row titles (600), descriptions, meta, hints, buttons, tabs, footer |
 | `--s-text-sm` | 12 | badges, counts, code chips, the uppercase day label |
 | (numbers) | 20 / 600 | stat card values only |
+
+**Why numbers are 20 (1.5.0 QA P21).** A count is read at a glance, before
+its label, and 20 is the smallest size at which three numbers in a row
+(Home's This week: Changes, Blocked, Waiting for you; a module's stat row)
+read as numbers and not as one more line of text. At 15 a number is the same
+size as the block's title above it and the two compete; at 13 it is just a
+word. It stays narrow: only a kit `StatCard` value (`--pp-text-3xl`), never
+a heading, a sentence or a label.
 
 Every `font-size` in `style.scss` is one of the three tokens; no raw px value
 (the one exception is a 24px icon box). The kit's steps are mapped onto the
