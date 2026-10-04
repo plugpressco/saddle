@@ -381,9 +381,19 @@ class Saddle_Blocks_Schema {
 			),
 		);
 
+		// A button's link is the one markup-sourced attribute given in attrs:
+		// compose_button() moves attrs.url into the href. Say so where it
+		// applies, so the text never forbids what the example does.
+		$how = array(
+			'core/button'  => __( 'Author it as {"type","content","attrs"}. Put the label in "content" and the link in attrs.url. The url attribute is markup-sourced, and Saddle writes it into the markup as the link\'s href. Preset classes from attrs like backgroundColor, textColor and fontSize go on the link; use slugs from saddle/get-design-system.', 'saddle' ),
+			'core/buttons' => __( 'Author it as {"type","attrs","children"}, with one core/button per child. Give each button its label as "content" and its link as attrs.url; Saddle writes the link into the markup as the href.', 'saddle' ),
+		);
+
 		$guidance = array(
 			'mode' => $mode,
-			'how'  => __( 'Author it as {"type","content","attrs","children"}. "content" carries the text/media payload (Saddle composes the editor-valid markup, including preset classes from attrs like backgroundColor/textColor/fontSize — use slugs from saddle/get-design-system). "attrs" are the block attributes above; markup-sourced ones are fed from "content", so never set those in attrs.', 'saddle' ),
+			'how'  => isset( $how[ $name ] )
+				? $how[ $name ]
+				: __( 'Author it as {"type","content","attrs","children"}. "content" carries the text or media payload. Saddle composes the editor-valid markup from it, including preset classes from attrs like backgroundColor, textColor and fontSize; use slugs from saddle/get-design-system. "attrs" are the block attributes above. Leave markup-sourced ones out of attrs, because "content" feeds them.', 'saddle' ),
 		);
 		if ( isset( $examples[ $name ] ) ) {
 			$guidance['example'] = $examples[ $name ];

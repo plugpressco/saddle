@@ -780,6 +780,51 @@ class Saddle_Blocks_Test extends WP_UnitTestCase {
 		$this->assertArrayHasKey( 'patterns', $patterns );
 	}
 
+	public function test_button_schema_text_agrees_with_its_own_example() {
+		$schema  = $this->run_ability( 'get-block-schema', array( 'type' => 'core/button' ) );
+		$example = $schema['authoring']['example'];
+		$how     = $schema['authoring']['how'];
+
+		// The example gives the link as attrs.url, which the registry marks
+		// markup-sourced. The text used to say never to set those in attrs.
+		$this->assertSame( '/signup', $example['attrs']['url'] );
+		$this->assertStringNotContainsString( 'never set those in attrs', $how );
+		$this->assertStringContainsString( 'attrs.url', $how );
+
+		// And the example works exactly as written.
+		$id = $this->page();
+		$this->assertNotWPError(
+			$this->run_ability(
+				'set-blocks',
+				array(
+					'post_id' => $id,
+					'nodes'   => array(
+						array(
+							'type'     => 'core/buttons',
+							'children' => array( $example ),
+						),
+					),
+				)
+			)
+		);
+		$this->assertStringContainsString( 'href="/signup"', get_post( $id )->post_content );
+	}
+
+	public function test_no_schema_example_sets_a_markup_sourced_attr_its_text_forbids() {
+		foreach ( Saddle_Blocks_Schema::curated_types() as $type ) {
+			$schema = Saddle_Blocks_Schema::describe( $type );
+			if ( is_wp_error( $schema ) || empty( $schema['authoring']['example']['attrs'] ) ) {
+				continue;
+			}
+			foreach ( array_keys( $schema['authoring']['example']['attrs'] ) as $attr ) {
+				if ( empty( $schema['attributes'][ $attr ]['markup_sourced'] ) ) {
+					continue;
+				}
+				$this->assertStringContainsString( 'attrs.' . $attr, $schema['authoring']['how'], "{$type}'s example sets the markup-sourced attrs.{$attr}, so its text must say that works." );
+			}
+		}
+	}
+
 	public function test_get_design_system_returns_unified_shape() {
 		$ds = $this->run_ability( 'get-design-system' );
 		$this->assertNotWPError( $ds );
