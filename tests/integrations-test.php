@@ -539,6 +539,12 @@ class Saddle_Integrations_Test extends WP_UnitTestCase {
 	/* -------- agents learn the tools exist -------- */
 
 	public function test_system_context_advertises_active_integrations() {
+		// With every native plugin active, nothing is said about absent ones
+		// (absent-plugins-test.php covers that section).
+		foreach ( array( 'saddle_divi_active', 'saddle_yoast_active', 'saddle_rankmath_active', 'saddle_aioseo_active', 'saddle_wc_active' ) as $filter ) {
+			add_filter( $filter, '__return_true' );
+		}
+
 		$sections = Saddle_Integrations::context_section( array() );
 
 		$this->assertCount( 1, $sections );
