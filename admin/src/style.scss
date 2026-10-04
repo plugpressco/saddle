@@ -118,15 +118,23 @@ body.saddle-admin-page {
 
 	// Field edges and the off switch need 3:1 against white; wp-admin's
 	// #8c8f94 is 3.24.
+	// Under the pointer the edge darkens to the one grey; the kit's hover
+	// reads --pp-border-strong, which on its own is lighter than the field
+	// edge and made the field fade.
 	.pp-control {
 		--pp-border: var( --s-field-edge );
+		--pp-border-strong: var( --s-fg-muted );
 	}
 
 	// WordPress core's input[type=search|number|…] rules outrank the kit's
-	// .pp-control and kept their own edge, so the colour is named here, and
+	// .pp-control and kept their own edge, so the colours are named here, and
 	// focus still wins.
-	input.pp-control:not( :focus ):not( :hover ) {
-		border-color: var( --s-field-edge );
+	input.pp-control:not( :focus ) {
+		border-color: var( --pp-border );
+	}
+
+	input.pp-control:hover:not( :focus ):not( :disabled ) {
+		border-color: var( --pp-border-strong );
 	}
 
 	// The off switch is WordPress's own toggle: a white track with the field
