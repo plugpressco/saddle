@@ -2149,6 +2149,10 @@ body.saddle-admin-page {
 	}
 
 	&__summary {
+		// Positioned, so the visually hidden "by you" / "via …" inside it is
+		// clipped here too. Without it, a cut-off line scrolled Home sideways
+		// (1111px wide on a phone).
+		position: relative;
 		flex: 1 1 auto;
 		min-width: 0;
 		overflow: hidden;
@@ -2550,6 +2554,19 @@ body.saddle-admin-page {
 	display: flex;
 	gap: 8px;
 	margin-top: 16px;
+}
+
+// On a phone a request reads as a sentence, so its buttons go under it
+// instead of squeezing it to a narrow column.
+@media ( max-width: 600px ) {
+	.saddle-needs-ok .pp-rowlist__row {
+		flex-wrap: wrap;
+	}
+
+	.saddle-needs-ok .pp-rowlist__actions {
+		flex-basis: 100%;
+		justify-content: flex-start;
+	}
 }
 
 // A module's unfinished setup tasks, above its first tab (K8). A block of
