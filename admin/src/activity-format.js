@@ -300,7 +300,12 @@ export const undoPlan = ( res, id ) => {
 		steps: [],
 		reasons: reasons.length
 			? reasons
-			: [ __( 'This change can’t be undone.', 'saddle' ) ],
+			: [
+					__(
+						'Nothing was recorded to undo for this change.',
+						'saddle'
+					),
+			  ],
 		token: '',
 	};
 };
