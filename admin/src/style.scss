@@ -93,6 +93,16 @@ body.saddle-admin-page,
 	--pp-code-bg: var( --s-code-bg );
 }
 
+// wp-admin paints every `code` grey with padding, and its rule outranks the
+// kit's, so inside any kit code block (the connect and skill drawers, What
+// apps see) each wrapped line got a grey strip. One reset for all of them.
+.pp-code .pp-code__pre code {
+	margin: 0;
+	padding: 0;
+	background: none;
+	font-size: inherit;
+}
+
 // Block titles are 13px/600; the DS draws card titles at 15px and row titles
 // at 500.
 .saddle-app,
@@ -112,8 +122,33 @@ body.saddle-admin-page {
 		--pp-border: var( --s-field-edge );
 	}
 
-	.pp-switch {
-		--pp-border-strong: var( --s-field-edge );
+	// WordPress core's input[type=search|number|…] rules outrank the kit's
+	// .pp-control and kept their own edge, so the colour is named here, and
+	// focus still wins.
+	input.pp-control:not( :focus ):not( :hover ) {
+		border-color: var( --s-field-edge );
+	}
+
+	// The off switch is WordPress's own toggle: a white track with the field
+	// edge and a grey knob (palette v3). On, it stays the brand with a white
+	// knob. The edge is an inset ring, so the switch keeps its size.
+	.pp-switch:not( [aria-checked="true"] ) {
+		background: var( --s-bg );
+		box-shadow: inset 0 0 0 1px var( --s-field-edge );
+
+		&::after {
+			background: var( --s-field-edge );
+			box-shadow: none;
+		}
+
+		&:hover:not( :disabled ) {
+			background: var( --s-bg );
+			box-shadow: inset 0 0 0 1px var( --s-fg-muted );
+
+			&::after {
+				background: var( --s-fg-muted );
+			}
+		}
 	}
 
 	// A row's icon or status dot sits on the block itself, like the logos on
@@ -481,6 +516,12 @@ body.saddle-admin-page {
 		> li {
 			margin: 0;
 		}
+
+		// The divider is an <li> too; this outranks the rule above so it keeps
+		// its inset and never touches the raised active item.
+		> .saddle-sections__rule {
+			margin: 8px 10px;
+		}
 	}
 
 	// Each section: a 16px icon and its 13px label, 32px tall, 6px corners.
@@ -607,7 +648,7 @@ body.saddle-admin-page {
 	gap: 8px;
 	height: 32px;
 	padding: 0 10px 0 12px;
-	border: 1px solid var( --s-border-strong );
+	border: 1px solid var( --s-border );
 	border-radius: var( --s-radius-pill );
 	background: var( --s-bg );
 	color: var( --s-fg );
@@ -716,11 +757,12 @@ body.saddle-admin-page {
 			white-space: nowrap;
 		}
 
-		&__rule {
+		&__rule,
+		&__list > .saddle-sections__rule {
 			flex: none;
 			width: 1px;
 			height: 20px;
-			margin: 0 4px;
+			margin: 0 6px;
 		}
 	}
 
@@ -1224,9 +1266,9 @@ body.saddle-admin-page {
 		padding: 8px 14px;
 		border-radius: 18px 18px 4px 18px;
 		// White with an edge: the page is wp-admin's grey, so a grey bubble
-		// would vanish into it (palette v3).
-		border: 1px solid var( --s-border );
+		// would vanish into it (palette v3). A ring, so the height is unchanged.
 		background: var( --s-bg );
+		box-shadow: inset 0 0 0 1px var( --s-border );
 		font-size: var( --s-text-title );
 	}
 
@@ -2565,14 +2607,17 @@ body.saddle-admin-page {
 	margin-top: 16px;
 }
 
-// On a phone a request reads as a sentence, so its buttons go under it
-// instead of squeezing it to a narrow column.
+// On a phone a request, or a connected app with its access and last use,
+// reads as a sentence, so the controls go under it instead of squeezing the
+// text into a narrow column.
 @media ( max-width: 600px ) {
-	.saddle-needs-ok .pp-rowlist__row {
+	.saddle-needs-ok .pp-rowlist__row,
+	.saddle-apps .pp-rowlist__row {
 		flex-wrap: wrap;
 	}
 
-	.saddle-needs-ok .pp-rowlist__actions {
+	.saddle-needs-ok .pp-rowlist__actions,
+	.saddle-apps .pp-rowlist__actions {
 		flex-basis: 100%;
 		justify-content: flex-start;
 	}
