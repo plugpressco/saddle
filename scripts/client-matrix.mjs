@@ -153,7 +153,9 @@ Options:
 		', '
   ) }.
   --path <path>      Only "key" or only "sign-in".
-  --no-write         Skip the gated write (it previews and changes nothing).
+  --write            Also run the gated write: a delete-post preview with no
+                     token. It changes nothing, but the preview waits under
+                     Needs your OK on Home for 15 minutes.
   --timeout <sec>    Per request. Default 30; shared hosting can take 15.
   --insecure         Accept a self-signed certificate (local sites).
   --markdown         Print the results as rows for tests/CLIENTS.md.
@@ -174,7 +176,7 @@ function options() {
 				token: { type: 'string' },
 				clients: { type: 'string' },
 				path: { type: 'string' },
-				'no-write': { type: 'boolean', default: false },
+				write: { type: 'boolean', default: false },
 				timeout: { type: 'string', default: '30' },
 				insecure: { type: 'boolean', default: false },
 				markdown: { type: 'boolean', default: false },
@@ -231,7 +233,7 @@ function options() {
 				: '',
 		clients: CLIENTS.filter( ( c ) => ids.includes( c.id ) ),
 		path: parsed.path || '',
-		write: ! parsed[ 'no-write' ],
+		write: !! parsed.write,
 		timeout: Math.max( 1, parseInt( parsed.timeout, 10 ) || 30 ) * 1000,
 		insecure: parsed.insecure,
 		markdown: parsed.markdown,

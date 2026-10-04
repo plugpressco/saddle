@@ -67,7 +67,8 @@ the date here.
 
 Node 22 or newer, no dependencies. Run it against a local or staging site,
 never a live one: each run is recorded under AI apps as a connection of the key
-you use, and the gated write aims a preview at the newest post.
+you use, and with `--write` the gated write aims a preview at the newest post
+(it waits under Needs your OK for 15 minutes).
 
 ```bash
 SADDLE_USER=admin SADDLE_KEY='abcd efgh ijkl mnop qrst uvwx' \
@@ -110,7 +111,7 @@ again.
 | refresh | ChatGPT: `tools/list` with no session header lists the same tools. |
 | prompts/list | When the server offers prompts: a list comes back. |
 | read | `saddle-get-site-info` returns the site as JSON. |
-| gated write | `saddle-delete-post` on the newest post, with no confirm token: a preview that asks for the token, or a refusal that gives its reason. Never a bare "Permission denied". Nothing changes either way. |
+| gated write (`--write` only) | `saddle-delete-post` on the newest post, with no confirm token: a preview that asks for the token, or a refusal that gives its reason. Never a bare "Permission denied". Nothing changes either way. |
 | close | DELETE gets 200, 202, 204 or 405. |
 | versions | `initialize` with 2024-11-05, 2025-03-26, 2025-06-18 and 2025-11-25. Saddle negotiates three of them; 2025-03-26 is answered with 2025-11-25, as the spec allows, and is a note. |
 
