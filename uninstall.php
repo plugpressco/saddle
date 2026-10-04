@@ -44,6 +44,8 @@ $saddle_options = array(
 	'saddle_onboarding',              // Saddle_Onboarding::OPTION.
 	'saddle_key_roles',               // Saddle_Access::KEY_ROLES_OPTION.
 	'saddle_access_version',          // Saddle_Access::VERSION_OPTION.
+	'saddle_access_legacy_before',    // Saddle_Access::LEGACY_BEFORE_OPTION.
+	'saddle_access_legacy_tier',      // Saddle_Access::LEGACY_TIER_OPTION.
 );
 foreach ( $saddle_options as $saddle_option ) {
 	delete_option( $saddle_option );

@@ -346,8 +346,59 @@ class Saddle_Access_Test extends WP_UnitTestCase {
 		Saddle_Access::maybe_migrate();
 
 		$this->assertSame( 'admin', Saddle_Access::role_for( 'key:' . $seen ) );
-		$this->assertSame( 'read', Saddle_Access::role_for( 'key:' . $foreign ), 'A key that never reached Saddle gets no role.' );
+		$this->assertArrayNotHasKey( $foreign, get_option( Saddle_Access::KEY_ROLES_OPTION ), 'A key that never reached Saddle gets no role at migration.' );
 		$this->assertSame( 'read', Saddle_Access::role_for( 'oauth:' . $grant ), 'Migration only ever lowers a grant.' );
+	}
+
+	/**
+	 * Legacy support (Fahim, 2026-10-04: "keep legacy support"). In 1.3.0 any
+	 * Application Password reached Saddle at the site tier, including one the
+	 * owner made by hand under Users → Profile, and 1.3.0 kept no record of
+	 * which keys used Saddle. Such a key keeps the old site tier the first
+	 * time it calls Saddle after the update, and that becomes its role.
+	 */
+	public function test_a_hand_made_key_from_before_the_update_keeps_the_old_site_tier() {
+		$hand_made = WP_Application_Passwords::create_new_application_password( $this->admin, array( 'name' => 'My laptop' ) )[1]['uuid'];
+		update_option( Saddle_Access::LEGACY_BEFORE_OPTION, time() + 60 );
+		update_option( Saddle_Access::LEGACY_TIER_OPTION, 'write' );
+
+		$this->assertArrayNotHasKey( $hand_made, (array) get_option( Saddle_Access::KEY_ROLES_OPTION, array() ), 'No role is handed out ahead of use.' );
+
+		$this->sign_in_with_key( $hand_made );
+		$this->assertSame( 'write', Saddle_Capabilities::get_tier(), 'The key does what it could do in 1.3.0.' );
+		$this->assertSame( 'write', get_option( Saddle_Access::KEY_ROLES_OPTION )[ $hand_made ], 'It is stored, so AI apps shows it and the owner can change it.' );
+		$this->assertNotWPError( $this->create_post_as_current() );
+	}
+
+	public function test_a_key_made_after_the_update_starts_read_only() {
+		update_option( Saddle_Access::LEGACY_BEFORE_OPTION, time() - 60 );
+		update_option( Saddle_Access::LEGACY_TIER_OPTION, 'admin' );
+		$new_key = WP_Application_Passwords::create_new_application_password( $this->admin, array( 'name' => 'Made today' ) )[1]['uuid'];
+
+		$this->sign_in_with_key( $new_key );
+		$this->assertSame( 'read', Saddle_Capabilities::get_tier() );
+	}
+
+	public function test_a_legacy_key_the_owner_lowers_stays_lowered() {
+		$hand_made = WP_Application_Passwords::create_new_application_password( $this->admin, array( 'name' => 'My laptop' ) )[1]['uuid'];
+		update_option( Saddle_Access::LEGACY_BEFORE_OPTION, time() + 60 );
+		update_option( Saddle_Access::LEGACY_TIER_OPTION, 'admin' );
+		Saddle_Access::set_role( 'key:' . $hand_made, 'read' );
+
+		$this->sign_in_with_key( $hand_made );
+		$this->assertSame( 'read', Saddle_Capabilities::get_tier() );
+	}
+
+	public function test_the_legacy_moment_is_recorded_once() {
+		delete_option( Saddle_Access::VERSION_OPTION );
+		update_option( Saddle_Access::LEGACY_BEFORE_OPTION, 1000 );
+		update_option( Saddle_Access::LEGACY_TIER_OPTION, 'write' );
+		Saddle_Capabilities::set_tier( 'admin' );
+
+		Saddle_Access::maybe_migrate();
+
+		$this->assertSame( 1000, (int) get_option( Saddle_Access::LEGACY_BEFORE_OPTION ), 'A re-run never moves the line.' );
+		$this->assertSame( 'write', get_option( Saddle_Access::LEGACY_TIER_OPTION ) );
 	}
 
 	public function test_the_migration_runs_once_and_is_idempotent() {

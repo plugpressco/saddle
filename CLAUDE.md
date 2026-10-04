@@ -305,7 +305,12 @@ lowered by `saddle_tier_ceiling`; a new key or an unknown connection is
 `read`, and a caller with no connection (the owner's browser) falls back to
 the legacy site tier. The one-time migration gave existing keys the old site
 tier and lowered each grant to `min(site tier, scope)`, so an update never
-widened anything (R3, pinned by a test). Only the owner sets a role, in
+widened anything (R3, pinned by a test). **Legacy support** (Fahim,
+2026-10-04, "keep legacy support"): 1.3.0 let every Application Password reach
+Saddle at the site tier and recorded nothing per key, so any other key that
+existed before the move keeps that tier the first time it calls Saddle and has
+it stored as its role (`Saddle_Access::legacy_role()`, the moment in
+`saddle_access_legacy_before`). Keys made after the update start at `read`. Only the owner sets a role, in
 wp-admin; no tool can (`Saddle_Settings_Guard`).
 
 *Decided 2026-09-27 (#243): once the owner has turned sign-in on, the address
