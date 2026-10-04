@@ -2251,7 +2251,7 @@ class Saddle_Abilities {
 
 		$post = get_post( $id );
 		if ( ! $post || ! in_array( $post->post_type, $types, true ) ) {
-			return self::not_found( $types );
+			return self::not_found( $types, $post );
 		}
 
 		if ( ! current_user_can( 'read_post', $post->ID ) ) {
@@ -2282,10 +2282,12 @@ class Saddle_Abilities {
 	 * never translated, so the interpolated form ships a half-English string in
 	 * every locale.
 	 *
-	 * @param string[] $types Accepted post types.
+	 * @param string[]     $types Accepted post types.
+	 * @param WP_Post|null $post  The item the ID names, when it exists but is
+	 *                            another type. The message then says which.
 	 * @return WP_Error
 	 */
-	private static function not_found( array $types ) {
+	private static function not_found( array $types, $post = null ) {
 		if ( array( 'attachment' ) === $types ) {
 			$message = __( 'No media item with that ID.', 'saddle' );
 		} elseif ( array( 'post' ) === $types ) {
@@ -2297,7 +2299,52 @@ class Saddle_Abilities {
 		} else {
 			$message = __( 'No post or page with that ID.', 'saddle' );
 		}
-		return new WP_Error( 'saddle_not_found', $message, array( 'status' => 404 ) );
+		return new WP_Error( 'saddle_not_found', trim( $message . ' ' . self::type_hint( $post ) ), array( 'status' => 404 ) );
+	}
+
+	/**
+	 * For an ID that exists but is another type than the tool asked for: which
+	 * type it is and which tools reach it ("ID 59 belongs to the type Event
+	 * ("qa_event"). Use the post tools with "post_type" set to "qa_event".").
+	 * Without it an agent read "No post with that ID." as "it does not exist".
+	 *
+	 * Said only when the caller could read the item through those tools: a
+	 * type Saddle manages, and read_post on the item. Anything else stays a
+	 * plain "not found", so the hint discloses nothing new.
+	 *
+	 * @param WP_Post|null $post The item.
+	 * @return string '' when there is nothing to say.
+	 */
+	private static function type_hint( $post ) {
+		if ( ! $post instanceof WP_Post ) {
+			return '';
+		}
+		$type = $post->post_type;
+		if ( ! in_array( $type, array_merge( Saddle_Post_Types::content_types(), array( 'attachment' ) ), true ) || ! current_user_can( 'read_post', $post->ID ) ) {
+			return '';
+		}
+
+		if ( 'attachment' === $type ) {
+			$next = __( 'Use the media tools.', 'saddle' );
+		} elseif ( 'post' === $type ) {
+			$next = __( 'Use the post tools.', 'saddle' );
+		} elseif ( 'page' === $type ) {
+			$next = __( 'Use the page tools.', 'saddle' );
+		} else {
+			/* translators: %s: post type name, such as qa_event. */
+			$next = sprintf( __( 'Use the post tools with "post_type" set to "%s".', 'saddle' ), $type );
+		}
+
+		$object = get_post_type_object( $type );
+
+		return sprintf(
+			/* translators: 1: item ID, 2: the type's name, such as Event, 3: post type name, such as qa_event, 4: which tools to use. */
+			__( 'ID %1$d belongs to the type %2$s ("%3$s"). %4$s', 'saddle' ),
+			$post->ID,
+			$object ? $object->labels->singular_name : $type,
+			$type,
+			$next
+		);
 	}
 
 	/**
