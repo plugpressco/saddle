@@ -41,6 +41,17 @@ class Saddle_Access {
 	const VERSION = 1;
 
 	/**
+	 * When this install moved to per-app roles (Unix time). A key created
+	 * before it existed under the site-wide tier (see legacy_role()).
+	 */
+	const LEGACY_BEFORE_OPTION = 'saddle_access_legacy_before';
+
+	/**
+	 * The site-wide tier at that moment: what every key could do then.
+	 */
+	const LEGACY_TIER_OPTION = 'saddle_access_legacy_tier';
+
+	/**
 	 * The roles, weakest first. They are the tier names.
 	 */
 	const ROLES = array( 'read', 'write', 'admin' );
@@ -90,8 +101,13 @@ class Saddle_Access {
 
 		if ( 'key' === $kind && '' !== $ref ) {
 			$roles = self::key_roles();
+			if ( isset( $roles[ $ref ] ) ) {
+				return $roles[ $ref ];
+			}
 
-			return isset( $roles[ $ref ] ) ? $roles[ $ref ] : 'read';
+			$legacy = self::legacy_role( $ref );
+
+			return '' !== $legacy ? $legacy : 'read';
 		}
 
 		if ( 'oauth' === $kind && '' !== $ref ) {
@@ -106,6 +122,47 @@ class Saddle_Access {
 
 		// A connection id of a kind we do not know is not trusted with anything.
 		return 'read';
+	}
+
+	/**
+	 * The role an Application Password from before the move to per-app roles
+	 * keeps, or '' when it is not one.
+	 *
+	 * Legacy support (Fahim, 2026-10-04). In 1.3.0 every Application Password
+	 * reached Saddle at the site tier, including one the owner made by hand
+	 * under Users → Profile, and 1.3.0 kept no record of which keys used
+	 * Saddle. migrate() can only give roles to the keys it can tell were
+	 * Saddle's. Any other key that existed then keeps the old site tier the
+	 * first time it calls Saddle, so an update never takes away what an app
+	 * could do, and that becomes its stored role, which the owner can change on
+	 * AI apps. A key made after the update starts at Read only, as every new
+	 * key does. This never widens anything: the key could do exactly this
+	 * before the update.
+	 *
+	 * Only the calling user's own key is looked up: that is the case on an
+	 * app's request, and a key that has called once has its role stored.
+	 *
+	 * @param string $uuid Application Password UUID.
+	 * @return string One of ROLES, or ''.
+	 */
+	private static function legacy_role( $uuid ) {
+		$before = (int) get_option( self::LEGACY_BEFORE_OPTION, 0 );
+		$tier   = (string) get_option( self::LEGACY_TIER_OPTION, '' );
+		$user   = get_current_user_id();
+		if ( $before <= 0 || ! in_array( $tier, self::ROLES, true ) || ! $user || ! class_exists( 'WP_Application_Passwords' ) ) {
+			return '';
+		}
+
+		$item = WP_Application_Passwords::get_user_application_password( $user, (string) $uuid );
+		if ( ! $item || empty( $item['created'] ) || (int) $item['created'] >= $before ) {
+			return '';
+		}
+
+		$roles          = self::key_roles();
+		$roles[ $uuid ] = $tier;
+		update_option( self::KEY_ROLES_OPTION, $roles, true );
+
+		return $tier;
 	}
 
 	/**
@@ -216,6 +273,10 @@ class Saddle_Access {
 	public static function migrate() {
 		$site  = Saddle_Capabilities::get_site_tier();
 		$roles = self::key_roles();
+
+		// The moment and the tier, once: a forced re-run never moves the line.
+		add_option( self::LEGACY_BEFORE_OPTION, time(), '', true );
+		add_option( self::LEGACY_TIER_OPTION, $site, '', true );
 
 		$seen = array();
 		foreach ( array_keys( Saddle_Connections::all() ) as $id ) {
