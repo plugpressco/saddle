@@ -65,6 +65,18 @@ delete_metadata( 'user', 0, 'saddle_ui', '', true ); // Saddle_Onboarding: the t
 delete_metadata( 'user', 0, 'saddle_client_hints', '', true );
 delete_metadata( 'user', 0, 'saddle_issued_credentials', '', true );
 
+// Saddle's cached reads (the Divi module index, refusal notes and the like)
+// expire on their own, but uninstall leaves nothing behind. Only names that
+// start with saddle_ are touched.
+global $wpdb;
+$wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- One-time cleanup on uninstall; transients have no API to list by prefix.
+	$wpdb->prepare(
+		"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
+		$wpdb->esc_like( '_transient_saddle_' ) . '%',
+		$wpdb->esc_like( '_transient_timeout_saddle_' ) . '%'
+	)
+);
+
 // Clear scheduled GC, and any update run still queued.
 $saddle_gc_timestamp = wp_next_scheduled( 'saddle_gc_tokens' );
 if ( $saddle_gc_timestamp ) {
