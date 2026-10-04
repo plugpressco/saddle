@@ -3,7 +3,8 @@
  * WordPress, on a page of its own: Accounts (outside services with a key),
  * Plugins (found on this site) and Add-ons (plugins that bring tools).
  *
- * One row per record from `GET /services`: the name and one status line. An
+ * One row per record from `GET /services`: the name and one status line (an
+ * account says what it is for first). Every section is named. An
  * account with no key has one button, "Add key"; any other row is itself the
  * button that opens the drawer. The drawer holds one line of what the
  * service is, the key form (accounts) or the switch (third-party add-ons),
@@ -30,14 +31,13 @@ import { api } from '../api';
 import SectionHeader from './SectionHeader';
 import { icons } from '../icons/kit';
 import {
-	groupServices,
 	keyLink,
 	replaceRecord,
 	roleLabel,
-	statusLabel,
 	summaryOf,
 	toolCount,
 } from '../services-logic';
+import { namedGroups, rowLine } from '../services-page-logic';
 
 /**
  * The key form for an account, or the key it has with Change and Remove.
@@ -304,15 +304,15 @@ function Detail( { record, onChanged } ) {
 }
 
 /**
- * One service: its name and status. An account with no key gets "Add key";
- * any other row is the button that opens the drawer.
+ * One service: its name and its line (rowLine). An account with no key gets
+ * "Add key"; any other row is the button that opens the drawer.
  *
  * @param {Object}   props
  * @param {Object}   props.record The service.
  * @param {Function} props.onOpen Opens its drawer.
  */
 function ServiceRow( { record, onOpen } ) {
-	const status = statusLabel( record );
+	const status = rowLine( record );
 
 	if ( 'needs_key' === record.status ) {
 		return (
@@ -366,7 +366,8 @@ export default function Services() {
 			} );
 	}, [] );
 
-	const groups = useMemo( () => groupServices( records ), [ records ] );
+	// Every section is named, even when it is the only one (P23).
+	const groups = useMemo( () => namedGroups( records ), [ records ] );
 	const open = ( records || [] ).find( ( r ) => r.key === openKey );
 	const update = ( next ) =>
 		setRecords( ( list ) => replaceRecord( list, next ) );
@@ -387,7 +388,7 @@ export default function Services() {
 		<>
 			{ groups.map( ( g ) => (
 				<section key={ g.kind } className="saddle-section">
-					{ g.title && <SectionHeader title={ g.title } /> }
+					<SectionHeader title={ g.title } />
 					<RowList>
 						{ g.rows.map( ( r ) => (
 							<ServiceRow
