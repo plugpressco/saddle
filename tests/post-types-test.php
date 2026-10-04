@@ -177,6 +177,60 @@ class Saddle_Post_Types_Test extends WP_UnitTestCase {
 		_unregister_post_type( 'qa_event' );
 	}
 
+	/**
+	 * Gate summaries and log lines name a custom type by its label.
+	 * Regression: they used the slug, "Move qa_event #59 … to the trash".
+	 */
+	public function test_gate_summaries_name_the_type_by_its_label() {
+		register_post_type(
+			'qa_event',
+			array(
+				'public'       => true,
+				'show_ui'      => true,
+				'show_in_rest' => true,
+				'labels'       => array(
+					'name'          => 'Events',
+					'singular_name' => 'Event',
+				),
+			)
+		);
+		$event = self::factory()->post->create(
+			array(
+				'post_type'  => 'qa_event',
+				'post_title' => 'Launch',
+			)
+		);
+		$input = array(
+			'post_type' => 'qa_event',
+			'id'        => $event,
+		);
+
+		$preview = $this->run_ability( 'delete-post', $input );
+		$this->assertSame( sprintf( 'Move Event #%d "Launch" to the trash. It can be restored from Trash.', $event ), $preview['summary'] );
+		$this->assertSame( 'qa_event', $preview['preview']['type'], 'The structured preview keeps the type name.' );
+
+		$this->run_ability( 'delete-post', $input + array( 'confirm_token' => $preview['confirm_token'] ) );
+		$this->assertSame( sprintf( 'Moved Event #%d "Launch" to the trash.', $event ), Saddle_Log::query( 1, 1 )['entries'][0]['summary'] );
+
+		// A wrong-type ID on a write tool names both types by label.
+		$post   = self::factory()->post->create();
+		$update = $this->run_ability(
+			'update-post',
+			array(
+				'post_type' => 'qa_event',
+				'id'        => $post,
+				'title'     => 'x',
+			)
+		);
+		$this->assertSame( sprintf( 'No Event with that ID. ID %d belongs to the type Post ("post"). Use the post tools.', $post ), $update->get_error_message() );
+
+		// Built-in types keep their plain lowercase words.
+		$plain = $this->run_ability( 'delete-post', array( 'id' => $post ) );
+		$this->assertStringStartsWith( sprintf( 'Move post #%d ', $post ), $plain['summary'] );
+
+		_unregister_post_type( 'qa_event' );
+	}
+
 	/** The hint discloses nothing the caller could not read: an unmanaged type stays "not found". */
 	public function test_an_id_of_an_unmanaged_type_stays_not_found() {
 		$hidden = self::factory()->post->create( array( 'post_type' => 'hidden_thing' ) );

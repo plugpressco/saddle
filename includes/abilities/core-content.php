@@ -1137,16 +1137,16 @@ class Saddle_Abilities {
 				// "You approved Claude Code's request: Publish post #18 …".
 				'summary' => 'future' === $status
 					? sprintf(
-						/* translators: 1: type, 2: id, 3: title. */
+						/* translators: 1: the type's name, such as post, page or Event, 2: id, 3: title. */
 						__( 'Schedule %1$s #%2$d "%3$s" to publish later, with any other edits in the same request.', 'saddle' ),
-						$type,
+						self::type_label( $type ),
 						$id,
 						$existing->post_title
 					)
 					: sprintf(
-						/* translators: 1: type, 2: id, 3: title. */
+						/* translators: 1: the type's name, such as post, page or Event, 2: id, 3: title. */
 						__( 'Publish %1$s #%2$d "%3$s", with any other edits in the same request.', 'saddle' ),
-						$type,
+						self::type_label( $type ),
 						$id,
 						$existing->post_title
 					),
@@ -1185,9 +1185,9 @@ class Saddle_Abilities {
 
 		if ( 'future' === $post->post_status ) {
 			return sprintf(
-				/* translators: 1: content type, 2: id, 3: title, 4: date and time it goes live. */
+				/* translators: 1: the type's name, such as post, page or Event, 2: id, 3: title, 4: date and time it goes live. */
 				__( 'Scheduled %1$s #%2$d "%3$s" to publish on %4$s.', 'saddle' ),
-				$type,
+				self::type_label( $type ),
 				$id,
 				$post->post_title,
 				mysql2date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $post->post_date )
@@ -1196,18 +1196,18 @@ class Saddle_Abilities {
 
 		if ( 'publish' === $post->post_status ) {
 			return sprintf(
-				/* translators: 1: content type, 2: id, 3: title. */
+				/* translators: 1: the type's name, such as post, page or Event, 2: id, 3: title. */
 				__( 'Published %1$s #%2$d "%3$s".', 'saddle' ),
-				$type,
+				self::type_label( $type ),
 				$id,
 				$post->post_title
 			);
 		}
 
 		return sprintf(
-			/* translators: 1: post type, 2: id, 3: title. */
+			/* translators: 1: the type's name, such as post, page or Event, 2: id, 3: title. */
 			__( 'Updated %1$s #%2$d "%3$s"', 'saddle' ),
-			$type,
+			self::type_label( $type ),
 			$id,
 			$post->post_title
 		);
@@ -2204,9 +2204,9 @@ class Saddle_Abilities {
 			'create-' . $type,
 			$id,
 			sprintf(
-				/* translators: 1: post type, 2: id, 3: title. */
+				/* translators: 1: the type's name, such as post, page or Event, 2: id, 3: title. */
 				__( 'Created %1$s #%2$d "%3$s"', 'saddle' ),
-				$type,
+				self::type_label( $type ),
 				$id,
 				$post->post_title
 			)
@@ -2300,6 +2300,27 @@ class Saddle_Abilities {
 			$message = __( 'No post or page with that ID.', 'saddle' );
 		}
 		return new WP_Error( 'saddle_not_found', trim( $message . ' ' . self::type_hint( $post ) ), array( 'status' => 404 ) );
+	}
+
+	/**
+	 * A content type's name for a sentence: "post" and "page" as Saddle
+	 * writes them, and a custom type by its own singular label ("Event"),
+	 * never its slug ("qa_event"). The label is the registering plugin's,
+	 * already translated; the slug never is.
+	 *
+	 * @param string $type Post type name.
+	 * @return string
+	 */
+	private static function type_label( $type ) {
+		if ( 'post' === $type ) {
+			return _x( 'post', 'content type, in a sentence', 'saddle' );
+		}
+		if ( 'page' === $type ) {
+			return _x( 'page', 'content type, in a sentence', 'saddle' );
+		}
+		$object = get_post_type_object( $type );
+
+		return ( $object && ! empty( $object->labels->singular_name ) ) ? (string) $object->labels->singular_name : (string) $type;
 	}
 
 	/**
@@ -2428,15 +2449,12 @@ class Saddle_Abilities {
 		}
 		$existing = get_post( $id );
 		if ( ! $existing || $type !== $existing->post_type ) {
-			return new WP_Error(
-				'saddle_not_found',
-				sprintf(
-					/* translators: %s: post type. */
-					__( 'No %s with that ID.', 'saddle' ),
-					$type
-				),
-				array( 'status' => 404 )
+			$missing = sprintf(
+				/* translators: %s: the type's name, such as post, page or Event. */
+				__( 'No %s with that ID.', 'saddle' ),
+				self::type_label( $type )
 			);
+			return new WP_Error( 'saddle_not_found', trim( $missing . ' ' . self::type_hint( $existing ) ), array( 'status' => 404 ) );
 		}
 
 		// Per-object authorization. The tier + generic-cap check in the
@@ -2503,9 +2521,9 @@ class Saddle_Abilities {
 				'update-' . $type,
 				$id,
 				sprintf(
-					/* translators: 1: post type, 2: id, 3: title. */
+					/* translators: 1: the type's name, such as post, page or Event, 2: id, 3: title. */
 					__( 'Updated %1$s #%2$d "%3$s"', 'saddle' ),
-					$type,
+					self::type_label( $type ),
 					$id,
 					$post->post_title
 				)
@@ -2537,15 +2555,12 @@ class Saddle_Abilities {
 		}
 		$post = get_post( $id );
 		if ( ! $post || $type !== $post->post_type ) {
-			return new WP_Error(
-				'saddle_not_found',
-				sprintf(
-					/* translators: %s: post type. */
-					__( 'No %s with that ID.', 'saddle' ),
-					$type
-				),
-				array( 'status' => 404 )
+			$missing = sprintf(
+				/* translators: %s: the type's name, such as post, page or Event. */
+				__( 'No %s with that ID.', 'saddle' ),
+				self::type_label( $type )
 			);
+			return new WP_Error( 'saddle_not_found', trim( $missing . ' ' . self::type_hint( $post ) ), array( 'status' => 404 ) );
 		}
 
 		// Per-object delete authorization (wp_delete_post() doesn't check).
@@ -2568,9 +2583,9 @@ class Saddle_Abilities {
 			'permanent'  => false,
 			'new_status' => 'trash',
 			'note'       => sprintf(
-				/* translators: 1: type, 2: id, 3: title. */
+				/* translators: 1: the type's name, such as post, page or Event, 2: id, 3: title. */
 				__( 'Already in the trash: %1$s #%2$d "%3$s". Nothing changed. To delete it for good, call again with "force" set to true.', 'saddle' ),
-				$type,
+				self::type_label( $type ),
 				$id,
 				$post->post_title
 			),
@@ -2582,32 +2597,32 @@ class Saddle_Abilities {
 
 		$summary = $permanent
 			? sprintf(
-				/* translators: 1: type, 2: id, 3: title. */
+				/* translators: 1: the type's name, such as post, page or Event, 2: id, 3: title. */
 				__( 'Permanently delete %1$s #%2$d "%3$s". This cannot be undone.', 'saddle' ),
-				$type,
+				self::type_label( $type ),
 				$id,
 				$post->post_title
 			)
 			: sprintf(
-				/* translators: 1: type, 2: id, 3: title. */
+				/* translators: 1: the type's name, such as post, page or Event, 2: id, 3: title. */
 				__( 'Move %1$s #%2$d "%3$s" to the trash. It can be restored from Trash.', 'saddle' ),
-				$type,
+				self::type_label( $type ),
 				$id,
 				$post->post_title
 			);
 
 		$done = $permanent
 			? sprintf(
-				/* translators: 1: type, 2: id, 3: title. */
+				/* translators: 1: the type's name, such as post, page or Event, 2: id, 3: title. */
 				__( 'Permanently deleted %1$s #%2$d "%3$s".', 'saddle' ),
-				$type,
+				self::type_label( $type ),
 				$id,
 				$post->post_title
 			)
 			: sprintf(
-				/* translators: 1: type, 2: id, 3: title. */
+				/* translators: 1: the type's name, such as post, page or Event, 2: id, 3: title. */
 				__( 'Moved %1$s #%2$d "%3$s" to the trash.', 'saddle' ),
-				$type,
+				self::type_label( $type ),
 				$id,
 				$post->post_title
 			);
@@ -2623,9 +2638,9 @@ class Saddle_Abilities {
 				'done'    => static function ( $result ) use ( $done, $type, $id, $post ) {
 					return empty( $result['deleted'] )
 						? sprintf(
-							/* translators: 1: type, 2: id, 3: title. */
+							/* translators: 1: the type's name, such as post, page or Event, 2: id, 3: title. */
 							__( 'Nothing changed: %1$s #%2$d "%3$s" was already in the trash.', 'saddle' ),
-							$type,
+							self::type_label( $type ),
 							$id,
 							$post->post_title
 						)
