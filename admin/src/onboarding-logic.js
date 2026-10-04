@@ -7,6 +7,7 @@
  * (FirstRun, WaitingLine, SetupBlock) only draw what these return.
  */
 import { __, sprintf } from '@wordpress/i18n';
+import { WEB_APPS } from './connect-apps';
 
 /**
  * First-run steps after the site read, in order. The site read itself
@@ -476,12 +477,19 @@ export function tryPrompt( look ) {
  * The checks shown when a connection has not arrived after two minutes.
  * `ok` is true (fine), false (a likely cause) or null (nothing to say).
  *
+ * Only what can stop the path in use is listed. HTTPS and pretty
+ * permalinks are what sign-in by address needs; a key works without them,
+ * so the key path leaves them out. A local site stops only the apps that
+ * connect from their own servers, and those never take a key there.
+ *
  * @param {Object}  args
- * @param {boolean} args.ssl        The site is served over HTTPS.
+ * @param {boolean} args.ssl        The site is served over HTTPS (or counts
+ *                                  as secure, as a local site does).
  * @param {boolean} args.permalinks Pretty permalinks are on.
  * @param {boolean} args.local      The address looks like a local site.
  * @param {string}  args.app        The app key.
  * @param {string}  args.authHeader `ok`, or a stripped-header status.
+ * @param {string}  args.path       'address' or 'key': how the app connects.
  * @return {Object[]} `{ key, ok, label, hint }` rows, in reading order.
  */
 export function selfCheckFindings( {
@@ -490,31 +498,37 @@ export function selfCheckFindings( {
 	local,
 	app,
 	authHeader,
+	path = 'address',
 } ) {
-	const rows = [
-		{
-			key: 'https',
-			ok: !! ssl,
-			label: __( 'The site uses HTTPS', 'saddle' ),
-			hint: ssl
-				? ''
-				: __(
-						'Apps that sign in by address need HTTPS. Use a key instead, or move the site to HTTPS.',
-						'saddle'
-				  ),
-		},
-		{
-			key: 'permalinks',
-			ok: !! permalinks,
-			label: __( 'Pretty permalinks are on', 'saddle' ),
-			hint: permalinks
-				? ''
-				: __(
-						'Go to Settings → Permalinks and choose anything other than Plain.',
-						'saddle'
-				  ),
-		},
-	];
+	const byAddress = 'key' !== path;
+	const rows = [];
+
+	if ( byAddress ) {
+		rows.push(
+			{
+				key: 'https',
+				ok: !! ssl,
+				label: __( 'The site uses HTTPS', 'saddle' ),
+				hint: ssl
+					? ''
+					: __(
+							'Apps that sign in by address need HTTPS. Use a key instead, or move the site to HTTPS.',
+							'saddle'
+					  ),
+			},
+			{
+				key: 'permalinks',
+				ok: !! permalinks,
+				label: __( 'Pretty permalinks are on', 'saddle' ),
+				hint: permalinks
+					? ''
+					: __(
+							'Go to Settings → Permalinks and choose anything other than Plain.',
+							'saddle'
+					  ),
+			}
+		);
+	}
 
 	if ( authHeader && 'unknown' !== authHeader ) {
 		const fine =
@@ -532,7 +546,7 @@ export function selfCheckFindings( {
 		} );
 	}
 
-	if ( local ) {
+	if ( local && byAddress && WEB_APPS.includes( app ) ) {
 		rows.push( {
 			key: 'local',
 			ok: false,

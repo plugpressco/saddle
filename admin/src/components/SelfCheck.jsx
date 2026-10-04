@@ -1,11 +1,12 @@
 /**
- * What to look at when an app has not connected after a while (#277): two
- * minutes in the welcome, the wizard's own clock on AI apps.
+ * What to look at when an app has not connected after two minutes in the
+ * welcome (#277).
  *
- * It replaces the spinner in first run with the likely causes, in reading
- * order: HTTPS, permalinks, whether the Authorization header reaches PHP (with
- * the existing one-click fix), a local site, a ChatGPT plan note and a
- * firewall. Then the two ways out: a key, or skip for now.
+ * The likely causes, in reading order, for the path in use (R2): on the
+ * address path HTTPS, permalinks, a local site (web apps only) and a ChatGPT
+ * plan note; on both paths whether the Authorization header reaches PHP
+ * (with the one-click fix) and a firewall. Then the two ways out: a key, or
+ * skip for now.
  */
 import { useState, useEffect } from '@wordpress/element';
 import { Button, CalloutCard, ChecklistItem } from '@plugpress/ui';
@@ -20,6 +21,8 @@ const stripped = ( status ) =>
 /**
  * @param {Object}    props
  * @param {string}    props.app        App key.
+ * @param {string}    props.path       'address' or 'key'.
+ * @param {boolean}   props.ssl        The site counts as secure for sign-in.
  * @param {boolean}   props.local      The site looks like a local one.
  * @param {boolean}   props.permalinks Pretty permalinks are on.
  * @param {?Function} props.onUseKey   "Use a key instead", or null when the
@@ -28,6 +31,8 @@ const stripped = ( status ) =>
  */
 export default function SelfCheck( {
 	app,
+	path = 'address',
+	ssl = !! saddleData.ssl,
 	local,
 	permalinks,
 	onUseKey,
@@ -46,11 +51,12 @@ export default function SelfCheck( {
 	}, [] );
 
 	const rows = selfCheckFindings( {
-		ssl: !! saddleData.ssl,
+		ssl,
 		permalinks,
 		local,
 		app,
 		authHeader: status,
+		path,
 	} );
 
 	return (

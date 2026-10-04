@@ -59,6 +59,12 @@ export const APPS = [
 			'Older Claude desktop builds: Settings → Developer → Edit Config. Paste this inside, save, and restart the app. It connects through a small bridge (mcp-remote), which needs Node installed.',
 			'saddle'
 		),
+		// On a site on this computer the bridge is the one way in, for
+		// every desktop build: claude.ai can't reach the site.
+		howLocal: __(
+			'In the Claude desktop app: Settings → Developer → Edit Config. Paste this inside, save, and restart the app. It needs Node installed.',
+			'saddle'
+		),
 		next: __(
 			'Turn the connector on in a chat and ask Claude about your site.',
 			'saddle'
@@ -258,9 +264,47 @@ export const APPS = [
 
 /**
  * Apps that connect from their own servers, not from the owner's computer,
- * so they can't reach a site that runs on this computer.
+ * so they can't reach a site that runs on this computer. They also take the
+ * address in a form (name, address, authentication) rather than a config
+ * file or a command.
  */
 export const WEB_APPS = [ 'claude', 'chatgpt', 'grok' ];
+
+/**
+ * Apps that run on the owner's computer and connect to a local site, in the
+ * order the connect drawer offers them when a web app can't.
+ */
+export const LOCAL_APPS = [ 'claude-code', 'cursor', 'codex' ];
+
+/**
+ * Whether an MCP address belongs to a site on this computer: localhost,
+ * 127.0.0.1, or a .test or .local name.
+ *
+ * @param {string} url The MCP address.
+ * @return {boolean} True for a local site.
+ */
+export function isLocalAddress( url ) {
+	return /(?:localhost|127\.0\.0\.1|\.test|\.local)(?::|\/|$)/i.test(
+		String( url || '' )
+	);
+}
+
+/**
+ * This site runs on this computer, so web apps can't reach it.
+ */
+export const IS_LOCAL = isLocalAddress( MCP_URL );
+
+/**
+ * Whether an app can't reach this site at all: a web app, and a site on
+ * this computer.
+ *
+ * @param {Object|null} app   An APPS entry.
+ * @param {boolean}     local The site runs on this computer.
+ * @return {boolean} True when the app's own servers can't reach the site.
+ */
+export function unreachableHere( app, local = IS_LOCAL ) {
+	return !! app && !! local && WEB_APPS.includes( app.key );
+}
 
 /**
  * Which path an app takes in the connect wizard.
@@ -270,7 +314,9 @@ export const WEB_APPS = [ 'claude', 'chatgpt', 'grok' ];
  * while sign-in is off but the site can turn it on, the way ChatGPT always
  * has: the owner sees the switch first, and a key is the fallback. The key
  * stays the only path where sign-in can't work: no HTTPS, plain permalinks,
- * or a local site that an app on the web can't reach.
+ * or a local site that an app on the web can't reach. That last one holds
+ * with sign-in on too: Claude's connector is reached from Claude's servers,
+ * so on a local site only its desktop bridge (a key) gets through.
  *
  * @param {Object|null}  app         An APPS entry, or null before one is picked.
  * @param {Object}       args
@@ -291,11 +337,11 @@ export function connectPath(
 	if ( app && ! app.viaAddress ) {
 		return 'key';
 	}
+	if ( unreachableHere( app, local ) ) {
+		return 'key';
+	}
 	const on = !! ( signIn && signIn.enabled );
-	const canOffer =
-		offer &&
-		!! ( signIn && signIn.ready ) &&
-		! ( local && app && WEB_APPS.includes( app.key ) );
+	const canOffer = offer && !! ( signIn && signIn.ready );
 	return ( on || canOffer ) && false !== prefer ? 'address' : 'key';
 }
 
@@ -626,13 +672,89 @@ export function buildGuideConfig( app, mode = 'key' ) {
 /**
  * The instruction for an app on a given path.
  *
- * @param {Object} app  An APPS entry.
- * @param {string} mode 'address' or 'key'.
+ * @param {Object}  app   An APPS entry.
+ * @param {string}  mode  'address' or 'key'.
+ * @param {boolean} local The site runs on this computer.
  * @return {string} Where the setup goes.
  */
-export function howFor( app, mode ) {
+export function howFor( app, mode, local = false ) {
 	if ( 'address' === mode ) {
 		return app.howAddress || app.how || '';
 	}
+	if ( local && app.howLocal ) {
+		return app.howLocal;
+	}
 	return app.how || app.howAddress || '';
+}
+
+/**
+ * The newest key already made for an app, if any: making another one would
+ * stack "Claude Code 2" on a key nobody remembers, so the owner is asked to
+ * replace it or add one.
+ *
+ * @param {Object[]} connections Rows from GET /connections.
+ * @param {string}   appKey      An APPS key.
+ * @param {Function} appOf       Maps a key's name to an app key.
+ * @return {Object|null} The connection row, or null.
+ */
+export function existingKey( connections, appKey, appOf = () => '' ) {
+	if ( ! appKey || 'other' === appKey ) {
+		return null;
+	}
+	const mine = ( Array.isArray( connections ) ? connections : [] ).filter(
+		( c ) =>
+			c &&
+			'key' === c.kind &&
+			( c.app === appKey || appOf( c.name ) === appKey )
+	);
+	mine.sort( ( a, b ) => ( b.created_at || 0 ) - ( a.created_at || 0 ) );
+	return mine[ 0 ] || null;
+}
+
+/* ------------------------------------------- a key made on this screen */
+
+// The key made on this screen and not yet copied, kept in the tab's session
+// so a reload can remove it: React's clean-up never runs on a reload, and a
+// key nobody copied can't be in any app.
+const PENDING_KEY = 'saddle-pending-key';
+
+/**
+ * Remember a key that was just made and not yet copied.
+ *
+ * @param {string} uuid The key's uuid.
+ */
+export function rememberPendingKey( uuid ) {
+	try {
+		window.sessionStorage.setItem( PENDING_KEY, String( uuid || '' ) );
+	} catch ( e ) {
+		// Storage is off: the unmount clean-up still covers leaving in-app.
+	}
+}
+
+/**
+ * The key a previous load made and never copied, or ''.
+ *
+ * @return {string} Its uuid.
+ */
+export function pendingKey() {
+	try {
+		return window.sessionStorage.getItem( PENDING_KEY ) || '';
+	} catch ( e ) {
+		return '';
+	}
+}
+
+/**
+ * Forget the pending key: it was copied, used or removed.
+ *
+ * @param {string} uuid Only forget it when it is this key; '' for any.
+ */
+export function forgetPendingKey( uuid = '' ) {
+	try {
+		if ( ! uuid || window.sessionStorage.getItem( PENDING_KEY ) === uuid ) {
+			window.sessionStorage.removeItem( PENDING_KEY );
+		}
+	} catch ( e ) {
+		// Nothing stored.
+	}
 }
