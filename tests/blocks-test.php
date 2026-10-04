@@ -407,6 +407,99 @@ class Saddle_Blocks_Test extends WP_UnitTestCase {
 		$this->assertCount( 2, $tree[0]['innerBlocks'] );
 	}
 
+	/** Three top-level paragraphs, for the move tests. */
+	private function three_paragraphs() {
+		$id = $this->page();
+		$this->run_ability(
+			'set-blocks',
+			array(
+				'post_id' => $id,
+				'nodes'   => array(
+					array(
+						'type'    => 'core/paragraph',
+						'content' => 'A',
+					),
+					array(
+						'type'    => 'core/paragraph',
+						'content' => 'B',
+					),
+					array(
+						'type'    => 'core/paragraph',
+						'content' => 'C',
+					),
+				),
+			)
+		);
+
+		return $id;
+	}
+
+	/** How many move-block entries the log holds. */
+	private function moves_logged() {
+		return count( wp_list_filter( Saddle_Log::query( 100, 1 )['entries'], array( 'action' => 'move-block' ) ) );
+	}
+
+	/**
+	 * A move past the end lands last, and moving the last block there changes
+	 * nothing. Regression: it was saved and logged as "Moved … from 2 to 2".
+	 */
+	public function test_a_move_that_lands_where_it_started_is_refused() {
+		$id     = $this->three_paragraphs();
+		$before = get_post( $id )->post_content;
+		$logged = $this->moves_logged();
+
+		$clamped = $this->run_ability(
+			'move-block',
+			array(
+				'post_id'           => $id,
+				'from_address'      => '2',
+				'to_parent_address' => '',
+				'position'          => 9,
+			)
+		);
+		$this->assertWPError( $clamped );
+		$this->assertSame( 'saddle_move_noop', $clamped->get_error_code() );
+		$this->assertSame( 'Nothing moved. Position 9 is past the end of that container, so the block would go last, and the block at 2 is already last there.', $clamped->get_error_message() );
+
+		$same = $this->run_ability(
+			'move-block',
+			array(
+				'post_id'           => $id,
+				'from_address'      => '1',
+				'to_parent_address' => '',
+				'position'          => 1,
+			)
+		);
+		$this->assertSame( 'saddle_move_noop', $same->get_error_code() );
+		$this->assertSame( 'Nothing moved. The block at 1 is already in that place.', $same->get_error_message() );
+
+		$this->assertSame( $before, get_post( $id )->post_content, 'Nothing was saved.' );
+		$this->assertSame( $logged, $this->moves_logged(), 'Nothing was logged.' );
+	}
+
+	/** A clamped move that does move says where the block really went. */
+	public function test_a_clamped_move_says_where_the_block_went() {
+		$id = $this->three_paragraphs();
+
+		$result = $this->run_ability(
+			'move-block',
+			array(
+				'post_id'           => $id,
+				'from_address'      => '0',
+				'to_parent_address' => '',
+				'position'          => 9,
+			)
+		);
+
+		$this->assertNotWPError( $result );
+		$this->assertSame( '2', $result['moved'] );
+		$this->assertStringStartsWith( 'Position 9 is past the end of that container, so the block went last, to 2.', $result['note'] );
+		$this->assertSame( sprintf( 'Moved core/paragraph from 0 to 2 on post #%d.', $id ), Saddle_Log::query( 1, 1 )['entries'][0]['summary'] );
+
+		$tree = Saddle_Blocks_Tree::parse( get_post( $id )->post_content );
+		$this->assertStringContainsString( 'A', $tree[2]['innerHTML'] );
+	}
+
 	public function test_remove_block_leaf_is_immediate_but_subtree_needs_the_two_step_confirm() {
 		$id = $this->page();
 		$this->run_ability(
