@@ -1441,6 +1441,13 @@ body.saddle-admin-page {
 	}
 }
 
+// A page's shape while the app loads (P12): a heading's place, then a block
+// of rows.
+.saddle-skeleton {
+	display: grid;
+	gap: var( --pp-space-3 );
+}
+
 // No app connected: one sentence and one button, centred in one block.
 .saddle-home__connect {
 	display: flex;

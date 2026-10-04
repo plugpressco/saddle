@@ -16,7 +16,7 @@ import { useState, useEffect, useRef } from '@wordpress/element';
 import {
 	Button,
 	Notice,
-	Spinner,
+	Skeleton,
 	Badge,
 	Textarea,
 	Switch,
@@ -302,8 +302,14 @@ export default function Guidance() {
 			.finally( () => setSaving( false ) );
 	};
 
+	// The page's shape while it loads, not a lone spinner (P12).
 	if ( loading ) {
-		return <Spinner />;
+		return (
+			<div className="saddle-skeleton" aria-busy="true">
+				<Skeleton height={ 15 } width={ 120 } />
+				<RowList loading loadingRows={ FIELDS.length } />
+			</div>
+		);
 	}
 
 	const systemRegion = {

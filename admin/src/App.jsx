@@ -27,7 +27,6 @@ import {
 	ConfirmProvider,
 	Toaster,
 	toast,
-	Spinner,
 } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { api, saddleData } from './api';
@@ -37,7 +36,7 @@ import AuthTrouble from './components/AuthTrouble';
 import Frame from './components/Frame';
 import { pickSlot } from './notices';
 import { drillHeader } from './frame-logic';
-import Screen from './screens';
+import Screen, { ScreenSkeleton } from './screens';
 import { showFirstRun, tourDue } from './onboarding-logic';
 import {
 	areaUrl,
@@ -568,10 +567,19 @@ export default function App() {
 	if ( redirect ) {
 		view = null;
 	} else if ( loading ) {
+		// The frame's shape and the page's, not a lone spinner (P12).
 		view = (
-			<div className="pp-app saddle-app saddle-app--loading">
-				<Spinner />
-			</div>
+			<Frame
+				area={ area }
+				tab={ tab }
+				sub={ sub }
+				view={ routeView }
+				onTab={ setTab }
+				onSub={ ( next ) => goRoute( { sub: next } ) }
+				loading
+			>
+				<ScreenSkeleton area={ area } tab={ tab } />
+			</Frame>
 		);
 	} else if ( authError ) {
 		view = <AuthTrouble onRetry={ () => window.location.reload() } />;

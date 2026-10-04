@@ -2,7 +2,12 @@
  * Home's pure helpers (#309): the week's numbers and the plugins the apps
  * can work inside.
  */
-import { weekStart, weekTiles, worksWith } from '../../admin/src/home-logic';
+import {
+	selfCheckDue,
+	weekStart,
+	weekTiles,
+	worksWith,
+} from '../../admin/src/home-logic';
 
 const NOW = Date.parse( '2026-10-02T12:00:00Z' );
 
@@ -62,5 +67,31 @@ describe( 'works with', () => {
 			'analytics',
 		] );
 		expect( worksWith( null ) ).toEqual( [] );
+	} );
+} );
+
+describe( 'selfCheckDue (P12)', () => {
+	it( 'waits for the week’s numbers', () => {
+		expect( selfCheckDue( true, null ) ).toBe( false );
+		expect( selfCheckDue( true, undefined ) ).toBe( false );
+		expect(
+			selfCheckDue( true, { changes: 1, blocked: 0, waiting: 0 } )
+		).toBe( true );
+	} );
+
+	it( 'runs even when the numbers failed to load', () => {
+		expect(
+			selfCheckDue( true, {
+				changes: null,
+				blocked: null,
+				waiting: null,
+			} )
+		).toBe( true );
+	} );
+
+	it( 'never runs with no app connected', () => {
+		expect(
+			selfCheckDue( false, { changes: 0, blocked: 0, waiting: 0 } )
+		).toBe( false );
 	} );
 } );

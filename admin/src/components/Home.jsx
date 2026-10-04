@@ -22,6 +22,7 @@ import {
 	CardHeader,
 	Row,
 	RowList,
+	Skeleton,
 	StatCard,
 	StatGrid,
 	StatusDot,
@@ -33,10 +34,10 @@ import { parseModules } from '../onboarding-logic';
 import SetupBlock from './SetupBlock';
 import NeedsYourOk from './NeedsYourOk';
 import SectionHeader from './SectionHeader';
-import Activity from './Activity';
+import Activity, { ActivitySkeleton } from './Activity';
 import { ROLES } from './ConnectedClients';
 import { AppLogo, appKeyFromLabel } from './icons';
-import { weekStart, weekTiles, worksWith } from '../home-logic';
+import { selfCheckDue, weekStart, weekTiles, worksWith } from '../home-logic';
 
 // Session cache for the connection self-check so re-opening Home doesn't
 // re-run the loopback probe. Reset on full reload, which is the right
@@ -82,6 +83,75 @@ function weekTotal( type, byApp = false ) {
 	).then(
 		( res ) => ( Number.isInteger( res.total ) ? res.total : null ),
 		() => null
+	);
+}
+
+/**
+ * This week: three numbers in one block. Until they arrive the numbers are
+ * placeholders, so the block keeps its place; a number that failed to load
+ * is left out, and nothing is drawn when all three failed.
+ *
+ * @param {Object}  props
+ * @param {?Object} props.week `{ changes, blocked, waiting }`, or null while loading.
+ */
+function WeekCard( { week } ) {
+	const loading = null === week;
+	const tiles = weekTiles(
+		loading ? { changes: 0, blocked: 0, waiting: 0 } : week
+	);
+	if ( ! tiles.length ) {
+		return null;
+	}
+	return (
+		<Card className="saddle-home__week" aria-busy={ loading || undefined }>
+			<CardHeader title={ __( 'This week', 'saddle' ) } />
+			<StatGrid columns={ tiles.length } divided>
+				{ tiles.map( ( t ) => (
+					<StatCard
+						key={ t.key }
+						flush
+						label={ t.label }
+						value={
+							loading ? (
+								<Skeleton height={ 20 } width={ 28 } />
+							) : (
+								String( t.value )
+							)
+						}
+					/>
+				) ) }
+			</StatGrid>
+		</Card>
+	);
+}
+
+/**
+ * Home's shape while it loads (P12): the week's block, the feed and the
+ * apps column, as placeholders. No h1 or h2 in it: the app draws this before
+ * WordPress has moved its notices (see Frame).
+ */
+export function HomeSkeleton() {
+	return (
+		<div className="saddle-home">
+			<div className="saddle-home__main">
+				<WeekCard week={ null } />
+				<div className="saddle-activity">
+					<div
+						className="saddle-activity__filters"
+						aria-hidden="true"
+					>
+						<Skeleton height={ 15 } width={ 72 } />
+					</div>
+					<ActivitySkeleton />
+				</div>
+			</div>
+			<aside className="saddle-home__side" aria-hidden="true">
+				<div className="saddle-stack">
+					<Skeleton height={ 15 } width={ 48 } />
+					<RowList loading loadingRows={ 2 } />
+				</div>
+			</aside>
+		</div>
 	);
 }
 
@@ -175,11 +245,12 @@ export default function Home( {
 		};
 	}, [] );
 
+	// The loopback header probe runs last (selfCheckDue).
+	const probeDue = selfCheckDue( connected, week );
 	useEffect( () => {
-		if ( healthCache ) {
-			return; // Already probed this session.
+		if ( healthCache || ! probeDue ) {
+			return; // Already probed this session, or not yet.
 		}
-		// Runs the loopback header probe once; Home never waits on it.
 		api( 'self-check' )
 			.then( ( res ) => {
 				healthCache = { status: res.status || 'unknown' };
@@ -189,11 +260,12 @@ export default function Home( {
 				healthCache = { status: 'unknown' };
 				setHealth( healthCache );
 			} );
-	}, [] );
+	}, [ probeDue ] );
 
-	// Until the connections are in, which page this is is unknown.
+	// Until the connections are in, which page this is is unknown: draw its
+	// shape.
 	if ( ! Array.isArray( apps ) ) {
-		return null;
+		return <HomeSkeleton />;
 	}
 
 	// Nothing connected: one block, and the feed only when there is history.
@@ -231,7 +303,6 @@ export default function Home( {
 
 	const modules = ( areas || [] ).filter( ( a ) => 'module' === a.kind );
 	const plugins = worksWith( services );
-	const tiles = weekTiles( week );
 
 	return (
 		<div className="saddle-home">
@@ -252,21 +323,7 @@ export default function Home( {
 					onHide={ onHideSetup }
 				/>
 
-				{ tiles.length > 0 && (
-					<Card className="saddle-home__week">
-						<CardHeader title={ __( 'This week', 'saddle' ) } />
-						<StatGrid columns={ tiles.length } divided>
-							{ tiles.map( ( t ) => (
-								<StatCard
-									key={ t.key }
-									flush
-									label={ t.label }
-									value={ String( t.value ) }
-								/>
-							) ) }
-						</StatGrid>
-					</Card>
-				) }
+				<WeekCard week={ week } />
 
 				<section id="activity">
 					<Activity
