@@ -1348,16 +1348,9 @@ body.saddle-admin-page {
 		line-height: 1.5;
 	}
 
-	// The connect step lives inside Saddle's message: the conversation already
-	// names the app and the choice comes later, so the wizard's own heading
-	// and its "what it will be able to do" card stay out of the thread.
+	// The connect step lives inside Saddle's message, at the thread's size.
 	.saddle-wizard--embedded {
 		font-size: var( --s-text );
-
-		.saddle-wizard__title,
-		.saddle-wizard__cando {
-			display: none;
-		}
 	}
 
 	@media ( max-width: 782px ) {
@@ -2432,11 +2425,6 @@ body.saddle-admin-page {
 
 	.pp-collapsible__panel {
 		padding: 0 0 var(--pp-space-3);
-	}
-
-	// Sign-in for apps: the disclosure already names it.
-	&__signin .saddle-section-head {
-		display: none;
 	}
 
 	&__check {

@@ -268,8 +268,8 @@ function ToolSwitches( { caps, listed, onChanged } ) {
 	);
 }
 
-// Sign-in for apps: the one control, drawn by SignInCard. Its own heading is
-// hidden here (the disclosure says it).
+// Sign-in for apps: the one control, drawn by SignInCard. The disclosure
+// names it, so SignInCard draws no heading of its own (#293).
 function SignIn() {
 	const signIn = useOauthSettings();
 	return <SignInCard { ...signIn } />;
