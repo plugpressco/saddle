@@ -162,6 +162,34 @@ describe( 'buildConfig', () => {
 		expect( setup ).not.toContain( '--auth oauth' );
 	} );
 
+	it( 'puts only "Basic …" in a JSON key config’s Authorization header', () => {
+		// The symptom: Cursor, VS Code, Windsurf and "Any MCP app" got
+		// "Authorization": "Authorization: Basic …", so the app sent the
+		// header name twice and every call was refused.
+		const { buildConfig, buildGuideConfig } = load( site );
+		const basic = `Basic ${ btoa( 'admin:abcdEFGH' ) }`;
+		const server = ( app, root = 'mcpServers' ) =>
+			JSON.parse( buildConfig( app, 'abcd EFGH', 'key' ) )[ root ][
+				'saddle-example'
+			];
+
+		expect( server( 'cursor' ).headers.Authorization ).toBe( basic );
+		expect( server( 'other' ).headers.Authorization ).toBe( basic );
+		expect( server( 'windsurf' ).headers.Authorization ).toBe( basic );
+		expect( server( 'vscode', 'servers' ).headers.Authorization ).toBe(
+			basic
+		);
+		expect(
+			JSON.parse( buildGuideConfig( 'cursor', 'key' ) ).mcpServers[
+				'saddle-example'
+			].headers.Authorization
+		).toBe( 'Basic PASTE-YOUR-KEY-HERE' );
+		// The command-line apps name the header themselves.
+		expect( buildConfig( 'claude-code', 'abcd EFGH', 'key' ) ).toContain(
+			`--header "Authorization: ${ basic }"`
+		);
+	} );
+
 	it( 'gives Grok the connector form lines', () => {
 		const { buildConfig } = load( site );
 		const setup = buildConfig( 'grok', null, 'address' );

@@ -395,8 +395,13 @@ function formLines() {
  */
 function assemble( app, auth ) {
 	const byAddress = null === auth;
+	// A command names the header itself ("Authorization: Basic …"); a JSON
+	// config is a map of header names to values, so its value is "Basic …"
+	// alone. Naming it twice there made every call fail (1.5.0 QA).
 	const header = byAddress ? '' : `Authorization: Basic ${ auth }`;
-	const headers = byAddress ? {} : { headers: { Authorization: header } };
+	const headers = byAddress
+		? {}
+		: { headers: { Authorization: `Basic ${ auth }` } };
 
 	switch ( app ) {
 		// One CLI command, native HTTP transport. User scope, not the default
