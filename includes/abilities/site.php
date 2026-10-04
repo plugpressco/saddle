@@ -15,9 +15,11 @@
  * (option values, installed inventory) sit at `admin` too, not `read` — the
  * inventory itself is sensitive. Option get/update is confined to an
  * allowlist; a hard blocklist (siteurl/home, auth keys/salts, active_plugins,
- * roles/registration) always wins, even over the extension filter. The one
- * irreversible operation — overwriting an option value — routes through the
- * approval gate, with the new value bound into the confirm token.
+ * roles/registration) always wins, even over the extension filter. Every
+ * change here routes through the approval gate except a cache flush:
+ * overwriting an option value (the new value bound into the confirm token),
+ * activating or deactivating a plugin (#320) and switching the theme, each
+ * bound to what its preview showed.
  *
  * @package Saddle
  */
