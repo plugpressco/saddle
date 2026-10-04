@@ -18,6 +18,9 @@ class Saddle_Connection_Test extends WP_UnitTestCase {
 
 	public function tear_down() {
 		$_SERVER = $this->server_backup;
+		$GLOBALS['wp_rest_application_password_status'] = null;
+		remove_filter( 'wp_is_application_passwords_available', '__return_true' );
+		remove_filter( 'application_password_is_api_request', '__return_true' );
 		parent::tear_down();
 	}
 
@@ -610,5 +613,77 @@ class Saddle_Connection_Test extends WP_UnitTestCase {
 	public function test_explain_auth_error_passes_through_non_errors() {
 		$this->assertTrue( Saddle_Connection::explain_auth_error( true ) );
 		$this->assertNull( Saddle_Connection::explain_auth_error( null ) );
+	}
+
+	/* -------- a rejected key, through core's real filter chain -------- */
+
+	/**
+	 * Send a wrong Application Password for a real user to the MCP route and
+	 * run both auth filters the way WP_REST_Server does.
+	 *
+	 * @param string $uri Request URI.
+	 * @return WP_Error|true|null What rest_authentication_errors decided.
+	 */
+	private function authenticate_with_a_wrong_key( $uri = '/wp-json/saddle/v1/mcp' ) {
+		add_filter( 'wp_is_application_passwords_available', '__return_true' );
+		add_filter( 'application_password_is_api_request', '__return_true' );
+
+		$user = self::factory()->user->create_and_get( array( 'role' => 'administrator' ) );
+		WP_Application_Passwords::create_new_application_password( $user->ID, array( 'name' => 'Saddle: Claude Code' ) );
+
+		wp_set_current_user( 0 );
+		$GLOBALS['wp_rest_application_password_status'] = null;
+		unset( $_SERVER['HTTP_AUTHORIZATION'], $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] );
+		$_SERVER['REQUEST_URI']   = $uri;
+		$_SERVER['PHP_AUTH_USER'] = $user->user_login;
+		$_SERVER['PHP_AUTH_PW']   = 'abcd abcd abcd abcd abcd abcd';
+
+		$this->assertFalse( apply_filters( 'determine_current_user', false ), 'The wrong key must not sign anyone in.' );
+
+		return apply_filters( 'rest_authentication_errors', null );
+	}
+
+	public function test_a_rejected_key_keeps_saddles_explanation_through_cores_filter_chain() {
+		// Core holds the rejection from determine_current_user and only returns
+		// it from rest_authentication_errors at priority 90. The relabel runs at
+		// 20, so it used to see null and core's "invalid application password"
+		// reached the app.
+		$result = $this->authenticate_with_a_wrong_key();
+
+		$this->assertWPError( $result );
+		$this->assertSame( 'saddle_credential_rejected', $result->get_error_code() );
+		$this->assertSame( 401, $result->get_error_data()['status'] );
+	}
+
+	public function test_a_rejected_key_keeps_saddles_explanation_while_woocommerce_is_active() {
+		// WooCommerce's REST authentication (WC_REST_Authentication, 11.1)
+		// hooks determine_current_user at 15 and rest_authentication_errors at
+		// 10, 15 and 20. For a route outside wc/ each one hands the value on.
+		$pass = static function ( $value ) {
+			return $value;
+		};
+		add_filter( 'determine_current_user', $pass, 15 );
+		add_filter( 'rest_authentication_errors', $pass, 10 );
+		add_filter( 'rest_authentication_errors', $pass, 15 );
+		add_filter( 'rest_authentication_errors', $pass, 20 );
+
+		try {
+			$result = $this->authenticate_with_a_wrong_key();
+		} finally {
+			remove_filter( 'determine_current_user', $pass, 15 );
+			remove_filter( 'rest_authentication_errors', $pass, 10 );
+			remove_filter( 'rest_authentication_errors', $pass, 15 );
+			remove_filter( 'rest_authentication_errors', $pass, 20 );
+		}
+
+		$this->assertWPError( $result );
+		$this->assertSame( 'saddle_credential_rejected', $result->get_error_code() );
+	}
+
+	public function test_a_rejected_key_elsewhere_keeps_cores_own_error() {
+		$result = $this->authenticate_with_a_wrong_key( '/wp-json/wp/v2/posts' );
+
+		$this->assertWPError( $result );
+		$this->assertSame( 'incorrect_password', $result->get_error_code(), 'Only Saddle\'s own route is relabelled.' );
 	}
 }
