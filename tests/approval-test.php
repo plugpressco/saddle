@@ -262,6 +262,38 @@ class Saddle_Approval_Test extends WP_UnitTestCase {
 		$this->assertWPError( $result );
 		$this->assertSame( 'saddle_token_user_mismatch', $result->get_error_code() );
 		$this->assertSame( 0, $calls, 'Another user must never confirm a token they did not preview.' );
+
+		// The refusal does not spend the issuer's token.
+		wp_set_current_user( $issuer );
+		$own = Saddle_Approval::gate( $this->gate_args( $calls, array( 'input' => array( 'confirm_token' => $token ) ) ) );
+		$this->assertSame( array( 'executed' => true ), $own );
+		$this->assertSame( 1, $calls );
+	}
+
+	/**
+	 * Two confirms with one token race: both find the token, and only the one
+	 * whose delete removes the row may run. Simulated by deleting the row from
+	 * under this request just before its own delete, as a concurrent request
+	 * that got there first would. Regression: the delete's result was ignored,
+	 * so the losing request ran the action a second time.
+	 */
+	public function test_a_token_spent_by_a_concurrent_request_does_not_run_again() {
+		$token   = Saddle_Approval::gate( $this->gate_args( $calls ) )['confirm_token'];
+		$post_id = $this->token_post_id( $token );
+
+		$winner = static function ( $id ) use ( $post_id ) {
+			global $wpdb;
+			if ( (int) $id === $post_id ) {
+				$wpdb->delete( $wpdb->posts, array( 'ID' => $post_id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Test: the concurrent request's DELETE.
+			}
+		};
+		add_action( 'delete_post', $winner );
+		$result = Saddle_Approval::gate( $this->gate_args( $calls, array( 'input' => array( 'confirm_token' => $token ) ) ) );
+		remove_action( 'delete_post', $winner );
+
+		$this->assertWPError( $result );
+		$this->assertSame( 'saddle_invalid_token', $result->get_error_code() );
+		$this->assertSame( 0, $calls, 'The request that lost the race must not run the action.' );
 	}
 
 	/* -------- audit logging -------- */

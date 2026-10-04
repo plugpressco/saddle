@@ -287,9 +287,11 @@ class Saddle_Approval {
 	}
 
 	/**
-	 * Validate and consume a token. Single-use: the token record is deleted on
-	 * lookup regardless of outcome, so even a mismatched/expired token cannot be
-	 * retried. The consumer must be the same user the preview was issued to.
+	 * Validate and consume a token. The consumer must be the user and the app
+	 * the preview was issued to; a token presented by anyone else is refused
+	 * and left in place for its owner. Once its owner presents it, it is spent
+	 * whatever the outcome, so a mismatched or expired token cannot be
+	 * retried, and only one of several concurrent requests can spend it.
 	 *
 	 * @param string      $token  Candidate token.
 	 * @param string      $action Action the token must be bound to.
@@ -340,9 +342,12 @@ class Saddle_Approval {
 		$stored_conn   = (string) get_post_meta( $post_id, self::META_CONNECTION, true );
 		$decision      = (string) get_post_meta( $post_id, self::META_DECISION, true );
 
-		// Single-use: burn the token now, before any further branching.
-		wp_delete_post( $post_id, true );
-
+		// Whose token is it? Answered BEFORE the token is spent. A token
+		// presented by any user or app other than the one it was issued to can
+		// never run anything: both checks refuse it, on this call and on every
+		// later one. So it is left for its owner. Spending it here let one
+		// app's refused confirm destroy another app's pending preview, which
+		// then could no longer be confirmed or approved.
 		if ( get_current_user_id() !== $stored_user ) {
 			return new WP_Error(
 				'saddle_token_user_mismatch',
@@ -361,6 +366,22 @@ class Saddle_Approval {
 			);
 		}
 
+		// Spend it, and only go on if THIS request spent it. Two requests from
+		// the owning app can both find the token above. wp_delete_post()
+		// returns false unless its own DELETE removed the row, and the database
+		// lets exactly one DELETE of a row succeed. So of any number of
+		// concurrent confirms, one gets the token and the rest are refused here,
+		// before anything runs. The token stays single-use under a race.
+		if ( ! wp_delete_post( $post_id, true ) ) {
+			return new WP_Error(
+				'saddle_invalid_token',
+				__( 'Invalid or already-used confirmation token. Request a new preview to get a fresh token.', 'saddle' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		// From here the token is spent whatever the outcome, so a mismatched,
+		// expired or refused token cannot be retried.
 		if ( $stored_action !== $action ) {
 			return new WP_Error(
 				'saddle_token_mismatch',

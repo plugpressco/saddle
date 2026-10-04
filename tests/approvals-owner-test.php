@@ -89,11 +89,18 @@ class Saddle_Approvals_Owner_Test extends WP_UnitTestCase {
 		$this->assertWPError( $result );
 		$this->assertSame( 'saddle_token_connection_mismatch', $result->get_error_code() );
 		$this->assertSame( 0, $calls );
+		$this->assertCount( 1, $this->pending(), 'A refused foreign confirm leaves the request waiting.' );
 
-		// Burned: even the right app cannot use it now.
+		// Not burned: the app that asked can still confirm, exactly once.
+		// Regression: B's refused attempt spent A's token.
 		$this->as_key( $a );
+		$own = Saddle_Approval::gate( $this->args( $calls, array( 'confirm_token' => $token ) ) );
+		$this->assertSame( array( 'executed' => true ), $own );
+		$this->assertSame( 1, $calls );
+
 		$again = Saddle_Approval::gate( $this->args( $calls, array( 'confirm_token' => $token ) ) );
 		$this->assertSame( 'saddle_invalid_token', $again->get_error_code() );
+		$this->assertSame( 0, $calls );
 	}
 
 	public function test_browser_session_and_key_do_not_share_tokens() {
