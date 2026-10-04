@@ -1130,6 +1130,7 @@ class Saddle_Abilities {
 		return Saddle_Approval::gate(
 			array(
 				'action'  => 'publish_' . $type,
+				'tool'    => 'page' === $type ? 'update-page' : 'update-post',
 				'target'  => (string) $id,
 				'bind'    => $bind,
 				// Says what the app asks to do, so the owner's decision reads

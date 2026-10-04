@@ -125,6 +125,19 @@ class Saddle_Capabilities {
 	}
 
 	/**
+	 * The access level an ability requires, read from the same registry as
+	 * required_cap(): the level its permission closure enforces.
+	 *
+	 * @param string $short_name Ability id without the 'saddle/' prefix.
+	 * @return string Tier name, or '' when nothing is registered under that name.
+	 */
+	public static function required_level( $short_name ) {
+		$key = (string) $short_name;
+
+		return isset( self::$gates[ $key ]['level'] ) ? (string) self::$gates[ $key ]['level'] : '';
+	}
+
+	/**
 	 * Ordered list of valid tier names.
 	 *
 	 * @return string[]

@@ -44,6 +44,7 @@ class Saddle_Approval {
 	const META_DECISION   = '_saddle_decision';
 	const META_DECIDED_BY = '_saddle_decided_by';
 	const META_DECIDED_AT = '_saddle_decided_at';
+	const META_TIER       = '_saddle_tier';
 
 	const DECISION_APPROVED = 'approved';
 	const DECISION_REJECTED = 'rejected';
@@ -104,6 +105,11 @@ class Saddle_Approval {
 	 *                             summary, so callers that predate it work
 	 *                             unchanged.
 	 *     @type array    $preview Structured detail of what will change.
+	 *     @type string   $tool    Optional. The tool (ability short name) whose
+	 *                             call this is, when `action` is not its name.
+	 *                             Its access level is kept with the request, so
+	 *                             Needs your OK can leave out a request the app
+	 *                             can no longer run. Defaults to `action`.
 	 *     @type array    $input   The ability's input (read for `confirm_token`).
 	 *     @type callable $execute Zero-arg callable that performs the mutation
 	 *                             and returns the result (or WP_Error).
@@ -171,6 +177,7 @@ class Saddle_Approval {
 			array(
 				'summary' => isset( $args['summary'] ) ? (string) $args['summary'] : '',
 				'preview' => isset( $args['preview'] ) ? $args['preview'] : null,
+				'tier'    => self::needed_tier( isset( $args['tool'] ) ? (string) $args['tool'] : $action ),
 			)
 		);
 		if ( is_wp_error( $new_token ) ) {
@@ -197,7 +204,8 @@ class Saddle_Approval {
 	 * @param string $bind   Confirmation-relevant parameter bound to the token
 	 *                       (e.g. permanent-vs-trash); '' when the action has none.
 	 * @param array  $detail Optional. `summary` and `preview`, kept so the owner
-	 *                       can decide on the Dashboard.
+	 *                       can decide on the Dashboard, and `tier`, the access
+	 *                       level the tool needs.
 	 * @return string|WP_Error 32-char hex token, or WP_Error on failure.
 	 */
 	private static function issue_token( $action, $target = '', $bind = '', array $detail = array() ) {
@@ -253,8 +261,42 @@ class Saddle_Approval {
 		$preview = wp_json_encode( isset( $detail['preview'] ) ? $detail['preview'] : null );
 		update_post_meta( $post_id, self::META_PREVIEW, wp_slash( false === $preview ? 'null' : $preview ) );
 		update_post_meta( $post_id, self::META_DECISION, '' );
+		update_post_meta( $post_id, self::META_TIER, isset( $detail['tier'] ) ? (string) $detail['tier'] : '' );
 
 		return $token;
+	}
+
+	/**
+	 * The access level a tool needs, as its permission callback enforces it.
+	 * Gate actions are mostly the tool's own name; the older ones use
+	 * underscores ("delete_post" for delete-post).
+	 *
+	 * @param string $tool Tool short name or gate action.
+	 * @return string Tier name, or '' when no tool by that name is registered.
+	 */
+	private static function needed_tier( $tool ) {
+		$tier = Saddle_Capabilities::required_level( $tool );
+
+		return '' !== $tier ? $tier : Saddle_Capabilities::required_level( str_replace( '_', '-', $tool ) );
+	}
+
+	/**
+	 * Whether the app behind a waiting request has lost the access level its
+	 * tool needs since it asked. Its confirm would be refused before the gate,
+	 * so approving the request cannot help. A request whose level is unknown
+	 * is never treated as out of reach.
+	 *
+	 * @param int $id Token post id.
+	 * @return bool
+	 */
+	private static function out_of_reach( $id ) {
+		$tier = (string) get_post_meta( $id, self::META_TIER, true );
+		if ( '' === $tier || ! class_exists( 'Saddle_Access' ) ) {
+			return false;
+		}
+		$role = Saddle_Access::role_for( (string) get_post_meta( $id, self::META_CONNECTION, true ) );
+
+		return Saddle_Capabilities::rank( $role ) < Saddle_Capabilities::rank( $tier );
 	}
 
 	/**
@@ -541,6 +583,8 @@ class Saddle_Approval {
 
 	/**
 	 * The requests waiting on the owner: unexpired, undecided, newest first.
+	 * A request whose app no longer has the access level its tool needs is
+	 * left out: approving it could not make it run.
 	 *
 	 * @return array[] `id`, `app`, `connection`, `tool`, `target`, `summary`,
 	 *                 `preview`, `created_at`, `expires_at`.
@@ -572,7 +616,7 @@ class Saddle_Approval {
 
 		$rows = array();
 		foreach ( $query->posts as $post ) {
-			if ( '' !== (string) get_post_meta( $post->ID, self::META_DECISION, true ) ) {
+			if ( '' !== (string) get_post_meta( $post->ID, self::META_DECISION, true ) || self::out_of_reach( $post->ID ) ) {
 				continue;
 			}
 			$expires = (int) get_post_meta( $post->ID, '_saddle_expires', true );
@@ -615,6 +659,24 @@ class Saddle_Approval {
 		}
 
 		$approved = 'approve' === $decision;
+
+		if ( $approved && self::out_of_reach( $id ) ) {
+			$labels = class_exists( 'Saddle_Access' ) ? Saddle_Access::labels() : array();
+			$tier   = (string) get_post_meta( $id, self::META_TIER, true );
+			$role   = Saddle_Access::role_for( (string) get_post_meta( $id, self::META_CONNECTION, true ) );
+
+			return new WP_Error(
+				'saddle_approval_out_of_reach',
+				sprintf(
+					/* translators: 1: app name, 2: access level the request needs, such as Edit content, 3: the app's access level now. */
+					__( '%1$s can no longer do this. It needs %2$s access and now has %3$s. Approving would not help.', 'saddle' ),
+					(string) get_post_meta( $id, self::META_APP, true ),
+					isset( $labels[ $tier ] ) ? $labels[ $tier ] : $tier,
+					isset( $labels[ $role ] ) ? $labels[ $role ] : $role
+				),
+				array( 'status' => 409 )
+			);
+		}
 
 		update_post_meta( $id, self::META_DECISION, $approved ? self::DECISION_APPROVED : self::DECISION_REJECTED );
 		update_post_meta( $id, self::META_DECIDED_BY, get_current_user_id() );

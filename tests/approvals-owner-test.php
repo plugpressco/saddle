@@ -296,6 +296,43 @@ class Saddle_Approvals_Owner_Test extends WP_UnitTestCase {
 		$this->assertSame( 409, $this->decide( $id, 'reject' )->get_status() );
 	}
 
+	/**
+	 * A request whose app has since lost the access level its tool needs is
+	 * left out of Needs your OK, and approving it is refused: the app's
+	 * confirm would be refused before the gate anyway. Regression: it stayed
+	 * listed and could be approved to no effect.
+	 */
+	public function test_a_request_the_app_can_no_longer_run_is_left_out() {
+		$uuid = $this->key( 'Claude Code' );
+		$conn = 'key:' . $uuid;
+		Saddle_Access::set_role( $conn, 'write' );
+		$post = self::factory()->post->create( array( 'post_title' => 'Old news' ) );
+
+		$this->as_key( $uuid );
+		$preview = wp_get_ability( 'saddle/delete-post' )->execute( array( 'id' => $post ) );
+		$this->assertTrue( $preview['requires_confirmation'] );
+		$rows = $this->pending();
+		$this->assertCount( 1, $rows );
+		$id = $rows[0]['id'];
+
+		Saddle_Access::set_role( $conn, 'read' );
+		$this->assertSame( array(), $this->pending(), 'Approving could not help, so the owner is not asked.' );
+		$ids = wp_list_pluck( Saddle_Notices::for_screen( 'saddle', 'settings/general' ), 'id' );
+		$this->assertNotContains( 'saddle-needs-ok', $ids, 'The bell does not count it either.' );
+
+		$response = $this->decide( $id, 'approve' );
+		$this->assertSame( 409, $response->get_status() );
+		$this->assertSame( 'saddle_approval_out_of_reach', $response->get_data()['code'] );
+		$this->assertSame( 'Claude Code can no longer do this. It needs Edit content access and now has Read only. Approving would not help.', $response->get_data()['message'] );
+		$this->assertSame( '', get_post_meta( $id, '_saddle_decision', true ), 'A refused approval records nothing.' );
+
+		// More access than the tool needs is enough.
+		Saddle_Access::set_role( $conn, 'admin' );
+		$this->assertCount( 1, $this->pending() );
+
+		delete_option( Saddle_Access::KEY_ROLES_OPTION );
+	}
+
 	public function test_the_bell_counts_pending_requests_everywhere_but_the_dashboard_list() {
 		$ids = static function ( $screen ) {
 			return wp_list_pluck( Saddle_Notices::for_screen( 'saddle', $screen ), 'id' );
