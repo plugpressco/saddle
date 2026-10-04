@@ -199,10 +199,12 @@ The WordPress.org version never checks for its own updates. The version from plu
 
 == Screenshots ==
 
-1. Permissions: Choose what your AI can do.
-2. Apps: Connect an AI app.
-3. Activity: See every change and every blocked request.
-4. Instructions: Read what your AI is told, and add your own instructions and Skills.
+1. Home: see what your AI changed, what waits for your OK, and what each app may do.
+2. AI apps: connect Claude, ChatGPT, Claude Code, Cursor and other MCP apps.
+3. Needs your OK: deletes and plugin changes wait for you. See what an app wants, then approve or reject it.
+4. Context: tell every app about your site, its voice and its rules, and add Skills.
+5. Settings: choose the safety switches, sign-in for apps and advanced options.
+6. Welcome: Saddle looks around your site and helps you connect your first AI app.
 
 == Changelog ==
 
