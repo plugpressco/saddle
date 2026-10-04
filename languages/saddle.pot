@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-04T10:17:13+00:00\n"
+"POT-Creation-Date: 2026-10-04T11:04:04+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -5188,8 +5188,8 @@ msgstr ""
 
 #: includes/class-saddle-core-settings.php:107
 #: admin/build/index.js:38
-#: admin/src/components/SignInCard.jsx:213
 #: admin/src/components/SignInCard.jsx:226
+#: admin/src/components/SignInCard.jsx:238
 msgid "Let apps register themselves"
 msgstr ""
 
@@ -8029,7 +8029,7 @@ msgstr ""
 #: admin/build/index.js:38
 #: admin/build/index.js:119
 #: admin/src/components/ConnectApps.jsx:671
-#: admin/src/components/SignInCard.jsx:173
+#: admin/src/components/SignInCard.jsx:186
 #: admin/src/screens.jsx:298
 msgid "Loading"
 msgstr ""
@@ -8157,101 +8157,114 @@ msgid "The key is shown once. If you leave without copying it, Saddle deletes it
 msgstr ""
 
 #: admin/build/index.js:38
+#: admin/build/index.js:100
+#: admin/build/index.js:102
+#: admin/build/index.js:117
+#: admin/src/components/Guidance.jsx:303
+#: admin/src/components/Guidance.jsx:362
+#: admin/src/components/SettingsForm.jsx:348
+#: admin/src/components/SettingsPage.jsx:90
+#: admin/src/components/SettingsPage.jsx:217
+#: admin/src/components/SignInCard.jsx:57
+msgid "Saved."
+msgstr ""
+
+#: admin/build/index.js:38
 #: admin/build/index.js:117
 #: admin/src/components/SettingsForm.jsx:354
 #: admin/src/components/SettingsPage.jsx:98
-#: admin/src/components/SignInCard.jsx:49
+#: admin/src/components/SignInCard.jsx:63
 msgid "Could not save that setting."
 msgstr ""
 
 #: admin/build/index.js:38
-#: admin/src/components/SignInCard.jsx:71
+#: admin/src/components/SignInCard.jsx:85
 msgid "Apps can find this site’s sign-in details on their own."
 msgstr ""
 
 #: admin/build/index.js:38
-#: admin/src/components/SignInCard.jsx:78
+#: admin/src/components/SignInCard.jsx:92
 msgid "This site answers too slowly for some apps. The sign-in details are correct, but ChatGPT gives up after a few seconds and reports that the site doesn’t support sign-in. A page cache or a faster host usually fixes it."
 msgstr ""
 
 #: admin/build/index.js:38
-#: admin/src/components/SignInCard.jsx:84
+#: admin/src/components/SignInCard.jsx:98
 msgid "Apps may not be able to find the sign-in details automatically. This usually means WordPress lives in a subfolder, or your host blocks addresses starting with a dot. Most apps will still connect; ChatGPT may not."
 msgstr ""
 
 #: admin/build/index.js:38
 #: admin/build/index.js:88
 #: admin/src/approvals-logic.js:260
-#: admin/src/components/SignInCard.jsx:92
+#: admin/src/components/SignInCard.jsx:106
 msgid "Yes"
 msgstr ""
 
 #: admin/build/index.js:38
-#: admin/src/components/SignInCard.jsx:96
+#: admin/src/components/SignInCard.jsx:110
 msgid "Too slow"
 msgstr ""
 
 #: admin/build/index.js:38
-#: admin/src/components/SignInCard.jsx:99
+#: admin/src/components/SignInCard.jsx:113
 msgid "Maybe not"
 msgstr ""
 
 #: admin/build/index.js:38
-#: admin/src/components/SignInCard.jsx:137
+#: admin/src/components/SignInCard.jsx:150
 msgid "On. You approve each app."
 msgstr ""
 
 #: admin/build/index.js:38
 #: admin/build/index.js:112
-#: admin/src/components/SignInCard.jsx:139
+#: admin/src/components/SignInCard.jsx:152
 #: admin/src/services-logic.js:59
 msgid "Off"
 msgstr ""
 
 #: admin/build/index.js:38
-#: admin/src/components/SignInCard.jsx:131
+#: admin/src/components/SignInCard.jsx:144
 msgid "Needs HTTPS first."
 msgstr ""
 
 #: admin/build/index.js:38
-#: admin/src/components/SignInCard.jsx:132
+#: admin/src/components/SignInCard.jsx:145
 msgid "Needs pretty permalinks: Settings → Permalinks, anything but Plain."
 msgstr ""
 
 #: admin/build/index.js:38
-#: admin/src/components/SignInCard.jsx:148
+#: admin/src/components/SignInCard.jsx:161
 msgid "With this on, an app needs only this site’s address. It opens your browser and you approve it here, like “Sign in with Google”. Claude, ChatGPT, Claude Code, Codex, Cursor, VS Code and Gemini CLI connect this way, and ChatGPT connects no other way. Pasted keys keep working."
 msgstr ""
 
 #: admin/build/index.js:38
-#: admin/src/components/SignInCard.jsx:153
-#: admin/src/components/SignInCard.jsx:167
+#: admin/src/components/SignInCard.jsx:166
+#: admin/src/components/SignInCard.jsx:180
 msgid "Let apps sign in"
 msgstr ""
 
 #: admin/build/index.js:38
-#: admin/src/components/SignInCard.jsx:182
+#: admin/src/components/SignInCard.jsx:195
 msgid "Advanced sign-in options"
 msgstr ""
 
 #: admin/build/index.js:38
-#: admin/src/components/SignInCard.jsx:190
+#: admin/src/components/SignInCard.jsx:203
 msgid "Discoverable"
 msgstr ""
 
 #: admin/build/index.js:38
-#: admin/src/components/SignInCard.jsx:208
+#: admin/src/components/SignInCard.jsx:221
 msgid "Needed to connect by address. An app that registers still cannot do anything until you approve it on screen."
 msgstr ""
 
 #: admin/build/index.js:38
-#: admin/src/components/SignInCard.jsx:236
+#: admin/src/components/SignInCard.jsx:248
 msgid "When an app identifies itself by web address, Saddle fetches that address to confirm it vouches for the app. Turning this off means every app shows as unverified."
 msgstr ""
 
 #: admin/build/index.js:38
-#: admin/src/components/SignInCard.jsx:241
-#: admin/src/components/SignInCard.jsx:251
+#: admin/src/components/SignInCard.jsx:253
+#: admin/src/components/SignInCard.jsx:262
 msgid "Check app identity"
 msgstr ""
 
@@ -9912,17 +9925,6 @@ msgstr ""
 #: admin/src/components/Guidance.jsx:597
 #: admin/src/components/SettingsForm.jsx:436
 msgid "Save"
-msgstr ""
-
-#: admin/build/index.js:100
-#: admin/build/index.js:102
-#: admin/build/index.js:117
-#: admin/src/components/Guidance.jsx:303
-#: admin/src/components/Guidance.jsx:362
-#: admin/src/components/SettingsForm.jsx:348
-#: admin/src/components/SettingsPage.jsx:90
-#: admin/src/components/SettingsPage.jsx:217
-msgid "Saved."
 msgstr ""
 
 #: admin/build/index.js:100
