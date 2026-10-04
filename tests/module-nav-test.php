@@ -297,6 +297,43 @@ class Saddle_Module_Nav_Test extends WP_UnitTestCase {
 		);
 	}
 
+	/**
+	 * A module is one page only when it says exactly 'page'; anything else,
+	 * and every Core page, keeps the sections.
+	 *
+	 * @dataProvider layouts
+	 *
+	 * @param mixed  $layout   The descriptor's value, or null for none.
+	 * @param string $expected The layout Core keeps.
+	 */
+	public function test_layout_is_page_or_sections( $layout, $expected ) {
+		$this->rank( null === $layout ? array() : array( 'layout' => $layout ) );
+
+		$this->assertSame( $expected, Saddle_Modules::modules()['rank']['layout'] );
+		$this->assertSame( 'sections', Saddle_Modules::areas()['home']['layout'] );
+		$this->assertSame( 'sections', Saddle_Modules::areas()['settings']['layout'] );
+	}
+
+	public function layouts() {
+		return array(
+			'none'     => array( null, 'sections' ),
+			'page'     => array( 'page', 'page' ),
+			'sections' => array( 'sections', 'sections' ),
+			'unknown'  => array( 'grid', 'sections' ),
+			'wrong'    => array( array( 'page' ), 'sections' ),
+		);
+	}
+
+	public function test_the_app_gets_each_pages_layout() {
+		$this->rank( array( 'layout' => 'page' ) );
+		$saddle = $this->saddle_data( 'saddle-rank' );
+		$areas  = array_combine( array_column( $saddle['areas'], 'key' ), $saddle['areas'] );
+
+		$this->assertSame( 'page', $areas['rank']['layout'] );
+		$this->assertSame( 'sections', $areas['home']['layout'] );
+		$this->assertSame( 'sections', $areas['connections']['layout'] );
+	}
+
 	public function test_the_app_gets_the_page_and_each_sections_pages() {
 		$this->rank();
 		$_GET['tab'] = 'visibility';

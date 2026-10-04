@@ -306,6 +306,114 @@ describe( 'frameHeader: sidebar and tab rows', () => {
 	} );
 } );
 
+describe( 'frameHeader: a one-page module', () => {
+	const analytics = {
+		key: 'analytics',
+		title: 'Analytics',
+		module: true,
+		layout: 'page',
+		url: 'admin.php?page=saddle-analytics',
+		tabs: [
+			{
+				key: 'overview',
+				label: 'Overview',
+				url: 'admin.php?page=saddle-analytics',
+				subtabs: [],
+			},
+			{
+				key: 'settings',
+				label: 'Settings',
+				url: 'admin.php?page=saddle-analytics&tab=settings',
+				subtabs: [],
+			},
+		],
+	};
+
+	it( 'draws the page with no sidebar and no tab rows', () => {
+		const head = frameHeader( {
+			area: analytics,
+			tab: 'overview',
+			home: HOME,
+		} );
+		expect( head.layout ).toBe( 'page' );
+		expect( head.showSidebar ).toBe( false );
+		expect( head.showTabs ).toBe( false );
+		expect( head.showSubtabs ).toBe( false );
+		expect( labels( head ) ).toEqual( [ 'Saddle', 'Analytics' ] );
+	} );
+
+	it( 'reads Settings as Saddle / Module / Settings, the module crumb linked', () => {
+		const head = frameHeader( {
+			area: analytics,
+			tab: 'settings',
+			home: HOME,
+		} );
+		expect( head.showSidebar ).toBe( false );
+		expect( labels( head ) ).toEqual( [
+			'Saddle',
+			'Analytics',
+			'Settings',
+		] );
+		expect( head.crumbs[ 1 ] ).toEqual( {
+			key: 'module',
+			label: 'Analytics',
+			url: 'admin.php?page=saddle-analytics',
+		} );
+		expect( head.crumbs[ 2 ].url ).toBe( '' );
+	} );
+
+	it( 'drills in with no section crumb', () => {
+		const head = frameHeader( {
+			area: analytics,
+			tab: 'overview',
+			view: 'country',
+			drill: {
+				title: 'Country',
+				tab: 'overview',
+				sub: '',
+				view: 'country',
+			},
+			home: HOME,
+		} );
+		expect( head.drilled ).toBe( true );
+		expect( labels( head ) ).toEqual( [
+			'Saddle',
+			'Analytics',
+			'Country',
+		] );
+		expect( head.title ).toBe( 'Country' );
+	} );
+
+	it( 'leaves a sections module as it was', () => {
+		const head = frameHeader( {
+			area: { ...crm, layout: 'sections' },
+			tab: 'contacts',
+			sub: 'contacts',
+			home: HOME,
+		} );
+		expect( head.layout ).toBe( 'sections' );
+		expect( head.showSidebar ).toBe( true );
+		expect( head.showSubtabs ).toBe( true );
+		expect( labels( head ) ).toEqual( [ 'Saddle', 'CRM' ] );
+	} );
+
+	it( 'treats a module without a layout as sections (older payloads)', () => {
+		const head = frameHeader( { area: crm, tab: 'campaigns', home: HOME } );
+		expect( head.layout ).toBe( 'sections' );
+		expect( head.showSidebar ).toBe( true );
+	} );
+
+	it( 'ignores the key on a Core page', () => {
+		const head = frameHeader( {
+			area: { ...context, layout: 'page' },
+			tab: 'overview',
+			home: HOME,
+		} );
+		expect( head.layout ).toBe( 'sections' );
+		expect( labels( head ) ).toEqual( [ 'Saddle', 'Context' ] );
+	} );
+} );
+
 describe( 'sidebarItems', () => {
 	it( 'keeps the module order and moves Settings last', () => {
 		const { items, settings } = sidebarItems( [

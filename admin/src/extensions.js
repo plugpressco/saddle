@@ -265,6 +265,7 @@ const FEATURES = [
 	'view',
 	'drill-in',
 	'subtabs',
+	'page-layout',
 ];
 
 // What this shell supports, for addons that feature-detect. Set when the

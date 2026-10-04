@@ -111,6 +111,7 @@ class Saddle_Modules {
 		 *     'tab_icons'    => array( 'reports' => 'reports' ), // Tab key => icon.
 		 *     'subtabs'      => array( 'reports' => array( 'sources' => 'Sources', 'pages' => 'Pages' ) ),
 		 *     'subtab_icons' => array( 'reports' => array( 'sources' => 'globe', 'pages' => 'page' ) ),
+		 *     'layout'       => 'page',              // Or 'sections', the default.
 		 *
 		 * plus `product`, `version`, `summary`, `order`, `nav`, `capability`,
 		 * `script`, `content` and the `status`, `setup` and `settings`
@@ -132,6 +133,12 @@ class Saddle_Modules {
 		 * key: `overview` is dashboard-dots and `settings` is settings. Labels
 		 * stay plain strings in `tabs` and `subtabs`; an icon never goes there.
 		 * Older Core ignores all three keys, so a module can ship them first.
+		 *
+		 * `layout => 'page'` makes the module one page: no sidebar and no icon
+		 * tab row. Its first tab is the page; Settings (and any other tab) is
+		 * reached by address and reads `Saddle / Module / Settings`. Older Core
+		 * ignores the key and draws the tabs as sections. The client can tell
+		 * with `window.saddleShell?.has?.( 'page-layout' )`.
 		 *
 		 * A screen registers for a tab, or for one page of it:
 		 * `{ module, tab, sub, Component }` through `saddle.admin.screens`.
@@ -202,6 +209,7 @@ class Saddle_Modules {
 				'subtab_icons' => Saddle_Module_Nav::icons( $subtabs, isset( $module['subtab_icons'] ) ? $module['subtab_icons'] : array() ),
 				'script'       => isset( $module['script'] ) ? sanitize_key( (string) $module['script'] ) : '',
 				'content'      => isset( $module['content'] ) && 'mount' === $module['content'] ? 'mount' : 'screens',
+				'layout'       => isset( $module['layout'] ) && 'page' === $module['layout'] ? 'page' : 'sections',
 			);
 		}
 
@@ -221,8 +229,8 @@ class Saddle_Modules {
 	 *
 	 * @return array<string,array> Keyed by area; each has `slug`, `title`,
 	 *                             `tabs`, `nav`, `capability`, `module`,
-	 *                             `icon`, `tab_icons`, `subtabs` and
-	 *                             `subtab_icons`.
+	 *                             `icon`, `tab_icons`, `subtabs`,
+	 *                             `subtab_icons` and `layout`.
 	 */
 	public static function areas() {
 		$core  = self::core_areas();
@@ -247,6 +255,7 @@ class Saddle_Modules {
 					'tab_icons'    => Saddle_Nav_Icons::tab_icons( $area['tabs'], array() ),
 					'subtabs'      => array(),
 					'subtab_icons' => array(),
+					'layout'       => 'sections',
 				),
 				$area
 			);
