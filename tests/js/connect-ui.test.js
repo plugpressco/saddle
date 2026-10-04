@@ -3,7 +3,8 @@
  * drawer makes a key in place and reads like the address path (S7), leads
  * with what works on this computer (P7), never shows a wrong "Connected"
  * dot first (R10) and cleans up a key a reload left (R1); the welcome never
- * asks for the app again.
+ * asks for the app again; Sign-in for apps says nothing it doesn't know
+ * while loading (R3) and draws no heading of its own (#293).
  */
 
 const SITE = {
@@ -102,6 +103,9 @@ function setup( data, routes ) {
 			.default,
 		ConnectWizard: require( '../../admin/src/components/ConnectWizard' )
 			.default,
+		SignInCard: require( '../../admin/src/components/SignInCard' ).default,
+		// The app mounts every screen inside one, as App.jsx does.
+		TooltipProvider: require( '@plugpress/ui' ).TooltipProvider,
 	};
 }
 
@@ -616,5 +620,63 @@ describe( 'the key setup’s own address (S7)', () => {
 		expect( el.textContent ).not.toContain(
 			'Which app are you connecting'
 		);
+	} );
+} );
+
+describe( 'Sign-in for apps (R3, #293)', () => {
+	it( 'says nothing it doesn’t know while the setting loads', async () => {
+		const env = setup( SITE, {} );
+		const { el } = await render(
+			env,
+			<env.TooltipProvider>
+				<env.SignInCard
+					oauth={ null }
+					saving={ false }
+					save={ () => {} }
+				/>
+			</env.TooltipProvider>
+		);
+
+		expect( el.textContent ).not.toContain( 'Off' );
+		expect( el.querySelector( '[role="switch"]' ) ).toBeNull();
+		expect( el.querySelector( '[role="status"]' ) ).not.toBeNull();
+	} );
+
+	it( 'shows the switch once the setting is known', async () => {
+		const env = setup( SITE, {} );
+		const { el } = await render(
+			env,
+			<env.TooltipProvider>
+				<env.SignInCard
+					oauth={ SIGN_IN_ON }
+					saving={ false }
+					save={ () => {} }
+				/>
+			</env.TooltipProvider>
+		);
+
+		expect( el.textContent ).toContain( 'On. You approve each app.' );
+		expect(
+			el.querySelector( '[role="switch"]' ).getAttribute( 'aria-checked' )
+		).toBe( 'true' );
+	} );
+
+	it( 'draws no heading of its own: the disclosure names it', async () => {
+		const env = setup( SITE, {} );
+		const { el } = await render(
+			env,
+			<env.TooltipProvider>
+				<env.SignInCard
+					oauth={ SIGN_IN_OFF }
+					saving={ false }
+					save={ () => {} }
+				/>
+			</env.TooltipProvider>
+		);
+
+		expect(
+			el.querySelector( 'h1, h2, h3, .saddle-section-head' )
+		).toBeNull();
+		expect( el.textContent ).toContain( 'Let apps sign in' );
 	} );
 } );

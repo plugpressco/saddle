@@ -3,6 +3,9 @@
  * Settings → Advanced → Sign-in for apps. On or off, whether the site
  * can do it yet, whether apps can discover it, and the two registration
  * switches all sit here; nothing else on the page flips them.
+ *
+ * It draws no heading of its own (#293): the disclosure it sits in names
+ * it, and what sign-in is sits behind the "?" beside the switch.
  */
 import { useState, useEffect, useCallback } from '@wordpress/element';
 import {
@@ -12,10 +15,11 @@ import {
 	Badge,
 	HelpTip,
 	Collapsible,
+	Skeleton,
+	Spinner,
 } from '@plugpress/ui';
 import { __ } from '@wordpress/i18n';
 import { api } from '../api';
-import SectionHeader from './SectionHeader';
 
 /**
  * The state behind the card, shared with the Apps tab so the hint above the
@@ -117,43 +121,57 @@ const Labelled = ( { children, help } ) => (
  * @param {Function} props.save   Saves `{ enabled, dcr, cimd }` changes.
  */
 export default function SignInCard( { oauth, saving, error, save } ) {
-	let state = __( 'Off', 'saddle' );
-	if ( oauth && ! oauth.ready ) {
+	// Until the setting arrives, the row says nothing it doesn't know: no
+	// "Off" and no switch, a placeholder and a spinner instead (R3).
+	let state = null;
+	if ( ! oauth ) {
+		state = <Skeleton height={ 10 } width="40%" />;
+	} else if ( ! oauth.ready ) {
 		state = oauth.permalinks
 			? __( 'Needs HTTPS first.', 'saddle' )
 			: __(
 					'Needs pretty permalinks: Settings → Permalinks, anything but Plain.',
 					'saddle'
 			  );
-	} else if ( oauth?.enabled ) {
+	} else if ( oauth.enabled ) {
 		state = __( 'On. You approve each app.', 'saddle' );
+	} else {
+		state = __( 'Off', 'saddle' );
 	}
 
 	return (
-		<section className="saddle-section" id="saddle-signin">
-			<SectionHeader
-				title={ __( 'Sign-in for apps', 'saddle' ) }
-				help={ __(
-					'With this on, an app needs only this site’s address. It opens your browser and you approve it here, like “Sign in with Google”. Claude, ChatGPT, Claude Code, Codex, Cursor, VS Code and Gemini CLI connect this way, and ChatGPT connects no other way. Pasted keys keep working.',
-					'saddle'
-				) }
-			/>
-
+		<div className="saddle-section saddle-signin">
 			<RowList>
 				<Row
-					title={ __( 'Let apps sign in', 'saddle' ) }
+					title={
+						<Labelled
+							help={ __(
+								'With this on, an app needs only this site’s address. It opens your browser and you approve it here, like “Sign in with Google”. Claude, ChatGPT, Claude Code, Codex, Cursor, VS Code and Gemini CLI connect this way, and ChatGPT connects no other way. Pasted keys keep working.',
+								'saddle'
+							) }
+						>
+							{ __( 'Let apps sign in', 'saddle' ) }
+						</Labelled>
+					}
 					description={ state }
 					actions={
-						<Switch
-							id="saddle-oauth-switch"
-							checked={ !! oauth?.enabled }
-							disabled={ ! oauth || ! oauth.ready || saving }
-							onChange={ () =>
-								save( { enabled: ! oauth.enabled } )
-							}
-							// The visible label, so speech input can say it.
-							aria-label={ __( 'Let apps sign in', 'saddle' ) }
-						/>
+						oauth ? (
+							<Switch
+								id="saddle-oauth-switch"
+								checked={ !! oauth.enabled }
+								disabled={ ! oauth.ready || saving }
+								onChange={ () =>
+									save( { enabled: ! oauth.enabled } )
+								}
+								// The visible label, so speech input can say it.
+								aria-label={ __(
+									'Let apps sign in',
+									'saddle'
+								) }
+							/>
+						) : (
+							<Spinner label={ __( 'Loading', 'saddle' ) } />
+						)
 					}
 				/>
 			</RowList>
@@ -242,6 +260,6 @@ export default function SignInCard( { oauth, saving, error, save } ) {
 			) }
 
 			{ error && <p className="saddle-settings__note">{ error }</p> }
-		</section>
+		</div>
 	);
 }
