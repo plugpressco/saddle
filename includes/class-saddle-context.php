@@ -70,7 +70,7 @@ class Saddle_Context {
 		if ( 'read' === $tier ) {
 			$allowed = __( 'You may READ content only. You cannot create, edit, or delete anything at the current access level.', 'saddle' );
 		} else {
-			$allowed = __( 'You may read content and create or edit posts, pages, and media. Some changes, such as deleting, first return a preview and a single-use confirm token. Show the user the preview, and call again with the token only after they agree. Nothing is ever deleted in one step.', 'saddle' );
+			$allowed = __( 'You may read content and create or edit posts, pages, and media. Some changes, such as deleting, first return a preview and a single-use confirmation token. Show the user the preview, and call again with the token only after they agree. Nothing is ever deleted in one step.', 'saddle' );
 		}
 
 		$lines = array();
