@@ -4,7 +4,7 @@ Tags: mcp, ai, claude, chatgpt, divi
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.5.0
+Stable tag: 1.5.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -210,6 +210,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 
 = 1.5.1 =
 * New: A plugin that adds a page under Saddle can draw it as one page, with no sidebar and no tab row. Its settings open from the page and lead back to it. Saddle Analytics uses this.
+* Changed: On a plugin's page under Saddle, such as SEO or CRM, the sections sit in a white panel on the left, and the page starts right beside it instead of in the middle of the screen.
 
 = 1.5.0 =
 * New: Each connected app has its own access. On AI apps, choose Read only, Edit content (posts, pages, media, menus and SEO) or Manage the site (also plugins, themes, updates and settings) for each app. A new app starts at Read only. Updating Saddle keeps what each existing app could already do and never widens it.
