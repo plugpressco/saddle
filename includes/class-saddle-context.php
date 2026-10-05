@@ -70,7 +70,7 @@ class Saddle_Context {
 		if ( 'read' === $tier ) {
 			$allowed = __( 'You may READ content only. You cannot create, edit, or delete anything at the current access level.', 'saddle' );
 		} else {
-			$allowed = __( 'You may read content and create or edit posts, pages, and media. Deleting is possible but every deletion first returns a preview and a single-use confirmation token — you must call again with that token to actually delete. Nothing is ever deleted in one step.', 'saddle' );
+			$allowed = __( 'You may read content and create or edit posts, pages, and media. Some changes, such as deleting, first return a preview and a single-use confirmation token. Show the user the preview, and call again with the token only after they agree. Nothing is ever deleted in one step.', 'saddle' );
 		}
 
 		$lines = array();
@@ -448,6 +448,10 @@ class Saddle_Context {
 
 		$counts = Saddle_Capabilities::hidden_tool_counts();
 		$lines  = array();
+		// The owner's word for the level ("Edit content"), the one AI apps
+		// shows, so the agent names it the way the owner will look for it.
+		$labels = Saddle_Access::labels();
+		$tier   = Saddle_Capabilities::get_tier();
 
 		if ( ! empty( $counts['tier'] ) ) {
 			$lines[] = '- ' . sprintf(
@@ -459,7 +463,7 @@ class Saddle_Context {
 					'saddle'
 				),
 				(int) $counts['tier'],
-				Saddle_Capabilities::get_tier()
+				isset( $labels[ $tier ] ) ? $labels[ $tier ] : $tier
 			);
 		}
 
