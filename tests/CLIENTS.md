@@ -187,7 +187,7 @@ the site is plain HTTP with `WP_ENVIRONMENT_TYPE=local`.
 
 | Date | App | Version | Path | Connect | Read | Gated write | Refusal at Read only | Notes |
 |---|---|---|---|---|---|---|---|---|
-| 2026-10-05 | Claude Code | 2.1.289 | key | Pass | Pass: names the site, lists the four drafts, explains its access | **Fail on 1.5.1:** got the preview and confirmed in the same turn without asking (#333). **Pass with #334:** quotes the preview, asks, trashes only after "yes" | Pass: says the level needed and points to AI apps; nothing changes | Activity shows "Moved post #4 … to the trash." with Undo. Called the levels "write" and "read" (#334 makes it "Edit content", "Read only") |
+| 2026-10-05 | Claude Code | 2.1.289 | key | Pass | Pass: names the site, lists the four drafts, explains its access | **Fail on 1.5.1:** got the preview and confirmed in the same turn without asking (#333). **Pass on `main` since #334 (a0f8676):** quotes the preview, asks, trashes only after "yes" | Pass: says the level needed and points to AI apps; nothing changes | Activity shows "Moved post #4 … to the trash." with Undo. Called the levels "write" and "read" (since #334 it says "Edit content", "Read only") |
 | 2026-10-05 | Claude Code | 2.1.289 | sign-in | Pass: client metadata document, consent screen, Edit content chosen | Pass | **Fail on 1.5.1**, as with the key (#333) | Pass | On Playground, needed a test-only DNS stand-in for `claude.ai` (#335) |
 | | Claude | | sign-in | | | | | Not run: needs an HTTPS address the web app can reach |
 | | ChatGPT | | sign-in | | | | | Not run: needs an HTTPS address the web app can reach |
