@@ -934,8 +934,7 @@ class Saddle_REST_Admin {
 	 * future plugin doing the same would land there too — a grouping bug nobody
 	 * would think to look for in a REST controller.
 	 *
-	 * The literals stay as a floor so nothing regroups on sites where a
-	 * contributor enrols later than this runs (Saddle Pro's `knovia-`), and
+	 * The literals stay as a floor: `waggle-` is the catalog default, and
 	 * `unsplash-` is here despite not being a wrapper at all: it is an external
 	 * service from the owner's point of view, which is what this grouping is
 	 * about.
@@ -943,7 +942,7 @@ class Saddle_REST_Admin {
 	 * @return string[]
 	 */
 	private static function integration_prefixes() {
-		$prefixes = array( 'waggle-', 'knovia-', 'unsplash-' );
+		$prefixes = array( 'waggle-', 'unsplash-' );
 
 		if ( class_exists( 'Saddle_Integrations' ) ) {
 			foreach ( array_keys( Saddle_Integrations::integrations() ) as $slug ) {

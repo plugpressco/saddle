@@ -619,7 +619,7 @@ class Saddle_Integrations_Test extends WP_UnitTestCase {
 
 		$this->assertContains( 'mailyard-', $list, 'A self-enrolled integration must reach the UI grouping.' );
 		$this->assertContains( 'waggle-', $list );
-		$this->assertContains( 'knovia-', $list, 'The literal floor keeps Pro’s grouping from regressing.' );
+		$this->assertNotContains( 'knovia-', $list, 'Saddle Pro no longer wraps a knowledge base; Bridle KB enrols in free Saddle.' );
 	}
 
 	/* -------- third-party integrations: owner-approved -------- */
@@ -752,7 +752,7 @@ class Saddle_Integrations_Test extends WP_UnitTestCase {
 	 * plugin's tools off on every site.
 	 */
 	public function test_every_plugpress_plugin_is_first_party() {
-		foreach ( array( 'waggle', 'mailyard', 'analytics', 'rank', 'crm' ) as $slug ) {
+		foreach ( array( 'waggle', 'mailyard', 'analytics', 'rank', 'crm', 'bridle', 'bridle-kb' ) as $slug ) {
 			$this->assertTrue( Saddle_Integrations::is_first_party( $slug ), "{$slug} must be first-party" );
 			$this->assertContains( $slug, Saddle_Integrations::FIRST_PARTY );
 		}
@@ -794,6 +794,59 @@ class Saddle_Integrations_Test extends WP_UnitTestCase {
 		$this->assertSame( array(), get_option( Saddle_Integrations::APPROVED_OPTION, array() ) );
 		$this->assertNotNull( wp_get_ability( 'saddle/analytics-get-overview' ), 'Saddle Analytics is live with nothing approved.' );
 		$this->assertSame( 'plugpress', $rows['analytics']['source'] );
+	}
+
+	/**
+	 * Bridle and Bridle KB enrol themselves as `bridle` and `bridle-kb` (#338):
+	 * PlugPress's, so live with nothing approved. Bridle's `bridle/` prefix must
+	 * not pick up Bridle KB's `bridle-kb/` abilities, which share its start.
+	 */
+	public function test_bridle_and_bridle_kb_are_first_party_and_stay_apart() {
+		$add = static function ( $integrations ) {
+			$integrations['bridle']    = array(
+				'prefix' => 'bridle/',
+				'title'  => 'Bridle',
+			);
+			$integrations['bridle-kb'] = array(
+				'prefix' => 'bridle-kb/',
+				'title'  => 'Bridle KB',
+			);
+			return $integrations;
+		};
+		add_filter( 'saddle_integrations', $add );
+		$this->within_abilities_init(
+			static function () {
+				foreach ( array( 'bridle/list-conversations', 'bridle-kb/get-docs' ) as $name ) {
+					wp_register_ability(
+						$name,
+						array(
+							'label'               => $name,
+							'description'         => 'x',
+							'category'            => 'saddle',
+							'input_schema'        => array(
+								'type'       => 'object',
+								'default'    => (object) array(),
+								'properties' => (object) array(),
+							),
+							'execute_callback'    => '__return_empty_array',
+							'permission_callback' => '__return_true',
+							'meta'                => array( 'annotations' => array( 'readonly' => true ) ),
+						)
+					);
+				}
+				Saddle_Integrations::register_wrappers();
+			}
+		);
+		$rows = array_column( Saddle_Integrations::listing(), null, 'slug' );
+		remove_filter( 'saddle_integrations', $add );
+
+		$this->assertSame( array(), get_option( Saddle_Integrations::APPROVED_OPTION, array() ) );
+		$this->assertNotNull( wp_get_ability( 'saddle/bridle-list-conversations' ), 'Bridle is live with nothing approved.' );
+		$this->assertNotNull( wp_get_ability( 'saddle/bridle-kb-get-docs' ), 'Bridle KB is live with nothing approved.' );
+		$this->assertSame( 'plugpress', $rows['bridle']['source'] );
+		$this->assertSame( 'plugpress', $rows['bridle-kb']['source'] );
+		$this->assertSame( 1, $rows['bridle']['tools'], 'Bridle counts only its own bridle/* abilities.' );
+		$this->assertSame( 1, $rows['bridle-kb']['tools'] );
 	}
 
 	/**
