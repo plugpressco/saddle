@@ -931,9 +931,16 @@ class Saddle_MCP {
 				return __( 'Saddle is paused on this site, so no tools will run. The site owner can resume it from the AI switch at the top of any Saddle page. Do not retry until they do.', 'saddle' );
 			}
 
+			// Some apps keep only the start of this text: Claude Code stops at
+			// 2,048 characters, about a third of a fresh site's guide, and the
+			// owner's instructions come last (#333). So the first line says
+			// where the rest is. It lives here, not in system_context(),
+			// because get-instructions serves that and is the place it points.
+			$text = __( 'Some apps show only the start of this guide. If yours stops partway, call saddle/get-instructions once to read the rest, including the site owner\'s instructions.', 'saddle' ) . "\n\n";
+
 			// system_context() is already tier-aware, so what a session is told
 			// tracks what it is allowed to do.
-			$text = Saddle_Context::system_context();
+			$text .= Saddle_Context::system_context();
 			$user = Saddle_Context::user();
 			if ( '' !== $user ) {
 				$text .= "\n## Site owner's instructions\n\n" . $user . "\n";

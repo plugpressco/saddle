@@ -191,7 +191,10 @@ class Saddle_Approval {
 			'action'                => $action,
 			'summary'               => isset( $args['summary'] ) ? (string) $args['summary'] : '',
 			'preview'               => isset( $args['preview'] ) ? $args['preview'] : null,
-			'instructions'          => __( 'This is a preview — nothing has changed. To proceed, call this tool again with the same arguments plus "confirm_token" set to the value above. The token is single-use and expires in 15 minutes. The owner can also approve this on their Saddle Home page.', 'saddle' ),
+			// Every app reads this, whatever it does with the server instructions
+			// (Claude Code keeps only their first 2,048 characters, #333), so the
+			// ask-first rule lives here too, not only in the context.
+			'instructions'          => __( 'This is a preview. Nothing has changed. Show the user the summary above and ask whether to go ahead. Only after they agree, call this tool again with the same arguments plus "confirm_token" set to the value above. The token is single-use and expires in 15 minutes. The owner can also approve this on their Saddle Home page.', 'saddle' ),
 		);
 	}
 

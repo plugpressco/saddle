@@ -83,6 +83,18 @@ class Saddle_Approval_Test extends WP_UnitTestCase {
 		$this->assertSame( 0, $calls, 'A preview must mutate nothing.' );
 	}
 
+	/**
+	 * Every app reads the preview, whatever it does with the server
+	 * instructions. When it only said "to proceed, call again with the token",
+	 * Claude Code took that as permission and confirmed in the same turn (#333).
+	 */
+	public function test_the_preview_tells_the_agent_to_ask_before_confirming() {
+		$result = Saddle_Approval::gate( $this->gate_args( $calls ) );
+
+		$this->assertStringContainsString( 'ask whether to go ahead', $result['instructions'] );
+		$this->assertStringContainsString( 'Only after they agree', $result['instructions'] );
+	}
+
 	public function test_dry_run_issues_a_persisted_single_use_token() {
 		$result   = Saddle_Approval::gate( $this->gate_args( $calls ) );
 		$token    = $result['confirm_token'];

@@ -495,6 +495,29 @@ class Saddle_MCP_Transport_Test extends WP_UnitTestCase {
 
 		$this->assertStringContainsString( 'not offered to you', $instructions );
 		$this->assertStringContainsString( 'Saddle → AI apps', $instructions );
+		// The owner's word for the level, the one AI apps shows, not the tier key.
+		$this->assertStringContainsString( 'than the "Read only" one', $instructions );
+	}
+
+	/**
+	 * Claude Code keeps only the first 2,048 characters of a server's
+	 * instructions (measured on 2.1.289, #333). It confirmed a gated delete in
+	 * the same turn because the ask-first rule sat at character 6,532. What an
+	 * agent must not miss has to fit inside them: ask before confirming, and
+	 * where the rest of the guide is, the owner's instructions included.
+	 */
+	public function test_the_first_2048_characters_carry_the_gate_rule_and_where_the_rest_is() {
+		Saddle_Capabilities::set_tier( 'write' );
+		update_option( Saddle_Context::USER_OPTION, 'Always write in British English.' );
+
+		$instructions = $this->initialize( '2025-11-25' )['instructions'];
+
+		delete_option( Saddle_Context::USER_OPTION );
+
+		$head = mb_substr( $instructions, 0, 2048 );
+		$this->assertStringContainsString( 'saddle/get-instructions', $head );
+		$this->assertStringContainsString( 'call again with the token only after they agree', $head );
+		$this->assertStringContainsString( 'Always write in British English.', $instructions, 'The owner\'s instructions are still served, last.' );
 	}
 
 	public function test_nothing_is_claimed_to_be_withheld_when_nothing_is() {
