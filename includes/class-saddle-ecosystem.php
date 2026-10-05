@@ -3,7 +3,7 @@
  * PARKED — Phase 3 ecosystem integration.
  *
  * This class is intentionally NOT loaded or instantiated anywhere. It is a
- * placeholder for cross-product orchestration (inbees/outbees/mailyard/
+ * placeholder for cross-product orchestration (bridle/outbees/mailyard/
  * formyard/flypops), which is explicitly out of scope for v0.1 and v0.2.
  *
  * Do NOT require or instantiate this without an explicit decision to reopen

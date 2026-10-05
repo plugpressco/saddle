@@ -29,10 +29,12 @@ class Saddle_Integrations {
 	 *
 	 * `rank` is Saddle Rank, Waggle renamed in its 2.0 (it enrols itself as
 	 * saddle-rank/*). `waggle` stays for the sites still running Waggle.
+	 * `bridle` and `bridle-kb` are Bridle, the support inbox, and Bridle KB,
+	 * its knowledge base; both enrol themselves (bridle/*, bridle-kb/*).
 	 *
 	 * @var string[]
 	 */
-	const FIRST_PARTY = array( 'waggle', 'mailyard', 'analytics', 'rank', 'crm' );
+	const FIRST_PARTY = array( 'waggle', 'mailyard', 'analytics', 'rank', 'crm', 'bridle', 'bridle-kb' );
 
 	/**
 	 * Option holding the third-party slugs the owner has switched on.
