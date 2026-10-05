@@ -147,6 +147,21 @@ Claude Code can run the pass without touching your own setup:
   then `claude mcp login <slug>`. It needs a terminal; `--no-browser` prints the
   address to open instead of opening a browser. Afterwards the `-p` command
   above works with a config file that has the address and no header.
+Codex, the same way:
+
+- **Key:** `codex exec --skip-git-repo-check -s read-only -c approval_policy='"never"' -c 'mcp_servers.<slug>.url="<address>"' -c "mcp_servers.<slug>.http_headers={Authorization=\"Basic …\"}" --json -o <file> "<prompt>" < /dev/null`.
+  Continue with `... resume <thread_id> "<prompt>"`. Turn off your other MCP
+  servers for the run with `-c 'mcp_servers.<name>.enabled=false'`.
+- Codex asks for its own approval before a destructive tool, and with
+  approvals off it refuses the call. To test Saddle's gate instead, pass that
+  one tool through: `-c 'mcp_servers.<slug>.tools.saddle-delete-post.approval_mode="approve"'`.
+- **Sign-in:** `codex mcp login <slug> --no-browser -c 'mcp_servers.<slug>.url="<address>"'`
+  (it needs a terminal), then the `exec` command above without the header.
+
+Cursor's `cursor-agent`: put the server in a project's `.cursor/mcp.json`,
+run `cursor-agent mcp enable <slug>`, and `cursor-agent mcp list-tools <slug>`
+proves the connection. Asking it anything needs a Cursor sign-in.
+
 - On WordPress Playground or Studio, sign-in from Claude Code stops before the
   consent screen, because PHP there has no DNS to check Claude Code's identity
   document (#335). Keys work there.
@@ -184,6 +199,8 @@ Versions: 2024-11-05, 2025-06-18 and 2025-11-25 negotiate; 2025-03-26 is a note.
 
 The same site as the script run above. Sign-in was on for the sign-in rows;
 the site is plain HTTP with `WP_ENVIRONMENT_TYPE=local`.
+The Codex and Cursor rows ran later the same day, on the 1.5.1 zip with
+#334's three files on top, which is `main` at a0f8676.
 
 | Date | App | Version | Path | Connect | Read | Gated write | Refusal at Read only | Notes |
 |---|---|---|---|---|---|---|---|---|
@@ -191,8 +208,8 @@ the site is plain HTTP with `WP_ENVIRONMENT_TYPE=local`.
 | 2026-10-05 | Claude Code | 2.1.289 | sign-in | Pass: client metadata document, consent screen, Edit content chosen | Pass | **Fail on 1.5.1**, as with the key (#333) | Pass | On Playground, needed a test-only DNS stand-in for `claude.ai` (#335) |
 | | Claude | | sign-in | | | | | Not run: needs an HTTPS address the web app can reach |
 | | ChatGPT | | sign-in | | | | | Not run: needs an HTTPS address the web app can reach |
-| | Codex | 0.157.0 | key | | | | | Not run: a headless Codex run needs the owner's go-ahead |
-| | Codex | | sign-in | | | | | Not run |
+| 2026-10-05 | Codex | 0.157.0 | key | Pass | Pass: calls get-instructions first, names the site and the drafts, says "Edit content" | Pass on `main` (a0f8676): quotes the preview, "Nothing has changed yet. Shall I confirm?", trashes only after "Yes, confirm" | Pass: says Read only and links to AI apps; nothing changes | Codex asks its own approval for a destructive tool. With approvals off it refuses `delete-post` before Saddle sees it; the run passed that one tool through (see below) to test Saddle's gate |
+| 2026-10-05 | Codex | 0.157.0 | sign-in | Pass: client metadata document `chatgpt.com/oauth/codex/client.json`, consent screen, Edit content; client `codex-mcp-client 0.157.0` | Pass | Pass on `main`, as with the key | Pass | On Playground, needed the DNS stand-in for `chatgpt.com` (#335) |
 | | Gemini CLI | | key | | | | | Not run: not installed here, and needs a Google sign-in |
-| | Cursor | 2026.01.23 (`cursor-agent`) | key | | | | | Not run: a headless Cursor run needs the owner's go-ahead |
-| | Cursor | | sign-in | | | | | Not run |
+| 2026-10-05 | Cursor | 2026.01.23 (`cursor-agent`) | key | Pass: "ready", 69 tools at Edit content; Saddle labels it "Cursor 1.0.0" | | | | Read and the gated write not run: `cursor-agent` needs the owner's Cursor sign-in |
+| | Cursor | | sign-in | | | | | Not run: `cursor-agent mcp login` opens a browser, so it needs the owner at the keyboard |
