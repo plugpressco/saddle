@@ -59,6 +59,13 @@ Where these come from, so you know what to check against the real app:
 - **User-Agent:** the script sends `saddle-client-matrix/1.0 (<app>)`, not the
   app's own. Saddle reads User-Agent only to label a connection that sent no
   `clientInfo`.
+- **How much of the server instructions an app reads:** Claude Code 2.1.289
+  keeps the first 2,048 characters of `initialize`'s `instructions` and drops
+  the rest, ending its copy with "… [truncated]" (measured 2026-10-05; a fresh
+  site's guide is about 6,900 characters). So anything an agent must not miss
+  goes in the first 2,048 characters or in a tool result, and the first line
+  points to `saddle/get-instructions` for the rest (#333). Not yet measured
+  for the other apps.
 
 If a real app turns out to send something else, change its profile and note
 the date here.
@@ -130,6 +137,20 @@ For each app, on a staging site with sign-in on and a draft post to spare:
 
 Record the app's version and the date below. File a failure as its own issue.
 
+Claude Code can run the pass without touching your own setup:
+
+- **Key:** put the server in a file of its own and run
+  `claude -p --mcp-config <file> --strict-mcp-config --allowedTools "mcp__<slug>__*" --output-format json "<prompt>" < /dev/null`.
+  Continue the same conversation with `--resume <session_id>` from the JSON.
+  Without `< /dev/null` it waits for input that never comes.
+- **Sign-in:** in a scratch folder, `claude mcp add --scope local --transport http <slug> <address>`,
+  then `claude mcp login <slug>`. It needs a terminal; `--no-browser` prints the
+  address to open instead of opening a browser. Afterwards the `-p` command
+  above works with a config file that has the address and no header.
+- On WordPress Playground or Studio, sign-in from Claude Code stops before the
+  consent screen, because PHP there has no DNS to check Claude Code's identity
+  document (#335). Keys work there.
+
 ## Results
 
 ### Script, 2026-10-04
@@ -148,16 +169,30 @@ WordPress Playground CLI 3.1.56, WordPress latest, PHP 8.3, Saddle at
 Versions on both transports: 2024-11-05, 2025-06-18 and 2025-11-25 negotiate;
 2025-03-26 is answered with 2025-11-25.
 
+### Script, 2026-10-05
+
+WordPress Playground CLI 3.1.57, WordPress 7.1.2, PHP 8.3, the Saddle 1.5.1
+zip from WordPress.org (sha256 `001e0a44…0c53b4`), built-in transport.
+
+| Credential | Apps | Result |
+|---|---|---|
+| Key, Edit content, `--write` | All six profiles, key and sign-in rows | Pass (sign-in rows: token reused, discover skipped) |
+
+Versions: 2024-11-05, 2025-06-18 and 2025-11-25 negotiate; 2025-03-26 is a note.
+
 ### Real apps
+
+The same site as the script run above. Sign-in was on for the sign-in rows;
+the site is plain HTTP with `WP_ENVIRONMENT_TYPE=local`.
 
 | Date | App | Version | Path | Connect | Read | Gated write | Refusal at Read only | Notes |
 |---|---|---|---|---|---|---|---|---|
-| | Claude Code | | key | | | | | |
-| | Claude Code | | sign-in | | | | | |
-| | Claude | | sign-in | | | | | |
-| | ChatGPT | | sign-in | | | | | |
-| | Codex | | key | | | | | |
-| | Codex | | sign-in | | | | | |
-| | Gemini CLI | | key | | | | | |
-| | Cursor | | key | | | | | |
-| | Cursor | | sign-in | | | | | |
+| 2026-10-05 | Claude Code | 2.1.289 | key | Pass | Pass: names the site, lists the four drafts, explains its access | **Fail on 1.5.1:** got the preview and confirmed in the same turn without asking (#333). **Pass on `main` since #334 (a0f8676):** quotes the preview, asks, trashes only after "yes" | Pass: says the level needed and points to AI apps; nothing changes | Activity shows "Moved post #4 … to the trash." with Undo. Called the levels "write" and "read" (since #334 it says "Edit content", "Read only") |
+| 2026-10-05 | Claude Code | 2.1.289 | sign-in | Pass: client metadata document, consent screen, Edit content chosen | Pass | **Fail on 1.5.1**, as with the key (#333) | Pass | On Playground, needed a test-only DNS stand-in for `claude.ai` (#335) |
+| | Claude | | sign-in | | | | | Not run: needs an HTTPS address the web app can reach |
+| | ChatGPT | | sign-in | | | | | Not run: needs an HTTPS address the web app can reach |
+| | Codex | 0.157.0 | key | | | | | Not run: a headless Codex run needs the owner's go-ahead |
+| | Codex | | sign-in | | | | | Not run |
+| | Gemini CLI | | key | | | | | Not run: not installed here, and needs a Google sign-in |
+| | Cursor | 2026.01.23 (`cursor-agent`) | key | | | | | Not run: a headless Cursor run needs the owner's go-ahead |
+| | Cursor | | sign-in | | | | | Not run |
