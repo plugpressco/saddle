@@ -489,6 +489,12 @@ export default function Frame( {
 	let width = PAGE_WIDTH;
 	if ( head.showSidebar ) {
 		width = MODULE_WIDTH;
+	} else if ( 'page' === head.layout ) {
+		// One page is as wide as Home; its Settings reads like a module's.
+		width =
+			area.tabs && area.tabs[ 0 ] && area.tabs[ 0 ].key === tab
+				? HOME_WIDTH
+				: MODULE_WIDTH;
 	} else if ( 'home' === area.key && 'overview' === tab ) {
 		width = HOME_WIDTH;
 	}

@@ -359,6 +359,7 @@ class Saddle_Settings {
 				'version' => isset( $area['version'] ) ? $area['version'] : '',
 				'summary' => isset( $area['summary'] ) ? $area['summary'] : '',
 				'content' => isset( $area['content'] ) ? $area['content'] : '',
+				'layout'  => $area['layout'],
 				'tabs'    => $tabs,
 			);
 		}

@@ -7,6 +7,10 @@
  * (`&tab=`) and, in a section with two or more pages, an icon tab row
  * (`&sub=`). Core's pages keep their header tab row instead.
  *
+ * A module that declares `layout: 'page'` is one page instead: no sidebar and
+ * no icon tab row. Its first tab is the page; any other tab (Settings) is a
+ * drill-in reached by address, read as `Saddle / Module / Settings`.
+ *
  * A module screen opens one item with `&view=`. While it is open, the screen
  * may call `props.header.drillIn( { title } )`: the breadcrumb then reads
  * `Saddle / Module / Section / title` and the icon tab row steps aside. The
@@ -28,7 +32,7 @@
  * @param {Object}  props.home  The first crumb: `{ label, url }` (Saddle, to Home).
  * @param {string=} props.crumb The page's name when it is not the area's title
  *                              (first run's "Welcome").
- * @return {{crumbs: Array, title: string, drilled: boolean, showTabs: boolean, showSidebar: boolean, showSubtabs: boolean}}
+ * @return {{crumbs: Array, title: string, drilled: boolean, layout: string, showTabs: boolean, showSidebar: boolean, showSubtabs: boolean}}
  *         The header. Each crumb is `{ key, label, url }`; `key` is `home`,
  *         `module`, `section` or `current`, and the last one has no url.
  */
@@ -44,7 +48,9 @@ export function frameHeader( {
 	const tabs = area && Array.isArray( area.tabs ) ? area.tabs : [];
 	const title = ( area && area.title ) || '';
 	const module = !! ( area && area.module ) && ! crumb;
+	const onePage = module && 'page' === area.layout;
 	const current = tabs.find( ( t ) => t.key === tab );
+	const first = tabs.length > 0 && tabs[ 0 ].key === tab;
 	const pages =
 		current && Array.isArray( current.subtabs ) ? current.subtabs : [];
 
@@ -68,6 +74,17 @@ export function frameHeader( {
 		crumbs = [ homeCrumb, { key: 'current', label: crumb, url: '' } ];
 	} else if ( area && 'home' === area.key ) {
 		crumbs = [ { ...homeCrumb, url: '' } ];
+	} else if ( onePage && ( drilled || ( current && ! first ) ) ) {
+		// One page has no sections to name: the module, then what is open.
+		crumbs = [
+			homeCrumb,
+			{ key: 'module', label: title, url: ( area && area.url ) || '' },
+			{
+				key: 'current',
+				label: drilled ? drill.title : current.label,
+				url: '',
+			},
+		];
 	} else if ( drilled ) {
 		const page = sub && pages.find( ( p ) => p.key === sub );
 		crumbs = [
@@ -92,9 +109,10 @@ export function frameHeader( {
 		crumbs,
 		title: crumbs[ crumbs.length - 1 ].label,
 		drilled,
+		layout: onePage ? 'page' : 'sections',
 		showTabs: ! module && ! drilled && tabs.length > 1,
-		showSidebar: module && tabs.length > 0,
-		showSubtabs: module && ! drilled && pages.length > 1,
+		showSidebar: module && ! onePage && tabs.length > 0,
+		showSubtabs: module && ! onePage && ! drilled && pages.length > 1,
 	};
 }
 

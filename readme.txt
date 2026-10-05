@@ -208,6 +208,9 @@ The WordPress.org version never checks for its own updates. The version from plu
 
 == Changelog ==
 
+= 1.5.1 =
+* New: A plugin that adds a page under Saddle can draw it as one page, with no sidebar and no tab row. Its settings open from the page and lead back to it. Saddle Analytics uses this.
+
 = 1.5.0 =
 * New: Each connected app has its own access. On AI apps, choose Read only, Edit content (posts, pages, media, menus and SEO) or Manage the site (also plugins, themes, updates and settings) for each app. A new app starts at Read only. Updating Saddle keeps what each existing app could already do and never widens it.
 * New: Needs your OK. When an app asks to make a big change, such as publishing or deleting, you can approve or reject it on Home as well as in the chat. The request shows what would change. Only the app that asked can confirm it, and a request leaves the list once its app no longer has the access it needs.
