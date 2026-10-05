@@ -208,6 +208,9 @@ The WordPress.org version never checks for its own updates. The version from plu
 
 == Changelog ==
 
+= 1.5.2 =
+* Fixed: When a step shows a preview first, such as moving a post to the trash, your AI app now shows you the preview and waits for your yes. Claude Code reads only the start of Saddle's guide, and it could confirm on its own.
+
 = 1.5.1 =
 * New: A plugin that adds a page under Saddle can draw it as one page, with no sidebar and no tab row. Its settings open from the page and lead back to it. Saddle Analytics uses this.
 * Changed: On a plugin's page under Saddle, such as SEO or CRM, the sections sit in a white panel on the left, and the page starts right beside it instead of in the middle of the screen.
