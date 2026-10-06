@@ -254,12 +254,42 @@ class Saddle_MCP {
 		$registered = array();
 		if ( method_exists( $adapter, 'get_server' ) ) {
 			$server = $adapter->get_server( self::ADAPTER_SERVER_ID );
-			if ( is_object( $server ) && method_exists( $server, 'get_tools' ) ) {
-				$registered = array_keys( $server->get_tools() );
+			$tools  = self::server_list( $server, 'get_tools' );
+			if ( null !== $tools ) {
+				$registered = array_keys( $tools );
 			}
 		}
 
 		Saddle_MCP_Diagnostics::record_health( Saddle_MCP_Diagnostics::assess( $names, $registered ) );
+	}
+
+	/**
+	 * A server's tools, resources or prompts, or null when the adapter's
+	 * method wants arguments. MCP Adapter 0.7.0 asks for the request's
+	 * protocol schema there (#340); Saddle::adapter_is_current() keeps such a
+	 * copy off Saddle's path, and this keeps a stray call from fatalling every
+	 * request if one is ever reached.
+	 *
+	 * @param object|null $server The adapter's McpServer instance.
+	 * @param string      $method get_tools, get_resources or get_prompts.
+	 * @return array|null
+	 */
+	private static function server_list( $server, $method ) {
+		if ( ! is_object( $server ) || ! method_exists( $server, $method ) ) {
+			return null;
+		}
+
+		try {
+			if ( 0 !== ( new ReflectionMethod( $server, $method ) )->getNumberOfRequiredParameters() ) {
+				return null;
+			}
+		} catch ( ReflectionException $e ) {
+			return null;
+		}
+
+		$list = $server->$method();
+
+		return is_array( $list ) ? $list : null;
 	}
 
 	/**
@@ -290,10 +320,10 @@ class Saddle_MCP {
 		// adapter's router doesn't implement, and gets a 404 back on a
 		// capability we told it we had. That reads as a broken connector.
 		if ( isset( $data['capabilities'] ) && is_array( $data['capabilities'] ) ) {
-			if ( method_exists( $server, 'get_resources' ) && ! $server->get_resources() ) {
+			if ( array() === self::server_list( $server, 'get_resources' ) ) {
 				unset( $data['capabilities']['resources'] );
 			}
-			if ( method_exists( $server, 'get_prompts' ) && ! $server->get_prompts() ) {
+			if ( array() === self::server_list( $server, 'get_prompts' ) ) {
 				unset( $data['capabilities']['prompts'] );
 			}
 		}

@@ -518,11 +518,28 @@ final class Saddle {
 	 * the built-in transport serves the route and Saddle never starts that
 	 * adapter itself.
 	 *
+	 * MCP Adapter 0.7.0 moved the other way (#340): McpServer::get_tools(),
+	 * get_resources() and get_prompts() now need the request's negotiated
+	 * protocol schema, and the handshake and list filters carry new record
+	 * types. Saddle's server code is written against the 0.5–0.6 API, and on
+	 * 0.7.0 it fatalled every request. Until it supports the new API, a
+	 * server whose get_tools() wants arguments is treated like a copy that is
+	 * too old: the built-in transport serves the route.
+	 *
 	 * @param string $prompt_class The adapter's prompt class. A parameter only so the probe can be tested.
+	 * @param string $server_class The adapter's server class. A parameter only so the probe can be tested.
 	 * @return bool
 	 */
-	public static function adapter_is_current( $prompt_class = '\\WP\\MCP\\Domain\\Prompts\\McpPrompt' ) {
-		return method_exists( $prompt_class, 'fromArray' );
+	public static function adapter_is_current( $prompt_class = '\\WP\\MCP\\Domain\\Prompts\\McpPrompt', $server_class = '\\WP\\MCP\\Core\\McpServer' ) {
+		if ( ! method_exists( $prompt_class, 'fromArray' ) || ! method_exists( $server_class, 'get_tools' ) ) {
+			return false;
+		}
+
+		try {
+			return 0 === ( new ReflectionMethod( ltrim( $server_class, '\\' ), 'get_tools' ) )->getNumberOfRequiredParameters();
+		} catch ( ReflectionException $e ) {
+			return false;
+		}
 	}
 
 

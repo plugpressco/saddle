@@ -64,6 +64,17 @@ class Saddle_Bundled_Adapter {
 			return;
 		}
 
+		// The official MCP Adapter plugin is installed, active or not (#340).
+		// Activating it in the same request as a loaded bundle redeclares
+		// WP\MCP\Autoloader (its require_once is a different path) and fatals,
+		// and the bundle's Jetpack Autoloader can pick up that plugin's newer
+		// classes even while it is inactive. With the bundle off, an active
+		// copy serves the adapter and an inactive one leaves Saddle's
+		// built-in transport on /saddle/v1/mcp.
+		if ( self::standalone_installed() ) {
+			return;
+		}
+
 		$lib        = SADDLE_DIR . 'includes/lib/wp-mcp/';
 		$autoloader = $lib . 'includes/Autoloader.php';
 		if ( ! is_readable( $autoloader ) ) {
@@ -88,5 +99,25 @@ class Saddle_Bundled_Adapter {
 		) {
 			\WP\MCP\Plugin::instance();
 		}
+	}
+
+	/**
+	 * Whether the official MCP Adapter plugin is installed (any folder name a
+	 * release zip unpacks to, active or not).
+	 *
+	 * @param string|null $plugins_dir Plugins directory; WP_PLUGIN_DIR by default. A parameter only so it can be tested.
+	 * @return bool
+	 */
+	public static function standalone_installed( $plugins_dir = null ) {
+		if ( null === $plugins_dir ) {
+			if ( ! defined( 'WP_PLUGIN_DIR' ) ) {
+				return false;
+			}
+			$plugins_dir = WP_PLUGIN_DIR;
+		}
+
+		$found = glob( rtrim( (string) $plugins_dir, '/\\' ) . '/mcp-adapter*/mcp-adapter.php' );
+
+		return ! empty( $found );
 	}
 }
