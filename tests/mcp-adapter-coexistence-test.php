@@ -148,6 +148,51 @@ class Saddle_MCP_Adapter_Coexistence_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * MCP Adapter 0.7.0 made McpServer::get_tools() (and get_resources(),
+	 * get_prompts()) require the request's protocol schema. Saddle called it
+	 * bare and every request on the site fatalled (#340). A server with that
+	 * API is not "current" yet: the built-in transport serves the route.
+	 */
+	public function test_an_adapter_whose_server_needs_a_schema_is_not_handed_the_route() {
+		$this->assertFalse( Saddle::adapter_is_current( 'Saddle_Test_Adapter_Prompt', 'Saddle_Test_Adapter_070_Server' ) );
+		$this->assertTrue( Saddle::adapter_is_current( 'Saddle_Test_Adapter_Prompt', 'Saddle_Test_Adapter_061_Server' ) );
+		$this->assertFalse( Saddle::adapter_is_current( 'Saddle_Test_Adapter_Prompt', 'Saddle_Test_No_Such_Server' ) );
+	}
+
+	/**
+	 * A stray call to a schema-taking server method is skipped, not made.
+	 */
+	public function test_server_lists_are_read_only_from_the_api_saddle_knows() {
+		$list = new ReflectionMethod( 'Saddle_MCP', 'server_list' );
+		$list->setAccessible( true );
+
+		$this->assertNull( $list->invoke( null, new Saddle_Test_Adapter_070_Server(), 'get_tools' ) );
+		$this->assertSame( array( 'saddle-get-site-info' => true ), $list->invoke( null, new Saddle_Test_Adapter_061_Server(), 'get_tools' ) );
+		$this->assertNull( $list->invoke( null, null, 'get_tools' ) );
+		$this->assertNull( $list->invoke( null, new Saddle_Test_Adapter_061_Server(), 'get_prompts' ) );
+	}
+
+	/**
+	 * With the official plugin installed, active or not, the bundle stays off:
+	 * activating it next to a loaded bundle redeclared WP\MCP\Autoloader
+	 * (#340). Any folder a release zip unpacks to counts.
+	 */
+	public function test_the_bundle_stands_aside_for_an_installed_official_plugin() {
+		$dir = trailingslashit( get_temp_dir() ) . 'saddle-plugins-' . wp_generate_password( 6, false );
+		wp_mkdir_p( $dir . '/akismet' );
+		$this->assertFalse( Saddle_Bundled_Adapter::standalone_installed( $dir ) );
+
+		wp_mkdir_p( $dir . '/mcp-adapter-0.7.0' );
+		file_put_contents( $dir . '/mcp-adapter-0.7.0/mcp-adapter.php', '<?php' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- test fixture.
+		$this->assertTrue( Saddle_Bundled_Adapter::standalone_installed( $dir ) );
+
+		unlink( $dir . '/mcp-adapter-0.7.0/mcp-adapter.php' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink -- test fixture.
+		rmdir( $dir . '/mcp-adapter-0.7.0' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir -- test fixture.
+		rmdir( $dir . '/akismet' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir -- test fixture.
+		rmdir( $dir ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir -- test fixture.
+	}
+
+	/**
 	 * The other half: the copy this suite runs (0.6.1, the one Gravity Forms
 	 * sites run) still gets the route, so the probe did not switch the
 	 * adapter path off for everyone.
@@ -166,5 +211,39 @@ class Saddle_Test_Adapter_010_Prompt {
 
 	public static function from_array( array $data ) {
 		return $data;
+	}
+}
+
+/**
+ * A current adapter's McpPrompt: has fromArray().
+ */
+class Saddle_Test_Adapter_Prompt {
+
+	public static function fromArray( array $data ) {
+		return $data;
+	}
+}
+
+/**
+ * MCP Adapter 0.6.1's McpServer: get_tools() takes nothing.
+ */
+class Saddle_Test_Adapter_061_Server {
+
+	public function get_tools() {
+		return array( 'saddle-get-site-info' => true );
+	}
+
+	public function get_prompts( $schema ) {
+		return array( $schema );
+	}
+}
+
+/**
+ * MCP Adapter 0.7.0's McpServer: get_tools() wants the protocol schema.
+ */
+class Saddle_Test_Adapter_070_Server {
+
+	public function get_tools( $schema ) {
+		return array( $schema );
 	}
 }
