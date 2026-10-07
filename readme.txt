@@ -211,6 +211,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 = 1.5.2 =
 * Fixed: Saddle and the WordPress MCP Adapter plugin 0.7.0 can now run on the same site. Activating the adapter next to Saddle stopped with a fatal error, and with both active every page failed. Saddle now serves its own endpoint itself when the adapter is a version it doesn't support yet, and keeps its built-in copy of the adapter out of the way of the official plugin.
 * Changed: Bridle and Bridle KB are PlugPress plugins, so their tools are on as soon as the plugin is active, like Mailyard and SEO. You no longer switch them on under Services.
+* Changed: Saddle CRM is now Stirrup, PlugPress's standalone newsletter plugin. Its tools work as soon as it is active, like Bridle's.
 * Fixed: When a step shows a preview first, such as moving a post to the trash, your AI app now shows you the preview and waits for your yes. Claude Code reads only the start of Saddle's guide, and it could confirm on its own.
 
 = 1.5.1 =
