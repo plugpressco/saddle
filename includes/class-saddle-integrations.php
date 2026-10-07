@@ -31,10 +31,13 @@ class Saddle_Integrations {
 	 * saddle-rank/*). `waggle` stays for the sites still running Waggle.
 	 * `bridle` and `bridle-kb` are Bridle, the support inbox, and Bridle KB,
 	 * its knowledge base; both enrol themselves (bridle/*, bridle-kb/*).
+	 * `stirrup` is Stirrup, PlugPress's newsletter plugin (stirrup/*); it was
+	 * Saddle CRM, enrolled as `crm`, until it left the Saddle family on
+	 * 2026-10-08. No released install enrols as `crm`.
 	 *
 	 * @var string[]
 	 */
-	const FIRST_PARTY = array( 'waggle', 'mailyard', 'analytics', 'rank', 'crm', 'bridle', 'bridle-kb' );
+	const FIRST_PARTY = array( 'waggle', 'mailyard', 'analytics', 'rank', 'bridle', 'bridle-kb', 'stirrup' );
 
 	/**
 	 * Option holding the third-party slugs the owner has switched on.
