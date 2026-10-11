@@ -114,9 +114,13 @@ class Saddle_Undo {
 		$reasons = array();
 
 		if ( null === $entry['journal'] ) {
-			$reasons[] = in_array( $entry['action'], array( 'update-plugin', 'update-theme' ), true )
-				? __( 'Plugin and theme updates can’t be undone: WordPress removes its backup once an update succeeds.', 'saddle' )
-				: __( 'Nothing was recorded to undo for this change: it predates undo, or it changed nothing Saddle can restore.', 'saddle' );
+			if ( in_array( $entry['action'], array( 'update-plugin', 'update-theme' ), true ) ) {
+				$reasons[] = __( 'Plugin and theme updates can’t be undone: WordPress removes its backup once an update succeeds.', 'saddle' );
+			} elseif ( 'install-plugin' === $entry['action'] ) {
+				$reasons[] = __( 'Installs can’t be undone here: Saddle never deletes a plugin. Delete it in wp-admin under Plugins.', 'saddle' );
+			} else {
+				$reasons[] = __( 'Nothing was recorded to undo for this change: it predates undo, or it changed nothing Saddle can restore.', 'saddle' );
+			}
 		} elseif ( ! empty( $entry['journal']['overflow'] ) ) {
 			$reasons[] = sprintf(
 				/* translators: %d: item limit. */

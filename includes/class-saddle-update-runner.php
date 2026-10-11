@@ -29,6 +29,11 @@
  * Results live in a bounded option so `list-updates` can report what a
  * confirmed run did, including a rollback.
  *
+ * Installs from the WordPress.org directory (#349) share the queue, the cron
+ * hook, the lock and the results, and nothing else: they go to
+ * {@see Saddle_Install_Runner}, because core installs through a different API
+ * from a different source of truth.
+ *
  * @package Saddle
  */
 
@@ -58,6 +63,12 @@ class Saddle_Update_Runner {
 	 * Most items one run may carry. Over the cap is refused, never truncated.
 	 */
 	const MAX_ITEMS = 10;
+
+	/**
+	 * Run types that install from the directory instead of updating; the
+	 * runner hands them to {@see Saddle_Install_Runner}.
+	 */
+	const INSTALL_TYPES = array( 'install-plugin', 'install-theme' );
 
 	/**
 	 * Hook the cron handler. Called once at plugin load.
@@ -98,7 +109,8 @@ class Saddle_Update_Runner {
 	 * Checked before a preview is issued, so a confirm token is never handed
 	 * out for a run that cannot happen, and reported by list-updates.
 	 *
-	 * @param string $type 'plugin' or 'theme'.
+	 * @param string $type A run type: 'plugin', 'theme', 'install-plugin' or
+	 *                     'install-theme'.
 	 * @return string[] Reasons; empty when clear.
 	 */
 	public static function blocked_by( $type = 'plugin' ) {
@@ -116,7 +128,7 @@ class Saddle_Update_Runner {
 			$reasons[] = __( 'A plugin or a host setting has disabled background updates on this site.', 'saddle' );
 		}
 
-		$context = 'theme' === $type ? get_theme_root() : WP_PLUGIN_DIR;
+		$context = in_array( $type, array( 'theme', 'install-theme' ), true ) ? get_theme_root() : WP_PLUGIN_DIR;
 		if ( $updater->is_vcs_checkout( $context ) ) {
 			$reasons[] = __( 'This site is a version-control checkout (git, svn or similar). WordPress refuses to update files that a repository owns.', 'saddle' );
 		}
@@ -130,8 +142,9 @@ class Saddle_Update_Runner {
 	/**
 	 * Queue a confirmed set of items for a background run and start cron.
 	 *
-	 * @param string $type  'plugin' or 'theme'.
-	 * @param array  $items Items, each {file|stylesheet, name, from, to}.
+	 * @param string $type  A run type: 'plugin', 'theme', 'install-plugin' or
+	 *                      'install-theme'.
+	 * @param array  $items Items, each {id, name, from, to}.
 	 * @return string Run id.
 	 */
 	public static function queue( $type, array $items ) {
@@ -206,6 +219,50 @@ class Saddle_Update_Runner {
 		$run['started'] = time();
 		self::save_run( $run );
 
+		// As core's own WP_Automatic_Updater::run() does: the per-item
+		// completion hooks would re-check for updates and start language-pack
+		// upgrades after every item. The caches are refreshed once, below.
+		$completion_hooks = array(
+			array( array( 'Language_Pack_Upgrader', 'async_upgrade' ), 20 ),
+			array( 'wp_version_check', 10 ),
+			array( 'wp_update_plugins', 10 ),
+			array( 'wp_update_themes', 10 ),
+		);
+		foreach ( $completion_hooks as $hook ) {
+			remove_action( 'upgrader_process_complete', $hook[0], $hook[1] );
+		}
+
+		if ( in_array( $type, self::INSTALL_TYPES, true ) ) {
+			Saddle_Install_Runner::apply( $run );
+		} else {
+			self::apply_updates( $run, $updater );
+		}
+
+		foreach ( $completion_hooks as $hook ) {
+			add_action( 'upgrader_process_complete', $hook[0], $hook[1] );
+		}
+		WP_Upgrader::release_lock( 'auto_updater' );
+
+		if ( in_array( $type, array( 'theme', 'install-theme' ), true ) ) {
+			wp_clean_themes_cache( true );
+		} else {
+			wp_clean_plugins_cache( true );
+		}
+
+		$run['status']   = 'finished';
+		$run['finished'] = time();
+		self::save_run( $run );
+	}
+
+	/**
+	 * Apply every offered update of one run through core's automatic updater.
+	 *
+	 * @param array                $run     Run, by reference; items get their status.
+	 * @param WP_Automatic_Updater $updater Core's updater.
+	 */
+	private static function apply_updates( array &$run, WP_Automatic_Updater $updater ) {
+		$type = $run['type'];
+
 		// Fresh offers, and the caches that would otherwise report old versions.
 		if ( 'theme' === $type ) {
 			wp_update_themes();
@@ -224,19 +281,6 @@ class Saddle_Update_Runner {
 			return in_array( $id, $wanted, true ) ? true : $update;
 		};
 		add_filter( "auto_update_{$type}", $force, PHP_INT_MAX, 2 );
-
-		// As core's own WP_Automatic_Updater::run() does: the per-item
-		// completion hooks would re-check for updates and start language-pack
-		// upgrades after every item. The caches are refreshed once, below.
-		$completion_hooks = array(
-			array( array( 'Language_Pack_Upgrader', 'async_upgrade' ), 20 ),
-			array( 'wp_version_check', 10 ),
-			array( 'wp_update_plugins', 10 ),
-			array( 'wp_update_themes', 10 ),
-		);
-		foreach ( $completion_hooks as $hook ) {
-			remove_action( 'upgrader_process_complete', $hook[0], $hook[1] );
-		}
 
 		foreach ( $run['items'] as &$item ) {
 			$offer = isset( $offers[ $item['id'] ] ) ? $offers[ $item['id'] ] : null;
@@ -258,21 +302,7 @@ class Saddle_Update_Runner {
 		}
 		unset( $item );
 
-		foreach ( $completion_hooks as $hook ) {
-			add_action( 'upgrader_process_complete', $hook[0], $hook[1] );
-		}
 		remove_filter( "auto_update_{$type}", $force, PHP_INT_MAX );
-		WP_Upgrader::release_lock( 'auto_updater' );
-
-		if ( 'theme' === $type ) {
-			wp_clean_themes_cache( true );
-		} else {
-			wp_clean_plugins_cache( true );
-		}
-
-		$run['status']   = 'finished';
-		$run['finished'] = time();
-		self::save_run( $run );
 	}
 
 	/**

@@ -121,6 +121,8 @@ require_once SADDLE_DIR . 'includes/class-saddle-undo-steps.php';
 require_once SADDLE_DIR . 'includes/class-saddle-rehearsal.php';
 require_once SADDLE_DIR . 'includes/class-saddle-post-types.php';
 require_once SADDLE_DIR . 'includes/class-saddle-update-runner.php';
+require_once SADDLE_DIR . 'includes/class-saddle-install-runner.php';
+require_once SADDLE_DIR . 'includes/class-saddle-directory.php';
 require_once SADDLE_DIR . 'includes/class-saddle-unsplash.php';
 require_once SADDLE_DIR . 'includes/class-saddle-connection.php';
 require_once SADDLE_DIR . 'includes/class-saddle-http.php';
