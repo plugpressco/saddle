@@ -1,5 +1,10 @@
 # Saddle — Design Alignment
 
+> **BRAND COLOR CHANGED (2026-10-12, Fahim; #345):** one brand color for the
+> plugin, saddle.to and Cloud: **Saddle magenta `#D000C4`**, replacing Petrol.
+> Where the brand may appear does not change. Petrol below is history; read
+> every "Petrol" in this file as "the brand".
+
 > **DECIDED (2026-10-01, Fahim; #280):** the admin is **WordPress-native with one
 > brand color, Petrol teal `#0B6470`**. Fahim reviewed Jetpack's admin and asked
 > for "a simple UI compliant with the default WordPress UI yet representing the
@@ -29,9 +34,10 @@ wp-admin like a core screen.
 
 | Role | Hex | Contrast |
 |---|---|---|
-| **Brand** (Petrol) | `#0B6470` | white on it 6.84; on white 6.84 |
-| Brand hover / press | `#08505A` / `#063F47` | white 9.11 / 11.60 |
-| Brand tint / soft | `#E2F1F2` / `#C5E4E7` | brand on tint 5.89 |
+| **Brand** (Saddle magenta, was Petrol `#0B6470`) | `#D000C4` | white on it 4.69; on white 4.69 |
+| Brand hover / press | `#B000A6` / `#900088` | white 6.18 / 8.26 |
+| Brand text (small text on the tint) | `#A3009A` | on tint 5.7; on white 6.9 |
+| Brand tint / soft | `#FDE0FB` / `#F9C2F4` | brand text on tint 5.7 (the brand itself is 3.86, marks only) |
 | Canvas (page) | `#F0F0F1`, wp-admin's own body grey (palette v3) | white blocks on it 1.14:1 |
 | Header band | `#FFFFFF`, `#DCDCDE` hairline under it | |
 | Surface (blocks) | `#FFFFFF`, `#DCDCDE` edge, 8px corners, `0 1px 2px rgba(0,0,0,.04)` | |
@@ -139,7 +145,7 @@ computed style or by grep:
 - **F6 Structure and register.** Page → tab → section → block → row. One idea
   per block, no sentence under a heading unless it carries a fact, no captions
   under numbers, never a "—" tile, say a thing once.
-- **F7 Petrol in the places listed above, and in charts only as ink.** The one
+- **F7 The brand (Petrol until 2026-10-12) in the places listed above, and in charts only as ink.** The one
   data series is `--saddle-chart-ink`, the comparison series
   `--saddle-chart-compare` dashed, grid `--saddle-chart-grid`, labels
   `--saddle-chart-text`. A vendor's bar keeps the vendor's colour; an unknown

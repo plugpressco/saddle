@@ -27,9 +27,9 @@
 // Contrast, measured (WCAG 2.x), on white / the page / #f6f7f7:
 // text #1d2327 15.89 / 13.95 / 14.80; the one grey #646970 5.53 / 4.86 /
 // 5.15; field edges #8c8f94 3.24 on white (fields sit on blocks); white on
-// the brand 6.84; every status text on its tint 4.75 or more, and 4.54 or
-// more on the page. Links follow --wp-admin-theme-color (fresh #2271b1 5.17
-// on white, 4.54 on the page).
+// the brand 4.69, brand text on its tint 5.7; every status text on its tint
+// 4.75 or more, and 4.54 or more on the page. Links follow
+// --wp-admin-theme-color (fresh #2271b1 5.17 on white, 4.54 on the page).
 // ---------------------------------------------------------------------------
 // `.pp-scope` is on every portaled layer (drawers, lists, menus, tooltips)
 // and the DS re-declares its own tokens there, so it is named here too:
@@ -37,11 +37,14 @@
 @mixin palette {
 	// The brand. Nothing reads these directly except the few places listed in
 	// DESIGN-ALIGNMENT.md; everything else maps onto WordPress's own values.
-	--saddle-brand: #0b6470; // Petrol, 6.84 on white either way round
-	--saddle-brand-hover: #08505a;
-	--saddle-brand-press: #063f47;
-	--saddle-brand-tint: #e2f1f2;
-	--saddle-brand-soft: #c5e4e7;
+	// Saddle magenta, one color for the plugin, saddle.to and Cloud (#345,
+	// 2026-10-12; it replaced Petrol #0b6470). White on it 4.69.
+	--saddle-brand: #d000c4;
+	--saddle-brand-hover: #b000a6;
+	--saddle-brand-press: #900088;
+	--saddle-brand-text: #a3009a; // small text on the tint, 5.7
+	--saddle-brand-tint: #fde0fb;
+	--saddle-brand-soft: #f9c2f4;
 
 	// wp-admin's greys, light to dark, one step each.
 	--pp-n-50: #f6f7f7; // gray-0

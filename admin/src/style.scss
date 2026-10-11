@@ -4,7 +4,7 @@
  * Powered by the PlugPress design system (@plugpress/ui). Saddle overrides the
  * shared --pp-* tokens below so the admin reads as WordPress itself: its greys,
  * its link blue, its focus color, and Jetpack's soft blocks on an off-white
- * page. The brand, Petrol teal, lands in a handful of places only: the
+ * page. The brand, Saddle magenta, lands in a handful of places only: the
  * mark, primary buttons, switches and radios when on, and the
  * selected access level. Light-only. See DESIGN-ALIGNMENT.md for the palette,
  * the type scale and where the brand may appear.
@@ -1401,7 +1401,7 @@ body.saddle-admin-page {
 			padding: 1px 8px;
 			border-radius: var( --s-radius-pill );
 			background: var( --saddle-brand-tint );
-			color: var( --s-brand );
+			color: var( --saddle-brand-text );
 			font-size: var( --s-text-sm );
 		}
 	}
