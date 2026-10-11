@@ -89,6 +89,12 @@ class Saddle_Directory {
 		if ( ! function_exists( 'plugins_api' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/plugin-install.php';
 		}
+		// The admin theme API. Not keyed on wp_get_themes(), which wp-includes
+		// always defines: found on a real install, where a REST request had no
+		// themes_api() (the test suite loads the admin files up front).
+		if ( ! function_exists( 'themes_api' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/theme.php';
+		}
 	}
 
 	/**
