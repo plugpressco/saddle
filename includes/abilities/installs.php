@@ -1,12 +1,13 @@
 <?php
 /**
- * The WordPress.org directory: finding a plugin, and installing one.
+ * The WordPress.org directory: finding a plugin, and installing a plugin or
+ * a theme.
  *
  * Decided 2026-10-12 (#347): Saddle installs a plugin or theme only from the
  * WordPress.org directory, by slug, through WordPress's own installer, out of
  * band, after a confirmed preview. Every directory read goes through
- * {@see Saddle_Directory}, which asks core's own `plugins_api()`, the same
- * request Plugins → Add New makes. A confirmed install is queued for
+ * {@see Saddle_Directory}, which asks core's own `plugins_api()` and
+ * `themes_api()`, the same requests the Add New screens make. A confirmed install is queued for
  * {@see Saddle_Update_Runner}; the request that confirms never runs the
  * installer. A new install arrives inactive, and nothing here deletes.
  *
@@ -18,11 +19,12 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Register the directory abilities. Hooked to `wp_abilities_api_init`.
  *
- * The permission capability is `activate_plugins`, as for update-plugin:
- * `install_plugins` maps to `do_not_allow` on a site that forbids file
- * changes, which would hide the tool behind a wrong "your account lacks the
+ * The permission capability is `activate_plugins` (`switch_themes` for
+ * themes), as for update-plugin and update-theme: `install_plugins` and
+ * `install_themes` map to `do_not_allow` on a site that forbids file changes,
+ * which would hide the tool behind a wrong "your account lacks the
  * permission" note. The install handler names that reason first, then checks
- * `install_plugins` itself.
+ * the install capability itself.
  */
 function saddle_register_install_abilities() {
 	wp_register_ability(
@@ -80,6 +82,32 @@ function saddle_register_install_abilities() {
 			),
 			'execute_callback'    => array( 'Saddle_Install_Abilities', 'install_plugin' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'admin', 'activate_plugins', 'install-plugin' ),
+			'meta'                => saddle_ability_meta( false, true, false, 'admin', true ),
+		)
+	);
+
+	wp_register_ability(
+		'saddle/install-theme',
+		array(
+			'label'               => __( 'Install a theme', 'saddle' ),
+			'description'         => __( 'Installs one theme from the WordPress.org directory, by its slug, as in wordpress.org/themes/<slug>/. Nothing else can be installed: no zip, no URL, no file. It takes two calls. The first call changes nothing: it returns a preview with the theme\'s name, author, version, active installs, rating and last update, the WordPress and PHP versions it needs against this site\'s, its parent theme if it is a child theme, any warnings, and a confirm_token. Call again with the same "slug" and that token to queue the install. WordPress\'s own installer then runs it in the background; check list-updates a minute later for the result under "runs" (installed, skipped or failed). The theme is NOT activated: switch to it with activate-theme, its own confirmed step. Refuses a theme that is already installed, a slug WordPress.org does not have, a theme that needs a newer PHP or WordPress, a child theme whose parent theme is not installed (install the parent first), and sites where WordPress cannot change files. Installs cannot be undone from Saddle; the site owner removes a theme in wp-admin under Appearance → Themes.', 'saddle' ),
+			'category'            => 'saddle',
+			'input_schema'        => array(
+				'type'       => 'object',
+				'required'   => array( 'slug' ),
+				'properties' => array(
+					'slug'          => array(
+						'type'        => 'string',
+						'description' => __( 'The theme\'s WordPress.org slug, as in wordpress.org/themes/<slug>/.', 'saddle' ),
+					),
+					'confirm_token' => array(
+						'type'        => 'string',
+						'description' => __( 'Token from the preview step, required to queue the install.', 'saddle' ),
+					),
+				),
+			),
+			'execute_callback'    => array( 'Saddle_Install_Abilities', 'install_theme' ),
+			'permission_callback' => Saddle_Capabilities::permission( 'admin', 'switch_themes', 'install-theme' ),
 			'meta'                => saddle_ability_meta( false, true, false, 'admin', true ),
 		)
 	);
@@ -165,7 +193,7 @@ class Saddle_Install_Abilities {
 		// Installed and active are this site's, so they are never cached.
 		$results = array();
 		foreach ( $found['rows'] as $row ) {
-			$here             = Saddle_Directory::plugin_status( $row['slug'] );
+			$here             = Saddle_Install_Runner::installed( 'plugin', $row['slug'] );
 			$row['installed'] = $here['installed'];
 			$row['active']    = $here['file'] ? is_plugin_active( $here['file'] ) : false;
 			$row['plugin']    = $here['file'];
@@ -186,72 +214,106 @@ class Saddle_Install_Abilities {
 	 * @return array|WP_Error
 	 */
 	public static function install_plugin( $input = null ) {
-		$input = is_array( $input ) ? $input : array();
+		return self::install( 'plugin', is_array( $input ) ? $input : array() );
+	}
+
+	/**
+	 * saddle/install-theme.
+	 *
+	 * @param mixed $input Ability input.
+	 * @return array|WP_Error
+	 */
+	public static function install_theme( $input = null ) {
+		return self::install( 'theme', is_array( $input ) ? $input : array() );
+	}
+
+	/**
+	 * Preview, then queue, the install of one directory slug.
+	 *
+	 * @param string $type  'plugin' or 'theme'.
+	 * @param array  $input Ability input.
+	 * @return array|WP_Error
+	 */
+	private static function install( $type, array $input ) {
 		Saddle_Directory::load_api();
+		$theme = 'theme' === $type;
 
 		// Refuse before a preview exists: a token must never be issued for an
 		// install this site cannot perform.
-		$blocked = Saddle_Update_Runner::blocked_by( 'plugin' );
+		$blocked = Saddle_Update_Runner::blocked_by( $type );
 		if ( ! empty( $blocked ) ) {
 			return new WP_Error( 'saddle_updates_unavailable', implode( ' ', $blocked ), array( 'status' => 409 ) );
 		}
-		if ( ! current_user_can( 'install_plugins' ) ) {
-			return new WP_Error( 'saddle_cannot_install', __( 'The WordPress account this app is connected as cannot install plugins here (on a multisite network, only a network administrator can). No Saddle setting changes that.', 'saddle' ), array( 'status' => 403 ) );
+		if ( ! current_user_can( $theme ? 'install_themes' : 'install_plugins' ) ) {
+			return new WP_Error(
+				'saddle_cannot_install',
+				$theme
+					? __( 'The WordPress account this app is connected as cannot install themes here (on a multisite network, only a network administrator can). No Saddle setting changes that.', 'saddle' )
+					: __( 'The WordPress account this app is connected as cannot install plugins here (on a multisite network, only a network administrator can). No Saddle setting changes that.', 'saddle' ),
+				array( 'status' => 403 )
+			);
 		}
 
 		$slug = Saddle_Directory::clean_slug( isset( $input['slug'] ) ? $input['slug'] : '' );
 		if ( is_wp_error( $slug ) ) {
 			return $slug;
 		}
-		$api = Saddle_Directory::plugin( $slug );
+		$api = Saddle_Directory::entry( $type, $slug );
 		if ( is_wp_error( $api ) ) {
 			return $api;
 		}
-		$refusal = Saddle_Directory::refusal( $api );
+		$refusal = Saddle_Install_Runner::refusal( $type, $api );
 		if ( $refusal ) {
 			return $refusal;
 		}
 
 		$entry = Saddle_Directory::row( $api );
-		$needs = isset( $api->requires_plugins ) ? array_values( array_map( 'strval', (array) $api->requires_plugins ) ) : array();
+		$needs = ( ! $theme && isset( $api->requires_plugins ) ) ? array_values( array_map( 'strval', (array) $api->requires_plugins ) ) : array();
 		$label = sprintf( '%s %s', $entry['name'], $entry['version'] );
+		$extra = $theme
+			? array( 'parent' => Saddle_Install_Runner::parent_slug( $api ) ? Saddle_Install_Runner::parent_slug( $api ) : null )
+			: array( 'requires_plugins' => $needs );
 
 		return Saddle_Approval::gate(
 			array(
-				'action'  => 'install-plugin',
+				'action'  => 'install-' . $type,
 				'target'  => $slug,
 				// Bind the version: a preview shown for 1.1 must not be
 				// confirmable into installing a 1.2 released in between.
 				'bind'    => $entry['version'],
-				'summary' => sprintf(
+				'summary' => $theme
+					/* translators: %s: theme name and version. */
+					? sprintf( __( 'Install the theme %s from WordPress.org in the background. It is not activated.', 'saddle' ), $label )
 					/* translators: %s: plugin name and version. */
-					__( 'Install %s from WordPress.org in the background. It arrives inactive.', 'saddle' ),
-					$label
-				),
+					: sprintf( __( 'Install %s from WordPress.org in the background. It arrives inactive.', 'saddle' ), $label ),
 				'preview' => array_merge(
 					$entry,
 					array(
-						'type'               => 'plugin',
-						'wordpress'          => get_bloginfo( 'version' ),
-						'php'                => PHP_VERSION,
-						'requires_plugins'   => $needs,
+						'type'      => $type,
+						'wordpress' => get_bloginfo( 'version' ),
+						'php'       => PHP_VERSION,
+					),
+					$extra,
+					array(
 						'warnings'           => self::warnings( $entry, $needs ),
 						'source'             => 'wordpress.org',
 						'arrives_inactive'   => true,
 						'runs_in_background' => true,
-						'undo'               => __( 'Saddle cannot undo an install. To remove the plugin, delete it in wp-admin under Plugins.', 'saddle' ),
+						'undo'               => $theme
+							? __( 'Saddle cannot undo an install. To remove the theme, delete it in wp-admin under Appearance → Themes.', 'saddle' )
+							: __( 'Saddle cannot undo an install. To remove the plugin, delete it in wp-admin under Plugins.', 'saddle' ),
 					)
 				),
 				// The gate logs the confirmed call with this line, once.
-				'done'    => sprintf(
+				'done'    => $theme
+					/* translators: %s: theme name and version. */
+					? sprintf( __( 'Queued install of the theme %s from WordPress.org.', 'saddle' ), $label )
 					/* translators: %s: plugin name and version. */
-					__( 'Queued install of %s from WordPress.org.', 'saddle' ),
-					$label
-				),
+					: sprintf( __( 'Queued install of %s from WordPress.org.', 'saddle' ), $label ),
 				'input'   => $input,
-				'execute' => static function () use ( $slug, $entry ) {
+				'execute' => static function () use ( $type, $slug, $entry, $theme ) {
 					$run_id = Saddle_Update_Runner::queue(
-						'install-plugin',
+						'install-' . $type,
 						array(
 							array(
 								'id'   => $slug,
@@ -264,12 +326,14 @@ class Saddle_Install_Abilities {
 					return array(
 						'queued'     => true,
 						'run_id'     => $run_id,
-						'type'       => 'plugin',
+						'type'       => $type,
 						'slug'       => $slug,
 						'version'    => $entry['version'],
 						'check_with' => 'list-updates',
-						'next'       => 'activate-plugin',
-						'note'       => __( 'The install starts within about a minute and reports installed, skipped or failed under "runs" in list-updates. The plugin arrives inactive; activate it with activate-plugin.', 'saddle' ),
+						'next'       => $theme ? 'activate-theme' : 'activate-plugin',
+						'note'       => $theme
+							? __( 'The install starts within about a minute and reports installed, skipped or failed under "runs" in list-updates. The theme is not activated; switch to it with activate-theme.', 'saddle' )
+							: __( 'The install starts within about a minute and reports installed, skipped or failed under "runs" in list-updates. The plugin arrives inactive; activate it with activate-plugin.', 'saddle' ),
 					);
 				},
 			)

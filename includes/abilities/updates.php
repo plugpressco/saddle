@@ -54,7 +54,7 @@ function saddle_register_update_abilities() {
 		'saddle/list-updates',
 		array(
 			'label'               => __( 'List available updates', 'saddle' ),
-			'description'         => __( 'Lists the plugin, theme, WordPress core and translation updates this site has been offered, each with the installed and new version, whether the item is active, whether WordPress auto-updates it, and a changelog link. Also reports anything that would stop updates from being applied here (a host that forbids file changes, a version-control checkout, missing filesystem access) and the results of recent runs queued by update-plugin, update-theme or install-plugin, including any rollback. Read-only. Pass "refresh": true to make WordPress check for updates again instead of using its cached answer.', 'saddle' ),
+			'description'         => __( 'Lists the plugin, theme, WordPress core and translation updates this site has been offered, each with the installed and new version, whether the item is active, whether WordPress auto-updates it, and a changelog link. Also reports anything that would stop updates from being applied here (a host that forbids file changes, a version-control checkout, missing filesystem access) and the results of recent runs queued by update-plugin, update-theme, install-plugin or install-theme, including any rollback. Read-only. Pass "refresh": true to make WordPress check for updates again instead of using its cached answer.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -90,7 +90,7 @@ function saddle_register_update_abilities() {
 		'saddle/update-theme',
 		array(
 			'label'               => __( 'Update themes', 'saddle' ),
-			'description'         => __( 'Applies theme updates that WordPress has already offered (see list-updates), at most 10 per call. Same preview → confirm_token → background run as update-plugin. WordPress keeps a backup of the previous version; it does not check themes for fatal errors, so update the active theme with that in mind. Check list-updates a minute later for each item\'s result. Never installs or deletes a theme.', 'saddle' ),
+			'description'         => __( 'Applies theme updates that WordPress has already offered (see list-updates), at most 10 per call. Same preview → confirm_token → background run as update-plugin. WordPress keeps a backup of the previous version; it does not check themes for fatal errors, so update the active theme with that in mind. Check list-updates a minute later for each item\'s result. Never deletes a theme; install-theme adds a new one.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => $item_schema( 'themes', __( 'Theme directory names, from list-updates.', 'saddle' ) ),
 			'execute_callback'    => array( 'Saddle_Update_Abilities', 'update_theme' ),

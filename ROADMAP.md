@@ -59,7 +59,7 @@ when it is picked up; this file names direction, not tickets.
    run" and is written into `CLAUDE.md`'s hard line with the code.
 
    **Added 2026-10-12, in this order, all free, next to the updates (Fahim):**
-   `search-plugins` (#348, built), `install-plugin` (#349, built), `install-theme` (#350),
+   `search-plugins` (#348, built), `install-plugin` (#349, built), `install-theme` (#350, built),
    `update-core` (#351), `update-translations` (#352). Installs come only from
    the WordPress.org directory, by slug, through WordPress's own installer in
    the background runner, and arrive inactive; activating stays its own

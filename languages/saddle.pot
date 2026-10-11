@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-11T22:50:36+00:00\n"
+"POT-Creation-Date: 2026-10-11T23:00:43+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -2150,84 +2150,121 @@ msgstr ""
 msgid "Set %1$d display condition(s) on the module at %2$s on Divi page #%3$d."
 msgstr ""
 
-#: includes/abilities/installs.php:31
+#: includes/abilities/installs.php:33
 msgid "Search the plugin directory"
 msgstr ""
 
-#: includes/abilities/installs.php:32
+#: includes/abilities/installs.php:34
 msgid "Searches the WordPress.org plugin directory, the same search as Plugins → Add New, or looks up one plugin by its exact slug. Pass \"search\" (words) or \"slug\", not both. Returns up to 10 plugins, each with its slug, name, author, version, active installs, rating (0 to 100) and number of ratings, the date it was last updated, the WordPress version it was tested up to, the WordPress and PHP versions it requires, and whether it is installed and active on this site (with its plugin file when installed). Install one with install-plugin and its slug. Read-only. Results are cached on this site for an hour."
 msgstr ""
 
-#: includes/abilities/installs.php:40
+#: includes/abilities/installs.php:42
 msgid "Words to search the directory for, as typed into Plugins → Add New."
 msgstr ""
 
-#: includes/abilities/installs.php:44
+#: includes/abilities/installs.php:46
 msgid "One exact plugin slug, as in wordpress.org/plugins/<slug>/."
 msgstr ""
 
-#: includes/abilities/installs.php:51
+#: includes/abilities/installs.php:53
 msgid "How many results to return, 1 to 10."
 msgstr ""
 
-#: includes/abilities/installs.php:64
+#: includes/abilities/installs.php:66
 msgid "Install a plugin"
 msgstr ""
 
-#: includes/abilities/installs.php:65
+#: includes/abilities/installs.php:67
 msgid "Installs one plugin from the WordPress.org directory, by its slug (find it with search-plugins). Nothing else can be installed: no zip, no URL, no file. It takes two calls. The first call changes nothing: it returns a preview with the plugin's name, author, version, active installs, rating and last update, the WordPress version it was tested up to against this site's, the PHP it needs against this site's, any warnings (not tested with this WordPress, not updated in two years, needs other plugins), and a confirm_token. Call again with the same \"slug\" and that token to queue the install. WordPress's own installer then runs it in the background, the way Plugins → Add New does; check list-updates a minute later for the result under \"runs\" (installed, skipped or failed). The plugin arrives INACTIVE: turn it on with activate-plugin, its own confirmed step. Refuses a plugin that is already installed, a slug WordPress.org does not have or has closed, a plugin that needs a newer PHP or WordPress, and sites where WordPress cannot change files. Installs cannot be undone from Saddle; the site owner removes a plugin in wp-admin under Plugins."
 msgstr ""
 
-#: includes/abilities/installs.php:73
+#: includes/abilities/installs.php:75
 msgid "The plugin's WordPress.org slug, as in wordpress.org/plugins/<slug>/."
 msgstr ""
 
-#: includes/abilities/installs.php:77
+#: includes/abilities/installs.php:79
+#: includes/abilities/installs.php:105
 msgid "Token from the preview step, required to queue the install."
 msgstr ""
 
-#: includes/abilities/installs.php:121
+#: includes/abilities/installs.php:92
+msgid "Install a theme"
+msgstr ""
+
+#: includes/abilities/installs.php:93
+msgid "Installs one theme from the WordPress.org directory, by its slug, as in wordpress.org/themes/<slug>/. Nothing else can be installed: no zip, no URL, no file. It takes two calls. The first call changes nothing: it returns a preview with the theme's name, author, version, active installs, rating and last update, the WordPress and PHP versions it needs against this site's, its parent theme if it is a child theme, any warnings, and a confirm_token. Call again with the same \"slug\" and that token to queue the install. WordPress's own installer then runs it in the background; check list-updates a minute later for the result under \"runs\" (installed, skipped or failed). The theme is NOT activated: switch to it with activate-theme, its own confirmed step. Refuses a theme that is already installed, a slug WordPress.org does not have, a theme that needs a newer PHP or WordPress, a child theme whose parent theme is not installed (install the parent first), and sites where WordPress cannot change files. Installs cannot be undone from Saddle; the site owner removes a theme in wp-admin under Appearance → Themes."
+msgstr ""
+
+#: includes/abilities/installs.php:101
+msgid "The theme's WordPress.org slug, as in wordpress.org/themes/<slug>/."
+msgstr ""
+
+#: includes/abilities/installs.php:149
 msgid "Pass \"search\" (words to search for) or \"slug\" (one exact plugin slug), not both."
 msgstr ""
 
-#: includes/abilities/installs.php:199
+#: includes/abilities/installs.php:251
+msgid "The WordPress account this app is connected as cannot install themes here (on a multisite network, only a network administrator can). No Saddle setting changes that."
+msgstr ""
+
+#: includes/abilities/installs.php:252
 msgid "The WordPress account this app is connected as cannot install plugins here (on a multisite network, only a network administrator can). No Saddle setting changes that."
 msgstr ""
 
+#. translators: %s: theme name and version.
+#: includes/abilities/installs.php:286
+#, php-format
+msgid "Install the theme %s from WordPress.org in the background. It is not activated."
+msgstr ""
+
 #. translators: %s: plugin name and version.
-#: includes/abilities/installs.php:228
+#: includes/abilities/installs.php:288
 #, php-format
 msgid "Install %s from WordPress.org in the background. It arrives inactive."
 msgstr ""
 
-#: includes/abilities/installs.php:242
+#: includes/abilities/installs.php:303
+msgid "Saddle cannot undo an install. To remove the theme, delete it in wp-admin under Appearance → Themes."
+msgstr ""
+
+#: includes/abilities/installs.php:304
 msgid "Saddle cannot undo an install. To remove the plugin, delete it in wp-admin under Plugins."
 msgstr ""
 
+#. translators: %s: theme name and version.
+#: includes/abilities/installs.php:310
+#, php-format
+msgid "Queued install of the theme %s from WordPress.org."
+msgstr ""
+
 #. translators: %s: plugin name and version.
-#: includes/abilities/installs.php:248
+#: includes/abilities/installs.php:312
 #, php-format
 msgid "Queued install of %s from WordPress.org."
 msgstr ""
 
-#: includes/abilities/installs.php:272
+#: includes/abilities/installs.php:335
+msgid "The install starts within about a minute and reports installed, skipped or failed under \"runs\" in list-updates. The theme is not activated; switch to it with activate-theme."
+msgstr ""
+
+#: includes/abilities/installs.php:336
 msgid "The install starts within about a minute and reports installed, skipped or failed under \"runs\" in list-updates. The plugin arrives inactive; activate it with activate-plugin."
 msgstr ""
 
 #. translators: 1: version the plugin was tested up to, 2: this site's WordPress version.
-#: includes/abilities/installs.php:297
+#: includes/abilities/installs.php:361
 #, php-format
 msgid "Tested up to WordPress %1$s; this site runs %2$s."
 msgstr ""
 
 #. translators: %s: date of the last update.
-#: includes/abilities/installs.php:305
+#: includes/abilities/installs.php:369
 #, php-format
 msgid "Not updated since %s, more than two years ago."
 msgstr ""
 
 #. translators: %s: comma-separated plugin slugs.
-#: includes/abilities/installs.php:312
+#: includes/abilities/installs.php:376
 #, php-format
 msgid "Needs these plugins active before it can be activated: %s."
 msgstr ""
@@ -3484,7 +3521,7 @@ msgid "List available updates"
 msgstr ""
 
 #: includes/abilities/updates.php:57
-msgid "Lists the plugin, theme, WordPress core and translation updates this site has been offered, each with the installed and new version, whether the item is active, whether WordPress auto-updates it, and a changelog link. Also reports anything that would stop updates from being applied here (a host that forbids file changes, a version-control checkout, missing filesystem access) and the results of recent runs queued by update-plugin, update-theme or install-plugin, including any rollback. Read-only. Pass \"refresh\": true to make WordPress check for updates again instead of using its cached answer."
+msgid "Lists the plugin, theme, WordPress core and translation updates this site has been offered, each with the installed and new version, whether the item is active, whether WordPress auto-updates it, and a changelog link. Also reports anything that would stop updates from being applied here (a host that forbids file changes, a version-control checkout, missing filesystem access) and the results of recent runs queued by update-plugin, update-theme, install-plugin or install-theme, including any rollback. Read-only. Pass \"refresh\": true to make WordPress check for updates again instead of using its cached answer."
 msgstr ""
 
 #: includes/abilities/updates.php:66
@@ -3508,7 +3545,7 @@ msgid "Update themes"
 msgstr ""
 
 #: includes/abilities/updates.php:93
-msgid "Applies theme updates that WordPress has already offered (see list-updates), at most 10 per call. Same preview → confirm_token → background run as update-plugin. WordPress keeps a backup of the previous version; it does not check themes for fatal errors, so update the active theme with that in mind. Check list-updates a minute later for each item's result. Never installs or deletes a theme."
+msgid "Applies theme updates that WordPress has already offered (see list-updates), at most 10 per call. Same preview → confirm_token → background run as update-plugin. WordPress keeps a backup of the previous version; it does not check themes for fatal errors, so update the active theme with that in mind. Check list-updates a minute later for each item's result. Never deletes a theme; install-theme adds a new one."
 msgstr ""
 
 #: includes/abilities/updates.php:95
@@ -5159,7 +5196,7 @@ msgid "A destructive tool answering with a preview and a confirm_token is NOT an
 msgstr ""
 
 #: includes/class-saddle-context.php:262
-msgid "Plugins are installed only from the WordPress.org directory, by slug (find one with search-plugins), and arrive inactive: activating is a separate, confirmed step (activate-plugin). Saddle never installs from a zip or a URL and never deletes a plugin, so send the user to wp-admin for those."
+msgid "Plugins and themes are installed only from the WordPress.org directory, by slug (search-plugins finds a plugin), and arrive inactive: activating is a separate, confirmed step (activate-plugin or activate-theme). Saddle never installs from a zip or a URL and never deletes a plugin or theme, so send the user to wp-admin for those."
 msgstr ""
 
 #: includes/class-saddle-context.php:429
@@ -5373,52 +5410,36 @@ msgstr ""
 msgid "Sign-in for apps needs pretty permalinks. Choose any option but Plain in Settings → Permalinks, then try again."
 msgstr ""
 
-#: includes/class-saddle-directory.php:77
+#: includes/class-saddle-directory.php:105
 msgid "WordPress.org sent an answer Saddle could not read."
 msgstr ""
 
-#. translators: %s: plugin slug.
-#: includes/class-saddle-directory.php:189
-#, php-format
-msgid "A plugin with the slug \"%s\" is already installed, or a folder with that name exists. Use activate-plugin to turn it on, or update-plugin if list-updates offers a newer version."
-msgstr ""
-
-#. translators: 1: plugin name, 2: required PHP version, 3: this site's PHP version.
-#: includes/class-saddle-directory.php:200
-#, php-format
-msgid "%1$s needs PHP %2$s or newer; this site runs PHP %3$s. The host has to update PHP first."
-msgstr ""
-
-#. translators: 1: plugin name, 2: required WordPress version, 3: this site's WordPress version.
-#: includes/class-saddle-directory.php:213
-#, php-format
-msgid "%1$s needs WordPress %2$s or newer; this site runs WordPress %3$s."
-msgstr ""
-
-#: includes/class-saddle-directory.php:224
-msgid "The directory answer on this site names a package outside downloads.wordpress.org, so another plugin is probably changing it. Saddle installs only packages WordPress.org itself offers. Install this one in wp-admin if you trust its source."
-msgstr ""
-
 #. translators: %s: the error WordPress reported.
-#: includes/class-saddle-directory.php:267
+#: includes/class-saddle-directory.php:204
 #, php-format
 msgid "WordPress could not get an answer from the WordPress.org directory: %s"
 msgstr ""
 
 #. translators: %s: plugin slug.
-#: includes/class-saddle-directory.php:277
+#: includes/class-saddle-directory.php:214
 #, php-format
 msgid "WordPress.org has closed the plugin \"%s\", so it cannot be installed."
 msgstr ""
 
+#. translators: %s: theme slug.
+#: includes/class-saddle-directory.php:222
+#, php-format
+msgid "The WordPress.org directory has no theme with the slug \"%s\". Check the slug in its address, wordpress.org/themes/<slug>/."
+msgstr ""
+
 #. translators: %s: plugin slug.
-#: includes/class-saddle-directory.php:284
+#: includes/class-saddle-directory.php:224
 #, php-format
 msgid "The WordPress.org directory has no plugin with the slug \"%s\". Use search-plugins with \"search\" to find the right slug."
 msgstr ""
 
-#: includes/class-saddle-directory.php:298
-msgid "A directory slug has only lowercase letters, digits and hyphens, as in wordpress.org/plugins/<slug>/."
+#: includes/class-saddle-directory.php:238
+msgid "A directory slug has only lowercase letters, digits and hyphens, as in wordpress.org/plugins/<slug>/ or wordpress.org/themes/<slug>/."
 msgstr ""
 
 #: includes/class-saddle-http.php:129
@@ -5461,30 +5482,74 @@ msgstr ""
 msgid "The public page redirected more than three times, so Saddle stopped."
 msgstr ""
 
-#. translators: 1: version offered now, 2: version confirmed.
-#: includes/class-saddle-install-runner.php:66
+#. translators: %s: theme slug.
+#: includes/class-saddle-install-runner.php:113
 #, php-format
-msgid "WordPress.org now offers version %1$s, not the %2$s that was confirmed, so nothing was installed. Preview it again with install-plugin."
+msgid "A theme with the slug \"%s\" is already installed, or a folder with that name exists. Use activate-theme to switch to it, or update-theme if list-updates offers a newer version."
 msgstr ""
 
-#: includes/class-saddle-install-runner.php:97
+#. translators: %s: plugin slug.
+#: includes/class-saddle-install-runner.php:115
+#, php-format
+msgid "A plugin with the slug \"%s\" is already installed, or a folder with that name exists. Use activate-plugin to turn it on, or update-plugin if list-updates offers a newer version."
+msgstr ""
+
+#. translators: 1: plugin or theme name, 2: required PHP version, 3: this site's PHP version.
+#: includes/class-saddle-install-runner.php:120
+#, php-format
+msgid "%1$s needs PHP %2$s or newer; this site runs PHP %3$s. The host has to update PHP first."
+msgstr ""
+
+#. translators: 1: plugin or theme name, 2: required WordPress version, 3: this site's WordPress version.
+#: includes/class-saddle-install-runner.php:124
+#, php-format
+msgid "%1$s needs WordPress %2$s or newer; this site runs WordPress %3$s."
+msgstr ""
+
+#. translators: 1: child theme name, 2: parent theme slug.
+#: includes/class-saddle-install-runner.php:134
+#, php-format
+msgid "%1$s is a child theme of \"%2$s\", which is not installed. Install \"%2$s\" first with install-theme, then this one."
+msgstr ""
+
+#: includes/class-saddle-install-runner.php:138
+msgid "The directory answer on this site names a package outside downloads.wordpress.org, so another plugin is probably changing it. Saddle installs only packages WordPress.org itself offers. Install this one in wp-admin if you trust its source."
+msgstr ""
+
+#. translators: 1: version offered now, 2: version confirmed.
+#: includes/class-saddle-install-runner.php:187
+#, php-format
+msgid "WordPress.org now offers version %1$s, not the %2$s that was confirmed, so nothing was installed. Preview it again."
+msgstr ""
+
+#: includes/class-saddle-install-runner.php:207
+msgid "Saddle installs only the theme that was confirmed."
+msgstr ""
+
+#: includes/class-saddle-install-runner.php:229
 msgid "WordPress could not install the package."
 msgstr ""
 
+#. translators: 1: theme name, 2: version.
+#: includes/class-saddle-install-runner.php:245
+#, php-format
+msgid "Installed the theme %1$s %2$s from WordPress.org. It is not active."
+msgstr ""
+
 #. translators: 1: plugin name, 2: version.
-#: includes/class-saddle-install-runner.php:111
+#: includes/class-saddle-install-runner.php:247
 #, php-format
 msgid "Installed %1$s %2$s from WordPress.org. It is inactive."
 msgstr ""
 
-#. translators: 1: plugin name, 2: version, 3: reason.
-#: includes/class-saddle-install-runner.php:114
+#. translators: 1: plugin or theme name, 2: version, 3: reason.
+#: includes/class-saddle-install-runner.php:250
 #, php-format
 msgid "Install of %1$s %2$s was skipped: %3$s"
 msgstr ""
 
-#. translators: 1: plugin name, 2: version, 3: error message.
-#: includes/class-saddle-install-runner.php:117
+#. translators: 1: plugin or theme name, 2: version, 3: error message.
+#: includes/class-saddle-install-runner.php:253
 #, php-format
 msgid "Install of %1$s %2$s failed: %3$s"
 msgstr ""
@@ -6478,7 +6543,7 @@ msgid "Plugin and theme updates can’t be undone: WordPress removes its backup 
 msgstr ""
 
 #: includes/class-saddle-undo.php:120
-msgid "Installs can’t be undone here: Saddle never deletes a plugin. Delete it in wp-admin under Plugins."
+msgid "Installs can’t be undone here: Saddle never deletes a plugin or theme. Delete it in wp-admin under Plugins or Appearance → Themes."
 msgstr ""
 
 #: includes/class-saddle-undo.php:122

@@ -1,17 +1,17 @@
 <?php
 /**
- * The WordPress.org directory, read through core's own `plugins_api()`.
+ * The WordPress.org directory, read through core's own `plugins_api()` and
+ * `themes_api()`.
  *
  * Why a separate class: the install abilities ask the directory before they
  * issue a confirm token, and {@see Saddle_Install_Runner} asks it again on a
- * cron event with no ability loaded, so both must reach the same lookups and
- * the same refusals. One class also keeps the rule "only a package WordPress.org
- * names" in one place.
+ * cron event with no ability loaded, so both must reach the same lookups. One
+ * class also keeps the rule "only a package WordPress.org names" in one place.
  *
  * Decided 2026-10-12 (#347): Saddle installs a plugin or theme only from the
  * WordPress.org directory, by slug. Every request here is the one Plugins →
- * Add New makes, and the package is the `download_link` that answer names,
- * on downloads.wordpress.org or refused.
+ * Add New or Appearance → Themes → Add New makes, and the package is the
+ * `download_link` that answer names, on downloads.wordpress.org or refused.
  *
  * @package Saddle
  */
@@ -19,7 +19,7 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Directory lookups, mapping and refusals.
+ * Directory lookups and mapping.
  */
 class Saddle_Directory {
 
@@ -54,6 +54,34 @@ class Saddle_Directory {
 	);
 
 	/**
+	 * The theme fields Saddle asks for. `parent` and `template` name the parent
+	 * of a child theme, which core's installer would otherwise fetch unasked.
+	 */
+	const THEME_FIELDS = array(
+		'active_installs'    => true,
+		'last_updated'       => true,
+		'requires'           => true,
+		'requires_php'       => true,
+		'rating'             => true,
+		'num_ratings'        => true,
+		'downloadlink'       => true,
+		'parent'             => true,
+		'template'           => true,
+		'sections'           => false,
+		'description'        => false,
+		'tags'               => false,
+		'screenshot_url'     => false,
+		'preview_url'        => false,
+		'homepage'           => false,
+		'reviews_url'        => false,
+		'theme_url'          => false,
+		'extended_author'    => false,
+		'photon_screenshots' => false,
+		'downloaded'         => false,
+		'creation_time'      => false,
+	);
+
+	/**
 	 * Load the admin install APIs, which a REST or cron request lacks.
 	 */
 	public static function load_api() {
@@ -80,27 +108,35 @@ class Saddle_Directory {
 	}
 
 	/**
-	 * One plugin's directory entry, asked fresh, never cached: an install
-	 * must see the version WordPress.org offers now.
+	 * One plugin's or theme's directory entry, asked fresh, never cached: an
+	 * install must see the version WordPress.org offers now.
 	 *
+	 * @param string $type 'plugin' or 'theme'.
 	 * @param string $slug Directory slug.
 	 * @return object|WP_Error The entry, or a named refusal.
 	 */
-	public static function plugin( $slug ) {
-		$api = self::plugins( 'plugin_information', array( 'slug' => $slug ) );
-		if ( is_wp_error( $api ) ) {
-			return self::error( $api, $slug );
+	public static function entry( $type, $slug ) {
+		self::load_api();
+		$api = 'theme' === $type
+			? themes_api(
+				'theme_information',
+				array(
+					'slug'   => $slug,
+					'fields' => self::THEME_FIELDS,
+				)
+			)
+			: self::plugins( 'plugin_information', array( 'slug' => $slug ) );
+
+		if ( ! is_wp_error( $api ) && ( ! is_object( $api ) || empty( $api->slug ) || empty( $api->version ) ) ) {
+			$api = new WP_Error( 'directory_not_found', 'not found' );
 		}
-		if ( empty( $api->slug ) || empty( $api->version ) ) {
-			return self::error( new WP_Error( 'plugins_api_failed', 'Plugin not found.' ), $slug );
-		}
-		return $api;
+		return is_wp_error( $api ) ? self::error( $api, $slug, $type ) : $api;
 	}
 
 	/**
 	 * One directory entry, as the agent sees it.
 	 *
-	 * @param object|array $api One plugin from plugins_api().
+	 * @param object|array $api One plugin or theme from the directory.
 	 * @return array
 	 */
 	public static function row( $api ) {
@@ -116,7 +152,7 @@ class Saddle_Directory {
 		return array(
 			'slug'            => (string) $api['slug'],
 			'name'            => $readable( isset( $api['name'] ) ? $api['name'] : $api['slug'] ),
-			'author'          => $readable( isset( $api['author'] ) ? $api['author'] : '' ),
+			'author'          => $readable( isset( $api['author'] ) && is_scalar( $api['author'] ) ? $api['author'] : '' ),
 			'version'         => (string) $text( 'version' ),
 			'active_installs' => isset( $api['active_installs'] ) ? (int) $api['active_installs'] : 0,
 			'rating'          => isset( $api['rating'] ) ? (int) $api['rating'] : 0,
@@ -126,106 +162,6 @@ class Saddle_Directory {
 			'requires'        => $text( 'requires' ),
 			'requires_php'    => $text( 'requires_php' ),
 		);
-	}
-
-	/**
-	 * Whether a plugin slug is installed here, and its plugin file when it is.
-	 *
-	 * Core's rule on Plugins → Add New (`install_plugin_install_status()`):
-	 * a folder of that name, or a known plugin WordPress.org lists under that
-	 * slug. Saddle reads the same two things without calling that function,
-	 * because it forces a fresh update check, a request to WordPress.org with
-	 * every installed plugin, whenever its cached answer looks old.
-	 *
-	 * @param string $slug Directory slug.
-	 * @return array {installed: bool, file: string|null}
-	 */
-	public static function plugin_status( $slug ) {
-		self::load_api();
-		$known = get_site_transient( 'update_plugins' );
-		foreach ( array( 'response', 'no_update' ) as $list ) {
-			foreach ( isset( $known->$list ) ? (array) $known->$list : array() as $file => $plugin ) {
-				$plugin = (object) $plugin;
-				if ( isset( $plugin->slug ) && $plugin->slug === $slug ) {
-					return array(
-						'installed' => true,
-						'file'      => (string) $file,
-					);
-				}
-			}
-		}
-
-		if ( ! is_dir( WP_PLUGIN_DIR . '/' . $slug ) ) {
-			return array(
-				'installed' => false,
-				'file'      => null,
-			);
-		}
-		$found = get_plugins( '/' . $slug );
-		return array(
-			'installed' => true,
-			'file'      => $found ? $slug . '/' . key( $found ) : null,
-		);
-	}
-
-	/**
-	 * Why this directory entry must not be installed here, or null.
-	 *
-	 * Asked before a confirm token is issued and again when the run starts,
-	 * so a token is never handed out for an install that cannot happen and
-	 * a change in between is caught.
-	 *
-	 * @param object $api A plugin entry from plugin().
-	 * @return WP_Error|null
-	 */
-	public static function refusal( $api ) {
-		$slug   = (string) $api->slug;
-		$status = self::plugin_status( $slug );
-		if ( $status['installed'] || file_exists( WP_PLUGIN_DIR . '/' . $slug ) ) {
-			return new WP_Error(
-				'saddle_already_installed',
-				sprintf(
-					/* translators: %s: plugin slug. */
-					__( 'A plugin with the slug "%s" is already installed, or a folder with that name exists. Use activate-plugin to turn it on, or update-plugin if list-updates offers a newer version.', 'saddle' ),
-					$slug
-				),
-				array( 'status' => 409 )
-			);
-		}
-		if ( ! empty( $api->requires_php ) && ! is_php_version_compatible( $api->requires_php ) ) {
-			return new WP_Error(
-				'saddle_php_too_old',
-				sprintf(
-					/* translators: 1: plugin name, 2: required PHP version, 3: this site's PHP version. */
-					__( '%1$s needs PHP %2$s or newer; this site runs PHP %3$s. The host has to update PHP first.', 'saddle' ),
-					wp_strip_all_tags( (string) $api->name ),
-					$api->requires_php,
-					PHP_VERSION
-				),
-				array( 'status' => 409 )
-			);
-		}
-		if ( ! empty( $api->requires ) && ! is_wp_version_compatible( $api->requires ) ) {
-			return new WP_Error(
-				'saddle_wp_too_old',
-				sprintf(
-					/* translators: 1: plugin name, 2: required WordPress version, 3: this site's WordPress version. */
-					__( '%1$s needs WordPress %2$s or newer; this site runs WordPress %3$s.', 'saddle' ),
-					wp_strip_all_tags( (string) $api->name ),
-					$api->requires,
-					get_bloginfo( 'version' )
-				),
-				array( 'status' => 409 )
-			);
-		}
-		if ( ! self::is_wporg_package( isset( $api->download_link ) ? $api->download_link : '', 'plugin' ) ) {
-			return new WP_Error(
-				'saddle_not_from_wporg',
-				__( 'The directory answer on this site names a package outside downloads.wordpress.org, so another plugin is probably changing it. Saddle installs only packages WordPress.org itself offers. Install this one in wp-admin if you trust its source.', 'saddle' ),
-				array( 'status' => 409 )
-			);
-		}
-		return null;
 	}
 
 	/**
@@ -250,15 +186,16 @@ class Saddle_Directory {
 	/**
 	 * Name what went wrong with a directory request.
 	 *
-	 * plugins_api() reports both a refused request and the directory's own
-	 * "Plugin not found." / "closed" as `plugins_api_failed`. Only a failed
+	 * Core reports both a refused request and the directory's own "not found"
+	 * or "closed" as `plugins_api_failed` / `themes_api_failed`. Only a failed
 	 * request carries the transport's message as error data.
 	 *
-	 * @param WP_Error $error From plugins_api().
+	 * @param WP_Error $error From plugins_api() or themes_api().
 	 * @param string   $slug  The slug asked for, if any.
+	 * @param string   $type  'plugin' or 'theme'.
 	 * @return WP_Error
 	 */
-	public static function error( WP_Error $error, $slug = '' ) {
+	public static function error( WP_Error $error, $slug = '', $type = 'plugin' ) {
 		if ( $error->get_error_data() || '' === $slug ) {
 			return new WP_Error(
 				'saddle_directory_unreachable',
@@ -280,8 +217,11 @@ class Saddle_Directory {
 		}
 		return new WP_Error(
 			'saddle_not_in_directory',
-			/* translators: %s: plugin slug. */
-			sprintf( __( 'The WordPress.org directory has no plugin with the slug "%s". Use search-plugins with "search" to find the right slug.', 'saddle' ), $slug ),
+			'theme' === $type
+				/* translators: %s: theme slug. */
+				? sprintf( __( 'The WordPress.org directory has no theme with the slug "%s". Check the slug in its address, wordpress.org/themes/<slug>/.', 'saddle' ), $slug )
+				/* translators: %s: plugin slug. */
+				: sprintf( __( 'The WordPress.org directory has no plugin with the slug "%s". Use search-plugins with "search" to find the right slug.', 'saddle' ), $slug ),
 			array( 'status' => 404 )
 		);
 	}
@@ -295,7 +235,7 @@ class Saddle_Directory {
 	public static function clean_slug( $raw ) {
 		$slug = strtolower( trim( (string) $raw, " /\t\n" ) );
 		if ( ! preg_match( '/^[a-z0-9][a-z0-9-]*$/', $slug ) ) {
-			return new WP_Error( 'saddle_invalid_slug', __( 'A directory slug has only lowercase letters, digits and hyphens, as in wordpress.org/plugins/<slug>/.', 'saddle' ), array( 'status' => 400 ) );
+			return new WP_Error( 'saddle_invalid_slug', __( 'A directory slug has only lowercase letters, digits and hyphens, as in wordpress.org/plugins/<slug>/ or wordpress.org/themes/<slug>/.', 'saddle' ), array( 'status' => 400 ) );
 		}
 		return $slug;
 	}
