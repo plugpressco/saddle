@@ -1,38 +1,29 @@
 <?php
 /**
- * Applies plugin and theme updates that WordPress already offers, through
- * core's own automatic updater, out of band.
+ * Runs confirmed updates and installs out of band: plugin, theme and core
+ * updates WordPress already offers, and installs from the WordPress.org
+ * directory.
  *
- * Why a separate class: the abilities in `abilities/updates.php` answer a
- * request and return; this runs later on a one-shot cron event with no
- * request, no ability context and no agent to answer. Keeping the two apart
- * is also what makes the hard line testable: nothing here is reachable from
- * an ability's execute path except {@see self::queue()}.
+ * Why a separate class: the abilities answer a request and return; this runs
+ * later on a one-shot cron event with no request, no ability context and no
+ * agent to answer. Keeping the two apart is also what makes the hard line
+ * testable: nothing here is reachable from an ability's execute path except
+ * {@see self::queue()}.
  *
- * How the hard line keeps its meaning (decided 2026-09-27):
+ * This class schedules, guards, locks and stores runs. The work itself is
+ * one of two paths: {@see Saddle_Offer_Runner} hands an offer core already
+ * holds to {@see WP_Automatic_Updater::update()}, and
+ * {@see Saddle_Install_Runner} installs from the directory through core's
+ * installer. Neither writes a file or picks a package URL, and both report an
+ * item core declines as skipped, never forced.
  *
- * - Saddle never writes a file and never picks a package URL. Each item is an
- *   offer core already lists in the `update_plugins` / `update_themes`
- *   transient, and {@see WP_Automatic_Updater::update()} downloads and
- *   installs it exactly as an auto-update would: maintenance mode on, the
- *   temporary backup (WordPress 6.3), the loopback fatal check and rollback
- *   for an active plugin (WordPress 6.6), maintenance mode off.
- * - Core's own refusals stand. {@see WP_Automatic_Updater::is_disabled()}
- *   covers `DISALLOW_FILE_MODS` and `AUTOMATIC_UPDATER_DISABLED`;
- *   {@see WP_Automatic_Updater::should_update()} covers a VCS checkout and a
- *   filesystem that needs credentials. An item core declines is reported as
- *   skipped, never forced.
- * - The only thing Saddle adds is a one-shot `auto_update_{type}` filter that
- *   says yes for the items the owner confirmed, so `should_update()` treats
- *   them like an auto-update the owner had switched on for this run only.
+ * Core's own refusals stand. {@see self::blocked_by()} names
+ * `DISALLOW_FILE_MODS`, `AUTOMATIC_UPDATER_DISABLED`, a VCS checkout and a
+ * filesystem that needs credentials before any token is issued, and again
+ * when the run starts.
  *
  * Results live in a bounded option so `list-updates` can report what a
  * confirmed run did, including a rollback.
- *
- * Installs from the WordPress.org directory (#349) share the queue, the cron
- * hook, the lock and the results, and nothing else: they go to
- * {@see Saddle_Install_Runner}, because core installs through a different API
- * from a different source of truth.
  *
  * @package Saddle
  */
@@ -109,8 +100,8 @@ class Saddle_Update_Runner {
 	 * Checked before a preview is issued, so a confirm token is never handed
 	 * out for a run that cannot happen, and reported by list-updates.
 	 *
-	 * @param string $type A run type: 'plugin', 'theme', 'install-plugin' or
-	 *                     'install-theme'.
+	 * @param string $type A run type: 'plugin', 'theme', 'core',
+	 *                     'install-plugin' or 'install-theme'.
 	 * @return string[] Reasons; empty when clear.
 	 */
 	public static function blocked_by( $type = 'plugin' ) {
@@ -128,7 +119,11 @@ class Saddle_Update_Runner {
 			$reasons[] = __( 'A plugin or a host setting has disabled background updates on this site.', 'saddle' );
 		}
 
-		$context = in_array( $type, array( 'theme', 'install-theme' ), true ) ? get_theme_root() : WP_PLUGIN_DIR;
+		if ( 'core' === $type ) {
+			$context = ABSPATH;
+		} else {
+			$context = in_array( $type, array( 'theme', 'install-theme' ), true ) ? get_theme_root() : WP_PLUGIN_DIR;
+		}
 		if ( $updater->is_vcs_checkout( $context ) ) {
 			$reasons[] = __( 'This site is a version-control checkout (git, svn or similar). WordPress refuses to update files that a repository owns.', 'saddle' );
 		}
@@ -142,8 +137,8 @@ class Saddle_Update_Runner {
 	/**
 	 * Queue a confirmed set of items for a background run and start cron.
 	 *
-	 * @param string $type  A run type: 'plugin', 'theme', 'install-plugin' or
-	 *                      'install-theme'.
+	 * @param string $type  A run type: 'plugin', 'theme', 'core',
+	 *                      'install-plugin' or 'install-theme'.
 	 * @param array  $items Items, each {id, name, from, to}.
 	 * @return string Run id.
 	 */
@@ -235,7 +230,7 @@ class Saddle_Update_Runner {
 		if ( in_array( $type, self::INSTALL_TYPES, true ) ) {
 			Saddle_Install_Runner::apply( $run );
 		} else {
-			self::apply_updates( $run, $updater );
+			Saddle_Offer_Runner::apply( $run, $updater );
 		}
 
 		foreach ( $completion_hooks as $hook ) {
@@ -252,102 +247,6 @@ class Saddle_Update_Runner {
 		$run['status']   = 'finished';
 		$run['finished'] = time();
 		self::save_run( $run );
-	}
-
-	/**
-	 * Apply every offered update of one run through core's automatic updater.
-	 *
-	 * @param array                $run     Run, by reference; items get their status.
-	 * @param WP_Automatic_Updater $updater Core's updater.
-	 */
-	private static function apply_updates( array &$run, WP_Automatic_Updater $updater ) {
-		$type = $run['type'];
-
-		// Fresh offers, and the caches that would otherwise report old versions.
-		if ( 'theme' === $type ) {
-			wp_update_themes();
-			$offers = get_site_transient( 'update_themes' );
-		} else {
-			wp_update_plugins();
-			$offers = get_site_transient( 'update_plugins' );
-		}
-		$offers = ( is_object( $offers ) && ! empty( $offers->response ) ) ? $offers->response : array();
-
-		// Say yes, for this run only, to exactly the items the owner confirmed.
-		$wanted = wp_list_pluck( $run['items'], 'id' );
-		$force  = static function ( $update, $offer ) use ( $wanted, $type ) {
-			$key = 'theme' === $type ? 'theme' : 'plugin';
-			$id  = is_object( $offer ) ? ( isset( $offer->$key ) ? $offer->$key : '' ) : ( isset( $offer[ $key ] ) ? $offer[ $key ] : '' );
-			return in_array( $id, $wanted, true ) ? true : $update;
-		};
-		add_filter( "auto_update_{$type}", $force, PHP_INT_MAX, 2 );
-
-		foreach ( $run['items'] as &$item ) {
-			$offer = isset( $offers[ $item['id'] ] ) ? $offers[ $item['id'] ] : null;
-			if ( ! $offer ) {
-				$item['status']  = 'up_to_date';
-				$item['message'] = __( 'No update was offered any more when the run started.', 'saddle' );
-				continue;
-			}
-			$offer = is_array( $offer ) ? (object) $offer : $offer;
-			try {
-				$result = $updater->update( $type, $offer );
-			} catch ( Throwable $e ) {
-				// Something hooked into the upgrade threw. Core would have
-				// left the site in maintenance mode; lift it and report.
-				( new WP_Upgrader( new Automatic_Upgrader_Skin() ) )->maintenance_mode( false );
-				$result = new WP_Error( 'saddle_update_exception', $e->getMessage() );
-			}
-			self::record_item( $type, $item, $result );
-		}
-		unset( $item );
-
-		remove_filter( "auto_update_{$type}", $force, PHP_INT_MAX );
-	}
-
-	/**
-	 * Translate core's result for one item into a status, and log it.
-	 *
-	 * @param string $type   'plugin' or 'theme'.
-	 * @param array  $item   Run item, by reference.
-	 * @param mixed  $result What WP_Automatic_Updater::update() returned.
-	 */
-	private static function record_item( $type, array &$item, $result ) {
-		if ( false === $result ) {
-			$item['status']  = 'skipped';
-			$item['message'] = __( 'WordPress declined to update this item on its own (a version-control checkout, missing filesystem access, or a plugin telling it not to).', 'saddle' );
-		} elseif ( is_wp_error( $result ) ) {
-			$codes = $result->get_error_codes();
-			if ( in_array( 'plugin_update_fatal_error_rollback_successful', $codes, true ) ) {
-				$item['status'] = 'rolled_back';
-			} else {
-				$item['status'] = 'failed';
-			}
-			$item['message'] = implode( ' ', $result->get_error_messages() );
-		} else {
-			$item['status']  = 'applied';
-			$item['message'] = '';
-		}
-
-		$action = 'theme' === $type ? 'update-theme' : 'update-plugin';
-		switch ( $item['status'] ) {
-			case 'applied':
-				/* translators: 1: item name, 2: old version, 3: new version. */
-				$summary = sprintf( __( 'Updated %1$s from %2$s to %3$s.', 'saddle' ), $item['name'], $item['from'], $item['to'] );
-				break;
-			case 'rolled_back':
-				/* translators: 1: item name, 2: new version, 3: old version. */
-				$summary = sprintf( __( 'Update of %1$s to %2$s caused a fatal error; WordPress restored %3$s.', 'saddle' ), $item['name'], $item['to'], $item['from'] );
-				break;
-			case 'skipped':
-				/* translators: 1: item name, 2: new version. */
-				$summary = sprintf( __( 'Update of %1$s to %2$s was skipped by WordPress.', 'saddle' ), $item['name'], $item['to'] );
-				break;
-			default:
-				/* translators: 1: item name, 2: new version, 3: error message. */
-				$summary = sprintf( __( 'Update of %1$s to %2$s failed: %3$s', 'saddle' ), $item['name'], $item['to'], $item['message'] );
-		}
-		Saddle_Log::record_action( $action, $item['id'], $summary );
 	}
 
 	/**

@@ -122,6 +122,7 @@ require_once SADDLE_DIR . 'includes/class-saddle-rehearsal.php';
 require_once SADDLE_DIR . 'includes/class-saddle-post-types.php';
 require_once SADDLE_DIR . 'includes/class-saddle-update-runner.php';
 require_once SADDLE_DIR . 'includes/class-saddle-install-runner.php';
+require_once SADDLE_DIR . 'includes/class-saddle-offer-runner.php';
 require_once SADDLE_DIR . 'includes/class-saddle-directory.php';
 require_once SADDLE_DIR . 'includes/class-saddle-unsplash.php';
 require_once SADDLE_DIR . 'includes/class-saddle-connection.php';
@@ -336,6 +337,7 @@ final class Saddle {
 			require_once SADDLE_DIR . 'includes/abilities/site.php';
 			require_once SADDLE_DIR . 'includes/abilities/updates.php';
 			require_once SADDLE_DIR . 'includes/abilities/installs.php';
+			require_once SADDLE_DIR . 'includes/abilities/core-updates.php';
 			require_once SADDLE_DIR . 'includes/abilities/users.php';
 			require_once SADDLE_DIR . 'includes/abilities/context.php';
 			require_once SADDLE_DIR . 'includes/abilities/lint.php';
@@ -362,6 +364,7 @@ final class Saddle {
 			add_action( 'wp_abilities_api_init', 'saddle_register_site_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_update_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_install_abilities' );
+			add_action( 'wp_abilities_api_init', 'saddle_register_core_update_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_user_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_context_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_lint_abilities' );

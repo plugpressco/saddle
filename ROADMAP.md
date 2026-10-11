@@ -60,12 +60,12 @@ when it is picked up; this file names direction, not tickets.
 
    **Added 2026-10-12, in this order, all free, next to the updates (Fahim):**
    `search-plugins` (#348, built), `install-plugin` (#349, built), `install-theme` (#350, built),
-   `update-core` (#351), `update-translations` (#352). Installs come only from
+   `update-core` (#351, built), `update-translations` (#352). Installs come only from
    the WordPress.org directory, by slug, through WordPress's own installer in
    the background runner, and arrive inactive; activating stays its own
    confirmed step, and nothing deletes. Core updates are minor and security
-   releases, plus a major release only when the owner has turned on
-   WordPress's own automatic updates for all new versions. No zip or URL
+   releases, plus a major release only when WordPress's own switch for all
+   new versions is on (the default since WordPress 5.6 for new installs). No zip or URL
    installs, no file editors, no delete tools. The hard line was rewritten
    first (#347).
 3. **The agency workflow.** Divi 5 page editing moves to free (2026-09-26 split:
