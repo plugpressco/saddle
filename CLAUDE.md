@@ -130,20 +130,36 @@ dry-run, no diff and no revert.
   which lets WordPress rewrite its own `.htaccess` block exactly as Settings →
   Permalinks does. A soft flush would leave Apache without rules after a move
   off plain permalinks, so it stays a hard flush.
-- **Updates are applied only through WordPress's own updater, and only for
-  what WordPress already offers.** `saddle/update-plugin` and
-  `saddle/update-theme` (admin tier, gated, at most 10 items) queue a
-  background run; `Saddle_Update_Runner` hands each item to
-  `WP_Automatic_Updater::update()`, which downloads the package core listed,
-  keeps the temporary backup, and for an active plugin runs the loopback fatal
-  check and restores the backup on failure. Saddle never writes a file, never
-  chooses a package URL, never calls the upgrader inside a request (a test
-  pins this), never installs or deletes a plugin or theme, and never updates
-  core. It refuses, naming the reason, wherever core would (`DISALLOW_FILE_MODS`,
+- **Updates and installs run only through WordPress's own updater and
+  installer, and only for what WordPress already offers.** Six tools, all
+  admin tier and gated, queue a background run and never call the upgrader
+  inside a request (a test pins this): `saddle/update-plugin` and
+  `saddle/update-theme` (at most 10 items), `saddle/update-core`,
+  `saddle/update-translations`, `saddle/install-plugin` and
+  `saddle/install-theme` (one slug each). `Saddle_Update_Runner` hands each
+  update to `WP_Automatic_Updater::update()`, which downloads the package core
+  listed, keeps the temporary backup, and for an active plugin runs the
+  loopback fatal check and restores the backup on failure;
+  `Saddle_Install_Runner` hands an install to `Plugin_Upgrader::install()` or
+  `Theme_Upgrader::install()`.
+  Saddle installs a plugin or theme only from the WordPress.org directory, by
+  slug, and only through WordPress's own installer, out of band, after a
+  confirmed preview. It never takes a zip, a URL or a file. A new install
+  arrives inactive. Saddle applies core updates only for releases WordPress
+  already offers, through core's automatic updater: minor and security
+  releases, and a major release only when the owner has turned on WordPress's
+  own automatic updates for all new versions. Translation updates go through
+  core's language pack upgrader. Saddle never deletes a plugin or theme. It
+  still never writes a file and never picks a package URL: the package is the
+  one the WordPress.org API names, exactly as on the Add New screen, and a
+  package from anywhere else is refused.
+  It refuses, naming the reason, wherever core would (`DISALLOW_FILE_MODS`,
   `AUTOMATIC_UPDATER_DISABLED`, a VCS checkout, a non-direct filesystem). The
-  auto-update switch is WordPress's own option. Decided 2026-09-27 evening on
-  Fahim's "research, then take the decision", replacing the same morning's
-  "reported, never run"; applies to Pro too.
+  auto-update switch is WordPress's own option. Updates decided 2026-09-27
+  evening on Fahim's "research, then take the decision", replacing the same
+  morning's "reported, never run"; installs, core and translations added
+  2026-10-12 (#347, Fahim: majors only behind WordPress's own switch). Applies
+  to Pro too.
 
 If a feature seems to need any of these, that is a signal to redesign the
 feature. Two reasons, both load-bearing: WordPress.org will not accept arbitrary
@@ -460,6 +476,12 @@ change. `Tested up to:` moves only when Fahim has verified against a newer WP.
   all three competitors that were checked.
 - Don't add PHP execution, filesystem writes or shell WP-CLI as a power-user
   convenience. See the hard line.
+- Don't install a plugin or theme from a zip upload, a URL or a file path, and
+  don't add a tool that takes one. Installs come only from the WordPress.org
+  directory, by slug, with the package its API names. Don't activate anything
+  as part of an install either; activation stays its own confirmed step.
+- Don't add `delete-plugin` or `delete-theme`. Removing a plugin or theme
+  stays in wp-admin.
 - Don't change the default tier away from `read`, even temporarily for testing.
 - Don't remove the Application Password path now that OAuth exists. Every
   header-capable client uses it, it needs no consent round-trip, and it is the
