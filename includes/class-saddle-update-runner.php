@@ -100,7 +100,7 @@ class Saddle_Update_Runner {
 	 * Checked before a preview is issued, so a confirm token is never handed
 	 * out for a run that cannot happen, and reported by list-updates.
 	 *
-	 * @param string $type A run type: 'plugin', 'theme', 'core',
+	 * @param string $type A run type: 'plugin', 'theme', 'core', 'translation',
 	 *                     'install-plugin' or 'install-theme'.
 	 * @return string[] Reasons; empty when clear.
 	 */
@@ -121,6 +121,8 @@ class Saddle_Update_Runner {
 
 		if ( 'core' === $type ) {
 			$context = ABSPATH;
+		} elseif ( 'translation' === $type ) {
+			$context = WP_CONTENT_DIR; // As core's own updater checks language packs.
 		} else {
 			$context = in_array( $type, array( 'theme', 'install-theme' ), true ) ? get_theme_root() : WP_PLUGIN_DIR;
 		}
@@ -137,7 +139,7 @@ class Saddle_Update_Runner {
 	/**
 	 * Queue a confirmed set of items for a background run and start cron.
 	 *
-	 * @param string $type  A run type: 'plugin', 'theme', 'core',
+	 * @param string $type  A run type: 'plugin', 'theme', 'core', 'translation',
 	 *                      'install-plugin' or 'install-theme'.
 	 * @param array  $items Items, each {id, name, from, to}.
 	 * @return string Run id.

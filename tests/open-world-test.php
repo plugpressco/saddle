@@ -21,6 +21,7 @@ class Saddle_Open_World_Test extends WP_UnitTestCase {
 		'saddle/install-plugin',
 		'saddle/install-theme',
 		'saddle/update-core',
+		'saddle/update-translations',
 	);
 
 	public function test_every_saddle_tool_declares_all_four_hints() {

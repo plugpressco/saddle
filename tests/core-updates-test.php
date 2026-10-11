@@ -1,6 +1,6 @@
 <?php
 /**
- * Core update ability tests.
+ * Core and translation update ability tests.
  *
  * Drives the real wp_get_ability()->execute() path and the real
  * Saddle_Update_Runner handing the offer to core's WP_Automatic_Updater. The
@@ -17,7 +17,9 @@
  * confirm never runs the upgrader inside the request (the hard line);
  * single-use tokens bound to the release; minor before major; a major only
  * behind WordPress's own switch for all new versions; every refusal; and the
- * runner handing exactly the confirmed release to core.
+ * runner handing exactly the confirmed release to core. For translations:
+ * the same gate, and a real language pack applied by core's
+ * Language_Pack_Upgrader from a local zip.
  *
  * @package Saddle
  */
@@ -28,6 +30,8 @@ class Saddle_Core_Updates_Test extends WP_UnitTestCase {
 	private $version;
 	private $upgrader_calls = 0;
 	private $plugin_dir;
+	private $zip;
+	private $lang_files = array();
 
 	public function set_up() {
 		parent::set_up();
@@ -60,8 +64,16 @@ class Saddle_Core_Updates_Test extends WP_UnitTestCase {
 			unlink( ABSPATH . '.maintenance' );
 		}
 		if ( $this->plugin_dir && is_dir( $this->plugin_dir ) ) {
-			unlink( $this->plugin_dir . '/old-plugin.php' );
+			array_map( 'unlink', glob( $this->plugin_dir . '/*.php' ) );
 			rmdir( $this->plugin_dir );
+		}
+		foreach ( $this->lang_files as $file ) {
+			if ( file_exists( $file ) ) {
+				unlink( $file );
+			}
+		}
+		if ( $this->zip && file_exists( $this->zip ) ) {
+			unlink( $this->zip );
 		}
 		delete_option( 'active_plugins' );
 		delete_site_transient( 'update_core' );
@@ -369,5 +381,125 @@ class Saddle_Core_Updates_Test extends WP_UnitTestCase {
 
 		$item = Saddle_Update_Runner::get_run( $done['run_id'] )['items'][0];
 		$this->assertSame( 'up_to_date', $item['status'] );
+	}
+
+	/* -------- update-translations -------- */
+
+	/** Offer one language pack for a throwaway plugin, as WordPress.org does. */
+	private function offer_translation( $updated = '2026-10-01 10:00:00' ) {
+		$this->plugin_dir = WP_PLUGIN_DIR . '/saddle-lp';
+		wp_mkdir_p( $this->plugin_dir );
+		file_put_contents( $this->plugin_dir . '/saddle-lp.php', "<?php\n/**\n * Plugin Name: Saddle LP\n * Version: 1.0\n */\n" );
+		wp_cache_delete( 'plugins', 'plugins' );
+		set_site_transient(
+			'update_plugins',
+			(object) array(
+				'last_checked' => time(),
+				'response'     => array(),
+				'no_update'    => array(),
+				'translations' => array(
+					array(
+						'type'       => 'plugin',
+						'slug'       => 'saddle-lp',
+						'language'   => 'de_DE',
+						'version'    => '1.0',
+						'updated'    => $updated,
+						'package'    => 'https://downloads.wordpress.org/translation/plugin/saddle-lp/1.0/de_DE.zip',
+						'autoupdate' => true,
+					),
+				),
+			)
+		);
+	}
+
+	private function translations( array $input = array() ) {
+		return wp_get_ability( 'saddle/update-translations' )->execute( $input );
+	}
+
+	public function test_update_translations_requires_admin_tier() {
+		$this->offer_translation();
+		Saddle_Capabilities::set_tier( 'write' );
+		$this->assertWPError( $this->translations() );
+	}
+
+	public function test_translation_preview_lists_every_pack_and_confirm_queues_without_the_upgrader() {
+		$this->offer_translation();
+		$preview = $this->translations();
+		$this->assertNotWPError( $preview );
+		$this->assertSame(
+			array(
+				array(
+					'id'   => 'plugin:saddle-lp:de_DE',
+					'name' => 'Saddle LP (de_DE)',
+					'from' => '',
+					'to'   => '2026-10-01 10:00:00',
+				),
+			),
+			$preview['preview']['items']
+		);
+		$this->assertSame( array(), Saddle_Update_Runner::runs(), 'A preview must not queue a run.' );
+
+		$this->watch_upgrader();
+		$done = $this->translations( array( 'confirm_token' => $preview['confirm_token'] ) );
+		$this->assertNotWPError( $done );
+		$this->assertSame( 'translation', Saddle_Update_Runner::runs()[0]['type'] );
+		$this->assertSame( 0, $this->upgrader_calls, 'Confirming must not run the upgrader synchronously.' );
+		$this->assertWPError( $this->translations( array( 'confirm_token' => $preview['confirm_token'] ) ), 'A used token must be refused.' );
+	}
+
+	public function test_a_translation_token_cannot_apply_a_changed_list() {
+		$this->offer_translation();
+		$preview = $this->translations();
+		$this->offer_translation( '2026-10-05 10:00:00' );
+		$this->assertWPError( $this->translations( array( 'confirm_token' => $preview['confirm_token'] ) ) );
+		$this->assertSame( array(), Saddle_Update_Runner::runs() );
+	}
+
+	public function test_translation_refusals_come_before_any_token() {
+		$this->assert_refused( $this->translations(), 'saddle_no_update_offered' );
+
+		$this->offer_translation();
+		add_filter(
+			'map_meta_cap',
+			static function ( $caps, $cap ) {
+				return 'update_languages' === $cap ? array( 'do_not_allow' ) : $caps;
+			},
+			10,
+			2
+		);
+		$this->assert_refused( $this->translations(), 'saddle_cannot_update_translations' );
+		remove_all_filters( 'map_meta_cap' );
+
+		add_filter( 'file_mod_allowed', '__return_false' );
+		$this->assert_refused( $this->translations(), 'saddle_updates_unavailable' );
+	}
+
+	public function test_runner_applies_a_real_language_pack_through_core() {
+		$this->offer_translation();
+		$preview = $this->translations();
+		$done    = $this->translations( array( 'confirm_token' => $preview['confirm_token'] ) );
+
+		$this->zip = get_temp_dir() . 'saddle-lp-de_DE-' . wp_generate_password( 6, false ) . '.zip';
+		$zip       = new ZipArchive();
+		$zip->open( $this->zip, ZipArchive::CREATE | ZipArchive::OVERWRITE );
+		$zip->addFromString( 'saddle-lp-de_DE.po', "msgid \"\"\nmsgstr \"\"\n" );
+		$zip->addFromString( 'saddle-lp-de_DE.mo', 'mo' );
+		$zip->close();
+		$path = $this->zip;
+		add_filter(
+			'upgrader_pre_download',
+			static function () use ( $path ) {
+				return $path;
+			},
+			10,
+			0
+		);
+		$this->lang_files = array( WP_LANG_DIR . '/plugins/saddle-lp-de_DE.po', WP_LANG_DIR . '/plugins/saddle-lp-de_DE.mo' );
+
+		Saddle_Update_Runner::run( $done['run_id'] );
+
+		$item = Saddle_Update_Runner::get_run( $done['run_id'] )['items'][0];
+		$this->assertSame( 'applied', $item['status'], $item['message'] );
+		$this->assertFileExists( WP_LANG_DIR . '/plugins/saddle-lp-de_DE.mo', 'Core unpacked the pack where WordPress loads it.' );
 	}
 }

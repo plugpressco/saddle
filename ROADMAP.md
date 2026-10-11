@@ -60,7 +60,7 @@ when it is picked up; this file names direction, not tickets.
 
    **Added 2026-10-12, in this order, all free, next to the updates (Fahim):**
    `search-plugins` (#348, built), `install-plugin` (#349, built), `install-theme` (#350, built),
-   `update-core` (#351, built), `update-translations` (#352). Installs come only from
+   `update-core` (#351, built), `update-translations` (#352, built). Installs come only from
    the WordPress.org directory, by slug, through WordPress's own installer in
    the background runner, and arrive inactive; activating stays its own
    confirmed step, and nothing deletes. Core updates are minor and security
