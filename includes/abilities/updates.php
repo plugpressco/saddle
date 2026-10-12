@@ -7,8 +7,8 @@
  * already offers. It never writes a file and never picks a package URL; the
  * confirmed items are queued for {@see Saddle_Update_Runner}, which hands
  * each one to {@see WP_Automatic_Updater::update()} out of band, with core's
- * temporary backup, fatal check and rollback. No install, no delete, no core
- * update here. Everything sits at the `admin` tier, and the two abilities
+ * temporary backup, fatal check and rollback. No delete here; installs from
+ * the WordPress.org directory are in `installs.php`. Everything sits at the `admin` tier, and the two abilities
  * that change files route through the approval gate with the exact from → to
  * set bound into the token.
  *
@@ -54,7 +54,7 @@ function saddle_register_update_abilities() {
 		'saddle/list-updates',
 		array(
 			'label'               => __( 'List available updates', 'saddle' ),
-			'description'         => __( 'Lists the plugin, theme, WordPress core and translation updates this site has been offered, each with the installed and new version, whether the item is active, whether WordPress auto-updates it, and a changelog link. Also reports anything that would stop updates from being applied here (a host that forbids file changes, a version-control checkout, missing filesystem access) and the results of recent runs queued by update-plugin or update-theme, including any rollback. Read-only. Pass "refresh": true to make WordPress check for updates again instead of using its cached answer.', 'saddle' ),
+			'description'         => __( 'Lists the plugin, theme, WordPress core and translation updates this site has been offered, each with the installed and new version, whether the item is active, whether WordPress auto-updates it, and a changelog link. Also reports anything that would stop updates from being applied here (a host that forbids file changes, a version-control checkout, missing filesystem access) and the results of recent runs queued by update-plugin, update-theme or install-plugin, including any rollback. Read-only. Pass "refresh": true to make WordPress check for updates again instead of using its cached answer.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -77,7 +77,7 @@ function saddle_register_update_abilities() {
 		'saddle/update-plugin',
 		array(
 			'label'               => __( 'Update plugins', 'saddle' ),
-			'description'         => __( 'Applies plugin updates that WordPress has already offered (see list-updates), at most 10 per call. The first call returns a preview of every item with its installed and new version plus a confirm_token; call again with the same "plugins" and that token to queue the run. The updates then run in the background through WordPress\'s own updater: it keeps a backup, and if an active plugin causes a fatal error after updating, WordPress restores the previous version on its own. Check list-updates a minute later for the result of each item (applied, rolled back, failed or skipped). Refuses items with no update offered, more than 10 items, and sites where WordPress cannot change files. Never installs or deletes a plugin.', 'saddle' ),
+			'description'         => __( 'Applies plugin updates that WordPress has already offered (see list-updates), at most 10 per call. The first call returns a preview of every item with its installed and new version plus a confirm_token; call again with the same "plugins" and that token to queue the run. The updates then run in the background through WordPress\'s own updater: it keeps a backup, and if an active plugin causes a fatal error after updating, WordPress restores the previous version on its own. Check list-updates a minute later for the result of each item (applied, rolled back, failed or skipped). Refuses items with no update offered, more than 10 items, and sites where WordPress cannot change files. Never deletes a plugin; install-plugin adds a new one.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => $item_schema( 'plugins', __( 'Plugin files ("dir/file.php") or folder slugs, from list-updates.', 'saddle' ) ),
 			'execute_callback'    => array( 'Saddle_Update_Abilities', 'update_plugin' ),

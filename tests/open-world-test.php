@@ -18,6 +18,7 @@ class Saddle_Open_World_Test extends WP_UnitTestCase {
 		'saddle/update-plugin',
 		'saddle/update-theme',
 		'saddle/search-plugins',
+		'saddle/install-plugin',
 	);
 
 	public function test_every_saddle_tool_declares_all_four_hints() {

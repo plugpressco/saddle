@@ -1,12 +1,14 @@
 <?php
 /**
- * The WordPress.org directory: finding a plugin by name or slug.
+ * The WordPress.org directory: finding a plugin, and installing one.
  *
  * Decided 2026-10-12 (#347): Saddle installs a plugin or theme only from the
- * WordPress.org directory, by slug, through WordPress's own installer. Every
- * read here goes through core's own `plugins_api()`, the same request
- * Plugins → Add New makes, so the answer is the directory's and the request
- * is one the owner's WordPress already makes on that screen.
+ * WordPress.org directory, by slug, through WordPress's own installer, out of
+ * band, after a confirmed preview. Every directory read goes through
+ * {@see Saddle_Directory}, which asks core's own `plugins_api()`, the same
+ * request Plugins → Add New makes. A confirmed install is queued for
+ * {@see Saddle_Update_Runner}; the request that confirms never runs the
+ * installer. A new install arrives inactive, and nothing here deletes.
  *
  * @package Saddle
  */
@@ -16,17 +18,18 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Register the directory abilities. Hooked to `wp_abilities_api_init`.
  *
- * The capability is `activate_plugins`, as for list-updates: searching
- * reads a public directory and changes nothing, and `install_plugins` maps to
- * `do_not_allow` on a site that forbids file changes, where knowing what a
- * plugin is called is still useful.
+ * The permission capability is `activate_plugins`, as for update-plugin:
+ * `install_plugins` maps to `do_not_allow` on a site that forbids file
+ * changes, which would hide the tool behind a wrong "your account lacks the
+ * permission" note. The install handler names that reason first, then checks
+ * `install_plugins` itself.
  */
 function saddle_register_install_abilities() {
 	wp_register_ability(
 		'saddle/search-plugins',
 		array(
 			'label'               => __( 'Search the plugin directory', 'saddle' ),
-			'description'         => __( 'Searches the WordPress.org plugin directory, the same search as Plugins → Add New, or looks up one plugin by its exact slug. Pass "search" (words) or "slug", not both. Returns up to 10 plugins, each with its slug, name, author, version, active installs, rating (0 to 100) and number of ratings, the date it was last updated, the WordPress version it was tested up to, the WordPress and PHP versions it requires, and whether it is installed and active on this site (with its plugin file when installed). Read-only. Results are cached on this site for an hour.', 'saddle' ),
+			'description'         => __( 'Searches the WordPress.org plugin directory, the same search as Plugins → Add New, or looks up one plugin by its exact slug. Pass "search" (words) or "slug", not both. Returns up to 10 plugins, each with its slug, name, author, version, active installs, rating (0 to 100) and number of ratings, the date it was last updated, the WordPress version it was tested up to, the WordPress and PHP versions it requires, and whether it is installed and active on this site (with its plugin file when installed). Install one with install-plugin and its slug. Read-only. Results are cached on this site for an hour.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -54,6 +57,32 @@ function saddle_register_install_abilities() {
 			'meta'                => saddle_ability_meta( true, false, true, 'admin', true ),
 		)
 	);
+
+	wp_register_ability(
+		'saddle/install-plugin',
+		array(
+			'label'               => __( 'Install a plugin', 'saddle' ),
+			'description'         => __( 'Installs one plugin from the WordPress.org directory, by its slug (find it with search-plugins). Nothing else can be installed: no zip, no URL, no file. It takes two calls. The first call changes nothing: it returns a preview with the plugin\'s name, author, version, active installs, rating and last update, the WordPress version it was tested up to against this site\'s, the PHP it needs against this site\'s, any warnings (not tested with this WordPress, not updated in two years, needs other plugins), and a confirm_token. Call again with the same "slug" and that token to queue the install. WordPress\'s own installer then runs it in the background, the way Plugins → Add New does; check list-updates a minute later for the result under "runs" (installed, skipped or failed). The plugin arrives INACTIVE: turn it on with activate-plugin, its own confirmed step. Refuses a plugin that is already installed, a slug WordPress.org does not have or has closed, a plugin that needs a newer PHP or WordPress, and sites where WordPress cannot change files. Installs cannot be undone from Saddle; the site owner removes a plugin in wp-admin under Plugins.', 'saddle' ),
+			'category'            => 'saddle',
+			'input_schema'        => array(
+				'type'       => 'object',
+				'required'   => array( 'slug' ),
+				'properties' => array(
+					'slug'          => array(
+						'type'        => 'string',
+						'description' => __( 'The plugin\'s WordPress.org slug, as in wordpress.org/plugins/<slug>/.', 'saddle' ),
+					),
+					'confirm_token' => array(
+						'type'        => 'string',
+						'description' => __( 'Token from the preview step, required to queue the install.', 'saddle' ),
+					),
+				),
+			),
+			'execute_callback'    => array( 'Saddle_Install_Abilities', 'install_plugin' ),
+			'permission_callback' => Saddle_Capabilities::permission( 'admin', 'activate_plugins', 'install-plugin' ),
+			'meta'                => saddle_ability_meta( false, true, false, 'admin', true ),
+		)
+	);
 }
 
 /**
@@ -73,34 +102,9 @@ class Saddle_Install_Abilities {
 	const CACHE_PREFIX = 'saddle_plugin_search_';
 
 	/**
-	 * The directory fields Saddle asks for, and the heavy ones it turns off.
-	 * Pinned by a test against a recorded WordPress.org answer.
+	 * A plugin not updated for this long gets a warning in the preview.
 	 */
-	const FIELDS = array(
-		'active_installs'   => true,
-		'last_updated'      => true,
-		'tested'            => true,
-		'requires'          => true,
-		'requires_php'      => true,
-		'requires_plugins'  => true,
-		'rating'            => true,
-		'num_ratings'       => true,
-		'downloadlink'      => true,
-		'short_description' => false,
-		'description'       => false,
-		'sections'          => false,
-		'icons'             => false,
-		'banners'           => false,
-		'screenshots'       => false,
-		'tags'              => false,
-		'versions'          => false,
-		'contributors'      => false,
-		'ratings'           => false,
-		'reviews'           => false,
-		'donate_link'       => false,
-		'homepage'          => false,
-		'added'             => false,
-	);
+	const STALE_DAYS = 730;
 
 	/**
 	 * saddle/search-plugins.
@@ -118,7 +122,7 @@ class Saddle_Install_Abilities {
 		}
 
 		if ( '' !== $slug ) {
-			$slug = self::clean_slug( $slug );
+			$slug = Saddle_Directory::clean_slug( $slug );
 			if ( is_wp_error( $slug ) ) {
 				return $slug;
 			}
@@ -128,7 +132,7 @@ class Saddle_Install_Abilities {
 				static function ( $api ) {
 					return array(
 						'total' => 1,
-						'rows'  => array( Saddle_Install_Abilities::row( $api ) ),
+						'rows'  => array( Saddle_Directory::row( $api ) ),
 					);
 				}
 			);
@@ -144,7 +148,7 @@ class Saddle_Install_Abilities {
 				static function ( $api ) {
 					$rows = array();
 					foreach ( isset( $api->plugins ) ? (array) $api->plugins : array() as $plugin ) {
-						$rows[] = Saddle_Install_Abilities::row( $plugin );
+						$rows[] = Saddle_Directory::row( $plugin );
 					}
 					return array(
 						'total' => isset( $api->info['results'] ) ? (int) $api->info['results'] : count( $rows ),
@@ -155,13 +159,17 @@ class Saddle_Install_Abilities {
 		}
 
 		if ( is_wp_error( $found ) ) {
-			return self::directory_error( $found, $slug );
+			return Saddle_Directory::error( $found, $slug );
 		}
 
 		// Installed and active are this site's, so they are never cached.
 		$results = array();
 		foreach ( $found['rows'] as $row ) {
-			$results[] = self::here( $row );
+			$here             = Saddle_Directory::plugin_status( $row['slug'] );
+			$row['installed'] = $here['installed'];
+			$row['active']    = $here['file'] ? is_plugin_active( $here['file'] ) : false;
+			$row['plugin']    = $here['file'];
+			$results[]        = $row;
 		}
 
 		return array(
@@ -171,65 +179,146 @@ class Saddle_Install_Abilities {
 		);
 	}
 
+	/**
+	 * saddle/install-plugin.
+	 *
+	 * @param mixed $input Ability input.
+	 * @return array|WP_Error
+	 */
+	public static function install_plugin( $input = null ) {
+		$input = is_array( $input ) ? $input : array();
+		Saddle_Directory::load_api();
+
+		// Refuse before a preview exists: a token must never be issued for an
+		// install this site cannot perform.
+		$blocked = Saddle_Update_Runner::blocked_by( 'plugin' );
+		if ( ! empty( $blocked ) ) {
+			return new WP_Error( 'saddle_updates_unavailable', implode( ' ', $blocked ), array( 'status' => 409 ) );
+		}
+		if ( ! current_user_can( 'install_plugins' ) ) {
+			return new WP_Error( 'saddle_cannot_install', __( 'The WordPress account this app is connected as cannot install plugins here (on a multisite network, only a network administrator can). No Saddle setting changes that.', 'saddle' ), array( 'status' => 403 ) );
+		}
+
+		$slug = Saddle_Directory::clean_slug( isset( $input['slug'] ) ? $input['slug'] : '' );
+		if ( is_wp_error( $slug ) ) {
+			return $slug;
+		}
+		$api = Saddle_Directory::plugin( $slug );
+		if ( is_wp_error( $api ) ) {
+			return $api;
+		}
+		$refusal = Saddle_Directory::refusal( $api );
+		if ( $refusal ) {
+			return $refusal;
+		}
+
+		$entry = Saddle_Directory::row( $api );
+		$needs = isset( $api->requires_plugins ) ? array_values( array_map( 'strval', (array) $api->requires_plugins ) ) : array();
+		$label = sprintf( '%s %s', $entry['name'], $entry['version'] );
+
+		return Saddle_Approval::gate(
+			array(
+				'action'  => 'install-plugin',
+				'target'  => $slug,
+				// Bind the version: a preview shown for 1.1 must not be
+				// confirmable into installing a 1.2 released in between.
+				'bind'    => $entry['version'],
+				'summary' => sprintf(
+					/* translators: %s: plugin name and version. */
+					__( 'Install %s from WordPress.org in the background. It arrives inactive.', 'saddle' ),
+					$label
+				),
+				'preview' => array_merge(
+					$entry,
+					array(
+						'type'               => 'plugin',
+						'wordpress'          => get_bloginfo( 'version' ),
+						'php'                => PHP_VERSION,
+						'requires_plugins'   => $needs,
+						'warnings'           => self::warnings( $entry, $needs ),
+						'source'             => 'wordpress.org',
+						'arrives_inactive'   => true,
+						'runs_in_background' => true,
+						'undo'               => __( 'Saddle cannot undo an install. To remove the plugin, delete it in wp-admin under Plugins.', 'saddle' ),
+					)
+				),
+				// The gate logs the confirmed call with this line, once.
+				'done'    => sprintf(
+					/* translators: %s: plugin name and version. */
+					__( 'Queued install of %s from WordPress.org.', 'saddle' ),
+					$label
+				),
+				'input'   => $input,
+				'execute' => static function () use ( $slug, $entry ) {
+					$run_id = Saddle_Update_Runner::queue(
+						'install-plugin',
+						array(
+							array(
+								'id'   => $slug,
+								'name' => $entry['name'],
+								'from' => '',
+								'to'   => $entry['version'],
+							),
+						)
+					);
+					return array(
+						'queued'     => true,
+						'run_id'     => $run_id,
+						'type'       => 'plugin',
+						'slug'       => $slug,
+						'version'    => $entry['version'],
+						'check_with' => 'list-updates',
+						'next'       => 'activate-plugin',
+						'note'       => __( 'The install starts within about a minute and reports installed, skipped or failed under "runs" in list-updates. The plugin arrives inactive; activate it with activate-plugin.', 'saddle' ),
+					);
+				},
+			)
+		);
+	}
+
 	/* ------------------------------------------------------------------ */
 
 	/**
-	 * One directory entry, as the agent sees it.
+	 * What the owner should know before saying yes, in plain words.
 	 *
-	 * @param object|array $api One plugin from plugins_api().
-	 * @return array
+	 * "Untested" is the Add New list table's own test: WordPress newer than
+	 * the version the author tested up to.
+	 *
+	 * @param array    $entry Row from Saddle_Directory::row().
+	 * @param string[] $needs Slugs of plugins it requires.
+	 * @return string[]
 	 */
-	public static function row( $api ) {
-		$api      = (array) $api;
-		$text     = static function ( $key ) use ( $api ) {
-			return empty( $api[ $key ] ) ? null : (string) $api[ $key ];
-		};
-		$readable = static function ( $value ) {
-			return trim( html_entity_decode( wp_strip_all_tags( (string) $value ), ENT_QUOTES, 'UTF-8' ) );
-		};
-		$updated  = empty( $api['last_updated'] ) ? false : strtotime( (string) $api['last_updated'] );
-
-		return array(
-			'slug'            => (string) $api['slug'],
-			'name'            => $readable( isset( $api['name'] ) ? $api['name'] : $api['slug'] ),
-			'author'          => $readable( isset( $api['author'] ) ? $api['author'] : '' ),
-			'version'         => (string) $text( 'version' ),
-			'active_installs' => isset( $api['active_installs'] ) ? (int) $api['active_installs'] : 0,
-			'rating'          => isset( $api['rating'] ) ? (int) $api['rating'] : 0,
-			'num_ratings'     => isset( $api['num_ratings'] ) ? (int) $api['num_ratings'] : 0,
-			'last_updated'    => $updated ? gmdate( 'Y-m-d', $updated ) : null,
-			'tested'          => $text( 'tested' ),
-			'requires'        => $text( 'requires' ),
-			'requires_php'    => $text( 'requires_php' ),
-		);
+	private static function warnings( array $entry, array $needs ) {
+		$warnings = array();
+		$wp       = get_bloginfo( 'version' );
+		if ( ! empty( $entry['tested'] ) && version_compare( $wp, $entry['tested'], '>' ) ) {
+			$warnings[] = sprintf(
+				/* translators: 1: version the plugin was tested up to, 2: this site's WordPress version. */
+				__( 'Tested up to WordPress %1$s; this site runs %2$s.', 'saddle' ),
+				$entry['tested'],
+				$wp
+			);
+		}
+		if ( $entry['last_updated'] && strtotime( $entry['last_updated'] ) < time() - self::STALE_DAYS * DAY_IN_SECONDS ) {
+			$warnings[] = sprintf(
+				/* translators: %s: date of the last update. */
+				__( 'Not updated since %s, more than two years ago.', 'saddle' ),
+				$entry['last_updated']
+			);
+		}
+		if ( $needs ) {
+			$warnings[] = sprintf(
+				/* translators: %s: comma-separated plugin slugs. */
+				__( 'Needs these plugins active before it can be activated: %s.', 'saddle' ),
+				implode( ', ', $needs )
+			);
+		}
+		return $warnings;
 	}
 
 	/**
-	 * Add whether a directory entry is installed and active here, by core's
-	 * own rule on Plugins → Add New.
-	 *
-	 * @param array $row Row from row().
-	 * @return array
-	 */
-	private static function here( array $row ) {
-		self::load_install_api();
-		$status = install_plugin_install_status(
-			(object) array(
-				'slug'    => $row['slug'],
-				'version' => $row['version'],
-			)
-		);
-		$file   = empty( $status['file'] ) ? null : (string) $status['file'];
-
-		$row['installed'] = 'install' !== $status['status'];
-		$row['active']    = $file ? is_plugin_active( $file ) : false;
-		$row['plugin']    = $file;
-		return $row;
-	}
-
-	/**
-	 * Ask the directory through plugins_api(), or answer from the cache.
-	 * Only a good answer is cached, and only after it is mapped.
+	 * Ask the directory, or answer from the cache. Only a good answer is
+	 * cached, and only after it is mapped.
 	 *
 	 * @param string   $action  'query_plugins' or 'plugin_information'.
 	 * @param array    $request Request arguments, without fields.
@@ -243,91 +332,12 @@ class Saddle_Install_Abilities {
 			return $cached;
 		}
 
-		$api = self::directory( $action, $request );
+		$api = Saddle_Directory::plugins( $action, $request );
 		if ( is_wp_error( $api ) ) {
 			return $api;
 		}
 		$found = $map( $api );
 		set_transient( $key, $found, HOUR_IN_SECONDS );
 		return $found;
-	}
-
-	/**
-	 * One plugins_api() call with Saddle's fields.
-	 *
-	 * @param string $action  'query_plugins' or 'plugin_information'.
-	 * @param array  $request Request arguments, without fields.
-	 * @return object|WP_Error
-	 */
-	public static function directory( $action, array $request ) {
-		self::load_install_api();
-		$api = plugins_api( $action, $request + array( 'fields' => self::FIELDS ) );
-		if ( ! is_wp_error( $api ) && ! is_object( $api ) ) {
-			$api = new WP_Error( 'plugins_api_failed', __( 'WordPress.org sent an answer Saddle could not read.', 'saddle' ) );
-		}
-		return $api;
-	}
-
-	/**
-	 * Name what went wrong with a directory request.
-	 *
-	 * plugins_api() reports both a refused request and the directory's own
-	 * "Plugin not found." / "closed" as `plugins_api_failed`. Only a failed
-	 * request carries the transport's message as error data.
-	 *
-	 * @param WP_Error $error From plugins_api().
-	 * @param string   $slug  The slug asked for, if any.
-	 * @return WP_Error
-	 */
-	public static function directory_error( WP_Error $error, $slug = '' ) {
-		if ( $error->get_error_data() || '' === $slug ) {
-			return new WP_Error(
-				'saddle_directory_unreachable',
-				sprintf(
-					/* translators: %s: the error WordPress reported. */
-					__( 'WordPress could not get an answer from the WordPress.org directory: %s', 'saddle' ),
-					wp_strip_all_tags( (string) ( $error->get_error_data() ? $error->get_error_data() : $error->get_error_message() ) )
-				),
-				array( 'status' => 502 )
-			);
-		}
-		if ( 'closed' === $error->get_error_message() ) {
-			return new WP_Error(
-				'saddle_plugin_closed',
-				/* translators: %s: plugin slug. */
-				sprintf( __( 'WordPress.org has closed the plugin "%s", so it cannot be installed.', 'saddle' ), $slug ),
-				array( 'status' => 404 )
-			);
-		}
-		return new WP_Error(
-			'saddle_not_in_directory',
-			/* translators: %s: plugin slug. */
-			sprintf( __( 'The WordPress.org directory has no plugin with the slug "%s". Use search-plugins with "search" to find the right slug.', 'saddle' ), $slug ),
-			array( 'status' => 404 )
-		);
-	}
-
-	/**
-	 * A directory slug: lowercase letters, digits and hyphens.
-	 *
-	 * @param string $raw User input.
-	 * @return string|WP_Error
-	 */
-	public static function clean_slug( $raw ) {
-		$slug = strtolower( trim( (string) $raw, " /\t\n" ) );
-		if ( ! preg_match( '/^[a-z0-9][a-z0-9-]*$/', $slug ) ) {
-			return new WP_Error( 'saddle_invalid_slug', __( 'A directory slug has only lowercase letters, digits and hyphens, as in wordpress.org/plugins/<slug>/.', 'saddle' ), array( 'status' => 400 ) );
-		}
-		return $slug;
-	}
-
-	/**
-	 * Load the admin plugin-install API, which a REST or cron request lacks.
-	 */
-	private static function load_install_api() {
-		Saddle_Update_Runner::load_update_api();
-		if ( ! function_exists( 'plugins_api' ) ) {
-			require_once ABSPATH . 'wp-admin/includes/plugin-install.php';
-		}
 	}
 }

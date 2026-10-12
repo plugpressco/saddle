@@ -356,8 +356,9 @@ class Saddle_Undo_Test extends WP_UnitTestCase {
 
 	public function test_an_entry_with_nothing_recorded_says_so() {
 		Saddle_Log::record_action( 'update-plugin', 'akismet/akismet.php', 'Queued an update.' );
+		Saddle_Log::record_action( 'install-plugin', 'classic-editor', 'Queued install of Classic Editor 1.7.0 from WordPress.org.' );
 		Saddle_Log::record_action( 'flush-cache', 'object-cache', 'Flushed the cache.' );
-		$entries = $this->entry_ids( 2 );
+		$entries = $this->entry_ids( 3 );
 
 		$this->assertSame( 'not-recorded', Saddle_Undo::availability( $entries[0] ) );
 
@@ -366,6 +367,7 @@ class Saddle_Undo_Test extends WP_UnitTestCase {
 
 		$this->assertStringContainsString( 'Nothing was recorded', $reasons['flush-cache'][0] );
 		$this->assertStringContainsString( 'updates can’t be undone', $reasons['update-plugin'][0] );
+		$this->assertStringContainsString( 'never deletes a plugin', $reasons['install-plugin'][0] );
 	}
 
 	/* -------- the journal itself -------- */

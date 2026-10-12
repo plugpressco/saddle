@@ -2,13 +2,20 @@
 /**
  * Directory and install ability tests.
  *
- * Drives the real wp_get_ability()->execute() path and core's real
- * plugins_api(). Nothing leaves the test: `pre_http_request` answers the
+ * Drives the real wp_get_ability()->execute() path, core's real plugins_api()
+ * and, for installs, the real Saddle_Update_Runner handing a package to core's
+ * own Plugin_Upgrader. Nothing leaves the test: `pre_http_request` answers the
  * WordPress.org directory from answers recorded from the live API on
  * 2026-10-12 (`tests/fixtures/wporg/`), and refuses every other host. Those
  * recordings are what pin the directory's field names: if WordPress.org or
  * core renames one, re-record and this file goes red before a customer sees
- * an empty column.
+ * an empty column. The install package is a local zip served through
+ * `upgrader_pre_download`, the way the update tests serve theirs.
+ *
+ * What the install half pins: the admin tier; that a preview changes nothing
+ * and a confirm never runs the installer inside the request (the hard line);
+ * single-use tokens bound to the version shown; every refusal before a token;
+ * a real install that arrives inactive; and the run-time re-check.
  *
  * @package Saddle
  */
@@ -26,6 +33,14 @@ class Saddle_Installs_Test extends WP_UnitTestCase {
 	/** Plugin folders a test created, removed in tear_down. */
 	private $dirs = array();
 
+	/** Calls into core's upgrader, counted by watch_upgrader(). */
+	private $upgrader_calls = 0;
+
+	/** The zip a test served as the package. */
+	private $zip;
+
+	const SLUG = 'saddle-dummy-install';
+
 	public function set_up() {
 		parent::set_up();
 		require_once ABSPATH . 'wp-admin/includes/plugin.php';
@@ -34,13 +49,35 @@ class Saddle_Installs_Test extends WP_UnitTestCase {
 		Saddle_Capabilities::set_tier( 'admin' );
 
 		$this->info = array( 'classic-editor' => $this->fixture( 'plugin-information' ) );
+		$this->dummy( '1.0.0' );
+		$this->dirs[] = WP_PLUGIN_DIR . '/' . self::SLUG;
 		add_filter( 'pre_http_request', array( $this, 'serve_directory' ), 10, 3 );
+		add_filter( 'automatic_updates_is_vcs_checkout', '__return_false' );
+		// WordPress's test bootstrap disables background updates; the runner
+		// rightly honours that, so lift it as the update tests do.
+		add_filter( 'automatic_updater_disabled', '__return_false', 20 );
 	}
 
 	public function tear_down() {
 		global $wpdb;
 		remove_filter( 'pre_http_request', array( $this, 'serve_directory' ), 10 );
+		remove_filter( 'automatic_updates_is_vcs_checkout', '__return_false' );
+		remove_filter( 'automatic_updater_disabled', '__return_false', 20 );
 		remove_all_filters( 'plugins_api' );
+		remove_all_filters( 'plugins_api_result' );
+		remove_all_filters( 'upgrader_pre_download' );
+		remove_all_filters( 'upgrader_pre_install' );
+		remove_all_filters( 'file_mod_allowed' );
+		remove_all_filters( 'map_meta_cap' );
+		if ( file_exists( ABSPATH . '.maintenance' ) ) {
+			unlink( ABSPATH . '.maintenance' );
+		}
+		if ( $this->zip && file_exists( $this->zip ) ) {
+			unlink( $this->zip );
+		}
+		wp_clear_scheduled_hook( Saddle_Update_Runner::HOOK );
+		delete_option( Saddle_Update_Runner::OPTION );
+		delete_site_transient( 'update_plugins' );
 		foreach ( $this->dirs as $dir ) {
 			$this->remove_dir( $dir );
 		}
@@ -84,6 +121,68 @@ class Saddle_Installs_Test extends WP_UnitTestCase {
 		);
 	}
 
+	/** A directory entry for the throwaway plugin, built on the recorded answer. */
+	private function dummy( $version, array $extra = array() ) {
+		$this->info[ self::SLUG ] = array_merge(
+			$this->fixture( 'plugin-information' ),
+			array(
+				'name'             => 'Saddle Dummy Install',
+				'slug'             => self::SLUG,
+				'version'          => $version,
+				'tested'           => get_bloginfo( 'version' ),
+				'requires_plugins' => array(),
+				'last_updated'     => gmdate( 'Y-m-d g:ia', time() - DAY_IN_SECONDS ) . ' GMT',
+				'download_link'    => 'https://downloads.wordpress.org/plugin/' . self::SLUG . '.' . $version . '.zip',
+			),
+			$extra
+		);
+	}
+
+	/** A zip of the throwaway plugin, served in place of the download. */
+	private function serve_package( $version ) {
+		$this->zip = get_temp_dir() . self::SLUG . '-' . wp_generate_password( 6, false ) . '.zip';
+		$zip       = new ZipArchive();
+		$zip->open( $this->zip, ZipArchive::CREATE | ZipArchive::OVERWRITE );
+		$zip->addFromString( self::SLUG . '/' . self::SLUG . '.php', "<?php\n/**\n * Plugin Name: Saddle Dummy Install\n * Version: {$version}\n */\n" );
+		$zip->close();
+		$path = $this->zip;
+		add_filter(
+			'upgrader_pre_download',
+			static function () use ( $path ) {
+				return $path;
+			},
+			10,
+			0
+		);
+	}
+
+	/** Count every call into core's upgrader from here on. */
+	private function watch_upgrader() {
+		$count = function ( $reply ) {
+			++$this->upgrader_calls;
+			return $reply;
+		};
+		add_filter( 'upgrader_pre_download', $count, 1 );
+		add_filter( 'upgrader_pre_install', $count, 1 );
+	}
+
+	private function installed( $slug ) {
+		wp_cache_delete( 'plugins', 'plugins' );
+		return array_key_exists( "{$slug}/{$slug}.php", get_plugins() );
+	}
+
+	private function log_entries( $action ) {
+		return get_posts(
+			array(
+				'post_type'      => 'saddle_log',
+				'post_status'    => 'any',
+				'posts_per_page' => 20,
+				'meta_key'       => '_saddle_action', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'meta_value'     => $action, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+			)
+		);
+	}
+
 	private function write_plugin( $slug, $version ) {
 		$dir = WP_PLUGIN_DIR . '/' . $slug;
 		wp_mkdir_p( $dir );
@@ -115,6 +214,30 @@ class Saddle_Installs_Test extends WP_UnitTestCase {
 
 	private function search( array $input ) {
 		return $this->ability( 'saddle/search-plugins' )->execute( $input );
+	}
+
+	private function install( array $input = array() ) {
+		return $this->ability( 'saddle/install-plugin' )->execute( $input + array( 'slug' => self::SLUG ) );
+	}
+
+	private function preview() {
+		$preview = $this->install();
+		$this->assertNotWPError( $preview, is_wp_error( $preview ) ? $preview->get_error_message() : '' );
+		$this->assertTrue( $preview['requires_confirmation'] );
+		$this->assertNotEmpty( $preview['confirm_token'] );
+		return $preview;
+	}
+
+	private function confirm( $token ) {
+		return $this->install( array( 'confirm_token' => $token ) );
+	}
+
+	/** A refusal: an error, no token, nothing queued, nothing on disk. */
+	private function assert_refused( $result, $code ) {
+		$this->assertWPError( $result );
+		$this->assertSame( $code, $result->get_error_code(), $result->get_error_message() );
+		$this->assertFalse( wp_next_scheduled( Saddle_Update_Runner::HOOK ) );
+		$this->assertSame( array(), Saddle_Update_Runner::runs() );
 	}
 
 	/* -------- search-plugins -------- */
@@ -170,7 +293,7 @@ class Saddle_Installs_Test extends WP_UnitTestCase {
 		$this->assertSame( 'query_plugins', $query['action'] );
 		$this->assertSame( 'classic editor', $query['request']['search'] );
 		$this->assertSame( '3', $query['request']['per_page'] );
-		foreach ( Saddle_Install_Abilities::FIELDS as $field => $wanted ) {
+		foreach ( Saddle_Directory::FIELDS as $field => $wanted ) {
 			$this->assertSame( $wanted ? '1' : '0', $query['request']['fields'][ $field ], "Field {$field}" );
 		}
 	}
@@ -271,5 +394,209 @@ class Saddle_Installs_Test extends WP_UnitTestCase {
 		);
 		$this->assertWPError( $result );
 		$this->assertSame( array(), $this->requests );
+	}
+
+	/* -------- install-plugin: the gate, and the hard line -------- */
+
+	public function test_install_plugin_requires_admin_tier() {
+		Saddle_Capabilities::set_tier( 'write' );
+		$this->assertWPError( $this->install() );
+		$this->assertSame( array(), $this->requests );
+	}
+
+	public function test_preview_changes_nothing() {
+		$preview = $this->preview();
+		$shown   = $preview['preview'];
+
+		$this->assertSame( 'Saddle Dummy Install', $shown['name'] );
+		$this->assertSame( '1.0.0', $shown['version'] );
+		$this->assertSame( 'WordPress.org', $shown['author'] );
+		$this->assertSame( get_bloginfo( 'version' ), $shown['wordpress'] );
+		$this->assertSame( PHP_VERSION, $shown['php'] );
+		$this->assertSame( '5.2.4', $shown['requires_php'] );
+		$this->assertTrue( $shown['arrives_inactive'] );
+		$this->assertTrue( $shown['runs_in_background'] );
+		$this->assertSame( array(), $shown['warnings'] );
+		$this->assertSame( 'wordpress.org', $shown['source'] );
+
+		$this->assertFalse( wp_next_scheduled( Saddle_Update_Runner::HOOK ), 'A preview must not queue a run.' );
+		$this->assertSame( array(), Saddle_Update_Runner::runs(), 'A preview must not record a run.' );
+		$this->assertFalse( file_exists( WP_PLUGIN_DIR . '/' . self::SLUG ) );
+	}
+
+	public function test_confirm_queues_one_run_and_never_runs_the_installer_in_the_request() {
+		$preview = $this->preview();
+		$this->watch_upgrader();
+		$done = $this->confirm( $preview['confirm_token'] );
+
+		$this->assertNotWPError( $done );
+		$this->assertTrue( $done['queued'] );
+		$this->assertSame( 'activate-plugin', $done['next'] );
+		$this->assertNotFalse( wp_next_scheduled( Saddle_Update_Runner::HOOK, array( $done['run_id'] ) ) );
+
+		$runs = Saddle_Update_Runner::runs();
+		$this->assertCount( 1, $runs, 'Exactly one run is queued.' );
+		$this->assertSame( 'install-plugin', $runs[0]['type'] );
+		$this->assertSame( 'queued', $runs[0]['status'] );
+		$this->assertSame( self::SLUG, $runs[0]['items'][0]['id'] );
+		$this->assertSame( '1.0.0', $runs[0]['items'][0]['to'] );
+
+		// The hard line: the request that confirmed did not touch the upgrader.
+		$this->assertSame( 0, $this->upgrader_calls, 'Confirming must not run the installer synchronously.' );
+		$this->assertFalse( file_exists( WP_PLUGIN_DIR . '/' . self::SLUG ) );
+		$this->assertNotEmpty( $this->log_entries( 'install-plugin' ), 'Queueing is logged.' );
+	}
+
+	public function test_confirm_token_is_single_use() {
+		$preview = $this->preview();
+		$this->assertNotWPError( $this->confirm( $preview['confirm_token'] ) );
+		$this->assertWPError( $this->confirm( $preview['confirm_token'] ), 'A used token must be refused.' );
+		$this->assertCount( 1, Saddle_Update_Runner::runs() );
+	}
+
+	public function test_a_token_previewed_for_one_version_cannot_install_another() {
+		$preview = $this->preview();
+		$this->dummy( '1.1.0' ); // A new release arrived in between.
+		$this->assertWPError( $this->confirm( $preview['confirm_token'] ), 'The token binds the version previewed.' );
+		$this->assertSame( array(), Saddle_Update_Runner::runs() );
+	}
+
+	/* -------- install-plugin: the runner, with core's installer -------- */
+
+	public function test_runner_installs_the_confirmed_version_inactive() {
+		$done = $this->confirm( $this->preview()['confirm_token'] );
+		$this->serve_package( '1.0.0' );
+
+		Saddle_Update_Runner::run( $done['run_id'] );
+
+		$run = Saddle_Update_Runner::get_run( $done['run_id'] );
+		$this->assertSame( 'finished', $run['status'] );
+		$this->assertSame( 'installed', $run['items'][0]['status'], $run['items'][0]['message'] );
+		$this->assertTrue( $this->installed( self::SLUG ), 'Core installed the package.' );
+		$this->assertFalse( is_plugin_active( self::SLUG . '/' . self::SLUG . '.php' ), 'A new install arrives inactive.' );
+		$this->assertFalse( file_exists( ABSPATH . '.maintenance' ) );
+
+		$lines = wp_list_pluck( $this->log_entries( 'install-plugin' ), 'post_title' );
+		$this->assertNotEmpty( $lines );
+
+		// list-updates returns these runs as they are, under "runs".
+		$this->assertSame( 'installed', Saddle_Update_Runner::runs()[0]['items'][0]['status'] );
+	}
+
+	public function test_runner_skips_when_wordpress_org_moved_on() {
+		$done = $this->confirm( $this->preview()['confirm_token'] );
+		$this->dummy( '1.1.0' );
+		$this->serve_package( '1.1.0' );
+
+		Saddle_Update_Runner::run( $done['run_id'] );
+
+		$item = Saddle_Update_Runner::get_run( $done['run_id'] )['items'][0];
+		$this->assertSame( 'skipped', $item['status'] );
+		$this->assertStringContainsString( '1.1.0', $item['message'] );
+		$this->assertFalse( $this->installed( self::SLUG ), 'Only the confirmed version is ever installed.' );
+	}
+
+	public function test_runner_skips_a_plugin_installed_since_the_confirm() {
+		$done = $this->confirm( $this->preview()['confirm_token'] );
+		$this->write_plugin( self::SLUG, '0.9.0' );
+		$this->serve_package( '1.0.0' );
+
+		Saddle_Update_Runner::run( $done['run_id'] );
+
+		$item = Saddle_Update_Runner::get_run( $done['run_id'] )['items'][0];
+		$this->assertSame( 'skipped', $item['status'] );
+		wp_cache_delete( 'plugins', 'plugins' );
+		$this->assertSame( '0.9.0', get_plugins()[ self::SLUG . '/' . self::SLUG . '.php' ]['Version'], 'Nothing was overwritten.' );
+	}
+
+	/* -------- install-plugin: refusals, all before a token -------- */
+
+	public function test_a_site_that_forbids_file_changes_is_refused_before_asking_the_directory() {
+		add_filter( 'file_mod_allowed', '__return_false' );
+		$result = $this->install();
+		$this->assert_refused( $result, 'saddle_updates_unavailable' );
+		$this->assertStringContainsString( 'DISALLOW_FILE_MODS', $result->get_error_message() );
+		$this->assertSame( array(), $this->requests );
+	}
+
+	public function test_an_account_that_cannot_install_plugins_is_refused() {
+		add_filter(
+			'map_meta_cap',
+			static function ( $caps, $cap ) {
+				return 'install_plugins' === $cap ? array( 'do_not_allow' ) : $caps;
+			},
+			10,
+			2
+		);
+		$this->assert_refused( $this->install(), 'saddle_cannot_install' );
+	}
+
+	public function test_an_installed_plugin_or_a_leftover_folder_is_refused() {
+		$this->write_plugin( self::SLUG, '1.0.0' );
+		$this->assert_refused( $this->install(), 'saddle_already_installed' );
+
+		$this->remove_dir( WP_PLUGIN_DIR . '/' . self::SLUG );
+		wp_mkdir_p( WP_PLUGIN_DIR . '/' . self::SLUG );
+		file_put_contents( WP_PLUGIN_DIR . '/' . self::SLUG . '/readme.txt', 'Not a plugin.' );
+		wp_cache_delete( 'plugins', 'plugins' );
+		$this->assert_refused( $this->install(), 'saddle_already_installed' );
+	}
+
+	public function test_a_plugin_wordpress_org_knows_under_that_slug_in_another_folder_is_refused() {
+		set_site_transient(
+			'update_plugins',
+			(object) array(
+				'last_checked' => time(),
+				'response'     => array(),
+				'no_update'    => array(
+					'renamed-folder/main.php' => (object) array(
+						'slug'   => self::SLUG,
+						'plugin' => 'renamed-folder/main.php',
+					),
+				),
+			)
+		);
+		$this->assert_refused( $this->install(), 'saddle_already_installed' );
+		$this->assertSame( array(), array_filter( $this->requests, fn( $url ) => false !== strpos( $url, 'update-check' ) ), 'The check makes no update request.' );
+	}
+
+	public function test_unknown_and_invalid_slugs_are_refused() {
+		$this->assert_refused( $this->install( array( 'slug' => 'no-such-plugin' ) ), 'saddle_not_in_directory' );
+		$this->assert_refused( $this->install( array( 'slug' => '../hello' ) ), 'saddle_invalid_slug' );
+	}
+
+	public function test_a_plugin_needing_newer_php_or_wordpress_is_refused() {
+		$this->dummy( '1.0.0', array( 'requires_php' => '99.0' ) );
+		$this->assert_refused( $this->install(), 'saddle_php_too_old' );
+
+		$this->dummy( '1.0.0', array( 'requires' => '99.0' ) );
+		$this->assert_refused( $this->install(), 'saddle_wp_too_old' );
+	}
+
+	public function test_a_package_outside_wordpress_org_is_refused() {
+		foreach ( array(
+			'https://example.com/' . self::SLUG . '.zip',
+			'http://downloads.wordpress.org/plugin/' . self::SLUG . '.1.0.0.zip',
+			'https://downloads.wordpress.org/theme/' . self::SLUG . '.1.0.0.zip',
+			'https://downloads.wordpress.org:8443/plugin/' . self::SLUG . '.1.0.0.zip',
+		) as $link ) {
+			$this->dummy( '1.0.0', array( 'download_link' => $link ) );
+			$this->assert_refused( $this->install(), 'saddle_not_from_wporg' );
+		}
+	}
+
+	public function test_preview_warns_untested_stale_and_needed_plugins() {
+		$this->dummy(
+			'1.0.0',
+			array(
+				'tested'           => '5.0',
+				'last_updated'     => '2020-01-01 1:00pm GMT',
+				'requires_plugins' => array( 'woocommerce' ),
+			)
+		);
+		$warnings = implode( ' ', $this->preview()['preview']['warnings'] );
+		$this->assertStringContainsString( 'Tested up to WordPress 5.0', $warnings );
+		$this->assertStringContainsString( '2020-01-01', $warnings );
+		$this->assertStringContainsString( 'woocommerce', $warnings );
 	}
 }
