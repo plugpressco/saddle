@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-11T23:19:51+00:00\n"
+"POT-Creation-Date: 2026-10-12T23:07:35+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -1374,83 +1374,83 @@ msgstr[1] ""
 msgid "The WordPress account this app is connected as cannot see \"%s\" content on this site — only published items are available to it. That is the account's role, not a Saddle setting. Do not retry this status; tell the user to reconnect Saddle as an account that can edit this content."
 msgstr ""
 
-#: includes/abilities/core-updates.php:34
+#: includes/abilities/core-updates.php:35
 msgid "Update WordPress"
 msgstr ""
 
-#: includes/abilities/core-updates.php:35
-msgid "Updates WordPress itself to a release WordPress already offers for background updates (see list-updates). Minor and security releases (7.1.2 to 7.1.3) are always allowed. A major release (7.1 to 7.2) is allowed only when WordPress is set to update itself to all new versions (Dashboard → Updates; the default on sites installed since WordPress 5.6); otherwise it is refused, and the owner updates it there. When both are offered, the minor release comes first. It takes two calls. The first changes nothing: it returns a preview with the installed and new version, whether it is minor or major, the PHP and MySQL versions it needs against this site's, and for a major release the active plugins not tested with it and what cannot be undone, plus a confirm_token. Call again with that token to queue the update. WordPress's own updater then runs it in the background, with a short maintenance message for visitors; check list-updates a minute later for the result under \"runs\". A core update cannot be undone: WordPress has no rollback for one, and a major release also upgrades the database. Refuses development versions, a site where the last automatic core update failed critically, and sites where WordPress cannot change files."
+#: includes/abilities/core-updates.php:36
+msgid "Updates WordPress itself to a release WordPress already offers for background updates (see list-updates). Minor and security releases (7.1.2 to 7.1.3) are always allowed. A major release (7.1 to 7.2) is allowed only when the owner has turned on \"Major WordPress releases\" in Saddle → Settings, which is off by default and which no tool can change; otherwise it is refused, and the owner updates it in Dashboard → Updates or turns that setting on. When both are offered, the minor release comes first. It takes two calls. The first changes nothing: it returns a preview with the installed and new version, whether it is minor or major, the PHP and MySQL versions it needs against this site's, and for a major release the active plugins not tested with it and what cannot be undone, plus a confirm_token. Call again with that token to queue the update. WordPress's own updater then runs it in the background, with a short maintenance message for visitors; check list-updates a minute later for the result under \"runs\". A core update cannot be undone: WordPress has no rollback for one, and a major release also upgrades the database. Refuses development versions, a site where the last automatic core update failed critically, and sites where WordPress cannot change files."
 msgstr ""
 
-#: includes/abilities/core-updates.php:43
+#: includes/abilities/core-updates.php:44
 msgid "Token from the preview step, required to queue the update."
 msgstr ""
 
-#: includes/abilities/core-updates.php:56
+#: includes/abilities/core-updates.php:57
 msgid "Update translations"
 msgstr ""
 
-#: includes/abilities/core-updates.php:57
+#: includes/abilities/core-updates.php:58
 msgid "Applies every translation update WordPress offers for WordPress, plugins and themes (list-updates counts them). It takes two calls. The first changes nothing: it returns a preview listing each translation (what it translates and the language) and a confirm_token. Call again with that token to queue the run. WordPress's own language pack updater then applies them in the background, as it does on its own during background updates; check list-updates a minute later for each result under \"runs\". There is no list to pass and no limit: all offered translations are applied together. Translation updates cannot be undone. Refuses when nothing is offered and on sites where WordPress cannot change files."
 msgstr ""
 
-#: includes/abilities/core-updates.php:65
+#: includes/abilities/core-updates.php:66
 #: includes/abilities/updates.php:48
 msgid "Token from the preview step, required to queue the run."
 msgstr ""
 
-#: includes/abilities/core-updates.php:98
+#: includes/abilities/core-updates.php:99
 msgid "The WordPress account this app is connected as cannot update WordPress here (on a multisite network, only a network administrator can). No Saddle setting changes that."
 msgstr ""
 
-#: includes/abilities/core-updates.php:110
+#: includes/abilities/core-updates.php:111
 msgid "WordPress has no automatic rollback for a core update. If the new version breaks a plugin or the theme, the site stays on it until someone fixes it."
 msgstr ""
 
-#: includes/abilities/core-updates.php:111
+#: includes/abilities/core-updates.php:112
 msgid "A major release upgrades the database, so going back means restoring a database backup."
 msgstr ""
 
-#: includes/abilities/core-updates.php:112
+#: includes/abilities/core-updates.php:113
 msgid "Saddle runs on WordPress's own APIs. If the release changes them, this app may lose its connection before it can report the result."
 msgstr ""
 
 #. translators: 1: installed WordPress version, 2: new version.
-#: includes/abilities/core-updates.php:124
+#: includes/abilities/core-updates.php:125
 #, php-format
 msgid "Update WordPress from %1$s to %2$s, a major release, in the background. There is no automatic rollback."
 msgstr ""
 
 #. translators: 1: installed WordPress version, 2: new version.
-#: includes/abilities/core-updates.php:126
+#: includes/abilities/core-updates.php:127
 #, php-format
 msgid "Update WordPress from %1$s to %2$s, a minor release, in the background."
 msgstr ""
 
-#: includes/abilities/core-updates.php:138
+#: includes/abilities/core-updates.php:139
 msgid "Visitors see a short maintenance message while WordPress updates."
 msgstr ""
 
 #. translators: 1: installed WordPress version, 2: new version.
-#: includes/abilities/core-updates.php:142
+#: includes/abilities/core-updates.php:143
 #, php-format
 msgid "Queued update of WordPress from %1$s to %2$s."
 msgstr ""
 
-#: includes/abilities/core-updates.php:163
+#: includes/abilities/core-updates.php:164
 msgid "The update starts within about a minute and reports applied, failed or skipped under \"runs\" in list-updates."
 msgstr ""
 
-#: includes/abilities/core-updates.php:189
+#: includes/abilities/core-updates.php:190
 msgid "The WordPress account this app is connected as cannot update translations here (on a multisite network, only a network administrator can). No Saddle setting changes that."
 msgstr ""
 
-#: includes/abilities/core-updates.php:203
+#: includes/abilities/core-updates.php:204
 msgid "WordPress is not offering any translation updates right now."
 msgstr ""
 
 #. translators: %d: number of translations.
-#: includes/abilities/core-updates.php:215
+#: includes/abilities/core-updates.php:216
 #, php-format
 msgid "Update %d translation in the background."
 msgid_plural "Update %d translations in the background."
@@ -1458,7 +1458,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of translations.
-#: includes/abilities/core-updates.php:222
+#: includes/abilities/core-updates.php:223
 #, php-format
 msgid "Queued %d translation update."
 msgid_plural "Queued %d translation updates."
@@ -1466,33 +1466,33 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: installed WordPress version.
-#: includes/abilities/core-updates.php:251
+#: includes/abilities/core-updates.php:252
 #, php-format
 msgid "This site runs a development version of WordPress (%s). Saddle does not update development versions; update it in Dashboard → Updates."
 msgstr ""
 
-#: includes/abilities/core-updates.php:257
+#: includes/abilities/core-updates.php:258
 msgid "The last automatic WordPress update on this site failed critically. WordPress stops updating itself until someone updates it in Dashboard → Updates, and Saddle does the same."
 msgstr ""
 
 #. translators: %s: new WordPress version.
-#: includes/abilities/core-updates.php:280
+#: includes/abilities/core-updates.php:281
 #, php-format
-msgid "WordPress %s is a major release. Saddle applies one only when WordPress is set to update itself to all new versions, and this site updates itself only for maintenance and security releases. Ask the owner to update it in Dashboard → Updates, or to change that setting there. Do not retry."
+msgid "WordPress %s is a major release. Saddle applies one only when the owner turns on \"Major WordPress releases\" in Saddle → Settings, and it is off on this site. Tell the user they can update it in Dashboard → Updates, or turn that setting on and ask again. Do not retry."
 msgstr ""
 
-#: includes/abilities/core-updates.php:287
+#: includes/abilities/core-updates.php:288
 msgid "WordPress is not offering a core update this site can apply in the background. list-updates shows what is offered; a release offered only in Dashboard → Updates is applied there."
 msgstr ""
 
 #. translators: 1: new WordPress version, 2: required PHP version, 3: this site's PHP version.
-#: includes/abilities/core-updates.php:295
+#: includes/abilities/core-updates.php:296
 #, php-format
 msgid "WordPress %1$s needs PHP %2$s or newer; this site runs PHP %3$s. The host has to update PHP first."
 msgstr ""
 
 #. translators: 1: new WordPress version, 2: required MySQL version, 3: this site's MySQL version.
-#: includes/abilities/core-updates.php:304
+#: includes/abilities/core-updates.php:305
 #, php-format
 msgid "WordPress %1$s needs MySQL %2$s or newer; this site runs %3$s. The host has to update the database first."
 msgstr ""
@@ -4104,7 +4104,7 @@ msgid "You need to be an administrator to do that."
 msgstr ""
 
 #: includes/admin/class-saddle-rest.php:682
-#: includes/class-saddle-core-settings.php:227
+#: includes/class-saddle-core-settings.php:237
 msgid "Unknown access tier."
 msgstr ""
 
@@ -5319,7 +5319,7 @@ msgid "Plugins and themes are installed only from the WordPress.org directory, b
 msgstr ""
 
 #: includes/class-saddle-context.php:263
-msgid "update-core applies minor WordPress releases, and a major release only when WordPress is set to update itself to all new versions (Dashboard → Updates). A refusal for a major release is that setting: tell the user, do not retry."
+msgid "update-core applies minor WordPress releases, and a major release only when the owner has turned on \"Major WordPress releases\" in Saddle → Settings. A refusal for a major release is that setting: tell the user, do not retry."
 msgstr ""
 
 #: includes/class-saddle-context.php:430
@@ -5479,57 +5479,69 @@ msgstr ""
 msgid "Security"
 msgstr ""
 
-#: includes/class-saddle-core-settings.php:150
-msgid "Most memory entries kept"
+#: includes/class-saddle-core-settings.php:148
+msgid "Major WordPress releases"
+msgstr ""
+
+#: includes/class-saddle-core-settings.php:149
+msgid "Let apps update WordPress to a new major version, such as 7.1 to 7.2, after you approve the preview. Minor and security releases never need this."
 msgstr ""
 
 #: includes/class-saddle-core-settings.php:151
+msgid "Updates"
+msgstr ""
+
+#: includes/class-saddle-core-settings.php:159
+msgid "Most memory entries kept"
+msgstr ""
+
+#: includes/class-saddle-core-settings.php:160
 msgid "The oldest, least used entries are dropped past this number."
 msgstr ""
 
-#: includes/class-saddle-core-settings.php:153
-#: includes/class-saddle-core-settings.php:164
+#: includes/class-saddle-core-settings.php:162
+#: includes/class-saddle-core-settings.php:173
 #: admin/build/index.js:96
 #: admin/src/components/Memory.jsx:125
 msgid "Memory"
 msgstr ""
 
-#: includes/class-saddle-core-settings.php:161
+#: includes/class-saddle-core-settings.php:170
 msgid "Memory in each session"
 msgstr ""
 
-#: includes/class-saddle-core-settings.php:162
+#: includes/class-saddle-core-settings.php:171
 msgid "The most characters of memory handed to an app at the start of a session."
 msgstr ""
 
-#: includes/class-saddle-core-settings.php:170
+#: includes/class-saddle-core-settings.php:179
 msgid "Tell apps about recent changes"
 msgstr ""
 
-#: includes/class-saddle-core-settings.php:171
+#: includes/class-saddle-core-settings.php:180
 msgid "New sessions start with a short list of what was changed lately."
 msgstr ""
 
-#: includes/class-saddle-core-settings.php:173
-#: includes/class-saddle-core-settings.php:184
+#: includes/class-saddle-core-settings.php:182
+#: includes/class-saddle-core-settings.php:193
 #: admin/build/index.js:118
 #: admin/src/components/SettingsPage.jsx:366
 msgid "Recent changes"
 msgstr ""
 
-#: includes/class-saddle-core-settings.php:181
+#: includes/class-saddle-core-settings.php:190
 msgid "How many recent changes"
 msgstr ""
 
-#: includes/class-saddle-core-settings.php:182
+#: includes/class-saddle-core-settings.php:191
 msgid "The length of that list."
 msgstr ""
 
-#: includes/class-saddle-core-settings.php:295
+#: includes/class-saddle-core-settings.php:308
 msgid "Sign-in for apps needs HTTPS. An access token sent over plain HTTP can be read in transit."
 msgstr ""
 
-#: includes/class-saddle-core-settings.php:296
+#: includes/class-saddle-core-settings.php:309
 msgid "Sign-in for apps needs pretty permalinks. Choose any option but Plain in Settings → Permalinks, then try again."
 msgstr ""
 
@@ -6005,46 +6017,56 @@ msgstr ""
 msgid "That notice cannot be dismissed. It goes away once the problem is fixed."
 msgstr ""
 
-#: includes/class-saddle-offer-runner.php:65
+#: includes/class-saddle-offer-runner.php:71
 msgid "No update was offered any more when the run started."
 msgstr ""
 
-#: includes/class-saddle-offer-runner.php:181
+#: includes/class-saddle-offer-runner.php:79
+msgid "Major WordPress releases were turned off in Saddle → Settings before the update started."
+msgstr ""
+
+#. translators: %s: new WordPress version.
+#: includes/class-saddle-offer-runner.php:81
+#, php-format
+msgid "The update of WordPress to %s did not run: major releases were turned off in Saddle → Settings."
+msgstr ""
+
+#: includes/class-saddle-offer-runner.php:223
 msgid "WordPress declined to update this item on its own (a version-control checkout, missing filesystem access, or a plugin telling it not to)."
 msgstr ""
 
 #. translators: %s: translation, as "Akismet (de_DE)".
-#: includes/class-saddle-offer-runner.php:205
+#: includes/class-saddle-offer-runner.php:247
 #, php-format
 msgid "Updated the %s translation."
 msgstr ""
 
 #. translators: 1: translation, as "Akismet (de_DE)", 2: why it was not updated.
-#: includes/class-saddle-offer-runner.php:207
+#: includes/class-saddle-offer-runner.php:249
 #, php-format
 msgid "The %1$s translation was not updated: %2$s"
 msgstr ""
 
 #. translators: 1: item name, 2: old version, 3: new version.
-#: includes/class-saddle-offer-runner.php:214
+#: includes/class-saddle-offer-runner.php:256
 #, php-format
 msgid "Updated %1$s from %2$s to %3$s."
 msgstr ""
 
 #. translators: 1: item name, 2: new version, 3: old version.
-#: includes/class-saddle-offer-runner.php:218
+#: includes/class-saddle-offer-runner.php:260
 #, php-format
 msgid "Update of %1$s to %2$s caused a fatal error; WordPress restored %3$s."
 msgstr ""
 
 #. translators: 1: item name, 2: new version.
-#: includes/class-saddle-offer-runner.php:222
+#: includes/class-saddle-offer-runner.php:264
 #, php-format
 msgid "Update of %1$s to %2$s was skipped by WordPress."
 msgstr ""
 
 #. translators: 1: item name, 2: new version, 3: error message.
-#: includes/class-saddle-offer-runner.php:226
+#: includes/class-saddle-offer-runner.php:268
 #, php-format
 msgid "Update of %1$s to %2$s failed: %3$s"
 msgstr ""

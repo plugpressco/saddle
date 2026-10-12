@@ -147,11 +147,13 @@ dry-run, no diff and no revert.
   confirmed preview. It never takes a zip, a URL or a file. A new install
   arrives inactive. Saddle applies core updates only for releases WordPress
   already offers, through core's automatic updater: minor and security
-  releases, and a major release only when WordPress would apply it in the
-  background itself: its own "automatic updates for all new versions" switch
-  in Dashboard → Updates, which no tool can flip (on by default for sites
-  installed since WordPress 5.6). Translation updates go through
-  core's language pack upgrader. Saddle never deletes a plugin or theme. It
+  releases, and a major release only when the owner has turned on Saddle's
+  own "Major WordPress releases" setting in Saddle → Settings, which is off by
+  default and which no tool can change. WordPress's own "automatic updates
+  for all new versions" switch does not count: it is on by default for sites
+  installed since 5.6, and it decides only what WordPress does unattended.
+  Translation updates go through core's language pack upgrader. Saddle never
+  deletes a plugin or theme. It
   still never writes a file and never picks a package URL: the package is the
   one the WordPress.org API names, exactly as on the Add New screen, and a
   package from anywhere else is refused.
@@ -160,8 +162,9 @@ dry-run, no diff and no revert.
   auto-update switch is WordPress's own option. Updates decided 2026-09-27
   evening on Fahim's "research, then take the decision", replacing the same
   morning's "reported, never run"; installs, core and translations added
-  2026-10-12 (#347, Fahim: majors only behind WordPress's own switch; #351
-  found that the switch defaults to on for new installs). Applies
+  2026-10-12 (#347). Majors were first behind WordPress's own switch (#351);
+  that switch defaults to on for new installs, so on 2026-10-13 Fahim had
+  majors moved behind Saddle's own setting, off by default (#359). Applies
   to Pro too.
 
 If a feature seems to need any of these, that is a signal to redesign the

@@ -100,7 +100,7 @@ class Saddle_Module_Abilities_Test extends WP_UnitTestCase {
 
 		$body = $this->run_ability( 'get-module-settings', array( 'module' => 'saddle' ) );
 
-		$this->assertCount( 14, $body['fields'] );
+		$this->assertCount( 15, $body['fields'] );
 		$this->assertSame( array( 'read' ), array_values( array_unique( wp_list_pluck( $body['fields'], 'agent' ) ) ) );
 		$this->assertStringNotContainsString( 'abcdefghijklmnopqrst', wp_json_encode( $body ) );
 	}
@@ -269,12 +269,13 @@ class Saddle_Module_Abilities_Test extends WP_UnitTestCase {
 			'unsplash_key'            => 'abcdefghijklmnopqrstuvwx',
 			'memory_autoinject_agent' => true,
 			'enforce_tier_domain'     => true,
+			'core_major_updates'      => true,
 			'memory_max_entries'      => 20,
 			'memory_core_budget'      => 300,
 			'memory_recent_changes'   => false,
 			'memory_recent_limit'     => 3,
 		);
-		$this->assertCount( 14, $values );
+		$this->assertCount( 15, $values );
 
 		foreach ( $values as $key => $value ) {
 			$result = $this->run_ability( 'update-module-settings', array( 'module' => 'saddle', 'values' => array( $key => $value ) ) );
@@ -287,6 +288,7 @@ class Saddle_Module_Abilities_Test extends WP_UnitTestCase {
 		$this->assertFalse( Saddle_Capabilities::is_paused() );
 		$this->assertFalse( Saddle_Capabilities::is_rehearsal() );
 		$this->assertFalse( Saddle_Capabilities::is_drafts_only() );
+		$this->assertFalse( Saddle_Offer_Runner::core_majors_allowed() );
 	}
 
 	public function test_a_malicious_module_cannot_point_a_writable_field_at_the_tier() {
@@ -317,7 +319,7 @@ class Saddle_Module_Abilities_Test extends WP_UnitTestCase {
 	}
 
 	public function test_every_protected_option_is_named_in_one_place() {
-		foreach ( array( 'saddle_access_tier', 'saddle_paused', 'saddle_rehearsal', 'saddle_drafts_only', 'saddle_enabled_integrations', 'saddle_disabled_abilities', 'saddle_tier_domain', 'saddle_enforce_tier_domain', 'saddle_oauth_enabled', 'saddle_oauth_anything' ) as $name ) {
+		foreach ( array( 'saddle_access_tier', 'saddle_paused', 'saddle_rehearsal', 'saddle_drafts_only', 'saddle_enabled_integrations', 'saddle_disabled_abilities', 'saddle_tier_domain', 'saddle_enforce_tier_domain', 'saddle_core_major_updates', 'saddle_oauth_enabled', 'saddle_oauth_anything' ) as $name ) {
 			$this->assertTrue( Saddle_Settings_Guard::is_protected_option( $name ), $name );
 		}
 		$this->assertFalse( Saddle_Settings_Guard::is_protected_option( 'demo_settings' ) );

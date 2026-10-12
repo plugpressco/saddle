@@ -260,7 +260,7 @@ class Saddle_Context {
 		$lines[] = '- ' . __( 'A 401 saying no key arrived usually means the web server strips the Authorization header. Ask the user to open Saddle → Settings → Connection check and run it — it can fix this automatically on most hosts.', 'saddle' );
 		$lines[] = '- ' . __( 'A destructive tool answering with a preview and a confirm_token is NOT an error — that is the approval gate. Show the user the preview; call again with the token only after they agree.', 'saddle' );
 		$lines[] = '- ' . __( 'Plugins and themes are installed only from the WordPress.org directory, by slug (search-plugins finds a plugin), and arrive inactive: activating is a separate, confirmed step (activate-plugin or activate-theme). Saddle never installs from a zip or a URL and never deletes a plugin or theme, so send the user to wp-admin for those.', 'saddle' );
-		$lines[] = '- ' . __( 'update-core applies minor WordPress releases, and a major release only when WordPress is set to update itself to all new versions (Dashboard → Updates). A refusal for a major release is that setting: tell the user, do not retry.', 'saddle' );
+		$lines[] = '- ' . __( 'update-core applies minor WordPress releases, and a major release only when the owner has turned on "Major WordPress releases" in Saddle → Settings. A refusal for a major release is that setting: tell the user, do not retry.', 'saddle' );
 		$lines[] = '';
 
 		// Recent-changes recall: what connected agents changed lately, from

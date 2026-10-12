@@ -227,11 +227,13 @@ class Saddle_Settings_Registry_Test extends WP_UnitTestCase {
 		$body = Saddle_Settings_View::describe( 'saddle', Saddle_Settings_Registry::schema( 'saddle' ) );
 
 		$this->assertSame( 'saddle', $body['scope'] );
-		$this->assertCount( 14, $body['fields'] );
+		$this->assertCount( 15, $body['fields'] );
 
 		$by_key = array_column( $body['fields'], null, 'key' );
 		$this->assertSame( 'read', $by_key['tier']['value'] );
 		$this->assertFalse( $by_key['paused']['value'] );
+		$this->assertFalse( $by_key['core_major_updates']['value'] );
+		$this->assertSame( 'Updates', $by_key['core_major_updates']['section'] );
 		$this->assertTrue( $by_key['oauth_dcr']['value'] );
 		$this->assertSame( 500, $by_key['memory_max_entries']['value'] );
 		$this->assertSame( 1500, $by_key['memory_core_budget']['value'] );

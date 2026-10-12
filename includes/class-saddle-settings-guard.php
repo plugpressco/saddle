@@ -30,6 +30,7 @@ class Saddle_Settings_Guard {
 		'saddle_disabled_abilities',
 		'saddle_tier_domain',
 		'saddle_enforce_tier_domain',
+		'saddle_core_major_updates',
 	);
 
 	/**
