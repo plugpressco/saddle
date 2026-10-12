@@ -4,7 +4,7 @@ Tags: mcp, ai, claude, chatgpt, divi
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.5.1
+Stable tag: 1.5.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -217,6 +217,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 * New: Your AI app can update WordPress itself to a release WordPress offers. Minor and security releases are always allowed. A major release, such as 7.1 to 7.2, is allowed only if you turn on Major WordPress releases in Saddle → Settings. It is off by default, and no app can turn it on. The preview lists active plugins not tested with the new version, and nothing happens until you approve.
 * New: Your AI app can apply the translation updates WordPress offers, after a preview, through WordPress's own language pack updater.
 * Fixed: Saddle and the WordPress MCP Adapter plugin 0.7.0 can now run on the same site. Activating the adapter next to Saddle stopped with a fatal error, and with both active every page failed. Saddle now serves its own endpoint itself when the adapter is a version it doesn't support yet, and keeps its built-in copy of the adapter out of the way of the official plugin.
+* Changed: Saddle's brand color is now magenta, the same as saddle.to. It shows on the logo, primary buttons, switches when on and the selected access level. Links and greys stay WordPress's own.
 * Changed: Bridle and Bridle KB are PlugPress plugins, so their tools are on as soon as the plugin is active, like Mailyard and SEO. You no longer switch them on under Services.
 * Fixed: When a step shows a preview first, such as moving a post to the trash, your AI app now shows you the preview and waits for your yes. Claude Code reads only the start of Saddle's guide, and it could confirm on its own.
 
