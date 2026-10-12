@@ -29,6 +29,12 @@ defined( 'ABSPATH' ) || exit;
 class Saddle_Offer_Runner {
 
 	/**
+	 * Saddle's own switch for major WordPress releases (#359). Off unless the
+	 * owner turns it on in Saddle → Settings; no tool can change it.
+	 */
+	const OPTION_CORE_MAJOR = 'saddle_core_major_updates';
+
+	/**
 	 * Apply every offered update of one run through core's automatic updater.
 	 * Called by the update runner with its lock held and the completion hooks
 	 * lifted.
@@ -66,6 +72,15 @@ class Saddle_Offer_Runner {
 				continue;
 			}
 			$offer = is_array( $offer ) ? (object) $offer : $offer;
+			// The owner can turn major releases off between the confirm and
+			// the run; the switch holds until the update starts.
+			if ( 'core' === $type && self::is_major( $offer->current ) && ! self::core_majors_allowed() ) {
+				$item['status']  = 'skipped';
+				$item['message'] = __( 'Major WordPress releases were turned off in Saddle → Settings before the update started.', 'saddle' );
+				/* translators: %s: new WordPress version. */
+				Saddle_Log::record_action( 'update-core', 'core', sprintf( __( 'The update of WordPress to %s did not run: major releases were turned off in Saddle → Settings.', 'saddle' ), $offer->current ) );
+				continue;
+			}
 			// On a failure core's skin opens an output buffer and never closes
 			// it (WP_Upgrader_Skin::error() calls header()). Its messages are
 			// kept by the skin, so close what the update left open.
@@ -120,6 +135,44 @@ class Saddle_Offer_Runner {
 			$offers[ $id ] = (object) $offer;
 		}
 		return $offers;
+	}
+
+	/**
+	 * Whether the owner lets apps apply a major WordPress release: Saddle's
+	 * own setting, off by default. WordPress's "automatic updates for all new
+	 * versions" switch does not count. It is on by default for sites
+	 * installed since 5.6, and it decides only what WordPress does
+	 * unattended (Fahim, 2026-10-13, #359).
+	 *
+	 * @return bool
+	 */
+	public static function core_majors_allowed() {
+		return (bool) get_option( self::OPTION_CORE_MAJOR, false );
+	}
+
+	/**
+	 * Turn major releases on or off. Only the owner's screens call this: the
+	 * Safety switch on Saddle → Settings and the settings registry, whose
+	 * field no tool can write.
+	 *
+	 * @param bool $allowed Whether apps may apply a major release.
+	 */
+	public static function set_core_majors( $allowed ) {
+		update_option( self::OPTION_CORE_MAJOR, $allowed ? 1 : 0 );
+	}
+
+	/**
+	 * Whether a release is a major one, by core's own rule: a release on
+	 * another X.Y branch than the installed one.
+	 *
+	 * @param string $version Offered version.
+	 * @return bool
+	 */
+	public static function is_major( $version ) {
+		$branch = static function ( $v ) {
+			return implode( '.', array_slice( preg_split( '/[.-]/', (string) $v ), 0, 2 ) );
+		};
+		return $branch( $version ) !== $branch( get_bloginfo( 'version' ) );
 	}
 
 	/**

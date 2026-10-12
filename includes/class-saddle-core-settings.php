@@ -8,7 +8,7 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Scope `saddle` of the settings registry: the fourteen options Core already
+ * Scope `saddle` of the settings registry: the fifteen options Core already
  * keeps, given one shape so the admin draws them, `/preferences/saddle`
  * serves them and `saddle/get-module-settings` explains them.
  *
@@ -142,6 +142,14 @@ class Saddle_Core_Settings {
 				'section' => __( 'Security', 'saddle' ),
 				'level'   => 'basic',
 			),
+			'core_major_updates'      => array(
+				'type'    => 'boolean',
+				'default' => false,
+				'label'   => __( 'Major WordPress releases', 'saddle' ),
+				'help'    => __( 'Let apps update WordPress to a new major version, such as 7.1 to 7.2, after you approve the preview. Minor and security releases never need this.', 'saddle' ),
+				'screen'  => $settings,
+				'control' => 'custom',
+			),
 			'memory_max_entries'      => array(
 				'type'    => 'integer',
 				'minimum' => 10,
@@ -204,6 +212,7 @@ class Saddle_Core_Settings {
 			'unsplash_key'            => Saddle_Unsplash::get_key(),
 			'memory_autoinject_agent' => (bool) get_option( Saddle_Memory::OPTION_AUTOINJECT, false ),
 			'enforce_tier_domain'     => Saddle_Capabilities::is_domain_enforced(),
+			'core_major_updates'      => Saddle_Offer_Runner::core_majors_allowed(),
 			'memory_max_entries'      => (int) get_option( Saddle_Memory::OPTION_MAX_ENTRIES, Saddle_Memory::DEFAULT_MAX_ENTRIES ),
 			'memory_core_budget'      => (int) get_option( Saddle_Memory::OPTION_CORE_BUDGET, Saddle_Memory::DEFAULT_CORE_BUDGET ),
 			'memory_recent_changes'   => (bool) get_option( self::OPTION_RECENT_CHANGES, true ),
@@ -252,6 +261,9 @@ class Saddle_Core_Settings {
 					break;
 				case 'enforce_tier_domain':
 					Saddle_Capabilities::set_domain_enforcement( (bool) $value );
+					break;
+				case 'core_major_updates':
+					Saddle_Offer_Runner::set_core_majors( (bool) $value );
 					break;
 				case 'memory_max_entries':
 					update_option( Saddle_Memory::OPTION_MAX_ENTRIES, (int) $value );

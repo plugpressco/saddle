@@ -41,17 +41,19 @@ describe( 'runnableTools', () => {
 } );
 
 describe( 'safetyPrefs', () => {
-	it( 'reads the three switches from /preferences', () => {
+	it( 'reads the four switches from /preferences', () => {
 		expect(
 			safetyPrefs( {
 				drafts_only: true,
 				rehearsal: false,
 				domain: { enforced: true },
+				core_major_updates: true,
 			} )
 		).toEqual( {
 			drafts_only: true,
 			rehearsal: false,
 			domain_enforced: true,
+			core_major_updates: true,
 		} );
 	} );
 
@@ -60,6 +62,7 @@ describe( 'safetyPrefs', () => {
 			drafts_only: false,
 			rehearsal: false,
 			domain_enforced: false,
+			core_major_updates: false,
 		} );
 		expect( safetyPrefs( null ).domain_enforced ).toBe( false );
 	} );

@@ -16,8 +16,8 @@
  * What this pins: the admin tier; that a preview changes nothing and a
  * confirm never runs the upgrader inside the request (the hard line);
  * single-use tokens bound to the release; minor before major; a major only
- * behind WordPress's own switch for all new versions; every refusal; and the
- * runner handing exactly the confirmed release to core. For translations:
+ * behind Saddle's own setting, whatever WordPress's switch says (#359); every
+ * refusal; and the runner handing exactly the confirmed release to core. For translations:
  * the same gate, and a real language pack applied by core's
  * Language_Pack_Upgrader from a local zip.
  *
@@ -79,6 +79,7 @@ class Saddle_Core_Updates_Test extends WP_UnitTestCase {
 		delete_site_transient( 'update_core' );
 		delete_site_transient( 'update_plugins' );
 		delete_site_option( 'auto_update_core_major' );
+		delete_option( Saddle_Offer_Runner::OPTION_CORE_MAJOR );
 		delete_site_option( 'auto_core_update_failed' );
 		WP_Upgrader::release_lock( 'core_updater' );
 		wp_clear_scheduled_hook( Saddle_Update_Runner::HOOK );
@@ -240,32 +241,63 @@ class Saddle_Core_Updates_Test extends WP_UnitTestCase {
 		$this->assertSame( 'minor', $this->preview()['preview']['kind'] );
 	}
 
-	public function test_a_new_install_lets_wordpress_apply_major_releases() {
+	public function test_wordpress_turns_its_own_major_switch_on_for_new_installs() {
 		// Core's default since WordPress 5.6 (schema.php): a new install
-		// updates itself to every new version; a site upgraded from before
-		// 5.6 has "unset", which means minor releases only. Saddle follows
-		// whichever this site has, so this default decides most sites.
+		// updates itself to every new version. That is why Saddle does not
+		// read this switch for majors (#359): on most sites it was never the
+		// owner's choice, and it decides only what WordPress does unattended.
 		$this->assertSame( 'enabled', get_site_option( 'auto_update_core_major' ) );
 	}
 
-	public function test_a_major_release_is_refused_when_wordpress_updates_itself_only_for_minor_releases() {
-		if ( defined( 'WP_AUTO_UPDATE_CORE' ) ) {
-			$this->markTestSkipped( 'WP_AUTO_UPDATE_CORE decides majors on this install.' );
-		}
-		// What Dashboard → Updates' "maintenance and security releases only"
-		// link stores. A site upgraded from before 5.6 has "unset", which
-		// core reads the same way.
-		update_site_option( 'auto_update_core_major', 'disabled' );
+	public function test_a_major_release_is_refused_by_default_even_when_wordpress_updates_itself_to_majors() {
+		update_site_option( 'auto_update_core_major', 'enabled' );
+		$this->assertFalse( Saddle_Offer_Runner::core_majors_allowed(), 'Off by default.' );
 		$this->offer( array( $this->next( 'major' ) ) );
+
 		$result = $this->call();
+
 		$this->assert_refused( $result, 'saddle_major_core_update' );
+		$this->assertStringContainsString( 'Saddle → Settings', $result->get_error_message() );
 		$this->assertStringContainsString( 'Dashboard → Updates', $result->get_error_message() );
 	}
 
-	public function test_a_major_release_wordpress_would_apply_lists_what_can_break() {
-		if ( defined( 'WP_AUTO_UPDATE_CORE' ) ) {
-			$this->markTestSkipped( 'WP_AUTO_UPDATE_CORE decides majors on this install.' );
-		}
+	public function test_the_owner_turns_major_releases_on_in_saddle_settings() {
+		$field = Saddle_Settings_Registry::schema( 'saddle' )['fields']['core_major_updates'];
+		$this->assertSame( 'boolean', $field['type'] );
+		$this->assertFalse( $field['default'] );
+		$this->assertSame( 'read', $field['agent'], 'No tool can turn it on.' );
+		$this->assertSame( 'settings/general', $field['screen'] );
+		$this->assertSame( 'custom', $field['control'], 'The Safety section draws it.' );
+		$this->assertTrue( Saddle_Settings_Guard::is_protected_option( Saddle_Offer_Runner::OPTION_CORE_MAJOR ) );
+
+		$this->assertTrue( Saddle_Core_Settings::set( array( 'core_major_updates' => true ) ) );
+		$this->assertTrue( Saddle_Offer_Runner::core_majors_allowed() );
+		$this->assertTrue( Saddle_Core_Settings::get()['core_major_updates'] );
+	}
+
+	public function test_the_safety_switch_saves_it_through_the_owners_route() {
+		$post = function ( array $body ) {
+			$request = new WP_REST_Request( 'POST', '/saddle/v1/preferences' );
+			$request->set_header( 'content-type', 'application/json' );
+			$request->set_body( wp_json_encode( $body ) );
+			return rest_get_server()->dispatch( $request );
+		};
+
+		$response = $post( array( 'core_major_updates' => true ) );
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertTrue( $response->get_data()['core_major_updates'] );
+		$this->assertTrue( Saddle_Offer_Runner::core_majors_allowed() );
+
+		$this->assertFalse( $post( array( 'core_major_updates' => false ) )->get_data()['core_major_updates'] );
+		$this->assertFalse( Saddle_Offer_Runner::core_majors_allowed() );
+
+		// Owner only: an editor is refused and nothing changes.
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'editor' ) ) );
+		$this->assertSame( 403, $post( array( 'core_major_updates' => true ) )->get_status() );
+		$this->assertFalse( Saddle_Offer_Runner::core_majors_allowed() );
+	}
+
+	public function test_a_major_release_the_owner_allowed_lists_what_can_break() {
 		// An active plugin WordPress.org says was tested only up to this X.Y.
 		$this->plugin_dir = WP_PLUGIN_DIR . '/old-plugin';
 		wp_mkdir_p( $this->plugin_dir );
@@ -286,7 +318,9 @@ class Saddle_Core_Updates_Test extends WP_UnitTestCase {
 			)
 		);
 
-		update_site_option( 'auto_update_core_major', 'enabled' );
+		// WordPress's own switch says minor only; Saddle's setting decides.
+		update_site_option( 'auto_update_core_major', 'disabled' );
+		update_option( Saddle_Offer_Runner::OPTION_CORE_MAJOR, true );
 		$this->offer( array( $this->next( 'major' ) ) );
 		$shown = $this->preview()['preview'];
 
@@ -381,6 +415,52 @@ class Saddle_Core_Updates_Test extends WP_UnitTestCase {
 
 		$item = Saddle_Update_Runner::get_run( $done['run_id'] )['items'][0];
 		$this->assertSame( 'up_to_date', $item['status'] );
+	}
+
+	/** Answer core's download with an error, and keep what it asked for. */
+	private function refuse_download() {
+		$asked = new ArrayObject();
+		add_filter(
+			'upgrader_pre_download',
+			static function ( $reply, $package ) use ( $asked ) {
+				$asked[] = $package;
+				return new WP_Error( 'saddle_test_no_download', 'Not in tests.' );
+			},
+			10,
+			2
+		);
+		return $asked;
+	}
+
+	public function test_runner_hands_an_allowed_major_release_to_core_whatever_wordpress_switch_says() {
+		update_site_option( 'auto_update_core_major', 'disabled' );
+		update_option( Saddle_Offer_Runner::OPTION_CORE_MAJOR, true );
+		$this->offer( array( $this->next( 'major' ) ) );
+		$done  = $this->confirm( $this->preview()['confirm_token'] );
+		$asked = $this->refuse_download();
+
+		Saddle_Update_Runner::run( $done['run_id'] );
+
+		$item = Saddle_Update_Runner::get_run( $done['run_id'] )['items'][0];
+		$this->assertSame( 'failed', $item['status'], 'Core took the release and asked for its package.' );
+		$this->assertStringContainsString( 'wordpress-' . $this->next( 'major' ), $asked[0] );
+		$this->assertSame( $this->version, wp_get_wp_version() );
+	}
+
+	public function test_runner_skips_a_major_release_turned_off_after_the_confirm() {
+		update_option( Saddle_Offer_Runner::OPTION_CORE_MAJOR, true );
+		$this->offer( array( $this->next( 'major' ) ) );
+		$done = $this->confirm( $this->preview()['confirm_token'] );
+		update_option( Saddle_Offer_Runner::OPTION_CORE_MAJOR, false );
+		$this->watch_upgrader();
+
+		Saddle_Update_Runner::run( $done['run_id'] );
+
+		$item = Saddle_Update_Runner::get_run( $done['run_id'] )['items'][0];
+		$this->assertSame( 'skipped', $item['status'] );
+		$this->assertStringContainsString( 'Saddle → Settings', $item['message'] );
+		$this->assertSame( 0, $this->upgrader_calls, 'Core was never asked.' );
+		$this->assertSame( $this->version, wp_get_wp_version() );
 	}
 
 	/* -------- update-translations -------- */

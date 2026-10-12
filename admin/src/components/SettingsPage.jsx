@@ -1,7 +1,7 @@
 /**
  * Settings — one page, no tabs (#285).
  *
- * - Safety: three switches that save the moment they are flipped. A switch
+ * - Safety: four switches that save the moment they are flipped. A switch
  *   moves at once, says "Saved." when the server agrees, and moves back if it
  *   doesn't (R9, P16).
  * - Advanced: rarely used things, each collapsed — single tools, sign-in for
@@ -49,7 +49,8 @@ const Labelled = ( { children, help } ) => (
 );
 
 /**
- * Safety: drafts-only, rehearsal and the domain check, each saved on flip
+ * Safety: drafts-only, rehearsal, the domain check and major WordPress
+ * releases (#359), each saved on flip
  * through `POST /preferences`.
  *
  * @param {Object}   props
@@ -164,6 +165,21 @@ function Safety( { onRehearsalChanged } ) {
 					),
 					meta: __(
 						'After an address change, confirm access again.',
+						'saddle'
+					),
+				} ) }
+				{ row( {
+					key: 'core_major_updates',
+					// The address an app gives the owner when it is refused
+					// a major release (the settings registry's field id).
+					id: 'saddle-field-saddle-core_major_updates',
+					title: __( 'Major WordPress releases', 'saddle' ),
+					help: __(
+						'Lets an app update WordPress to a new major version, such as 7.1 to 7.2, after you approve its preview. A major release has no automatic rollback and upgrades the database. Minor and security releases never need this. WordPress’s own “automatic updates for all new versions” in Dashboard → Updates is a separate setting.',
+						'saddle'
+					),
+					meta: __(
+						'Apps can update WordPress to a new major version.',
 						'saddle'
 					),
 				} ) }

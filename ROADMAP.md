@@ -64,8 +64,8 @@ when it is picked up; this file names direction, not tickets.
    the WordPress.org directory, by slug, through WordPress's own installer in
    the background runner, and arrive inactive; activating stays its own
    confirmed step, and nothing deletes. Core updates are minor and security
-   releases, plus a major release only when WordPress's own switch for all
-   new versions is on (the default since WordPress 5.6 for new installs). No zip or URL
+   releases, plus a major release only when the owner turns on "Major
+   WordPress releases" in Saddle → Settings, off by default (#359). No zip or URL
    installs, no file editors, no delete tools. The hard line was rewritten
    first (#347).
 3. **The agency workflow.** Divi 5 page editing moves to free (2026-09-26 split:

@@ -7,13 +7,14 @@
  * release WordPress already offers for background updates, through
  * {@see WP_Automatic_Updater::update()} in {@see Saddle_Update_Runner}, out of
  * band, after a confirmed preview. Minor and security releases, always. A
- * major release only when WordPress itself would apply it in the background
- * (Fahim, 2026-10-12): its own switch in Dashboard → Updates, "automatic
- * updates for all new versions", which no tool can flip. That switch is on by
- * default for sites installed since WordPress 5.6 and "unset" (minor only)
- * for sites upgraded from before; an owner who chose "maintenance and
- * security releases only" gets every major refused. A major has no automatic
- * rollback and upgrades the database, so Saddle never goes past that switch.
+ * major release only when the owner has turned on Saddle's own setting,
+ * "Major WordPress releases" in Saddle → Settings, which is off by default
+ * and which no tool can change (Fahim, 2026-10-13, #359). It replaced
+ * WordPress's own "automatic updates for all new versions" switch (#351):
+ * WordPress turns that on by default for sites installed since 5.6, so it
+ * was rarely the owner's choice, and it decides what WordPress does
+ * unattended, not what an app may do after a preview. A major has no
+ * automatic rollback and upgrades the database.
  *
  * @package Saddle
  */
@@ -32,7 +33,7 @@ function saddle_register_core_update_abilities() {
 		'saddle/update-core',
 		array(
 			'label'               => __( 'Update WordPress', 'saddle' ),
-			'description'         => __( 'Updates WordPress itself to a release WordPress already offers for background updates (see list-updates). Minor and security releases (7.1.2 to 7.1.3) are always allowed. A major release (7.1 to 7.2) is allowed only when WordPress is set to update itself to all new versions (Dashboard → Updates; the default on sites installed since WordPress 5.6); otherwise it is refused, and the owner updates it there. When both are offered, the minor release comes first. It takes two calls. The first changes nothing: it returns a preview with the installed and new version, whether it is minor or major, the PHP and MySQL versions it needs against this site\'s, and for a major release the active plugins not tested with it and what cannot be undone, plus a confirm_token. Call again with that token to queue the update. WordPress\'s own updater then runs it in the background, with a short maintenance message for visitors; check list-updates a minute later for the result under "runs". A core update cannot be undone: WordPress has no rollback for one, and a major release also upgrades the database. Refuses development versions, a site where the last automatic core update failed critically, and sites where WordPress cannot change files.', 'saddle' ),
+			'description'         => __( 'Updates WordPress itself to a release WordPress already offers for background updates (see list-updates). Minor and security releases (7.1.2 to 7.1.3) are always allowed. A major release (7.1 to 7.2) is allowed only when the owner has turned on "Major WordPress releases" in Saddle → Settings, which is off by default and which no tool can change; otherwise it is refused, and the owner updates it in Dashboard → Updates or turns that setting on. When both are offered, the minor release comes first. It takes two calls. The first changes nothing: it returns a preview with the installed and new version, whether it is minor or major, the PHP and MySQL versions it needs against this site\'s, and for a major release the active plugins not tested with it and what cannot be undone, plus a confirm_token. Call again with that token to queue the update. WordPress\'s own updater then runs it in the background, with a short maintenance message for visitors; check list-updates a minute later for the result under "runs". A core update cannot be undone: WordPress has no rollback for one, and a major release also upgrades the database. Refuses development versions, a site where the last automatic core update failed critically, and sites where WordPress cannot change files.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -237,8 +238,8 @@ class Saddle_Core_Update_Abilities {
 	/* ------------------------------------------------------------------ */
 
 	/**
-	 * The release to offer: the newest minor one, else a major one WordPress
-	 * would apply in the background itself, or a named refusal.
+	 * The release to offer: the newest minor one, else a major one when the
+	 * owner allows majors in Saddle → Settings, or a named refusal.
 	 *
 	 * @return object|WP_Error An offer from the update_core transient.
 	 */
@@ -273,11 +274,11 @@ class Saddle_Core_Update_Abilities {
 
 		$offer = $best['minor'];
 		if ( ! $offer && $best['major'] ) {
-			if ( ! Core_Upgrader::should_update_to_version( $best['major']->current ) ) {
+			if ( ! Saddle_Offer_Runner::core_majors_allowed() ) {
 				return new WP_Error(
 					'saddle_major_core_update',
 					/* translators: %s: new WordPress version. */
-					sprintf( __( 'WordPress %s is a major release. Saddle applies one only when WordPress is set to update itself to all new versions, and this site updates itself only for maintenance and security releases. Ask the owner to update it in Dashboard → Updates, or to change that setting there. Do not retry.', 'saddle' ), $best['major']->current ),
+					sprintf( __( 'WordPress %s is a major release. Saddle applies one only when the owner turns on "Major WordPress releases" in Saddle → Settings, and it is off on this site. Tell the user they can update it in Dashboard → Updates, or turn that setting on and ask again. Do not retry.', 'saddle' ), $best['major']->current ),
 					array( 'status' => 409 )
 				);
 			}
@@ -315,10 +316,7 @@ class Saddle_Core_Update_Abilities {
 	 * @return string 'minor' or 'major'.
 	 */
 	private static function kind( $version ) {
-		$branch = static function ( $v ) {
-			return implode( '.', array_slice( preg_split( '/[.-]/', (string) $v ), 0, 2 ) );
-		};
-		return $branch( $version ) === $branch( get_bloginfo( 'version' ) ) ? 'minor' : 'major';
+		return Saddle_Offer_Runner::is_major( $version ) ? 'major' : 'minor';
 	}
 
 	/**
