@@ -30,6 +30,12 @@ class Saddle_Installs_Test extends WP_UnitTestCase {
 	/** plugin_information answers by slug; anything else is "not found". */
 	private $info = array();
 
+	/** theme_information answers by slug; anything else is "not found". */
+	private $themes = array();
+
+	/** Theme folders a test created, removed in tear_down. */
+	private $theme_dirs = array();
+
 	/** Plugin folders a test created, removed in tear_down. */
 	private $dirs = array();
 
@@ -40,6 +46,8 @@ class Saddle_Installs_Test extends WP_UnitTestCase {
 	private $zip;
 
 	const SLUG = 'saddle-dummy-install';
+	const THEME  = 'saddle-dummy-theme';
+	const PARENT = 'saddle-dummy-parent';
 
 	public function set_up() {
 		parent::set_up();
@@ -51,6 +59,8 @@ class Saddle_Installs_Test extends WP_UnitTestCase {
 		$this->info = array( 'classic-editor' => $this->fixture( 'plugin-information' ) );
 		$this->dummy( '1.0.0' );
 		$this->dirs[] = WP_PLUGIN_DIR . '/' . self::SLUG;
+		$this->dummy_theme( '1.0.0' );
+		$this->theme_dirs = array( get_theme_root() . '/' . self::THEME, get_theme_root() . '/' . self::PARENT );
 		add_filter( 'pre_http_request', array( $this, 'serve_directory' ), 10, 3 );
 		add_filter( 'automatic_updates_is_vcs_checkout', '__return_false' );
 		// WordPress's test bootstrap disables background updates; the runner
@@ -78,9 +88,11 @@ class Saddle_Installs_Test extends WP_UnitTestCase {
 		wp_clear_scheduled_hook( Saddle_Update_Runner::HOOK );
 		delete_option( Saddle_Update_Runner::OPTION );
 		delete_site_transient( 'update_plugins' );
-		foreach ( $this->dirs as $dir ) {
+		foreach ( array_merge( $this->dirs, $this->theme_dirs ) as $dir ) {
 			$this->remove_dir( $dir );
 		}
+		wp_clean_themes_cache();
+		remove_all_filters( 'themes_api' );
 		$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '%saddle_plugin_search_%'" );
 		wp_cache_flush();
 		wp_cache_delete( 'plugins', 'plugins' );
@@ -97,7 +109,7 @@ class Saddle_Installs_Test extends WP_UnitTestCase {
 
 	public function serve_directory( $pre, $args, $url ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- filter signature.
 		$parts = wp_parse_url( $url );
-		if ( 'api.wordpress.org' !== $parts['host'] || '/plugins/info/1.2/' !== $parts['path'] ) {
+		if ( 'api.wordpress.org' !== $parts['host'] || ! in_array( $parts['path'], array( '/plugins/info/1.2/', '/themes/info/1.2/' ), true ) ) {
 			return new WP_Error( 'saddle_test_offline', 'No outbound HTTP in tests: ' . $url );
 		}
 		$this->requests[] = $url;
@@ -105,6 +117,9 @@ class Saddle_Installs_Test extends WP_UnitTestCase {
 
 		if ( 'query_plugins' === $query['action'] ) {
 			$body = $this->fixture( 'query-plugins' );
+		} elseif ( 'theme_information' === $query['action'] ) {
+			$slug = $query['request']['slug'];
+			$body = isset( $this->themes[ $slug ] ) ? $this->themes[ $slug ] : array( 'error' => 'Theme not found' );
 		} else {
 			$slug = $query['request']['slug'];
 			$body = isset( $this->info[ $slug ] ) ? $this->info[ $slug ] : array( 'error' => 'Plugin not found.' );
@@ -135,6 +150,62 @@ class Saddle_Installs_Test extends WP_UnitTestCase {
 				'download_link'    => 'https://downloads.wordpress.org/plugin/' . self::SLUG . '.' . $version . '.zip',
 			),
 			$extra
+		);
+	}
+
+	/** A directory entry for the throwaway theme, built on the recorded answer. */
+	private function dummy_theme( $version, array $extra = array() ) {
+		$this->themes[ self::THEME ] = array_merge(
+			$this->fixture( 'theme-information' ),
+			array(
+				'name'          => 'Saddle Dummy Theme',
+				'slug'          => self::THEME,
+				'version'       => $version,
+				'last_updated'  => gmdate( 'Y-m-d', time() - DAY_IN_SECONDS ),
+				'download_link' => 'https://downloads.wordpress.org/theme/' . self::THEME . '.' . $version . '.zip',
+			),
+			$extra
+		);
+	}
+
+	/** The recorded child-theme answer, pointed at the throwaway parent. */
+	private function dummy_child( $version ) {
+		$child = $this->fixture( 'theme-information-child' );
+		$this->assertSame( 'kindergarten-art-school', $child['template'], 'WordPress.org names a child theme\'s parent in "template".' );
+		$this->assertSame( 'kindergarten-art-school', $child['parent']['slug'] );
+		$this->dummy_theme(
+			$version,
+			array(
+				'template' => self::PARENT,
+				'parent'   => array_merge( $child['parent'], array( 'slug' => self::PARENT ) ),
+			)
+		);
+	}
+
+	/** A theme folder on disk, as if installed. */
+	private function write_theme( $slug, $version = '1.0.0' ) {
+		wp_mkdir_p( get_theme_root() . '/' . $slug );
+		file_put_contents( get_theme_root() . "/{$slug}/style.css", "/*\nTheme Name: Test {$slug}\nVersion: {$version}\n*/\n" );
+		file_put_contents( get_theme_root() . "/{$slug}/index.php", "<?php\n" );
+		wp_clean_themes_cache();
+	}
+
+	/** A zip of the throwaway theme, served in place of the download. */
+	private function serve_theme_package( $version, $template = '' ) {
+		$this->zip = get_temp_dir() . self::THEME . '-' . wp_generate_password( 6, false ) . '.zip';
+		$zip       = new ZipArchive();
+		$zip->open( $this->zip, ZipArchive::CREATE | ZipArchive::OVERWRITE );
+		$zip->addFromString( self::THEME . '/style.css', "/*\nTheme Name: Saddle Dummy Theme\nVersion: {$version}\n" . ( $template ? "Template: {$template}\n" : '' ) . "*/\n" );
+		$zip->addFromString( self::THEME . '/index.php', "<?php\n" );
+		$zip->close();
+		$path = $this->zip;
+		add_filter(
+			'upgrader_pre_download',
+			static function () use ( $path ) {
+				return $path;
+			},
+			10,
+			0
 		);
 	}
 
@@ -218,6 +289,21 @@ class Saddle_Installs_Test extends WP_UnitTestCase {
 
 	private function install( array $input = array() ) {
 		return $this->ability( 'saddle/install-plugin' )->execute( $input + array( 'slug' => self::SLUG ) );
+	}
+
+	private function install_theme( array $input = array() ) {
+		return $this->ability( 'saddle/install-theme' )->execute( $input + array( 'slug' => self::THEME ) );
+	}
+
+	private function preview_theme() {
+		$preview = $this->install_theme();
+		$this->assertNotWPError( $preview, is_wp_error( $preview ) ? $preview->get_error_message() : '' );
+		$this->assertNotEmpty( $preview['confirm_token'] );
+		return $preview;
+	}
+
+	private function confirm_theme( $token ) {
+		return $this->install_theme( array( 'confirm_token' => $token ) );
 	}
 
 	private function preview() {
@@ -598,5 +684,131 @@ class Saddle_Installs_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'Tested up to WordPress 5.0', $warnings );
 		$this->assertStringContainsString( '2020-01-01', $warnings );
 		$this->assertStringContainsString( 'woocommerce', $warnings );
+	}
+
+	/* -------- install-theme -------- */
+
+	public function test_install_theme_requires_admin_tier() {
+		Saddle_Capabilities::set_tier( 'write' );
+		$this->assertWPError( $this->install_theme() );
+		$this->assertSame( array(), $this->requests );
+	}
+
+	public function test_theme_preview_changes_nothing() {
+		$shown = $this->preview_theme()['preview'];
+		$this->assertSame( 'theme', $shown['type'] );
+		$this->assertSame( 'Saddle Dummy Theme', $shown['name'] );
+		$this->assertSame( '1.0.0', $shown['version'] );
+		$this->assertSame( 'wordpressdotorg', $shown['author'] );
+		$this->assertSame( '7.2', $shown['requires_php'] );
+		$this->assertNull( $shown['parent'] );
+		$this->assertNull( $shown['tested'], 'The themes API has no "tested up to".' );
+		$this->assertTrue( $shown['arrives_inactive'] );
+		$this->assertSame( array(), Saddle_Update_Runner::runs() );
+		$this->assertFalse( file_exists( get_theme_root() . '/' . self::THEME ) );
+		$this->assertStringContainsString( 'action=theme_information', $this->requests[0] );
+	}
+
+	public function test_theme_confirm_queues_one_run_and_never_runs_the_installer_in_the_request() {
+		$preview = $this->preview_theme();
+		$this->watch_upgrader();
+		$done = $this->confirm_theme( $preview['confirm_token'] );
+
+		$this->assertNotWPError( $done );
+		$this->assertSame( 'activate-theme', $done['next'] );
+		$runs = Saddle_Update_Runner::runs();
+		$this->assertCount( 1, $runs );
+		$this->assertSame( 'install-theme', $runs[0]['type'] );
+		$this->assertSame( 0, $this->upgrader_calls, 'Confirming must not run the installer synchronously.' );
+		$this->assertFalse( file_exists( get_theme_root() . '/' . self::THEME ) );
+		$this->assertNotEmpty( $this->log_entries( 'install-theme' ) );
+		$this->assertWPError( $this->confirm_theme( $preview['confirm_token'] ), 'A used token must be refused.' );
+	}
+
+	public function test_a_theme_token_previewed_for_one_version_cannot_install_another() {
+		$preview = $this->preview_theme();
+		$this->dummy_theme( '1.1.0' );
+		$this->assertWPError( $this->confirm_theme( $preview['confirm_token'] ) );
+		$this->assertSame( array(), Saddle_Update_Runner::runs() );
+	}
+
+	public function test_runner_installs_a_theme_without_switching_to_it() {
+		$active = get_stylesheet();
+		$done   = $this->confirm_theme( $this->preview_theme()['confirm_token'] );
+		$this->serve_theme_package( '1.0.0' );
+
+		Saddle_Update_Runner::run( $done['run_id'] );
+
+		$item = Saddle_Update_Runner::get_run( $done['run_id'] )['items'][0];
+		$this->assertSame( 'installed', $item['status'], $item['message'] );
+		wp_clean_themes_cache();
+		$this->assertTrue( wp_get_theme( self::THEME )->exists(), 'Core installed the theme.' );
+		$this->assertSame( $active, get_stylesheet(), 'A new theme is never activated.' );
+		$this->assertFalse( file_exists( ABSPATH . '.maintenance' ) );
+	}
+
+	public function test_a_child_theme_needs_its_parent_installed_first() {
+		$this->dummy_child( '1.0.0' );
+		$result = $this->install_theme();
+		$this->assert_refused( $result, 'saddle_parent_theme_missing' );
+		$this->assertStringContainsString( self::PARENT, $result->get_error_message() );
+
+		$this->write_theme( self::PARENT );
+		$this->assertSame( self::PARENT, $this->preview_theme()['preview']['parent'] );
+	}
+
+	public function test_runner_skips_a_child_whose_parent_went_away() {
+		$this->dummy_child( '1.0.0' );
+		$this->write_theme( self::PARENT );
+		$done = $this->confirm_theme( $this->preview_theme()['confirm_token'] );
+		$this->remove_dir( get_theme_root() . '/' . self::PARENT );
+		wp_clean_themes_cache();
+		$this->serve_theme_package( '1.0.0', self::PARENT );
+
+		Saddle_Update_Runner::run( $done['run_id'] );
+
+		$item = Saddle_Update_Runner::get_run( $done['run_id'] )['items'][0];
+		$this->assertSame( 'skipped', $item['status'] );
+		$this->assertFalse( file_exists( get_theme_root() . '/' . self::THEME ) );
+	}
+
+	public function test_runner_never_fetches_a_parent_nobody_confirmed() {
+		// The directory says no parent, but the package's style.css names one.
+		// Core's installer would fetch and install that parent on its own.
+		$done = $this->confirm_theme( $this->preview_theme()['confirm_token'] );
+		$this->serve_theme_package( '1.0.0', self::PARENT );
+		$this->requests = array();
+
+		Saddle_Update_Runner::run( $done['run_id'] );
+
+		$asked = implode( ' ', $this->requests );
+		$this->assertStringNotContainsString( self::PARENT, $asked, 'The unconfirmed parent was never asked for.' );
+		$this->assertFalse( file_exists( get_theme_root() . '/' . self::PARENT ), 'Nor installed.' );
+	}
+
+	public function test_theme_refusals_come_before_any_token() {
+		$this->assert_refused( $this->install_theme( array( 'slug' => 'no-such-theme' ) ), 'saddle_not_in_directory' );
+
+		$this->dummy_theme( '1.0.0', array( 'download_link' => 'https://downloads.wordpress.org/plugin/' . self::THEME . '.1.0.0.zip' ) );
+		$this->assert_refused( $this->install_theme(), 'saddle_not_from_wporg' );
+
+		$this->dummy_theme( '1.0.0', array( 'requires_php' => '99.0' ) );
+		$this->assert_refused( $this->install_theme(), 'saddle_php_too_old' );
+
+		$this->dummy_theme( '1.0.0' );
+		$this->write_theme( self::THEME );
+		$this->assert_refused( $this->install_theme(), 'saddle_already_installed' );
+	}
+
+	public function test_an_account_that_cannot_install_themes_is_refused() {
+		add_filter(
+			'map_meta_cap',
+			static function ( $caps, $cap ) {
+				return 'install_themes' === $cap ? array( 'do_not_allow' ) : $caps;
+			},
+			10,
+			2
+		);
+		$this->assert_refused( $this->install_theme(), 'saddle_cannot_install' );
 	}
 }

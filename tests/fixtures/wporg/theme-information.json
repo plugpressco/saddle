@@ -1,0 +1,19 @@
+{
+    "name": "Twenty Twenty-Five",
+    "slug": "twentytwentyfive",
+    "version": "1.5",
+    "preview_url": "https://wp-themes.com/twentytwentyfive/",
+    "author": "wordpressdotorg",
+    "rating": 80,
+    "num_ratings": 14,
+    "active_installs": 1000000,
+    "last_updated": "2026-05-20",
+    "last_updated_time": "2026-05-20 21:54:25",
+    "download_link": "https://downloads.wordpress.org/theme/twentytwentyfive.1.5.zip",
+    "requires": "6.7",
+    "requires_php": "7.2",
+    "is_commercial": false,
+    "external_support_url": false,
+    "is_community": true,
+    "external_repository_url": ""
+}
