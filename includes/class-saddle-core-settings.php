@@ -147,9 +147,8 @@ class Saddle_Core_Settings {
 				'default' => false,
 				'label'   => __( 'Major WordPress releases', 'saddle' ),
 				'help'    => __( 'Let apps update WordPress to a new major version, such as 7.1 to 7.2, after you approve the preview. Minor and security releases never need this.', 'saddle' ),
-				'screen'  => 'settings/general',
-				'section' => __( 'Updates', 'saddle' ),
-				'level'   => 'basic',
+				'screen'  => $settings,
+				'control' => 'custom',
 			),
 			'memory_max_entries'      => array(
 				'type'    => 'integer',
@@ -264,7 +263,7 @@ class Saddle_Core_Settings {
 					Saddle_Capabilities::set_domain_enforcement( (bool) $value );
 					break;
 				case 'core_major_updates':
-					update_option( Saddle_Offer_Runner::OPTION_CORE_MAJOR, (bool) $value );
+					Saddle_Offer_Runner::set_core_majors( (bool) $value );
 					break;
 				case 'memory_max_entries':
 					update_option( Saddle_Memory::OPTION_MAX_ENTRIES, (int) $value );

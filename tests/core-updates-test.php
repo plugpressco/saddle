@@ -267,11 +267,34 @@ class Saddle_Core_Updates_Test extends WP_UnitTestCase {
 		$this->assertFalse( $field['default'] );
 		$this->assertSame( 'read', $field['agent'], 'No tool can turn it on.' );
 		$this->assertSame( 'settings/general', $field['screen'] );
+		$this->assertSame( 'custom', $field['control'], 'The Safety section draws it.' );
 		$this->assertTrue( Saddle_Settings_Guard::is_protected_option( Saddle_Offer_Runner::OPTION_CORE_MAJOR ) );
 
 		$this->assertTrue( Saddle_Core_Settings::set( array( 'core_major_updates' => true ) ) );
 		$this->assertTrue( Saddle_Offer_Runner::core_majors_allowed() );
 		$this->assertTrue( Saddle_Core_Settings::get()['core_major_updates'] );
+	}
+
+	public function test_the_safety_switch_saves_it_through_the_owners_route() {
+		$post = function ( array $body ) {
+			$request = new WP_REST_Request( 'POST', '/saddle/v1/preferences' );
+			$request->set_header( 'content-type', 'application/json' );
+			$request->set_body( wp_json_encode( $body ) );
+			return rest_get_server()->dispatch( $request );
+		};
+
+		$response = $post( array( 'core_major_updates' => true ) );
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertTrue( $response->get_data()['core_major_updates'] );
+		$this->assertTrue( Saddle_Offer_Runner::core_majors_allowed() );
+
+		$this->assertFalse( $post( array( 'core_major_updates' => false ) )->get_data()['core_major_updates'] );
+		$this->assertFalse( Saddle_Offer_Runner::core_majors_allowed() );
+
+		// Owner only: an editor is refused and nothing changes.
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'editor' ) ) );
+		$this->assertSame( 403, $post( array( 'core_major_updates' => true ) )->get_status() );
+		$this->assertFalse( Saddle_Offer_Runner::core_majors_allowed() );
 	}
 
 	public function test_a_major_release_the_owner_allowed_lists_what_can_break() {

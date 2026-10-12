@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-12T23:07:35+00:00\n"
+"POT-Creation-Date: 2026-10-12T23:24:19+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -4071,14 +4071,14 @@ msgid "That is not an access role Saddle knows."
 msgstr ""
 
 #: includes/admin/class-saddle-connections-rest.php:159
-#: includes/admin/class-saddle-rest.php:551
-#: includes/admin/class-saddle-rest.php:581
+#: includes/admin/class-saddle-rest.php:555
+#: includes/admin/class-saddle-rest.php:585
 msgid "That connection no longer exists. It may already be disconnected."
 msgstr ""
 
 #. translators: 1: app name, 2: its new access, e.g. "Edit content".
 #: includes/admin/class-saddle-connections-rest.php:173
-#: includes/admin/class-saddle-rest.php:599
+#: includes/admin/class-saddle-rest.php:603
 #, php-format
 msgid "Set %1$s to “%2$s”"
 msgstr ""
@@ -4103,139 +4103,139 @@ msgstr ""
 msgid "You need to be an administrator to do that."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:682
-#: includes/class-saddle-core-settings.php:237
+#: includes/admin/class-saddle-rest.php:687
+#: includes/class-saddle-core-settings.php:236
 msgid "Unknown access tier."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:782
-#: includes/admin/class-saddle-rest.php:795
+#: includes/admin/class-saddle-rest.php:791
+#: includes/admin/class-saddle-rest.php:804
 msgid "No skill with that name."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:864
-#: includes/admin/class-saddle-rest.php:880
+#: includes/admin/class-saddle-rest.php:873
+#: includes/admin/class-saddle-rest.php:889
 msgid "No memory entry with that key."
 msgstr ""
 
 #. translators: %d: entries removed.
-#: includes/admin/class-saddle-rest.php:919
+#: includes/admin/class-saddle-rest.php:928
 #, php-format
 msgid "Owner cleared all agent-written memory (%d entries)."
 msgstr ""
 
 #. translators: %s: plugin name.
-#: includes/admin/class-saddle-rest.php:1186
+#: includes/admin/class-saddle-rest.php:1195
 #, php-format
 msgid "Switched on the %s integration"
 msgstr ""
 
 #. translators: %s: plugin name.
-#: includes/admin/class-saddle-rest.php:1186
+#: includes/admin/class-saddle-rest.php:1195
 #, php-format
 msgid "Switched off the %s integration"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1209
+#: includes/admin/class-saddle-rest.php:1218
 msgid "Yoast SEO"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1209
+#: includes/admin/class-saddle-rest.php:1218
 #: includes/class-saddle-service-sources.php:66
 msgid "Reads and edits Yoast’s own SEO fields."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1210
+#: includes/admin/class-saddle-rest.php:1219
 msgid "Rank Math"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1210
+#: includes/admin/class-saddle-rest.php:1219
 #: includes/class-saddle-service-sources.php:67
 msgid "Reads and edits Rank Math’s own SEO fields."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1211
+#: includes/admin/class-saddle-rest.php:1220
 msgid "AIOSEO"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1211
+#: includes/admin/class-saddle-rest.php:1220
 #: includes/class-saddle-service-sources.php:68
 msgid "Reads and edits AIOSEO’s own SEO fields."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1212
+#: includes/admin/class-saddle-rest.php:1221
 msgid "WooCommerce"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1212
+#: includes/admin/class-saddle-rest.php:1221
 #: includes/class-saddle-service-sources.php:69
 msgid "Products and orders."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1213
+#: includes/admin/class-saddle-rest.php:1222
 #: includes/class-saddle-unsplash.php:574
 #: includes/class-saddle-unsplash.php:626
 msgid "Unsplash"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1213
+#: includes/admin/class-saddle-rest.php:1222
 msgid "Stock-photo search and import, built into Saddle. Needs an Access Key under Saddle → Services."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1265
+#: includes/admin/class-saddle-rest.php:1274
 msgid "MCP Client"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1300
-#: includes/admin/class-saddle-rest.php:1411
-#: includes/admin/class-saddle-rest.php:1466
+#: includes/admin/class-saddle-rest.php:1309
+#: includes/admin/class-saddle-rest.php:1420
+#: includes/admin/class-saddle-rest.php:1475
 msgid "Application Passwords are not available on this site."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1304
+#: includes/admin/class-saddle-rest.php:1313
 msgid "Application Passwords are off on this site. Serve the site over HTTPS, or turn them back on in your security plugin."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1309
+#: includes/admin/class-saddle-rest.php:1318
 msgid "AI app"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1420
-#: includes/admin/class-saddle-rest.php:1472
+#: includes/admin/class-saddle-rest.php:1429
+#: includes/admin/class-saddle-rest.php:1481
 msgid "No Saddle client with that ID."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1492
+#: includes/admin/class-saddle-rest.php:1501
 msgid "The old key was removed, but issuing its replacement failed. Connect the app again from the Connections screen."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1594
+#: includes/admin/class-saddle-rest.php:1603
 msgid "Only the site owner can undo from here. Apps use their own undo tool."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1603
+#: includes/admin/class-saddle-rest.php:1612
 msgid "Choose at least one change to undo."
 msgstr ""
 
 #. translators: %s: the change that was undone, as the activity log recorded it.
-#: includes/admin/class-saddle-rest.php:1679
+#: includes/admin/class-saddle-rest.php:1688
 #, php-format
 msgid "Undid this change: %s"
 msgstr ""
 
 #. translators: %d: number of changes undone.
-#: includes/admin/class-saddle-rest.php:1685
+#: includes/admin/class-saddle-rest.php:1694
 #, php-format
 msgid "Undid %d change."
 msgid_plural "Undid %d changes."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/admin/class-saddle-rest.php:1730
+#: includes/admin/class-saddle-rest.php:1739
 msgid "That preview has expired or was already used. Choose Undo again."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1738
+#: includes/admin/class-saddle-rest.php:1747
 msgid "Something changed since the preview. Choose Undo again to see what comes back."
 msgstr ""
 
@@ -5480,6 +5480,8 @@ msgid "Security"
 msgstr ""
 
 #: includes/class-saddle-core-settings.php:148
+#: admin/build/index.js:117
+#: admin/src/components/SettingsPage.jsx:176
 msgid "Major WordPress releases"
 msgstr ""
 
@@ -5487,61 +5489,57 @@ msgstr ""
 msgid "Let apps update WordPress to a new major version, such as 7.1 to 7.2, after you approve the preview. Minor and security releases never need this."
 msgstr ""
 
-#: includes/class-saddle-core-settings.php:151
-msgid "Updates"
-msgstr ""
-
-#: includes/class-saddle-core-settings.php:159
+#: includes/class-saddle-core-settings.php:158
 msgid "Most memory entries kept"
 msgstr ""
 
-#: includes/class-saddle-core-settings.php:160
+#: includes/class-saddle-core-settings.php:159
 msgid "The oldest, least used entries are dropped past this number."
 msgstr ""
 
-#: includes/class-saddle-core-settings.php:162
-#: includes/class-saddle-core-settings.php:173
+#: includes/class-saddle-core-settings.php:161
+#: includes/class-saddle-core-settings.php:172
 #: admin/build/index.js:96
 #: admin/src/components/Memory.jsx:125
 msgid "Memory"
 msgstr ""
 
-#: includes/class-saddle-core-settings.php:170
+#: includes/class-saddle-core-settings.php:169
 msgid "Memory in each session"
 msgstr ""
 
-#: includes/class-saddle-core-settings.php:171
+#: includes/class-saddle-core-settings.php:170
 msgid "The most characters of memory handed to an app at the start of a session."
 msgstr ""
 
-#: includes/class-saddle-core-settings.php:179
+#: includes/class-saddle-core-settings.php:178
 msgid "Tell apps about recent changes"
 msgstr ""
 
-#: includes/class-saddle-core-settings.php:180
+#: includes/class-saddle-core-settings.php:179
 msgid "New sessions start with a short list of what was changed lately."
 msgstr ""
 
-#: includes/class-saddle-core-settings.php:182
-#: includes/class-saddle-core-settings.php:193
+#: includes/class-saddle-core-settings.php:181
+#: includes/class-saddle-core-settings.php:192
 #: admin/build/index.js:118
-#: admin/src/components/SettingsPage.jsx:366
+#: admin/src/components/SettingsPage.jsx:382
 msgid "Recent changes"
 msgstr ""
 
-#: includes/class-saddle-core-settings.php:190
+#: includes/class-saddle-core-settings.php:189
 msgid "How many recent changes"
 msgstr ""
 
-#: includes/class-saddle-core-settings.php:191
+#: includes/class-saddle-core-settings.php:190
 msgid "The length of that list."
 msgstr ""
 
-#: includes/class-saddle-core-settings.php:308
+#: includes/class-saddle-core-settings.php:307
 msgid "Sign-in for apps needs HTTPS. An access token sent over plain HTTP can be read in transit."
 msgstr ""
 
-#: includes/class-saddle-core-settings.php:309
+#: includes/class-saddle-core-settings.php:308
 msgid "Sign-in for apps needs pretty permalinks. Choose any option but Plain in Settings → Permalinks, then try again."
 msgstr ""
 
@@ -6031,42 +6029,42 @@ msgstr ""
 msgid "The update of WordPress to %s did not run: major releases were turned off in Saddle → Settings."
 msgstr ""
 
-#: includes/class-saddle-offer-runner.php:223
+#: includes/class-saddle-offer-runner.php:234
 msgid "WordPress declined to update this item on its own (a version-control checkout, missing filesystem access, or a plugin telling it not to)."
 msgstr ""
 
 #. translators: %s: translation, as "Akismet (de_DE)".
-#: includes/class-saddle-offer-runner.php:247
+#: includes/class-saddle-offer-runner.php:258
 #, php-format
 msgid "Updated the %s translation."
 msgstr ""
 
 #. translators: 1: translation, as "Akismet (de_DE)", 2: why it was not updated.
-#: includes/class-saddle-offer-runner.php:249
+#: includes/class-saddle-offer-runner.php:260
 #, php-format
 msgid "The %1$s translation was not updated: %2$s"
 msgstr ""
 
 #. translators: 1: item name, 2: old version, 3: new version.
-#: includes/class-saddle-offer-runner.php:256
+#: includes/class-saddle-offer-runner.php:267
 #, php-format
 msgid "Updated %1$s from %2$s to %3$s."
 msgstr ""
 
 #. translators: 1: item name, 2: new version, 3: old version.
-#: includes/class-saddle-offer-runner.php:260
+#: includes/class-saddle-offer-runner.php:271
 #, php-format
 msgid "Update of %1$s to %2$s caused a fatal error; WordPress restored %3$s."
 msgstr ""
 
 #. translators: 1: item name, 2: new version.
-#: includes/class-saddle-offer-runner.php:264
+#: includes/class-saddle-offer-runner.php:275
 #, php-format
 msgid "Update of %1$s to %2$s was skipped by WordPress."
 msgstr ""
 
 #. translators: 1: item name, 2: new version, 3: error message.
-#: includes/class-saddle-offer-runner.php:268
+#: includes/class-saddle-offer-runner.php:279
 #, php-format
 msgid "Update of %1$s to %2$s failed: %3$s"
 msgstr ""
@@ -8563,8 +8561,8 @@ msgstr ""
 #: admin/src/components/Guidance.jsx:303
 #: admin/src/components/Guidance.jsx:362
 #: admin/src/components/SettingsForm.jsx:348
-#: admin/src/components/SettingsPage.jsx:90
-#: admin/src/components/SettingsPage.jsx:217
+#: admin/src/components/SettingsPage.jsx:91
+#: admin/src/components/SettingsPage.jsx:233
 #: admin/src/components/SignInCard.jsx:57
 msgid "Saved."
 msgstr ""
@@ -8572,7 +8570,7 @@ msgstr ""
 #: admin/build/index.js:38
 #: admin/build/index.js:117
 #: admin/src/components/SettingsForm.jsx:354
-#: admin/src/components/SettingsPage.jsx:98
+#: admin/src/components/SettingsPage.jsx:99
 #: admin/src/components/SignInCard.jsx:62
 msgid "Could not save that setting."
 msgstr ""
@@ -10574,7 +10572,7 @@ msgstr ""
 #: admin/build/index.js:110
 #: admin/build/index.js:117
 #: admin/src/components/Services.jsx:241
-#: admin/src/components/SettingsPage.jsx:222
+#: admin/src/components/SettingsPage.jsx:238
 msgid "Could not save that change."
 msgstr ""
 
@@ -10698,99 +10696,109 @@ msgid "Discard"
 msgstr ""
 
 #: admin/build/index.js:117
-#: admin/src/components/SettingsPage.jsx:129
+#: admin/src/components/SettingsPage.jsx:130
 msgid "Safety"
 msgstr ""
 
 #: admin/build/index.js:117
-#: admin/src/components/SettingsPage.jsx:134
+#: admin/src/components/SettingsPage.jsx:135
 msgid "Publishing needs my OK"
 msgstr ""
 
 #: admin/build/index.js:117
-#: admin/src/components/SettingsPage.jsx:135
+#: admin/src/components/SettingsPage.jsx:136
 msgid "New posts and pages an app asks to publish or schedule are saved as drafts. Publishing or scheduling an existing item needs your confirmation. Edits to content that is already live still go through."
 msgstr ""
 
 #: admin/build/index.js:117
-#: admin/src/components/SettingsPage.jsx:139
+#: admin/src/components/SettingsPage.jsx:140
 msgid "Apps save drafts; you approve what goes live."
 msgstr ""
 
 #: admin/build/index.js:117
-#: admin/src/components/SettingsPage.jsx:147
+#: admin/src/components/SettingsPage.jsx:148
 msgid "Practice mode"
 msgstr ""
 
 #: admin/build/index.js:117
-#: admin/src/components/SettingsPage.jsx:148
+#: admin/src/components/SettingsPage.jsx:149
 msgid "Apps can try anything their access allows and nothing is saved. Each tool that would change the site says what it would have done, and the attempt shows in Activity as rehearsed. Reading works as usual."
 msgstr ""
 
 #: admin/build/index.js:117
-#: admin/src/components/SettingsPage.jsx:152
+#: admin/src/components/SettingsPage.jsx:153
 msgid "Apps try changes but nothing is saved."
 msgstr ""
 
 #: admin/build/index.js:117
-#: admin/src/components/SettingsPage.jsx:160
+#: admin/src/components/SettingsPage.jsx:161
 msgid "Stop writes if the site moves"
 msgstr ""
 
 #: admin/build/index.js:117
-#: admin/src/components/SettingsPage.jsx:161
+#: admin/src/components/SettingsPage.jsx:162
 msgid "If the site address changes, for example after copying it to another domain, apps are refused writes until you confirm their access again."
 msgstr ""
 
 #: admin/build/index.js:117
-#: admin/src/components/SettingsPage.jsx:165
+#: admin/src/components/SettingsPage.jsx:166
 msgid "After an address change, confirm access again."
 msgstr ""
 
 #: admin/build/index.js:117
-#: admin/src/components/SettingsPage.jsx:198
+#: admin/src/components/SettingsPage.jsx:177
+msgid "Lets an app update WordPress to a new major version, such as 7.1 to 7.2, after you approve its preview. A major release has no automatic rollback and upgrades the database. Minor and security releases never need this. WordPress’s own “automatic updates for all new versions” in Dashboard → Updates is a separate setting."
+msgstr ""
+
+#: admin/build/index.js:117
+#: admin/src/components/SettingsPage.jsx:181
+msgid "Apps can update WordPress to a new major version."
+msgstr ""
+
+#: admin/build/index.js:117
+#: admin/src/components/SettingsPage.jsx:214
 msgid "Other"
 msgstr ""
 
 #: admin/build/index.js:117
-#: admin/src/components/SettingsPage.jsx:235
+#: admin/src/components/SettingsPage.jsx:251
 msgid "Search tools…"
 msgstr ""
 
 #: admin/build/index.js:117
-#: admin/src/components/SettingsPage.jsx:236
+#: admin/src/components/SettingsPage.jsx:252
 msgid "Search tools"
 msgstr ""
 
 #: admin/build/index.js:117
-#: admin/src/components/SettingsPage.jsx:240
+#: admin/src/components/SettingsPage.jsx:256
 msgid "No tools match."
 msgstr ""
 
 #: admin/build/index.js:117
-#: admin/src/components/SettingsPage.jsx:333
+#: admin/src/components/SettingsPage.jsx:349
 msgid "Advanced"
 msgstr ""
 
 #. translators: %d: number of tools.
 #: admin/build/index.js:118
-#: admin/src/components/SettingsPage.jsx:338
+#: admin/src/components/SettingsPage.jsx:354
 #, js-format
 msgid "Turn off single tools (%d)"
 msgstr ""
 
 #: admin/build/index.js:118
-#: admin/src/components/SettingsPage.jsx:352
+#: admin/src/components/SettingsPage.jsx:368
 msgid "Sign-in for apps"
 msgstr ""
 
 #: admin/build/index.js:118
-#: admin/src/components/SettingsPage.jsx:358
+#: admin/src/components/SettingsPage.jsx:374
 msgid "Memory limits"
 msgstr ""
 
 #: admin/build/index.js:118
-#: admin/src/components/SettingsPage.jsx:375
+#: admin/src/components/SettingsPage.jsx:391
 msgid "Connection check"
 msgstr ""
 

@@ -151,6 +151,17 @@ class Saddle_Offer_Runner {
 	}
 
 	/**
+	 * Turn major releases on or off. Only the owner's screens call this: the
+	 * Safety switch on Saddle → Settings and the settings registry, whose
+	 * field no tool can write.
+	 *
+	 * @param bool $allowed Whether apps may apply a major release.
+	 */
+	public static function set_core_majors( $allowed ) {
+		update_option( self::OPTION_CORE_MAJOR, $allowed ? 1 : 0 );
+	}
+
+	/**
 	 * Whether a release is a major one, by core's own rule: a release on
 	 * another X.Y branch than the installed one.
 	 *

@@ -233,7 +233,7 @@ class Saddle_Settings_Registry_Test extends WP_UnitTestCase {
 		$this->assertSame( 'read', $by_key['tier']['value'] );
 		$this->assertFalse( $by_key['paused']['value'] );
 		$this->assertFalse( $by_key['core_major_updates']['value'] );
-		$this->assertSame( 'Updates', $by_key['core_major_updates']['section'] );
+		$this->assertSame( 'custom', $by_key['core_major_updates']['control'] );
 		$this->assertTrue( $by_key['oauth_dcr']['value'] );
 		$this->assertSame( 500, $by_key['memory_max_entries']['value'] );
 		$this->assertSame( 1500, $by_key['memory_core_budget']['value'] );
