@@ -147,8 +147,10 @@ dry-run, no diff and no revert.
   confirmed preview. It never takes a zip, a URL or a file. A new install
   arrives inactive. Saddle applies core updates only for releases WordPress
   already offers, through core's automatic updater: minor and security
-  releases, and a major release only when the owner has turned on WordPress's
-  own automatic updates for all new versions. Translation updates go through
+  releases, and a major release only when WordPress would apply it in the
+  background itself: its own "automatic updates for all new versions" switch
+  in Dashboard → Updates, which no tool can flip (on by default for sites
+  installed since WordPress 5.6). Translation updates go through
   core's language pack upgrader. Saddle never deletes a plugin or theme. It
   still never writes a file and never picks a package URL: the package is the
   one the WordPress.org API names, exactly as on the Add New screen, and a
@@ -158,7 +160,8 @@ dry-run, no diff and no revert.
   auto-update switch is WordPress's own option. Updates decided 2026-09-27
   evening on Fahim's "research, then take the decision", replacing the same
   morning's "reported, never run"; installs, core and translations added
-  2026-10-12 (#347, Fahim: majors only behind WordPress's own switch). Applies
+  2026-10-12 (#347, Fahim: majors only behind WordPress's own switch; #351
+  found that the switch defaults to on for new installs). Applies
   to Pro too.
 
 If a feature seems to need any of these, that is a signal to redesign the
