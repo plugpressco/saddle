@@ -92,6 +92,7 @@ These tools stay off until you give an app Manage the site.
 
 * Settings: Change the site title, permalinks and reading options.
 * Plugins and themes: Activate and deactivate plugins and switch the active theme, each after a preview.
+* Plugin directory: Search the WordPress.org plugin directory and see which results are already installed on your site.
 * Updates: See which plugin, theme and WordPress updates are waiting, apply plugin and theme updates through WordPress's own updater, and turn automatic updates on or off per plugin. WordPress keeps a backup and restores a plugin that breaks the site.
 * Site Health: Read the results of WordPress's own Site Health checks.
 * Cache: Clear the site cache.
@@ -185,6 +186,7 @@ Saddle sends no tracking or usage data. It connects to another site only in thes
 4. Unsplash (optional): This runs only after you add your own API key under **Saddle → Services**. Saddle sends your search words or a photo ID to `api.unsplash.com`. It downloads photos from `images.unsplash.com`. Each imported photo gets a caption that credits the photographer, as Unsplash requires. You can edit or remove it. See the [API Guidelines](https://help.unsplash.com/en/articles/2511245-unsplash-api-guidelines), [API Terms](https://unsplash.com/api-terms) and [Privacy Policy](https://unsplash.com/privacy).
 5. OAuth app check (optional): This runs only when OAuth sign-in is on. Saddle reads a public web address the app provides to confirm who the app is. It sends nothing about your site.
 6. Updates and Site Health (optional): When your AI app lists or applies updates, or reads Site Health, WordPress runs its own checks with WordPress.org and downloads the update packages it already offers, from WordPress.org or a plugin's own update server, exactly as the Updates screen does. After updating an active plugin, WordPress loads your own home page once to check for a fatal error.
+7. Plugin directory (optional): When your AI app searches for a plugin, WordPress sends the search words or the plugin slug to `api.wordpress.org`, as **Plugins → Add New** does. Like every WordPress.org request WordPress makes, it includes your WordPress version, language and site address. Saddle keeps the results on your site for an hour.
 
 The WordPress.org version never checks for its own updates. The version from plugpress.co checks at most once every six hours. It sends only the plugin name and version number.
 
@@ -209,6 +211,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 == Changelog ==
 
 = 1.5.2 =
+* New: Your AI app can search the WordPress.org plugin directory. Each result shows the plugin's version, active installs, rating, last update and the WordPress and PHP versions it needs, and whether it is already installed and active on your site.
 * Fixed: Saddle and the WordPress MCP Adapter plugin 0.7.0 can now run on the same site. Activating the adapter next to Saddle stopped with a fatal error, and with both active every page failed. Saddle now serves its own endpoint itself when the adapter is a version it doesn't support yet, and keeps its built-in copy of the adapter out of the way of the official plugin.
 * Changed: Bridle and Bridle KB are PlugPress plugins, so their tools are on as soon as the plugin is active, like Mailyard and SEO. You no longer switch them on under Services.
 * Fixed: When a step shows a preview first, such as moving a post to the trash, your AI app now shows you the preview and waits for your yes. Claude Code reads only the start of Saddle's guide, and it could confirm on its own.

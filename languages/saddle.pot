@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-05T12:51:30+00:00\n"
+"POT-Creation-Date: 2026-10-11T22:42:18+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -2150,6 +2150,56 @@ msgstr ""
 msgid "Set %1$d display condition(s) on the module at %2$s on Divi page #%3$d."
 msgstr ""
 
+#: includes/abilities/installs.php:28
+msgid "Search the plugin directory"
+msgstr ""
+
+#: includes/abilities/installs.php:29
+msgid "Searches the WordPress.org plugin directory, the same search as Plugins → Add New, or looks up one plugin by its exact slug. Pass \"search\" (words) or \"slug\", not both. Returns up to 10 plugins, each with its slug, name, author, version, active installs, rating (0 to 100) and number of ratings, the date it was last updated, the WordPress version it was tested up to, the WordPress and PHP versions it requires, and whether it is installed and active on this site (with its plugin file when installed). Read-only. Results are cached on this site for an hour."
+msgstr ""
+
+#: includes/abilities/installs.php:37
+msgid "Words to search the directory for, as typed into Plugins → Add New."
+msgstr ""
+
+#: includes/abilities/installs.php:41
+msgid "One exact plugin slug, as in wordpress.org/plugins/<slug>/."
+msgstr ""
+
+#: includes/abilities/installs.php:48
+msgid "How many results to return, 1 to 10."
+msgstr ""
+
+#: includes/abilities/installs.php:117
+msgid "Pass \"search\" (words to search for) or \"slug\" (one exact plugin slug), not both."
+msgstr ""
+
+#: includes/abilities/installs.php:266
+msgid "WordPress.org sent an answer Saddle could not read."
+msgstr ""
+
+#. translators: %s: the error WordPress reported.
+#: includes/abilities/installs.php:288
+#, php-format
+msgid "WordPress could not get an answer from the WordPress.org directory: %s"
+msgstr ""
+
+#. translators: %s: plugin slug.
+#: includes/abilities/installs.php:298
+#, php-format
+msgid "WordPress.org has closed the plugin \"%s\", so it cannot be installed."
+msgstr ""
+
+#. translators: %s: plugin slug.
+#: includes/abilities/installs.php:305
+#, php-format
+msgid "The WordPress.org directory has no plugin with the slug \"%s\". Use search-plugins with \"search\" to find the right slug."
+msgstr ""
+
+#: includes/abilities/installs.php:319
+msgid "A directory slug has only lowercase letters, digits and hyphens, as in wordpress.org/plugins/<slug>/."
+msgstr ""
+
 #: includes/abilities/lint.php:27
 msgid "Lint page design"
 msgstr ""
@@ -3887,117 +3937,117 @@ msgid "Owner cleared all agent-written memory (%d entries)."
 msgstr ""
 
 #. translators: %s: plugin name.
-#: includes/admin/class-saddle-rest.php:1187
+#: includes/admin/class-saddle-rest.php:1186
 #, php-format
 msgid "Switched on the %s integration"
 msgstr ""
 
 #. translators: %s: plugin name.
-#: includes/admin/class-saddle-rest.php:1187
+#: includes/admin/class-saddle-rest.php:1186
 #, php-format
 msgid "Switched off the %s integration"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1210
+#: includes/admin/class-saddle-rest.php:1209
 msgid "Yoast SEO"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1210
+#: includes/admin/class-saddle-rest.php:1209
 #: includes/class-saddle-service-sources.php:66
 msgid "Reads and edits Yoast’s own SEO fields."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1211
+#: includes/admin/class-saddle-rest.php:1210
 msgid "Rank Math"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1211
+#: includes/admin/class-saddle-rest.php:1210
 #: includes/class-saddle-service-sources.php:67
 msgid "Reads and edits Rank Math’s own SEO fields."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1212
+#: includes/admin/class-saddle-rest.php:1211
 msgid "AIOSEO"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1212
+#: includes/admin/class-saddle-rest.php:1211
 #: includes/class-saddle-service-sources.php:68
 msgid "Reads and edits AIOSEO’s own SEO fields."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1213
+#: includes/admin/class-saddle-rest.php:1212
 msgid "WooCommerce"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1213
+#: includes/admin/class-saddle-rest.php:1212
 #: includes/class-saddle-service-sources.php:69
 msgid "Products and orders."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1214
+#: includes/admin/class-saddle-rest.php:1213
 #: includes/class-saddle-unsplash.php:574
 #: includes/class-saddle-unsplash.php:626
 msgid "Unsplash"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1214
+#: includes/admin/class-saddle-rest.php:1213
 msgid "Stock-photo search and import, built into Saddle. Needs an Access Key under Saddle → Services."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1266
+#: includes/admin/class-saddle-rest.php:1265
 msgid "MCP Client"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1301
-#: includes/admin/class-saddle-rest.php:1412
-#: includes/admin/class-saddle-rest.php:1467
+#: includes/admin/class-saddle-rest.php:1300
+#: includes/admin/class-saddle-rest.php:1411
+#: includes/admin/class-saddle-rest.php:1466
 msgid "Application Passwords are not available on this site."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1305
+#: includes/admin/class-saddle-rest.php:1304
 msgid "Application Passwords are off on this site. Serve the site over HTTPS, or turn them back on in your security plugin."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1310
+#: includes/admin/class-saddle-rest.php:1309
 msgid "AI app"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1421
-#: includes/admin/class-saddle-rest.php:1473
+#: includes/admin/class-saddle-rest.php:1420
+#: includes/admin/class-saddle-rest.php:1472
 msgid "No Saddle client with that ID."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1493
+#: includes/admin/class-saddle-rest.php:1492
 msgid "The old key was removed, but issuing its replacement failed. Connect the app again from the Connections screen."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1595
+#: includes/admin/class-saddle-rest.php:1594
 msgid "Only the site owner can undo from here. Apps use their own undo tool."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1604
+#: includes/admin/class-saddle-rest.php:1603
 msgid "Choose at least one change to undo."
 msgstr ""
 
 #. translators: %s: the change that was undone, as the activity log recorded it.
-#: includes/admin/class-saddle-rest.php:1680
+#: includes/admin/class-saddle-rest.php:1679
 #, php-format
 msgid "Undid this change: %s"
 msgstr ""
 
 #. translators: %d: number of changes undone.
-#: includes/admin/class-saddle-rest.php:1686
+#: includes/admin/class-saddle-rest.php:1685
 #, php-format
 msgid "Undid %d change."
 msgid_plural "Undid %d changes."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/admin/class-saddle-rest.php:1731
+#: includes/admin/class-saddle-rest.php:1730
 msgid "That preview has expired or was already used. Choose Undo again."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1739
+#: includes/admin/class-saddle-rest.php:1738
 msgid "Something changed since the preview. Choose Undo again to see what comes back."
 msgstr ""
 
@@ -4829,7 +4879,7 @@ msgid "Saddle sign-in keys cannot be used over XML-RPC."
 msgstr ""
 
 #: includes/class-saddle-connection.php:480
-#: includes/class-saddle-mcp.php:580
+#: includes/class-saddle-mcp.php:610
 msgid "Your sign-in key was rejected — it was most likely revoked or removed. Reconnect the app from Saddle to issue a fresh key."
 msgstr ""
 
@@ -5382,24 +5432,24 @@ msgstr ""
 msgid "%1$s (via the %2$s integration)."
 msgstr ""
 
-#: includes/class-saddle-integrations.php:81
+#: includes/class-saddle-integrations.php:83
 msgid "SEO and AEO tools from the Waggle plugin."
 msgstr ""
 
-#: includes/class-saddle-integrations.php:162
+#: includes/class-saddle-integrations.php:164
 msgid "PlugPress integrations are always on. Turn individual tools off under Saddle → Settings → Advanced."
 msgstr ""
 
-#: includes/class-saddle-integrations.php:174
+#: includes/class-saddle-integrations.php:176
 msgid "No installed plugin offers that integration."
 msgstr ""
 
-#: includes/class-saddle-integrations.php:286
+#: includes/class-saddle-integrations.php:288
 msgid "Plugins not on this site"
 msgstr ""
 
 #. translators: %s: a list of plugin names, such as "Divi 5, Yoast SEO and WooCommerce".
-#: includes/class-saddle-integrations.php:290
+#: includes/class-saddle-integrations.php:292
 #, php-format
 msgid "Saddle has tools for %s, but that plugin is not active here, so its tools are not offered. If a request needs it, say it is not active on this site."
 msgid_plural "Saddle has tools for %s, but those plugins are not active here, so their tools are not offered. If a request needs one, say that plugin is not active on this site."
@@ -5407,18 +5457,18 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: 1: plugin name, 2: tool-name prefix, 3: number of tools.
-#: includes/class-saddle-integrations.php:345
+#: includes/class-saddle-integrations.php:347
 #, php-format
 msgid "- %1$s is installed: use the saddle/%2$s-* tools (%3$d available) for its features instead of improvising with generic tools."
 msgstr ""
 
 #. translators: %s: plugin name.
-#: includes/class-saddle-integrations.php:358
+#: includes/class-saddle-integrations.php:360
 #, php-format
 msgid "- %s is installed, but the site owner has not switched on its tools. If they are needed, tell the user they can turn it on under Saddle → Services."
 msgstr ""
 
-#: includes/class-saddle-integrations.php:366
+#: includes/class-saddle-integrations.php:368
 msgid "Plugins connected to Saddle"
 msgstr ""
 
@@ -5470,69 +5520,69 @@ msgstr ""
 msgid "Tiered, default-safe, approval-gated MCP access to posts, pages, and media."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:517
+#: includes/class-saddle-mcp.php:547
 msgid "This MCP endpoint does not offer an event stream. Send JSON-RPC over POST instead."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:518
+#: includes/class-saddle-mcp.php:548
 msgid "This MCP endpoint is stateless and issues no session to terminate."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:569
+#: includes/class-saddle-mcp.php:599
 msgid "The access token was rejected — it has expired, been revoked, or was issued for a different site. Refresh it, or reconnect the app to authorize a new one."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:590
+#: includes/class-saddle-mcp.php:620
 msgid "The request arrived without a sign-in key. If you did connect one, your host may be stripping the Authorization header — open Saddle and run the connection check to confirm and fix it."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:623
+#: includes/class-saddle-mcp.php:653
 msgid "Parse error: request body is not valid JSON-RPC."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:632
+#: includes/class-saddle-mcp.php:662
 msgid "Invalid request."
 msgstr ""
 
 #. translators: 1: protocol version the client asked for, 2: comma-separated list of supported versions.
-#: includes/class-saddle-mcp.php:782
+#: includes/class-saddle-mcp.php:812
 #, php-format
 msgid "Unsupported MCP protocol version \"%1$s\". This server speaks %2$s."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:857
+#: includes/class-saddle-mcp.php:887
 msgid "No prompt by that name for this connection."
 msgstr ""
 
 #. translators: %s: JSON-RPC method name.
-#: includes/class-saddle-mcp.php:872
+#: includes/class-saddle-mcp.php:902
 #, php-format
 msgid "Method not found: %s"
 msgstr ""
 
-#: includes/class-saddle-mcp.php:931
+#: includes/class-saddle-mcp.php:961
 msgid "Saddle is paused on this site, so no tools will run. The site owner can resume it from the AI switch at the top of any Saddle page. Do not retry until they do."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:939
+#: includes/class-saddle-mcp.php:969
 msgid "Some apps show only the start of this guide. If yours stops partway, call saddle/get-instructions once to read the rest, including the site owner's instructions."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:950
+#: includes/class-saddle-mcp.php:980
 msgid "Saddle exposes tiered, approval-gated access to this site's posts, pages, and media. Call saddle/get-instructions for the current scope and safety rules before acting."
 msgstr ""
 
-#: includes/class-saddle-mcp.php:1147
+#: includes/class-saddle-mcp.php:1177
 msgid "Invalid params: a Saddle tool name is required."
 msgstr ""
 
 #. translators: %s: tool name.
-#: includes/class-saddle-mcp.php:1157
+#: includes/class-saddle-mcp.php:1187
 #, php-format
 msgid "Tool not found: %s"
 msgstr ""
 
-#: includes/class-saddle-mcp.php:1187
+#: includes/class-saddle-mcp.php:1217
 msgid "None of Saddle’s site-wide gates (pause, access level, per-tool toggles) blocked this — the connected WordPress account likely lacks a capability this tool requires, or the specific item is protected. Do not retry the same call."
 msgstr ""
 
@@ -7149,7 +7199,7 @@ msgid "This persisted attribute does nothing — rewrite it on a path the block 
 msgstr ""
 
 #. translators: %s: minimum WordPress version.
-#: saddle.php:548
+#: saddle.php:567
 #, php-format
 msgid "Saddle requires WordPress %s or later (the core Abilities API). The MCP server is disabled until you upgrade."
 msgstr ""
