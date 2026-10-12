@@ -118,6 +118,8 @@ class Saddle_Undo {
 				$reasons[] = __( 'Plugin and theme updates can’t be undone: WordPress removes its backup once an update succeeds.', 'saddle' );
 			} elseif ( 'update-core' === $entry['action'] ) {
 				$reasons[] = __( 'WordPress updates can’t be undone: WordPress has no rollback for a core update.', 'saddle' );
+			} elseif ( 'update-translations' === $entry['action'] ) {
+				$reasons[] = __( 'Translation updates can’t be undone: WordPress keeps no copy of the translation files it replaced.', 'saddle' );
 			} elseif ( in_array( $entry['action'], array( 'install-plugin', 'install-theme' ), true ) ) {
 				$reasons[] = __( 'Installs can’t be undone here: Saddle never deletes a plugin or theme. Delete it in wp-admin under Plugins or Appearance → Themes.', 'saddle' );
 			} else {

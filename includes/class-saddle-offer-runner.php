@@ -1,7 +1,7 @@
 <?php
 /**
- * Applies the updates WordPress already offers (plugins, themes, core)
- * through core's own automatic updater, for one run of
+ * Applies the updates WordPress already offers (plugins, themes, core,
+ * translations) through core's own automatic updater, for one run of
  * {@see Saddle_Update_Runner}.
  *
  * Why a separate class: the update runner schedules, locks, guards and
@@ -49,6 +49,9 @@ class Saddle_Offer_Runner {
 			$offer = (object) $offer;
 			if ( 'core' === $type ) {
 				return ( isset( $offer->current, $wanted['core'] ) && $offer->current === $wanted['core'] ) ? true : $update;
+			}
+			if ( 'translation' === $type ) {
+				return isset( $wanted[ Saddle_Offer_Runner::translation_id( $offer ) ] ) ? true : $update;
 			}
 			$key = 'theme' === $type ? 'theme' : 'plugin';
 			return ( isset( $offer->$key ) && isset( $wanted[ $offer->$key ] ) ) ? true : $update;
@@ -101,6 +104,9 @@ class Saddle_Offer_Runner {
 			}
 			return array();
 		}
+		if ( 'translation' === $run['type'] ) {
+			return self::translation_offers();
+		}
 
 		if ( 'theme' === $run['type'] ) {
 			wp_update_themes();
@@ -136,6 +142,33 @@ class Saddle_Offer_Runner {
 	}
 
 	/**
+	 * The translation updates WordPress offers, keyed by
+	 * "type:slug:language".
+	 *
+	 * @return object[]
+	 */
+	public static function translation_offers() {
+		$offers = array();
+		foreach ( (array) wp_get_translation_updates() as $offer ) {
+			$offer = (object) $offer;
+			if ( isset( $offer->type, $offer->slug, $offer->language ) ) {
+				$offers[ self::translation_id( $offer ) ] = $offer;
+			}
+		}
+		return $offers;
+	}
+
+	/**
+	 * The id of one translation update: "type:slug:language".
+	 *
+	 * @param object $offer A language pack offer.
+	 * @return string
+	 */
+	public static function translation_id( $offer ) {
+		return isset( $offer->type, $offer->slug, $offer->language ) ? "{$offer->type}:{$offer->slug}:{$offer->language}" : '';
+	}
+
+	/**
 	 * Translate core's result for one item into a status, and log it.
 	 *
 	 * @param string $type   'plugin' or 'theme'.
@@ -160,11 +193,21 @@ class Saddle_Offer_Runner {
 		}
 
 		$actions = array(
-			'plugin' => 'update-plugin',
-			'theme'  => 'update-theme',
-			'core'   => 'update-core',
+			'plugin'      => 'update-plugin',
+			'theme'       => 'update-theme',
+			'core'        => 'update-core',
+			'translation' => 'update-translations',
 		);
 		$action  = $actions[ $type ];
+		if ( 'translation' === $type ) {
+			$summary = 'applied' === $item['status']
+				/* translators: %s: translation, as "Akismet (de_DE)". */
+				? sprintf( __( 'Updated the %s translation.', 'saddle' ), $item['name'] )
+				/* translators: 1: translation, as "Akismet (de_DE)", 2: why it was not updated. */
+				: sprintf( __( 'The %1$s translation was not updated: %2$s', 'saddle' ), $item['name'], $item['message'] ? $item['message'] : $item['status'] );
+			Saddle_Log::record_action( $action, $item['id'], $summary );
+			return;
+		}
 		switch ( $item['status'] ) {
 			case 'applied':
 				/* translators: 1: item name, 2: old version, 3: new version. */

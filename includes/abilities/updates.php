@@ -55,7 +55,7 @@ function saddle_register_update_abilities() {
 		'saddle/list-updates',
 		array(
 			'label'               => __( 'List available updates', 'saddle' ),
-			'description'         => __( 'Lists the plugin, theme, WordPress core and translation updates this site has been offered, each with the installed and new version, whether the item is active, whether WordPress auto-updates it, and a changelog link. Also reports anything that would stop updates from being applied here (a host that forbids file changes, a version-control checkout, missing filesystem access) and the results of recent runs queued by update-plugin, update-theme, update-core, install-plugin or install-theme, including any rollback. Read-only. Pass "refresh": true to make WordPress check for updates again instead of using its cached answer.', 'saddle' ),
+			'description'         => __( 'Lists the plugin, theme, WordPress core and translation updates this site has been offered, each with the installed and new version, whether the item is active, whether WordPress auto-updates it, and a changelog link. Also reports anything that would stop updates from being applied here (a host that forbids file changes, a version-control checkout, missing filesystem access) and the results of recent runs queued by update-plugin, update-theme, update-core, update-translations, install-plugin or install-theme, including any rollback. Read-only. Pass "refresh": true to make WordPress check for updates again instead of using its cached answer.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
