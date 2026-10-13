@@ -91,6 +91,12 @@ and finding each fails at least one. Check every change against all three.
    something they have to turn off. Under the ALLOW / ASK / BLOCK model (product
    plan, Phase 2) this means every write tool starts BLOCK on a new install. A
    starting preset may be offered; it is never pre-applied. Decided 2026-09-27.
+   *Built in #364 (2026-10-14):* a new app starts at Read only, which blocks
+   every write; each tool then has a site-wide mode, Allow, Ask first or Off
+   (`Saddle_Tool_Modes`), which can only narrow the app's role. The
+   recommended set is one click in Settings and only tightens. A changing
+   tool that did not exist on the site's first run (a later update, a plugin
+   activated later) arrives as Ask first (R3).
 
 3. **No destructive action without a two-step confirm.** Any ability that mutates
    more than one row, or deletes/overwrites without recovery, goes through
@@ -219,6 +225,14 @@ bound to action, target and `bind`). Two rules that are easy to get wrong:
 a destructive call must pass `bind` covering every argument the preview showed,
 not just the target; and a refusal must name the gate that caused it, because
 `denial_reason()` is the only thing standing between an agent and a retry loop.
+`Saddle_Tool_Modes` (#364) adds Ask first: like rehearsal, it wraps every
+changing tool's execute callback at registration (priority 5, so rehearsal at
+10 wraps it), and until the owner approves under Needs your OK the tool's own
+code never runs. A tool's own preview step inside the approved run is
+answered by that approval (`Saddle_Approval::run_approved()`), and
+`consume_token()` refuses a confirm for an Ask-first tool until the owner
+said yes, without spending the token. A token reaches a tool's code only if
+it is a live token from that same tool's own preview.
 
 **3. Tools — what the agent is offered.** Every ability declares `accessLevel`,
 `destructive` and a tier via `saddle_ability_meta()` — free, Pro and the wrapped
@@ -494,6 +508,9 @@ change. `Tested up to:` moves only when Fahim has verified against a newer WP.
   only path that works while the OAuth toggle is off — which is the default.
 - Don't turn OAuth on by default, and don't start a new app above `read` or let a
   tool change a role. All three are load-bearing for non-negotiable #2.
+- Don't let a tool change a mode, don't let the recommended set loosen
+  anything, and don't let a new changing tool arrive at Allow. Ask first is
+  the owner's word in wp-admin; never accept a chat "yes" in its place.
 - Don't wire up `Saddle_Ecosystem`.
 - Don't put licensing or upsell code in free, and never let a free tool mention
   Pro or leave a visible gap for a Pro tool (wp.org guidelines 5 and 11). Builder
