@@ -1072,8 +1072,9 @@ class Saddle_REST_Admin {
 	 * @return WP_REST_Response
 	 */
 	public static function get_capabilities() {
-		$catalog   = array();
-		$abilities = function_exists( 'wp_get_abilities' ) ? wp_get_abilities() : array();
+		$catalog     = array();
+		$abilities   = function_exists( 'wp_get_abilities' ) ? wp_get_abilities() : array();
+		$recommended = Saddle_Tool_Modes::recommended();
 
 		foreach ( $abilities as $key => $ability ) {
 			$name = is_string( $key ) ? $key : $ability->get_name();
@@ -1109,6 +1110,13 @@ class Saddle_REST_Admin {
 				'lane'        => $lane,
 				'category'    => self::category_for( $short, $name ),
 				'enabled'     => Saddle_Capabilities::is_ability_enabled( $short ),
+				// Allow, Ask first or Off (#364). Ask first is offered only for a
+				// tool that changes something; `new` marks one that arrived as
+				// Ask first because the owner has not chosen for it yet.
+				'mode'        => Saddle_Tool_Modes::mode( $short ),
+				'askable'     => ! $readonly,
+				'new'         => Saddle_Tool_Modes::is_new( $short ),
+				'recommended' => in_array( $short, $recommended, true ),
 				// False when the tool cannot run on this site: its plugin is
 				// not active, or its service has no key. Such a tool is also
 				// left out of tools/list.

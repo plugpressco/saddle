@@ -136,6 +136,11 @@ class Saddle_Context {
 
 		if ( 'read' !== $tier ) {
 			$lines[] = '- ' . __( 'Every change you make is recorded. If one went wrong, saddle/recall-changes lists it with an id, and saddle/undo-changes puts back what it replaced (preview first, then confirm).', 'saddle' );
+
+			$asking = class_exists( 'Saddle_Tool_Modes' ) ? Saddle_Tool_Modes::context_line() : '';
+			if ( '' !== $asking ) {
+				$lines[] = '- ' . $asking;
+			}
 		}
 
 		foreach ( self::withheld_tools_lines() as $line ) {
