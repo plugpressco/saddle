@@ -89,3 +89,39 @@ describe( 'tools list', () => {
 		);
 	} );
 } );
+
+describe( 'tool modes (#364)', () => {
+	const {
+		modesFor,
+		modeOf,
+		modeMap,
+		withMode,
+		askingCount,
+	} = require( '../../admin/src/tools-list' );
+
+	const write = { short: 'create-post', askable: true, mode: 'ask' };
+	const read = { short: 'get-post', askable: false, mode: 'allow' };
+
+	it( 'offers Ask first only for a tool that changes something', () => {
+		expect( modesFor( write ) ).toEqual( [ 'allow', 'ask', 'off' ] );
+		expect( modesFor( read ) ).toEqual( [ 'allow', 'off' ] );
+	} );
+
+	it( 'reads the mode, falling back to enabled from an older Core', () => {
+		expect( modeOf( write ) ).toBe( 'ask' );
+		expect( modeOf( { short: 'x', enabled: false } ) ).toBe( 'off' );
+		expect( modeOf( { short: 'x', enabled: true } ) ).toBe( 'allow' );
+		expect( modeOf( { short: 'x', mode: 'bogus', enabled: true } ) ).toBe(
+			'allow'
+		);
+	} );
+
+	it( 'sets one mode without touching the original map', () => {
+		const map = modeMap( [ write, read ] );
+		const next = withMode( map, 'get-post', 'off' );
+
+		expect( map.get( 'get-post' ) ).toBe( 'allow' );
+		expect( next.get( 'get-post' ) ).toBe( 'off' );
+		expect( askingCount( [ write, read ], next ) ).toBe( 1 );
+	} );
+} );

@@ -149,7 +149,8 @@ class Saddle_Approvals_Owner_Test extends WP_UnitTestCase {
 		$this->assertSame( 'Publish “Spring sale”', $row['summary'] );
 		$this->assertSame( 'publish', $row['preview']['after']['status'] );
 		$this->assertSame( $row['created_at'] + Saddle_Approval::TOKEN_TTL, $row['expires_at'] );
-		$this->assertEqualsCanonicalizing( array( 'id', 'app', 'connection', 'tool', 'target', 'summary', 'preview', 'created_at', 'expires_at' ), array_keys( $row ) );
+		$this->assertFalse( $row['waits'], 'A tool at Allow can also be confirmed after a yes in the chat.' );
+		$this->assertEqualsCanonicalizing( array( 'id', 'app', 'connection', 'waits', 'tool', 'target', 'summary', 'preview', 'created_at', 'expires_at' ), array_keys( $row ) );
 	}
 
 	public function test_list_is_newest_first_and_admin_only() {

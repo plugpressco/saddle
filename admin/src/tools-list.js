@@ -94,3 +94,64 @@ export function flipTool( set, short ) {
 	}
 	return next;
 }
+
+/**
+ * What each tool may do (#364): Allow, Ask first or Off.
+ */
+export const MODES = [ 'allow', 'ask', 'off' ];
+
+/**
+ * The modes a tool can take. Ask first is offered only for a tool that
+ * changes something; a read tool is Allow or Off.
+ *
+ * @param {Object} tool Tool.
+ * @return {string[]} Mode keys, in the order the menu lists them.
+ */
+export const modesFor = ( tool ) =>
+	tool && tool.askable ? MODES : [ 'allow', 'off' ];
+
+/**
+ * A tool's mode as the server sent it. An older Core sends only `enabled`.
+ *
+ * @param {Object} tool Tool.
+ * @return {string} Mode key.
+ */
+export function modeOf( tool ) {
+	if ( tool && MODES.includes( tool.mode ) ) {
+		return tool.mode;
+	}
+	return tool && false === tool.enabled ? 'off' : 'allow';
+}
+
+/**
+ * Every tool's mode, by short name.
+ *
+ * @param {Array} tools All tools.
+ * @return {Map<string,string>} Short name to mode.
+ */
+export const modeMap = ( tools ) =>
+	new Map( ( tools || [] ).map( ( t ) => [ t.short, modeOf( t ) ] ) );
+
+/**
+ * The map after setting one tool, without touching the original.
+ *
+ * @param {Map<string,string>} map   Modes.
+ * @param {string}             short Tool.
+ * @param {string}             mode  New mode.
+ * @return {Map<string,string>} New map.
+ */
+export function withMode( map, short, mode ) {
+	const next = new Map( map );
+	next.set( short, mode );
+	return next;
+}
+
+/**
+ * How many of the listed tools ask the owner first.
+ *
+ * @param {Array}              tools Listed tools.
+ * @param {Map<string,string>} map   Modes.
+ * @return {number} Count.
+ */
+export const askingCount = ( tools, map ) =>
+	( tools || [] ).filter( ( t ) => 'ask' === map.get( t.short ) ).length;
