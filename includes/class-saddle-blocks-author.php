@@ -164,33 +164,37 @@ class Saddle_Blocks_Author {
 	 */
 	private static function compose( $type, $block_type, array $attrs, $content, array $children, $address ) {
 		$text = is_string( $content ) ? $content : '';
+		$id   = self::anchor( $attrs );
 
 		switch ( $type ) {
 			case 'core/paragraph':
 				$extra = ! empty( $attrs['dropCap'] ) ? array( 'has-drop-cap' ) : array();
-				return self::static_block( $type, $attrs, self::tag( 'p', self::classnames( $attrs, $extra ), self::inline_style( $attrs ) ) . $text . '</p>' );
+				return self::static_block( $type, $attrs, self::tag( 'p', self::classnames( $attrs, $extra ), self::inline_style( $attrs ), false, $id ) . $text . '</p>' );
 
 			case 'core/heading':
 				$level = isset( $attrs['level'] ) ? max( 1, min( 6, (int) $attrs['level'] ) ) : 2;
 				$tag   = 'h' . $level;
-				return self::static_block( $type, $attrs, self::tag( $tag, self::classnames( $attrs, array( 'wp-block-heading' ) ), self::inline_style( $attrs ) ) . $text . '</' . $tag . '>' );
+				return self::static_block( $type, $attrs, self::tag( $tag, self::classnames( $attrs, array( 'wp-block-heading' ) ), self::inline_style( $attrs ), false, $id ) . $text . '</' . $tag . '>' );
 
 			case 'core/list':
 				$tag = ! empty( $attrs['ordered'] ) ? 'ol' : 'ul';
-				return self::container_block( $type, $attrs, self::tag( $tag, self::classnames( $attrs, array( 'wp-block-list' ) ), self::inline_style( $attrs ) ), '</' . $tag . '>', $children );
+				return self::container_block( $type, $attrs, self::tag( $tag, self::classnames( $attrs, array( 'wp-block-list' ) ), self::inline_style( $attrs ), false, $id ), '</' . $tag . '>', $children );
 
 			case 'core/list-item':
+				// Classes and styles go on the <li> like on every other text
+				// block; a bare <li> lost them on the page (#344).
+				$li = self::tag( 'li', self::classnames( $attrs ), self::inline_style( $attrs ), false, $id );
 				if ( $children ) {
 					// A nested list rides inside the parent <li>.
-					return self::container_block( $type, $attrs, '<li>' . $text, '</li>', $children );
+					return self::container_block( $type, $attrs, $li . $text, '</li>', $children );
 				}
-				return self::static_block( $type, $attrs, '<li>' . $text . '</li>' );
+				return self::static_block( $type, $attrs, $li . $text . '</li>' );
 
 			case 'core/quote':
-				return self::container_block( $type, $attrs, self::tag( 'blockquote', self::classnames( $attrs, array( 'wp-block-quote' ) ), self::inline_style( $attrs ) ), '</blockquote>', $children );
+				return self::container_block( $type, $attrs, self::tag( 'blockquote', self::classnames( $attrs, array( 'wp-block-quote' ) ), self::inline_style( $attrs ), false, $id ), '</blockquote>', $children );
 
 			case 'core/code':
-				return self::static_block( $type, $attrs, self::tag( 'pre', self::classnames( $attrs, array( 'wp-block-code' ) ), self::inline_style( $attrs ) ) . '<code>' . esc_html( $text ) . '</code></pre>' );
+				return self::static_block( $type, $attrs, self::tag( 'pre', self::classnames( $attrs, array( 'wp-block-code' ) ), self::inline_style( $attrs ), false, $id ) . '<code>' . esc_html( $text ) . '</code></pre>' );
 
 			case 'core/image':
 				return self::compose_image( $attrs, $content, $address );
@@ -199,17 +203,17 @@ class Saddle_Blocks_Author {
 				return self::compose_button( $attrs, $text, $address );
 
 			case 'core/buttons':
-				return self::container_block( $type, $attrs, self::tag( 'div', self::classnames( $attrs, array( 'wp-block-buttons' ) ), self::inline_style( $attrs ) ), '</div>', $children );
+				return self::container_block( $type, $attrs, self::tag( 'div', self::classnames( $attrs, array( 'wp-block-buttons' ) ), self::inline_style( $attrs ), false, $id ), '</div>', $children );
 
 			case 'core/group':
 				if ( empty( $attrs['layout'] ) ) {
 					$attrs['layout'] = array( 'type' => 'constrained' );
 				}
 				$tag = isset( $attrs['tagName'] ) && is_string( $attrs['tagName'] ) && '' !== $attrs['tagName'] ? $attrs['tagName'] : 'div';
-				return self::container_block( $type, $attrs, self::tag( $tag, self::classnames( $attrs, array( 'wp-block-group' ) ), self::inline_style( $attrs ) ), '</' . $tag . '>', $children );
+				return self::container_block( $type, $attrs, self::tag( $tag, self::classnames( $attrs, array( 'wp-block-group' ) ), self::inline_style( $attrs ), false, $id ), '</' . $tag . '>', $children );
 
 			case 'core/columns':
-				return self::container_block( $type, $attrs, self::tag( 'div', self::classnames( $attrs, array( 'wp-block-columns' ) ), self::inline_style( $attrs ) ), '</div>', $children );
+				return self::container_block( $type, $attrs, self::tag( 'div', self::classnames( $attrs, array( 'wp-block-columns' ) ), self::inline_style( $attrs ), false, $id ), '</div>', $children );
 
 			case 'core/column':
 				$style = self::inline_style( $attrs );
@@ -217,17 +221,17 @@ class Saddle_Blocks_Author {
 					$width = is_numeric( $attrs['width'] ) ? $attrs['width'] . '%' : (string) $attrs['width'];
 					$style = trim( 'flex-basis:' . $width . ';' . $style, ';' );
 				}
-				return self::container_block( $type, $attrs, self::tag( 'div', self::classnames( $attrs, array( 'wp-block-column' ) ), $style ), '</div>', $children );
+				return self::container_block( $type, $attrs, self::tag( 'div', self::classnames( $attrs, array( 'wp-block-column' ) ), $style, false, $id ), '</div>', $children );
 
 			case 'core/separator':
-				return self::static_block( $type, $attrs, self::tag( 'hr', self::classnames( $attrs, array( 'wp-block-separator', 'has-alpha-channel-opacity' ) ), self::inline_style( $attrs ), true ) );
+				return self::static_block( $type, $attrs, self::tag( 'hr', self::classnames( $attrs, array( 'wp-block-separator', 'has-alpha-channel-opacity' ) ), self::inline_style( $attrs ), true, $id ) );
 
 			case 'core/spacer':
 				$height = isset( $attrs['height'] ) ? $attrs['height'] : '100px';
 				$height = is_numeric( $height ) ? $height . 'px' : (string) $height;
 
 				$attrs['height'] = $height;
-				return self::static_block( $type, $attrs, '<div style="' . esc_attr( 'height:' . $height ) . '" aria-hidden="true" class="wp-block-spacer"></div>' );
+				return self::static_block( $type, $attrs, '<div' . ( $id ? ' id="' . $id['id'] . '"' : '' ) . ' style="' . esc_attr( 'height:' . $height ) . '" aria-hidden="true" class="wp-block-spacer"></div>' );
 
 			case 'core/html':
 				return self::static_block( $type, $attrs, $text );
@@ -303,7 +307,7 @@ class Saddle_Blocks_Author {
 		}
 		$img .= '/>';
 
-		$html = self::tag( 'figure', self::classnames( $attrs, $figure_classes ), self::inline_style( $attrs ) ) . $img;
+		$html = self::tag( 'figure', self::classnames( $attrs, $figure_classes ), self::inline_style( $attrs ), false, self::anchor( $attrs ) ) . $img;
 		if ( '' !== $caption ) {
 			$html .= '<figcaption class="wp-element-caption">' . $caption . '</figcaption>';
 		}
@@ -356,7 +360,7 @@ class Saddle_Blocks_Author {
 		return self::static_block(
 			'core/button',
 			$attrs,
-			'<div class="' . esc_attr( implode( ' ', $outer ) ) . '">' . $link . $text . '</a></div>'
+			self::tag( 'div', $outer, '', false, self::anchor( $attrs ) ) . $link . $text . '</a></div>'
 		);
 	}
 
@@ -414,6 +418,64 @@ class Saddle_Blocks_Author {
 		}
 
 		return array_values( array_unique( array_filter( $classes ) ) );
+	}
+
+	/**
+	 * The content to recompose a leaf block from when only its attrs change,
+	 * or null to keep its saved markup as it is.
+	 *
+	 * Keeping the markup left new classes, styles and anchors in the comment
+	 * only, so the page never showed them (#344). A text leaf is recomposed
+	 * from the text inside its outer tag; a separator or spacer has none.
+	 * Image, button and code keep their markup: their content is not plain
+	 * inner text.
+	 *
+	 * @param string $type Block type.
+	 * @param string $html The block's saved inner markup.
+	 * @return string|null
+	 */
+	public static function leaf_text( $type, $html ) {
+		if ( in_array( $type, array( 'core/separator', 'core/spacer' ), true ) ) {
+			return '';
+		}
+		if ( ! in_array( $type, array( 'core/paragraph', 'core/heading', 'core/list-item' ), true ) ) {
+			return null;
+		}
+		if ( ! preg_match( '#^<(p|h[1-6]|li)\b[^>]*>(.*)</\1>$#is', trim( $html ), $m ) ) {
+			return null;
+		}
+		return $m[2];
+	}
+
+	/**
+	 * The `id` on a block's outer tag, which the editor saves as its anchor
+	 * without putting it in the comment.
+	 *
+	 * @param string $html Saved markup, starting with the outer tag.
+	 * @return string '' when there is none.
+	 */
+	public static function markup_anchor( $html ) {
+		if ( preg_match( '#^\s*<[a-z][a-z0-9]*\b[^>]*?\sid="([^"]*)"#i', (string) $html, $m ) ) {
+			return html_entity_decode( $m[1], ENT_QUOTES );
+		}
+		return '';
+	}
+
+	/**
+	 * The `id` a block's outer tag carries for its `anchor` attribute (#344).
+	 *
+	 * Every static block composed here supports anchors, and the editor reads
+	 * the anchor from this `id`, so without it `#anchor` links went nowhere.
+	 * The attribute also stays in the comment, so a later Saddle edit keeps it.
+	 *
+	 * @param array $attrs Authored attributes.
+	 * @return array `id` => escaped value, or empty.
+	 */
+	private static function anchor( array $attrs ) {
+		if ( empty( $attrs['anchor'] ) || ! is_string( $attrs['anchor'] ) ) {
+			return array();
+		}
+		return array( 'id' => esc_attr( $attrs['anchor'] ) );
 	}
 
 	/**

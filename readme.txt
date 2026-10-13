@@ -214,6 +214,10 @@ The WordPress.org version never checks for its own updates. The version from plu
 * New: Ask first. In Saddle → Settings → Advanced → What each tool may do, set any tool to Allow, Ask first or Off. A tool set to Ask first shows you the change and waits under Needs your OK on the Dashboard. It runs only after you approve it there; a yes in the chat is not enough. Each app's access level still applies.
 * New: A recommended set in the same place, applied in one click. Plugins, themes, updates, settings and anything that deletes ask you first, and publishing needs your OK. Content edits stay allowed, and a tool you turned off stays off. Nothing is set until you click.
 * New: A tool added by a later Saddle update, or by a plugin you activate later, asks you first until you choose what it may do. Tools that exist when you update to this version keep working exactly as before.
+* Fix: A list item your AI app writes now keeps its CSS class and style on the page. They used to reach the block's settings only, so an icon or style set by class disappeared.
+* Fix: A block's anchor now becomes its HTML id, so links to #anchor reach it. An anchor made in the block editor is kept when your AI app edits that block.
+* Fix: When your AI app changes only the settings of a paragraph, heading, list item, separator or spacer, such as a drop cap, a heading level or a class, the page now shows the change. It used to keep the old markup.
+* Fix: When sign-in by address cannot read an app's identity because this server cannot look up the app's address, Saddle now says so and suggests a key. It used to say the address pointed to a private network. WordPress Playground and Studio cannot look up outside addresses.
 
 = 1.5.2 =
 * New: Your AI app can search the WordPress.org plugin directory. Each result shows the plugin's version, active installs, rating, last update and the WordPress and PHP versions it needs, and whether it is already installed and active on your site.
