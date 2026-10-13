@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-12T23:25:10+00:00\n"
+"POT-Creation-Date: 2026-10-13T22:24:03+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -5575,43 +5575,49 @@ msgstr ""
 msgid "A directory slug has only lowercase letters, digits and hyphens, as in wordpress.org/plugins/<slug>/ or wordpress.org/themes/<slug>/."
 msgstr ""
 
-#: includes/class-saddle-http.php:129
-msgid "Only HTTPS URLs can be fetched."
+#. translators: %s: a host name, such as claude.ai.
+#: includes/class-saddle-http.php:139
+#, php-format
+msgid "This server could not look up %s, so Saddle could not check where it points. Some hosts, such as WordPress Playground and Studio, cannot look up outside addresses. Use a key there instead."
 msgstr ""
 
-#: includes/class-saddle-http.php:133
+#: includes/class-saddle-http.php:145
 msgid "That address resolves to a private or unreachable network."
 msgstr ""
 
+#: includes/class-saddle-http.php:168
+msgid "Only HTTPS URLs can be fetched."
+msgstr ""
+
 #. translators: %d: HTTP status code.
-#: includes/class-saddle-http.php:157
+#: includes/class-saddle-http.php:196
 #, php-format
 msgid "That address answered with HTTP %d."
 msgstr ""
 
-#: includes/class-saddle-http.php:165
+#: includes/class-saddle-http.php:204
 msgid "That address did not return JSON."
 msgstr ""
 
-#: includes/class-saddle-http.php:170
+#: includes/class-saddle-http.php:209
 msgid "That document is too large to read."
 msgstr ""
 
-#: includes/class-saddle-http.php:175
+#: includes/class-saddle-http.php:214
 msgid "That document is not valid JSON."
 msgstr ""
 
-#: includes/class-saddle-http.php:208
+#: includes/class-saddle-http.php:247
 msgid "Only this site's own pages can be fetched this way."
 msgstr ""
 
 #. translators: %s: the other site's host name.
-#: includes/class-saddle-http.php:246
+#: includes/class-saddle-http.php:285
 #, php-format
 msgid "The public page redirects to another site (%s), so Saddle did not follow it."
 msgstr ""
 
-#: includes/class-saddle-http.php:256
+#: includes/class-saddle-http.php:295
 msgid "The public page redirected more than three times, so Saddle stopped."
 msgstr ""
 

@@ -214,6 +214,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 * Fix: A list item your AI app writes now keeps its CSS class and style on the page. They used to reach the block's settings only, so an icon or style set by class disappeared.
 * Fix: A block's anchor now becomes its HTML id, so links to #anchor reach it. An anchor made in the block editor is kept when your AI app edits that block.
 * Fix: When your AI app changes only the settings of a paragraph, heading, list item, separator or spacer, such as a drop cap, a heading level or a class, the page now shows the change. It used to keep the old markup.
+* Fix: When sign-in by address cannot read an app's identity because this server cannot look up the app's address, Saddle now says so and suggests a key. It used to say the address pointed to a private network. WordPress Playground and Studio cannot look up outside addresses.
 
 = 1.5.2 =
 * New: Your AI app can search the WordPress.org plugin directory. Each result shows the plugin's version, active installs, rating, last update and the WordPress and PHP versions it needs, and whether it is already installed and active on your site.

@@ -53,37 +53,7 @@ class Saddle_HTTP {
 		if ( ! $host ) {
 			return false;
 		}
-		$host = trim( $host, '[]' ); // Strip IPv6 brackets.
-
-		$ips = array();
-		if ( filter_var( $host, FILTER_VALIDATE_IP ) ) {
-			$ips[] = $host;
-		} else {
-			foreach ( array( DNS_A, DNS_AAAA ) as $dns_type ) {
-				// Silenced by design: this is an SSRF pre-flight resolving a
-				// caller-supplied host to reject internal targets. A lookup
-				// failure just means "no records" — we must not warn or throw on
-				// an attacker-chosen name, only fall through to refusal.
-				$records = @dns_get_record( $host, $dns_type ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- see comment above.
-				if ( is_array( $records ) ) {
-					foreach ( $records as $record ) {
-						if ( ! empty( $record['ip'] ) ) {
-							$ips[] = $record['ip'];
-						}
-						if ( ! empty( $record['ipv6'] ) ) {
-							$ips[] = $record['ipv6'];
-						}
-					}
-				}
-			}
-			if ( empty( $ips ) ) {
-				$resolved = gethostbyname( $host );
-				if ( $resolved && $resolved !== $host ) {
-					$ips[] = $resolved;
-				}
-			}
-		}
-
+		$ips  = self::resolve( $host );
 		$safe = ! empty( $ips );
 		foreach ( $ips as $ip ) {
 			if ( ! filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) ) {
@@ -104,6 +74,75 @@ class Saddle_HTTP {
 		 * @param string[] $ips  The resolved IPs that were checked.
 		 */
 		return (bool) apply_filters( 'saddle_url_is_safe', $safe, $url, $ips );
+	}
+
+	/**
+	 * The addresses a host resolves to, or none when it cannot be looked up.
+	 *
+	 * @param string $host Host name or IP, with or without IPv6 brackets.
+	 * @return string[]
+	 */
+	private static function resolve( $host ) {
+		$host = trim( (string) $host, '[]' ); // Strip IPv6 brackets.
+
+		if ( filter_var( $host, FILTER_VALIDATE_IP ) ) {
+			return array( $host );
+		}
+
+		$ips = array();
+		foreach ( array( DNS_A, DNS_AAAA ) as $dns_type ) {
+			// Silenced by design: this is an SSRF pre-flight resolving a
+			// caller-supplied host to reject internal targets. A lookup
+			// failure just means "no records" — we must not warn or throw on
+			// an attacker-chosen name, only fall through to refusal.
+			$records = @dns_get_record( $host, $dns_type ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- see comment above.
+			if ( is_array( $records ) ) {
+				foreach ( $records as $record ) {
+					if ( ! empty( $record['ip'] ) ) {
+						$ips[] = $record['ip'];
+					}
+					if ( ! empty( $record['ipv6'] ) ) {
+						$ips[] = $record['ipv6'];
+					}
+				}
+			}
+		}
+		if ( empty( $ips ) ) {
+			$resolved = gethostbyname( $host );
+			if ( $resolved && $resolved !== $host ) {
+				$ips[] = $resolved;
+			}
+		}
+
+		return $ips;
+	}
+
+	/**
+	 * Why url_is_safe() refused a URL, in words the site owner can act on.
+	 *
+	 * A host that could not be looked up at all is not the same problem as one
+	 * that points inside a private network. PHP on WordPress Playground and
+	 * Studio has no DNS, so every outside name lands in the first case there
+	 * (#335). Both stay refused; only the message differs.
+	 *
+	 * @param string $url The refused URL.
+	 * @return WP_Error
+	 */
+	private static function blocked_error( $url ) {
+		$host = trim( (string) wp_parse_url( $url, PHP_URL_HOST ), '[]' );
+
+		if ( '' !== $host && ! self::resolve( $host ) ) {
+			return new WP_Error(
+				'saddle_http_unresolved',
+				sprintf(
+					/* translators: %s: a host name, such as claude.ai. */
+					__( 'This server could not look up %s, so Saddle could not check where it points. Some hosts, such as WordPress Playground and Studio, cannot look up outside addresses. Use a key there instead.', 'saddle' ),
+					$host
+				)
+			);
+		}
+
+		return new WP_Error( 'saddle_http_blocked', __( 'That address resolves to a private or unreachable network.', 'saddle' ) );
 	}
 
 	/**
@@ -130,7 +169,7 @@ class Saddle_HTTP {
 		}
 
 		if ( ! self::url_is_safe( $url ) ) {
-			return new WP_Error( 'saddle_http_blocked', __( 'That address resolves to a private or unreachable network.', 'saddle' ) );
+			return self::blocked_error( $url );
 		}
 
 		$response = wp_safe_remote_get(
