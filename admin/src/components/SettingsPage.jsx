@@ -4,7 +4,8 @@
  * - Safety: four switches that save the moment they are flipped. A switch
  *   moves at once, says "Saved." when the server agrees, and moves back if it
  *   doesn't (R9, P16).
- * - Advanced: rarely used things, each collapsed — single tools, sign-in for
+ * - Advanced: rarely used things, each collapsed — what each tool may do
+ *   (Allow, Ask first or Off, #364), sign-in for
  *   apps, memory limits, recent changes, the connection check.
  *   `&section=signin` (the connect drawer's "Turn it on") opens Sign-in for
  *   apps and scrolls to it. The connection check runs only once opened: it
@@ -21,18 +22,21 @@ import {
 	useCallback,
 } from '@wordpress/element';
 import {
+	Badge,
+	Button,
 	Collapsible,
 	HelpTip,
 	Row,
 	RowList,
+	Select,
 	Skeleton,
 	Switch,
 	Tooltip,
 	toast,
 } from '@plugpress/ui';
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { api } from '../api';
-import { disabledSet, flipTool, groupTools } from '../tools-list';
+import { groupTools, modeMap, modesFor, withMode } from '../tools-list';
 import { runnableTools, safetyPrefs } from '../settings-logic';
 import SectionHeader from './SectionHeader';
 import SettingsForm from './SettingsForm';
@@ -188,27 +192,38 @@ function Safety( { onRehearsalChanged } ) {
 	);
 }
 
+// The three modes, as the menu names them (#364).
+const MODE_LABELS = {
+	allow: __( 'Allow', 'saddle' ),
+	ask: __( 'Ask first', 'saddle' ),
+	off: __( 'Off', 'saddle' ),
+};
+
 /**
- * Turn off single tools: a search, then every tool that can run on this site
- * as a row with a switch, grouped by area. A switch moves at once and saves
- * (the whole switched-off set goes to `POST /abilities`); off stays off for
- * every app. A tool for a plugin that isn't active is left out of the list,
- * and its own on or off is kept.
+ * What each tool may do: a search, a one-click recommended set, then every
+ * tool that can run on this site as a row with Allow, Ask first or Off,
+ * grouped by area (#364). A choice shows at once and saves through
+ * `POST /tool-modes`; it holds for every app, under each app's own role. A
+ * tool for a plugin that isn't active is left out of the list, and its mode
+ * is kept.
  *
  * @param {Object}   props
  * @param {Array}    props.caps      Every tool, from `GET /capabilities`.
  * @param {Array}    props.listed    The tools to list (runnableTools()).
  * @param {Function} props.onChanged Reloads the tools.
+ * @param {Function} props.onApplied Called after the recommended set, which
+ *                                   also turns on a Safety switch.
  */
-function ToolSwitches( { caps, listed, onChanged } ) {
+function ToolModes( { caps, listed, onChanged, onApplied } ) {
 	const [ query, setQuery ] = useState( '' );
-	const [ off, setOff ] = useState( () => disabledSet( caps ) );
+	const [ modes, setModes ] = useState( () => modeMap( caps ) );
+	const [ applying, setApplying ] = useState( false );
 	// Saves on their way. The tools reload only when the last one is back,
-	// so a reload never shows a switch from before a newer flip.
+	// so a reload never shows a mode from before a newer choice.
 	const pending = useRef( 0 );
 
 	// The server's answer wins whenever the tools reload.
-	useEffect( () => setOff( disabledSet( caps ) ), [ caps ] );
+	useEffect( () => setModes( modeMap( caps ) ), [ caps ] );
 
 	const groups = useMemo(
 		() => groupTools( listed, query, __( 'Other', 'saddle' ) ),
@@ -222,18 +237,21 @@ function ToolSwitches( { caps, listed, onChanged } ) {
 		}
 	}, [ onChanged ] );
 
-	const flip = ( short ) => {
-		const next = flipTool( off, short );
-		setOff( next );
+	const choose = ( short, mode ) => {
+		const before = modes.get( short );
+		if ( before === mode ) {
+			return;
+		}
+		setModes( ( now ) => withMode( now, short, mode ) );
 		pending.current += 1;
-		api( 'abilities', {
+		api( 'tool-modes', {
 			method: 'POST',
-			data: { disabled: [ ...next ] },
+			data: { tool: short, mode },
 		} )
 			.then( () => toast.success( __( 'Saved.', 'saddle' ) ) )
 			.catch( ( e ) => {
-				// Put back this one switch; any other flip stands.
-				setOff( ( now ) => flipTool( now, short ) );
+				// Put back this one tool; any other choice stands.
+				setModes( ( now ) => withMode( now, short, before ) );
 				toast.error(
 					e?.message || __( 'Could not save that change.', 'saddle' )
 				);
@@ -241,8 +259,70 @@ function ToolSwitches( { caps, listed, onChanged } ) {
 			.finally( settle );
 	};
 
+	const applyRecommended = () => {
+		setApplying( true );
+		api( 'tool-modes/recommended', { method: 'POST' } )
+			.then( ( res ) => {
+				const moved = ( res && res.moved ) || [];
+				toast.success(
+					moved.length
+						? sprintf(
+								/* translators: %d: number of tools. */
+								_n(
+									'%d tool now asks you first. Publishing needs your OK.',
+									'%d tools now ask you first. Publishing needs your OK.',
+									moved.length,
+									'saddle'
+								),
+								moved.length
+						  )
+						: __(
+								'Already set. Publishing needs your OK.',
+								'saddle'
+						  )
+				);
+				if ( onApplied ) {
+					onApplied();
+				}
+				if ( onChanged ) {
+					onChanged();
+				}
+			} )
+			.catch( ( e ) =>
+				toast.error(
+					e?.message || __( 'Could not save that change.', 'saddle' )
+				)
+			)
+			.finally( () => setApplying( false ) );
+	};
+
 	return (
 		<div className="saddle-tools">
+			<p className="saddle-tools__intro">
+				{ __(
+					'Ask first: the app shows you the change and it waits under Needs your OK on the Dashboard. It runs only after you approve it there.',
+					'saddle'
+				) }
+			</p>
+			<RowList>
+				<Row
+					title={ __( 'Recommended set', 'saddle' ) }
+					description={ __(
+						'Ask first for plugins, themes, updates, settings and anything that deletes. Publishing needs your OK. Content edits stay allowed. Nothing you turned off is turned on.',
+						'saddle'
+					) }
+					actions={
+						<Button
+							variant="secondary"
+							size="sm"
+							onClick={ applyRecommended }
+							disabled={ applying }
+						>
+							{ __( 'Use it', 'saddle' ) }
+						</Button>
+					}
+				/>
+			</RowList>
 			<input
 				type="search"
 				className="saddle-tools__search"
@@ -269,11 +349,49 @@ function ToolSwitches( { caps, listed, onChanged } ) {
 									</Tooltip>
 								}
 								actions={
-									<Switch
-										checked={ ! off.has( tool.short ) }
-										onChange={ () => flip( tool.short ) }
-										aria-label={ tool.label }
-									/>
+									<>
+										{ tool.new &&
+											'ask' ===
+												modes.get( tool.short ) && (
+												<Tooltip
+													content={ __(
+														'Added since you last chose. It asks you first until you pick.',
+														'saddle'
+													) }
+												>
+													<span>
+														<Badge>
+															{ __(
+																'New',
+																'saddle'
+															) }
+														</Badge>
+													</span>
+												</Tooltip>
+											) }
+										<Select
+											className="saddle-tools__mode"
+											size="sm"
+											options={ modesFor( tool ).map(
+												( m ) => ( {
+													value: m,
+													label: MODE_LABELS[ m ],
+												} )
+											) }
+											value={ modes.get( tool.short ) }
+											onChange={ ( mode ) =>
+												choose( tool.short, mode )
+											}
+											aria-label={ sprintf(
+												/* translators: %s: tool name. */
+												__(
+													'What %s may do',
+													'saddle'
+												),
+												tool.label
+											) }
+										/>
+									</>
 								}
 							/>
 						) ) }
@@ -322,6 +440,8 @@ export default function SettingsPage( {
 	const signInRef = useRef( null );
 	// The connection check mounts when first opened and stays after.
 	const [ checkOpened, setCheckOpened ] = useState( false );
+	// The recommended set turns on a Safety switch; remounting Safety reloads it.
+	const [ safetyKey, setSafetyKey ] = useState( 0 );
 	const tools = useMemo( () => runnableTools( caps ), [ caps ] );
 
 	// Bring Sign-in for apps into view. Safety above loads its own data and
@@ -343,7 +463,10 @@ export default function SettingsPage( {
 
 	return (
 		<>
-			<Safety onRehearsalChanged={ onRehearsalChanged } />
+			<Safety
+				key={ safetyKey }
+				onRehearsalChanged={ onRehearsalChanged }
+			/>
 
 			<section className="saddle-section">
 				<SectionHeader title={ __( 'Advanced', 'saddle' ) } />
@@ -351,14 +474,15 @@ export default function SettingsPage( {
 					<Collapsible
 						trigger={ sprintf(
 							/* translators: %d: number of tools. */
-							__( 'Turn off single tools (%d)', 'saddle' ),
+							__( 'What each tool may do (%d)', 'saddle' ),
 							tools.length
 						) }
 					>
-						<ToolSwitches
+						<ToolModes
 							caps={ caps }
 							listed={ tools }
 							onChanged={ loadCaps }
+							onApplied={ () => setSafetyKey( ( k ) => k + 1 ) }
 						/>
 					</Collapsible>
 					<Collapsible

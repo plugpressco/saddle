@@ -2548,6 +2548,18 @@ body.saddle-admin-page {
 		font-size: var( --s-text );
 		color: var(--s-fg-subtle);
 	}
+
+	&__intro {
+		margin: 0;
+		padding-inline: var(--pp-space-4);
+		font-size: var( --s-text );
+		color: var(--s-fg-subtle);
+	}
+
+	// Allow / Ask first / Off: one width, so the column lines up.
+	&__mode {
+		min-width: 112px;
+	}
 }
 
 /* Client traffic — the MCP request record. Deliberately plain: this is a

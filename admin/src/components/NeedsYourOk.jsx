@@ -106,11 +106,25 @@ export default function NeedsYourOk( { onChange } ) {
 					<Row
 						key={ item.id }
 						title={ requestTitle( item ) }
-						description={ sprintf(
-							/* translators: %s: how long ago, e.g. "3 min ago". */
-							__( 'Asked %s · waits until you decide', 'saddle' ),
-							askedAgo( item.created_at )
-						) }
+						description={
+							item.waits
+								? sprintf(
+										/* translators: %s: how long ago, e.g. "3 min ago". */
+										__(
+											'Asked %s · set to ask you first, so only you can approve it',
+											'saddle'
+										),
+										askedAgo( item.created_at )
+								  )
+								: sprintf(
+										/* translators: %s: how long ago, e.g. "3 min ago". */
+										__(
+											'Asked %s · waits until you decide',
+											'saddle'
+										),
+										askedAgo( item.created_at )
+								  )
+						}
 						actions={
 							<>
 								<Button

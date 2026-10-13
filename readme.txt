@@ -103,7 +103,7 @@ These tools stay off until you give an app Manage the site.
 * Confirmation: Review a preview before anything is deleted or overwritten, a plugin or theme is installed, a plugin is turned on or off, or the theme changes.
 * Drafts only: Save new posts as drafts until you publish them.
 * Rehearsal: Let an app try anything its level allows while nothing is saved. Each change it would have made shows in the activity log as rehearsed.
-* Tool switches: Turn off any single tool.
+* Tool switches: Set each tool to Allow, Ask first or Off. A tool set to Ask first waits for your approval on the Dashboard, and a yes in the chat is not enough. A recommended set applies this to plugins, themes, updates, settings and deletes in one click. A tool added by a later update asks first until you choose.
 * Pause: Block all AI requests with one switch.
 * Activity log: See every change and every blocked request.
 * Undo: Ask your AI to undo a logged change, or click Undo on it in Home's Activity feed. It restores a page's earlier version, untrashes what was trashed, and puts settings back. A change that someone edited again since is left alone. Permanent deletes, plugin, WordPress and translation updates, and installs cannot be undone.
@@ -209,6 +209,11 @@ The WordPress.org version never checks for its own updates. The version from plu
 6. Welcome: Saddle looks around your site and helps you connect your first AI app.
 
 == Changelog ==
+
+= 1.6.0 =
+* New: Ask first. In Saddle → Settings → Advanced → What each tool may do, set any tool to Allow, Ask first or Off. A tool set to Ask first shows you the change and waits under Needs your OK on the Dashboard. It runs only after you approve it there; a yes in the chat is not enough. Each app's access level still applies.
+* New: A recommended set in the same place, applied in one click. Plugins, themes, updates, settings and anything that deletes ask you first, and publishing needs your OK. Content edits stay allowed, and a tool you turned off stays off. Nothing is set until you click.
+* New: A tool added by a later Saddle update, or by a plugin you activate later, asks you first until you choose what it may do. Tools that exist when you update to this version keep working exactly as before.
 
 = 1.5.2 =
 * New: Your AI app can search the WordPress.org plugin directory. Each result shows the plugin's version, active installs, rating, last update and the WordPress and PHP versions it needs, and whether it is already installed and active on your site.
