@@ -210,6 +210,11 @@ The WordPress.org version never checks for its own updates. The version from plu
 
 == Changelog ==
 
+= 1.6.0 =
+* Fix: A list item your AI app writes now keeps its CSS class and style on the page. They used to reach the block's settings only, so an icon or style set by class disappeared.
+* Fix: A block's anchor now becomes its HTML id, so links to #anchor reach it. An anchor made in the block editor is kept when your AI app edits that block.
+* Fix: When your AI app changes only the settings of a paragraph, heading, list item, separator or spacer, such as a drop cap, a heading level or a class, the page now shows the change. It used to keep the old markup.
+
 = 1.5.2 =
 * New: Your AI app can search the WordPress.org plugin directory. Each result shows the plugin's version, active installs, rating, last update and the WordPress and PHP versions it needs, and whether it is already installed and active on your site.
 * New: Your AI app can install a plugin from the WordPress.org directory by its name. It shows a preview first, with warnings when the plugin is not tested with your WordPress or has not been updated in two years, and waits for your approval. WordPress's own installer then adds it in the background. The plugin arrives inactive, so turning it on is a separate step you approve. Saddle never installs from a zip file or a link, and never deletes a plugin.

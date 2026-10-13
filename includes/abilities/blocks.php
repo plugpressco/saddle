@@ -981,11 +981,29 @@ class Saddle_Blocks_Abilities {
 			'type'  => (string) $node['blockName'],
 			'attrs' => array_replace_recursive( is_array( $node['attrs'] ) ? $node['attrs'] : array(), $attrs_patch ),
 		);
+
+		// The editor keeps an anchor in the markup's id, not the comment, so
+		// recomposing would drop one made there.
+		$saved_open = is_array( $node['innerContent'] ) && isset( $node['innerContent'][0] ) && is_string( $node['innerContent'][0] )
+			? $node['innerContent'][0]
+			: (string) $node['innerHTML'];
+		$saved_id   = Saddle_Blocks_Author::markup_anchor( $saved_open );
+		if ( '' !== $saved_id && ! array_key_exists( 'anchor', $authored['attrs'] ) ) {
+			$authored['attrs']['anchor'] = $saved_id;
+		}
+
 		if ( $has_content ) {
 			$authored['content'] = $input['content'];
 		} elseif ( ! $node['innerBlocks'] ) {
-			// Keep the block's current inner markup when only attrs change.
-			$authored['html'] = (string) $node['innerHTML'];
+			// Only attrs change: a text leaf is recomposed from its current
+			// text, so the new classes reach the page (#344). Anything else
+			// keeps its saved markup.
+			$text = Saddle_Blocks_Author::leaf_text( $authored['type'], (string) $node['innerHTML'] );
+			if ( null !== $text ) {
+				$authored['content'] = $text;
+			} else {
+				$authored['html'] = (string) $node['innerHTML'];
+			}
 		}
 
 		$fresh = Saddle_Blocks_Author::expand_node( $authored, $address );

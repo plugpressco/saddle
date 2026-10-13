@@ -1090,4 +1090,135 @@ class Saddle_Blocks_Test extends WP_UnitTestCase {
 		$accent  = reset( $accent );
 		$this->assertSame( '#ff0000', $accent['color'], 'The original accent must survive a second seed.' );
 	}
+	/* -------- #344: list-item classes, and anchors as ids -------- */
+
+	/**
+	 * The symptom in #344: a list item with a className saved as a bare <li>,
+	 * so the class reached the comment but not the page.
+	 */
+	public function test_a_list_item_keeps_its_class_and_style_in_the_markup() {
+		$item = Saddle_Blocks_Author::expand_node(
+			array(
+				"type"    => "core/list-item",
+				"content" => "Shield",
+				"attrs"   => array(
+					"className" => "s-ico-shield",
+					"style"     => array( "typography" => array( "fontWeight" => "600" ) ),
+				),
+			)
+		);
+
+		$this->assertNotWPError( $item );
+		$this->assertStringContainsString( "<li class=\"s-ico-shield\" style=\"font-weight:600;\">Shield</li>", $item["innerHTML"] );
+
+		$nested = Saddle_Blocks_Author::expand_node(
+			array(
+				"type"     => "core/list-item",
+				"content"  => "Parent",
+				"attrs"    => array( "className" => "s-ico-shield" ),
+				"children" => array(
+					array(
+						"type"     => "core/list",
+						"children" => array( array( "type" => "core/list-item", "content" => "Child" ) ),
+					),
+				),
+			)
+		);
+
+		$this->assertNotWPError( $nested );
+		$this->assertSame( "<li class=\"s-ico-shield\">Parent", $nested["innerContent"][0] );
+	}
+
+	/**
+	 * The path #344 was seen on: edit-block with attrs only, on an existing
+	 * list item, must put the class on the page.
+	 */
+	public function test_edit_block_puts_a_list_item_class_on_the_page() {
+		$id = $this->page( "<!-- wp:list -->\n<ul class=\"wp-block-list\"><!-- wp:list-item -->\n<li>Step one</li>\n<!-- /wp:list-item --></ul>\n<!-- /wp:list -->" );
+
+		$result = $this->run_ability(
+			"edit-block",
+			array(
+				"post_id" => $id,
+				"address" => "0.0",
+				"attrs"   => array( "className" => "s-ico-shield" ),
+			)
+		);
+
+		$this->assertNotWPError( $result );
+		$this->assertStringContainsString( "<li class=\"s-ico-shield\">Step one</li>", get_post( $id )->post_content );
+	}
+
+	/**
+	 * The comment on #344: an anchor stayed in the comment and never became
+	 * the outer tag`s id, so #anchor links went nowhere.
+	 */
+	public function test_an_anchor_becomes_the_id_on_the_outer_tag() {
+		$cases = array(
+			array( array( "type" => "core/group", "attrs" => array( "anchor" => "works-with" ), "children" => array( array( "type" => "core/paragraph", "content" => "x" ) ) ), "<div class=\"wp-block-group\" id=\"works-with\">" ),
+			array( array( "type" => "core/heading", "content" => "Pricing", "attrs" => array( "anchor" => "pricing" ) ), "<h2 class=\"wp-block-heading\" id=\"pricing\">" ),
+			array( array( "type" => "core/paragraph", "content" => "x", "attrs" => array( "anchor" => "intro" ) ), "<p id=\"intro\">" ),
+			array( array( "type" => "core/list-item", "content" => "x", "attrs" => array( "anchor" => "step-1" ) ), "<li id=\"step-1\">" ),
+			array( array( "type" => "core/spacer", "attrs" => array( "anchor" => "gap" ) ), "<div id=\"gap\" style=\"height:100px\"" ),
+			array( array( "type" => "core/separator", "attrs" => array( "anchor" => "rule" ) ), "id=\"rule\"/>" ),
+			array( array( "type" => "core/button", "content" => "Go", "attrs" => array( "anchor" => "cta", "url" => "https://example.com/" ) ), "<div class=\"wp-block-button\" id=\"cta\">" ),
+			array( array( "type" => "core/image", "content" => "https://example.com/a.jpg", "attrs" => array( "anchor" => "hero-img" ) ), "<figure class=\"wp-block-image\" id=\"hero-img\">" ),
+		);
+
+		foreach ( $cases as $case ) {
+			$block = Saddle_Blocks_Author::expand_node( $case[0] );
+			$this->assertNotWPError( $block, $case[0]["type"] );
+			$html = serialize_block( $block );
+			$this->assertStringContainsString( $case[1], $html, $case[0]["type"] );
+			$this->assertSame( $case[0]["attrs"]["anchor"], parse_blocks( $html )[0]["attrs"]["anchor"], $case[0]["type"] . " keeps the anchor in the comment, so a later edit keeps it." );
+		}
+	}
+
+	public function test_an_anchor_is_escaped_in_the_id() {
+		$block = Saddle_Blocks_Author::expand_node(
+			array(
+				"type"    => "core/paragraph",
+				"content" => "x",
+				"attrs"   => array( "anchor" => "a\"><script>" ),
+			)
+		);
+
+		$this->assertStringNotContainsString( "<script>", $block["innerHTML"] );
+		$this->assertStringContainsString( "id=\"a&quot;&gt;&lt;script&gt;\"", $block["innerHTML"] );
+	}
+	/**
+	 * Same class as #344 on any text leaf: an attrs-only edit used to keep
+	 * the old markup, so a drop cap or heading level reached only the comment.
+	 */
+	public function test_an_attrs_only_edit_recomposes_a_text_leaf_and_keeps_its_inline_markup() {
+		$id = $this->page( "<!-- wp:paragraph -->\n<p>Read <strong>this</strong> first</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:heading -->\n<h2 class=\"wp-block-heading\">Title</h2>\n<!-- /wp:heading -->" );
+
+		$this->assertNotWPError( $this->run_ability( "edit-block", array( "post_id" => $id, "address" => "0", "attrs" => array( "dropCap" => true ) ) ) );
+		$this->assertNotWPError( $this->run_ability( "edit-block", array( "post_id" => $id, "address" => "1", "attrs" => array( "level" => 3 ) ) ) );
+
+		$content = get_post( $id )->post_content;
+		$this->assertStringContainsString( "<p class=\"has-drop-cap\">Read <strong>this</strong> first</p>", $content );
+		$this->assertStringContainsString( "<h3 class=\"wp-block-heading\">Title</h3>", $content );
+	}
+
+	/**
+	 * The editor saves an anchor as the markup`s id and leaves it out of the
+	 * comment. Recomposing must carry it over, not drop it.
+	 */
+	public function test_an_attrs_only_edit_keeps_an_anchor_made_in_the_editor() {
+		$id = $this->page( "<!-- wp:heading -->\n<h2 class=\"wp-block-heading\" id=\"faq\">FAQ</h2>\n<!-- /wp:heading -->\n\n<!-- wp:group {\"layout\":{\"type\":\"constrained\"}} -->\n<div id=\"works-with\" class=\"wp-block-group\"><!-- wp:paragraph -->\n<p>x</p>\n<!-- /wp:paragraph --></div>\n<!-- /wp:group -->" );
+
+		$this->assertNotWPError( $this->run_ability( "edit-block", array( "post_id" => $id, "address" => "0", "attrs" => array( "className" => "is-faq" ) ) ) );
+		$this->assertNotWPError( $this->run_ability( "edit-block", array( "post_id" => $id, "address" => "1", "attrs" => array( "className" => "band" ) ) ) );
+
+		$content = get_post( $id )->post_content;
+		$this->assertStringContainsString( "<h2 class=\"wp-block-heading is-faq\" id=\"faq\">FAQ</h2>", $content );
+		$this->assertStringContainsString( "<div class=\"wp-block-group band\" id=\"works-with\">", $content );
+	}
+
+	public function test_an_attrs_only_edit_on_an_image_keeps_its_markup() {
+		$html = "<figure class=\"wp-block-image\"><img src=\"https://example.com/a.jpg\" alt=\"A\"/></figure>";
+		$this->assertNull( Saddle_Blocks_Author::leaf_text( "core/image", $html ) );
+		$this->assertSame( "", Saddle_Blocks_Author::leaf_text( "core/spacer", "<div style=\"height:40px\" aria-hidden=\"true\" class=\"wp-block-spacer\"></div>" ) );
+	}
 }
