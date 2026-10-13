@@ -119,6 +119,7 @@ require_once SADDLE_DIR . 'includes/class-saddle-journal.php';
 require_once SADDLE_DIR . 'includes/class-saddle-undo.php';
 require_once SADDLE_DIR . 'includes/class-saddle-undo-steps.php';
 require_once SADDLE_DIR . 'includes/class-saddle-rehearsal.php';
+require_once SADDLE_DIR . 'includes/class-saddle-tool-modes.php';
 require_once SADDLE_DIR . 'includes/class-saddle-post-types.php';
 require_once SADDLE_DIR . 'includes/class-saddle-update-runner.php';
 require_once SADDLE_DIR . 'includes/class-saddle-install-runner.php';
@@ -179,6 +180,7 @@ require_once SADDLE_DIR . 'includes/admin/class-saddle-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-notices-admin.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-connections-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-approvals-rest.php';
+require_once SADDLE_DIR . 'includes/admin/class-saddle-tool-modes-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-services-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-onboarding-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-modules-rest.php';
@@ -309,6 +311,7 @@ final class Saddle {
 		Saddle_Access::register();
 		add_action( 'rest_api_init', array( 'Saddle_Connections_REST', 'register_routes' ) );
 		add_action( 'rest_api_init', array( 'Saddle_Approvals_REST', 'register_routes' ) );
+		add_action( 'rest_api_init', array( 'Saddle_Tool_Modes_REST', 'register_routes' ) );
 		add_action( 'rest_api_init', array( 'Saddle_Services_REST', 'register_routes' ) );
 		add_action( 'rest_api_init', array( 'Saddle_Modules_REST', 'register_routes' ) );
 
@@ -327,6 +330,7 @@ final class Saddle {
 		// Rehearsal mode wraps every write tool at registration, so it has to
 		// be hooked before wp_abilities_api_init fires.
 		Saddle_Rehearsal::init();
+		Saddle_Tool_Modes::init();
 
 		// The MCP surface and abilities require core's Abilities API (WP 6.9+).
 		if ( self::abilities_api_available() ) {

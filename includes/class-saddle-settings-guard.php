@@ -28,6 +28,8 @@ class Saddle_Settings_Guard {
 		'saddle_drafts_only',
 		'saddle_enabled_integrations',
 		'saddle_disabled_abilities',
+		'saddle_ask_abilities',
+		'saddle_known_abilities',
 		'saddle_tier_domain',
 		'saddle_enforce_tier_domain',
 		'saddle_core_major_updates',

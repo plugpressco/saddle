@@ -45,9 +45,120 @@ class Saddle_Approval {
 	const META_DECIDED_BY = '_saddle_decided_by';
 	const META_DECIDED_AT = '_saddle_decided_at';
 	const META_TIER       = '_saddle_tier';
+	const META_TOOL       = '_saddle_tool';
 
 	const DECISION_APPROVED = 'approved';
 	const DECISION_REJECTED = 'rejected';
+
+	/**
+	 * The tool whose owner-approved call is running now, or null. Inside that
+	 * run its own preview step is already answered (see run_approved()).
+	 *
+	 * @var string|null
+	 */
+	private static $approved_tool = null;
+
+	/**
+	 * Run a call the owner approved under Needs your OK and the app then
+	 * confirmed (#364). A preview the tool's own code asks for on the way is
+	 * answered by that approval, so the owner is not asked twice.
+	 *
+	 * @param string   $tool Tool name without the namespace.
+	 * @param callable $run  The call.
+	 * @return mixed What the call returns.
+	 */
+	public static function run_approved( $tool, callable $run ) {
+		$before              = self::$approved_tool;
+		self::$approved_tool = (string) $tool;
+		try {
+			return call_user_func( $run );
+		} finally {
+			self::$approved_tool = $before;
+		}
+	}
+
+	/**
+	 * The calling app's connection id (`key:<uuid>`, `oauth:<grant>`), or ''
+	 * for the owner's own browser session.
+	 *
+	 * @return string
+	 */
+	public static function connection() {
+		return self::current_connection();
+	}
+
+	/**
+	 * The tool a live token belongs to, without spending it, or '' when no
+	 * live token matches.
+	 *
+	 * @param string $token Candidate token.
+	 * @return string
+	 */
+	public static function token_tool( $token ) {
+		$action = self::token_action( $token );
+		if ( '' === $action ) {
+			return '';
+		}
+		$query = new WP_Query(
+			array(
+				'post_type'      => self::CPT,
+				'title'          => self::hash_token( (string) $token ),
+				'post_status'    => 'publish',
+				'posts_per_page' => 1,
+				'fields'         => 'ids',
+				'no_found_rows'  => true,
+			)
+		);
+		$tool  = $query->posts ? (string) get_post_meta( (int) $query->posts[0], self::META_TOOL, true ) : '';
+
+		return '' !== $tool ? $tool : str_replace( '_', '-', $action );
+	}
+
+	/**
+	 * The action a live token was issued for, without spending it, or ''.
+	 *
+	 * @param string $token Candidate token.
+	 * @return string
+	 */
+	public static function token_action( $token ) {
+		$query = new WP_Query(
+			array(
+				'post_type'              => self::CPT,
+				'title'                  => self::hash_token( (string) $token ),
+				'post_status'            => 'publish',
+				'posts_per_page'         => 1,
+				'fields'                 => 'ids',
+				'no_found_rows'          => true,
+				'update_post_term_cache' => false,
+			)
+		);
+
+		return $query->posts ? (string) get_post_meta( (int) $query->posts[0], '_saddle_action', true ) : '';
+	}
+
+	/**
+	 * The tool a gate call belongs to: `tool` when given, else the action
+	 * with the older underscore spelling ("delete_post") made a tool name.
+	 *
+	 * @param array $args Gate arguments.
+	 * @return string
+	 */
+	private static function tool_of( array $args ) {
+		$tool = isset( $args['tool'] ) && '' !== (string) $args['tool'] ? (string) $args['tool'] : (string) $args['action'];
+		return str_replace( '_', '-', $tool );
+	}
+
+	/**
+	 * Whether a request waits for the owner, not the chat: its tool is set to
+	 * Ask first and an app (not the owner's own browser) made it.
+	 *
+	 * @param string $tool       Tool name without the namespace.
+	 * @param string $connection Connection id, '' for a browser session.
+	 * @return bool
+	 */
+	private static function waits_for_owner( $tool, $connection ) {
+		return '' !== (string) $connection && class_exists( 'Saddle_Tool_Modes' ) && Saddle_Tool_Modes::asks_first( (string) $tool );
+	}
 
 	/**
 	 * Register the token-storage CPT. Hidden from every UI and export.
@@ -111,6 +222,8 @@ class Saddle_Approval {
 	 *                             Needs your OK can leave out a request the app
 	 *                             can no longer run. Defaults to `action`.
 	 *     @type array    $input   The ability's input (read for `confirm_token`).
+	 *     @type bool     $log     Optional. False when the code being run logs
+	 *                             its own change. Default true.
 	 *     @type callable $execute Zero-arg callable that performs the mutation
 	 *                             and returns the result (or WP_Error).
 	 * }
@@ -138,38 +251,70 @@ class Saddle_Approval {
 			if ( is_wp_error( $ok ) ) {
 				return $ok;
 			}
-			$result = call_user_func( $execute );
-
-			// Log the executed destructive action (not the preview). A WP_Error
-			// result is logged too — the executor may have partially mutated
-			// before failing, and a confirmed destructive call with no audit
-			// trail is worse than a noisy one.
-			if ( class_exists( 'Saddle_Log' ) ) {
-				$summary = isset( $args['summary'] ) ? (string) $args['summary'] : '';
-				if ( is_wp_error( $result ) ) {
-					$summary = sprintf(
-						/* translators: 1: original summary, 2: error message. */
-						__( '%1$s. Failed after confirmation: %2$s', 'saddle' ),
-						rtrim( $summary, '. ' ),
-						$result->get_error_message()
-					);
-				} else {
-					$done    = self::done_line( isset( $args['done'] ) ? $args['done'] : null, $result );
-					$summary = '' !== $done ? $done : $summary;
-				}
-				Saddle_Log::record(
-					array(
-						'action'  => $action,
-						'target'  => $target,
-						'summary' => $summary,
-					)
-				);
-			}
-
-			return $result;
+			return self::run_confirmed( $args, $action, $target, $execute );
 		}
 
-		// Dry-run path: issue a token, return a preview, mutate nothing.
+		// The owner approved this very call under Needs your OK and the app
+		// confirmed it (#364), so the tool's own preview step is answered.
+		if ( null !== self::$approved_tool && self::tool_of( $args ) === self::$approved_tool ) {
+			return self::run_confirmed( $args, $action, $target, $execute );
+		}
+
+		return self::preview( $args, $action, $target, $bind );
+	}
+
+	/**
+	 * Run a confirmed action and record it.
+	 *
+	 * @param array    $args    The gate arguments.
+	 * @param string   $action  Action identifier.
+	 * @param string   $target  Target identifier.
+	 * @param callable $execute The mutation.
+	 * @return mixed The executor's result.
+	 */
+	private static function run_confirmed( array $args, $action, $target, $execute ) {
+		$result = call_user_func( $execute );
+
+		// Log the executed destructive action (not the preview). A WP_Error
+		// result is logged too — the executor may have partially mutated
+		// before failing, and a confirmed destructive call with no audit
+		// trail is worse than a noisy one.
+		if ( class_exists( 'Saddle_Log' ) && ( ! isset( $args['log'] ) || false !== $args['log'] ) ) {
+			$summary = isset( $args['summary'] ) ? (string) $args['summary'] : '';
+			if ( is_wp_error( $result ) ) {
+				$summary = sprintf(
+					/* translators: 1: original summary, 2: error message. */
+					__( '%1$s. Failed after confirmation: %2$s', 'saddle' ),
+					rtrim( $summary, '. ' ),
+					$result->get_error_message()
+				);
+			} else {
+				$done    = self::done_line( isset( $args['done'] ) ? $args['done'] : null, $result );
+				$summary = '' !== $done ? $done : $summary;
+			}
+			Saddle_Log::record(
+				array(
+					'action'  => $action,
+					'target'  => $target,
+					'summary' => $summary,
+				)
+			);
+		}
+
+		return $result;
+	}
+
+	/**
+	 * The dry run: issue a token, return a preview, mutate nothing.
+	 *
+	 * @param array  $args   The gate arguments.
+	 * @param string $action Action identifier.
+	 * @param string $target Target identifier.
+	 * @param string $bind   Bound parameter.
+	 * @return array|WP_Error
+	 */
+	private static function preview( array $args, $action, $target, $bind ) {
+		$tool      = self::tool_of( $args );
 		$new_token = self::issue_token(
 			$action,
 			$target,
@@ -178,10 +323,29 @@ class Saddle_Approval {
 				'summary' => isset( $args['summary'] ) ? (string) $args['summary'] : '',
 				'preview' => isset( $args['preview'] ) ? $args['preview'] : null,
 				'tier'    => self::needed_tier( isset( $args['tool'] ) ? (string) $args['tool'] : $action ),
+				'tool'    => $tool,
 			)
 		);
 		if ( is_wp_error( $new_token ) ) {
 			return $new_token;
+		}
+
+		if ( self::waits_for_owner( $tool, self::current_connection() ) ) {
+			return array(
+				'requires_confirmation' => true,
+				'needs_owner_approval'  => true,
+				'confirm_token'         => $new_token,
+				'expires_in_seconds'    => self::TOKEN_TTL,
+				'action'                => $action,
+				'summary'               => isset( $args['summary'] ) ? (string) $args['summary'] : '',
+				'preview'               => isset( $args['preview'] ) ? $args['preview'] : null,
+				'approve_at'            => admin_url( 'admin.php?page=saddle' ),
+				'instructions'          => sprintf(
+					/* translators: %s: address of the Saddle Dashboard in wp-admin. */
+					__( 'Nothing has changed. The site owner set this tool to ask them first, so it waits for their OK, not for a yes in this chat. Tell the user it is waiting under Needs your OK on the Saddle Dashboard (%s). After the owner approves it there, call this tool again with the same arguments plus "confirm_token" set to the value above. Until then that call is refused. The token is single-use and expires in 15 minutes.', 'saddle' ),
+					admin_url( 'admin.php?page=saddle' )
+				),
+			);
 		}
 
 		return array(
@@ -265,6 +429,7 @@ class Saddle_Approval {
 		update_post_meta( $post_id, self::META_PREVIEW, wp_slash( false === $preview ? 'null' : $preview ) );
 		update_post_meta( $post_id, self::META_DECISION, '' );
 		update_post_meta( $post_id, self::META_TIER, isset( $detail['tier'] ) ? (string) $detail['tier'] : '' );
+		update_post_meta( $post_id, self::META_TOOL, isset( $detail['tool'] ) ? (string) $detail['tool'] : '' );
 
 		return $token;
 	}
@@ -407,6 +572,21 @@ class Saddle_Approval {
 			return new WP_Error(
 				'saddle_token_connection_mismatch',
 				__( 'This confirmation token was issued to a different app. Preview the action yourself, then confirm with the token it returns.', 'saddle' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		// A tool set to Ask first runs only on the owner's word (#364). Checked
+		// before the token is spent, so the same token works once they approve.
+		$stored_tool = (string) get_post_meta( $post_id, self::META_TOOL, true );
+		if ( '' === $decision && self::waits_for_owner( '' !== $stored_tool ? $stored_tool : str_replace( '_', '-', (string) $stored_action ), $stored_conn ) ) {
+			return new WP_Error(
+				'saddle_awaiting_owner',
+				sprintf(
+					/* translators: %s: address of the Saddle Dashboard in wp-admin. */
+					__( 'The site owner has not approved this yet. It is waiting under Needs your OK on the Saddle Dashboard (%s). Ask them to approve it there, then call again with the same token. Don’t ask for a new preview.', 'saddle' ),
+					admin_url( 'admin.php?page=saddle' )
+				),
 				array( 'status' => 403 )
 			);
 		}
@@ -589,7 +769,7 @@ class Saddle_Approval {
 	 * A request whose app no longer has the access level its tool needs is
 	 * left out: approving it could not make it run.
 	 *
-	 * @return array[] `id`, `app`, `connection`, `tool`, `target`, `summary`,
+	 * @return array[] `id`, `app`, `connection`, `waits`, `tool`, `target`, `summary`,
 	 *                 `preview`, `created_at`, `expires_at`.
 	 */
 	public static function pending() {
@@ -622,13 +802,19 @@ class Saddle_Approval {
 			if ( '' !== (string) get_post_meta( $post->ID, self::META_DECISION, true ) || self::out_of_reach( $post->ID ) ) {
 				continue;
 			}
-			$expires = (int) get_post_meta( $post->ID, '_saddle_expires', true );
-			$preview = json_decode( (string) get_post_meta( $post->ID, self::META_PREVIEW, true ), true );
-			$rows[]  = array(
+			$expires    = (int) get_post_meta( $post->ID, '_saddle_expires', true );
+			$preview    = json_decode( (string) get_post_meta( $post->ID, self::META_PREVIEW, true ), true );
+			$connection = (string) get_post_meta( $post->ID, self::META_CONNECTION, true );
+			$action     = (string) get_post_meta( $post->ID, '_saddle_action', true );
+			$tool       = (string) get_post_meta( $post->ID, self::META_TOOL, true );
+			$rows[]     = array(
 				'id'         => (int) $post->ID,
 				'app'        => (string) get_post_meta( $post->ID, self::META_APP, true ),
-				'connection' => (string) get_post_meta( $post->ID, self::META_CONNECTION, true ),
-				'tool'       => (string) get_post_meta( $post->ID, '_saddle_action', true ),
+				'connection' => $connection,
+				// True when only the owner's OK lets it run (Ask first, #364);
+				// otherwise the app may also confirm after a yes in the chat.
+				'waits'      => self::waits_for_owner( '' !== $tool ? $tool : str_replace( '_', '-', $action ), $connection ),
+				'tool'       => $action,
 				'target'     => (string) get_post_meta( $post->ID, '_saddle_target', true ),
 				'summary'    => (string) get_post_meta( $post->ID, self::META_SUMMARY, true ),
 				'preview'    => $preview,

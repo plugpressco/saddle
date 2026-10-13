@@ -101,7 +101,7 @@ class Saddle_Rehearsal {
 	 * @param array $input Call input.
 	 * @return int
 	 */
-	private static function target_id( array $input ) {
+	public static function target_id( array $input ) {
 		foreach ( array( 'id', 'post_id', 'page_id' ) as $key ) {
 			if ( isset( $input[ $key ] ) && is_numeric( $input[ $key ] ) ) {
 				return (int) $input[ $key ];
