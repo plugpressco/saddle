@@ -210,6 +210,9 @@ The WordPress.org version never checks for its own updates. The version from plu
 
 == Changelog ==
 
+= 1.6.0 =
+* Fix: When sign-in by address cannot read an app's identity because this server cannot look up the app's address, Saddle now says so and suggests a key. It used to say the address pointed to a private network. WordPress Playground and Studio cannot look up outside addresses.
+
 = 1.5.2 =
 * New: Your AI app can search the WordPress.org plugin directory. Each result shows the plugin's version, active installs, rating, last update and the WordPress and PHP versions it needs, and whether it is already installed and active on your site.
 * New: Your AI app can install a plugin from the WordPress.org directory by its name. It shows a preview first, with warnings when the plugin is not tested with your WordPress or has not been updated in two years, and waits for your approval. WordPress's own installer then adds it in the background. The plugin arrives inactive, so turning it on is a separate step you approve. Saddle never installs from a zip file or a link, and never deletes a plugin.
