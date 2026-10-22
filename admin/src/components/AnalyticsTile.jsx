@@ -1,16 +1,19 @@
 /**
- * Saddle Analytics as a row in Home's Add-ons (#367), while it is not on and
- * this owner may add it. One button installs it from WordPress.org and turns
- * it on without leaving the page (see analytics-addon.js); then the row
- * opens it. A failure says why and links to the Plugins screen.
+ * Saddle Analytics as a tile in Home's Add-ons (#367; a tile since #369),
+ * while it is not on and this owner may add it. One button installs it from
+ * WordPress.org and turns it on without leaving the page (see
+ * analytics-addon.js); then the tile opens it. A failure says why and links
+ * to the Plugins screen.
  */
 import { useState } from '@wordpress/element';
-import { Button, Row, StatusDot } from '@plugpress/ui';
+import { Button } from '@plugpress/ui';
 import { __ } from '@wordpress/i18n';
 import { addAnalytics, addError, analyticsOffer } from '../analytics-addon';
+import { addonTone } from '../home-logic';
+import { NavIcon } from '../icons/iconoir';
 
-export default function AnalyticsRow() {
-	// What the page knew when this row first drew: it keeps drawing after
+export default function AnalyticsTile() {
+	// What the page knew when this tile first drew: it keeps drawing after
 	// the add, to say it is on.
 	const [ offer ] = useState( analyticsOffer );
 	const [ phase, setPhase ] = useState( 'idle' );
@@ -33,7 +36,7 @@ export default function AnalyticsRow() {
 		);
 	};
 
-	let description = __( 'Visitor stats, no cookies', 'saddle' );
+	let line = __( 'Visitor stats, no cookies', 'saddle' );
 	let action = (
 		<Button
 			variant="secondary"
@@ -48,18 +51,18 @@ export default function AnalyticsRow() {
 		</Button>
 	);
 	if ( 'busy' === phase ) {
-		description = installed
+		line = installed
 			? __( 'Turning it on…', 'saddle' )
 			: __( 'Installing from WordPress.org…', 'saddle' );
 	} else if ( 'done' === phase ) {
-		description = __( 'On', 'saddle' );
+		line = __( 'On', 'saddle' );
 		action = (
 			<Button variant="link" size="sm" href={ offer.url }>
 				{ __( 'Open', 'saddle' ) }
 			</Button>
 		);
 	} else if ( 'failed' === phase ) {
-		description = error;
+		line = error;
 		action = (
 			<Button variant="link" size="sm" href={ offer.manualUrl }>
 				{ __( 'Open Plugins', 'saddle' ) }
@@ -68,18 +71,22 @@ export default function AnalyticsRow() {
 	}
 
 	return (
-		<Row
-			icon={
-				<StatusDot
-					tone={
-						{ done: 'success', failed: 'danger' }[ phase ] ||
-						'neutral'
-					}
-				/>
-			}
-			title={ __( 'Saddle Analytics', 'saddle' ) }
-			description={ description }
-			actions={ action }
-		/>
+		<li className="saddle-addon">
+			<span
+				className={ `saddle-tile saddle-tile--${ addonTone(
+					'analytics'
+				) }` }
+				aria-hidden="true"
+			>
+				<NavIcon name="graph-up" size={ 20 } />
+			</span>
+			<span className="saddle-addon__text">
+				<span className="saddle-addon__name">
+					{ __( 'Saddle Analytics', 'saddle' ) }
+				</span>
+				<span className="saddle-addon__line">{ line }</span>
+			</span>
+			{ action }
+		</li>
 	);
 }

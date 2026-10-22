@@ -1,49 +1,46 @@
 /**
- * Home (#309, the Dashboard until then; clearer in #367): an action page.
+ * Home (#309, the Dashboard until then; clearer in #367; one column after
+ * Saddle Cloud's overview in #369): an action page.
  *
- * With no app connected, one block asks the owner to connect one, and the
+ * With no app connected, one card asks the owner to connect one, and the
  * activity feed follows only when there is history. Nothing else is drawn:
- * the week's numbers are about apps, and so is the side column.
+ * the week's numbers are about apps.
  *
- * Once an app is connected, two columns. The main one holds "Needs your OK"
- * while something waits, then the AI apps, each row saying what the app may
- * do and when it was last used, with its one next step on the row ("Try
- * it", "Change access"), then the week's three numbers and the activity feed
- * by day. The side one holds the add-ons (the installed modules, and Saddle
- * Analytics while it is not on), the plugins on this site the apps can work
- * inside ("Works with"), and a warning when connections may not work.
+ * Once an app is connected, one column of soft cards. "Needs your OK" while
+ * something waits, and a warning when connections may not work. Then This
+ * week: three numbers and the changes of each of the last seven days as
+ * bars. Then the AI apps, each with what it may do, when it was last used
+ * and its one next step ("Try it", "Change access"). Then the add-ons as
+ * tiles (the installed modules, and Saddle Analytics while it is not on),
+ * the plugins on this site the apps can work inside ("Works with"), and the
+ * activity feed by day.
  *
- * The AI switch is in the header on every page, so Home does not repeat it,
- * and there are no tabs: the feed is part of the page.
+ * No status dots and no rules between rows: tiles, chips and space carry the
+ * structure. The AI switch is in the header on every page, so Home does not
+ * repeat it.
  */
 import { useState, useEffect } from '@wordpress/element';
-import {
-	Button,
-	Card,
-	CardHeader,
-	Row,
-	RowList,
-	Skeleton,
-	StatCard,
-	StatGrid,
-	StatusDot,
-} from '@plugpress/ui';
-import { __ } from '@wordpress/i18n';
-import { api } from '../api';
+import { Button, Skeleton, VisuallyHidden } from '@plugpress/ui';
+import { __, _n, sprintf } from '@wordpress/i18n';
+import { api, saddleData } from '../api';
 import { analyticsOffer } from '../analytics-addon';
 import { metaLine } from '../apps-logic';
 import { APPS } from '../connect-apps';
 import { parseModules } from '../onboarding-logic';
-import { withArg } from '../routes';
-import AnalyticsRow from './AnalyticsRow';
+import { findArea, withArg } from '../routes';
+import AnalyticsTile from './AnalyticsTile';
 import NeedsYourOk from './NeedsYourOk';
-import SectionHeader from './SectionHeader';
 import Activity, { ActivitySkeleton } from './Activity';
 import { ROLES } from './ConnectedClients';
-import { AppLogo, appKeyFromLabel } from './icons';
+import { AppLogo, BrandMark, appKeyFromLabel } from './icons';
+import { icons } from '../icons/kit';
+import { NavIcon } from '../icons/iconoir';
 import {
+	addonTone,
 	appNext,
+	appTone,
 	selfCheckDue,
+	weekDays,
 	weekStart,
 	weekTiles,
 	worksWith,
@@ -53,6 +50,20 @@ import {
 // re-run the loopback probe. Reset on full reload, which is the right
 // granularity.
 let healthCache = null;
+
+// Each role's chip.
+const ROLE_TONE = {
+	read: 'sky',
+	write: 'lilac',
+	admin: 'pink',
+};
+
+// A module's state, when it asks for the owner, as a chip on its tile.
+const STATE_CHIP = {
+	'needs-setup': __( 'Set up', 'saddle' ),
+	attention: __( 'Check', 'saddle' ),
+	off: __( 'Off', 'saddle' ),
+};
 
 /**
  * A connection's name as the owner knows it: the app Saddle recognised, else
@@ -67,42 +78,130 @@ function connectionLabel( c ) {
 }
 
 /**
- * What a connection may do, in the AI apps page's words.
+ * How many log entries of one type the week holds, from `total`, and with
+ * `times` when each happened.
  *
- * @param {Object} c A row from GET /connections.
- * @return {string} "Read only", "Edit content" or "Manage the site", or ''.
+ * @param {string}  type      'executed' or 'denied'.
+ * @param {boolean} byApp     Count only what apps did, leaving out the
+ *                            owner's own steps (approvals, rejections, new
+ *                            roles).
+ * @param {boolean} withTimes Ask for each entry's time too, for the chart.
+ * @return {Promise<?Object>} `{ total, times }`, or null when it failed.
  */
-function roleLabel( c ) {
-	const role = ROLES.find( ( r ) => r.key === c.role );
-	return role ? role.label : '';
-}
-
-/**
- * How many log entries of one type the week holds, from `total`.
- *
- * @param {string}  type  'executed' or 'denied'.
- * @param {boolean} byApp Count only what apps did, leaving out the owner's
- *                        own steps (approvals, rejections, new roles).
- * @return {Promise<number|null>} The count, or null when it failed.
- */
-function weekTotal( type, byApp = false ) {
+function weekLog( type, byApp = false, withTimes = false ) {
 	return api(
 		`audit-log?per_page=1&type=${ type }&since=${ weekStart() }${
 			byApp ? '&by=app' : ''
-		}`
+		}${ withTimes ? '&times=1' : '' }`
 	).then(
-		( res ) => ( Number.isInteger( res.total ) ? res.total : null ),
+		( res ) =>
+			Number.isInteger( res.total )
+				? { total: res.total, times: res.times || [] }
+				: null,
 		() => null
 	);
 }
 
 /**
- * This week: three numbers in one block. Until they arrive the numbers are
- * placeholders, so the block keeps its place; a number that failed to load
- * is left out, and nothing is drawn when all three failed.
+ * A card's heading row: its name, and its links or buttons on the right.
+ *
+ * @param {Object} props
+ * @param {string} props.title   The card's name.
+ * @param {*}      props.actions Optional controls.
+ */
+function CardHead( { title, actions } ) {
+	return (
+		<div className="saddle-home__head">
+			<h2 className="saddle-home__title">{ title }</h2>
+			{ actions && (
+				<div className="saddle-home__actions">{ actions }</div>
+			) }
+		</div>
+	);
+}
+
+/**
+ * The changes of each day this week as bars, Saddle Cloud's: pale pink, and
+ * the brand on today's and on the one pointed at. A day with changes shows
+ * its number over its bar.
+ *
+ * @param {Object} props
+ * @param {Array}  props.days From weekDays().
+ */
+function WeekBars( { days } ) {
+	const max = Math.max( 1, ...days.map( ( d ) => d.count ) );
+	return (
+		<figure className="saddle-bars">
+			<ul
+				className="saddle-bars__plot"
+				aria-label={ __( 'Changes each day this week', 'saddle' ) }
+			>
+				{ days.map( ( d ) => (
+					<li
+						key={ d.date.getTime() }
+						className={ `saddle-bars__day${
+							d.today ? ' is-today' : ''
+						}` }
+					>
+						<VisuallyHidden>
+							{ sprintf(
+								/* translators: 1: a day, such as "Monday, October 20", 2: how many changes. */
+								_n(
+									'%1$s: %2$d change',
+									'%1$s: %2$d changes',
+									d.count,
+									'saddle'
+								),
+								d.date.toLocaleDateString( undefined, {
+									weekday: 'long',
+									month: 'long',
+									day: 'numeric',
+								} ),
+								d.count
+							) }
+						</VisuallyHidden>
+						{ d.count > 0 && (
+							<span
+								className="saddle-bars__count"
+								aria-hidden="true"
+							>
+								{ d.count.toLocaleString() }
+							</span>
+						) }
+						<span
+							className="saddle-bars__bar"
+							aria-hidden="true"
+							style={ {
+								blockSize: `${ Math.max(
+									3,
+									Math.round( ( d.count / max ) * 100 )
+								) }%`,
+							} }
+						/>
+					</li>
+				) ) }
+			</ul>
+			<div className="saddle-bars__ticks" aria-hidden="true">
+				{ days.map( ( d ) => (
+					<span key={ d.date.getTime() }>
+						{ d.date.toLocaleDateString( undefined, {
+							weekday: 'short',
+						} ) }
+					</span>
+				) ) }
+			</div>
+		</figure>
+	);
+}
+
+/**
+ * This week: three numbers, then the changes of each day as bars. Until
+ * they arrive the numbers are placeholders, so the card keeps its place; a
+ * number that failed to load is left out, and nothing is drawn when all
+ * three failed.
  *
  * @param {Object}  props
- * @param {?Object} props.week `{ changes, blocked, waiting }`, or null while loading.
+ * @param {?Object} props.week `{ changes, blocked, waiting, times }`, or null while loading.
  */
 function WeekCard( { week } ) {
 	const loading = null === week;
@@ -113,68 +212,66 @@ function WeekCard( { week } ) {
 		return null;
 	}
 	return (
-		<Card className="saddle-home__week" aria-busy={ loading || undefined }>
-			<CardHeader title={ __( 'This week', 'saddle' ) } />
-			<StatGrid columns={ tiles.length } divided>
+		<section
+			className="saddle-home__card saddle-week"
+			aria-busy={ loading || undefined }
+		>
+			<CardHead title={ __( 'This week', 'saddle' ) } />
+			<div className="saddle-week__numbers">
 				{ tiles.map( ( t ) => (
-					<StatCard
-						key={ t.key }
-						flush
-						label={ t.label }
-						value={
-							loading ? (
-								<Skeleton height={ 20 } width={ 28 } />
+					<div className="saddle-week__number" key={ t.key }>
+						<span className="saddle-week__value">
+							{ loading ? (
+								<Skeleton height={ 32 } width={ 40 } />
 							) : (
-								String( t.value )
-							)
-						}
-					/>
+								t.value.toLocaleString()
+							) }
+						</span>
+						<span className="saddle-week__label">{ t.label }</span>
+					</div>
 				) ) }
-			</StatGrid>
-		</Card>
+			</div>
+			{ loading || ! Array.isArray( week.times ) ? (
+				<Skeleton height={ 120 } aria-hidden="true" />
+			) : (
+				<WeekBars days={ weekDays( week.times ) } />
+			) }
+		</section>
 	);
 }
 
 /**
- * Home's shape while it loads (P12): the apps, the week's block and the
- * feed, then the side column, as placeholders. No h1 or h2 in it: the app
- * draws this before WordPress has moved its notices (see Frame).
+ * Home's shape while it loads (P12): the week, the apps and the feed, as
+ * placeholders. No h1 or h2 in it: the app draws this before WordPress has
+ * moved its notices (see Frame).
  */
 export function HomeSkeleton() {
 	return (
 		<div className="saddle-home">
-			<div className="saddle-home__main">
-				<div className="saddle-stack" aria-hidden="true">
-					<Skeleton height={ 15 } width={ 56 } />
-					<RowList loading loadingRows={ 2 } />
+			<div className="saddle-home__card" aria-hidden="true">
+				<Skeleton height={ 15 } width={ 72 } />
+				<div className="saddle-week__numbers">
+					{ [ 0, 1, 2 ].map( ( i ) => (
+						<Skeleton key={ i } height={ 32 } width={ 56 } />
+					) ) }
 				</div>
-				<WeekCard week={ null } />
-				<div className="saddle-activity">
-					<div
-						className="saddle-activity__filters"
-						aria-hidden="true"
-					>
-						<Skeleton height={ 15 } width={ 72 } />
-					</div>
-					<ActivitySkeleton />
-				</div>
+				<Skeleton height={ 120 } />
 			</div>
-			<aside className="saddle-home__side" aria-hidden="true">
-				<div className="saddle-stack">
-					<Skeleton height={ 15 } width={ 48 } />
-					<RowList loading loadingRows={ 1 } />
-				</div>
-			</aside>
+			<div className="saddle-home__card" aria-hidden="true">
+				<Skeleton height={ 15 } width={ 56 } />
+				{ [ 0, 1 ].map( ( i ) => (
+					<div className="saddle-app-row" key={ i }>
+						<Skeleton width={ 40 } height={ 40 } />
+						<Skeleton height={ 13 } width={ `${ 40 - i * 10 }%` } />
+					</div>
+				) ) }
+			</div>
+			<div className="saddle-home__card saddle-activity">
+				<ActivitySkeleton />
+			</div>
 		</div>
 	);
 }
-
-const STATE_TONE = {
-	ready: 'success',
-	'needs-setup': 'warning',
-	attention: 'warning',
-	off: 'neutral',
-};
 
 export default function Home( {
 	clients,
@@ -195,12 +292,13 @@ export default function Home( {
 	// Bumped after the owner undid a change in the feed, which reloads
 	// itself: only the counts need it.
 	const [ countKey, setCountKey ] = useState( 0 );
-	// This week: changes, blocked attempts, and what waits for the owner.
+	// This week: changes and when each happened, blocked attempts, and what
+	// waits for the owner.
 	const [ week, setWeek ] = useState( null );
 	// The Services records, for "Works with".
 	const [ services, setServices ] = useState( [] );
 	// Whether Add-ons offers Saddle Analytics, as the page first knew it: its
-	// row stays after the add, to say it is on.
+	// tile stays after the add, to say it is on.
 	const [ offerAnalytics ] = useState( () => analyticsOffer().canAdd );
 
 	const known = Array.isArray( connections );
@@ -229,15 +327,21 @@ export default function Home( {
 		}
 		let alive = true;
 		Promise.all( [
-			weekTotal( 'executed', true ),
-			weekTotal( 'denied' ),
+			weekLog( 'executed', true, true ),
+			weekLog( 'denied' ),
 			api( 'approvals' ).then(
 				( res ) => ( res.approvals || [] ).length,
 				() => null
 			),
 		] ).then(
 			( [ changes, blocked, waiting ] ) =>
-				alive && setWeek( { changes, blocked, waiting } )
+				alive &&
+				setWeek( {
+					changes: changes ? changes.total : null,
+					times: changes ? changes.times : null,
+					blocked: blocked ? blocked.total : null,
+					waiting,
+				} )
 		);
 		return () => {
 			alive = false;
@@ -283,26 +387,31 @@ export default function Home( {
 		return <HomeSkeleton />;
 	}
 
-	// Nothing connected: one block, and the feed only when there is history.
+	// Nothing connected: one card, and the feed only when there is history.
 	if ( ! connected ) {
 		return (
-			<div className="saddle-home saddle-home--single">
-				<Card className="saddle-home__connect">
+			<div className="saddle-home">
+				<div className="saddle-home__card saddle-home__connect">
+					<span
+						className="saddle-tile saddle-tile--pink saddle-tile--lg"
+						aria-hidden="true"
+					>
+						<BrandMark width={ 28 } height={ 28 } />
+					</span>
 					<p className="saddle-home__connect-text">
 						{ __( 'No AI app is connected yet.', 'saddle' ) }
 					</p>
 					<Button variant="primary" onClick={ onConnect }>
 						{ __( 'Connect an app', 'saddle' ) }
 					</Button>
-				</Card>
+				</div>
 
-				<section id="activity">
-					<Activity
-						caps={ caps }
-						title={ __( 'Activity', 'saddle' ) }
-						hideEmpty
-					/>
-				</section>
+				<Activity
+					caps={ caps }
+					title={ __( 'Activity', 'saddle' ) }
+					hideEmpty
+					className="saddle-home__card"
+				/>
 			</div>
 		);
 	}
@@ -321,13 +430,6 @@ export default function Home( {
 		services,
 		modules.map( ( m ) => m.key )
 	);
-
-	// What an app may do and when it last did something: "Read only · Last
-	// used 2 minutes ago". The registry knows both; the keys fallback neither.
-	const appLine = ( c ) =>
-		[ roleLabel( c ), known ? metaLine( c ) : '' ]
-			.filter( Boolean )
-			.join( ' · ' ) || undefined;
 
 	// The app's one next step, on its own row.
 	const appAction = ( c ) => {
@@ -363,20 +465,53 @@ export default function Home( {
 				</Button>
 			);
 		}
-		return undefined;
+		return null;
 	};
 
 	return (
 		<div className="saddle-home">
-			<div className="saddle-home__main">
-				{ /* Big changes an app asked for, waiting for the owner (#287).
-				     Draws nothing when there are none. */ }
-				<NeedsYourOk onChange={ () => setFeedKey( ( k ) => k + 1 ) } />
+			{ healthProblem && (
+				<div className="saddle-home__card saddle-home__alert">
+					<span
+						className="saddle-tile saddle-tile--butter"
+						aria-hidden="true"
+					>
+						<icons.AlertTriangle size={ 20 } />
+					</span>
+					<div className="saddle-home__alert-text">
+						<p className="saddle-home__alert-title">
+							{ __( 'Connections may not work', 'saddle' ) }
+						</p>
+						<p className="saddle-home__alert-line">
+							{ __(
+								'Your server may block the sign-in header apps need, or Application Passwords are off.',
+								'saddle'
+							) }
+						</p>
+					</div>
+					<Button
+						variant="secondary"
+						size="sm"
+						onClick={ () =>
+							onNavigate( { area: 'settings', tab: 'general' } )
+						}
+					>
+						{ __( 'Check', 'saddle' ) }
+					</Button>
+				</div>
+			) }
 
-				<section className="saddle-stack">
-					<SectionHeader
-						title={ __( 'AI apps', 'saddle' ) }
-						actions={
+			{ /* Big changes an app asked for, waiting for the owner (#287).
+			     Draws nothing when there are none. */ }
+			<NeedsYourOk onChange={ () => setFeedKey( ( k ) => k + 1 ) } />
+
+			<WeekCard week={ week } />
+
+			<section className="saddle-home__card">
+				<CardHead
+					title={ __( 'AI apps', 'saddle' ) }
+					actions={
+						<>
 							<Button
 								variant="link"
 								size="sm"
@@ -384,143 +519,150 @@ export default function Home( {
 							>
 								{ __( 'Manage', 'saddle' ) }
 							</Button>
-						}
-					/>
-					<RowList>
-						{ apps.map( ( c ) => (
-							<Row
-								key={ c.id }
-								icon={
-									<AppLogo
-										app={
-											c.app ||
-											appKeyFromLabel(
-												c.name || c.client
-											)
-										}
-									/>
-								}
-								title={ connectionLabel( c ) }
-								description={ appLine( c ) }
-								actions={ appAction( c ) }
-							/>
-						) ) }
-						<Row
-							title={
-								<Button
-									variant="link"
-									size="sm"
-									onClick={ onConnect }
+							<Button
+								variant="secondary"
+								size="sm"
+								onClick={ onConnect }
+							>
+								<icons.Plus size={ 16 } />
+								{ __( 'Connect app', 'saddle' ) }
+							</Button>
+						</>
+					}
+				/>
+				<ul className="saddle-home__apps">
+					{ apps.map( ( c ) => {
+						const app =
+							c.app || appKeyFromLabel( c.name || c.client );
+						const role = ROLES.find( ( r ) => r.key === c.role );
+						const meta = known ? metaLine( c ) : '';
+						return (
+							<li className="saddle-app-row" key={ c.id }>
+								<span
+									className={ `saddle-tile saddle-tile--${ appTone(
+										app
+									) }` }
+									aria-hidden="true"
 								>
-									{ __( 'Connect another app', 'saddle' ) }
-								</Button>
-							}
-						/>
-					</RowList>
-				</section>
+									<AppLogo app={ app } />
+								</span>
+								<span className="saddle-app-row__text">
+									<span className="saddle-app-row__name">
+										{ connectionLabel( c ) }
+									</span>
+									{ meta && (
+										<span className="saddle-app-row__meta">
+											{ meta }
+										</span>
+									) }
+								</span>
+								<span className="saddle-app-row__end">
+									{ role && (
+										<span
+											className={ `saddle-chip saddle-chip--${
+												ROLE_TONE[ role.key ] || 'sky'
+											}` }
+										>
+											{ role.label }
+										</span>
+									) }
+									{ appAction( c ) }
+								</span>
+							</li>
+						);
+					} ) }
+				</ul>
+			</section>
 
-				<WeekCard week={ week } />
-
-				<section id="activity">
-					<Activity
-						key={ feedKey }
-						caps={ caps }
-						title={ __( 'Activity', 'saddle' ) }
-						onChange={ () => setCountKey( ( k ) => k + 1 ) }
-					/>
-				</section>
-			</div>
-
-			<aside className="saddle-home__side">
-				{ ( modules.length > 0 || offerAnalytics ) && (
-					<section className="saddle-stack">
-						<SectionHeader title={ __( 'Add-ons', 'saddle' ) } />
-						<RowList>
-							{ modules.map( ( m ) => (
-								<Row
-									key={ m.key }
-									icon={
-										m.state ? (
-											<StatusDot
-												tone={
-													STATE_TONE[ m.state ] ||
-													'neutral'
-												}
-											/>
-										) : undefined
-									}
-									title={ m.product || m.title }
-									description={ m.line || undefined }
-									actions={
-										<Button
-											variant="link"
-											size="sm"
+			{ ( modules.length > 0 || offerAnalytics ) && (
+				<section className="saddle-home__card">
+					<CardHead title={ __( 'Add-ons', 'saddle' ) } />
+					<ul className="saddle-home__addons">
+						{ modules.map( ( m ) => {
+							const area = findArea( saddleData.areas, m.key );
+							const chip = STATE_CHIP[ m.state ];
+							return (
+								<li className="saddle-addon" key={ m.key }>
+									<span
+										className={ `saddle-tile saddle-tile--${ addonTone(
+											m.key
+										) }` }
+										aria-hidden="true"
+									>
+										<NavIcon
+											name={
+												( area && area.icon ) ||
+												'view-grid'
+											}
+											size={ 20 }
+										/>
+									</span>
+									<span className="saddle-addon__text">
+										<a
+											className="saddle-addon__name saddle-addon__link"
 											href={ m.admin_url }
 										>
-											{ __( 'Open', 'saddle' ) }
-										</Button>
-									}
-								/>
-							) ) }
-							{ offerAnalytics && <AnalyticsRow /> }
-						</RowList>
-					</section>
-				) }
+											{ m.product || m.title }
+										</a>
+										{ m.line && (
+											<span className="saddle-addon__line">
+												{ m.line }
+											</span>
+										) }
+									</span>
+									{ chip && (
+										<span className="saddle-chip saddle-chip--butter">
+											{ chip }
+										</span>
+									) }
+									<icons.ChevronRight
+										size={ 16 }
+										className="saddle-addon__go"
+									/>
+								</li>
+							);
+						} ) }
+						{ offerAnalytics && <AnalyticsTile /> }
+					</ul>
+				</section>
+			) }
 
-				{ plugins.length > 0 && (
-					<section className="saddle-stack">
-						<SectionHeader
-							title={ __( 'Works with', 'saddle' ) }
-							actions={
-								<Button
-									variant="link"
-									size="sm"
-									onClick={ () =>
-										onNavigate( {
-											area: 'services',
-											tab: 'overview',
-										} )
-									}
-								>
-									{ __( 'Services', 'saddle' ) }
-								</Button>
-							}
-						/>
-						<RowList>
-							{ plugins.map( ( p ) => (
-								<Row key={ p.key } title={ p.name } />
-							) ) }
-						</RowList>
-					</section>
-				) }
+			{ plugins.length > 0 && (
+				<section className="saddle-home__card">
+					<CardHead
+						title={ __( 'Works with', 'saddle' ) }
+						actions={
+							<Button
+								variant="link"
+								size="sm"
+								onClick={ () =>
+									onNavigate( {
+										area: 'services',
+										tab: 'overview',
+									} )
+								}
+							>
+								{ __( 'Services', 'saddle' ) }
+							</Button>
+						}
+					/>
+					<ul className="saddle-home__chips">
+						{ plugins.map( ( p ) => (
+							<li className="saddle-chip" key={ p.key }>
+								{ p.name }
+							</li>
+						) ) }
+					</ul>
+				</section>
+			) }
 
-				{ healthProblem && (
-					<RowList>
-						<Row
-							icon={ <StatusDot tone="warning" /> }
-							title={ __( 'Connections may not work', 'saddle' ) }
-							description={ __(
-								'Your server may block the sign-in header apps need, or Application Passwords are off.',
-								'saddle'
-							) }
-							actions={
-								<Button
-									variant="link"
-									size="sm"
-									onClick={ () =>
-										onNavigate( {
-											area: 'settings',
-											tab: 'general',
-										} )
-									}
-								>
-									{ __( 'Check', 'saddle' ) }
-								</Button>
-							}
-						/>
-					</RowList>
-				) }
-			</aside>
+			<Activity
+				key={ feedKey }
+				caps={ caps }
+				title={ __( 'Activity', 'saddle' ) }
+				onChange={ () => setCountKey( ( k ) => k + 1 ) }
+				className="saddle-home__card"
+			/>
 		</div>
 	);
 }

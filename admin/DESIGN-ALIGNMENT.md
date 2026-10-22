@@ -188,8 +188,9 @@ The plan and the section maps for Rank, CRM and Analytics are in
   switch (range, size, grouping) stays `SegmentedControl`. Neither carries
   icons.
 - **The menu.** Saddle → Home, then the products (Analytics, Rank, CRM),
-  then a hairline, then AI apps, Services, Context and Settings. Every item
-  has its Iconoir icon before its label. The hairline is drawn only when at
+  then a hairline, then AI apps, Services, Context and Settings. Labels
+  only, no icons (#369, 2026-10-22, Fahim: "remove icons of submenu of
+  saddle"; they had one each since 2026-10-03). The hairline is drawn only when at
   least one product is there: `Saddle_Settings::order_submenu()` gives the
   first of Core's pages after the products the `saddle-menu-group` class,
   and one `admin_head` stylesheet (printed only for users who can see the
@@ -244,8 +245,8 @@ Fahim: "for sidebar and tab icons ... use https://iconoir.com/ svg icons".
 Iconoir 7.12.1 (MIT) is the family's one icon set: regular style, stroke
 1.5, `currentColor`.
 
-- **Sizes:** 16px in the menu and the tabs, 20px in the header, a 6px gap to
-  the label.
+- **Sizes:** 16px in the tabs, 20px in the header and on Home's tiles, a
+  6px gap to the label. The WordPress menu has none (#369).
 - **Colour:** never Petrol. An icon is the colour of the text beside it.
 - **Labels:** no icon without a label. The one exception is an icon button
   with a tooltip and an `aria-label`.
@@ -351,35 +352,50 @@ Analytics, CRM, Rank and Pro.
     names, code comments, and `.pot` files. If unsure whether text reaches
     the owner's screen, trace it. If it reaches only an agent, leave it.
 
-## Home (#309, v2 the same day)
+## Home (#309; one column after Saddle Cloud, #369)
 
-Home replaced the Dashboard on 2026-10-02. The first build had captioned stat
-tiles, a row of suggested prompts and three ways to say "connect"; Fahim:
-"more ugly now … no ai slop, random text box, ai text, no repeat unnecessary
-things". The v2 plan is `planning/HOME-APPS-SERVICES-V2.md`. Home is now:
+Home replaced the Dashboard on 2026-10-02 (v2 plan:
+`planning/HOME-APPS-SERVICES-V2.md`), was made clearer in #367, and on
+2026-10-22 became one column of soft cards after Saddle Cloud's overview.
+Fahim: "make home better, bring stats, playful home with clean ui, no AI
+slop of ui like dot, force border everywhere.. no 2 column.. inspire by
+saddle cloud".
 
-- **Nothing connected:** one block, centred, "No AI app is connected yet." and
-  a primary "Connect an app". Then the feed if there is history. No stats,
-  no side column.
-- **Connected (clearer in #367, 2026-10-22, Fahim: "rework saddle dashboard
-  homepage cleaner view and make clear"):** left, "Needs your OK" while
-  something waits; **AI apps** first, because they are what the page is
-  about: logo, name, "Read only · Last used 2 minutes ago", and the app's one
-  next step on its own row ("Try it" for an app that has not used Saddle,
-  "Change access" as a link for one that can only read), "Manage" in the
-  heading, "Connect another app" as the last row. This replaces the
-  floating next-step line, which had no block and named one app at a time.
-  Then **This week**, one block with its title in the header row and three
-  numbers with labels only, Changes · Blocked · Waiting for you, exact (the
-  log's `since` argument), on one row at every width; then **Activity**: the
-  heading and the filters (All · Changes · Blocked, and Rehearsed only when
-  one exists) on one row, days as 13/600 grey labels, one-line rows (the
-  app's logo or a status dot, the summary, the time; the actor in the row's
-  tooltip), "Show older". Right, **Add-ons** (the installed modules, and
+- **The look, Home only.** The page grey with Cloud's faint pink and lilac
+  glow at the top (on `main[data-saddle-screen="home/overview"]`). White
+  cards with 12px corners (`--s-radius-card`) and an edge you barely see,
+  drawn as a shadow (`--s-card-edge`), never a border. No rules between
+  rows: a row pointed at gets a soft `#F6F7F7` ground. No status dots
+  anywhere on Home. 960px, like every Core page.
+- **Pastel tiles and chips** (`--saddle-pop-*`, Cloud's six tones, each with
+  its own ink at 3:1 or better): a 40px tile with 10px corners behind an
+  app's logo or an add-on's icon; a pill chip for an app's role (Read only
+  sky, Edit content lilac, Manage the site pink), an add-on that asks for the
+  owner (butter: Set up, Check, Off) and each plugin under Works with. An
+  app or add-on keeps its tone (`appTone`, `addonTone` in `home-logic.js`).
+- **Nothing connected:** one card, centred: the mark on a pink tile, "No AI
+  app is connected yet." at 15/600 and a primary "Connect an app". Then the
+  feed, in its card, if there is history.
+- **Connected, top to bottom:** the connection warning (a butter card with a
+  warning tile, two lines and Check) when the self-check fails; Needs your
+  OK while something waits; **This week**: Changes, Blocked and Waiting for
+  you at 32/600 with their labels under them, then the changes of each of
+  the last seven days (today and the six before, local midnight; the week
+  the numbers count) as bars. Bars are `--saddle-chart-bar` pale pink, the
+  brand on today's and on the one pointed at; a day with changes shows its
+  count over its bar, today's in brand text; the weekdays under them, today
+  in 600. The times come from `GET /audit-log?times=1`, one query of dates.
+  Then **AI apps**: "Manage" and "Connect app" in the card's heading row;
+  each app as its logo tile, name, "Last used …", its role chip and its one
+  next step ("Try it", or "Change access" as a link). On a phone the chip
+  and the step sit under the name. Then **Add-ons** as tiles, as many to a
+  row as fit 260px, each a link to its add-on (the name, stretched over the
+  tile), with its icon, its line ("12 visitors today") and a chevron;
   Saddle Analytics with Install or Turn on while it is not on and the owner
-  may add it), **Works with** (plugin names only, "Services" link; an add-on
-  already under Add-ons is not repeated) when non-empty, the connection
-  warning.
+  may add it. Then **Works with** as chips. Then **Activity**: heading and
+  filters on one row, days as 13/600 grey labels, one-line rows (the app's
+  logo, or a lilac person tile for the owner's own steps; the summary,
+  which says "Blocked · …" for a refusal; the time).
 - Nothing generated: no suggested prompts, no tips, no captions under
   numbers.
 
@@ -435,6 +451,7 @@ pills, "Yes, add it" (or "Yes, turn it on") and "Not now". Yes shows a grey
 | `--s-text` | 13 | everything you read: body, row titles (600), descriptions, meta, hints, buttons, tabs, footer |
 | `--s-text-sm` | 12 | badges, counts, code chips, the uppercase day label |
 | (numbers) | 20 / 600 | stat card values only |
+| `--s-text-hero` | 32 / 600 | Home's three week numbers only (#369) |
 
 **Why numbers are 20 (1.5.0 QA P21).** A count is read at a glance, before
 its label, and 20 is the smallest size at which three numbers in a row
@@ -447,8 +464,9 @@ a heading, a sentence or a label.
 Every `font-size` in `style.scss` is one of the three tokens; no raw px value
 (the one exception is a 24px icon box). The kit's steps are mapped onto the
 same three through `--pp-text-*`, so kit components land on the scale too.
-Checked by computed style on every page: only 12, 13 and 15px render.
-Nothing is bigger, anywhere: no hero sentences, no 24px ledes, no 27px titles.
+Checked by computed style on every page: only 12, 13 and 15px render, plus
+20 for stat values and 32 for Home's week numbers. Nothing else is bigger:
+no hero sentences, no 24px ledes, no 27px titles.
 
 ## Structure: page → tab → section → block → row
 

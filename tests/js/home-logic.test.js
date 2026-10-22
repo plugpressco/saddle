@@ -3,8 +3,11 @@
  * the plugins the apps can work inside.
  */
 import {
+	addonTone,
 	appNext,
+	appTone,
 	selfCheckDue,
+	weekDays,
 	weekStart,
 	weekTiles,
 	worksWith,
@@ -13,11 +16,46 @@ import {
 const NOW = Date.parse( '2026-10-02T12:00:00Z' );
 
 describe( 'this week', () => {
-	it( 'starts seven days ago, in Unix seconds', () => {
-		expect( weekStart( NOW ) ).toBe(
-			Date.parse( '2026-09-25T12:00:00Z' ) / 1000
-		);
+	it( 'starts at midnight six days ago, so it is the seven days the chart draws', () => {
+		const start = new Date( weekStart( NOW ) * 1000 );
+		const today = new Date( NOW );
+		today.setHours( 0, 0, 0, 0 );
+		expect( [ start.getHours(), start.getMinutes() ] ).toEqual( [ 0, 0 ] );
+		expect( Math.round( ( today - start ) / 86400000 ) ).toBe( 6 );
 		expect( Number.isInteger( weekStart( NOW + 999 ) ) ).toBe( true );
+	} );
+
+	it( 'puts each change on its day, today last', () => {
+		const at = ( daysAgo, hour ) => {
+			const d = new Date( NOW );
+			d.setHours( hour, 0, 0, 0 );
+			d.setDate( d.getDate() - daysAgo );
+			return d.getTime() / 1000;
+		};
+		const days = weekDays(
+			[ at( 0, 1 ), at( 0, 23 ), at( 2, 0 ), at( 6, 0 ), at( 7, 23 ) ],
+			NOW
+		);
+		expect( days.map( ( d ) => d.count ) ).toEqual( [
+			1, 0, 0, 0, 1, 0, 2,
+		] );
+		expect( days.map( ( d ) => d.today ) ).toEqual( [
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			true,
+		] );
+		expect( weekDays( null, NOW ).map( ( d ) => d.count ) ).toEqual( [
+			0, 0, 0, 0, 0, 0, 0,
+		] );
+	} );
+
+	it( 'counts a change stamped after now (a server clock ahead) for today', () => {
+		const days = weekDays( [ NOW / 1000 + 3600 ], NOW );
+		expect( days[ 6 ].count ).toBe( 1 );
 	} );
 
 	it( 'shows the three numbers in order, zeros included', () => {
@@ -136,5 +174,22 @@ describe( 'an app’s next step (#367)', () => {
 			appNext( { app: 'claude', role: 'write', first_tool_at: 9 } )
 		).toBe( '' );
 		expect( appNext( null ) ).toBe( '' );
+	} );
+} );
+
+describe( 'tiles', () => {
+	it( 'gives known apps and add-ons their own tone, others a steady one', () => {
+		expect( appTone( 'claude-code' ) ).toBe( 'peach' );
+		expect( addonTone( 'analytics' ) ).toBe( 'pink' );
+		expect( appTone( 'some-new-app' ) ).toBe( appTone( 'some-new-app' ) );
+		expect( [
+			'pink',
+			'lilac',
+			'sky',
+			'mint',
+			'butter',
+			'peach',
+		] ).toContain( addonTone( 'someone-elses-module' ) );
+		expect( appTone( '' ) ).toBe( 'pink' );
 	} );
 } );

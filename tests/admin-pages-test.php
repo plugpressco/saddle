@@ -144,35 +144,31 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		);
 	}
 
-	/* ------------------------------------------------- icons and the hairline */
+	/* ------------------------------------------------------ labels and the hairline */
 
-	public function test_each_menu_title_is_an_icon_and_the_label() {
+	public function test_each_menu_title_is_the_label_alone() {
 		$this->analytics_module( array( 'icon' => 'graph-up' ) );
 		$this->build_menu();
 
-		$icons = array(
-			'saddle'             => 'home-simple-door',
-			'saddle-analytics'   => 'graph-up',
-			'saddle-connections' => 'sparks',
-			'saddle-services'    => 'puzzle',
-			'saddle-context'     => 'brain',
-			'saddle-settings'    => 'settings',
+		$labels = array(
+			'saddle'             => 'Home',
+			'saddle-analytics'   => 'Analytics',
+			'saddle-connections' => 'AI apps',
+			'saddle-services'    => 'Services',
+			'saddle-context'     => 'Context',
+			'saddle-settings'    => 'Settings',
 		);
 		foreach ( $this->saddle_items() as $slug => $item ) {
-			$this->assertSame( Saddle_Nav_Icons::svg( $icons[ $slug ] ), substr( $item[0], 0, strlen( Saddle_Nav_Icons::svg( $icons[ $slug ] ) ) ), $slug );
-			$this->assertStringStartsWith( '<svg class="saddle-nav-icon"', $item[0], $slug );
-			$this->assertStringNotContainsString( '<svg', $item[3], 'The page title stays plain text: ' . $slug );
+			$this->assertSame( $labels[ $slug ], $item[0], 'No icon before the label (#369): ' . $slug );
 		}
 		$this->assertSame( 'Analytics ‹ Saddle', $this->saddle_items()['saddle-analytics'][3] );
 	}
 
-	public function test_a_label_is_escaped_after_the_icon() {
+	public function test_a_label_is_escaped() {
 		$this->analytics_module( array( 'title' => 'Q&A <b>' ) );
 		$this->build_menu();
 
-		$title = $this->saddle_items()['saddle-analytics'][0];
-		$this->assertStringEndsWith( 'Q&amp;A &lt;b&gt;', $title );
-		$this->assertStringNotContainsString( '<svg', $title, 'A module without an icon gets none.' );
+		$this->assertSame( 'Q&amp;A &lt;b&gt;', $this->saddle_items()['saddle-analytics'][0] );
 	}
 
 	public function test_the_group_line_needs_a_product_under_home() {

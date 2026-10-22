@@ -152,15 +152,88 @@ class Saddle_Log {
 	public static function query( $per_page = 20, $page = 1, $type = '', $since = 0, $by = '' ) {
 		$per_page = max( 1, min( 100, (int) $per_page ) );
 		$page     = max( 1, (int) $page );
-		$since    = max( 0, (int) $since );
+
+		$args = self::filter_args( $type, $since, $by );
+
+		$args['posts_per_page'] = $per_page;
+		$args['paged']          = $page;
+
+		$q = new WP_Query( $args );
+
+		$entries = array();
+		foreach ( $q->posts as $post ) {
+			$user      = $post->post_author ? get_userdata( $post->post_author ) : null;
+			$type      = (string) get_post_meta( $post->ID, '_saddle_type', true );
+			$entries[] = array(
+				'id'        => (int) $post->ID,
+				// Whether the owner's Undo can offer this entry (Activity feed).
+				'undo'      => ! in_array( $type, self::NOT_CHANGES, true ) && class_exists( 'Saddle_Undo' ) ? Saddle_Undo::availability( $post->ID ) : '',
+				'date'      => $post->post_date_gmt,
+				'action'    => (string) get_post_meta( $post->ID, '_saddle_action', true ),
+				'target'    => (string) get_post_meta( $post->ID, '_saddle_target', true ),
+				'summary'   => $post->post_title,
+				'user'      => $user ? $user->user_login : '',
+				'user_name' => $user ? $user->display_name : '',
+				'app'       => (string) get_post_meta( $post->ID, '_saddle_app', true ),
+				// Entries predating the type field are executed mutations.
+				'type'      => in_array( $type, self::NOT_CHANGES, true ) ? $type : 'executed',
+			);
+		}
+
+		return array(
+			'entries'     => $entries,
+			'total'       => (int) $q->found_posts,
+			'total_pages' => (int) $q->max_num_pages,
+			'page'        => $page,
+		);
+	}
+
+	/**
+	 * When each matching entry happened, newest first, for Home's chart of the
+	 * week (#369). One query for the dates alone: no meta, no undo check, no
+	 * author lookup, so a busy week costs what a quiet one does.
+	 *
+	 * @param string $type  As query().
+	 * @param int    $since As query().
+	 * @param string $by    As query().
+	 * @return int[] Unix seconds (UTC), at most 1000 (the log's own cap).
+	 */
+	public static function times( $type = '', $since = 0, $by = '' ) {
+		$args = self::filter_args( $type, $since, $by );
+
+		$args['posts_per_page']         = 1000; // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page -- Bounded private CPT, GC'd at 1000 changes.
+		$args['no_found_rows']          = true;
+		$args['update_post_meta_cache'] = false;
+		$args['update_post_term_cache'] = false;
+
+		$times = array();
+		foreach ( ( new WP_Query( $args ) )->posts as $post ) {
+			$time = strtotime( $post->post_date_gmt . ' UTC' );
+			if ( false !== $time ) {
+				$times[] = $time;
+			}
+		}
+
+		return $times;
+	}
+
+	/**
+	 * The WP_Query arguments query() and times() share: the log's posts, newest
+	 * first, narrowed by type, start and who made them.
+	 *
+	 * @param string $type  'executed' | 'denied' | 'rehearsed' | '' (all).
+	 * @param int    $since Unix timestamp (UTC), 0 for no limit.
+	 * @param string $by    'app' for entries an app made, '' for all.
+	 * @return array WP_Query arguments.
+	 */
+	private static function filter_args( $type, $since, $by ) {
+		$since = max( 0, (int) $since );
 
 		$args = array(
-			'post_type'      => self::CPT,
-			'post_status'    => 'publish',
-			'posts_per_page' => $per_page,
-			'paged'          => $page,
-			'orderby'        => 'date',
-			'order'          => 'DESC',
+			'post_type'   => self::CPT,
+			'post_status' => 'publish',
+			'orderby'     => 'date',
+			'order'       => 'DESC',
 		);
 
 		// The stored GMT date against a UTC "Y-m-d H:i:s" string, which
@@ -215,34 +288,7 @@ class Saddle_Log {
 				: array( $made_by_app );
 		}
 
-		$q = new WP_Query( $args );
-
-		$entries = array();
-		foreach ( $q->posts as $post ) {
-			$user      = $post->post_author ? get_userdata( $post->post_author ) : null;
-			$type      = (string) get_post_meta( $post->ID, '_saddle_type', true );
-			$entries[] = array(
-				'id'        => (int) $post->ID,
-				// Whether the owner's Undo can offer this entry (Activity feed).
-				'undo'      => ! in_array( $type, self::NOT_CHANGES, true ) && class_exists( 'Saddle_Undo' ) ? Saddle_Undo::availability( $post->ID ) : '',
-				'date'      => $post->post_date_gmt,
-				'action'    => (string) get_post_meta( $post->ID, '_saddle_action', true ),
-				'target'    => (string) get_post_meta( $post->ID, '_saddle_target', true ),
-				'summary'   => $post->post_title,
-				'user'      => $user ? $user->user_login : '',
-				'user_name' => $user ? $user->display_name : '',
-				'app'       => (string) get_post_meta( $post->ID, '_saddle_app', true ),
-				// Entries predating the type field are executed mutations.
-				'type'      => in_array( $type, self::NOT_CHANGES, true ) ? $type : 'executed',
-			);
-		}
-
-		return array(
-			'entries'     => $entries,
-			'total'       => (int) $q->found_posts,
-			'total_pages' => (int) $q->max_num_pages,
-			'page'        => $page,
-		);
+		return $args;
 	}
 
 	/**

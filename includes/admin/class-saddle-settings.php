@@ -51,12 +51,12 @@ class Saddle_Settings {
 			// The first submenu shares the menu's slug, which is what renames
 			// WordPress's automatic "Saddle" item to "Home". WordPress prints a
 			// submenu title as HTML (wp-admin/menu-header.php), so the label is
-			// escaped here, after the icon. The page title stays plain text.
+			// escaped here. Labels only, no icons (#369).
 			$hook = add_submenu_page(
 				self::PAGE_SLUG,
 				/* translators: %s: page name, such as Dashboard or AI apps. */
 				sprintf( __( '%s ‹ Saddle', 'saddle' ), $area['title'] ),
-				Saddle_Nav_Icons::menu_slot( $area['icon'] ) . esc_html( $area['title'] ),
+				esc_html( $area['title'] ),
 				$area['capability'],
 				$area['slug'],
 				array( __CLASS__, 'render_page' )
@@ -72,8 +72,8 @@ class Saddle_Settings {
 	}
 
 	/**
-	 * The menu's icons and hairline, on every admin screen where the Saddle
-	 * menu shows. Printed only for users who can see the menu.
+	 * The menu's hairline, on every admin screen where the Saddle menu shows.
+	 * Printed only for users who can see the menu.
 	 */
 	public static function menu_styles() {
 		if ( ! current_user_can( 'manage_options' ) ) {

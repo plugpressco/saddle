@@ -122,8 +122,10 @@ class Saddle_Log_Test extends WP_UnitTestCase {
 	 *
 	 * @param string $type 'executed' or 'denied'.
 	 * @param int    $days How many days ago it happened.
+	 * @param string $app  The app that made it, '' for the owner's own step.
+	 * @return int The entry's id.
 	 */
-	private function record_days_ago( $type, $days ) {
+	private function record_days_ago( $type, $days, $app = '' ) {
 		global $wpdb;
 
 		Saddle_Log::record(
@@ -143,7 +145,12 @@ class Saddle_Log_Test extends WP_UnitTestCase {
 			),
 			array( 'ID' => $id )
 		);
+		if ( '' !== $app ) {
+			update_post_meta( $id, '_saddle_app', $app );
+		}
 		clean_post_cache( $id );
+
+		return $id;
 	}
 
 	/**
@@ -248,5 +255,43 @@ class Saddle_Log_Test extends WP_UnitTestCase {
 			),
 			'The entry from ten days ago must not count for the week.'
 		);
+	}
+
+	/**
+	 * Home's chart of the week (#369) asks for `times`: when each of the
+	 * week's changes by an app happened. Older changes, the owner's own steps
+	 * and blocked attempts stay out, and without `times` the answer is as
+	 * before.
+	 */
+	public function test_rest_audit_log_times_are_the_weeks_changes_by_apps() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+		$args  = array(
+			'type'     => 'executed',
+			'by'       => 'app',
+			'per_page' => 1,
+			'since'    => time() - WEEK_IN_SECONDS,
+		);
+		$fetch = static function ( $args ) {
+			$request = new WP_REST_Request( 'GET', '/saddle/v1/audit-log' );
+			$request->set_query_params( $args );
+			return rest_do_request( $request )->get_data();
+		};
+
+		$before = $fetch( $args + array( 'times' => true ) )['times'];
+
+		$this->record_days_ago( 'executed', 2, 'Claude Code' );
+		$this->record_days_ago( 'executed', 10, 'Claude Code' );
+		$this->record_days_ago( 'executed', 0 );
+		$this->record_days_ago( 'denied', 1, 'Claude Code' );
+
+		$data = $fetch( $args + array( 'times' => true ) );
+		$this->assertCount( count( $before ) + 1, $data['times'] );
+		$this->assertSame( $data['total'], count( $data['times'] ), 'The chart and the number above it count the same entries.' );
+		$new = array_values( array_diff( $data['times'], $before ) );
+		$this->assertCount( 1, $new );
+		$this->assertEqualsWithDelta( time() - 2 * DAY_IN_SECONDS, $new[0], 5 );
+		$this->assertCount( 1, $data['entries'], 'per_page still bounds the entries.' );
+
+		$this->assertArrayNotHasKey( 'times', $fetch( $args ) );
 	}
 }

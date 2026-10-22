@@ -3,8 +3,8 @@
  * Home's feed since #309.
  *
  * Every executed change and every blocked attempt, newest first, grouped by
- * day. Each row is one line: the logo of the app that did it (a dot when no
- * app did), what happened, and the time. The row's tooltip holds the whole
+ * day. Each row is one line: the logo of the app that did it (a person tile
+ * when no app did, #369), what happened, and the time. The row's tooltip holds the whole
  * line, which the row may cut short, and who did it ("via Claude Code", or
  * "by you" for the owner's own steps).
  * Filterable to just changes or just blocked attempts, and to rehearsals when
@@ -41,6 +41,7 @@ import {
 	wasUndone,
 } from '../activity-format';
 import { AppLogo, appKeyFromLabel } from './icons';
+import { icons } from '../icons/kit';
 
 const PER_PAGE = 25;
 
@@ -162,12 +163,14 @@ function UndoPreview( { plan, confirming, onConfirm, onCancel } ) {
  *                                    no app connected).
  * @param {Function=} props.onChange  Called after the owner undid a change, so
  *                                    the page can refresh what it counts.
+ * @param {string=}   props.className More classes on the feed (Home's card).
  */
 export default function Activity( {
 	caps = [],
 	title,
 	hideEmpty = false,
 	onChange,
+	className = '',
 } ) {
 	const [ entries, setEntries ] = useState( [] );
 	const [ total, setTotal ] = useState( 0 );
@@ -291,7 +294,10 @@ export default function Activity( {
 	const groups = groupByDay( entries );
 
 	return (
-		<div className="saddle-activity">
+		<div
+			id="activity"
+			className={ `saddle-activity ${ className }`.trim() }
+		>
 			<div className="saddle-activity__filters">
 				{ title && (
 					<h2 className="saddle-activity__heading">{ title }</h2>
@@ -361,7 +367,9 @@ export default function Activity( {
 											<span
 												className="saddle-activity__mark"
 												aria-hidden="true"
-											/>
+											>
+												<icons.User size={ 14 } />
+											</span>
 										) }
 										{ /* The whole line stays in the
 										     text, so a screen reader reads
