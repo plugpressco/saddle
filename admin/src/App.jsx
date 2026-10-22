@@ -491,9 +491,6 @@ export default function App() {
 		setTab( 'overview' );
 	};
 
-	const hideSetup = () =>
-		sendOnboarding( { event: 'setup.hide', module: 'home' } );
-
 	const finishTour = () => {
 		setTourDismissed( true );
 		sendOnboarding( { event: 'tour.done' } );
@@ -677,8 +674,6 @@ export default function App() {
 						removeClient={ removeClient }
 						onTogglePause={ togglePause }
 						loadCaps={ loadCaps }
-						onboarding={ onboarding }
-						onHideSetup={ hideSetup }
 					/>
 				</div>
 				{ ! wizardOpen &&

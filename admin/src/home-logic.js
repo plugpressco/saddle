@@ -1,6 +1,6 @@
 /**
- * Pure helpers for Home (#309): the week's numbers and the plugins the apps
- * can work inside. No React, no network.
+ * Pure helpers for Home (#309): the week's numbers, each app's next step and
+ * the plugins the apps can work inside. No React, no network.
  */
 import { __ } from '@wordpress/i18n';
 
@@ -47,17 +47,40 @@ export function weekTiles( week ) {
 }
 
 /**
- * The plugins on this site the apps can work inside, for "Works with": the
- * Services page's plugin and add-on records that are on, with tools.
+ * The one next step for a connected app, shown on its row in Home's AI apps
+ * (#367; a line of its own before): try it while it has not used Saddle
+ * yet, then give it more than Read only.
  *
- * @param {Array} records From GET /services.
+ * @param {Object} c A row from GET /connections.
+ * @return {string} `try`, `access` or '' for nothing to do.
+ */
+export function appNext( c ) {
+	if ( ! c ) {
+		return '';
+	}
+	// The welcome's try step needs to know which app it is.
+	if ( ! c.first_tool_at && c.app ) {
+		return 'try';
+	}
+	return 'read' === ( c.role || 'read' ) ? 'access' : '';
+}
+
+/**
+ * The plugins on this site the apps can work inside, for "Works with": the
+ * Services page's plugin and add-on records that are on, with tools. An
+ * add-on Home already lists under Add-ons is left out (#367), so no name
+ * shows twice.
+ *
+ * @param {Array}    records From GET /services.
+ * @param {string[]} listed  Keys Home already shows elsewhere.
  * @return {Array<Object>} The records, plugins first.
  */
-export function worksWith( records ) {
+export function worksWith( records, listed = [] ) {
 	const list = Array.isArray( records ) ? records : [];
 	const on = ( r ) =>
 		r &&
 		( 'plugin' === r.kind || 'addon' === r.kind ) &&
+		! listed.includes( r.key ) &&
 		( 'active' === r.status ||
 			'detected' === r.status ||
 			'ready' === r.status ) &&

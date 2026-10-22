@@ -11,7 +11,9 @@
  * may do (choose). The step is stored with each change, so a reload rebuilds
  * the conversation up to where the owner was. "Skip for now" leaves the app
  * at Read only: only the owner's pick on the last step ever raises it, and
- * only for the app that was just connected (#285).
+ * only for the app that was just connected (#285). After that pick, while
+ * Saddle Analytics is not on and the owner may add it, one more question
+ * offers it (#367); it is part of the last step, not a stored step.
  */
 import { useState, useEffect, useRef } from '@wordpress/element';
 import {
@@ -23,6 +25,7 @@ import {
 } from '@plugpress/ui';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { api, connectionPath } from '../api';
+import { addAnalytics, addError, analyticsOffer } from '../analytics-addon';
 import ConnectWizard from './ConnectWizard';
 import WaitingLine from './WaitingLine';
 import { APPS } from '../connect-apps';
@@ -555,6 +558,159 @@ function endLine( role, label ) {
 	}
 }
 
+/**
+ * One more question after the access choice (#367): visitor stats. Yes adds
+ * Saddle Analytics from WordPress.org and turns it on without leaving the
+ * page (see analytics-addon.js). Whatever the answer, the Finish button
+ * follows it.
+ *
+ * @param {Object} props
+ * @param {*}      props.finish The Finish button, drawn once answered.
+ */
+function AnalyticsQuestion( { finish } ) {
+	const reduced = useReducedMotion();
+	const [ offer ] = useState( analyticsOffer );
+	// '' until answered, then 'yes' or 'no'.
+	const [ answer, setAnswer ] = useState( '' );
+	// After a yes: 'adding', then 'added' or 'failed'.
+	const [ phase, setPhase ] = useState( '' );
+	const [ error, setError ] = useState( '' );
+	// The end of this part of the conversation, kept in view as it grows.
+	const end = useRef( null );
+	const installed = 'inactive' === offer.state;
+	const yesLabel = installed
+		? __( 'Yes, turn it on', 'saddle' )
+		: __( 'Yes, add it', 'saddle' );
+
+	useEffect( () => {
+		if ( end.current ) {
+			end.current.scrollIntoView( {
+				behavior: reduced || document.hidden ? 'auto' : 'smooth',
+				block: 'nearest',
+			} );
+		}
+	}, [ answer, phase, reduced ] );
+
+	const yes = () => {
+		setAnswer( 'yes' );
+		setPhase( 'adding' );
+		addAnalytics().then(
+			() => setPhase( 'added' ),
+			( e ) => {
+				setError( addError( e ) );
+				setPhase( 'failed' );
+			}
+		);
+	};
+
+	return (
+		<>
+			<Say cont>
+				<p>
+					{ installed
+						? __(
+								'One more question. Saddle Analytics is installed but off. It counts visits without cookies, and your AI can read the numbers. Turn it on?',
+								'saddle'
+						  )
+						: __(
+								'One more question. Do you want visitor stats? Saddle Analytics counts visits without cookies, and your AI can read the numbers.',
+								'saddle'
+						  ) }
+				</p>
+			</Say>
+
+			{ ! answer && (
+				<div
+					className="saddle-chat__replies"
+					role="group"
+					aria-label={ __( 'Visitor stats', 'saddle' ) }
+				>
+					<button
+						type="button"
+						className="saddle-chat__chip"
+						onClick={ yes }
+					>
+						{ yesLabel }
+					</button>
+					<button
+						type="button"
+						className="saddle-chat__chip"
+						onClick={ () => setAnswer( 'no' ) }
+					>
+						{ __( 'Not now', 'saddle' ) }
+					</button>
+				</div>
+			) }
+
+			{ answer && (
+				<You>
+					{ 'yes' === answer ? yesLabel : __( 'Not now', 'saddle' ) }
+				</You>
+			) }
+
+			{ 'adding' === phase && (
+				<Say>
+					<p className="saddle-chat__muted">
+						{ installed
+							? __( 'Turning on Saddle Analytics…', 'saddle' )
+							: __(
+									'Installing Saddle Analytics from WordPress.org…',
+									'saddle'
+							  ) }
+					</p>
+				</Say>
+			) }
+
+			{ 'added' === phase && (
+				<Say>
+					<Done>{ __( 'Saddle Analytics is on.', 'saddle' ) }</Done>
+					<p>
+						{ __(
+							'It counts visits from now on, and has its own page in the Saddle menu.',
+							'saddle'
+						) }
+					</p>
+					{ finish }
+				</Say>
+			) }
+
+			{ 'failed' === phase && (
+				<Say>
+					<Notice tone="danger">{ error }</Notice>
+					<p>
+						{ __(
+							'You can add it from the Plugins screen instead.',
+							'saddle'
+						) }{ ' ' }
+						<a href={ offer.manualUrl }>
+							{ __( 'Open Plugins', 'saddle' ) }
+						</a>
+					</p>
+					{ finish }
+				</Say>
+			) }
+
+			{ 'no' === answer && (
+				<Say>
+					<p>
+						{ installed
+							? __(
+									'You can turn it on any time from Home.',
+									'saddle'
+							  )
+							: __(
+									'You can add it any time from Home.',
+									'saddle'
+							  ) }
+					</p>
+					{ finish }
+				</Say>
+			) }
+			<div ref={ end } />
+		</>
+	);
+}
+
 /* ------------------------------------------------------------------------ */
 /* The welcome                                                              */
 /* ------------------------------------------------------------------------ */
@@ -606,6 +762,8 @@ export default function FirstRun( {
 	const [ tried, setTried ] = useState( null );
 	// The owner's answer to the last question, once saved.
 	const [ chosen, setChosen ] = useState( '' );
+	// Whether the end offers Saddle Analytics, as the page first knew it.
+	const [ askAnalytics ] = useState( () => analyticsOffer().canAdd );
 	// The newest part of the conversation, kept in view the way a chat is.
 	const newest = useRef( null );
 	const pulseForConnect = useRef( null );
@@ -692,6 +850,13 @@ export default function FirstRun( {
 
 	const label = app && appMeta( app ) ? appMeta( app ).label : '';
 	const role = ROLES.find( ( r ) => r.key === chosen );
+	const finishButton = (
+		<div>
+			<Button variant="primary" onClick={ () => finish( chosen ) }>
+				{ __( 'Finish', 'saddle' ) }
+			</Button>
+		</div>
+	);
 
 	const renderWaiting = ( {
 		app: appKey,
@@ -882,15 +1047,11 @@ export default function FirstRun( {
 							<You>{ role.label }</You>
 							<Say>
 								<p>{ endLine( chosen, label ) }</p>
-								<div>
-									<Button
-										variant="primary"
-										onClick={ () => finish( chosen ) }
-									>
-										{ __( 'Finish', 'saddle' ) }
-									</Button>
-								</div>
+								{ ! askAnalytics && finishButton }
 							</Say>
+							{ askAnalytics && (
+								<AnalyticsQuestion finish={ finishButton } />
+							) }
 						</>
 					) }
 				</div>

@@ -1,16 +1,17 @@
 /**
- * Home (#309, the Dashboard until then): an action page.
+ * Home (#309, the Dashboard until then; clearer in #367): an action page.
  *
  * With no app connected, one block asks the owner to connect one, and the
  * activity feed follows only when there is history. Nothing else is drawn:
  * the week's numbers are about apps, and so is the side column.
  *
  * Once an app is connected, two columns. The main one holds "Needs your OK"
- * while something waits, one line from Saddle with the next step for an app
- * (try it, or let it edit), the week's three numbers, and the activity feed
- * by day. The side one lists each connected app with what it may do, the
- * plugins on this site the apps can work inside ("Works with"), a warning
- * when connections may not work, and the installed modules.
+ * while something waits, then the AI apps, each row saying what the app may
+ * do and when it was last used, with its one next step on the row ("Try
+ * it", "Change access"), then the week's three numbers and the activity feed
+ * by day. The side one holds the add-ons (the installed modules, and Saddle
+ * Analytics while it is not on), the plugins on this site the apps can work
+ * inside ("Works with"), and a warning when connections may not work.
  *
  * The AI switch is in the header on every page, so Home does not repeat it,
  * and there are no tabs: the feed is part of the page.
@@ -29,15 +30,24 @@ import {
 } from '@plugpress/ui';
 import { __ } from '@wordpress/i18n';
 import { api } from '../api';
+import { analyticsOffer } from '../analytics-addon';
+import { metaLine } from '../apps-logic';
 import { APPS } from '../connect-apps';
 import { parseModules } from '../onboarding-logic';
-import SetupBlock from './SetupBlock';
+import { withArg } from '../routes';
+import AnalyticsRow from './AnalyticsRow';
 import NeedsYourOk from './NeedsYourOk';
 import SectionHeader from './SectionHeader';
 import Activity, { ActivitySkeleton } from './Activity';
 import { ROLES } from './ConnectedClients';
 import { AppLogo, appKeyFromLabel } from './icons';
-import { selfCheckDue, weekStart, weekTiles, worksWith } from '../home-logic';
+import {
+	appNext,
+	selfCheckDue,
+	weekStart,
+	weekTiles,
+	worksWith,
+} from '../home-logic';
 
 // Session cache for the connection self-check so re-opening Home doesn't
 // re-run the loopback probe. Reset on full reload, which is the right
@@ -126,14 +136,18 @@ function WeekCard( { week } ) {
 }
 
 /**
- * Home's shape while it loads (P12): the week's block, the feed and the
- * apps column, as placeholders. No h1 or h2 in it: the app draws this before
- * WordPress has moved its notices (see Frame).
+ * Home's shape while it loads (P12): the apps, the week's block and the
+ * feed, then the side column, as placeholders. No h1 or h2 in it: the app
+ * draws this before WordPress has moved its notices (see Frame).
  */
 export function HomeSkeleton() {
 	return (
 		<div className="saddle-home">
 			<div className="saddle-home__main">
+				<div className="saddle-stack" aria-hidden="true">
+					<Skeleton height={ 15 } width={ 56 } />
+					<RowList loading loadingRows={ 2 } />
+				</div>
 				<WeekCard week={ null } />
 				<div className="saddle-activity">
 					<div
@@ -148,7 +162,7 @@ export function HomeSkeleton() {
 			<aside className="saddle-home__side" aria-hidden="true">
 				<div className="saddle-stack">
 					<Skeleton height={ 15 } width={ 48 } />
-					<RowList loading loadingRows={ 2 } />
+					<RowList loading loadingRows={ 1 } />
 				</div>
 			</aside>
 		</div>
@@ -163,20 +177,17 @@ const STATE_TONE = {
 };
 
 export default function Home( {
-	tier,
 	clients,
 	caps,
 	onNavigate,
 	onConnect,
-	onboarding,
-	onHideSetup,
 	homeUrl,
 } ) {
 	// Keys and address (OAuth) connections, from the connection registry.
 	// `false` means the route failed: fall back to the keys the app already
 	// loaded rather than claim there are none.
 	const [ connections, setConnections ] = useState( null );
-	// Every page and module, fetched once for the next step and Modules.
+	// Every page and module, fetched once for Add-ons.
 	const [ areas, setAreas ] = useState( null );
 	const [ health, setHealth ] = useState( healthCache );
 	// Bumped after an approve or reject, so the feed and the counts show it.
@@ -188,7 +199,11 @@ export default function Home( {
 	const [ week, setWeek ] = useState( null );
 	// The Services records, for "Works with".
 	const [ services, setServices ] = useState( [] );
+	// Whether Add-ons offers Saddle Analytics, as the page first knew it: its
+	// row stays after the add, to say it is on.
+	const [ offerAnalytics ] = useState( () => analyticsOffer().canAdd );
 
+	const known = Array.isArray( connections );
 	const apps =
 		false === connections
 			? clients.map( ( c ) => ( {
@@ -302,7 +317,54 @@ export default function Home( {
 		health.status !== 'nonce_header_stripped';
 
 	const modules = ( areas || [] ).filter( ( a ) => 'module' === a.kind );
-	const plugins = worksWith( services );
+	const plugins = worksWith(
+		services,
+		modules.map( ( m ) => m.key )
+	);
+
+	// What an app may do and when it last did something: "Read only · Last
+	// used 2 minutes ago". The registry knows both; the keys fallback neither.
+	const appLine = ( c ) =>
+		[ roleLabel( c ), known ? metaLine( c ) : '' ]
+			.filter( Boolean )
+			.join( ' · ' ) || undefined;
+
+	// The app's one next step, on its own row.
+	const appAction = ( c ) => {
+		const next = known ? appNext( c ) : '';
+		if ( 'try' === next ) {
+			// The welcome reopens at "try it", for this app.
+			return (
+				<Button
+					variant="secondary"
+					size="sm"
+					href={ withArg(
+						withArg(
+							withArg( homeUrl, 'setup', '1' ),
+							'step',
+							'try'
+						),
+						'app',
+						c.app
+					) }
+				>
+					{ __( 'Try it', 'saddle' ) }
+				</Button>
+			);
+		}
+		if ( 'access' === next ) {
+			return (
+				<Button
+					variant="link"
+					size="sm"
+					onClick={ () => onNavigate( 'connect' ) }
+				>
+					{ __( 'Change access', 'saddle' ) }
+				</Button>
+			);
+		}
+		return undefined;
+	};
 
 	return (
 		<div className="saddle-home">
@@ -311,34 +373,9 @@ export default function Home( {
 				     Draws nothing when there are none. */ }
 				<NeedsYourOk onChange={ () => setFeedKey( ( k ) => k + 1 ) } />
 
-				<SetupBlock
-					tier={ tier }
-					connections={
-						Array.isArray( connections ) ? connections : null
-					}
-					areas={ areas }
-					onboarding={ onboarding }
-					homeUrl={ homeUrl }
-					onNavigate={ onNavigate }
-					onHide={ onHideSetup }
-				/>
-
-				<WeekCard week={ week } />
-
-				<section id="activity">
-					<Activity
-						key={ feedKey }
-						caps={ caps }
-						title={ __( 'Activity', 'saddle' ) }
-						onChange={ () => setCountKey( ( k ) => k + 1 ) }
-					/>
-				</section>
-			</div>
-
-			<aside className="saddle-home__side">
 				<section className="saddle-stack">
 					<SectionHeader
-						title={ __( 'Apps', 'saddle' ) }
+						title={ __( 'AI apps', 'saddle' ) }
 						actions={
 							<Button
 								variant="link"
@@ -364,7 +401,8 @@ export default function Home( {
 									/>
 								}
 								title={ connectionLabel( c ) }
-								description={ roleLabel( c ) || undefined }
+								description={ appLine( c ) }
+								actions={ appAction( c ) }
 							/>
 						) ) }
 						<Row
@@ -380,6 +418,54 @@ export default function Home( {
 						/>
 					</RowList>
 				</section>
+
+				<WeekCard week={ week } />
+
+				<section id="activity">
+					<Activity
+						key={ feedKey }
+						caps={ caps }
+						title={ __( 'Activity', 'saddle' ) }
+						onChange={ () => setCountKey( ( k ) => k + 1 ) }
+					/>
+				</section>
+			</div>
+
+			<aside className="saddle-home__side">
+				{ ( modules.length > 0 || offerAnalytics ) && (
+					<section className="saddle-stack">
+						<SectionHeader title={ __( 'Add-ons', 'saddle' ) } />
+						<RowList>
+							{ modules.map( ( m ) => (
+								<Row
+									key={ m.key }
+									icon={
+										m.state ? (
+											<StatusDot
+												tone={
+													STATE_TONE[ m.state ] ||
+													'neutral'
+												}
+											/>
+										) : undefined
+									}
+									title={ m.product || m.title }
+									description={ m.line || undefined }
+									actions={
+										<Button
+											variant="link"
+											size="sm"
+											href={ m.admin_url }
+										>
+											{ __( 'Open', 'saddle' ) }
+										</Button>
+									}
+								/>
+							) ) }
+							{ offerAnalytics && <AnalyticsRow /> }
+						</RowList>
+					</section>
+				) }
 
 				{ plugins.length > 0 && (
 					<section className="saddle-stack">
@@ -433,40 +519,6 @@ export default function Home( {
 							}
 						/>
 					</RowList>
-				) }
-
-				{ modules.length > 0 && (
-					<section className="saddle-stack">
-						<SectionHeader title={ __( 'Modules', 'saddle' ) } />
-						<RowList>
-							{ modules.map( ( m ) => (
-								<Row
-									key={ m.key }
-									icon={
-										m.state ? (
-											<StatusDot
-												tone={
-													STATE_TONE[ m.state ] ||
-													'neutral'
-												}
-											/>
-										) : undefined
-									}
-									title={ m.product || m.title }
-									description={ m.line || undefined }
-									actions={
-										<Button
-											variant="link"
-											size="sm"
-											href={ m.admin_url }
-										>
-											{ __( 'Open', 'saddle' ) }
-										</Button>
-									}
-								/>
-							) ) }
-						</RowList>
-					</section>
 				) }
 			</aside>
 		</div>

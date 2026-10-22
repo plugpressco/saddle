@@ -1535,37 +1535,17 @@ body.saddle-admin-page {
 		padding-block: 0;
 	}
 
-	// Three short numbers fit side by side down to phone width; the kit
-	// would break them 2 + 1 below 900px.
-	@media ( min-width: 561px ) and ( max-width: 900px ) {
+	// Three short numbers fit side by side down to phone width (#367); the
+	// kit would break them 2 + 1 below 900px and stack them below 560px.
+	// The kit drops the dividers there, so a gap keeps them apart.
+	@media ( max-width: 900px ) {
 		.pp-stat-grid--fixed {
+			gap: var( --pp-space-3 );
 			grid-template-columns: repeat(
 				var( --pp-stat-grid-cols, 3 ),
 				minmax( 0, 1fr )
 			);
 		}
-	}
-}
-
-// One line from Saddle with the next step for an app, beside its mark. A
-// line, not a box: one sentence doesn't get a border.
-.saddle-nudge {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-
-	&__mark svg {
-		display: block;
-		width: 22px;
-		height: 22px;
-		color: var( --s-brand );
-	}
-
-	&__text {
-		flex: 1 1 auto;
-		min-width: 0;
-		margin: 0;
-		font-size: var( --s-text );
 	}
 }
 

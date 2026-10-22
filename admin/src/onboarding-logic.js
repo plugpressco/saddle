@@ -1,10 +1,10 @@
 /**
  * The pure parts of onboarding (#277): which first-run step a reload resumes
- * at, what the waiting line says, which tasks the Dashboard's Setup block lists, how
- * the modules route (K2) is read, and the plain-words names for tool calls.
+ * at, what the waiting line says, how the modules route (K2) is read, and
+ * the plain-words names for tool calls.
  *
  * No React and no network here, so each rule has a unit test. The components
- * (FirstRun, WaitingLine, SetupBlock) only draw what these return.
+ * (FirstRun, WaitingLine) only draw what these return.
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { WEB_APPS } from './connect-apps';
@@ -583,7 +583,7 @@ export function selfCheckFindings( {
 	return rows;
 }
 
-/* ------------------------------------------------- modules (K2) and Setup */
+/* --------------------------------------------------------- modules (K2) */
 
 /**
  * The areas from `GET /modules`, or none when the route is absent or its
@@ -597,151 +597,4 @@ export function parseModules( res ) {
 		return [];
 	}
 	return res.areas.filter( ( a ) => a && 'string' === typeof a.key );
-}
-
-/**
- * Each module's unfinished setup tasks, ready to list.
- *
- * A task that waits on another (`after`) is shown only once that one is done.
- *
- * @param {Object[]} areas From parseModules().
- * @return {Object[]} `{ module, product, task }` rows, in menu order.
- */
-export function moduleTasks( areas ) {
-	const rows = [];
-	( areas || [] ).forEach( ( area ) => {
-		const setup = area.setup;
-		if ( ! setup || ! Array.isArray( setup.tasks ) ) {
-			return;
-		}
-		const done = new Set(
-			setup.tasks.filter( ( t ) => t.done ).map( ( t ) => t.id )
-		);
-		setup.tasks.forEach( ( task ) => {
-			if ( task.done || ( task.after && ! done.has( task.after ) ) ) {
-				return;
-			}
-			rows.push( {
-				module: area.key,
-				product: area.product || area.title || area.key,
-				task,
-			} );
-		} );
-	} );
-	return rows;
-}
-
-/**
- * The three Core setup tasks, derived and never stored.
- *
- * - Connect an app: any connection exists.
- * - Try a first prompt: any connection has made a tool call.
- * - Choose what it can do: the owner chose in first run, the tier is above
- *   read, or first run finished without a choice on record (an upgraded site
- *   that was migrated to done).
- *
- * @param {Object}   args
- * @param {Object[]} args.connections `connections` from GET /connections.
- * @param {Object}   args.firstRun    `first_run` from GET /onboarding.
- * @param {string}   args.tier        The site's tier.
- * @return {Object[]} `{ id, title, done }` in order.
- */
-export function coreTasks( { connections, firstRun, tier } ) {
-	const list = connections || [];
-	const run = firstRun || {};
-	const chose =
-		'' !== ( run.tier_choice || '' ) ||
-		'read' !== tier ||
-		// Access is per app now (#285): any app above Read only is a choice.
-		list.some( ( c ) => c.role && 'read' !== c.role ) ||
-		( 'done' === run.state && '' === ( run.tier_choice || '' ) );
-
-	return [
-		{
-			id: 'connect',
-			title: __( 'Connect an app', 'saddle' ),
-			done: list.length > 0,
-		},
-		{
-			id: 'try',
-			title: __( 'Try a first prompt', 'saddle' ),
-			done: list.some( ( c ) => c.first_tool_at > 0 ),
-		},
-		{
-			id: 'choose',
-			title: __( 'Choose what it can do', 'saddle' ),
-			done: chose,
-		},
-	];
-}
-
-/**
- * Everything the Dashboard's Setup block lists, and whether it should show at all.
- *
- * @param {Object}   args
- * @param {Object[]} args.connections From GET /connections.
- * @param {Object}   args.onboarding  GET /onboarding.
- * @param {string}   args.tier        The site's tier.
- * @param {Object[]} args.areas       From parseModules().
- * @return {{core: Object[], modules: Object[], done: number, total: number,
- *         visible: boolean}} `visible` is false once everything is done or
- *         the owner hid the block.
- */
-export function setupBlock( { connections, onboarding, tier, areas } ) {
-	const firstRun = ( onboarding && onboarding.first_run ) || {};
-	const core = coreTasks( { connections, firstRun, tier } );
-	const modules = moduleTasks( areas );
-	const coreDone = core.filter( ( t ) => t.done ).length;
-	const modulesLeft = modules.length;
-	const withSetup = ( areas || [] ).filter( ( a ) => a.setup );
-	const modulesDone = withSetup.reduce( ( sum, a ) => sum + a.setup.done, 0 );
-	const modulesTotal = withSetup.reduce(
-		( sum, a ) => sum + a.setup.total,
-		0
-	);
-
-	const hidden =
-		onboarding &&
-		onboarding.modules &&
-		onboarding.modules.home &&
-		onboarding.modules.home.setup_hidden_at > 0;
-	const everything = coreDone === core.length && 0 === modulesLeft;
-
-	return {
-		core,
-		modules,
-		done: coreDone + modulesDone,
-		total: core.length + modulesTotal,
-		visible: ! hidden && ! everything,
-	};
-}
-
-/**
- * The one next step Home suggests (#309), instead of the whole Setup list:
- * the first unfinished Core task, else the first unfinished module task.
- *
- * A Core step names the app it is about: for "try", an app that has not used
- * Saddle yet; for "choose", an app that is still Read only; else the first.
- *
- * @param {Object}   block       From setupBlock().
- * @param {Object[]} connections From GET /connections.
- * @return {Object|null} `{ id, app }` for a Core task (`connect`, `try`,
- *         `choose`), `{ id: 'module', module, product, task }` for a module
- *         task, or null when there is nothing to suggest.
- */
-export function nextStep( block, connections ) {
-	if ( ! block || ! block.visible ) {
-		return null;
-	}
-	const core = ( block.core || [] ).find( ( t ) => ! t.done );
-	if ( core ) {
-		const list = ( connections || [] ).filter( ( c ) => c.app );
-		const pick = {
-			try: list.find( ( c ) => ! c.first_tool_at ),
-			choose: list.find( ( c ) => ! c.role || 'read' === c.role ),
-		}[ core.id ];
-		return { id: core.id, app: ( pick || list[ 0 ] || {} ).app || '' };
-	}
-	const mod = ( block.modules || [] )[ 0 ];
-	return mod ? { id: 'module', ...mod } : null;
 }

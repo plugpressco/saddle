@@ -1,8 +1,9 @@
 /**
- * Home's pure helpers (#309): the week's numbers and the plugins the apps
- * can work inside.
+ * Home's pure helpers (#309): the week's numbers, each app's next step and
+ * the plugins the apps can work inside.
  */
 import {
+	appNext,
 	selfCheckDue,
 	weekStart,
 	weekTiles,
@@ -68,6 +69,21 @@ describe( 'works with', () => {
 		] );
 		expect( worksWith( null ) ).toEqual( [] );
 	} );
+
+	it( 'leaves out an add-on Home already lists', () => {
+		const records = [
+			{
+				key: 'analytics',
+				kind: 'addon',
+				status: 'active',
+				tool_count: 9,
+			},
+			{ key: 'wc', kind: 'plugin', status: 'detected', tool_count: 3 },
+		];
+		expect(
+			worksWith( records, [ 'analytics' ] ).map( ( r ) => r.key )
+		).toEqual( [ 'wc' ] );
+	} );
 } );
 
 describe( 'selfCheckDue (P12)', () => {
@@ -93,5 +109,32 @@ describe( 'selfCheckDue (P12)', () => {
 		expect(
 			selfCheckDue( false, { changes: 0, blocked: 0, waiting: 0 } )
 		).toBe( false );
+	} );
+} );
+
+describe( 'an app’s next step (#367)', () => {
+	it( 'asks to try an app that has not used Saddle yet', () => {
+		expect(
+			appNext( { app: 'claude', role: 'read', first_tool_at: 0 } )
+		).toBe( 'try' );
+	} );
+
+	it( 'offers more access once it has, while it can only read', () => {
+		expect(
+			appNext( { app: 'claude', role: 'read', first_tool_at: 9 } )
+		).toBe( 'access' );
+	} );
+
+	it( 'skips the try step for an app it cannot name', () => {
+		expect( appNext( { app: '', role: 'read', first_tool_at: 0 } ) ).toBe(
+			'access'
+		);
+	} );
+
+	it( 'has nothing to say once the app can edit', () => {
+		expect(
+			appNext( { app: 'claude', role: 'write', first_tool_at: 9 } )
+		).toBe( '' );
+		expect( appNext( null ) ).toBe( '' );
 	} );
 } );

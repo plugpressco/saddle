@@ -334,8 +334,6 @@ export default function Screen( props ) {
 		onTogglePause,
 		loadCaps,
 		onRehearsalChanged,
-		onboarding,
-		onHideSetup,
 	} = props;
 	const extTabs = useMemo( collectTabs, [] );
 
@@ -358,7 +356,6 @@ export default function Screen( props ) {
 			return (
 				<>
 					<Home
-						tier={ tier }
 						clients={ clients }
 						paused={ paused }
 						pausing={ pausing }
@@ -366,8 +363,6 @@ export default function Screen( props ) {
 						caps={ caps }
 						onNavigate={ navigate }
 						onConnect={ () => openConnect() }
-						onboarding={ onboarding }
-						onHideSetup={ onHideSetup }
 						homeUrl={ area.url }
 					/>
 					<Cards where="home" navigate={ navigate } />
