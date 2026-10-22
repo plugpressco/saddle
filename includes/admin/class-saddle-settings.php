@@ -68,32 +68,17 @@ class Saddle_Settings {
 		}
 
 		add_action( 'in_admin_header', array( __CLASS__, 'setup_notice_quarantine' ) );
-		add_action( 'admin_head', array( __CLASS__, 'menu_styles' ) );
 	}
 
 	/**
-	 * The menu's hairline, on every admin screen where the Saddle menu shows.
-	 * Printed only for users who can see the menu.
-	 */
-	public static function menu_styles() {
-		if ( ! current_user_can( 'manage_options' ) ) {
-			return;
-		}
-
-		echo '<style id="saddle-menu-css">' . Saddle_Nav_Icons::menu_css() . "</style>\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- A fixed stylesheet; no input reaches it.
-	}
-
-	/**
-	 * Keep Agent setup, Context, Settings and Get Pro last in the Saddle menu.
+	 * The Saddle menu's order (#373): Home, Agent setup and Context first,
+	 * then the modules, then Settings and Get Pro. A plain list: no icons and
+	 * no dividing line.
 	 *
 	 * A sibling that adds its own submenu (Saddle Rank does, at priority 20)
-	 * lands after whatever is already there. The modules belong between Dashboard
-	 * and Core's configuration pages, so those move to the end once every
-	 * plugin has had its turn.
-	 *
-	 * When a product sits under Home, the first of Core's pages after it
-	 * carries `saddle-menu-group`, which draws a hairline between the two
-	 * groups (see menu_styles()).
+	 * lands after whatever is already there, so the order is settled once
+	 * every plugin has had its turn: Core's first pages lead, Core's last
+	 * pages close, and everything else keeps its order between them.
 	 */
 	public static function order_submenu() {
 		global $submenu;
@@ -103,34 +88,32 @@ class Saddle_Settings {
 		}
 
 		$areas = Saddle_Modules::areas();
-		$last  = array( $areas['connections']['slug'], $areas['context']['slug'], $areas['settings']['slug'] );
+		$lead  = array( $areas['home']['slug'], $areas['connections']['slug'], $areas['context']['slug'] );
+		$close = array( $areas['settings']['slug'] );
 		if ( isset( $areas['plans'] ) ) {
-			$last[] = $areas['plans']['slug'];
+			$close[] = $areas['plans']['slug'];
 		}
-		$head = array();
-		$tail = array();
 
+		$first  = array();
+		$middle = array();
+		$last   = array();
 		foreach ( $submenu[ self::PAGE_SLUG ] as $item ) {
-			$position = isset( $item[2] ) ? array_search( $item[2], $last, true ) : false;
-			if ( false === $position ) {
-				$head[] = $item;
+			$slug     = isset( $item[2] ) ? $item[2] : '';
+			$lead_at  = array_search( $slug, $lead, true );
+			$close_at = array_search( $slug, $close, true );
+			if ( false !== $lead_at ) {
+				$first[ $lead_at ] = $item;
+			} elseif ( false !== $close_at ) {
+				$last[ $close_at ] = $item;
 			} else {
-				$tail[ $position ] = $item;
+				$middle[] = $item;
 			}
 		}
 
-		ksort( $tail );
-		$items = array_merge( $head, array_values( $tail ) );
+		ksort( $first );
+		ksort( $last );
 
-		$first = count( $head );
-		if ( $first > 1 && isset( $items[ $first ] ) ) {
-			$classes = isset( $items[ $first ][4] ) ? trim( (string) $items[ $first ][4] ) : '';
-			if ( ! in_array( 'saddle-menu-group', explode( ' ', $classes ), true ) ) {
-				$items[ $first ][4] = trim( $classes . ' saddle-menu-group' );
-			}
-		}
-
-		$submenu[ self::PAGE_SLUG ] = $items; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Reordering our own menu's items, after every plugin has added to it.
+		$submenu[ self::PAGE_SLUG ] = array_merge( array_values( $first ), $middle, array_values( $last ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Reordering our own menu's items, after every plugin has added to it.
 	}
 
 	/**

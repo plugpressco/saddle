@@ -24,10 +24,10 @@ class Saddle_Modules_View {
 	 */
 	public static function all() {
 		$areas = array();
-		foreach ( array_keys( Saddle_Modules::areas() ) as $key ) {
-			// Get Pro is for the owner's eyes only: never in what an agent
-			// reads (#373).
-			if ( 'plans' === $key ) {
+		foreach ( Saddle_Modules::areas() as $key => $area ) {
+			// Get Pro and the Analytics placeholder are for the owner's eyes
+			// only: never in what an agent reads (#373).
+			if ( 'plans' === $key || ! empty( $area['placeholder'] ) ) {
 				continue;
 			}
 			$areas[] = self::one( $key );

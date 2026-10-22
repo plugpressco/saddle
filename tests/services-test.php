@@ -574,7 +574,7 @@ class Saddle_Services_Test extends WP_UnitTestCase {
 	}
 
 	public function test_the_owner_admin_line_and_settings_summary_name_where_keys_live() {
-		$this->assertStringContainsString( 'Agent setup, Context, Settings.', Saddle_Context::system_context() );
+		$this->assertStringContainsString( 'MCP, Context, Settings.', Saddle_Context::system_context() );
 		$by_key = array_column( Saddle_Modules_View::all(), null, 'key' );
 		$this->assertArrayNotHasKey( 'services', $by_key );
 		$this->assertStringContainsString( 'Unsplash', $by_key['settings']['summary'] );

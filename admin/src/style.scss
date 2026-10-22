@@ -1151,6 +1151,27 @@ body.saddle-admin-page {
 		}
 	}
 
+	// A web app on a site on this computer: one soft butter box that says
+	// why once and offers the apps that run here.
+	&__away {
+		display: grid;
+		gap: var( --pp-space-3 );
+		padding: var( --pp-space-4 );
+		border-radius: 12px;
+		background: var( --saddle-pop-butter );
+
+		.saddle-connect__hint {
+			color: var( --saddle-pop-butter-ink );
+		}
+	}
+
+	&__away-title {
+		margin: 0;
+		font-size: var( --s-text );
+		font-weight: 600;
+		color: var( --saddle-pop-butter-ink );
+	}
+
 	// A command or config wraps instead of clipping: at spaces and after
 	// hyphens, and inside a word only when the word is wider than the line
 	// on its own.
@@ -2701,80 +2722,120 @@ body.saddle-admin-page {
 }
 
 /* ---------- Get Pro (#373) ---------- */
-// The plans after saddle.to's pricing page: a line and the size picker,
-// three soft cards (Pro ringed in pink), and the money-back line.
+// Centred: a heading, one line and the sites picker; the plans as one table
+// of three cards whose rows line up (subgrid); four short answers. Pro wears
+// the crown, a soft pink wash and a lifted shadow.
 .saddle-plans {
 	display: grid;
-	gap: var( --pp-space-5 );
+	gap: var( --pp-space-6 );
 }
 
-.saddle-plans__head {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	justify-content: space-between;
-	gap: var( --pp-space-4 );
+.saddle-plans__intro {
+	display: grid;
+	justify-items: center;
+	gap: var( --pp-space-2 );
+	text-align: center;
+}
+
+.saddle-plans__title {
+	margin: 0;
+	font-size: var( --s-text-display );
+	font-weight: 600;
+	letter-spacing: -0.01em;
+	color: var( --s-fg );
 }
 
 .saddle-plans__lede {
-	flex: 1 1 320px;
+	max-width: 600px;
 	margin: 0;
-	font-size: var( --s-text );
-	line-height: 1.55;
+	text-wrap: balance;
+	font-size: var( --s-text-title );
+	line-height: 1.5;
 	color: var( --s-fg-subtle );
 }
 
-.saddle-plans__cards {
+.saddle-plans__sizes {
+	margin-block-start: var( --pp-space-3 );
+}
+
+// Six rows per plan: head, price, billed, button, numbers, what it adds.
+.saddle-plans__table {
 	display: grid;
 	grid-template-columns: minmax( 0, 1fr );
 	gap: var( --pp-space-4 );
 
 	@media ( min-width: 900px ) {
 		grid-template-columns: repeat( 3, minmax( 0, 1fr ) );
+		grid-template-rows: repeat( 6, auto );
+		column-gap: var( --pp-space-5 );
+		row-gap: 0;
 	}
 }
 
 .saddle-plan {
-	gap: var( --pp-space-3 );
+	display: grid;
 	align-content: start;
+	gap: var( --pp-space-3 );
+	padding: var( --pp-space-6 ) var( --pp-space-5 );
+	background: var( --s-bg );
+	border-radius: 16px;
+	box-shadow: var( --s-card-edge );
+
+	@media ( min-width: 900px ) {
+		grid-row: span 6;
+		grid-template-rows: subgrid;
+		gap: 0;
+	}
 
 	&.is-pro {
-		box-shadow: 0 0 0 2px var( --saddle-pop-pink ), var( --s-card-edge );
+		background:
+			linear-gradient(
+				180deg,
+				var( --saddle-pop-pink ) 0,
+				var( --s-bg ) 160px
+			);
+		box-shadow:
+			0 0 0 1px rgb( 208 0 196 / 0.18 ),
+			0 16px 40px -20px rgb( 208 0 196 / 0.4 );
 	}
 }
 
 .saddle-plan__head {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
-	gap: var( --pp-space-2 );
+	gap: var( --pp-space-3 );
 }
 
-.saddle-plan__job,
-.saddle-plan__billed,
-.saddle-plan__lead {
+.saddle-plan__name {
+	display: grid;
+	gap: 2px;
+	min-width: 0;
+}
+
+.saddle-plan__title {
+	margin: 0;
+	font-size: var( --s-text-lg );
+	font-weight: 600;
+	color: var( --s-fg );
+}
+
+.saddle-plan__job {
 	margin: 0;
 	font-size: var( --s-text );
 	color: var( --s-fg-subtle );
-}
-
-.saddle-plan__lead {
-	margin-block-start: var( --pp-space-2 );
-	font-weight: 600;
-	color: var( --s-fg );
 }
 
 .saddle-plan__price {
 	display: flex;
 	align-items: baseline;
 	gap: var( --pp-space-1 );
-	margin: var( --pp-space-2 ) 0 0;
+	margin: var( --pp-space-5 ) 0 0;
 }
 
 .saddle-plan__amount {
-	font-size: var( --s-text-hero );
+	font-size: var( --s-text-price );
 	font-weight: 600;
-	line-height: 1.1;
+	line-height: 1;
 	letter-spacing: -0.02em;
 	font-variant-numeric: tabular-nums;
 	color: var( --s-fg );
@@ -2785,9 +2846,52 @@ body.saddle-admin-page {
 	color: var( --s-fg-subtle );
 }
 
+.saddle-plan__billed {
+	margin: var( --pp-space-1 ) 0 var( --pp-space-4 );
+	font-size: var( --s-text );
+	color: var( --s-fg-subtle );
+}
+
 .saddle-plan__buy {
 	justify-content: center;
 	width: 100%;
+}
+
+// The same three numbers on every plan, on a soft ground.
+.saddle-plan__facts {
+	display: grid;
+	gap: 6px;
+	margin: var( --pp-space-4 ) 0 0;
+	padding: var( --pp-space-3 ) var( --pp-space-4 );
+	list-style: none;
+	border-radius: 10px;
+	background: var( --pp-n-50 );
+	font-size: var( --s-text );
+	font-weight: 600;
+	color: var( --s-fg );
+
+	li {
+		margin: 0;
+	}
+
+	.is-none {
+		font-weight: 400;
+		color: var( --s-fg-subtle );
+	}
+}
+
+.saddle-plan__adds {
+	display: grid;
+	align-content: start;
+	gap: var( --pp-space-2 );
+	margin-block-start: var( --pp-space-4 );
+}
+
+.saddle-plan__lead {
+	margin: 0;
+	font-size: var( --s-text );
+	font-weight: 600;
+	color: var( --s-fg );
 }
 
 .saddle-plan__items {
@@ -2797,7 +2901,8 @@ body.saddle-admin-page {
 	padding: 0;
 	list-style: none;
 	font-size: var( --s-text );
-	line-height: 1.45;
+	line-height: 1.5;
+	color: var( --s-fg );
 
 	li {
 		display: flex;
@@ -2809,26 +2914,134 @@ body.saddle-admin-page {
 
 .saddle-plan__tick {
 	flex: none;
-	margin-block-start: 1px;
+	margin-block-start: 2px;
 	color: var( --saddle-pop-mint-ink );
-}
-
-.saddle-plans__foot {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	justify-content: space-between;
-	gap: var( --pp-space-3 );
-	margin: 0;
-	font-size: var( --s-text );
 }
 
 .saddle-plans__refund {
-	display: inline-flex;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: var( --pp-space-2 );
+	margin: 0;
+	font-size: var( --s-text );
+	font-weight: 600;
+	color: var( --saddle-pop-mint-ink );
+}
+
+// Four short answers, two to a row on a wide screen.
+.saddle-plans__faq {
+	display: grid;
+	gap: var( --pp-space-4 );
+	padding: var( --pp-space-6 ) var( --pp-space-5 );
+	background: var( --s-bg );
+	border-radius: 16px;
+	box-shadow: var( --s-card-edge );
+}
+
+.saddle-plans__faq-title {
+	margin: 0;
+	font-size: var( --s-text-lg );
+	font-weight: 600;
+	color: var( --s-fg );
+}
+
+.saddle-plans__answers {
+	display: grid;
+	gap: var( --pp-space-5 );
+	margin: 0;
+
+	@media ( min-width: 700px ) {
+		grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
+		column-gap: var( --pp-space-6 );
+	}
+
+	dt {
+		margin: 0 0 4px;
+		font-size: var( --s-text );
+		font-weight: 600;
+		color: var( --s-fg );
+	}
+
+	dd {
+		margin: 0;
+		font-size: var( --s-text );
+		line-height: 1.55;
+		color: var( --s-fg-subtle );
+	}
+}
+
+.saddle-plans__compare {
+	justify-self: start;
+	font-size: var( --s-text );
+}
+
+/* ---------- Analytics, until Saddle Analytics is on (#373) ---------- */
+// One centred card: the Analytics tile, a heading, one line, four points
+// and the button that adds it.
+.saddle-offer {
+	justify-items: center;
+	max-width: 560px;
+	margin-inline: auto;
+	padding: var( --pp-space-8 ) var( --pp-space-6 );
+	text-align: center;
+}
+
+.saddle-offer__title {
+	margin: var( --pp-space-2 ) 0 0;
+	font-size: var( --s-text-display );
+	font-weight: 600;
+	letter-spacing: -0.01em;
+	color: var( --s-fg );
+}
+
+.saddle-offer__lede {
+	max-width: 420px;
+	margin: 0;
+	font-size: var( --s-text-title );
+	line-height: 1.5;
+	color: var( --s-fg-subtle );
+}
+
+.saddle-offer__points {
+	display: grid;
+	gap: var( --pp-space-2 );
+	margin: var( --pp-space-2 ) 0;
+	padding: var( --pp-space-4 ) var( --pp-space-5 );
+	list-style: none;
+	border-radius: 12px;
+	background: var( --pp-n-50 );
+	font-size: var( --s-text );
+	text-align: start;
+
+	li {
+		display: flex;
+		align-items: flex-start;
+		gap: var( --pp-space-2 );
+		margin: 0;
+	}
+}
+
+.saddle-offer__action {
+	display: grid;
+	justify-items: center;
+	gap: var( --pp-space-3 );
+}
+
+.saddle-offer__done {
+	display: flex;
 	align-items: center;
 	gap: var( --pp-space-2 );
-	color: var( --saddle-pop-mint-ink );
+	margin: 0;
+	font-size: var( --s-text );
 	font-weight: 600;
+	color: var( --saddle-pop-mint-ink );
+}
+
+.saddle-offer__note {
+	margin: 0;
+	font-size: var( --s-text );
+	color: var( --s-fg-subtle );
 }
 
 /* ---------- Accounts and plugins that add tools, on Settings (#291, #369) ---------- */

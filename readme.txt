@@ -27,7 +27,7 @@ Click **Live Preview** at the top of this page. A test WordPress opens in your b
 = How it works =
 
 1. Install Saddle and choose what your AI may do.
-2. Add your AI app under **Saddle → Agent setup**. Paste the address Saddle shows into the app and approve the connection when your browser opens.
+2. Add your AI app under **Saddle → MCP**. Paste the address Saddle shows into the app and approve the connection when your browser opens.
 3. Ask your AI to write, edit or check your content.
 
 Saddle works with Claude and Claude Code, ChatGPT, Cursor, VS Code, Codex, Gemini CLI and other apps that support MCP (Model Context Protocol). Step-by-step setup for each app is at [saddle.to/docs](https://saddle.to/docs).
@@ -138,9 +138,9 @@ Every feature in this free plugin stays free. Saddle → Get Pro shows the plans
 == Installation ==
 
 1. Install and activate Saddle from **Plugins → Add New**.
-2. Go to **Saddle → Agent setup** and pick your app.
+2. Go to **Saddle → MCP** and pick your app.
 3. Paste the address into your AI app and approve the connection when your browser opens.
-4. To allow changes, choose Edit content or Manage the site next to the app on **Saddle → Agent setup**.
+4. To allow changes, choose Edit content or Manage the site next to the app on **Saddle → MCP**.
 
 == Frequently Asked Questions ==
 
@@ -166,7 +166,7 @@ No. Every action uses standard WordPress functions.
 
 = Does it work with ChatGPT? =
 
-Yes. Go to **Saddle → Agent setup**, pick ChatGPT, and turn on sign-in when Saddle offers it. Then add your site as a connector in ChatGPT and approve it when ChatGPT sends you to your site.
+Yes. Go to **Saddle → MCP**, pick ChatGPT, and turn on sign-in when Saddle offers it. Then add your site as a connector in ChatGPT and approve it when ChatGPT sends you to your site.
 
 = Does it work with page builders? =
 
@@ -202,13 +202,19 @@ The WordPress.org version never checks for its own updates. The version from plu
 == Screenshots ==
 
 1. Home: see what your AI changed and undo it, what waits for your OK, and what each app may do.
-2. Agent setup: connect Claude, ChatGPT, Claude Code, Cursor and other MCP apps.
+2. MCP: connect Claude, ChatGPT, Claude Code, Cursor and other MCP apps.
 3. Needs your OK: deletes and plugin changes wait for you. See what an app wants, then approve or reject it.
 4. Context: tell every app about your site, its voice and its rules, and add Skills.
 5. Settings: choose the safety switches, sign-in for apps and advanced options.
 6. Welcome: Saddle looks around your site and helps you connect your first AI app.
 
 == Changelog ==
+
+= 1.6.2 =
+* Changed: The Saddle menu reads Home, MCP, Context, your add-ons, Settings and Get Pro, as one plain list with no dividing line. Agent setup is now called MCP; its page still starts with "Connect your AI app".
+* New: Analytics is always in the Saddle menu. Until Saddle Analytics is on, its page says what it does and installs it from WordPress.org in one click; then the same page shows your stats.
+* Changed: Get Pro is clearer. The plans sit side by side with their rows lined up, Pro marked with a crown, and each plan shows its sites, AI-app calls a day and SEO credits a month. Four short answers follow.
+* Changed: On a site on this computer, MCP marks the apps that need a public site, and picking one shows one short note with the apps that run here.
 
 = 1.6.1 =
 * New: Saddle → Get Pro, the last item in the Saddle menu, shows the Go, Pro and Reach plans for 5, 20 or 50 sites, with their prices billed yearly and a button to each plan's checkout on saddle.to. It is hidden while Saddle Pro is active, sends nothing from your site, and changes nothing else.

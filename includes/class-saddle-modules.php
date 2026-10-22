@@ -63,10 +63,10 @@ class Saddle_Modules {
 			),
 			'connections' => array(
 				'slug'  => 'saddle-connections',
-				'title' => __( 'Agent setup', 'saddle' ),
+				'title' => __( 'MCP', 'saddle' ),
 				'icon'  => 'sparks',
 				'tabs'  => array(
-					'apps' => __( 'Agent setup', 'saddle' ),
+					'apps' => __( 'MCP', 'saddle' ),
 				),
 			),
 			// Get Pro (#373): the plans, last in the menu, only while Saddle
@@ -244,8 +244,46 @@ class Saddle_Modules {
 	}
 
 	/**
-	 * Every page, in menu order: Home, the modules, Agent setup, Context,
-	 * Settings, and Get Pro while offers_pro() says so.
+	 * Whether the menu shows Analytics while Saddle Analytics is not on
+	 * (#373): a page that recommends it and installs it in one click.
+	 *
+	 * @return bool
+	 */
+	public static function offers_analytics() {
+		/**
+		 * Filter whether the Saddle menu recommends Saddle Analytics while it
+		 * is not on.
+		 *
+		 * @param bool $show True by default.
+		 */
+		return (bool) apply_filters( 'saddle_show_analytics_offer', true );
+	}
+
+	/**
+	 * Saddle's own Analytics page, until Saddle Analytics takes the slug. A
+	 * Core page (not a module), and a placeholder no agent reads about.
+	 *
+	 * @return array An area.
+	 */
+	private static function analytics_placeholder() {
+		return array(
+			'slug'        => 'saddle-analytics',
+			'title'       => __( 'Analytics', 'saddle' ),
+			'icon'        => 'graph-up',
+			'tabs'        => array(
+				'overview' => __( 'Analytics', 'saddle' ),
+			),
+			'module'      => false,
+			'placeholder' => true,
+		);
+	}
+
+	/**
+	 * Every page, in menu order (#373): Home, Agent setup and Context, the
+	 * modules (Analytics among them, Saddle's placeholder until Saddle
+	 * Analytics is on), then Settings, and Get Pro while offers_pro() says
+	 * so. Using the AI comes first, the add-ons next, the settings and plans
+	 * last.
 	 *
 	 * @return array<string,array> Keyed by area; each has `slug`, `title`,
 	 *                             `tabs`, `nav`, `capability`, `module`,
@@ -254,15 +292,25 @@ class Saddle_Modules {
 	 */
 	public static function areas() {
 		$core  = self::core_areas();
-		$areas = array( 'home' => $core['home'] );
+		$areas = array(
+			'home'        => $core['home'],
+			'connections' => $core['connections'],
+			'context'     => $core['context'],
+		);
 
-		foreach ( self::modules() as $key => $module ) {
+		// Analytics is always in the menu (#373): Saddle Analytics' own page
+		// once it is on, Saddle's page recommending it until then. Both use
+		// `page=saddle-analytics`, so the address never changes.
+		$modules = self::modules();
+		if ( ! isset( $modules['analytics'] ) && self::offers_analytics() ) {
+			$areas['analytics'] = self::analytics_placeholder();
+		}
+
+		foreach ( $modules as $key => $module ) {
 			$areas[ $key ] = $module;
 		}
 
-		$areas['connections'] = $core['connections'];
-		$areas['context']     = $core['context'];
-		$areas['settings']    = $core['settings'];
+		$areas['settings'] = $core['settings'];
 		if ( self::offers_pro() ) {
 			$areas['plans'] = $core['plans'];
 		}

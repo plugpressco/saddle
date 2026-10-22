@@ -189,7 +189,11 @@ The plan and the section maps for Rank, CRM and Analytics are in
   icons.
 - **The menu.** Saddle → Home, then the products (Analytics, Rank, CRM),
   then a hairline, then Agent setup, Context and Settings, then Get Pro
-  while Saddle Pro is not active (#373). Labels
+  while Saddle Pro is not active (#373). **Since 2026-10-23 (Fahim: "re
+  order menu better way", "remove border menu in sub menu make clean list
+  menus"): Home, MCP (was Agent setup), Context, the add-ons (Analytics
+  always, Saddle's placeholder until Saddle Analytics is on), Settings,
+  Get Pro; no dividing line.** Labels
   only, no icons (#369, 2026-10-22, Fahim: "remove icons of submenu of
   saddle"; they had one each since 2026-10-03). The hairline is drawn only when at
   least one product is there: `Saddle_Settings::order_submenu()` gives the
@@ -400,7 +404,7 @@ saddle cloud".
 - Nothing generated: no suggested prompts, no tips, no captions under
   numbers.
 
-## Agent setup (#369; AI apps until then)
+## MCP (#369 as Agent setup; AI apps until then; named MCP 2026-10-23)
 
 Fahim, 2026-10-22: "instead AI Apps call Agent Setup.. make setup nice way
 present", then "no drawer, make like saddle cloud". The page follows Cloud's
@@ -449,27 +453,47 @@ show the rest.
 - Saddle's own add-ons and the plugins Saddle edits need nothing from the
   owner, so Settings does not list them.
 
-## Get Pro (#373)
+## Get Pro (#373, clearer the same day)
 
-Fahim, 2026-10-23: "add pricing get pro page with pricing table". He
-amended non-negotiable #3 for exactly this page; nothing else in free
-Saddle names a paid plan.
+Fahim, 2026-10-23: "add pricing get pro page with pricing table", then
+"make cleaner ui, nicer text, easy understandable", "feature list height
+with normal and how many credit show that also", "center show plans big,
+make proper table with go pro premium icon (crown)". He amended
+non-negotiable #3 for exactly this page; nothing else in free Saddle
+names a paid plan.
 
 - The last item in the Saddle menu, "Get Pro", only while Saddle Pro is not
-  active. The header reads "Saddle / Get Pro".
-- One line ("Saddle stays free. A plan adds Saddle Cloud, one AI connection
-  for all your sites, and Saddle Pro on Pro and Reach.") with the sites
-  picker (5 / 20 / 50, a SegmentedControl, opening on 20) at its end.
-- Three soft cards, after saddle.to's pricing page: name, the job line, the
-  price a month at 32/600 with "a month", "Billed yearly, $X a year", the
-  button ("Choose Pro" primary, the others secondary, each opening
-  saddle.to/go/<plan>-<sites>/ in a new tab), then what the plan adds with
-  mint ticks. Pro carries a pink "Saddle Pro" chip and a soft pink ring.
-  Reach's list leads with the month's SEO credits. Equal heights in a row.
-- Under them: "7-day money-back guarantee" with a shield, mint, and
-  "Compare plans on saddle.to".
-- The prices live in `admin/src/get-pro-logic.js`; a price change on
-  saddle.to needs a Saddle release.
+  active. The page is 1040px wide.
+- Centred: "One AI connection for all your sites" (24/600), one line, the
+  sites picker (5 / 20 / 50, opening on 20).
+- The plans as one table of three cards whose rows line up (subgrid): the
+  plan's icon on its tile (Go `flash` sky, Pro `crown` pink, Reach
+  `graph-up` mint), its name (20/600) and job; the price a month at 40/600
+  with "/ month" and "$X billed yearly"; the button ("Choose Pro" primary,
+  the others secondary, each opening saddle.to/go/<plan>-<sites>/ in a new
+  tab); the same three numbers on a soft ground (sites, AI-app calls a day,
+  SEO credits a month, "No SEO credits" grey on Go and Pro); then four
+  things it adds with mint ticks. Pro: a pink wash from the top and a
+  lifted pink shadow.
+- Then "7-day money-back guarantee on every plan" (mint, a shield), and
+  Questions: four short answers (do I need a plan, an AI-app call, an SEO
+  credit, changing or cancelling) and "Compare every detail on saddle.to".
+- The plans, numbers and answers live in `admin/src/get-pro-logic.js`; a
+  change on saddle.to needs a Saddle release.
+
+## Analytics until Saddle Analytics is on (#373)
+
+Fahim, 2026-10-23: "analytics menu show and if analytics plugin not
+installed then show placeholder analytics with install plugin recommend".
+Saddle registers its own `analytics` page at `saddle-analytics` while the
+module is absent (`Saddle_Modules::offers_analytics()`, filter
+`saddle_show_analytics_offer`); the module takes the slug once it is on, so
+the address never changes. One centred card: the pink Analytics tile, "See
+who visits your site" (24/600), one line, four points on a soft ground,
+and "Install Saddle Analytics" (or "Turn on" when installed), through
+`analytics-addon.js`. Done: "Saddle Analytics is on." and "Open Analytics".
+An owner who may not add plugins is pointed at a site administrator and
+WordPress.org. No agent reads about the placeholder.
 
 ## The welcome (#309)
 

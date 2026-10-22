@@ -96,14 +96,4 @@ class Saddle_Nav_Icons {
 
 		return $icons;
 	}
-
-	/**
-	 * The menu's stylesheet: the hairline between the products and Core's
-	 * configuration pages. The labels carry no icons (#369).
-	 *
-	 * @return string CSS.
-	 */
-	public static function menu_css() {
-		return '#adminmenu li.saddle-menu-group{box-shadow:inset 0 1px 0 rgba(128,128,128,.3);margin-top:6px;padding-top:6px}';
-	}
 }

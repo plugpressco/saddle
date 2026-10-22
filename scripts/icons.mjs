@@ -92,6 +92,8 @@ const NAV = [
 	// The header.
 	'nav-arrow-left',
 	'bell',
+	// Get Pro's plans (#373): Go is `flash`, Reach `graph-up`.
+	'crown',
 ];
 
 /**

@@ -407,7 +407,7 @@ class Saddle_OAuth_Bearer_Test extends WP_UnitTestCase {
 
 		// The app was not granted it; the owner changes that per app.
 		$this->assertSame( 'saddle_tier_denied', $reason['code'] );
-		$this->assertStringContainsString( 'Saddle → Agent setup', $reason['message'] );
+		$this->assertStringContainsString( 'Saddle → MCP', $reason['message'] );
 		$this->assertStringNotContainsString( 'Permissions', $reason['message'] );
 	}
 

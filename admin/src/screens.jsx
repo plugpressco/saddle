@@ -11,6 +11,8 @@
  * - Settings: one page, in sections, Accounts and the plugins that add tools
  *   among them
  * - Get Pro: Saddle Cloud's plans, while Saddle Pro is not active (#373)
+ * - Analytics, until Saddle Analytics is on: what it does and one button
+ *   that adds it (#373)
  *
  * A module's page shows the screen its own bundle registered for the tab, or
  * for the page inside it (`saddle.admin.screens`, most specific first), or
@@ -31,6 +33,7 @@ import { findScreen } from './frame-logic';
 import { findArea, subtabsOf, withArg } from './routes';
 import Home, { HomeSkeleton } from './components/Home';
 import GetPro from './components/GetPro';
+import AnalyticsOffer from './components/AnalyticsOffer';
 import Context from './components/Guidance';
 import ConnectApps, { SetupIntro } from './components/ConnectApps';
 import Apps from './components/ConnectedClients';
@@ -383,6 +386,10 @@ export default function Screen( props ) {
 
 		case 'plans/overview':
 			return <GetPro />;
+
+		// Saddle Analytics is not on: Saddle's page recommends it (#373).
+		case 'analytics/overview':
+			return <AnalyticsOffer />;
 	}
 
 	return null;

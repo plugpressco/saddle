@@ -173,8 +173,4 @@ class Saddle_Nav_Icons_Test extends WP_UnitTestCase {
 		$this->assertSame( 'home-simple-door', $areas['home']['icon'] );
 		$this->assertSame( 'settings', $areas['settings']['icon'] );
 	}
-
-	public function test_menu_css_draws_only_the_hairline() {
-		$this->assertSame( '#adminmenu li.saddle-menu-group{box-shadow:inset 0 1px 0 rgba(128,128,128,.3);margin-top:6px;padding-top:6px}', Saddle_Nav_Icons::menu_css() );
-	}
 }

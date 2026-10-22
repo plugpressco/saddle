@@ -21,6 +21,7 @@ import { ReactComponent as ClipboardCheck } from '../../../assets/icons/clipboar
 import { ReactComponent as Clock } from '../../../assets/icons/clock.svg';
 import { ReactComponent as Copy } from '../../../assets/icons/copy.svg';
 import { ReactComponent as Cpu } from '../../../assets/icons/cpu.svg';
+import { ReactComponent as Crown } from '../../../assets/icons/crown.svg';
 import { ReactComponent as DashboardDots } from '../../../assets/icons/dashboard-dots.svg';
 import { ReactComponent as Download } from '../../../assets/icons/download.svg';
 import { ReactComponent as Drag } from '../../../assets/icons/drag.svg';
@@ -106,6 +107,7 @@ export const byName = {
 	clock: Clock,
 	copy: Copy,
 	cpu: Cpu,
+	crown: Crown,
 	'dashboard-dots': DashboardDots,
 	download: Download,
 	drag: Drag,

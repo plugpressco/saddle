@@ -371,9 +371,7 @@ describe( 'the steps on a site on this computer (P7)', () => {
 		);
 		const text = el.textContent;
 
-		expect( text ).toContain(
-			'Claude runs on its own servers, so it can’t reach a site on this computer.'
-		);
+		expect( text ).toContain( 'Claude can’t reach this site' );
 		const tiles = [
 			...el.querySelectorAll(
 				'#saddle-app-steps .saddle-connect__links button'
@@ -435,7 +433,7 @@ describe( 'the steps on a site on this computer (P7)', () => {
 	} );
 } );
 
-describe( 'Agent setup’s list of apps (#369, R10)', () => {
+describe( 'MCP’s list of apps (#369, R10)', () => {
 	const appButton = ( el, name ) =>
 		[ ...el.querySelectorAll( '.saddle-setup__app' ) ].find(
 			( b ) =>

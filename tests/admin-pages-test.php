@@ -103,19 +103,53 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 
 	/* ------------------------------------------------------------- the menu */
 
-	public function test_core_has_four_pages_and_get_pro_under_one_menu() {
+	/**
+	 * The menu's order (#373): using the AI first, then the add-ons
+	 * (Analytics always, Saddle's placeholder until Saddle Analytics is on),
+	 * then Settings and Get Pro.
+	 */
+	public function test_the_menu_reads_ai_first_then_add_ons_then_settings() {
 		$this->build_menu();
 
 		$this->assertSame(
 			array(
 				'saddle'             => 'Home',
-				'saddle-connections' => 'Agent setup',
+				'saddle-connections' => 'MCP',
 				'saddle-context'     => 'Context',
+				'saddle-analytics'   => 'Analytics',
 				'saddle-settings'    => 'Settings',
 				'saddle-plans'       => 'Get Pro',
 			),
 			$this->saddle_submenu()
 		);
+	}
+
+	/**
+	 * Until Saddle Analytics is on, Analytics is Saddle's own page that
+	 * recommends it; the module takes the same slug once it is on. Agents
+	 * never read about the placeholder.
+	 */
+	public function test_analytics_is_a_placeholder_until_the_module_takes_its_slug() {
+		$areas = Saddle_Modules::areas();
+		$this->assertTrue( $areas['analytics']['placeholder'] );
+		$this->assertFalse( $areas['analytics']['module'] );
+		$this->assertSame( 'saddle-analytics', $areas['analytics']['slug'] );
+		$this->assertNotContains( 'analytics', wp_list_pluck( Saddle_Modules_View::all(), 'key' ) );
+		$this->assertStringNotContainsString( 'Analytics', Saddle_Context::system_context() );
+
+		$this->analytics_module();
+		$areas = Saddle_Modules::areas();
+		$this->assertTrue( $areas['analytics']['module'] );
+		$this->assertArrayNotHasKey( 'placeholder', $areas['analytics'] );
+		$this->assertContains( 'analytics', wp_list_pluck( Saddle_Modules_View::all(), 'key' ) );
+	}
+
+	public function test_the_analytics_placeholder_can_be_turned_off() {
+		add_filter( 'saddle_show_analytics_offer', '__return_false' );
+		$areas = Saddle_Modules::areas();
+		remove_filter( 'saddle_show_analytics_offer', '__return_false' );
+
+		$this->assertArrayNotHasKey( 'analytics', $areas );
 	}
 
 	/**
@@ -137,12 +171,12 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		$this->assertArrayNotHasKey( 'plans', $areas );
 	}
 
-	public function test_a_module_sits_between_home_and_connections() {
+	public function test_a_module_sits_between_context_and_settings() {
 		$this->analytics_module();
 		$this->build_menu();
 
 		$this->assertSame(
-			array( 'saddle', 'saddle-analytics', 'saddle-connections', 'saddle-context', 'saddle-settings', 'saddle-plans' ),
+			array( 'saddle', 'saddle-connections', 'saddle-context', 'saddle-analytics', 'saddle-settings', 'saddle-plans' ),
 			array_keys( $this->saddle_submenu() )
 		);
 		$this->assertSame( 'Analytics', $this->saddle_submenu()['saddle-analytics'] );
@@ -150,20 +184,24 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 
 	/**
 	 * Saddle Rank adds its own submenu at priority 20, after Core's items. It
-	 * still lands between Home and AI apps.
+	 * still lands among the add-ons, before Settings and Get Pro, and the
+	 * list carries no class or style of Saddle's (no dividing line, #373).
 	 */
-	public function test_a_sibling_that_adds_its_own_item_still_lands_before_connections() {
+	public function test_a_sibling_that_adds_its_own_item_still_lands_before_settings() {
 		Saddle_Settings::register_menu();
 		add_submenu_page( 'saddle', 'SEO', 'SEO', 'manage_options', 'saddle-rank', '__return_null' );
 		Saddle_Settings::order_submenu();
 
 		$this->assertSame(
-			array( 'saddle', 'saddle-rank', 'saddle-connections', 'saddle-context', 'saddle-settings', 'saddle-plans' ),
+			array( 'saddle', 'saddle-connections', 'saddle-context', 'saddle-analytics', 'saddle-rank', 'saddle-settings', 'saddle-plans' ),
 			array_keys( $this->saddle_submenu() )
 		);
+		foreach ( $this->saddle_items() as $slug => $item ) {
+			$this->assertArrayNotHasKey( 4, $item, $slug );
+		}
 	}
 
-	/* ------------------------------------------------------ labels and the hairline */
+	/* ------------------------------------------------------------------ labels */
 
 	public function test_each_menu_title_is_the_label_alone() {
 		$this->analytics_module( array( 'icon' => 'graph-up' ) );
@@ -172,7 +210,7 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		$labels = array(
 			'saddle'             => 'Home',
 			'saddle-analytics'   => 'Analytics',
-			'saddle-connections' => 'Agent setup',
+			'saddle-connections' => 'MCP',
 			'saddle-context'     => 'Context',
 			'saddle-settings'    => 'Settings',
 			'saddle-plans'       => 'Get Pro',
@@ -190,59 +228,11 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		$this->assertSame( 'Q&amp;A &lt;b&gt;', $this->saddle_items()['saddle-analytics'][0] );
 	}
 
-	public function test_the_group_line_needs_a_product_under_home() {
-		$this->build_menu();
-		foreach ( $this->saddle_items() as $slug => $item ) {
-			$this->assertFalse( isset( $item[4] ) && false !== strpos( (string) $item[4], 'saddle-menu-group' ), $slug );
-		}
-
-		$this->reset_menus();
-		$this->analytics_module();
-		$this->build_menu();
-		$items = $this->saddle_items();
-		$this->assertSame( 'saddle-menu-group', $items['saddle-connections'][4], 'The first of Core\'s pages after the products.' );
-		foreach ( array( 'saddle', 'saddle-analytics', 'saddle-context', 'saddle-settings', 'saddle-plans' ) as $slug ) {
-			$this->assertArrayNotHasKey( 4, $items[ $slug ], $slug );
-		}
-
-		// Settled twice (another plugin re-running the order), the class is
-		// still there once.
-		Saddle_Settings::order_submenu();
-		$this->assertSame( 'saddle-menu-group', $this->saddle_items()['saddle-connections'][4] );
-	}
-
-	public function test_a_siblings_own_item_also_draws_the_line() {
-		Saddle_Settings::register_menu();
-		add_submenu_page( 'saddle', 'SEO', 'SEO', 'manage_options', 'saddle-rank', '__return_null' );
-		Saddle_Settings::order_submenu();
-
-		$this->assertSame( 'saddle-menu-group', $this->saddle_items()['saddle-connections'][4] );
-	}
-
-	public function test_the_menu_stylesheet_is_printed_for_the_menus_users_only() {
-		ob_start();
-		Saddle_Settings::menu_styles();
-		$css = ob_get_clean();
-		$this->assertStringContainsString( '<style id="saddle-menu-css">', $css );
-		$this->assertStringContainsString( 'li.saddle-menu-group', $css );
-
-		wp_set_current_user( self::factory()->user->create( array( 'role' => 'editor' ) ) );
-		ob_start();
-		Saddle_Settings::menu_styles();
-		$this->assertSame( '', ob_get_clean() );
-	}
-
-	public function test_register_menu_hooks_the_stylesheet() {
-		remove_all_actions( 'admin_head' );
-		$this->build_menu();
-		$this->assertSame( 10, has_action( 'admin_head', array( 'Saddle_Settings', 'menu_styles' ) ) );
-	}
-
 	public function test_a_module_without_nav_gets_no_page() {
 		$this->analytics_module( array( 'nav' => false ) );
 		$this->build_menu();
 
-		$this->assertArrayNotHasKey( 'saddle-analytics', $this->saddle_submenu() );
+		$this->assertArrayNotHasKey( 'saddle-analytics', $this->saddle_submenu(), 'The module took the slug, so no placeholder either.' );
 	}
 
 	public function test_modules_are_ordered_and_bad_descriptors_are_ignored() {
@@ -266,7 +256,7 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 
 		$this->assertSame( array( 'rank', 'crm' ), array_keys( Saddle_Modules::modules() ) );
 		$this->assertSame(
-			array( 'home', 'rank', 'crm', 'connections', 'context', 'settings', 'plans' ),
+			array( 'home', 'connections', 'context', 'analytics', 'rank', 'crm', 'settings', 'plans' ),
 			array_keys( Saddle_Modules::areas() )
 		);
 		$this->assertSame( array( 'overview' => 'Overview' ), Saddle_Modules::modules()['crm']['tabs'], 'A module with no tabs gets one.' );
@@ -489,16 +479,16 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 
 		$this->assertSame( 'connections', $saddle['area'] );
 		$this->assertSame( 'apps', $saddle['tab'] );
-		$this->assertSame( array( 'home', 'connections', 'context', 'settings', 'plans' ), array_column( $saddle['areas'], 'key' ) );
+		$this->assertSame( array( 'home', 'connections', 'context', 'analytics', 'settings', 'plans' ), array_column( $saddle['areas'], 'key' ) );
 		$this->assertSame( 2, $saddle['shellVersion'] );
 
 		$connections = $saddle['areas'][1];
 		$this->assertSame( array( 'apps' ), array_column( $connections['tabs'], 'key' ) );
-		$this->assertSame( 'Agent setup', $connections['title'] );
+		$this->assertSame( 'MCP', $connections['title'] );
 		$this->assertSame( array( 'overview' ), array_column( $saddle['areas'][0]['tabs'], 'key' ) );
 		$this->assertSame( 'Home', $saddle['areas'][0]['title'] );
 		$this->assertSame(
-			array( 'home-simple-door', 'sparks', 'brain', 'settings', 'star' ),
+			array( 'home-simple-door', 'sparks', 'brain', 'graph-up', 'settings', 'star' ),
 			array_column( $saddle['areas'], 'icon' )
 		);
 	}
@@ -526,7 +516,7 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 
 		preg_match( '/window\.saddleData = (\{.*\});/s', implode( "\n", wp_scripts()->get_data( 'saddle-admin', 'before' ) ), $match );
 		$saddle    = json_decode( $match[1], true );
-		$analytics = $saddle['areas'][1];
+		$analytics = array_combine( array_column( $saddle['areas'], 'key' ), $saddle['areas'] )['analytics'];
 
 		$this->assertSame( 'analytics', $analytics['key'] );
 		$this->assertSame( 'graph-up', $analytics['icon'] );

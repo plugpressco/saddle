@@ -194,6 +194,9 @@
 	--s-text: var( --pp-text-sm ); // 13: everything you read
 	--s-text-title: var( --pp-text-md ); // 15: page and section titles
 	--s-text-hero: 32px; // Home's week numbers only (#369)
+	--s-text-lg: 20px; // Get Pro's plan names and its Questions heading (#373)
+	--s-text-display: 24px; // Get Pro's heading only (#373)
+	--s-text-price: 40px; // Get Pro's prices only (#373)
 }
 
 // Geometry and motion ride the body too, so portaled layers (the Connect

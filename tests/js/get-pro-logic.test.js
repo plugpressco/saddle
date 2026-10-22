@@ -43,15 +43,30 @@ describe( 'plan cards', () => {
 		] );
 	} );
 
-	it( 'leads Reach with the month’s SEO credits and marks only Pro', () => {
+	it( 'gives every plan the same three numbers, credits only on Reach', () => {
 		const [ go, pro, reach ] = planCards( 20 );
-		expect( reach.items[ 0 ] ).toBe( '4,500 SEO credits a month' );
-		expect( go.items[ 0 ] ).toBe( 'One AI connection for all your sites' );
+		expect( reach.facts.map( ( f ) => f.text ) ).toEqual( [
+			'20 sites',
+			'5,000 AI-app calls a day',
+			'4,500 SEO credits a month',
+		] );
+		expect( go.facts.map( ( f ) => f.text ) ).toEqual( [
+			'20 sites',
+			'1,000 AI-app calls a day',
+			'No SEO credits',
+		] );
+		expect( go.facts[ 2 ].none ).toBe( true );
+		expect( reach.facts[ 2 ].none ).toBe( false );
+		// Four things each, so the cards line up.
+		expect(
+			[ go, pro, reach ].map( ( plan ) => plan.items.length )
+		).toEqual( [ 4, 4, 4 ] );
 		expect( [ go.pro, pro.pro, reach.pro ] ).toEqual( [
 			false,
 			true,
 			false,
 		] );
+		expect( pro.icon ).toBe( 'crown' );
 	} );
 
 	it( 'falls back to the first size for one it does not sell', () => {

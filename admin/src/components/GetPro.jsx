@@ -1,9 +1,14 @@
 /**
- * Saddle → Get Pro (#373): Saddle Cloud's Go, Pro and Reach plans for 5, 20
- * or 50 sites, after saddle.to's pricing page. A size picker, three cards
- * (the price a month, billed yearly, the button to that plan's checkout on
- * saddle.to, what the plan adds), and the money-back line. Every button
- * opens saddle.to in a new tab; the page itself sends nothing anywhere.
+ * Saddle → Get Pro (#373; clearer the same day): Saddle Cloud's Go, Pro and
+ * Reach plans for 5, 20 or 50 sites, after saddle.to's pricing page.
+ *
+ * Centred: a heading, one line, the sites picker. Then the plans as one
+ * table of three cards whose rows line up (subgrid): the plan's icon (Pro
+ * wears the crown) and what it is for, the price a month, what a year
+ * costs, the button to that plan's checkout on saddle.to, the same three
+ * numbers on every card (sites, AI-app calls a day, SEO credits a month),
+ * then the four things it adds. Then four short answers and the money-back
+ * line. Every button opens saddle.to in a new tab; the page sends nothing.
  *
  * The one place free Saddle names its paid plans (non-negotiable #3,
  * amended 2026-10-23). Saddle shows it only while Saddle Pro is not active
@@ -13,21 +18,118 @@ import { useState } from '@wordpress/element';
 import { Button, SegmentedControl, VisuallyHidden } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { icons } from '../icons/kit';
-import { FIRST_SIZE, SIZES, STORE, planCards, price } from '../get-pro-logic';
+import { NavIcon } from '../icons/iconoir';
+import {
+	FIRST_SIZE,
+	SIZES,
+	STORE,
+	planCards,
+	price,
+	questions,
+} from '../get-pro-logic';
 
 // Said once for every link that leaves the page.
 const NEW_TAB = __( '(opens in a new tab)', 'saddle' );
 
+/**
+ * One plan, as a column of the table.
+ *
+ * @param {Object} props
+ * @param {Object} props.plan From planCards().
+ */
+function Plan( { plan } ) {
+	const id = `saddle-plan-${ plan.key }`;
+	return (
+		<section
+			className={ `saddle-plan${ plan.pro ? ' is-pro' : '' }` }
+			aria-labelledby={ id }
+		>
+			<div className="saddle-plan__head">
+				<span
+					className={ `saddle-tile saddle-tile--${ plan.tone }` }
+					aria-hidden="true"
+				>
+					<NavIcon name={ plan.icon } size={ 22 } />
+				</span>
+				<div className="saddle-plan__name">
+					<h2 className="saddle-plan__title" id={ id }>
+						{ plan.name }
+					</h2>
+					<p className="saddle-plan__job">{ plan.job }</p>
+				</div>
+			</div>
+
+			<p className="saddle-plan__price">
+				<span className="saddle-plan__amount">
+					{ price( plan.monthly ) }
+				</span>
+				<span className="saddle-plan__per">
+					{ __( '/ month', 'saddle' ) }
+				</span>
+			</p>
+
+			<p className="saddle-plan__billed">
+				{ sprintf(
+					/* translators: %s: the price for a year, such as $228. */
+					__( '%s billed yearly', 'saddle' ),
+					price( plan.yearly )
+				) }
+			</p>
+
+			<Button
+				className="saddle-plan__buy"
+				variant={ plan.pro ? 'primary' : 'secondary' }
+				href={ plan.href }
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				{ sprintf(
+					/* translators: %s: a plan's name, such as Pro. */
+					__( 'Choose %s', 'saddle' ),
+					plan.name
+				) }
+				<VisuallyHidden>{ ` ${ NEW_TAB }` }</VisuallyHidden>
+			</Button>
+
+			<ul className="saddle-plan__facts">
+				{ plan.facts.map( ( f ) => (
+					<li key={ f.key } className={ f.none ? 'is-none' : '' }>
+						{ f.text }
+					</li>
+				) ) }
+			</ul>
+
+			<div className="saddle-plan__adds">
+				<p className="saddle-plan__lead">{ plan.lead }</p>
+				<ul className="saddle-plan__items">
+					{ plan.items.map( ( item ) => (
+						<li key={ item }>
+							<icons.Check
+								size={ 16 }
+								className="saddle-plan__tick"
+							/>
+							{ item }
+						</li>
+					) ) }
+				</ul>
+			</div>
+		</section>
+	);
+}
+
 export default function GetPro() {
 	const [ size, setSize ] = useState( String( FIRST_SIZE ) );
-	const cards = planCards( Number( size ) );
+	const plans = planCards( Number( size ) );
 
 	return (
 		<div className="saddle-plans">
-			<div className="saddle-plans__head">
+			<div className="saddle-plans__intro">
+				<h2 className="saddle-plans__title">
+					{ __( 'One AI connection for all your sites', 'saddle' ) }
+				</h2>
 				<p className="saddle-plans__lede">
 					{ __(
-						'Saddle stays free. A plan adds Saddle Cloud, one AI connection for all your sites, and Saddle Pro on Pro and Reach.',
+						'Saddle is free and stays free. Pick a plan to work on every site from one AI app.',
 						'saddle'
 					) }
 				</p>
@@ -47,88 +149,39 @@ export default function GetPro() {
 				/>
 			</div>
 
-			<div className="saddle-plans__cards">
-				{ cards.map( ( c ) => (
-					<section
-						key={ c.key }
-						className={ `saddle-soft-card saddle-plan${
-							c.pro ? ' is-pro' : ''
-						}` }
-						aria-labelledby={ `saddle-plan-${ c.key }` }
-					>
-						<div className="saddle-plan__head">
-							<h2
-								className="saddle-soft-card__title"
-								id={ `saddle-plan-${ c.key }` }
-							>
-								{ c.name }
-							</h2>
-							{ c.pro && (
-								<span className="saddle-chip saddle-chip--pink">
-									{ __( 'Saddle Pro', 'saddle' ) }
-								</span>
-							) }
-						</div>
-						<p className="saddle-plan__job">{ c.job }</p>
-						<p className="saddle-plan__price">
-							<span className="saddle-plan__amount">
-								{ price( c.monthly ) }
-							</span>
-							<span className="saddle-plan__per">
-								{ __( 'a month', 'saddle' ) }
-							</span>
-						</p>
-						<p className="saddle-plan__billed">
-							{ sprintf(
-								/* translators: %s: the price for a year, such as $228. */
-								__( 'Billed yearly, %s a year', 'saddle' ),
-								price( c.yearly )
-							) }
-						</p>
-						<Button
-							className="saddle-plan__buy"
-							variant={ c.pro ? 'primary' : 'secondary' }
-							href={ c.href }
-							target="_blank"
-							rel="noopener noreferrer"
-						>
-							{ sprintf(
-								/* translators: %s: a plan's name, such as Pro. */
-								__( 'Choose %s', 'saddle' ),
-								c.name
-							) }
-							<VisuallyHidden>{ ` ${ NEW_TAB }` }</VisuallyHidden>
-						</Button>
-						<p className="saddle-plan__lead">{ c.lead }</p>
-						<ul className="saddle-plan__items">
-							{ c.items.map( ( item ) => (
-								<li key={ item }>
-									<icons.Check
-										size={ 16 }
-										className="saddle-plan__tick"
-									/>
-									{ item }
-								</li>
-							) ) }
-						</ul>
-					</section>
+			<div className="saddle-plans__table">
+				{ plans.map( ( plan ) => (
+					<Plan key={ plan.key } plan={ plan } />
 				) ) }
 			</div>
 
-			<p className="saddle-plans__foot">
-				<span className="saddle-plans__refund">
-					<icons.ShieldCheck size={ 16 } />
-					{ __( '7-day money-back guarantee', 'saddle' ) }
-				</span>
+			<p className="saddle-plans__refund">
+				<icons.ShieldCheck size={ 16 } />
+				{ __( '7-day money-back guarantee on every plan', 'saddle' ) }
+			</p>
+
+			<section className="saddle-plans__faq">
+				<h2 className="saddle-plans__faq-title">
+					{ __( 'Questions', 'saddle' ) }
+				</h2>
+				<dl className="saddle-plans__answers">
+					{ questions().map( ( item ) => (
+						<div key={ item.q } className="saddle-plans__answer">
+							<dt>{ item.q }</dt>
+							<dd>{ item.a }</dd>
+						</div>
+					) ) }
+				</dl>
 				<a
+					className="saddle-plans__compare"
 					href={ `${ STORE }/pricing/` }
 					target="_blank"
 					rel="noopener noreferrer"
 				>
-					{ __( 'Compare plans on saddle.to', 'saddle' ) }
+					{ __( 'Compare every detail on saddle.to', 'saddle' ) }
 					<VisuallyHidden>{ ` ${ NEW_TAB }` }</VisuallyHidden>
 				</a>
-			</p>
+			</section>
 		</div>
 	);
 }
