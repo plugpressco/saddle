@@ -57,9 +57,9 @@ const AREAS = saddleData.areas || [];
 const CURRENT = findArea( AREAS, saddleData.area ) ||
 	findArea( AREAS, 'home' ) || {
 		key: 'home',
-		title: __( 'Home', 'saddle' ),
+		title: __( 'Overview', 'saddle' ),
 		url: window.location.href,
-		tabs: [ { key: 'overview', label: __( 'Home', 'saddle' ) } ],
+		tabs: [ { key: 'overview', label: __( 'Overview', 'saddle' ) } ],
 	};
 
 // `&setup=1` (Settings → Run setup again, and the Dashboard's Setup block) opens first

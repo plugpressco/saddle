@@ -531,7 +531,7 @@ change. `Tested up to:` moves only when Fahim has verified against a newer WP.
   (`admin/src/get-pro-logic.js`, kept equal to saddle-cloud's
   `src/shared/plans.ts`) and buttons to saddle.to's checkouts. Nothing else:
   no notices, no nags, nothing locked, no outbound request; the page is gone
-  while Saddle Pro is active (`Saddle_Modules::offers_pro()`, the
+  once Saddle Pro is installed, active or not (`Saddle_Modules::offers_pro()`, the
   `saddle_show_get_pro` filter), and no agent reads about it
   (`Saddle_Modules_View::all()` and the context skip it). Builder
   code other than Gutenberg and Divi 5 still does not belong here (ROADMAP NO list).

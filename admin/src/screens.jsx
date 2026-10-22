@@ -10,7 +10,7 @@
  *   memory, and what Saddle tells every app automatically
  * - Settings: one page, in sections, Accounts and the plugins that add tools
  *   among them
- * - Get Pro: Saddle Cloud's plans, while Saddle Pro is not active (#373)
+ * - Get Pro: Saddle Cloud's plans, while Saddle Pro is not installed (#373)
  * - Analytics, until Saddle Analytics is on: what it does and one button
  *   that adds it (#373)
  *

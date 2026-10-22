@@ -128,7 +128,7 @@ Apps can also connect with a pasted key. Saddle uses WordPress Application Passw
 * Design brief: Save a page's design plan and check the page against it.
 * WooCommerce: Update prices, stock, status and categories across many products, with undo.
 
-Every feature in this free plugin stays free. Saddle → Get Pro shows the plans and their prices, and only while Saddle Pro is not active. It sends nothing; its buttons open saddle.to.
+Every feature in this free plugin stays free. Saddle → Get Pro shows the plans and their prices, and only while Saddle Pro is not installed. It sends nothing; its buttons open saddle.to.
 
 = Credits =
 
@@ -211,7 +211,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 == Changelog ==
 
 = 1.6.2 =
-* Changed: The Saddle menu reads Home, MCP, Context, your add-ons, Settings and Get Pro, as one plain list with no dividing line. Agent setup is now called MCP; its page still starts with "Connect your AI app".
+* Changed: The Saddle menu reads Overview, your add-ons, Context, MCP, Settings and Get Pro, as one plain list with no dividing line. Home is now called Overview, and Agent setup is now MCP; its page still starts with "Connect your AI app". Get Pro carries a crown, and it is gone once Saddle Pro is installed, even while switched off.
 * New: Analytics is always in the Saddle menu. Until Saddle Analytics is on, its page says what it does and installs it from WordPress.org in one click; then the same page shows your stats.
 * Changed: Get Pro is clearer. The plans sit side by side with their rows lined up, Pro marked with a crown, and each plan shows its sites, AI-app calls a day and SEO credits a month. Four short answers follow.
 * Changed: On a site on this computer, MCP marks the apps that need a public site, and picking one shows one short note with the apps that run here.

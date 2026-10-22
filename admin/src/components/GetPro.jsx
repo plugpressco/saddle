@@ -11,7 +11,7 @@
  * line. Every button opens saddle.to in a new tab; the page sends nothing.
  *
  * The one place free Saddle names its paid plans (non-negotiable #3,
- * amended 2026-10-23). Saddle shows it only while Saddle Pro is not active
+ * amended 2026-10-23). Saddle shows it only while Saddle Pro is not installed
  * (`Saddle_Modules::offers_pro()`), and no agent is told about it.
  */
 import { useState } from '@wordpress/element';

@@ -191,9 +191,13 @@ The plan and the section maps for Rank, CRM and Analytics are in
   then a hairline, then Agent setup, Context and Settings, then Get Pro
   while Saddle Pro is not active (#373). **Since 2026-10-23 (Fahim: "re
   order menu better way", "remove border menu in sub menu make clean list
-  menus"): Home, MCP (was Agent setup), Context, the add-ons (Analytics
-  always, Saddle's placeholder until Saddle Analytics is on), Settings,
-  Get Pro; no dividing line.** Labels
+  menus", then "instead home can we call overview - analytics, then context
+  then mcp or settings and get pro with crown icon"): Overview (was Home),
+  the add-ons (Analytics first and always, Saddle's placeholder until
+  Saddle Analytics is on), Context, MCP (was Agent setup), Settings, Get
+  Pro; no dividing line. Get Pro is the one item with an icon: a 16px gold
+  crown (`#f0c33c`, inline style, no menu stylesheet), and it is gone once
+  Saddle Pro is installed, active or not.** Labels
   only, no icons (#369, 2026-10-22, Fahim: "remove icons of submenu of
   saddle"; they had one each since 2026-10-03). The hairline is drawn only when at
   least one product is there: `Saddle_Settings::order_submenu()` gives the
@@ -462,8 +466,8 @@ make proper table with go pro premium icon (crown)". He amended
 non-negotiable #3 for exactly this page; nothing else in free Saddle
 names a paid plan.
 
-- The last item in the Saddle menu, "Get Pro", only while Saddle Pro is not
-  active. The page is 1040px wide.
+- The last item in the Saddle menu, "Get Pro" with a gold crown, only while
+  Saddle Pro is not installed. The page is 1040px wide.
 - Centred: "One AI connection for all your sites" (24/600), one line, the
   sites picker (5 / 20 / 50, opening on 20).
 - The plans as one table of three cards whose rows line up (subgrid): the

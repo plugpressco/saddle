@@ -54,9 +54,9 @@ class Saddle_Settings {
 			// escaped here. Labels only, no icons (#369).
 			$hook = add_submenu_page(
 				self::PAGE_SLUG,
-				/* translators: %s: page name, such as Dashboard or AI apps. */
+				/* translators: %s: page name, such as Overview or MCP. */
 				sprintf( __( '%s ‹ Saddle', 'saddle' ), $area['title'] ),
-				esc_html( $area['title'] ),
+				self::menu_title( $key, $area ),
 				$area['capability'],
 				$area['slug'],
 				array( __CLASS__, 'render_page' )
@@ -71,9 +71,31 @@ class Saddle_Settings {
 	}
 
 	/**
-	 * The Saddle menu's order (#373): Home, Agent setup and Context first,
-	 * then the modules, then Settings and Get Pro. A plain list: no icons and
-	 * no dividing line.
+	 * A page's label in the Saddle menu: its name, escaped (WordPress prints
+	 * a submenu title as HTML), and for Get Pro a gold crown before it. No
+	 * other item has an icon (#369, #373).
+	 *
+	 * @param string $key  Area key.
+	 * @param array  $area The area.
+	 * @return string Markup.
+	 */
+	public static function menu_title( $key, array $area ) {
+		$label = esc_html( $area['title'] );
+		if ( 'plans' !== $key ) {
+			return $label;
+		}
+
+		$crown = Saddle_Nav_Icons::svg( 'crown', 16 );
+
+		return '' === $crown
+			? $label
+			: '<span class="saddle-get-pro-crown" style="display:inline-block;vertical-align:-3px;margin-inline-end:6px;color:#f0c33c" aria-hidden="true">' . $crown . '</span>' . $label;
+	}
+
+	/**
+	 * The Saddle menu's order (Fahim, 2026-10-23): Overview, the modules
+	 * (Analytics first), then Context, MCP, Settings and Get Pro. A plain
+	 * list with no dividing line; only Get Pro carries an icon, its crown.
 	 *
 	 * A sibling that adds its own submenu (Saddle Rank does, at priority 20)
 	 * lands after whatever is already there, so the order is settled once
@@ -88,8 +110,8 @@ class Saddle_Settings {
 		}
 
 		$areas = Saddle_Modules::areas();
-		$lead  = array( $areas['home']['slug'], $areas['connections']['slug'], $areas['context']['slug'] );
-		$close = array( $areas['settings']['slug'] );
+		$lead  = array( $areas['home']['slug'] );
+		$close = array( $areas['context']['slug'], $areas['connections']['slug'], $areas['settings']['slug'] );
 		if ( isset( $areas['plans'] ) ) {
 			$close[] = $areas['plans']['slug'];
 		}

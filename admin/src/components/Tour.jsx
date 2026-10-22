@@ -52,7 +52,7 @@ function stopsFor() {
 				visible( document.getElementById( 'toplevel_page_saddle' ) ),
 			title: __( 'Everything else is in the Saddle menu', 'saddle' ),
 			description: __(
-				'MCP, Context, your add-ons, Settings and Get Pro.',
+				'Your add-ons, Context, MCP and Settings.',
 				'saddle'
 			),
 			side: 'right',

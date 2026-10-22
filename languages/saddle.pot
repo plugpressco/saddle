@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-22T21:21:40+00:00\n"
+"POT-Creation-Date: 2026-10-22T21:36:47+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -2723,7 +2723,7 @@ msgid "List Saddle pages and modules"
 msgstr ""
 
 #: includes/abilities/modules.php:20
-msgid "Lists every page of the owner's Saddle admin (Home, MCP, Context, Settings) and every installed Saddle module (for example Analytics), in menu order: Home, MCP, Context, the modules, Settings. Each entry has a one-sentence \"summary\" you can repeat to the owner, its \"state\" and status \"line\" where a module reports one, setup progress with each unfinished task, the \"admin_url\" of the page, of each tab and of each page inside a tab (\"subtabs\"), how many tools it owns and how many of those you can call now, and which of its settings you may change (\"agent_writable\"). Use it first when the owner asks what is installed, what is left to set up, or where something lives. When you point the owner somewhere, give them the \"admin_url\" instead of describing clicks. Read-only. A Saddle module is an add-on plugin with its own page in the Saddle menu, such as Analytics; it is not a Divi module or a block on a page, which the saddle-divi-* and block tools handle."
+msgid "Lists every page of the owner's Saddle admin (Overview, Context, MCP, Settings) and every installed Saddle module (for example Analytics), in menu order: Overview, the modules, Context, MCP, Settings. Each entry has a one-sentence \"summary\" you can repeat to the owner, its \"state\" and status \"line\" where a module reports one, setup progress with each unfinished task, the \"admin_url\" of the page, of each tab and of each page inside a tab (\"subtabs\"), how many tools it owns and how many of those you can call now, and which of its settings you may change (\"agent_writable\"). Use it first when the owner asks what is installed, what is left to set up, or where something lives. When you point the owner somewhere, give them the \"admin_url\" instead of describing clicks. Read-only. A Saddle module is an add-on plugin with its own page in the Saddle menu, such as Analytics; it is not a Divi module or a block on a page, which the saddle-divi-* and block tools handle."
 msgstr ""
 
 #: includes/abilities/modules.php:36
@@ -2809,17 +2809,17 @@ msgstr ""
 msgid "(empty)"
 msgstr ""
 
-#: includes/abilities/modules.php:293
+#: includes/abilities/modules.php:295
 msgid "The owner's admin"
 msgstr ""
 
 #. translators: %s: the owner's Saddle pages, comma separated.
-#: includes/abilities/modules.php:297
+#: includes/abilities/modules.php:299
 #, php-format
 msgid "Owner's admin: Saddle → %s."
 msgstr ""
 
-#: includes/abilities/modules.php:300
+#: includes/abilities/modules.php:302
 msgid "To explain or change a setting, call saddle-get-module-settings and give the owner the admin_url instead of describing clicks."
 msgstr ""
 
@@ -3209,7 +3209,7 @@ msgid "Activate plugin"
 msgstr ""
 
 #: includes/abilities/site.php:67
-msgid "Activates an installed plugin. Provide its \"plugin\" file (e.g. \"akismet/akismet.php\") or its folder slug (e.g. \"akismet\"). It takes two calls. The first call changes nothing: it returns a preview naming the plugin and its version, and a \"confirm_token\". Call again with the same \"plugin\" and that token to activate it. The token works once and expires in 15 minutes, and the site owner can approve or refuse the request on their Saddle Home page until then. A plugin that is already active returns at once, with no preview. Reversible with deactivate-plugin. Returns the plugin that was activated. A plugin that fatals on activation returns an error and stays inactive."
+msgid "Activates an installed plugin. Provide its \"plugin\" file (e.g. \"akismet/akismet.php\") or its folder slug (e.g. \"akismet\"). It takes two calls. The first call changes nothing: it returns a preview naming the plugin and its version, and a \"confirm_token\". Call again with the same \"plugin\" and that token to activate it. The token works once and expires in 15 minutes, and the site owner can approve or refuse the request on their Saddle Overview page until then. A plugin that is already active returns at once, with no preview. Reversible with deactivate-plugin. Returns the plugin that was activated. A plugin that fatals on activation returns an error and stays inactive."
 msgstr ""
 
 #: includes/abilities/site.php:75
@@ -3226,7 +3226,7 @@ msgid "Deactivate plugin"
 msgstr ""
 
 #: includes/abilities/site.php:93
-msgid "Deactivates an active plugin. Provide its \"plugin\" file or folder slug. It takes two calls. The first call changes nothing: it returns a preview naming the plugin and its version, any active plugins that require it (\"required_by\"; they may stop working), whether it is network active on a multisite, and a \"confirm_token\". Call again with the same \"plugin\" and that token to deactivate it. The token works once and expires in 15 minutes, and the site owner can approve or refuse the request on their Saddle Home page until then. A plugin that is already inactive returns at once, with no preview. Refuses to deactivate Saddle itself. Reversible with activate-plugin. Returns the plugin that was deactivated."
+msgid "Deactivates an active plugin. Provide its \"plugin\" file or folder slug. It takes two calls. The first call changes nothing: it returns a preview naming the plugin and its version, any active plugins that require it (\"required_by\"; they may stop working), whether it is network active on a multisite, and a \"confirm_token\". Call again with the same \"plugin\" and that token to deactivate it. The token works once and expires in 15 minutes, and the site owner can approve or refuse the request on their Saddle Overview page until then. A plugin that is already inactive returns at once, with no preview. Refuses to deactivate Saddle itself. Reversible with activate-plugin. Returns the plugin that was deactivated."
 msgstr ""
 
 #: includes/abilities/site.php:105
@@ -3246,7 +3246,7 @@ msgid "Activate theme"
 msgstr ""
 
 #: includes/abilities/site.php:142
-msgid "Switches the active theme. Provide its \"stylesheet\" (theme directory name, e.g. \"twentytwentyfour\"). It takes two calls. The first call changes nothing: it returns a preview naming the theme to switch to and the theme active now, and a \"confirm_token\". Call again with the same \"stylesheet\" and that token to switch. The token works once and expires in 15 minutes, and the site owner can approve or refuse the request on their Saddle Home page until then. The theme that is already active returns at once, with no preview. Refuses a broken theme (missing files). Every page on the site changes how it looks. Reversible by activating the previous theme, or with undo-changes. Returns the newly active theme."
+msgid "Switches the active theme. Provide its \"stylesheet\" (theme directory name, e.g. \"twentytwentyfour\"). It takes two calls. The first call changes nothing: it returns a preview naming the theme to switch to and the theme active now, and a \"confirm_token\". Call again with the same \"stylesheet\" and that token to switch. The token works once and expires in 15 minutes, and the site owner can approve or refuse the request on their Saddle Overview page until then. The theme that is already active returns at once, with no preview. Refuses a broken theme (missing files). Every page on the site changes how it looks. Reversible by activating the previous theme, or with undo-changes. Returns the newly active theme."
 msgstr ""
 
 #: includes/abilities/site.php:150
@@ -4255,26 +4255,26 @@ msgstr ""
 msgid "No service with that key."
 msgstr ""
 
-#. translators: %s: page name, such as Dashboard or AI apps.
+#. translators: %s: page name, such as Overview or MCP.
 #: includes/admin/class-saddle-settings.php:58
 #, php-format
 msgid "%s ‹ Saddle"
 msgstr ""
 
-#: includes/admin/class-saddle-settings.php:174
+#: includes/admin/class-saddle-settings.php:196
 #: includes/class-saddle-modules.php:92
 #: includes/class-saddle-modules.php:192
 msgid "Settings"
 msgstr ""
 
-#: includes/admin/class-saddle-settings.php:175
+#: includes/admin/class-saddle-settings.php:197
 #: includes/class-saddle-notices.php:60
 #: includes/class-saddle-recipes.php:77
 #: includes/class-saddle-recipes.php:124
 msgid "Get started"
 msgstr ""
 
-#: includes/admin/class-saddle-settings.php:440
+#: includes/admin/class-saddle-settings.php:462
 msgid "Saddle: the admin UI has not been built yet. Run \"npm install && npm run build\" in the plugin folder."
 msgstr ""
 
@@ -4648,7 +4648,7 @@ msgid "Nothing has changed. The site owner set this tool to ask them first, so i
 msgstr ""
 
 #: includes/class-saddle-approval.php:361
-msgid "This is a preview. Nothing has changed. Show the user the summary above and ask whether to go ahead. Only after they agree, call this tool again with the same arguments plus \"confirm_token\" set to the value above. The token is single-use and expires in 15 minutes. The owner can also approve this on their Saddle Home page."
+msgid "This is a preview. Nothing has changed. Show the user the summary above and ask whether to go ahead. Only after they agree, call this tool again with the same arguments plus \"confirm_token\" set to the value above. The token is single-use and expires in 15 minutes. The owner can also approve this on their Saddle Overview page."
 msgstr ""
 
 #: includes/class-saddle-approval.php:382
@@ -5980,10 +5980,11 @@ msgstr ""
 
 #: includes/class-saddle-modules.php:58
 #: includes/class-saddle-modules.php:61
+#: includes/class-saddle-modules.php:179
 #: admin/build/index.js:130
 #: admin/src/App.jsx:60
 #: admin/src/App.jsx:62
-msgid "Home"
+msgid "Overview"
 msgstr ""
 
 #: includes/class-saddle-modules.php:66
@@ -6005,12 +6006,8 @@ msgstr ""
 msgid "General"
 msgstr ""
 
-#: includes/class-saddle-modules.php:179
-msgid "Overview"
-msgstr ""
-
-#: includes/class-saddle-modules.php:271
-#: includes/class-saddle-modules.php:274
+#: includes/class-saddle-modules.php:275
+#: includes/class-saddle-modules.php:278
 msgid "Analytics"
 msgstr ""
 
@@ -9319,14 +9316,14 @@ msgstr ""
 #: admin/build/index.js:78
 #: admin/src/components/FirstRun.jsx:534
 #, js-format
-msgid "Done. %s can now draft and edit your content. Anything big still waits for your OK, and every change shows up on Home."
+msgid "Done. %s can now draft and edit your content. Anything big still waits for your OK, and every change shows up on Overview."
 msgstr ""
 
 #. translators: %s: the app name.
 #: admin/build/index.js:79
 #: admin/src/components/FirstRun.jsx:543
 #, js-format
-msgid "Done. %s can now help run the site. Anything big still waits for your OK, and every change shows up on Home."
+msgid "Done. %s can now help run the site. Anything big still waits for your OK, and every change shows up on Overview."
 msgstr ""
 
 #. translators: %s: the app name.
@@ -9353,7 +9350,7 @@ msgstr ""
 
 #: admin/build/index.js:80
 #: admin/src/components/Tour.jsx:54
-msgid "MCP, Context, your add-ons, Settings and Get Pro."
+msgid "Your add-ons, Context, MCP and Settings."
 msgstr ""
 
 #: admin/build/index.js:80
