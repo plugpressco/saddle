@@ -361,18 +361,25 @@ things". The v2 plan is `planning/HOME-APPS-SERVICES-V2.md`. Home is now:
 - **Nothing connected:** one block, centred, "No AI app is connected yet." and
   a primary "Connect an app". Then the feed if there is history. No stats,
   no side column.
-- **Connected:** left, "Needs your OK" while something waits; one plain line
-  from Saddle with the single next setup step (`try` or `choose` only;
-  mark, sentence, button, close; no box); **This week**, one block with its
-  title in the header row and three numbers with labels only, Changes ·
-  Blocked · Waiting for you, exact (the log's `since` argument); then
-  **Activity**: the heading and the filters (All · Changes · Blocked, and
-  Rehearsed only when one exists) on one row, days as 13/600 grey labels,
-  one-line rows (the app's logo or a status dot, the summary, the time; the
-  actor in the row's tooltip), "Show older". Right, **Apps** (logo, name,
-  role, "Manage", "Connect another app" as the last row), **Works with**
-  (plugin names only, "Services" link) when non-empty, the connection
-  warning, **Modules**.
+- **Connected (clearer in #367, 2026-10-22, Fahim: "rework saddle dashboard
+  homepage cleaner view and make clear"):** left, "Needs your OK" while
+  something waits; **AI apps** first, because they are what the page is
+  about: logo, name, "Read only · Last used 2 minutes ago", and the app's one
+  next step on its own row ("Try it" for an app that has not used Saddle,
+  "Change access" as a link for one that can only read), "Manage" in the
+  heading, "Connect another app" as the last row. This replaces the
+  floating next-step line, which had no block and named one app at a time.
+  Then **This week**, one block with its title in the header row and three
+  numbers with labels only, Changes · Blocked · Waiting for you, exact (the
+  log's `since` argument), on one row at every width; then **Activity**: the
+  heading and the filters (All · Changes · Blocked, and Rehearsed only when
+  one exists) on one row, days as 13/600 grey labels, one-line rows (the
+  app's logo or a status dot, the summary, the time; the actor in the row's
+  tooltip), "Show older". Right, **Add-ons** (the installed modules, and
+  Saddle Analytics with Install or Turn on while it is not on and the owner
+  may add it), **Works with** (plugin names only, "Services" link; an add-on
+  already under Add-ons is not repeated) when non-empty, the connection
+  warning.
 - Nothing generated: no suggested prompts, no tips, no captions under
   numbers.
 
@@ -413,6 +420,12 @@ hints. It reads at **15px**, one step above the admin's 13, because the
 conversation is the page; it is the only place body text is 15. One sentence
 about the site replaces stat tiles and check rows (Fahim: the Pages / Posts /
 Media strip "not feel chat"; "onboarding should not like it setup").
+
+After the access choice, one more question (#367) while Saddle Analytics is
+not on and the owner may add it: "Do you want visitor stats?" with two
+pills, "Yes, add it" (or "Yes, turn it on") and "Not now". Yes shows a grey
+"Installing Saddle Analytics from WordPress.org…" line, then a ticked
+"Saddle Analytics is on." The Finish button follows whichever answer.
 
 ## Type: three sizes (Jetpack AI's, 2026-10-02)
 

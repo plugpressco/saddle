@@ -172,6 +172,16 @@ dry-run, no diff and no revert.
   that switch defaults to on for new installs, so on 2026-10-13 Fahim had
   majors moved behind Saddle's own setting, off by default (#359). Applies
   to Pro too.
+- **One owner-side install, not an agent's (#367, 2026-10-22, Fahim: "ask
+  user want analytics if yes then install saddle analytics direct").** The
+  welcome's last question and Home's Add-ons offer Saddle Analytics. On the
+  owner's click the page calls WordPress's own `POST /wp/v2/plugins` (or,
+  for an installed copy, `POST /wp/v2/plugins/saddle-analytics/saddle-analytics`)
+  with the owner's sign-in, for that one slug, as the block directory does:
+  WordPress downloads the package WordPress.org names and turns it on. It is
+  offered only when the owner has `install_plugins` (or `activate_plugins`
+  for an installed copy), never on a network. No ability, no Saddle route
+  and no Saddle key reaches it, so it is the owner installing, not Saddle.
 
 If a feature seems to need any of these, that is a signal to redesign the
 feature. Two reasons, both load-bearing: WordPress.org will not accept arbitrary
