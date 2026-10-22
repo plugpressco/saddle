@@ -84,7 +84,7 @@ class Saddle_Settings {
 	}
 
 	/**
-	 * Keep AI apps, Services, Context and Settings last in the Saddle menu.
+	 * Keep Agent setup, Services, Context and Settings last in the Saddle menu.
 	 *
 	 * A sibling that adds its own submenu (Saddle Rank does, at priority 20)
 	 * lands after whatever is already there. The modules belong between Dashboard

@@ -111,10 +111,10 @@ function weekLog( type, byApp = false, withTimes = false ) {
  */
 function CardHead( { title, actions } ) {
 	return (
-		<div className="saddle-home__head">
-			<h2 className="saddle-home__title">{ title }</h2>
+		<div className="saddle-soft-card__head">
+			<h2 className="saddle-soft-card__title">{ title }</h2>
 			{ actions && (
-				<div className="saddle-home__actions">{ actions }</div>
+				<div className="saddle-soft-card__actions">{ actions }</div>
 			) }
 		</div>
 	);
@@ -213,7 +213,7 @@ function WeekCard( { week } ) {
 	}
 	return (
 		<section
-			className="saddle-home__card saddle-week"
+			className="saddle-soft-card saddle-week"
 			aria-busy={ loading || undefined }
 		>
 			<CardHead title={ __( 'This week', 'saddle' ) } />
@@ -248,7 +248,7 @@ function WeekCard( { week } ) {
 export function HomeSkeleton() {
 	return (
 		<div className="saddle-home">
-			<div className="saddle-home__card" aria-hidden="true">
+			<div className="saddle-soft-card" aria-hidden="true">
 				<Skeleton height={ 15 } width={ 72 } />
 				<div className="saddle-week__numbers">
 					{ [ 0, 1, 2 ].map( ( i ) => (
@@ -257,7 +257,7 @@ export function HomeSkeleton() {
 				</div>
 				<Skeleton height={ 120 } />
 			</div>
-			<div className="saddle-home__card" aria-hidden="true">
+			<div className="saddle-soft-card" aria-hidden="true">
 				<Skeleton height={ 15 } width={ 56 } />
 				{ [ 0, 1 ].map( ( i ) => (
 					<div className="saddle-app-row" key={ i }>
@@ -266,7 +266,7 @@ export function HomeSkeleton() {
 					</div>
 				) ) }
 			</div>
-			<div className="saddle-home__card saddle-activity">
+			<div className="saddle-soft-card saddle-activity">
 				<ActivitySkeleton />
 			</div>
 		</div>
@@ -391,7 +391,7 @@ export default function Home( {
 	if ( ! connected ) {
 		return (
 			<div className="saddle-home">
-				<div className="saddle-home__card saddle-home__connect">
+				<div className="saddle-soft-card saddle-home__connect">
 					<span
 						className="saddle-tile saddle-tile--pink saddle-tile--lg"
 						aria-hidden="true"
@@ -410,7 +410,7 @@ export default function Home( {
 					caps={ caps }
 					title={ __( 'Activity', 'saddle' ) }
 					hideEmpty
-					className="saddle-home__card"
+					className="saddle-soft-card"
 				/>
 			</div>
 		);
@@ -471,7 +471,7 @@ export default function Home( {
 	return (
 		<div className="saddle-home">
 			{ healthProblem && (
-				<div className="saddle-home__card saddle-home__alert">
+				<div className="saddle-soft-card saddle-home__alert">
 					<span
 						className="saddle-tile saddle-tile--butter"
 						aria-hidden="true"
@@ -507,7 +507,7 @@ export default function Home( {
 
 			<WeekCard week={ week } />
 
-			<section className="saddle-home__card">
+			<section className="saddle-soft-card">
 				<CardHead
 					title={ __( 'AI apps', 'saddle' ) }
 					actions={
@@ -575,7 +575,7 @@ export default function Home( {
 			</section>
 
 			{ ( modules.length > 0 || offerAnalytics ) && (
-				<section className="saddle-home__card">
+				<section className="saddle-soft-card">
 					<CardHead title={ __( 'Add-ons', 'saddle' ) } />
 					<ul className="saddle-home__addons">
 						{ modules.map( ( m ) => {
@@ -628,7 +628,7 @@ export default function Home( {
 			) }
 
 			{ plugins.length > 0 && (
-				<section className="saddle-home__card">
+				<section className="saddle-soft-card">
 					<CardHead
 						title={ __( 'Works with', 'saddle' ) }
 						actions={
@@ -661,7 +661,7 @@ export default function Home( {
 				caps={ caps }
 				title={ __( 'Activity', 'saddle' ) }
 				onChange={ () => setCountKey( ( k ) => k + 1 ) }
-				className="saddle-home__card"
+				className="saddle-soft-card"
 			/>
 		</div>
 	);

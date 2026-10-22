@@ -4,7 +4,8 @@
  * Five pages (#285, #291):
  *
  * - Home: what the apps did, what waits for the owner, and the apps (#309)
- * - AI apps: the connected apps, each with its own access, and Connect an app
+ * - Agent setup: the address, the connected apps with their access, and each
+ *   app's steps
  * - Context: what every app knows — instructions as named fields, skills,
  *   memory, and what Saddle tells every app automatically
  * - Services: Accounts, Plugins and Add-ons, each row opening a drawer
@@ -18,7 +19,6 @@ import { useMemo, useEffect, useRef } from '@wordpress/element';
 import { doAction } from '@wordpress/hooks';
 import {
 	Button,
-	Drawer,
 	Notice,
 	RowList,
 	Skeleton,
@@ -30,13 +30,12 @@ import { findScreen } from './frame-logic';
 import { findArea, subtabsOf, withArg } from './routes';
 import Home, { HomeSkeleton } from './components/Home';
 import Context from './components/Guidance';
-import ConnectApps from './components/ConnectApps';
+import ConnectApps, { SetupIntro } from './components/ConnectApps';
 import Apps from './components/ConnectedClients';
 import Services from './components/Services';
 import SettingsForm from './components/SettingsForm';
 import SettingsPage from './components/SettingsPage';
 import { useOauthSettings } from './components/SignInCard';
-import ConnectWizard from './components/ConnectWizard';
 import SectionHeader from './components/SectionHeader';
 import ModuleSetup from './components/ModuleSetup';
 import {
@@ -166,15 +165,14 @@ function ModuleScreen( { area, tab, sub, view, args, navigate, header } ) {
 }
 
 /**
- * AI apps: the connected apps, each with its own access, and the Connect an
- * app drawer that the header button opens.
+ * Agent setup (#369; AI apps until then), after Saddle Cloud's page: the
+ * site's address, the connected apps with their access, then every app down
+ * the side with the chosen one's steps beside it. Nothing opens in a drawer:
+ * the connected list's Setup guide and Rotate key show that app's steps.
  *
  * @param {Object}   props
- * @param {Function} props.openConnect    Opens the Connect drawer.
- * @param {Function} props.closeConnect   Closes it.
- * @param {boolean}  props.connectOpen    Whether it is open.
- * @param {?string}  props.connectApp     The app it opens on.
- * @param {Function} props.openWizard     Opens the key setup.
+ * @param {?Object}  props.setupFocus     An app to show: `{ app, key, rotate, n }`.
+ * @param {Function} props.onSetupFocus   Asks for an app's steps.
  * @param {Function} props.refreshClients Reloads the connected apps.
  * @param {Function} props.removeClient   Drops a revoked app from the list.
  * @param {Array}    props.clients        Connected apps (keys).
@@ -182,11 +180,8 @@ function ModuleScreen( { area, tab, sub, view, args, navigate, header } ) {
  * @param {*}        props.navigate       Navigation helper.
  */
 function AppsTab( {
-	openConnect,
-	closeConnect,
-	connectOpen,
-	connectApp,
-	openWizard,
+	setupFocus,
+	onSetupFocus,
 	refreshClients,
 	removeClient,
 	clients,
@@ -196,32 +191,27 @@ function AppsTab( {
 	const signIn = useOauthSettings();
 
 	return (
-		<>
+		<div className="saddle-setup">
+			<SetupIntro />
 			<Apps
 				clients={ clients }
 				onClientsChanged={ refreshClients }
 				onClientRemoved={ removeClient }
 				siteTier={ tier }
-				onConnect={ ( app ) => openConnect( app ) }
+				onGuide={ ( app ) =>
+					onSetupFocus( { app, key: false, n: Date.now() } )
+				}
+				onRotate={ ( app, uuid ) =>
+					onSetupFocus( { app, rotate: uuid, n: Date.now() } )
+				}
+			/>
+			<ConnectApps
+				oauth={ signIn.oauth }
+				onConnected={ refreshClients }
+				focus={ setupFocus }
 			/>
 			<Cards where="connections" navigate={ navigate } />
-			<Drawer
-				open={ connectOpen }
-				onOpenChange={ ( open ) => ! open && closeConnect() }
-				title={ __( 'Connect an app', 'saddle' ) }
-				size="md"
-			>
-				<ConnectApps
-					oauth={ signIn.oauth }
-					onKey={ ( app ) => {
-						closeConnect();
-						openWizard( app );
-					} }
-					onConnected={ refreshClients }
-					initialApp={ connectApp }
-				/>
-			</Drawer>
-		</>
+		</div>
 	);
 }
 
@@ -320,16 +310,11 @@ export default function Screen( props ) {
 		caps,
 		clients,
 		paused,
-		wizardOpen,
-		wizardApp,
-		openWizard,
-		closeWizard,
 		refreshClients,
 		removeClient,
-		connectOpen,
-		connectApp,
+		setupFocus,
+		onSetupFocus,
 		openConnect,
-		closeConnect,
 		pausing,
 		onTogglePause,
 		loadCaps,
@@ -370,21 +355,10 @@ export default function Screen( props ) {
 			);
 
 		case 'connections/apps':
-			return wizardOpen ? (
-				<ConnectWizard
-					tier={ tier }
-					clients={ clients }
-					onExit={ closeWizard }
-					onClientsChanged={ refreshClients }
-					initialApp={ wizardApp }
-				/>
-			) : (
+			return (
 				<AppsTab
-					openConnect={ openConnect }
-					closeConnect={ closeConnect }
-					connectOpen={ connectOpen }
-					connectApp={ connectApp }
-					openWizard={ openWizard }
+					setupFocus={ setupFocus }
+					onSetupFocus={ onSetupFocus }
 					refreshClients={ refreshClients }
 					removeClient={ removeClient }
 					clients={ clients }

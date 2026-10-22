@@ -1,15 +1,11 @@
 /**
- * The connect step, in two places.
- *
- * - **The welcome** (`embedded`, #269): first run has already asked which
- *   AI. This shows that app's setup inside Saddle's message: the address,
- *   or a key made the moment the step opens, the one-click links, and the
- *   waiting line FirstRun draws (`renderWaiting`). It never asks for the app
- *   again (S7): an error or an older key for the app shows its own choice,
- *   and Back returns to the app chips.
- * - **The key setup's own address** (`&key=<app>` on AI apps): the same
- *   steps as the Connect an app drawer, on the page, so both look alike.
- *   AI apps itself makes keys inside the drawer.
+ * The welcome's connect step (#269). First run has already asked which AI.
+ * This shows that app's setup inside Saddle's message: the address, or a key
+ * made the moment the step opens, the one-click links, and the waiting line
+ * FirstRun draws (`renderWaiting`). It never asks for the app again (S7): an
+ * error or an older key for the app shows its own choice, and Back returns
+ * to the app chips. Agent setup shows the same steps beside its list of
+ * apps, `&key=<app>` included (#369).
  *
  * Two paths, and the welcome leads with the address whenever the site can
  * turn sign-in on (`connectPath`):
@@ -37,10 +33,8 @@ import {
 } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { api, saddleData } from '../api';
-import SectionHeader from './SectionHeader';
 import SelfCheck from './SelfCheck';
-import ConnectApps, { useKeyMaker } from './ConnectApps';
-import { useOauthSettings } from './SignInCard';
+import { useKeyMaker } from './ConnectApps';
 import { appKeyFromLabel } from './icons';
 import {
 	APPS,
@@ -53,51 +47,10 @@ import {
 } from '../connect-apps';
 
 /**
- * @param {Object}  props
- * @param {boolean} props.embedded The welcome's connect step; otherwise the
- *                                 key setup's own address on AI apps.
+ * @param {Object} props See WelcomeConnect.
  */
 export default function ConnectWizard( props ) {
-	return props.embedded ? (
-		<WelcomeConnect { ...props } />
-	) : (
-		<KeyPage { ...props } />
-	);
-}
-
-/**
- * `&key=<app>`: the Connect an app drawer's steps, on the page, starting
- * with a key for that app.
- *
- * @param {Object}   props
- * @param {string}   props.initialApp       The app a key is for, or null.
- * @param {Function} props.onExit           Back to the list of apps.
- * @param {Function} props.onClientsChanged Reloads the keys.
- */
-function KeyPage( { initialApp = null, onExit, onClientsChanged } ) {
-	const { oauth } = useOauthSettings();
-	return (
-		<section className="saddle-stack saddle-connect-page">
-			<SectionHeader
-				title={ __( 'Connect an app', 'saddle' ) }
-				actions={
-					<Button
-						variant="secondary"
-						size="sm"
-						onClick={ () => onExit() }
-					>
-						{ __( 'Done', 'saddle' ) }
-					</Button>
-				}
-			/>
-			<ConnectApps
-				oauth={ oauth }
-				initialApp={ initialApp }
-				startWithKey
-				onConnected={ onClientsChanged }
-			/>
-		</section>
-	);
+	return <WelcomeConnect { ...props } />;
 }
 
 /**

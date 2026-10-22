@@ -550,7 +550,7 @@ function endLine( role, label ) {
 			return sprintf(
 				/* translators: %s: the app name. */
 				__(
-					'Done. %s can look around, and you can give it more on AI apps any time.',
+					'Done. %s can look around, and you can give it more on Agent setup any time.',
 					'saddle'
 				),
 				label

@@ -198,7 +198,7 @@ class Saddle_WC_Abilities_Test extends WP_UnitTestCase {
 		$reason = Saddle_Capabilities::denial_reason( 'saddle/wc-list-orders' );
 		$this->assertSame( 'saddle_tier_denied', $reason['code'] );
 		$this->assertStringContainsString( '"write"', $reason['message'] );
-		$this->assertStringContainsString( 'Saddle → AI apps', $reason['message'] );
+		$this->assertStringContainsString( 'Saddle → Agent setup', $reason['message'] );
 	}
 
 	public function test_list_orders_works_at_edit_content() {

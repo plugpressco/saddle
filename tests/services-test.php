@@ -567,7 +567,7 @@ class Saddle_Services_Test extends WP_UnitTestCase {
 	}
 
 	public function test_the_modules_view_and_owner_admin_line_name_services() {
-		$this->assertStringContainsString( 'AI apps, Services, Context, Settings.', Saddle_Context::system_context() );
+		$this->assertStringContainsString( 'Agent setup, Services, Context, Settings.', Saddle_Context::system_context() );
 		$by_key = array_column( Saddle_Modules_View::all(), null, 'key' );
 		$this->assertArrayHasKey( 'services', $by_key );
 		$this->assertNotEmpty( $by_key['services']['summary'] );

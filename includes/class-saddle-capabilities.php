@@ -520,7 +520,7 @@ class Saddle_Capabilities {
 		if ( ! is_user_logged_in() ) {
 			return array(
 				'code'    => 'saddle_not_authenticated',
-				'message' => __( 'The request is not authenticated. Reconnect the app from Saddle → AI apps to issue a fresh sign-in key.', 'saddle' ),
+				'message' => __( 'The request is not authenticated. Reconnect the app from Saddle → Agent setup to issue a fresh sign-in key.', 'saddle' ),
 			);
 		}
 
@@ -563,7 +563,7 @@ class Saddle_Capabilities {
 						'code'    => 'saddle_service_not_set_up',
 						'message' => sprintf(
 							/* translators: 1: service name, such as Unsplash, 2: required access level, 3: this app's access level. */
-							__( '%1$s is not set up, and this tool also needs the "%2$s" access level, but this app only has "%3$s" access. Ask the owner to add a key under Saddle → Services and to change this app\'s access on Saddle → AI apps. Do not retry until they have.', 'saddle' ),
+							__( '%1$s is not set up, and this tool also needs the "%2$s" access level, but this app only has "%3$s" access. Ask the owner to add a key under Saddle → Services and to change this app\'s access on Saddle → Agent setup. Do not retry until they have.', 'saddle' ),
 							$account,
 							$level,
 							self::get_tier()
@@ -597,7 +597,7 @@ class Saddle_Capabilities {
 		if ( 'read' !== $required && '' !== $required && self::is_domain_enforced() && ! self::domain_matches_recorded() ) {
 			return array(
 				'code'    => 'saddle_domain_drift',
-				'message' => __( 'This site\'s domain changed since write access was granted, and the owner has domain enforcement on — write tools are refused until they re-confirm this app\'s access on Saddle → AI apps (or turn the domain check off in Saddle → Settings). Do not retry; tell the user.', 'saddle' ),
+				'message' => __( 'This site\'s domain changed since write access was granted, and the owner has domain enforcement on — write tools are refused until they re-confirm this app\'s access on Saddle → Agent setup (or turn the domain check off in Saddle → Settings). Do not retry; tell the user.', 'saddle' ),
 			);
 		}
 
@@ -606,7 +606,7 @@ class Saddle_Capabilities {
 				'code'    => 'saddle_tier_denied',
 				'message' => sprintf(
 					/* translators: 1: required access level, 2: current access level. */
-					__( 'This tool needs the "%1$s" access level, but this app only has "%2$s" access. Only the site owner can change it, on Saddle → AI apps. Do not retry — ask the user to change this app\'s access if they want this done.', 'saddle' ),
+					__( 'This tool needs the "%1$s" access level, but this app only has "%2$s" access. Only the site owner can change it, on Saddle → Agent setup. Do not retry — ask the user to change this app\'s access if they want this done.', 'saddle' ),
 					$required,
 					self::get_tier()
 				),

@@ -494,7 +494,7 @@ class Saddle_MCP_Transport_Test extends WP_UnitTestCase {
 		$instructions = $this->initialize( '2025-11-25' )['instructions'];
 
 		$this->assertStringContainsString( 'not offered to you', $instructions );
-		$this->assertStringContainsString( 'Saddle → AI apps', $instructions );
+		$this->assertStringContainsString( 'Saddle → Agent setup', $instructions );
 		// The owner's word for the level, the one AI apps shows, not the tier key.
 		$this->assertStringContainsString( 'than the "Read only" one', $instructions );
 	}

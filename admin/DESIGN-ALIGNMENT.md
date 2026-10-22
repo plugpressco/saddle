@@ -72,7 +72,7 @@ text; its red `#D63638` (4.73) is too thin for text, so text uses `#B32D2E`.
 
 **Only:** the mark in the header band · primary
 buttons (`--pp-action`) · switches, radios and checkboxes when on · the
-selected role (its tick and tint) in an app's access list on AI apps · chart
+selected role (its tick and tint) in an app's access list on Agent setup · chart
 ink, through `--saddle-chart-ink` (the one data series; see "The family").
 
 **Never:** links (WordPress blue), focus rings (WordPress's theme color), text,
@@ -92,7 +92,7 @@ Every Saddle page, module pages and first run included, is drawn by
   content area, `16px 24px`, one `#F0F0F0` hairline under it. Row 1 is the
   breadcrumb in the `h1` (15px): the 22px mark in Petrol and "Saddle", then
   `/` and the page's name. Home reads `[mark] Saddle`; every other page
-  `[mark] Saddle / Page` ("Saddle / AI apps", "Saddle / Rank", "Saddle /
+  `[mark] Saddle / Page` ("Saddle / Agent setup", "Saddle / Rank", "Saddle /
   Welcome" on first run). The parts before the last are grey links (Saddle
   goes to Home); the last is `#1E1E1E` at 600. See "Navigation" for a
   drill-in. On the right, the notices bell and the **AI switch**: a pill
@@ -188,7 +188,7 @@ The plan and the section maps for Rank, CRM and Analytics are in
   switch (range, size, grouping) stays `SegmentedControl`. Neither carries
   icons.
 - **The menu.** Saddle → Home, then the products (Analytics, Rank, CRM),
-  then a hairline, then AI apps, Services, Context and Settings. Labels
+  then a hairline, then Agent setup, Services, Context and Settings. Labels
   only, no icons (#369, 2026-10-22, Fahim: "remove icons of submenu of
   saddle"; they had one each since 2026-10-03). The hairline is drawn only when at
   least one product is there: `Saddle_Settings::order_submenu()` gives the
@@ -262,7 +262,7 @@ Iconoir 7.12.1 (MIT) is the family's one icon set: regular style, stroke
 | Analytics | `graph-up` | The map in `planning/MODULE-LAYOUT.md` |
 | Rank | `search-engine` | The map in `planning/MODULE-LAYOUT.md` |
 | CRM | `send-mail` | The map in `planning/MODULE-LAYOUT.md` |
-| AI apps | `sparks` | none |
+| Agent setup | `sparks` (no longer drawn in the menu) | none |
 | Services | `puzzle` | none |
 | Context | `brain` | none |
 | Settings | `settings` | General (one tab, no row) |
@@ -385,7 +385,8 @@ saddle cloud".
   brand on today's and on the one pointed at; a day with changes shows its
   count over its bar, today's in brand text; the weekdays under them, today
   in 600. The times come from `GET /audit-log?times=1`, one query of dates.
-  Then **AI apps**: "Manage" and "Connect app" in the card's heading row;
+  Then **AI apps**: "Manage" (to Agent setup) and "Connect app" (that
+  page's steps) in the card's heading row;
   each app as its logo tile, name, "Last used …", its role chip and its one
   next step ("Try it", or "Change access" as a link). On a phone the chip
   and the step sit under the name. Then **Add-ons** as tiles, as many to a
@@ -399,16 +400,35 @@ saddle cloud".
 - Nothing generated: no suggested prompts, no tips, no captions under
   numbers.
 
-## AI apps (#309 v2)
+## Agent setup (#369; AI apps until then)
 
-- **Nothing connected:** "Connect an app" (15/600, no sentence), then Chat
-  apps · Agents · Code editors as rows of light tiles: logo and name only,
-  44px, hairline, no shadow, 6px corners, `#949494` on hover. Under them one
-  link, "Another MCP app", and one line, "Address", the URL in a code chip,
-  "Copy" as a link-button. No boxes besides the tiles.
-- **Connected:** the list; each row has at most one meta fact ("Last used …"
-  or "Connected …", the more recent) and never repeats the role shown in the
-  dropdown beside it.
+Fahim, 2026-10-22: "instead AI Apps call Agent Setup.. make setup nice way
+present", then "no drawer, make like saddle cloud". The page follows Cloud's
+Agent setup (`saddle-cloud/src/routes/_app/agent-setup.tsx`), on Home's soft
+cards, tiles and chips.
+
+- **The address card:** "Connect your AI app" (15/600), one line ("Add this
+  site to your AI app with the address below. You choose what each app may
+  do."), four app logos on soft discs, overlapping, and "Your address": the
+  URL in a soft field with Copy at its end.
+- **Connected,** when any app is: one card, each row the app's logo on its
+  tile, its name, at most one meta fact ("Last used …" or "Connected …", the
+  more recent; never the role, which the dropdown beside it shows), the role
+  dropdown and the ⋯ menu. No rules between rows. On a phone the dropdown
+  sits under the name.
+- **The apps and their steps:** every app down the side, in the old groups'
+  order then "Any MCP app", each a button with its logo, name and where it
+  runs, a mint tick when it has connected; the chosen one sits on a white
+  ground with the card edge. Beside them, one card: the app's tile and
+  "Connect X", the one line of fact where one applies, the numbered steps
+  (Cloud's soft grey discs) and the waiting line. It stays in view beside
+  the long list on a wide screen. On a phone the apps are one row that
+  scrolls, the chosen one kept in view, and the steps follow. One app's
+  steps always show (Claude Code on a site on this computer, Claude
+  otherwise).
+- **No drawer.** Home's "Connect app", `&add=<app>` and `&key=<app>` (a key
+  at once), the list's Setup guide and Rotate key all show that app's steps
+  on this page and bring them into view.
 
 ## Services (#309 v2)
 
@@ -496,11 +516,11 @@ the pill stays for badges, dots and switches. Blocks carry one faint shadow
 3. **Say nothing rather than say nothing.** A tile reading `—` is worse than no
    tile.
 4. **Plain, task-first names.** WordPress's Saddle submenu picks the page:
-   Home, each installed module, then AI apps, Services, Context and
+   Home, each installed module, then Agent setup, Services, Context and
    Settings. Inside a module, its sidebar picks the section and the icon tab
    row the page (see "Navigation").
 5. **A choice explains itself where it is made.** An option list carries one
-   line per option (the access list on AI apps) instead of a separate "what
+   line per option (the access list on Agent setup) instead of a separate "what
    each option means" section.
 
 ## Constraints that still apply

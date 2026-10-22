@@ -109,7 +109,7 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		$this->assertSame(
 			array(
 				'saddle'             => 'Home',
-				'saddle-connections' => 'AI apps',
+				'saddle-connections' => 'Agent setup',
 				'saddle-services'    => 'Services',
 				'saddle-context'     => 'Context',
 				'saddle-settings'    => 'Settings',
@@ -153,7 +153,7 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		$labels = array(
 			'saddle'             => 'Home',
 			'saddle-analytics'   => 'Analytics',
-			'saddle-connections' => 'AI apps',
+			'saddle-connections' => 'Agent setup',
 			'saddle-services'    => 'Services',
 			'saddle-context'     => 'Context',
 			'saddle-settings'    => 'Settings',
@@ -475,7 +475,7 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 
 		$connections = $saddle['areas'][1];
 		$this->assertSame( array( 'apps' ), array_column( $connections['tabs'], 'key' ) );
-		$this->assertSame( 'AI apps', $connections['title'] );
+		$this->assertSame( 'Agent setup', $connections['title'] );
 		$this->assertSame( array( 'overview' ), array_column( $saddle['areas'][0]['tabs'], 'key' ) );
 		$this->assertSame( 'Home', $saddle['areas'][0]['title'] );
 		$this->assertSame(

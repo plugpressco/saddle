@@ -132,7 +132,7 @@ class Saddle_OAuth_Consent {
 		// some — ChatGPT among them — ask for nothing at all. Either way this
 		// screen decides, and read is the pre-selected answer.
 		echo '<h2>' . esc_html__( 'What it will be able to do', 'saddle' ) . '</h2>';
-		echo '<p>' . esc_html__( 'This is the most this app can do. You can change it later on Saddle → AI apps.', 'saddle' ) . '</p>';
+		echo '<p>' . esc_html__( 'This is the most this app can do. You can change it later on Saddle → Agent setup.', 'saddle' ) . '</p>';
 
 		echo '<ul style="list-style:none;margin:0 0 1.5em">';
 		foreach ( self::level_choices() as $tier => $choice ) {
@@ -154,7 +154,7 @@ class Saddle_OAuth_Consent {
 			)
 		) . '</p>';
 
-		echo '<p>' . esc_html__( 'Deletions and overwrites will still show you a preview and ask for confirmation every time. You can disconnect this app at any point from Saddle → AI apps.', 'saddle' ) . '</p>';
+		echo '<p>' . esc_html__( 'Deletions and overwrites will still show you a preview and ask for confirmation every time. You can disconnect this app at any point from Saddle → Agent setup.', 'saddle' ) . '</p>';
 
 		echo '<p>' . esc_html(
 			sprintf(

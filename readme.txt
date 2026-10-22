@@ -27,7 +27,7 @@ Click **Live Preview** at the top of this page. A test WordPress opens in your b
 = How it works =
 
 1. Install Saddle and choose what your AI may do.
-2. Add your AI app under **Saddle → AI apps**. Paste the address Saddle shows into the app and approve the connection when your browser opens.
+2. Add your AI app under **Saddle → Agent setup**. Paste the address Saddle shows into the app and approve the connection when your browser opens.
 3. Ask your AI to write, edit or check your content.
 
 Saddle works with Claude and Claude Code, ChatGPT, Cursor, VS Code, Codex, Gemini CLI and other apps that support MCP (Model Context Protocol). Step-by-step setup for each app is at [saddle.to/docs](https://saddle.to/docs).
@@ -138,9 +138,9 @@ Every feature in this free plugin stays free.
 == Installation ==
 
 1. Install and activate Saddle from **Plugins → Add New**.
-2. Go to **Saddle → AI apps**, click Connect an app, and pick your app.
+2. Go to **Saddle → Agent setup** and pick your app.
 3. Paste the address into your AI app and approve the connection when your browser opens.
-4. To allow changes, choose Edit content or Manage the site next to the app on **Saddle → AI apps**.
+4. To allow changes, choose Edit content or Manage the site next to the app on **Saddle → Agent setup**.
 
 == Frequently Asked Questions ==
 
@@ -166,7 +166,7 @@ No. Every action uses standard WordPress functions.
 
 = Does it work with ChatGPT? =
 
-Yes. Go to **Saddle → AI apps**, click Connect an app, pick ChatGPT, and turn on sign-in when Saddle offers it. Then add your site as a connector in ChatGPT and approve it when ChatGPT sends you to your site.
+Yes. Go to **Saddle → Agent setup**, pick ChatGPT, and turn on sign-in when Saddle offers it. Then add your site as a connector in ChatGPT and approve it when ChatGPT sends you to your site.
 
 = Does it work with page builders? =
 
@@ -202,7 +202,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 == Screenshots ==
 
 1. Home: see what your AI changed and undo it, what waits for your OK, and what each app may do.
-2. AI apps: connect Claude, ChatGPT, Claude Code, Cursor and other MCP apps.
+2. Agent setup: connect Claude, ChatGPT, Claude Code, Cursor and other MCP apps.
 3. Needs your OK: deletes and plugin changes wait for you. See what an app wants, then approve or reject it.
 4. Context: tell every app about your site, its voice and its rules, and add Skills.
 5. Settings: choose the safety switches, sign-in for apps and advanced options.
@@ -216,6 +216,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 * New: A recommended set in the same place, applied in one click. Plugins, themes, updates, settings and anything that deletes ask you first, and publishing needs your OK. Content edits stay allowed, and a tool you turned off stays off. Nothing is set until you click.
 * New: A tool added by a later Saddle update, or by a plugin you activate later, asks you first until you choose what it may do. Tools that exist when you update to this version keep working exactly as before.
 * New: Home is one column of soft cards. This week leads with big numbers and a bar for each of the last seven days. Your AI apps follow, each with what it may do as a coloured label, when it was last used and its next step: Try it for an app that has not tried Saddle yet, Change access for one that can only look. Add-ons are tiles that open them, and Saddle Analytics shows today's visitors there.
+* Changed: AI apps is now Agent setup. Your site's address sits on top with Copy, then your connected apps, then every app down the side with its steps beside it. Connecting no longer opens a panel, and Setup guide and Rotate key show that app's steps on the page.
 * Changed: The Saddle menu shows its page names without icons.
 * New: The welcome ends with one more question: do you want visitor stats? Say yes and Saddle Analytics installs from WordPress.org and turns on, without leaving the page. Home offers it under Add-ons too. It is asked only when you may install plugins and Saddle Analytics is not on yet.
 * Fix: A list item your AI app writes now keeps its CSS class and style on the page. They used to reach the block's settings only, so an icon or style set by class disappeared.

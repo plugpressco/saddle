@@ -1,10 +1,11 @@
 /**
- * The connect screens, rendered (1.5.0 release QA): the Connect an app
- * drawer makes a key in place and reads like the address path (S7), leads
- * with what works on this computer (P7), never shows a wrong "Connected"
- * dot first (R10) and cleans up a key a reload left (R1); the welcome never
- * asks for the app again; Sign-in for apps says nothing it doesn't know
- * while loading (R3) and draws no heading of its own (#293).
+ * The connect screens, rendered (1.5.0 release QA; Agent setup since #369):
+ * an app's steps make a key in place and read like the address path (S7),
+ * point at what works on this computer (P7), tick only apps that connected
+ * (R10) and clean up a key a reload left (R1); Agent setup shows the steps
+ * an address or the connected list asked for, a new key included; the
+ * welcome never asks for the app again; Sign-in for apps says nothing it
+ * doesn't know while loading (R3) and draws no heading of its own (#293).
  */
 
 const SITE = {
@@ -83,7 +84,19 @@ function setup( data, routes ) {
 		connectionPath: ( id, rest = '' ) =>
 			[ 'connections', id, rest ].filter( Boolean ).join( '/' ),
 	} ) );
-	// The app logos are SVG imports, which Jest can't read.
+	// The interface icons and the app logos are SVG imports, which Jest
+	// can't read. An icon keeps its label.
+	jest.doMock( '../../admin/src/icons/kit', () => ( {
+		icons: new Proxy(
+			{},
+			{
+				get: () => ( props ) =>
+					require( 'react' ).createElement( 'span', {
+						'aria-label': props[ 'aria-label' ],
+					} ),
+			}
+		),
+	} ) );
 	jest.doMock( '../../admin/src/components/icons', () => ( {
 		AppLogo: () => null,
 		BrandMark: () => null,
@@ -161,7 +174,7 @@ beforeEach( () => {
 	document.body.innerHTML = '';
 } );
 
-describe( 'the drawer’s key path (S7)', () => {
+describe( 'the steps’ key path (S7)', () => {
 	const routes = ( extra = {} ) => ( {
 		'GET connections': { connections: [] },
 		'POST clients': NEW_KEY,
@@ -169,11 +182,14 @@ describe( 'the drawer’s key path (S7)', () => {
 		...extra,
 	} );
 
-	it( 'makes the key in the drawer and shows it as one line per step', async () => {
+	it( 'makes the key in place and shows it as one line per step', async () => {
 		const env = setup( SITE, routes() );
 		const { el } = await render(
 			env,
-			<env.ConnectApps oauth={ SIGN_IN_OFF } initialApp="claude-code" />
+			<env.ConnectApps
+				oauth={ SIGN_IN_OFF }
+				focus={ { app: 'claude-code', n: 0 } }
+			/>
 		);
 
 		expect( el.textContent ).toContain(
@@ -197,17 +213,19 @@ describe( 'the drawer’s key path (S7)', () => {
 		expect( el.textContent ).not.toMatch(
 			/Choose app|Paste setup|Set up Claude Code|will be able to do|Which app are you connecting/
 		);
-		expect( el.querySelector( '.saddle-connect__app' ) ).toBeNull();
 	} );
 
-	it( 'deletes a key nobody copied when the drawer closes', async () => {
+	it( 'deletes a key nobody copied when the page closes', async () => {
 		const env = setup(
 			SITE,
 			routes( { [ `DELETE clients/${ NEW_KEY.uuid }` ]: {} } )
 		);
 		const { el, unmount } = await render(
 			env,
-			<env.ConnectApps oauth={ SIGN_IN_OFF } initialApp="claude-code" />
+			<env.ConnectApps
+				oauth={ SIGN_IN_OFF }
+				focus={ { app: 'claude-code', n: 0 } }
+			/>
 		);
 		await click( env, button( el, 'Make a key for Claude Code' ) );
 		await unmount();
@@ -215,7 +233,7 @@ describe( 'the drawer’s key path (S7)', () => {
 		expect( env.api.calls ).toContain( `DELETE clients/${ NEW_KEY.uuid }` );
 	} );
 
-	it( 'deletes a key that arrives after the drawer closed', async () => {
+	it( 'deletes a key that arrives after the page closed', async () => {
 		let answer;
 		const env = setup(
 			SITE,
@@ -229,7 +247,10 @@ describe( 'the drawer’s key path (S7)', () => {
 		);
 		const { el, unmount } = await render(
 			env,
-			<env.ConnectApps oauth={ SIGN_IN_OFF } initialApp="claude-code" />
+			<env.ConnectApps
+				oauth={ SIGN_IN_OFF }
+				focus={ { app: 'claude-code', n: 0 } }
+			/>
 		);
 		await click( env, button( el, 'Make a key for Claude Code' ) );
 		await unmount();
@@ -246,7 +267,10 @@ describe( 'the drawer’s key path (S7)', () => {
 		);
 		const { el, unmount } = await render(
 			env,
-			<env.ConnectApps oauth={ SIGN_IN_OFF } initialApp="claude-code" />
+			<env.ConnectApps
+				oauth={ SIGN_IN_OFF }
+				focus={ { app: 'claude-code', n: 0 } }
+			/>
 		);
 		await click( env, button( el, 'Make a key for Claude Code' ) );
 		await click( env, el.querySelector( '.pp-code__copy' ) );
@@ -278,7 +302,10 @@ describe( 'the drawer’s key path (S7)', () => {
 		);
 		const { el } = await render(
 			env,
-			<env.ConnectApps oauth={ SIGN_IN_OFF } initialApp="claude-code" />
+			<env.ConnectApps
+				oauth={ SIGN_IN_OFF }
+				focus={ { app: 'claude-code', n: 0 } }
+			/>
 		);
 		await click( env, button( el, 'Make a key for Claude Code' ) );
 
@@ -296,7 +323,10 @@ describe( 'the drawer’s key path (S7)', () => {
 		const env = setup( SITE, routes() );
 		const { el } = await render(
 			env,
-			<env.ConnectApps oauth={ SIGN_IN_ON } initialApp="cursor" />
+			<env.ConnectApps
+				oauth={ SIGN_IN_ON }
+				focus={ { app: 'cursor', n: 0 } }
+			/>
 		);
 
 		expect( el.textContent ).toContain( 'Approve it on the screen' );
@@ -313,7 +343,10 @@ describe( 'the drawer’s key path (S7)', () => {
 		const env = setup( SITE, routes() );
 		const { el } = await render(
 			env,
-			<env.ConnectApps oauth={ SIGN_IN_OFF } initialApp="chatgpt" />
+			<env.ConnectApps
+				oauth={ SIGN_IN_OFF }
+				focus={ { app: 'chatgpt', n: 0 } }
+			/>
 		);
 
 		expect( el.textContent ).toContain(
@@ -324,21 +357,28 @@ describe( 'the drawer’s key path (S7)', () => {
 	} );
 } );
 
-describe( 'the drawer on a site on this computer (P7)', () => {
-	it( 'leads with the apps that run here, then Claude’s desktop bridge', async () => {
+describe( 'the steps on a site on this computer (P7)', () => {
+	it( 'points at the apps that run here, then Claude’s desktop bridge', async () => {
 		const env = setup( LOCAL, {
 			'GET connections': { connections: [] },
 		} );
 		const { el } = await render(
 			env,
-			<env.ConnectApps oauth={ SIGN_IN_ON } initialApp="claude" />
+			<env.ConnectApps
+				oauth={ SIGN_IN_ON }
+				focus={ { app: 'claude', n: 0 } }
+			/>
 		);
 		const text = el.textContent;
 
 		expect( text ).toContain(
 			'Claude runs on its own servers, so it can’t reach a site on this computer.'
 		);
-		const tiles = [ ...el.querySelectorAll( '.saddle-connect__app' ) ];
+		const tiles = [
+			...el.querySelectorAll(
+				'#saddle-app-steps .saddle-connect__links button'
+			),
+		];
 		expect( tiles.map( ( t ) => t.textContent ) ).toEqual( [
 			'Claude Code',
 			'Cursor',
@@ -363,7 +403,10 @@ describe( 'the drawer on a site on this computer (P7)', () => {
 		} );
 		const { el } = await render(
 			env,
-			<env.ConnectApps oauth={ SIGN_IN_ON } initialApp="claude" />
+			<env.ConnectApps
+				oauth={ SIGN_IN_ON }
+				focus={ { app: 'claude', n: 0 } }
+			/>
 		);
 		await click( env, button( el, 'Make a key for Claude' ) );
 
@@ -372,28 +415,53 @@ describe( 'the drawer on a site on this computer (P7)', () => {
 		expect( first.textContent ).toContain( 'mcp-remote' );
 	} );
 
-	it( 'opens on a tile it lists', async () => {
+	it( 'opens an app it points at', async () => {
 		const env = setup( LOCAL, {
 			'GET connections': { connections: [] },
 		} );
 		const { el } = await render(
 			env,
-			<env.ConnectApps oauth={ SIGN_IN_OFF } initialApp="chatgpt" />
+			<env.ConnectApps
+				oauth={ SIGN_IN_OFF }
+				focus={ { app: 'claude', n: 0 } }
+			/>
 		);
-		await click(
-			env,
-			[ ...el.querySelectorAll( '.saddle-connect__app' ) ].find(
-				( t ) => 'Cursor' === t.textContent
-			)
-		);
+		await click( env, button( el, 'Cursor' ) );
 
-		expect( el.querySelector( 'h3' ).textContent ).toBe( 'Cursor' );
+		expect(
+			el.querySelector( '#saddle-app-steps-title' ).textContent
+		).toBe( 'Connect Cursor' );
 		expect( button( el, 'Make a key for Cursor' ) ).toBeDefined();
 	} );
 } );
 
-describe( 'the tiles’ Connected dots (R10)', () => {
-	it( 'waits for the connections instead of drawing tiles without dots', async () => {
+describe( 'Agent setup’s list of apps (#369, R10)', () => {
+	const appButton = ( el, name ) =>
+		[ ...el.querySelectorAll( '.saddle-setup__app' ) ].find(
+			( b ) =>
+				name ===
+				b.querySelector( '.saddle-setup__app-name' ).textContent
+		);
+
+	it( 'shows one app’s steps from the start, beside every app', async () => {
+		const env = setup( SITE, { 'GET connections': { connections: [] } } );
+		const { el } = await render(
+			env,
+			<env.ConnectApps oauth={ SIGN_IN_OFF } />
+		);
+
+		expect(
+			el.querySelectorAll( '.saddle-setup__app' ).length
+		).toBeGreaterThan( 8 );
+		expect( appButton( el, 'Claude' ).getAttribute( 'aria-pressed' ) ).toBe(
+			'true'
+		);
+		expect(
+			el.querySelector( '#saddle-app-steps-title' ).textContent
+		).toBe( 'Connect Claude' );
+	} );
+
+	it( 'ticks an app once it connected, not one whose key was never used', async () => {
 		let answer;
 		const env = setup( SITE, {
 			'GET connections': () =>
@@ -406,10 +474,7 @@ describe( 'the tiles’ Connected dots (R10)', () => {
 			<env.ConnectApps oauth={ SIGN_IN_OFF } />
 		);
 
-		expect( el.querySelector( '.saddle-connect__app' ) ).toBeNull();
-		expect(
-			el.querySelectorAll( '.saddle-connect__app-skeleton' ).length
-		).toBeGreaterThan( 0 );
+		expect( el.querySelector( '[aria-label="Connected"]' ) ).toBeNull();
 
 		await env.React.act( async () =>
 			answer( {
@@ -420,17 +485,61 @@ describe( 'the tiles’ Connected dots (R10)', () => {
 						app: 'cursor',
 						last_seen_at: 50,
 					},
+					{ id: 'key:2', kind: 'key', app: 'codex' },
 				],
 			} )
 		);
 		await settle( env );
 
-		const cursor = [
-			...el.querySelectorAll( '.saddle-connect__app' ),
-		].find( ( t ) => t.textContent.startsWith( 'Cursor' ) );
 		expect(
-			cursor.querySelector( '[aria-label="Connected"]' )
+			appButton( el, 'Cursor' ).querySelector(
+				'[aria-label="Connected"]'
+			)
 		).not.toBeNull();
+		expect(
+			appButton( el, 'Codex' ).querySelector( '[aria-label="Connected"]' )
+		).toBeNull();
+	} );
+
+	it( 'makes a key at once when the address asks for one (`&key=`)', async () => {
+		const env = setup( SITE, {
+			'GET connections': { connections: [] },
+			'POST clients': NEW_KEY,
+			'GET connections/pulse': { now: 1000, connections: [] },
+		} );
+		const { el } = await render(
+			env,
+			<env.ConnectApps
+				oauth={ SIGN_IN_OFF }
+				focus={ { app: 'claude-code', key: true, n: 0 } }
+			/>
+		);
+
+		expect( env.api.calls ).toContain( 'POST clients' );
+		expect(
+			el.querySelectorAll( '.saddle-connect__list > li' )
+		).toHaveLength( 2 );
+	} );
+
+	it( 'shows a rotated key’s new setup from the connected list', async () => {
+		const env = setup( SITE, {
+			'GET connections': { connections: [] },
+			'POST clients/old-1/rotate': NEW_KEY,
+			'GET connections/pulse': { now: 1000, connections: [] },
+		} );
+		const { el } = await render(
+			env,
+			<env.ConnectApps
+				oauth={ SIGN_IN_ON }
+				focus={ { app: 'claude-code', rotate: 'old-1', n: 1 } }
+			/>
+		);
+
+		expect( env.api.calls ).toContain( 'POST clients/old-1/rotate' );
+		expect( env.api.calls ).not.toContain( 'POST clients' );
+		expect(
+			el.querySelector( '.saddle-connect__list code' ).textContent
+		).toContain( 'Authorization' );
 	} );
 } );
 
@@ -589,37 +698,6 @@ describe( 'the welcome’s connect step', () => {
 			'Try Claude Code, Cursor or Codex here'
 		);
 		expect( el.querySelector( '.saddle-wizard__config' ) ).toBeNull();
-	} );
-} );
-
-describe( 'the key setup’s own address (S7)', () => {
-	it( 'shows the drawer’s steps with a key for the app, and no stepper', async () => {
-		const env = setup( SITE, {
-			'GET oauth-settings': SIGN_IN_OFF,
-			'GET connections': { connections: [] },
-			'POST clients': NEW_KEY,
-			'GET connections/pulse': { now: 1000, connections: [] },
-		} );
-		const { el } = await render(
-			env,
-			<env.ConnectWizard
-				initialApp="claude-code"
-				clients={ [] }
-				onExit={ () => {} }
-			/>
-		);
-
-		expect( el.querySelector( 'h2' ).textContent ).toBe( 'Connect an app' );
-		expect( env.api.calls ).toContain( 'POST clients' );
-		expect(
-			el.querySelectorAll( '.saddle-connect__list > li' )
-		).toHaveLength( 2 );
-		expect(
-			el.querySelector( '.pp-steps, .saddle-wizard__top' )
-		).toBeNull();
-		expect( el.textContent ).not.toContain(
-			'Which app are you connecting'
-		);
 	} );
 } );
 

@@ -61,10 +61,10 @@ class Saddle_Modules {
 			),
 			'connections' => array(
 				'slug'  => 'saddle-connections',
-				'title' => __( 'AI apps', 'saddle' ),
+				'title' => __( 'Agent setup', 'saddle' ),
 				'icon'  => 'sparks',
 				'tabs'  => array(
-					'apps' => __( 'AI apps', 'saddle' ),
+					'apps' => __( 'Agent setup', 'saddle' ),
 				),
 			),
 			'services'    => array(
