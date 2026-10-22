@@ -201,19 +201,19 @@ The WordPress.org version never checks for its own updates. The version from plu
 
 == Screenshots ==
 
-1. Home: see what your AI changed and undo it, what waits for your OK, and what each app may do.
-2. Agent setup: connect Claude, ChatGPT, Claude Code, Cursor and other MCP apps.
-3. Needs your OK: deletes and plugin changes wait for you. See what an app wants, then approve or reject it.
-4. Context: tell every app about your site, its voice and its rules, and add Skills.
-5. Settings: choose the safety switches, sign-in for apps and advanced options.
+1. Overview: what waits for your OK, your week in numbers, and the AI apps you connected.
+2. Agent setup: copy your address, connect any MCP app, and choose what each app may do.
+3. Logs: every change your AI apps made, and every one Saddle stopped.
+4. Settings: for each tool, choose Allow, Ask first or Off.
+5. Context: tell every app about your site, its goal, its voice and its rules.
 6. Welcome: Saddle looks around your site and helps you connect your first AI app.
 
 == Changelog ==
 
 = 1.6.2 =
-* Changed: The Saddle menu reads Overview, your add-ons, Context, Agent setup, Logs, Settings and Get Pro, as one plain list with no dividing line. Home is now called Overview.
+* Changed: The Saddle menu reads Overview, your add-ons, Context, Agent setup, Logs, Settings and Get Pro, as one plain list with no dividing line. Home is now called Overview. Get Pro carries a crown, and it is gone once Saddle Pro is installed, even while switched off.
 * Changed: Activity moves from Overview to its own page, Saddle → Logs: every change your apps made and every attempt Saddle blocked, with Undo. This week on Overview links to it.
-* Changed: On Overview, your connected apps are cards, up to three in a row, each with its access and its next step, and a last card connects another app. The card group is called Agent setup. Add-ons show their own WordPress.org icons. Get Pro carries a crown, and it is gone once Saddle Pro is installed, even while switched off.
+* Changed: On Overview, your connected apps are cards, up to three in a row, each with its access and its next step, and a last card connects another app. The card group is called Agent setup. Add-ons show their own WordPress.org icons.
 * New: Analytics is always in the Saddle menu. Until Saddle Analytics is on, its page says what it does and installs it from WordPress.org in one click; then the same page shows your stats.
 * Changed: Get Pro is clearer. The plans sit side by side with their rows lined up, Pro marked with a crown, and each plan shows its sites, AI-app calls a day and SEO credits a month. Four short answers follow.
 * Changed: On a site on this computer, Agent setup marks the apps that need a public site, and picking one shows one short note with the apps that run here.
