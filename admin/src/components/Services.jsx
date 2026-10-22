@@ -1,21 +1,24 @@
 /**
- * Services (#291) — everything Saddle can hand to the AI beyond core
- * WordPress, on a page of its own: Accounts (outside services with a key),
- * Plugins (found on this site) and Add-ons (plugins that bring tools).
+ * What the AI can use beyond core WordPress, on Settings (#369; a page of its
+ * own from #291 until then).
  *
- * One row per record from `GET /services`: the name and one status line (an
- * account says what it is for first). Every section is named. An
- * account with no key has one button, "Add key"; any other row is itself the
- * button that opens the drawer. The drawer holds one line of what the
- * service is, the key form (accounts) or the switch (third-party add-ons),
- * where the key comes from, and the tools, folded. A key never comes back
- * from the server, only whether one is set and its last four characters.
+ * - **Accounts:** outside services with a key, such as Unsplash. A row says
+ *   what the service is for and whether it is set up; "Add key" or "Change
+ *   key" opens the form right under it, with where the key comes from and
+ *   the hosts it sends to. A key never comes back from the server, only
+ *   whether one is set and its last four characters.
+ * - **Plugins that add tools:** another developer's plugin stays off until
+ *   the owner switches it on (non-negotiable #2). Each row has its switch,
+ *   what it sends off the site, and its tools, folded. Drawn only when such
+ *   a plugin is installed.
+ *
+ * Saddle's own add-ons and the plugins Saddle edits need nothing from the
+ * owner; Home lists them under Add-ons and Works with.
  */
-import { useState, useEffect, useMemo } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
 import {
 	Button,
 	Collapsible,
-	Drawer,
 	ErrorText,
 	Field,
 	Input,
@@ -29,15 +32,90 @@ import {
 import { __, sprintf } from '@wordpress/i18n';
 import { api } from '../api';
 import SectionHeader from './SectionHeader';
-import { icons } from '../icons/kit';
 import {
 	keyLink,
 	replaceRecord,
 	roleLabel,
-	summaryOf,
 	toolCount,
 } from '../services-logic';
-import { namedGroups, rowLine } from '../services-page-logic';
+import { rowLine } from '../services-page-logic';
+
+/**
+ * GET /services once, and a way to put back a record a change returned.
+ *
+ * @return {{records: ?Array, update: Function}} `records` is null until the
+ *         list arrives, and an empty list when it can't.
+ */
+export function useServices() {
+	const [ records, setRecords ] = useState( null );
+	useEffect( () => {
+		let alive = true;
+		api( 'services' )
+			.then( ( res ) => alive && setRecords( res.services || [] ) )
+			.catch( () => alive && setRecords( [] ) );
+		return () => {
+			alive = false;
+		};
+	}, [] );
+	return {
+		records,
+		update: ( next ) =>
+			setRecords( ( list ) => replaceRecord( list, next ) ),
+	};
+}
+
+/**
+ * The hosts a service sends to: the one privacy fact an owner needs before
+ * adding a key or switching it on (non-negotiable #1).
+ *
+ * @param {Object} props
+ * @param {Object} props.record A service record.
+ */
+function Sends( { record } ) {
+	const hosts = ( record.sends || [] ).map( ( s ) => s.host );
+	if ( ! hosts.length ) {
+		return null;
+	}
+	return (
+		<p className="saddle-svc__sends">
+			{ sprintf(
+				/* translators: %s: host names, e.g. "api.unsplash.com, images.unsplash.com". */
+				__( 'Sends to %s', 'saddle' ),
+				hosts.join( ', ' )
+			) }
+		</p>
+	);
+}
+
+/**
+ * A service's tools, folded under their count.
+ *
+ * @param {Object} props
+ * @param {Object} props.record A service record.
+ */
+function Tools( { record } ) {
+	const tools = record.tools || [];
+	if ( ! tools.length ) {
+		return null;
+	}
+	return (
+		<Collapsible
+			className="saddle-svc__tools"
+			trigger={ toolCount( record ) }
+		>
+			<ul className="saddle-svc__tool-list">
+				{ tools.map( ( t ) => (
+					<li key={ t.name } title={ t.name }>
+						<span>{ t.title || t.name }</span>
+						<span className="saddle-svc__role">
+							{ roleLabel( t.role ) }
+						</span>
+					</li>
+				) ) }
+			</ul>
+		</Collapsible>
+	);
+}
 
 /**
  * The key form for an account, or the key it has with Change and Remove.
@@ -199,14 +277,104 @@ function KeyForm( { record, onSaved } ) {
 }
 
 /**
- * The drawer body for one record. Its one line of what the service is sits
- * in the drawer's head, under the name.
+ * One account: its name and line, and its key form under it once opened.
  *
  * @param {Object}   props
- * @param {Object}   props.record    The service.
+ * @param {Object}   props.record  The account.
+ * @param {Function} props.onSaved Receives the updated record.
+ */
+function AccountRow( { record, onSaved } ) {
+	const needsKey = 'needs_key' === record.status;
+	const [ open, setOpen ] = useState( false );
+	return (
+		<>
+			<Row
+				className="saddle-svc__row"
+				title={ record.name }
+				description={ rowLine( record ) }
+				actions={
+					<Button
+						variant={ needsKey && ! open ? 'secondary' : 'link' }
+						size="sm"
+						aria-expanded={ open }
+						onClick={ () => setOpen( ( o ) => ! o ) }
+					>
+						{ open && __( 'Close', 'saddle' ) }
+						{ ! open &&
+							( needsKey
+								? __( 'Add key', 'saddle' )
+								: __( 'Change key', 'saddle' ) ) }
+					</Button>
+				}
+			/>
+			{ open && (
+				<div className="saddle-svc__detail">
+					<KeyForm
+						record={ record }
+						onSaved={ ( next ) => {
+							onSaved( next );
+							if ( 'needs_key' !== next.status ) {
+								setOpen( false );
+							}
+						} }
+					/>
+					<Sends record={ record } />
+				</div>
+			) }
+		</>
+	);
+}
+
+/**
+ * Settings → Accounts: outside services with a key. Draws nothing until the
+ * list arrives, or when there is no account.
+ *
+ * @param {Object}   props
+ * @param {?Array}   props.records   From useServices().
  * @param {Function} props.onChanged Receives an updated record.
  */
-function Detail( { record, onChanged } ) {
+export function Accounts( { records, onChanged } ) {
+	const accounts = ( records || [] ).filter( ( r ) => 'account' === r.kind );
+	if ( ! accounts.length ) {
+		return null;
+	}
+	return (
+		<section className="saddle-section" id="accounts">
+			<SectionHeader title={ __( 'Accounts', 'saddle' ) } />
+			<RowList>
+				{ accounts.map( ( r ) => (
+					<AccountRow
+						key={ r.key }
+						record={ r }
+						onSaved={ onChanged }
+					/>
+				) ) }
+			</RowList>
+		</section>
+	);
+}
+
+/**
+ * The plugins whose tools wait for the owner: another developer's plugin
+ * that adds tools to Saddle.
+ *
+ * @param {?Array} records From useServices().
+ * @return {Array} The records with a switch.
+ */
+export function switchable( records ) {
+	return ( records || [] ).filter(
+		( r ) => 'account' !== r.kind && r.can_toggle
+	);
+}
+
+/**
+ * One plugin that adds tools: its switch, what it sends and its tools.
+ *
+ * @param {Object}   props
+ * @param {Object}   props.record    The add-on.
+ * @param {Function} props.onChanged Receives the updated record.
+ */
+function AddonSwitch( { record, onChanged } ) {
 	const [ busy, setBusy ] = useState( false );
 	// Optimistic: the switch moves at once and goes back if the save fails.
 	const [ on, setOn ] = useState( !! record.enabled );
@@ -244,175 +412,46 @@ function Detail( { record, onChanged } ) {
 			.finally( () => setBusy( false ) );
 	};
 
-	const tools = record.tools || [];
-
 	return (
-		<div className="saddle-svc__detail">
-			{ 'account' === record.kind && (
-				<KeyForm record={ record } onSaved={ onChanged } />
-			) }
-
-			{ 'account' !== record.kind && record.can_toggle && (
-				<div className="saddle-svc__switch">
-					<Switch
-						checked={ on }
-						disabled={ busy }
-						onChange={ toggle }
-						aria-label={ sprintf(
-							/* translators: %s: plugin name. */
-							__( 'Let apps use %s', 'saddle' ),
-							record.name
-						) }
-					/>
-					<span aria-hidden="true">
-						{ __( 'Let apps use it', 'saddle' ) }
-					</span>
-				</div>
-			) }
-
-			{ /* The one privacy fact an owner needs before adding a key: which
-			     hosts this service sends to (non-negotiable #1). */ }
-			{ ( record.sends || [] ).length > 0 && (
-				<p className="saddle-svc__sends">
-					{ sprintf(
-						/* translators: %s: host names, e.g. "api.unsplash.com, images.unsplash.com". */
-						__( 'Sends to %s', 'saddle' ),
-						record.sends.map( ( s ) => s.host ).join( ', ' )
+		<div className="saddle-svc__addon">
+			<div className="saddle-svc__switch">
+				<Switch
+					checked={ on }
+					disabled={ busy }
+					onChange={ toggle }
+					aria-label={ sprintf(
+						/* translators: %s: plugin name. */
+						__( 'Let apps use %s', 'saddle' ),
+						record.name
 					) }
-				</p>
-			) }
-
-			{ tools.length > 0 && (
-				<Collapsible
-					className="saddle-svc__tools"
-					trigger={ toolCount( record ) }
-				>
-					<ul className="saddle-svc__tool-list">
-						{ tools.map( ( t ) => (
-							<li key={ t.name } title={ t.name }>
-								<span>{ t.title || t.name }</span>
-								<span className="saddle-svc__role">
-									{ roleLabel( t.role ) }
-								</span>
-							</li>
-						) ) }
-					</ul>
-				</Collapsible>
-			) }
+				/>
+				<span className="saddle-svc__name" aria-hidden="true">
+					{ record.name }
+				</span>
+			</div>
+			<Sends record={ record } />
+			<Tools record={ record } />
 		</div>
 	);
 }
 
 /**
- * One service: its name and its line (rowLine). An account with no key gets
- * "Add key"; any other row is the button that opens the drawer.
+ * Settings → Advanced → Plugins that add tools: one switch each.
  *
  * @param {Object}   props
- * @param {Object}   props.record The service.
- * @param {Function} props.onOpen Opens its drawer.
+ * @param {Array}    props.records   From switchable().
+ * @param {Function} props.onChanged Receives an updated record.
  */
-function ServiceRow( { record, onOpen } ) {
-	const status = rowLine( record );
-
-	if ( 'needs_key' === record.status ) {
-		return (
-			<Row
-				className="saddle-svc__row"
-				title={ record.name }
-				description={ status }
-				actions={
-					<Button variant="secondary" size="sm" onClick={ onOpen }>
-						{ __( 'Add key', 'saddle' ) }
-					</Button>
-				}
-			/>
-		);
-	}
-
-	// No `actions`, so the kit makes the whole row the button (role, tab
-	// stop, Enter and Space); the chevron sits inside its body.
+export function AddonSwitches( { records, onChanged } ) {
 	return (
-		<Row
-			className="saddle-svc__row"
-			onClick={ onOpen }
-			aria-haspopup="dialog"
-		>
-			<span className="saddle-svc__line">
-				<span className="saddle-svc__name">
-					<span className="pp-rowlist__title">{ record.name }</span>
-					{ status && (
-						<span className="pp-rowlist__description">
-							{ status }
-						</span>
-					) }
-				</span>
-				<icons.ChevronRight size={ 16 } className="saddle-svc__go" />
-			</span>
-		</Row>
-	);
-}
-
-export default function Services() {
-	// null until the list arrives.
-	const [ records, setRecords ] = useState( null );
-	const [ openKey, setOpenKey ] = useState( null );
-
-	useEffect( () => {
-		api( 'services' )
-			.then( ( res ) => setRecords( res.services || [] ) )
-			.catch( ( e ) => {
-				setRecords( [] );
-				toast.error( e.message );
-			} );
-	}, [] );
-
-	// Every section is named, even when it is the only one (P23).
-	const groups = useMemo( () => namedGroups( records ), [ records ] );
-	const open = ( records || [] ).find( ( r ) => r.key === openKey );
-	const update = ( next ) =>
-		setRecords( ( list ) => replaceRecord( list, next ) );
-
-	if ( null === records ) {
-		return <RowList loading />;
-	}
-
-	if ( 0 === groups.length ) {
-		return (
-			<p className="saddle-svc__empty">
-				{ __( 'Nothing here yet.', 'saddle' ) }
-			</p>
-		);
-	}
-
-	return (
-		<>
-			{ groups.map( ( g ) => (
-				<section key={ g.kind } className="saddle-section">
-					<SectionHeader title={ g.title } />
-					<RowList>
-						{ g.rows.map( ( r ) => (
-							<ServiceRow
-								key={ r.key }
-								record={ r }
-								onOpen={ () => setOpenKey( r.key ) }
-							/>
-						) ) }
-					</RowList>
-				</section>
+		<div className="saddle-svc__addons">
+			{ records.map( ( r ) => (
+				<AddonSwitch
+					key={ r.key }
+					record={ r }
+					onChanged={ onChanged }
+				/>
 			) ) }
-
-			<Drawer
-				open={ !! open }
-				onOpenChange={ ( next ) => ! next && setOpenKey( null ) }
-				title={ open ? open.name : '' }
-				// Mounted while closed too; the kit wants a name either way.
-				aria-label={ open ? undefined : __( 'Service', 'saddle' ) }
-				description={ open ? summaryOf( open ) : undefined }
-				closeLabel={ __( 'Close', 'saddle' ) }
-				size="md"
-			>
-				{ open && <Detail record={ open } onChanged={ update } /> }
-			</Drawer>
-		</>
+		</div>
 	);
 }

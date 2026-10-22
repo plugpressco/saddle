@@ -77,7 +77,7 @@ The SEO and WooCommerce tools work when that plugin is active.
 * All in One SEO: Read and edit the SEO title, meta description, robots and social fields of posts and pages.
 * WooCommerce: List and read products and variations. Orders show customer names and emails, so listing them needs Edit content.
 * Unsplash: Find and import free stock photos. This needs your own Unsplash API key.
-* Other plugins: Any plugin can add its own tools to Saddle. Tools from other developers stay off until you switch them on under Saddle > Services.
+* Other plugins: Any plugin can add its own tools to Saddle. Tools from other developers stay off until you switch them on under Saddle > Settings > Advanced.
 
 = Skills and memory =
 
@@ -183,7 +183,7 @@ Saddle sends no tracking or usage data. It connects to another site only in thes
 1. Upload from URL: WordPress downloads the one file you asked for.
 2. Connection check: Saddle sends a test request to your own site.
 3. Live page check (optional): This runs only when your AI app asks for it after editing a published page. Saddle loads that page from your own site, as a visitor would, to confirm the change is live.
-4. Unsplash (optional): This runs only after you add your own API key under **Saddle → Services**. Saddle sends your search words or a photo ID to `api.unsplash.com`. It downloads photos from `images.unsplash.com`. Each imported photo gets a caption that credits the photographer, as Unsplash requires. You can edit or remove it. See the [API Guidelines](https://help.unsplash.com/en/articles/2511245-unsplash-api-guidelines), [API Terms](https://unsplash.com/api-terms) and [Privacy Policy](https://unsplash.com/privacy).
+4. Unsplash (optional): This runs only after you add your own API key under **Saddle → Settings**. Saddle sends your search words or a photo ID to `api.unsplash.com`. It downloads photos from `images.unsplash.com`. Each imported photo gets a caption that credits the photographer, as Unsplash requires. You can edit or remove it. See the [API Guidelines](https://help.unsplash.com/en/articles/2511245-unsplash-api-guidelines), [API Terms](https://unsplash.com/api-terms) and [Privacy Policy](https://unsplash.com/privacy).
 5. OAuth app check (optional): This runs only when OAuth sign-in is on. Saddle reads a public web address the app provides to confirm who the app is. It sends nothing about your site.
 6. Updates and Site Health (optional): When your AI app lists or applies updates, or reads Site Health, WordPress runs its own checks with WordPress.org and downloads the update packages it already offers, from WordPress.org or a plugin's own update server, exactly as the Updates screen does. After updating an active plugin, WordPress loads your own home page once to check for a fatal error.
 7. Plugin and theme directory (optional): When your AI app searches for a plugin, or installs a plugin or theme, WordPress sends the search words or the slug to `api.wordpress.org`, as the **Add New** screens do. The same happens when you choose to add Saddle Analytics in Saddle's welcome or on Home. Like every WordPress.org request WordPress makes, it includes your WordPress version, language and site address. Saddle keeps search results on your site for an hour. An install downloads the package from `downloads.wordpress.org`. Saddle refuses a package from anywhere else.
@@ -218,6 +218,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 * New: Home is one column of soft cards. This week leads with big numbers and a bar for each of the last seven days. Your AI apps follow, each with what it may do as a coloured label, when it was last used and its next step: Try it for an app that has not tried Saddle yet, Change access for one that can only look. Add-ons are tiles that open them, and Saddle Analytics shows today's visitors there.
 * Changed: AI apps is now Agent setup. Your site's address sits on top with Copy, then your connected apps, then every app down the side with its steps beside it. Connecting no longer opens a panel, and Setup guide and Rotate key show that app's steps on the page.
 * Changed: The Saddle menu shows its page names without icons.
+* Changed: The Services page is gone. Add your Unsplash key under Settings → Accounts, and switch on plugins from other developers under Settings → Advanced → Plugins that add tools. Old links to Services open Settings.
 * New: The welcome ends with one more question: do you want visitor stats? Say yes and Saddle Analytics installs from WordPress.org and turns on, without leaving the page. Home offers it under Add-ons too. It is asked only when you may install plugins and Saddle Analytics is not on yet.
 * Fix: A list item your AI app writes now keeps its CSS class and style on the page. They used to reach the block's settings only, so an icon or style set by class disappeared.
 * Fix: A block's anchor now becomes its HTML id, so links to #anchor reach it. An anchor made in the block editor is kept when your AI app edits that block.

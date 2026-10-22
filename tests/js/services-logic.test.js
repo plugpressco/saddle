@@ -1,11 +1,8 @@
 import {
-	groupServices,
 	keyLink,
 	replaceRecord,
 	roleLabel,
-	sections,
 	statusLabel,
-	summaryOf,
 	toolCount,
 } from '../../admin/src/services-logic';
 
@@ -30,74 +27,6 @@ const yoast = {
 	sends: [],
 	tools: [ { name: 'a' } ],
 };
-const analytics = {
-	key: 'analytics',
-	name: 'Saddle Analytics',
-	description: '',
-	kind: 'addon',
-	source: 'plugpress',
-	status: 'active',
-	tools: [],
-};
-
-describe( 'sections', () => {
-	it( 'has a title and no note for each kind, in page order', () => {
-		expect( sections() ).toEqual( [
-			{ kind: 'account', title: 'Accounts' },
-			{ kind: 'plugin', title: 'Plugins' },
-			{ kind: 'addon', title: 'Add-ons' },
-		] );
-	} );
-} );
-
-describe( 'groupServices', () => {
-	it( 'groups by kind in page order and drops empty kinds', () => {
-		const groups = groupServices( [ analytics, yoast, unsplash ] );
-		expect( groups.map( ( g ) => g.kind ) ).toEqual( [
-			'account',
-			'plugin',
-			'addon',
-		] );
-		expect( groups.map( ( g ) => g.title ) ).toEqual( [
-			'Accounts',
-			'Plugins',
-			'Add-ons',
-		] );
-		expect( groups[ 1 ].rows ).toEqual( [ yoast ] );
-	} );
-	it( 'keeps the headings when two kinds have records', () => {
-		const groups = groupServices( [ yoast, unsplash ] );
-		expect( groups.map( ( g ) => g.title ) ).toEqual( [
-			'Accounts',
-			'Plugins',
-		] );
-	} );
-	it( 'drops the heading when only one kind has records', () => {
-		const groups = groupServices( [
-			unsplash,
-			{ ...unsplash, key: 'pexels', name: 'Pexels' },
-		] );
-		expect( groups ).toHaveLength( 1 );
-		expect( groups[ 0 ].kind ).toBe( 'account' );
-		expect( groups[ 0 ].title ).toBe( '' );
-		expect( groups[ 0 ].rows ).toHaveLength( 2 );
-	} );
-	it( 'carries no section note', () => {
-		const groups = groupServices( [ yoast, unsplash ] );
-		groups.forEach( ( g ) => expect( g ).not.toHaveProperty( 'note' ) );
-	} );
-	it( 'copes with nothing, and ignores unknown kinds', () => {
-		expect( groupServices( null ) ).toEqual( [] );
-		expect( groupServices( [] ) ).toEqual( [] );
-		expect( groupServices( [ { key: 'x', kind: 'weird' } ] ) ).toEqual(
-			[]
-		);
-		// An unknown kind does not count towards "two kinds".
-		const groups = groupServices( [ yoast, { key: 'x', kind: 'weird' } ] );
-		expect( groups ).toHaveLength( 1 );
-		expect( groups[ 0 ].title ).toBe( '' );
-	} );
-} );
 
 describe( 'statusLabel', () => {
 	it( 'says one word or two for each status', () => {
@@ -129,30 +58,6 @@ describe( 'statusLabel', () => {
 				expect( label ).not.toMatch( /tool|·|send|leaves/i );
 			}
 		);
-	} );
-} );
-
-describe( 'summaryOf', () => {
-	it( 'is the service’s own description, whole', () => {
-		expect( summaryOf( unsplash ) ).toBe( 'Stock photos' );
-		const long =
-			'This site’s own traffic analytics — visitors, sources, pages, AI referrals and AI crawlers. Read-only.';
-		expect( summaryOf( { ...analytics, description: long } ) ).toBe( long );
-	} );
-	it( 'names the kind when there is no description', () => {
-		expect( summaryOf( { kind: 'account', description: '' } ) ).toBe(
-			'Outside service'
-		);
-		expect( summaryOf( { kind: 'plugin', description: '  ' } ) ).toBe(
-			'Plugin'
-		);
-		expect( summaryOf( analytics ) ).toBe( 'PlugPress add-on' );
-		expect( summaryOf( { kind: 'addon', source: 'third-party' } ) ).toBe(
-			'Third-party add-on'
-		);
-	} );
-	it( 'copes with no record', () => {
-		expect( summaryOf( null ) ).toBe( '' );
 	} );
 } );
 

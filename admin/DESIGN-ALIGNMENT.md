@@ -188,7 +188,7 @@ The plan and the section maps for Rank, CRM and Analytics are in
   switch (range, size, grouping) stays `SegmentedControl`. Neither carries
   icons.
 - **The menu.** Saddle → Home, then the products (Analytics, Rank, CRM),
-  then a hairline, then Agent setup, Services, Context and Settings. Labels
+  then a hairline, then Agent setup, Context and Settings. Labels
   only, no icons (#369, 2026-10-22, Fahim: "remove icons of submenu of
   saddle"; they had one each since 2026-10-03). The hairline is drawn only when at
   least one product is there: `Saddle_Settings::order_submenu()` gives the
@@ -263,7 +263,6 @@ Iconoir 7.12.1 (MIT) is the family's one icon set: regular style, stroke
 | Rank | `search-engine` | The map in `planning/MODULE-LAYOUT.md` |
 | CRM | `send-mail` | The map in `planning/MODULE-LAYOUT.md` |
 | Agent setup | `sparks` (no longer drawn in the menu) | none |
-| Services | `puzzle` | none |
 | Context | `brain` | none |
 | Settings | `settings` | General (one tab, no row) |
 | Header | notices `bell` | |
@@ -339,7 +338,7 @@ Analytics, CRM, Rank and Pro.
 6. Buttons are a verb and an object ("Add key", "Review and send"). A toast
    states the result ("Saved", "Key added").
 7. An error says what failed, then what to do. No apology.
-8. Use the names on screen today: Saddle → Services, Saddle → Settings,
+8. Use the names on screen today: Saddle → Agent setup, Saddle → Settings,
    Writing assistant, Anthropic key. One word per thing across the family:
    "Visitors" not "Users", "and" not "&".
 9. Exact numbers. Never "100+".
@@ -430,21 +429,24 @@ cards, tiles and chips.
   at once), the list's Setup guide and Rotate key all show that app's steps
   on this page and bring them into view.
 
-## Services (#309 v2)
+## Accounts and plugins that add tools (Settings, #369; Services until then)
 
-- No section notes. Every section is named, "Accounts" / "Plugins" /
-  "Add-ons", even when it is the only one (1.5.0 QA P23: a page of one
-  unnamed list doesn't say what the list is), and nothing under the name.
-- Rows: the name and one status word ("Not set up" · "Ready" · "Active" ·
-  "Off"). An outside account says what it is for first ("Stock photos · Not
-  set up"), because its name alone may not; a plugin's name says it. No
-  letter avatar, no tool count. "Add key" (secondary) only for `needs_key`;
-  every other row is the button that opens the drawer, with a chevron.
-- The drawer: the service's one-line summary under its name, the key form
-  or the on/off switch, "Get a key from <service>", **"Sends to <hosts>"**
-  (the one privacy fact an owner needs; never remove it), and the tools as a
-  collapsed list.
-- Empty page: one grey line, "Nothing here yet."
+Fahim, 2026-10-23: "the services i think useless". The Services page (#291)
+is gone; its two jobs are on Settings, and Home's Add-ons and Works with
+show the rest.
+
+- **Settings → Accounts,** after Safety: one row per outside account, its
+  name and line ("Stock photos · Not set up"). "Add key" (secondary) or
+  "Change key" (link) opens the key form right under the row, inside the
+  same block: the key field, "Get a key from <service>", and **"Sends to
+  <hosts>"** (the one privacy fact an owner needs; never remove it). Saving
+  a key closes it. No drawer. `&section=services`, where every old Services
+  address lands, brings Accounts into view.
+- **Settings → Advanced → Plugins that add tools (n),** only when another
+  developer's plugin adds tools: each one its switch and name, "Sends to",
+  and its tools, folded. `&section=services` opens it too.
+- Saddle's own add-ons and the plugins Saddle edits need nothing from the
+  owner, so Settings does not list them.
 
 ## The welcome (#309)
 
@@ -516,7 +518,7 @@ the pill stays for badges, dots and switches. Blocks carry one faint shadow
 3. **Say nothing rather than say nothing.** A tile reading `—` is worse than no
    tile.
 4. **Plain, task-first names.** WordPress's Saddle submenu picks the page:
-   Home, each installed module, then Agent setup, Services, Context and
+   Home, each installed module, then Agent setup, Context and
    Settings. Inside a module, its sidebar picks the section and the icon tab
    row the page (see "Navigation").
 5. **A choice explains itself where it is made.** An option list carries one

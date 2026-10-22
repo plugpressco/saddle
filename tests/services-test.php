@@ -363,7 +363,7 @@ class Saddle_Services_Test extends WP_UnitTestCase {
 
 		$reason = Saddle_Capabilities::denial_reason( 'saddle/unsplash-search' );
 		$this->assertSame( 'saddle_service_not_set_up', $reason['code'] );
-		$this->assertStringStartsWith( 'Unsplash is not set up. Ask the owner to add a key under Saddle → Services.', $reason['message'] );
+		$this->assertStringStartsWith( 'Unsplash is not set up. Ask the owner to add a key under Saddle → Settings.', $reason['message'] );
 
 		$counts = Saddle_Capabilities::hidden_tool_counts();
 
@@ -527,7 +527,7 @@ class Saddle_Services_Test extends WP_UnitTestCase {
 		$section = Saddle_Services::context_section( array() )[0];
 		$this->assertSame( 'Services on this site', $section['title'] );
 		$text = implode( "\n", $section['lines'] );
-		$this->assertStringContainsString( '- Unsplash: not set up; ask the owner to add a key under Saddle → Services.', $text );
+		$this->assertStringContainsString( '- Unsplash: not set up; ask the owner to add a key under Saddle → Settings.', $text );
 		$this->assertStringNotContainsString( 'Acme Forms', $text, 'An add-on that is off is named once, under Plugins connected to Saddle.' );
 		$this->assertStringContainsString( '- Yoast SEO: detected; use the saddle-yoast-* tools.', $text );
 
@@ -558,19 +558,26 @@ class Saddle_Services_Test extends WP_UnitTestCase {
 
 	/* ------------------------------------------------------------ pages */
 
-	public function test_services_is_a_page_and_old_links_land_on_it() {
-		$this->assertSame( 'services', Saddle_Modules::area_for_page( 'saddle-services' ) );
-		$this->assertSame( array( 'overview' => 'Services' ), Saddle_Modules::areas()['services']['tabs'] );
-		$this->assertSame( Saddle_Modules::url( 'services' ), Saddle_Settings::legacy_target( 'saddle-settings', '', 'services' ) );
-		$this->assertSame( '', Saddle_Settings::legacy_target( 'saddle-settings', '', 'safety' ) );
-		$this->assertSame( '', Saddle_Settings::legacy_target( 'saddle-services', '', 'services' ) );
+	/**
+	 * Services was a page from #291 to #369. Its accounts and add-on switches
+	 * are on Settings, and an old link lands there; `services` stays a
+	 * reserved key, so no module takes the slug.
+	 */
+	public function test_services_is_no_page_and_old_links_land_on_settings() {
+		$this->assertArrayNotHasKey( 'services', Saddle_Modules::areas() );
+		$this->assertContains( 'services', Saddle_Modules::RESERVED );
+		$this->assertSame(
+			add_query_arg( 'section', 'services', Saddle_Modules::url( 'settings' ) ),
+			Saddle_Settings::legacy_target( 'saddle-services', '' )
+		);
+		$this->assertSame( '', Saddle_Settings::legacy_target( 'saddle-settings', '' ), 'Settings is the page now: no loop.' );
 	}
 
-	public function test_the_modules_view_and_owner_admin_line_name_services() {
-		$this->assertStringContainsString( 'Agent setup, Services, Context, Settings.', Saddle_Context::system_context() );
+	public function test_the_owner_admin_line_and_settings_summary_name_where_keys_live() {
+		$this->assertStringContainsString( 'Agent setup, Context, Settings.', Saddle_Context::system_context() );
 		$by_key = array_column( Saddle_Modules_View::all(), null, 'key' );
-		$this->assertArrayHasKey( 'services', $by_key );
-		$this->assertNotEmpty( $by_key['services']['summary'] );
+		$this->assertArrayNotHasKey( 'services', $by_key );
+		$this->assertStringContainsString( 'Unsplash', $by_key['settings']['summary'] );
 	}
 
 	/* ------------------------------------------------------------ readme */
@@ -591,7 +598,7 @@ class Saddle_Services_Test extends WP_UnitTestCase {
 			}
 		}
 		$this->assertGreaterThan( 1, $checked );
-		$this->assertStringContainsString( 'Saddle → Services', $external );
+		$this->assertStringContainsString( 'Saddle → Settings', $external );
 	}
 
 	/* ------------------------------------------------------------ connectors */

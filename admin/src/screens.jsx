@@ -1,15 +1,15 @@
 /**
  * What each Saddle page shows, tab by tab (#274).
  *
- * Five pages (#285, #291):
+ * Four pages (#285; Services went to Settings in #369):
  *
  * - Home: what the apps did, what waits for the owner, and the apps (#309)
  * - Agent setup: the address, the connected apps with their access, and each
  *   app's steps
  * - Context: what every app knows — instructions as named fields, skills,
  *   memory, and what Saddle tells every app automatically
- * - Services: Accounts, Plugins and Add-ons, each row opening a drawer
- * - Settings: one page, in sections
+ * - Settings: one page, in sections, Accounts and the plugins that add tools
+ *   among them
  *
  * A module's page shows the screen its own bundle registered for the tab, or
  * for the page inside it (`saddle.admin.screens`, most specific first), or
@@ -32,7 +32,6 @@ import Home, { HomeSkeleton } from './components/Home';
 import Context from './components/Guidance';
 import ConnectApps, { SetupIntro } from './components/ConnectApps';
 import Apps from './components/ConnectedClients';
-import Services from './components/Services';
 import SettingsForm from './components/SettingsForm';
 import SettingsPage from './components/SettingsPage';
 import { useOauthSettings } from './components/SignInCard';
@@ -376,9 +375,6 @@ export default function Screen( props ) {
 					onRehearsalChanged={ onRehearsalChanged }
 				/>
 			);
-
-		case 'services/overview':
-			return <Services />;
 
 		case 'context/overview':
 			return <Context />;

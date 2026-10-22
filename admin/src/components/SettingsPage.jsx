@@ -4,15 +4,19 @@
  * - Safety: four switches that save the moment they are flipped. A switch
  *   moves at once, says "Saved." when the server agrees, and moves back if it
  *   doesn't (R9, P16).
+ * - Accounts: outside services with a key, such as Unsplash (#369; the
+ *   Services page until then).
  * - Advanced: rarely used things, each collapsed — what each tool may do
- *   (Allow, Ask first or Off, #364), sign-in for
- *   apps, memory limits, recent changes, the connection check.
- *   `&section=signin` (the connect drawer's "Turn it on") opens Sign-in for
- *   apps and scrolls to it. The connection check runs only once opened: it
- *   calls the site back, which on a one-request-at-a-time server would hold
- *   the rest of the page.
+ *   (Allow, Ask first or Off, #364), sign-in for apps, plugins that add
+ *   tools (only when another developer's is installed), memory limits,
+ *   recent changes, the connection check. `&section=signin` (Agent setup's
+ *   "Turn it on") opens Sign-in for apps and scrolls to it;
+ *   `&section=services` (the old Services page's address) brings Accounts
+ *   into view and opens the plugins. The connection check runs only once
+ *   opened: it calls the site back, which on a one-request-at-a-time server
+ *   would hold the rest of the page.
  *
- * Who may do what is chosen per app on AI apps, not here.
+ * Who may do what is chosen per app on Agent setup, not here.
  */
 import {
 	useState,
@@ -43,6 +47,7 @@ import SettingsForm from './SettingsForm';
 import SignInCard, { useOauthSettings } from './SignInCard';
 import ConnectionHealth from './ConnectionHealth';
 import McpDiagnostics from './McpDiagnostics';
+import { Accounts, AddonSwitches, switchable, useServices } from './Services';
 
 // A label with its longer explanation behind a "?".
 const Labelled = ( { children, help } ) => (
@@ -437,35 +442,46 @@ export default function SettingsPage( {
 	children,
 } ) {
 	const [ signInAsked ] = useState( () => wantsSection( 'signin' ) );
+	const [ servicesAsked ] = useState( () => wantsSection( 'services' ) );
 	const signInRef = useRef( null );
+	const services = useServices();
+	const addons = switchable( services.records );
 	// The connection check mounts when first opened and stays after.
 	const [ checkOpened, setCheckOpened ] = useState( false );
 	// The recommended set turns on a Safety switch; remounting Safety reloads it.
 	const [ safetyKey, setSafetyKey ] = useState( 0 );
 	const tools = useMemo( () => runnableTools( caps ), [ caps ] );
 
-	// Bring Sign-in for apps into view. Safety above loads its own data and
-	// grows, so the jump repeats as the page settles, as App does for an
-	// anchor.
+	// Bring Sign-in for apps, or Accounts, into view. Safety above loads its
+	// own data and grows, so the jump repeats as the page settles, as App
+	// does for an anchor.
 	useEffect( () => {
-		if ( ! signInAsked ) {
+		if ( ! signInAsked && ! servicesAsked ) {
 			return undefined;
 		}
 		const timers = [ 0, 400, 1200 ].map( ( delay ) =>
 			setTimeout( () => {
-				if ( signInRef.current ) {
-					signInRef.current.scrollIntoView( { block: 'start' } );
+				const el = signInAsked
+					? signInRef.current
+					: document.getElementById( 'accounts' );
+				if ( el ) {
+					el.scrollIntoView( { block: 'start' } );
 				}
 			}, delay )
 		);
 		return () => timers.forEach( clearTimeout );
-	}, [ signInAsked ] );
+	}, [ signInAsked, servicesAsked ] );
 
 	return (
 		<>
 			<Safety
 				key={ safetyKey }
 				onRehearsalChanged={ onRehearsalChanged }
+			/>
+
+			<Accounts
+				records={ services.records }
+				onChanged={ services.update }
 			/>
 
 			<section className="saddle-section">
@@ -495,6 +511,21 @@ export default function SettingsPage( {
 							<SignIn />
 						</div>
 					</Collapsible>
+					{ addons.length > 0 && (
+						<Collapsible
+							defaultOpen={ servicesAsked }
+							trigger={ sprintf(
+								/* translators: %d: number of plugins. */
+								__( 'Plugins that add tools (%d)', 'saddle' ),
+								addons.length
+							) }
+						>
+							<AddonSwitches
+								records={ addons }
+								onChanged={ services.update }
+							/>
+						</Collapsible>
+					) }
 					<Collapsible trigger={ __( 'Memory limits', 'saddle' ) }>
 						<SettingsForm
 							scope="saddle"

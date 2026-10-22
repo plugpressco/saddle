@@ -1232,7 +1232,7 @@ class Saddle_REST_Admin {
 			'rank-math' => array( __( 'Rank Math', 'saddle' ), __( 'Reads and edits Rank Math’s own SEO fields.', 'saddle' ), array( 'Saddle_Rank_Math', 'is_active' ) ),
 			'aioseo'    => array( __( 'AIOSEO', 'saddle' ), __( 'Reads and edits AIOSEO’s own SEO fields.', 'saddle' ), array( 'Saddle_Aioseo', 'is_active' ) ),
 			'wc'        => array( __( 'WooCommerce', 'saddle' ), __( 'Products and orders.', 'saddle' ), array( 'Saddle_WC', 'is_active' ) ),
-			'unsplash'  => array( __( 'Unsplash', 'saddle' ), __( 'Stock-photo search and import, built into Saddle. Needs an Access Key under Saddle → Services.', 'saddle' ), null ),
+			'unsplash'  => array( __( 'Unsplash', 'saddle' ), __( 'Stock-photo search and import, built into Saddle. Needs an Access Key under Saddle → Settings.', 'saddle' ), null ),
 		);
 		foreach ( $natives as $slug => $native ) {
 			list( $title, $description, $probe ) = $native;

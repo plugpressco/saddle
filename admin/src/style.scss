@@ -2700,55 +2700,21 @@ body.saddle-admin-page {
 	margin-top: 8px;
 }
 
-/* ---------- Services (#291) ---------- */
-// One row per service: its name and one status line. "Add key" is the only
-// button a row carries; any other row is itself the button that opens the
-// drawer, with a chevron at its end.
-.saddle-svc__row.pp-rowlist__row--clickable:focus-visible {
-	// The block clips anything outside a row, so the ring sits inside it.
-	outline: 2px solid var( --s-focus );
-	outline-offset: -2px;
-	box-shadow: none;
-}
-
-.saddle-svc__line {
-	display: flex;
-	align-items: center;
-	gap: var( --pp-space-3 );
+/* ---------- Accounts and plugins that add tools, on Settings (#291, #369) ---------- */
+// An account is a row with "Add key" or "Change key"; the form opens right
+// under it, inside the same block. A plugin that adds tools is its switch
+// and name, what it sends and its tools, folded.
+.saddle-svc__detail {
+	display: grid;
+	gap: var( --pp-space-4 );
 	min-width: 0;
+	padding: 0 var( --pp-space-4 ) var( --pp-space-4 );
 }
 
-.saddle-svc__name {
-	display: flex;
-	flex: 1 1 auto;
-	flex-direction: column;
-	gap: var( --pp-space-05 );
-	min-width: 0;
-}
-
-.saddle-svc__go {
-	flex: 0 0 auto;
-	color: var( --s-fg-subtle );
-}
-
-.saddle-svc__empty {
-	margin: 0;
-	color: var( --s-fg-subtle );
-	font-size: var( --s-text );
-}
-
-// The drawer: the key form or the switch, then the tools, folded. Its one
-// line of what the service is lives in the drawer's head.
 .saddle-svc__sends {
 	margin: 0;
 	color: var( --s-fg-muted );
 	font-size: var( --s-text );
-}
-
-.saddle-svc__detail {
-	display: grid;
-	gap: var( --pp-space-5 );
-	min-width: 0;
 }
 
 .saddle-svc__key {
@@ -2792,6 +2758,17 @@ body.saddle-admin-page {
 	gap: var( --pp-space-2 );
 }
 
+.saddle-svc__addons {
+	display: grid;
+	gap: var( --pp-space-5 );
+}
+
+.saddle-svc__addon {
+	display: grid;
+	gap: var( --pp-space-2 );
+	min-width: 0;
+}
+
 .saddle-svc__switch {
 	display: flex;
 	align-items: center;
@@ -2799,16 +2776,18 @@ body.saddle-admin-page {
 	font-size: var( --s-text );
 }
 
-// The drawer is portaled outside the app root, where Saddle's focus rule
-// does not reach, and the kit draws no ring on this trigger.
+.saddle-svc__name {
+	font-weight: 600;
+}
+
 .saddle-svc__tools .pp-collapsible__trigger:focus-visible {
 	outline: 2px solid var( --s-focus );
 	outline-offset: 2px;
 	border-radius: var( --s-radius );
 }
 
-// The tools: a small bordered list, each tool's name and the role it needs.
-// The tool's id is its tooltip.
+// The tools: a small list, each tool's name and the role it needs. The
+// tool's id is its tooltip.
 .saddle-svc__tool-list {
 	display: grid;
 	margin: 0;

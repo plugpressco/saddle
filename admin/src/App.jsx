@@ -44,7 +44,6 @@ import {
 	legacyUrl,
 	readRoute,
 	routeUrl,
-	servicesSectionUrl,
 	placeFor,
 	resolveSub,
 	resolveTab,
@@ -109,7 +108,7 @@ export default function App() {
 		() =>
 			area.key === 'home'
 				? legacyUrl( AREAS, window.location.hash )
-				: servicesSectionUrl( area, AREAS, window.location.search ),
+				: null,
 		[ area ]
 	);
 	useEffect( () => {

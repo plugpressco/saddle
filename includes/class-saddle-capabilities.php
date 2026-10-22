@@ -563,7 +563,7 @@ class Saddle_Capabilities {
 						'code'    => 'saddle_service_not_set_up',
 						'message' => sprintf(
 							/* translators: 1: service name, such as Unsplash, 2: required access level, 3: this app's access level. */
-							__( '%1$s is not set up, and this tool also needs the "%2$s" access level, but this app only has "%3$s" access. Ask the owner to add a key under Saddle → Services and to change this app\'s access on Saddle → Agent setup. Do not retry until they have.', 'saddle' ),
+							__( '%1$s is not set up, and this tool also needs the "%2$s" access level, but this app only has "%3$s" access. Ask the owner to add a key under Saddle → Settings and to change this app\'s access on Saddle → Agent setup. Do not retry until they have.', 'saddle' ),
 							$account,
 							$level,
 							self::get_tier()
@@ -574,7 +574,7 @@ class Saddle_Capabilities {
 					'code'    => 'saddle_service_not_set_up',
 					'message' => sprintf(
 						/* translators: %s: service name, such as Unsplash. */
-						__( '%s is not set up. Ask the owner to add a key under Saddle → Services. Do not retry until they have.', 'saddle' ),
+						__( '%s is not set up. Ask the owner to add a key under Saddle → Settings. Do not retry until they have.', 'saddle' ),
 						$account
 					),
 				);

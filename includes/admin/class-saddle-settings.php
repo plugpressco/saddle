@@ -84,7 +84,7 @@ class Saddle_Settings {
 	}
 
 	/**
-	 * Keep Agent setup, Services, Context and Settings last in the Saddle menu.
+	 * Keep Agent setup, Context and Settings last in the Saddle menu.
 	 *
 	 * A sibling that adds its own submenu (Saddle Rank does, at priority 20)
 	 * lands after whatever is already there. The modules belong between Dashboard
@@ -103,7 +103,7 @@ class Saddle_Settings {
 		}
 
 		$areas = Saddle_Modules::areas();
-		$last  = array( $areas['connections']['slug'], $areas['services']['slug'], $areas['context']['slug'], $areas['settings']['slug'] );
+		$last  = array( $areas['connections']['slug'], $areas['context']['slug'], $areas['settings']['slug'] );
 		$head  = array();
 		$tail  = array();
 
@@ -132,18 +132,19 @@ class Saddle_Settings {
 
 	/**
 	 * Permissions was a tab of Connections until #285 and is gone: access is
-	 * chosen per app on AI apps. An old link to it
-	 * (`page=saddle-connections&tab=permissions`) goes to AI apps, once,
-	 * before anything is drawn.
+	 * chosen per app on Agent setup. An old link to it
+	 * (`page=saddle-connections&tab=permissions`) goes to Agent setup, once,
+	 * before anything is drawn. Services was a page until #369: WordPress
+	 * refuses an address it no longer knows before `admin_init`, so this also
+	 * runs on `admin_page_access_denied` and sends it to Settings.
 	 */
 	public static function redirect_legacy() {
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Reading which page was asked for; nothing is changed.
 		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( (string) $_GET['page'] ) ) : '';
 		$tab  = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( (string) $_GET['tab'] ) ) : '';
-		$part = isset( $_GET['section'] ) ? sanitize_key( wp_unslash( (string) $_GET['section'] ) ) : '';
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
-		$target = self::legacy_target( $page, $tab, $part );
+		$target = self::legacy_target( $page, $tab );
 		if ( '' !== $target ) {
 			wp_safe_redirect( $target );
 			exit;
@@ -155,17 +156,17 @@ class Saddle_Settings {
 	 *
 	 * @param string $page `admin.php?page=` value.
 	 * @param string $tab  `&tab=` value.
-	 * @param string $section `&section=` value.
 	 * @return string
 	 */
-	public static function legacy_target( $page, $tab, $section = '' ) {
+	public static function legacy_target( $page, $tab ) {
 		if ( 'saddle-connections' === $page && 'permissions' === $tab ) {
 			return Saddle_Modules::url( 'connections' );
 		}
 
-		// Services was a section of Settings until #291.
-		if ( 'saddle-settings' === $page && 'services' === $section ) {
-			return Saddle_Modules::url( 'services' );
+		// Services was a page from #291 to #369: its accounts and add-on
+		// switches are on Settings now.
+		if ( 'saddle-services' === $page ) {
+			return add_query_arg( 'section', 'services', Saddle_Modules::url( 'settings' ) );
 		}
 
 		return '';

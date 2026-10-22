@@ -629,23 +629,7 @@ export default function Home( {
 
 			{ plugins.length > 0 && (
 				<section className="saddle-soft-card">
-					<CardHead
-						title={ __( 'Works with', 'saddle' ) }
-						actions={
-							<Button
-								variant="link"
-								size="sm"
-								onClick={ () =>
-									onNavigate( {
-										area: 'services',
-										tab: 'overview',
-									} )
-								}
-							>
-								{ __( 'Services', 'saddle' ) }
-							</Button>
-						}
-					/>
+					<CardHead title={ __( 'Works with', 'saddle' ) } />
 					<ul className="saddle-home__chips">
 						{ plugins.map( ( p ) => (
 							<li className="saddle-chip" key={ p.key }>
