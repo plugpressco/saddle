@@ -21,7 +21,7 @@ relay. The buyer is a developer or agency already driving WordPress from Claude
 Code or Codex; Saddle's job is to make the page *judgeable*, not to do the
 judging.
 
-Free Saddle **1.6.0** is the build live on WordPress.org (released 2026-10-23, tag `v1.6.0`; 1.5.2 on 2026-10-13, 1.5.0 on 2026-10-04, 1.5.1 on 2026-10-05). 1.4.0 only ever reached staging, so it was skipped and its changelog folded into 1.5.0. (1.1.0 is skipped on purpose: a different 1.1.0 was published on GitHub on 2026-08-02 and withdrawn, and two builds must never share a number.) **Saddle Pro** is a
+Free Saddle **1.6.1** is the build live on WordPress.org (released 2026-10-23, tag `v1.6.1`; 1.6.0 the same day, 1.5.2 on 2026-10-13, 1.5.0 on 2026-10-04, 1.5.1 on 2026-10-05). 1.4.0 only ever reached staging, so it was skipped and its changelog folded into 1.5.0. (1.1.0 is skipped on purpose: a different 1.1.0 was published on GitHub on 2026-08-02 and withdrawn, and two builds must never share a number.) **Saddle Pro** is a
 separate plugin, sold commercially. Free never contains license code, and its
 one upsell is the Get Pro page (amended 2026-10-23, below).
 
