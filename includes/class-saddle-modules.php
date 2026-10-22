@@ -34,7 +34,7 @@ class Saddle_Modules {
 	/**
 	 * Keys a module may not take: Core's own pages.
 	 */
-	const RESERVED = array( 'home', 'connections', 'services', 'context', 'settings' );
+	const RESERVED = array( 'home', 'connections', 'services', 'context', 'settings', 'plans' );
 
 	/**
 	 * Core's pages, in menu order around the modules.
@@ -67,6 +67,16 @@ class Saddle_Modules {
 				'icon'  => 'sparks',
 				'tabs'  => array(
 					'apps' => __( 'Agent setup', 'saddle' ),
+				),
+			),
+			// Get Pro (#373): the plans, last in the menu, only while Saddle
+			// Pro is not active (offers_pro()).
+			'plans'       => array(
+				'slug'  => 'saddle-plans',
+				'title' => __( 'Get Pro', 'saddle' ),
+				'icon'  => 'star',
+				'tabs'  => array(
+					'overview' => __( 'Get Pro', 'saddle' ),
 				),
 			),
 			'context'     => array(
@@ -218,8 +228,24 @@ class Saddle_Modules {
 	}
 
 	/**
+	 * Whether Saddle shows its Get Pro page (#373). The one place free Saddle
+	 * names its paid plans (non-negotiable #3, amended 2026-10-23): a page in
+	 * the menu, nothing else, never while Saddle Pro is active.
+	 *
+	 * @return bool
+	 */
+	public static function offers_pro() {
+		/**
+		 * Filter whether the Saddle menu shows Get Pro.
+		 *
+		 * @param bool $show True unless Saddle Pro is active.
+		 */
+		return (bool) apply_filters( 'saddle_show_get_pro', ! defined( 'SADDLE_PRO_VERSION' ) );
+	}
+
+	/**
 	 * Every page, in menu order: Home, the modules, Agent setup, Context,
-	 * Settings.
+	 * Settings, and Get Pro while offers_pro() says so.
 	 *
 	 * @return array<string,array> Keyed by area; each has `slug`, `title`,
 	 *                             `tabs`, `nav`, `capability`, `module`,
@@ -237,6 +263,9 @@ class Saddle_Modules {
 		$areas['connections'] = $core['connections'];
 		$areas['context']     = $core['context'];
 		$areas['settings']    = $core['settings'];
+		if ( self::offers_pro() ) {
+			$areas['plans'] = $core['plans'];
+		}
 
 		foreach ( $areas as $key => $area ) {
 			$areas[ $key ] = array_merge(

@@ -188,7 +188,8 @@ The plan and the section maps for Rank, CRM and Analytics are in
   switch (range, size, grouping) stays `SegmentedControl`. Neither carries
   icons.
 - **The menu.** Saddle → Home, then the products (Analytics, Rank, CRM),
-  then a hairline, then Agent setup, Context and Settings. Labels
+  then a hairline, then Agent setup, Context and Settings, then Get Pro
+  while Saddle Pro is not active (#373). Labels
   only, no icons (#369, 2026-10-22, Fahim: "remove icons of submenu of
   saddle"; they had one each since 2026-10-03). The hairline is drawn only when at
   least one product is there: `Saddle_Settings::order_submenu()` gives the
@@ -448,6 +449,28 @@ show the rest.
 - Saddle's own add-ons and the plugins Saddle edits need nothing from the
   owner, so Settings does not list them.
 
+## Get Pro (#373)
+
+Fahim, 2026-10-23: "add pricing get pro page with pricing table". He
+amended non-negotiable #3 for exactly this page; nothing else in free
+Saddle names a paid plan.
+
+- The last item in the Saddle menu, "Get Pro", only while Saddle Pro is not
+  active. The header reads "Saddle / Get Pro".
+- One line ("Saddle stays free. A plan adds Saddle Cloud, one AI connection
+  for all your sites, and Saddle Pro on Pro and Reach.") with the sites
+  picker (5 / 20 / 50, a SegmentedControl, opening on 20) at its end.
+- Three soft cards, after saddle.to's pricing page: name, the job line, the
+  price a month at 32/600 with "a month", "Billed yearly, $X a year", the
+  button ("Choose Pro" primary, the others secondary, each opening
+  saddle.to/go/<plan>-<sites>/ in a new tab), then what the plan adds with
+  mint ticks. Pro carries a pink "Saddle Pro" chip and a soft pink ring.
+  Reach's list leads with the month's SEO credits. Equal heights in a row.
+- Under them: "7-day money-back guarantee" with a shield, mint, and
+  "Compare plans on saddle.to".
+- The prices live in `admin/src/get-pro-logic.js`; a price change on
+  saddle.to needs a Saddle release.
+
 ## The welcome (#309)
 
 First run is a conversation, titled "Welcome": Saddle's lines beside its
@@ -473,7 +496,7 @@ pills, "Yes, add it" (or "Yes, turn it on") and "Not now". Yes shows a grey
 | `--s-text` | 13 | everything you read: body, row titles (600), descriptions, meta, hints, buttons, tabs, footer |
 | `--s-text-sm` | 12 | badges, counts, code chips, the uppercase day label |
 | (numbers) | 20 / 600 | stat card values only |
-| `--s-text-hero` | 32 / 600 | Home's three week numbers only (#369) |
+| `--s-text-hero` | 32 / 600 | Home's three week numbers (#369) and Get Pro's prices (#373) |
 
 **Why numbers are 20 (1.5.0 QA P21).** A count is read at a glance, before
 its label, and 20 is the smallest size at which three numbers in a row

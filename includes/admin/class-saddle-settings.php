@@ -84,7 +84,7 @@ class Saddle_Settings {
 	}
 
 	/**
-	 * Keep Agent setup, Context and Settings last in the Saddle menu.
+	 * Keep Agent setup, Context, Settings and Get Pro last in the Saddle menu.
 	 *
 	 * A sibling that adds its own submenu (Saddle Rank does, at priority 20)
 	 * lands after whatever is already there. The modules belong between Dashboard
@@ -104,8 +104,11 @@ class Saddle_Settings {
 
 		$areas = Saddle_Modules::areas();
 		$last  = array( $areas['connections']['slug'], $areas['context']['slug'], $areas['settings']['slug'] );
-		$head  = array();
-		$tail  = array();
+		if ( isset( $areas['plans'] ) ) {
+			$last[] = $areas['plans']['slug'];
+		}
+		$head = array();
+		$tail = array();
 
 		foreach ( $submenu[ self::PAGE_SLUG ] as $item ) {
 			$position = isset( $item[2] ) ? array_search( $item[2], $last, true ) : false;

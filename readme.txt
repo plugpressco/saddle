@@ -128,7 +128,7 @@ Apps can also connect with a pasted key. Saddle uses WordPress Application Passw
 * Design brief: Save a page's design plan and check the page against it.
 * WooCommerce: Update prices, stock, status and categories across many products, with undo.
 
-Every feature in this free plugin stays free.
+Every feature in this free plugin stays free. Saddle → Get Pro shows the plans and their prices, and only while Saddle Pro is not active. It sends nothing; its buttons open saddle.to.
 
 = Credits =
 
@@ -209,6 +209,9 @@ The WordPress.org version never checks for its own updates. The version from plu
 6. Welcome: Saddle looks around your site and helps you connect your first AI app.
 
 == Changelog ==
+
+= 1.6.1 =
+* New: Saddle → Get Pro, the last item in the Saddle menu, shows the Go, Pro and Reach plans for 5, 20 or 50 sites, with their prices billed yearly and a button to each plan's checkout on saddle.to. It is hidden while Saddle Pro is active, sends nothing from your site, and changes nothing else.
 
 = 1.6.0 =
 * Changed: Saddle CRM is now Mailpuff, PlugPress's standalone newsletter plugin. Its tools work as soon as it is active, like Bridle's.

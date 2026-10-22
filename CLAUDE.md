@@ -22,7 +22,8 @@ Code or Codex; Saddle's job is to make the page *judgeable*, not to do the
 judging.
 
 Free Saddle **1.6.0** is the build live on WordPress.org (released 2026-10-23, tag `v1.6.0`; 1.5.2 on 2026-10-13, 1.5.0 on 2026-10-04, 1.5.1 on 2026-10-05). 1.4.0 only ever reached staging, so it was skipped and its changelog folded into 1.5.0. (1.1.0 is skipped on purpose: a different 1.1.0 was published on GitHub on 2026-08-02 and withdrawn, and two builds must never share a number.) **Saddle Pro** is a
-separate plugin, sold commercially. Free never contains license or upsell code.
+separate plugin, sold commercially. Free never contains license code, and its
+one upsell is the Get Pro page (amended 2026-10-23, below).
 
 **The split (decided 2026-09-26, reversing "no builder code in free"):** free
 edits, Pro operates the site. Free carries Gutenberg *and* Divi 5 page editing —
@@ -524,7 +525,15 @@ change. `Tested up to:` moves only when Fahim has verified against a newer WP.
   the owner's word in wp-admin; never accept a chat "yes" in its place.
 - Don't wire up `Saddle_Ecosystem`.
 - Don't put licensing or upsell code in free, and never let a free tool mention
-  Pro or leave a visible gap for a Pro tool (wp.org guidelines 5 and 11). Builder
+  Pro or leave a visible gap for a Pro tool (wp.org guidelines 5 and 11).
+  **One exception, Fahim 2026-10-23 (#373): Saddle → Get Pro**, the last menu
+  item, shows Saddle Cloud's Go, Pro and Reach plans with their prices
+  (`admin/src/get-pro-logic.js`, kept equal to saddle-cloud's
+  `src/shared/plans.ts`) and buttons to saddle.to's checkouts. Nothing else:
+  no notices, no nags, nothing locked, no outbound request; the page is gone
+  while Saddle Pro is active (`Saddle_Modules::offers_pro()`, the
+  `saddle_show_get_pro` filter), and no agent reads about it
+  (`Saddle_Modules_View::all()` and the context skip it). Builder
   code other than Gutenberg and Divi 5 still does not belong here (ROADMAP NO list).
 - Don't edit `includes/lib/wp-mcp/` — it is vendored. Fix upstream and re-vendor.
   **No zip ships the library:** the Gruntfile excludes `includes/lib/**` on
@@ -603,7 +612,8 @@ Remove any sentence that adds no useful information.
 **This repo is PUBLIC** — it is the WordPress.org source repo. Business record
 lives in the private `plugpressco/saddle-planning`, cloned beside this one at
 `../planning`. Never commit pricing, margins, competitor analysis, customer
-detail or internal correspondence here. Engineering docs and the agent skills
+detail or internal correspondence here. The public list prices on the Get
+Pro page (#373) are the one exception: saddle.to shows the same numbers. Engineering docs and the agent skills
 stay public on purpose: a repo where anyone can read the security rules and grep
 for `eval(` is evidence for the "no code execution, no filesystem writes" claim.
 
