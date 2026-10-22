@@ -470,10 +470,13 @@ export default function App() {
 			.finally( () => setPausing( false ) );
 	};
 
-	// Re-saving the current tier re-confirms it on this domain, clearing the
-	// warning — the same effect as saving the level.
+	// The owner expected the address change: the server records this address
+	// as the one the apps' access holds on, which clears the warning.
 	const clearDomainWarning = () => {
-		api( 'preferences', { method: 'POST', data: { tier } } )
+		api( 'preferences', {
+			method: 'POST',
+			data: { confirm_domain: true },
+		} )
 			.then( ( res ) => setDomainWarning( !! res.domain_warning ) )
 			.catch( ( e ) => setError( e.message ) );
 	};

@@ -217,6 +217,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 * New: Analytics is always in the Saddle menu. Until Saddle Analytics is on, its page says what it does and installs it from WordPress.org in one click; then the same page shows your stats.
 * Changed: Get Pro is clearer. The plans sit side by side with their rows lined up, Pro marked with a crown, and each plan shows its sites, AI-app calls a day and SEO credits a month. Four short answers follow.
 * Changed: On a site on this computer, Agent setup marks the apps that need a public site, and picking one shows one short note with the apps that run here.
+* Fix: Mark as expected on the notice that the site's address changed now clears it. Since each app got its own access, the button did nothing.
 
 = 1.6.1 =
 * New: Saddle → Get Pro, the last item in the Saddle menu, shows the Go, Pro and Reach plans for 5, 20 or 50 sites, with their prices billed yearly and a button to each plan's checkout on saddle.to. It is hidden while Saddle Pro is active, sends nothing from your site, and changes nothing else.
