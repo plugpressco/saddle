@@ -1,6 +1,6 @@
 /**
  * The pure rules of onboarding (#277): resume, the waiting line's backoff and
- * status, the plain-words tool names, Home's Setup block and the K2 fixture.
+ * status, the plain-words tool names and the K2 fixture.
  */
 import {
 	STEPS,
@@ -23,10 +23,6 @@ import {
 	tryPrompt,
 	selfCheckFindings,
 	parseModules,
-	moduleTasks,
-	coreTasks,
-	setupBlock,
-	nextStep,
 } from '../../admin/src/onboarding-logic';
 
 describe( 'the step machine', () => {
@@ -387,7 +383,7 @@ describe( 'the self-check after three minutes', () => {
 	} );
 } );
 
-/* ---------------------------------------------------- modules and Setup */
+/* ------------------------------------------------------------- modules */
 
 // What GET /modules returns (K2), trimmed to what Home reads.
 const MODULES = {
@@ -448,143 +444,6 @@ describe( 'K2 fixture parsing', () => {
 		expect( parseModules( { areas: [ null, { nokey: 1 } ] } ) ).toEqual(
 			[]
 		);
-	} );
-
-	it( 'lists unfinished tasks, holding back one that waits on another', () => {
-		const rows = moduleTasks( parseModules( MODULES ) );
-		expect( rows.map( ( r ) => r.task.id ) ).toEqual( [ 'first-visit' ] );
-		expect( rows[ 0 ].product ).toBe( 'Saddle Analytics' );
-		expect( rows[ 0 ].task.action.external ).toBe( true );
-	} );
-
-	it( 'lists the dependent task once its first task is done', () => {
-		const areas = parseModules( MODULES );
-		areas[ 1 ].setup.tasks[ 1 ].done = true;
-		expect( moduleTasks( areas ).map( ( r ) => r.task.id ) ).toEqual( [
-			'insight',
-		] );
-	} );
-} );
-
-describe( 'Home’s Setup block', () => {
-	const onboarding = ( run = {}, modules = {} ) => ( {
-		first_run: { state: 'skipped', tier_choice: '', ...run },
-		modules,
-	} );
-	const used = { id: 'oauth:1', first_tool_at: 5 };
-
-	it( 'starts with all three undone on a skipped, unconnected site', () => {
-		const tasks = coreTasks( {
-			connections: [],
-			firstRun: { state: 'skipped', tier_choice: '' },
-			tier: 'read',
-		} );
-		expect( tasks.map( ( t ) => [ t.id, t.done ] ) ).toEqual( [
-			[ 'connect', false ],
-			[ 'try', false ],
-			[ 'choose', false ],
-		] );
-	} );
-
-	it( 'derives connect and try from the registry', () => {
-		const connected = coreTasks( {
-			connections: [ { id: 'oauth:1', first_tool_at: 0 } ],
-			firstRun: { state: 'skipped' },
-			tier: 'read',
-		} );
-		expect( connected.map( ( t ) => t.done ) ).toEqual( [
-			true,
-			false,
-			false,
-		] );
-
-		const tried = coreTasks( {
-			connections: [ used ],
-			firstRun: { state: 'skipped' },
-			tier: 'read',
-		} );
-		expect( tried.map( ( t ) => t.done ) ).toEqual( [ true, true, false ] );
-	} );
-
-	it( 'counts access as chosen once any app is above read only', () => {
-		const choose = ( role ) =>
-			coreTasks( {
-				connections: [ { id: 'key:1', role } ],
-				firstRun: { state: 'skipped', tier_choice: '' },
-				tier: 'read',
-			} )[ 2 ].done;
-		expect( choose( 'write' ) ).toBe( true );
-		expect( choose( 'read' ) ).toBe( false );
-	} );
-
-	it( 'counts the level as chosen once it is on record or above read', () => {
-		const choose = ( firstRun, tier ) =>
-			coreTasks( { connections: [], firstRun, tier } )[ 2 ].done;
-		expect( choose( { state: 'done', tier_choice: 'read' }, 'read' ) ).toBe(
-			true
-		);
-		expect( choose( { state: 'skipped', tier_choice: '' }, 'write' ) ).toBe(
-			true
-		);
-		// A site migrated to done has no choice on record, and is not nagged.
-		expect( choose( { state: 'done', tier_choice: '' }, 'read' ) ).toBe(
-			true
-		);
-		expect( choose( { state: 'skipped', tier_choice: '' }, 'read' ) ).toBe(
-			false
-		);
-	} );
-
-	it( 'shows the block with counts across Core and modules', () => {
-		const block = setupBlock( {
-			connections: [ used ],
-			onboarding: onboarding( { state: 'done', tier_choice: 'read' } ),
-			tier: 'read',
-			areas: parseModules( MODULES ),
-		} );
-		expect( block.visible ).toBe( true );
-		// 3 core + 3 analytics + 2 crm tasks; 3 core + 1 + 2 done.
-		expect( block.total ).toBe( 8 );
-		expect( block.done ).toBe( 6 );
-		expect( block.modules ).toHaveLength( 1 );
-	} );
-
-	it( 'disappears when everything is done', () => {
-		const areas = parseModules( MODULES ).filter(
-			( a ) => a.key !== 'analytics'
-		);
-		const block = setupBlock( {
-			connections: [ used ],
-			onboarding: onboarding( { state: 'done', tier_choice: 'write' } ),
-			tier: 'write',
-			areas,
-		} );
-		expect( block.visible ).toBe( false );
-	} );
-
-	it( 'disappears when the owner hid it', () => {
-		const block = setupBlock( {
-			connections: [],
-			onboarding: onboarding(
-				{},
-				{ home: { setup_hidden_at: 1700000000 } }
-			),
-			tier: 'read',
-			areas: [],
-		} );
-		expect( block.visible ).toBe( false );
-	} );
-
-	it( 'works with no modules route at all', () => {
-		const block = setupBlock( {
-			connections: [],
-			onboarding: onboarding(),
-			tier: 'read',
-			areas: parseModules( null ),
-		} );
-		expect( block.visible ).toBe( true );
-		expect( block.modules ).toEqual( [] );
-		expect( block.total ).toBe( 3 );
 	} );
 } );
 
@@ -693,79 +552,5 @@ describe( 'resuming the connect step', () => {
 				appOf
 			)
 		).toBe( 'app' );
-	} );
-} );
-
-describe( 'Home’s one next step (#309)', () => {
-	const block = ( core, modules = [], visible = true ) => ( {
-		core: core.map( ( [ id, done ] ) => ( { id, title: id, done } ) ),
-		modules,
-		visible,
-	} );
-
-	it( 'suggests nothing when the block is hidden or done', () => {
-		expect(
-			nextStep( block( [ [ 'connect', false ] ], [], false ), [] )
-		).toBeNull();
-		expect( nextStep( block( [ [ 'connect', true ] ] ), [] ) ).toBeNull();
-		expect( nextStep( null, [] ) ).toBeNull();
-	} );
-
-	it( 'asks to connect first', () => {
-		expect(
-			nextStep(
-				block( [
-					[ 'connect', false ],
-					[ 'try', false ],
-				] ),
-				[]
-			)
-		).toEqual( { id: 'connect', app: '' } );
-	} );
-
-	it( 'names the app that has not used Saddle yet for "try"', () => {
-		const step = nextStep(
-			block( [
-				[ 'connect', true ],
-				[ 'try', false ],
-			] ),
-			[
-				{ app: 'cursor', first_tool_at: 9 },
-				{ app: 'claude', first_tool_at: 0 },
-			]
-		);
-		expect( step ).toEqual( { id: 'try', app: 'claude' } );
-	} );
-
-	it( 'names an app that is still Read only for "choose"', () => {
-		const step = nextStep(
-			block( [
-				[ 'connect', true ],
-				[ 'try', true ],
-				[ 'choose', false ],
-			] ),
-			[
-				{ app: 'claude', role: 'write', first_tool_at: 1 },
-				{ app: 'cursor', role: 'read', first_tool_at: 1 },
-			]
-		);
-		expect( step ).toEqual( { id: 'choose', app: 'cursor' } );
-	} );
-
-	it( 'falls back to the first module task once Core is done', () => {
-		const task = { id: 'goal', title: 'Add a goal' };
-		const step = nextStep(
-			block(
-				[ [ 'connect', true ] ],
-				[ { module: 'analytics', product: 'Analytics', task } ]
-			),
-			[ { app: 'claude' } ]
-		);
-		expect( step ).toEqual( {
-			id: 'module',
-			module: 'analytics',
-			product: 'Analytics',
-			task,
-		} );
 	} );
 } );

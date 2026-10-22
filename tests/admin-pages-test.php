@@ -358,6 +358,48 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		wp_deregister_script( 'saddle-admin' );
 	}
 
+	/* ---------------------------------------------- Saddle Analytics (#367) */
+
+	/**
+	 * `saddleData.analytics` on Home, for whoever is signed in.
+	 *
+	 * @return array
+	 */
+	private function analytics_offer() {
+		$this->build_menu();
+		$_GET['page'] = 'saddle';
+		Saddle_Settings::enqueue_assets( get_plugin_page_hookname( 'saddle', 'saddle' ) );
+		$data = implode( "\n", wp_scripts()->get_data( 'saddle-admin', 'before' ) );
+		preg_match( '/window\.saddleData = (\{.*\});/s', $data, $match );
+		wp_deregister_script( 'saddle-admin' );
+		return json_decode( $match[1], true )['analytics'];
+	}
+
+	public function test_an_owner_is_offered_saddle_analytics_while_it_is_not_on() {
+		// Installed or not depends on the test site's plugins folder; either
+		// way an administrator may add it.
+		$offer = $this->analytics_offer();
+		$this->assertContains( $offer['state'], array( 'missing', 'inactive' ) );
+		$this->assertTrue( $offer['canAdd'] );
+		$this->assertStringContainsString( 'page=saddle-analytics', $offer['url'] );
+	}
+
+	public function test_saddle_analytics_is_not_offered_once_it_is_on() {
+		update_option( 'active_plugins', array( 'saddle-analytics/saddle-analytics.php' ) );
+		$offer = $this->analytics_offer();
+		$this->assertSame( 'active', $offer['state'] );
+		$this->assertFalse( $offer['canAdd'] );
+	}
+
+	public function test_saddle_analytics_is_not_offered_to_someone_who_cannot_add_plugins() {
+		$editor = get_user_by( 'id', self::factory()->user->create( array( 'role' => 'editor' ) ) );
+		// Saddle's pages need manage_options; an editor given only that may
+		// still not install or turn on plugins.
+		$editor->add_cap( 'manage_options' );
+		wp_set_current_user( $editor->ID );
+		$this->assertFalse( $this->analytics_offer()['canAdd'] );
+	}
+
 	/* -------------------------------------------------------------- palette */
 
 	public function test_the_palette_is_registered_but_not_enqueued_until_asked() {
