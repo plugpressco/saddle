@@ -37,7 +37,7 @@ class Saddle_Services_Test extends WP_UnitTestCase {
 		$this->within_abilities_init(
 			static function () {
 				$all = wp_get_abilities();
-				foreach ( array( 'acme/get-report', 'saddle/acme-get-report', 'stirrup/list-contacts', 'saddle/stirrup-list-contacts' ) as $name ) {
+				foreach ( array( 'acme/get-report', 'saddle/acme-get-report', 'mailpuff/list-contacts', 'saddle/mailpuff-list-contacts' ) as $name ) {
 					if ( isset( $all[ $name ] ) ) {
 						wp_unregister_ability( $name );
 					}
@@ -86,13 +86,13 @@ class Saddle_Services_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Enrol a plugin by slug with one tool. A third-party slug is Acme's; `stirrup`
+	 * Enrol a plugin by slug with one tool. A third-party slug is Acme's; `mailpuff`
 	 * is first-party.
 	 */
 	private function enrol( $slug ) {
 		$tool = array(
-			'acme'    => array( 'acme/get-report', 'Get report', 'Acme Forms' ),
-			'stirrup' => array( 'stirrup/list-contacts', 'List contacts', 'Stirrup' ),
+			'acme'     => array( 'acme/get-report', 'Get report', 'Acme Forms' ),
+			'mailpuff' => array( 'mailpuff/list-contacts', 'List contacts', 'Mailpuff' ),
 		)[ $slug ];
 
 		add_filter(
@@ -169,7 +169,7 @@ class Saddle_Services_Test extends WP_UnitTestCase {
 	public function test_there_is_one_record_per_source_with_its_status_computed() {
 		add_filter( 'saddle_yoast_active', '__return_true' );
 		$this->enrol( 'acme' );
-		$this->enrol( 'stirrup' );
+		$this->enrol( 'mailpuff' );
 
 		$unsplash = $this->record( 'unsplash' );
 		$this->assertSame( 'account', $unsplash['kind'] );
@@ -189,17 +189,17 @@ class Saddle_Services_Test extends WP_UnitTestCase {
 		$this->assertSame( array(), $yoast['sends'] );
 		$this->assertNotEmpty( $yoast['tools'] );
 
-		$stirrup = $this->record( 'stirrup' );
-		$this->assertSame( array( 'addon', 'plugpress', 'active', true, false ), array( $stirrup['kind'], $stirrup['source'], $stirrup['status'], $stirrup['enabled'], $stirrup['can_toggle'] ) );
+		$mailpuff = $this->record( 'mailpuff' );
+		$this->assertSame( array( 'addon', 'plugpress', 'active', true, false ), array( $mailpuff['kind'], $mailpuff['source'], $mailpuff['status'], $mailpuff['enabled'], $mailpuff['can_toggle'] ) );
 		$this->assertSame(
 			array(
 				array(
-					'name'  => 'stirrup-list-contacts',
+					'name'  => 'mailpuff-list-contacts',
 					'title' => 'List contacts',
 					'role'  => 'read',
 				),
 			),
-			$stirrup['tools']
+			$mailpuff['tools']
 		);
 
 		$acme = $this->record( 'acme' );
@@ -476,13 +476,13 @@ class Saddle_Services_Test extends WP_UnitTestCase {
 
 	public function test_key_and_switch_routes_refuse_what_does_not_apply() {
 		add_filter( 'saddle_yoast_active', '__return_true' );
-		$this->enrol( 'stirrup' );
+		$this->enrol( 'mailpuff' );
 
 		$this->assertSame( 404, $this->call( 'POST', '/services/nope/key', array( 'key' => self::KEY ) )->get_status() );
 		$this->assertSame( 404, $this->call( 'POST', '/services/nope/enabled', array( 'enabled' => true ) )->get_status() );
 		$this->assertSame( 400, $this->call( 'POST', '/services/yoast/key', array( 'key' => self::KEY ) )->get_status() );
 		$this->assertSame( 400, $this->call( 'POST', '/services/unsplash/enabled', array( 'enabled' => false ) )->get_status() );
-		$this->assertSame( 400, $this->call( 'POST', '/services/stirrup/enabled', array( 'enabled' => false ) )->get_status(), 'PlugPress add-ons are always on.' );
+		$this->assertSame( 400, $this->call( 'POST', '/services/mailpuff/enabled', array( 'enabled' => false ) )->get_status(), 'PlugPress add-ons are always on.' );
 		$this->assertSame( 400, $this->call( 'POST', '/services/unsplash/enabled', array() )->get_status(), 'enabled is required.' );
 	}
 

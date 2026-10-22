@@ -5,7 +5,7 @@
 > (`saddle-pro/`) adds Divi site operations inside that server. Saddle
 > Analytics and Saddle Rank are sibling plugins that enrol through
 > `saddle_integrations` and surface as `saddle-analytics-*` and `saddle-rank-*`
-> tools. (Saddle CRM left the family on 2026-10-08: it is Stirrup, a
+> tools. (Saddle CRM left the family on 2026-10-08: it is Mailpuff, a
 > standalone PlugPress plugin.) Saddle Cloud is the future opt-in service (no repo
 > yet). **This repo is the core.** The map is the workspace `CLAUDE.md` one
 > level up (`planning/WORKSPACE.md`, private); this file wins on anything it

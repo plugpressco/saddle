@@ -211,6 +211,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 == Changelog ==
 
 = 1.6.0 =
+* Changed: Saddle CRM is now Mailpuff, PlugPress's standalone newsletter plugin. Its tools work as soon as it is active, like Bridle's.
 * New: Ask first. In Saddle → Settings → Advanced → What each tool may do, set any tool to Allow, Ask first or Off. A tool set to Ask first shows you the change and waits under Needs your OK on the Dashboard. It runs only after you approve it there; a yes in the chat is not enough. Each app's access level still applies.
 * New: A recommended set in the same place, applied in one click. Plugins, themes, updates, settings and anything that deletes ask you first, and publishing needs your OK. Content edits stay allowed, and a tool you turned off stays off. Nothing is set until you click.
 * New: A tool added by a later Saddle update, or by a plugin you activate later, asks you first until you choose what it may do. Tools that exist when you update to this version keep working exactly as before.
@@ -228,7 +229,6 @@ The WordPress.org version never checks for its own updates. The version from plu
 * Fixed: Saddle and the WordPress MCP Adapter plugin 0.7.0 can now run on the same site. Activating the adapter next to Saddle stopped with a fatal error, and with both active every page failed. Saddle now serves its own endpoint itself when the adapter is a version it doesn't support yet, and keeps its built-in copy of the adapter out of the way of the official plugin.
 * Changed: Saddle's brand color is now magenta, the same as saddle.to. It shows on the logo, primary buttons, switches when on and the selected access level. Links and greys stay WordPress's own.
 * Changed: Bridle and Bridle KB are PlugPress plugins, so their tools are on as soon as the plugin is active, like Mailyard and SEO. You no longer switch them on under Services.
-* Changed: Saddle CRM is now Stirrup, PlugPress's standalone newsletter plugin. Its tools work as soon as it is active, like Bridle's.
 * Fixed: When a step shows a preview first, such as moving a post to the trash, your AI app now shows you the preview and waits for your yes. Claude Code reads only the start of Saddle's guide, and it could confirm on its own.
 
 = 1.5.1 =
