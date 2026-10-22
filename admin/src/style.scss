@@ -2700,6 +2700,137 @@ body.saddle-admin-page {
 	margin-top: 8px;
 }
 
+/* ---------- Get Pro (#373) ---------- */
+// The plans after saddle.to's pricing page: a line and the size picker,
+// three soft cards (Pro ringed in pink), and the money-back line.
+.saddle-plans {
+	display: grid;
+	gap: var( --pp-space-5 );
+}
+
+.saddle-plans__head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: var( --pp-space-4 );
+}
+
+.saddle-plans__lede {
+	flex: 1 1 320px;
+	margin: 0;
+	font-size: var( --s-text );
+	line-height: 1.55;
+	color: var( --s-fg-subtle );
+}
+
+.saddle-plans__cards {
+	display: grid;
+	grid-template-columns: minmax( 0, 1fr );
+	gap: var( --pp-space-4 );
+
+	@media ( min-width: 900px ) {
+		grid-template-columns: repeat( 3, minmax( 0, 1fr ) );
+	}
+}
+
+.saddle-plan {
+	gap: var( --pp-space-3 );
+	align-content: start;
+
+	&.is-pro {
+		box-shadow: 0 0 0 2px var( --saddle-pop-pink ), var( --s-card-edge );
+	}
+}
+
+.saddle-plan__head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var( --pp-space-2 );
+}
+
+.saddle-plan__job,
+.saddle-plan__billed,
+.saddle-plan__lead {
+	margin: 0;
+	font-size: var( --s-text );
+	color: var( --s-fg-subtle );
+}
+
+.saddle-plan__lead {
+	margin-block-start: var( --pp-space-2 );
+	font-weight: 600;
+	color: var( --s-fg );
+}
+
+.saddle-plan__price {
+	display: flex;
+	align-items: baseline;
+	gap: var( --pp-space-1 );
+	margin: var( --pp-space-2 ) 0 0;
+}
+
+.saddle-plan__amount {
+	font-size: var( --s-text-hero );
+	font-weight: 600;
+	line-height: 1.1;
+	letter-spacing: -0.02em;
+	font-variant-numeric: tabular-nums;
+	color: var( --s-fg );
+}
+
+.saddle-plan__per {
+	font-size: var( --s-text );
+	color: var( --s-fg-subtle );
+}
+
+.saddle-plan__buy {
+	justify-content: center;
+	width: 100%;
+}
+
+.saddle-plan__items {
+	display: grid;
+	gap: var( --pp-space-2 );
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	font-size: var( --s-text );
+	line-height: 1.45;
+
+	li {
+		display: flex;
+		align-items: flex-start;
+		gap: var( --pp-space-2 );
+		margin: 0;
+	}
+}
+
+.saddle-plan__tick {
+	flex: none;
+	margin-block-start: 1px;
+	color: var( --saddle-pop-mint-ink );
+}
+
+.saddle-plans__foot {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: var( --pp-space-3 );
+	margin: 0;
+	font-size: var( --s-text );
+}
+
+.saddle-plans__refund {
+	display: inline-flex;
+	align-items: center;
+	gap: var( --pp-space-2 );
+	color: var( --saddle-pop-mint-ink );
+	font-weight: 600;
+}
+
 /* ---------- Accounts and plugins that add tools, on Settings (#291, #369) ---------- */
 // An account is a row with "Add key" or "Change key"; the form opens right
 // under it, inside the same block. A plugin that adds tools is its switch

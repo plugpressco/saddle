@@ -25,6 +25,11 @@ class Saddle_Modules_View {
 	public static function all() {
 		$areas = array();
 		foreach ( array_keys( Saddle_Modules::areas() ) as $key ) {
+			// Get Pro is for the owner's eyes only: never in what an agent
+			// reads (#373).
+			if ( 'plans' === $key ) {
+				continue;
+			}
 			$areas[] = self::one( $key );
 		}
 

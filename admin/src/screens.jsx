@@ -10,6 +10,7 @@
  *   memory, and what Saddle tells every app automatically
  * - Settings: one page, in sections, Accounts and the plugins that add tools
  *   among them
+ * - Get Pro: Saddle Cloud's plans, while Saddle Pro is not active (#373)
  *
  * A module's page shows the screen its own bundle registered for the tab, or
  * for the page inside it (`saddle.admin.screens`, most specific first), or
@@ -29,6 +30,7 @@ import { api, saddleData } from './api';
 import { findScreen } from './frame-logic';
 import { findArea, subtabsOf, withArg } from './routes';
 import Home, { HomeSkeleton } from './components/Home';
+import GetPro from './components/GetPro';
 import Context from './components/Guidance';
 import ConnectApps, { SetupIntro } from './components/ConnectApps';
 import Apps from './components/ConnectedClients';
@@ -378,6 +380,9 @@ export default function Screen( props ) {
 
 		case 'context/overview':
 			return <Context />;
+
+		case 'plans/overview':
+			return <GetPro />;
 	}
 
 	return null;
