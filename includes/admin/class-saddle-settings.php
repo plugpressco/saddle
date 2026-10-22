@@ -368,6 +368,49 @@ class Saddle_Settings {
 	}
 
 	/**
+	 * Saddle Analytics, for the welcome's question and Home's Add-ons (#367):
+	 * whether it is on, installed but off, or missing, and whether this owner
+	 * may add it from Saddle's pages.
+	 *
+	 * The page adds it through WordPress's own plugins REST endpoint
+	 * (`POST /wp/v2/plugins`), signed in as the owner, exactly as the block
+	 * directory installs a block: WordPress downloads the package
+	 * WordPress.org names. Saddle writes no file, and a Saddle key cannot
+	 * reach that route. Never offered on a network, where installing is the
+	 * network admin's.
+	 *
+	 * @return array { state: active|inactive|missing, canAdd: bool, url: string, manualUrl: string }
+	 */
+	private static function analytics_offer() {
+		$file = 'saddle-analytics/saddle-analytics.php';
+		if ( ! function_exists( 'is_plugin_active' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+		if ( is_plugin_active( $file ) ) {
+			$state = 'active';
+		} elseif ( file_exists( WP_PLUGIN_DIR . '/' . $file ) ) {
+			$state = 'inactive';
+		} else {
+			$state = 'missing';
+		}
+		$allowed = ! is_multisite()
+			&& current_user_can( 'activate_plugins' )
+			&& ( 'missing' !== $state || current_user_can( 'install_plugins' ) );
+
+		return array(
+			'state'     => $state,
+			'canAdd'    => 'active' !== $state && $allowed,
+			'url'       => esc_url_raw( admin_url( 'admin.php?page=saddle-analytics' ) ),
+			// Where the owner can do it by hand when the page can't.
+			'manualUrl' => esc_url_raw(
+				'missing' === $state
+					? admin_url( 'plugin-install.php?s=saddle-analytics&tab=search&type=term' )
+					: admin_url( 'plugins.php' )
+			),
+		);
+	}
+
+	/**
 	 * Enqueue the built React bundle on the Saddle page only.
 	 *
 	 * @param string $hook_suffix Current admin page hook.
@@ -523,6 +566,9 @@ class Saddle_Settings {
 					'areas'        => self::areas_for_app(),
 					// The notices for this page and tab, most severe first.
 					'notices'      => Saddle_Notices::for_screen( 'saddle', $area . '/' . $tab ),
+					// Saddle Analytics: on, off or missing, and whether this
+					// owner may add it here (the welcome, Home's Add-ons).
+					'analytics'    => self::analytics_offer(),
 				)
 			) . ';',
 			'before'
