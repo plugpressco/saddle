@@ -136,6 +136,11 @@ class Saddle_Context {
 
 		if ( 'read' !== $tier ) {
 			$lines[] = '- ' . __( 'Every change you make is recorded. If one went wrong, saddle/recall-changes lists it with an id, and saddle/undo-changes puts back what it replaced (preview first, then confirm).', 'saddle' );
+
+			$asking = class_exists( 'Saddle_Tool_Modes' ) ? Saddle_Tool_Modes::context_line() : '';
+			if ( '' !== $asking ) {
+				$lines[] = '- ' . $asking;
+			}
 		}
 
 		foreach ( self::withheld_tools_lines() as $line ) {
@@ -259,6 +264,8 @@ class Saddle_Context {
 		$lines[] = '- ' . __( 'A 401 saying the key was rejected means the sign-in key was revoked or rotated. Ask the user to reconnect this app from Saddle → AI apps (or paste the fresh setup if they just rotated the key).', 'saddle' );
 		$lines[] = '- ' . __( 'A 401 saying no key arrived usually means the web server strips the Authorization header. Ask the user to open Saddle → Settings → Connection check and run it — it can fix this automatically on most hosts.', 'saddle' );
 		$lines[] = '- ' . __( 'A destructive tool answering with a preview and a confirm_token is NOT an error — that is the approval gate. Show the user the preview; call again with the token only after they agree.', 'saddle' );
+		$lines[] = '- ' . __( 'Plugins and themes are installed only from the WordPress.org directory, by slug (search-plugins finds a plugin), and arrive inactive: activating is a separate, confirmed step (activate-plugin or activate-theme). Saddle never installs from a zip or a URL and never deletes a plugin or theme, so send the user to wp-admin for those.', 'saddle' );
+		$lines[] = '- ' . __( 'update-core applies minor WordPress releases, and a major release only when the owner has turned on "Major WordPress releases" in Saddle → Settings. A refusal for a major release is that setting: tell the user, do not retry.', 'saddle' );
 		$lines[] = '';
 
 		// Recent-changes recall: what connected agents changed lately, from

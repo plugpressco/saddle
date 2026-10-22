@@ -195,9 +195,30 @@ zip from WordPress.org (sha256 `001e0a44…0c53b4`), built-in transport.
 
 Versions: 2024-11-05, 2025-06-18 and 2025-11-25 negotiate; 2025-03-26 is a note.
 
+### Script, 2026-10-14
+
+WordPress Playground CLI 3.1.57, WordPress 7.1, PHP 8.3, the wporg zip built
+from #365 (Ask first, #364), built-in transport. The recommended set was on,
+so `delete-post` asked the owner first.
+
+| Credential | Apps | Result |
+|---|---|---|
+| Key, Edit content, `--write` | All six profiles, key and sign-in rows | Pass. The gated write returned a preview with `needs_owner_approval`; nothing changed |
+
+Versions: 2024-11-05, 2025-06-18 and 2025-11-25 negotiate; 2025-03-26 is a note.
+
+### Ask first with real apps, 2026-10-14
+
+The same site. `delete-post` set to Ask first; the app asked to trash a draft.
+
+| App | Version | Path | Result |
+|---|---|---|---|
+| Claude Code | 2.1.296 | key | Pass. It told the user the change waits under Needs your OK with the Dashboard link. After "Yes, go ahead" in the chat it tried, the site refused (`saddle_awaiting_owner`), it said a yes in the chat does not count, and the post stayed a draft. After the owner approved, it trashed the post. Activity: one "You approved…" line, one "Moved post #10 … to the trash." line |
+| Codex | 0.157.0 | key | Pass. Same as Claude Code: it pointed to Needs your OK, then trashed the draft after the owner approved. Run with `tools.saddle-delete-post.approval_mode="approve"` (see below) |
+
 ### Real apps
 
-The same site as the script run above. Sign-in was on for the sign-in rows;
+The same site as the 2026-10-05 script run above. Sign-in was on for the sign-in rows;
 the site is plain HTTP with `WP_ENVIRONMENT_TYPE=local`.
 The Codex and Cursor rows ran later the same day, on the 1.5.1 zip with
 #334's three files on top, which is `main` at a0f8676.
@@ -206,7 +227,7 @@ The Codex and Cursor rows ran later the same day, on the 1.5.1 zip with
 |---|---|---|---|---|---|---|---|---|
 | 2026-10-05 | Claude Code | 2.1.289 | key | Pass | Pass: names the site, lists the four drafts, explains its access | **Fail on 1.5.1:** got the preview and confirmed in the same turn without asking (#333). **Pass on `main` since #334 (a0f8676):** quotes the preview, asks, trashes only after "yes" | Pass: says the level needed and points to AI apps; nothing changes | Activity shows "Moved post #4 … to the trash." with Undo. Called the levels "write" and "read" (since #334 it says "Edit content", "Read only") |
 | 2026-10-05 | Claude Code | 2.1.289 | sign-in | Pass: client metadata document, consent screen, Edit content chosen | Pass | **Fail on 1.5.1**, as with the key (#333) | Pass | On Playground, needed a test-only DNS stand-in for `claude.ai` (#335) |
-| | Claude | | sign-in | | | | | Not run: needs an HTTPS address the web app can reach |
+| 2026-10-14 | Claude (claude.ai connector) | 2026-10 | sign-in | Pass: the connector on Fahim's claude.ai account, signed in by address to https://saddle.to (Saddle 1.5.1, built-in transport); self-check says `oauth`, Manage the site | Pass: names the site, 12 pages, 117 tools | Pass: a test draft (#417) previewed "Move post #417 … to the trash", nothing changed; confirmed with the token; trashed | Not run: it would mean lowering the role on the live site | Run from Claude Code, which uses the claude.ai connector through the same Anthropic connector service as Claude web and desktop. On 1.5.1 the preview's own text predates #334, so it does not yet say to ask the user first; 1.5.2 does |
 | | ChatGPT | | sign-in | | | | | Not run: needs an HTTPS address the web app can reach |
 | 2026-10-05 | Codex | 0.157.0 | key | Pass | Pass: calls get-instructions first, names the site and the drafts, says "Edit content" | Pass on `main` (a0f8676): quotes the preview, "Nothing has changed yet. Shall I confirm?", trashes only after "Yes, confirm" | Pass: says Read only and links to AI apps; nothing changes | Codex asks its own approval for a destructive tool. With approvals off it refuses `delete-post` before Saddle sees it; the run passed that one tool through (see below) to test Saddle's gate |
 | 2026-10-05 | Codex | 0.157.0 | sign-in | Pass: client metadata document `chatgpt.com/oauth/codex/client.json`, consent screen, Edit content; client `codex-mcp-client 0.157.0` | Pass | Pass on `main`, as with the key | Pass | On Playground, needed the DNS stand-in for `chatgpt.com` (#335) |

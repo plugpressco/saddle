@@ -19,6 +19,8 @@ $saddle_options = array(
 	'saddle_onboarded',
 	'saddle_user_context',      // Saddle_Context::USER_OPTION.
 	'saddle_disabled_abilities', // Saddle_Capabilities::DISABLED_OPTION.
+	'saddle_ask_abilities',      // Saddle_Tool_Modes::ASK_OPTION.
+	'saddle_known_abilities',    // Saddle_Tool_Modes::KNOWN_OPTION.
 	'saddle_drafts_only',       // Saddle_Capabilities::DRAFTS_ONLY_OPTION.
 	'saddle_rehearsal',         // Saddle_Capabilities::REHEARSAL_OPTION.
 	'saddle_paused',            // Saddle_Capabilities::PAUSED_OPTION.

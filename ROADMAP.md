@@ -50,13 +50,24 @@ when it is picked up; this file names direction, not tickets.
    **Added 2026-09-27 (evening), in this order, all free:** updates and health
    (`list-updates`, `update-plugin`, `update-theme`, `set-auto-update`,
    `get-site-health`; applied through core's own updater with its temporary
-   backup and fatal-check rollback, admin tier, gated, never an install or a
-   core update); `undo-changes` (#181) and rehearsal mode (#180); custom post
+   backup and fatal-check rollback, admin tier, gated; installs and core
+   updates came later, below); `undo-changes` (#181) and rehearsal mode (#180); custom post
    types (#137); menus (#244); template, part and pattern writes (#172). Ordered
    by what people use and what saves time, then by what keeps "safe on a live
    site" true as rivals ship undo and snapshots. The research is in the
    2026-09-27 plan; the updates decision revises the morning's "reported, never
    run" and is written into `CLAUDE.md`'s hard line with the code.
+
+   **Added 2026-10-12, in this order, all free, next to the updates (Fahim):**
+   `search-plugins` (#348, built), `install-plugin` (#349, built), `install-theme` (#350, built),
+   `update-core` (#351, built), `update-translations` (#352, built). Installs come only from
+   the WordPress.org directory, by slug, through WordPress's own installer in
+   the background runner, and arrive inactive; activating stays its own
+   confirmed step, and nothing deletes. Core updates are minor and security
+   releases, plus a major release only when the owner turns on "Major
+   WordPress releases" in Saddle → Settings, off by default (#359). No zip or URL
+   installs, no file editors, no delete tools. The hard line was rewritten
+   first (#347).
 3. **The agency workflow.** Divi 5 page editing moves to free (2026-09-26 split:
    free edits, Pro operates the site). Divi design-system export/import as JSON (Pro) —
    global colors, fonts, variables, presets, Theme Builder templates, library

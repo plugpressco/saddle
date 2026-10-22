@@ -27,4 +27,5 @@ export const safetyPrefs = ( res ) => ( {
 	drafts_only: !! ( res && res.drafts_only ),
 	rehearsal: !! ( res && res.rehearsal ),
 	domain_enforced: !! ( res && res.domain && res.domain.enforced ),
+	core_major_updates: !! ( res && res.core_major_updates ),
 } );

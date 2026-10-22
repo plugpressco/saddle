@@ -3,7 +3,7 @@
  * Plugin Name:       Saddle
  * Plugin URI:        https://saddle.to
  * Description:       Let Claude, ChatGPT and Cursor work on your site through MCP. Each app starts read-only, and every delete asks you first.
- * Version:           1.5.1
+ * Version:           1.5.2
  * Requires at least: 6.9
  * Requires PHP:      7.4
  * Author:            PlugPress
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SADDLE_VERSION', '1.5.1' );
+define( 'SADDLE_VERSION', '1.5.2' );
 define( 'SADDLE_FILE', __FILE__ );
 define( 'SADDLE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SADDLE_URL', plugin_dir_url( __FILE__ ) );
@@ -119,8 +119,12 @@ require_once SADDLE_DIR . 'includes/class-saddle-journal.php';
 require_once SADDLE_DIR . 'includes/class-saddle-undo.php';
 require_once SADDLE_DIR . 'includes/class-saddle-undo-steps.php';
 require_once SADDLE_DIR . 'includes/class-saddle-rehearsal.php';
+require_once SADDLE_DIR . 'includes/class-saddle-tool-modes.php';
 require_once SADDLE_DIR . 'includes/class-saddle-post-types.php';
 require_once SADDLE_DIR . 'includes/class-saddle-update-runner.php';
+require_once SADDLE_DIR . 'includes/class-saddle-install-runner.php';
+require_once SADDLE_DIR . 'includes/class-saddle-offer-runner.php';
+require_once SADDLE_DIR . 'includes/class-saddle-directory.php';
 require_once SADDLE_DIR . 'includes/class-saddle-unsplash.php';
 require_once SADDLE_DIR . 'includes/class-saddle-connection.php';
 require_once SADDLE_DIR . 'includes/class-saddle-http.php';
@@ -176,6 +180,7 @@ require_once SADDLE_DIR . 'includes/admin/class-saddle-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-notices-admin.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-connections-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-approvals-rest.php';
+require_once SADDLE_DIR . 'includes/admin/class-saddle-tool-modes-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-services-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-onboarding-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-modules-rest.php';
@@ -306,6 +311,7 @@ final class Saddle {
 		Saddle_Access::register();
 		add_action( 'rest_api_init', array( 'Saddle_Connections_REST', 'register_routes' ) );
 		add_action( 'rest_api_init', array( 'Saddle_Approvals_REST', 'register_routes' ) );
+		add_action( 'rest_api_init', array( 'Saddle_Tool_Modes_REST', 'register_routes' ) );
 		add_action( 'rest_api_init', array( 'Saddle_Services_REST', 'register_routes' ) );
 		add_action( 'rest_api_init', array( 'Saddle_Modules_REST', 'register_routes' ) );
 
@@ -324,6 +330,7 @@ final class Saddle {
 		// Rehearsal mode wraps every write tool at registration, so it has to
 		// be hooked before wp_abilities_api_init fires.
 		Saddle_Rehearsal::init();
+		Saddle_Tool_Modes::init();
 
 		// The MCP surface and abilities require core's Abilities API (WP 6.9+).
 		if ( self::abilities_api_available() ) {
@@ -333,6 +340,8 @@ final class Saddle {
 			require_once SADDLE_DIR . 'includes/abilities/site-editor-writes.php';
 			require_once SADDLE_DIR . 'includes/abilities/site.php';
 			require_once SADDLE_DIR . 'includes/abilities/updates.php';
+			require_once SADDLE_DIR . 'includes/abilities/installs.php';
+			require_once SADDLE_DIR . 'includes/abilities/core-updates.php';
 			require_once SADDLE_DIR . 'includes/abilities/users.php';
 			require_once SADDLE_DIR . 'includes/abilities/context.php';
 			require_once SADDLE_DIR . 'includes/abilities/lint.php';
@@ -358,6 +367,8 @@ final class Saddle {
 			add_action( 'wp_abilities_api_init', 'saddle_register_site_editor_write_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_site_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_update_abilities' );
+			add_action( 'wp_abilities_api_init', 'saddle_register_install_abilities' );
+			add_action( 'wp_abilities_api_init', 'saddle_register_core_update_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_user_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_context_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_lint_abilities' );

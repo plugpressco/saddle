@@ -4,7 +4,7 @@ Tags: mcp, ai, claude, chatgpt, divi
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.5.1
+Stable tag: 1.5.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -92,23 +92,24 @@ These tools stay off until you give an app Manage the site.
 
 * Settings: Change the site title, permalinks and reading options.
 * Plugins and themes: Activate and deactivate plugins and switch the active theme, each after a preview.
-* Updates: See which plugin, theme and WordPress updates are waiting, apply plugin and theme updates through WordPress's own updater, and turn automatic updates on or off per plugin. WordPress keeps a backup and restores a plugin that breaks the site.
+* Install from WordPress.org: Search the WordPress.org plugin directory, and install a plugin or theme from WordPress.org by name after a preview. A new plugin or theme arrives inactive, and turning it on is a separate step. Saddle never installs from a zip file or a link, and never deletes a plugin or theme.
+* Updates: See which plugin, theme and WordPress updates are waiting. Apply plugin, theme, WordPress and translation updates through WordPress's own updater, and turn automatic updates on or off per plugin. WordPress keeps a backup and restores a plugin that breaks the site. A major WordPress release is applied only if you turn on Major WordPress releases in Saddle → Settings. It is off by default, and no app can turn it on.
 * Site Health: Read the results of WordPress's own Site Health checks.
 * Cache: Clear the site cache.
 
 = Safety =
 
 * Access for each app: Choose Read only, Edit content or Manage the site for each connected app. New apps start at Read only.
-* Confirmation: Review a preview before anything is deleted or overwritten, a plugin is turned on or off, or the theme changes.
+* Confirmation: Review a preview before anything is deleted or overwritten, a plugin or theme is installed, a plugin is turned on or off, or the theme changes.
 * Drafts only: Save new posts as drafts until you publish them.
 * Rehearsal: Let an app try anything its level allows while nothing is saved. Each change it would have made shows in the activity log as rehearsed.
-* Tool switches: Turn off any single tool.
+* Tool switches: Set each tool to Allow, Ask first or Off. A tool set to Ask first waits for your approval on the Dashboard, and a yes in the chat is not enough. A recommended set applies this to plugins, themes, updates, settings and deletes in one click. A tool added by a later update asks first until you choose.
 * Pause: Block all AI requests with one switch.
 * Activity log: See every change and every blocked request.
-* Undo: Ask your AI to undo a logged change, or click Undo on it in Home's Activity feed. It restores a page's earlier version, untrashes what was trashed, and puts settings back. A change that someone edited again since is left alone. Permanent deletes and plugin updates cannot be undone.
+* Undo: Ask your AI to undo a logged change, or click Undo on it in Home's Activity feed. It restores a page's earlier version, untrashes what was trashed, and puts settings back. A change that someone edited again since is left alone. Permanent deletes, plugin, WordPress and translation updates, and installs cannot be undone.
 * Protected settings: The site URL, security keys, user roles and admin email cannot be changed.
 
-Saddle never runs code from the AI and has no shell access. Your AI app cannot write or edit files on your server. WordPress itself still saves uploads, applies updates and saves permalink rules the way it always does. The one file Saddle changes is .htaccess, and only when you click Fix it for me in the connection check. That adds one marked block so your server passes sign-in headers to WordPress. Uninstalling Saddle removes it.
+Saddle never runs code from the AI and has no shell access. Your AI app cannot write or edit files on your server. WordPress itself still saves uploads, applies updates, installs plugins and themes from WordPress.org and saves permalink rules the way it always does. The one file Saddle changes is .htaccess, and only when you click Fix it for me in the connection check. That adds one marked block so your server passes sign-in headers to WordPress. Uninstalling Saddle removes it.
 
 = Connecting an app =
 
@@ -185,6 +186,7 @@ Saddle sends no tracking or usage data. It connects to another site only in thes
 4. Unsplash (optional): This runs only after you add your own API key under **Saddle → Services**. Saddle sends your search words or a photo ID to `api.unsplash.com`. It downloads photos from `images.unsplash.com`. Each imported photo gets a caption that credits the photographer, as Unsplash requires. You can edit or remove it. See the [API Guidelines](https://help.unsplash.com/en/articles/2511245-unsplash-api-guidelines), [API Terms](https://unsplash.com/api-terms) and [Privacy Policy](https://unsplash.com/privacy).
 5. OAuth app check (optional): This runs only when OAuth sign-in is on. Saddle reads a public web address the app provides to confirm who the app is. It sends nothing about your site.
 6. Updates and Site Health (optional): When your AI app lists or applies updates, or reads Site Health, WordPress runs its own checks with WordPress.org and downloads the update packages it already offers, from WordPress.org or a plugin's own update server, exactly as the Updates screen does. After updating an active plugin, WordPress loads your own home page once to check for a fatal error.
+7. Plugin and theme directory (optional): When your AI app searches for a plugin, or installs a plugin or theme, WordPress sends the search words or the slug to `api.wordpress.org`, as the **Add New** screens do. Like every WordPress.org request WordPress makes, it includes your WordPress version, language and site address. Saddle keeps search results on your site for an hour. An install downloads the package from `downloads.wordpress.org`. Saddle refuses a package from anywhere else.
 
 The WordPress.org version never checks for its own updates. The version from plugpress.co checks at most once every six hours. It sends only the plugin name and version number.
 
@@ -208,8 +210,23 @@ The WordPress.org version never checks for its own updates. The version from plu
 
 == Changelog ==
 
+= 1.6.0 =
+* New: Ask first. In Saddle → Settings → Advanced → What each tool may do, set any tool to Allow, Ask first or Off. A tool set to Ask first shows you the change and waits under Needs your OK on the Dashboard. It runs only after you approve it there; a yes in the chat is not enough. Each app's access level still applies.
+* New: A recommended set in the same place, applied in one click. Plugins, themes, updates, settings and anything that deletes ask you first, and publishing needs your OK. Content edits stay allowed, and a tool you turned off stays off. Nothing is set until you click.
+* New: A tool added by a later Saddle update, or by a plugin you activate later, asks you first until you choose what it may do. Tools that exist when you update to this version keep working exactly as before.
+* Fix: A list item your AI app writes now keeps its CSS class and style on the page. They used to reach the block's settings only, so an icon or style set by class disappeared.
+* Fix: A block's anchor now becomes its HTML id, so links to #anchor reach it. An anchor made in the block editor is kept when your AI app edits that block.
+* Fix: When your AI app changes only the settings of a paragraph, heading, list item, separator or spacer, such as a drop cap, a heading level or a class, the page now shows the change. It used to keep the old markup.
+* Fix: When sign-in by address cannot read an app's identity because this server cannot look up the app's address, Saddle now says so and suggests a key. It used to say the address pointed to a private network. WordPress Playground and Studio cannot look up outside addresses.
+
 = 1.5.2 =
+* New: Your AI app can search the WordPress.org plugin directory. Each result shows the plugin's version, active installs, rating, last update and the WordPress and PHP versions it needs, and whether it is already installed and active on your site.
+* New: Your AI app can install a plugin from the WordPress.org directory by its name. It shows a preview first, with warnings when the plugin is not tested with your WordPress or has not been updated in two years, and waits for your approval. WordPress's own installer then adds it in the background. The plugin arrives inactive, so turning it on is a separate step you approve. Saddle never installs from a zip file or a link, and never deletes a plugin.
+* New: Your AI app can install a theme from the WordPress.org directory the same way. The theme is not activated. A child theme needs its parent theme installed first, so WordPress never adds a theme you did not see.
+* New: Your AI app can update WordPress itself to a release WordPress offers. Minor and security releases are always allowed. A major release, such as 7.1 to 7.2, is allowed only if you turn on Major WordPress releases in Saddle → Settings. It is off by default, and no app can turn it on. The preview lists active plugins not tested with the new version, and nothing happens until you approve.
+* New: Your AI app can apply the translation updates WordPress offers, after a preview, through WordPress's own language pack updater.
 * Fixed: Saddle and the WordPress MCP Adapter plugin 0.7.0 can now run on the same site. Activating the adapter next to Saddle stopped with a fatal error, and with both active every page failed. Saddle now serves its own endpoint itself when the adapter is a version it doesn't support yet, and keeps its built-in copy of the adapter out of the way of the official plugin.
+* Changed: Saddle's brand color is now magenta, the same as saddle.to. It shows on the logo, primary buttons, switches when on and the selected access level. Links and greys stay WordPress's own.
 * Changed: Bridle and Bridle KB are PlugPress plugins, so their tools are on as soon as the plugin is active, like Mailyard and SEO. You no longer switch them on under Services.
 * Changed: Saddle CRM is now Stirrup, PlugPress's standalone newsletter plugin. Its tools work as soon as it is active, like Bridle's.
 * Fixed: When a step shows a preview first, such as moving a post to the trash, your AI app now shows you the preview and waits for your yes. Claude Code reads only the start of Saddle's guide, and it could confirm on its own.

@@ -253,7 +253,15 @@ class Saddle_Updates_Test extends WP_UnitTestCase {
 
 	public function test_confirm_queues_a_run_and_never_runs_the_upgrader_in_the_request() {
 		$preview = $this->preview();
-		$done    = $this->confirm( $preview['confirm_token'] );
+		$calls   = 0;
+		$count   = static function ( $reply ) use ( &$calls ) {
+			++$calls;
+			return $reply;
+		};
+		add_filter( 'upgrader_pre_download', $count, 1 );
+		add_filter( 'upgrader_pre_install', $count, 1 );
+		$done = $this->confirm( $preview['confirm_token'] );
+		remove_filter( 'upgrader_pre_install', $count, 1 );
 
 		$this->assertNotWPError( $done );
 		$this->assertTrue( $done['queued'] );
@@ -266,6 +274,7 @@ class Saddle_Updates_Test extends WP_UnitTestCase {
 
 		// The hard line: the request that confirmed did not touch a file.
 		$this->assertSame( '1.0.0', $this->installed_version(), 'Confirming must not run the upgrader synchronously.' );
+		$this->assertSame( 0, $calls, 'Nothing reached core\'s upgrader during the confirming request.' );
 		$this->assertNotEmpty( $this->log_entries( 'update-plugin' ), 'Queueing is logged.' );
 	}
 

@@ -49,24 +49,28 @@ class Saddle_REST_Admin {
 				'callback'            => array( __CLASS__, 'update_settings' ),
 				'permission_callback' => array( __CLASS__, 'can_manage' ),
 				'args'                => array(
-					'tier'        => array(
+					'tier'               => array(
 						'type'     => 'string',
 						'required' => false,
 						'enum'     => Saddle_Capabilities::tiers(),
 					),
-					'onboarded'   => array(
+					'onboarded'          => array(
 						'type'     => 'boolean',
 						'required' => false,
 					),
-					'paused'      => array(
+					'paused'             => array(
 						'type'     => 'boolean',
 						'required' => false,
 					),
-					'drafts_only' => array(
+					'drafts_only'        => array(
 						'type'     => 'boolean',
 						'required' => false,
 					),
-					'rehearsal'   => array(
+					'rehearsal'          => array(
+						'type'     => 'boolean',
+						'required' => false,
+					),
+					'core_major_updates' => array(
 						'type'     => 'boolean',
 						'required' => false,
 					),
@@ -631,22 +635,23 @@ class Saddle_REST_Admin {
 	public static function get_settings() {
 		return new WP_REST_Response(
 			array(
-				'tier'           => Saddle_Capabilities::get_site_tier(),
-				'tiers'          => Saddle_Capabilities::tiers(),
-				'default'        => Saddle_Capabilities::DEFAULT_TIER,
-				'onboarded'      => Saddle_Onboarding::is_finished(),
-				'paused'         => Saddle_Capabilities::is_paused(),
-				'domain_warning' => ! Saddle_Capabilities::domain_matches_recorded(),
-				'domain'         => array(
+				'tier'               => Saddle_Capabilities::get_site_tier(),
+				'tiers'              => Saddle_Capabilities::tiers(),
+				'default'            => Saddle_Capabilities::DEFAULT_TIER,
+				'onboarded'          => Saddle_Onboarding::is_finished(),
+				'paused'             => Saddle_Capabilities::is_paused(),
+				'domain_warning'     => ! Saddle_Capabilities::domain_matches_recorded(),
+				'domain'             => array(
 					'current'  => Saddle_Capabilities::current_domain(),
 					'recorded' => Saddle_Capabilities::recorded_tier_domain(),
 					'enforced' => Saddle_Capabilities::is_domain_enforced(),
 				),
-				'drafts_only'    => Saddle_Capabilities::is_drafts_only(),
-				'rehearsal'      => Saddle_Capabilities::is_rehearsal(),
+				'drafts_only'        => Saddle_Capabilities::is_drafts_only(),
+				'rehearsal'          => Saddle_Capabilities::is_rehearsal(),
+				'core_major_updates' => Saddle_Offer_Runner::core_majors_allowed(),
 				// The key itself never leaves the server — only whether one is
 				// set, plus a last-4 hint so the owner can recognize it.
-				'unsplash'       => array(
+				'unsplash'           => array(
 					'configured' => Saddle_Unsplash::is_configured(),
 					'key_hint'   => Saddle_Unsplash::key_hint(),
 				),
@@ -701,6 +706,10 @@ class Saddle_REST_Admin {
 
 		if ( array_key_exists( 'rehearsal', $params ) ) {
 			Saddle_Capabilities::set_rehearsal( (bool) $request->get_param( 'rehearsal' ) );
+		}
+
+		if ( array_key_exists( 'core_major_updates', $params ) ) {
+			Saddle_Offer_Runner::set_core_majors( (bool) $request->get_param( 'core_major_updates' ) );
 		}
 
 		// Key absent from the body ⇒ untouched; '' or null ⇒ cleared;
@@ -1063,8 +1072,9 @@ class Saddle_REST_Admin {
 	 * @return WP_REST_Response
 	 */
 	public static function get_capabilities() {
-		$catalog   = array();
-		$abilities = function_exists( 'wp_get_abilities' ) ? wp_get_abilities() : array();
+		$catalog     = array();
+		$abilities   = function_exists( 'wp_get_abilities' ) ? wp_get_abilities() : array();
+		$recommended = Saddle_Tool_Modes::recommended();
 
 		foreach ( $abilities as $key => $ability ) {
 			$name = is_string( $key ) ? $key : $ability->get_name();
@@ -1100,6 +1110,13 @@ class Saddle_REST_Admin {
 				'lane'        => $lane,
 				'category'    => self::category_for( $short, $name ),
 				'enabled'     => Saddle_Capabilities::is_ability_enabled( $short ),
+				// Allow, Ask first or Off (#364). Ask first is offered only for a
+				// tool that changes something; `new` marks one that arrived as
+				// Ask first because the owner has not chosen for it yet.
+				'mode'        => Saddle_Tool_Modes::mode( $short ),
+				'askable'     => ! $readonly,
+				'new'         => Saddle_Tool_Modes::is_new( $short ),
+				'recommended' => in_array( $short, $recommended, true ),
 				// False when the tool cannot run on this site: its plugin is
 				// not active, or its service has no key. Such a tool is also
 				// left out of tools/list.

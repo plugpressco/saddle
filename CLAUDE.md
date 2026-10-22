@@ -21,7 +21,7 @@ relay. The buyer is a developer or agency already driving WordPress from Claude
 Code or Codex; Saddle's job is to make the page *judgeable*, not to do the
 judging.
 
-Free Saddle **1.5.0** is the build live on WordPress.org (released 2026-10-04, tag `v1.5.0`). 1.4.0 only ever reached staging, so it was skipped and its changelog folded into 1.5.0. (1.1.0 is skipped on purpose: a different 1.1.0 was published on GitHub on 2026-08-02 and withdrawn, and two builds must never share a number.) **Saddle Pro** is a
+Free Saddle **1.5.2** is the build live on WordPress.org (released 2026-10-13, tag `v1.5.2`; 1.5.0 on 2026-10-04, 1.5.1 on 2026-10-05). 1.4.0 only ever reached staging, so it was skipped and its changelog folded into 1.5.0. (1.1.0 is skipped on purpose: a different 1.1.0 was published on GitHub on 2026-08-02 and withdrawn, and two builds must never share a number.) **Saddle Pro** is a
 separate plugin, sold commercially. Free never contains license or upsell code.
 
 **The split (decided 2026-09-26, reversing "no builder code in free"):** free
@@ -92,6 +92,12 @@ and finding each fails at least one. Check every change against all three.
    something they have to turn off. Under the ALLOW / ASK / BLOCK model (product
    plan, Phase 2) this means every write tool starts BLOCK on a new install. A
    starting preset may be offered; it is never pre-applied. Decided 2026-09-27.
+   *Built in #364 (2026-10-14):* a new app starts at Read only, which blocks
+   every write; each tool then has a site-wide mode, Allow, Ask first or Off
+   (`Saddle_Tool_Modes`), which can only narrow the app's role. The
+   recommended set is one click in Settings and only tightens. A changing
+   tool that did not exist on the site's first run (a later update, a plugin
+   activated later) arrives as Ask first (R3).
 
 3. **No destructive action without a two-step confirm.** Any ability that mutates
    more than one row, or deletes/overwrites without recovery, goes through
@@ -131,20 +137,42 @@ dry-run, no diff and no revert.
   which lets WordPress rewrite its own `.htaccess` block exactly as Settings →
   Permalinks does. A soft flush would leave Apache without rules after a move
   off plain permalinks, so it stays a hard flush.
-- **Updates are applied only through WordPress's own updater, and only for
-  what WordPress already offers.** `saddle/update-plugin` and
-  `saddle/update-theme` (admin tier, gated, at most 10 items) queue a
-  background run; `Saddle_Update_Runner` hands each item to
-  `WP_Automatic_Updater::update()`, which downloads the package core listed,
-  keeps the temporary backup, and for an active plugin runs the loopback fatal
-  check and restores the backup on failure. Saddle never writes a file, never
-  chooses a package URL, never calls the upgrader inside a request (a test
-  pins this), never installs or deletes a plugin or theme, and never updates
-  core. It refuses, naming the reason, wherever core would (`DISALLOW_FILE_MODS`,
+- **Updates and installs run only through WordPress's own updater and
+  installer, and only for what WordPress already offers.** Six tools, all
+  admin tier and gated, queue a background run and never call the upgrader
+  inside a request (a test pins this): `saddle/update-plugin` and
+  `saddle/update-theme` (at most 10 items), `saddle/update-core`,
+  `saddle/update-translations`, `saddle/install-plugin` and
+  `saddle/install-theme` (one slug each). `Saddle_Update_Runner` hands each
+  update to `WP_Automatic_Updater::update()`, which downloads the package core
+  listed, keeps the temporary backup, and for an active plugin runs the
+  loopback fatal check and restores the backup on failure;
+  `Saddle_Install_Runner` hands an install to `Plugin_Upgrader::install()` or
+  `Theme_Upgrader::install()`.
+  Saddle installs a plugin or theme only from the WordPress.org directory, by
+  slug, and only through WordPress's own installer, out of band, after a
+  confirmed preview. It never takes a zip, a URL or a file. A new install
+  arrives inactive. Saddle applies core updates only for releases WordPress
+  already offers, through core's automatic updater: minor and security
+  releases, and a major release only when the owner has turned on Saddle's
+  own "Major WordPress releases" setting in Saddle → Settings, which is off by
+  default and which no tool can change. WordPress's own "automatic updates
+  for all new versions" switch does not count: it is on by default for sites
+  installed since 5.6, and it decides only what WordPress does unattended.
+  Translation updates go through core's language pack upgrader. Saddle never
+  deletes a plugin or theme. It
+  still never writes a file and never picks a package URL: the package is the
+  one the WordPress.org API names, exactly as on the Add New screen, and a
+  package from anywhere else is refused.
+  It refuses, naming the reason, wherever core would (`DISALLOW_FILE_MODS`,
   `AUTOMATIC_UPDATER_DISABLED`, a VCS checkout, a non-direct filesystem). The
-  auto-update switch is WordPress's own option. Decided 2026-09-27 evening on
-  Fahim's "research, then take the decision", replacing the same morning's
-  "reported, never run"; applies to Pro too.
+  auto-update switch is WordPress's own option. Updates decided 2026-09-27
+  evening on Fahim's "research, then take the decision", replacing the same
+  morning's "reported, never run"; installs, core and translations added
+  2026-10-12 (#347). Majors were first behind WordPress's own switch (#351);
+  that switch defaults to on for new installs, so on 2026-10-13 Fahim had
+  majors moved behind Saddle's own setting, off by default (#359). Applies
+  to Pro too.
 
 If a feature seems to need any of these, that is a signal to redesign the
 feature. Two reasons, both load-bearing: WordPress.org will not accept arbitrary
@@ -198,6 +226,14 @@ bound to action, target and `bind`). Two rules that are easy to get wrong:
 a destructive call must pass `bind` covering every argument the preview showed,
 not just the target; and a refusal must name the gate that caused it, because
 `denial_reason()` is the only thing standing between an agent and a retry loop.
+`Saddle_Tool_Modes` (#364) adds Ask first: like rehearsal, it wraps every
+changing tool's execute callback at registration (priority 5, so rehearsal at
+10 wraps it), and until the owner approves under Needs your OK the tool's own
+code never runs. A tool's own preview step inside the approved run is
+answered by that approval (`Saddle_Approval::run_approved()`), and
+`consume_token()` refuses a confirm for an Ask-first tool until the owner
+said yes, without spending the token. A token reaches a tool's code only if
+it is a live token from that same tool's own preview.
 
 **3. Tools — what the agent is offered.** Every ability declares `accessLevel`,
 `destructive` and a tier via `saddle_ability_meta()` — free, Pro and the wrapped
@@ -461,12 +497,21 @@ change. `Tested up to:` moves only when Fahim has verified against a newer WP.
   all three competitors that were checked.
 - Don't add PHP execution, filesystem writes or shell WP-CLI as a power-user
   convenience. See the hard line.
+- Don't install a plugin or theme from a zip upload, a URL or a file path, and
+  don't add a tool that takes one. Installs come only from the WordPress.org
+  directory, by slug, with the package its API names. Don't activate anything
+  as part of an install either; activation stays its own confirmed step.
+- Don't add `delete-plugin` or `delete-theme`. Removing a plugin or theme
+  stays in wp-admin.
 - Don't change the default tier away from `read`, even temporarily for testing.
 - Don't remove the Application Password path now that OAuth exists. Every
   header-capable client uses it, it needs no consent round-trip, and it is the
   only path that works while the OAuth toggle is off — which is the default.
 - Don't turn OAuth on by default, and don't start a new app above `read` or let a
   tool change a role. All three are load-bearing for non-negotiable #2.
+- Don't let a tool change a mode, don't let the recommended set loosen
+  anything, and don't let a new changing tool arrive at Allow. Ask first is
+  the owner's word in wp-admin; never accept a chat "yes" in its place.
 - Don't wire up `Saddle_Ecosystem`.
 - Don't put licensing or upsell code in free, and never let a free tool mention
   Pro or leave a visible gap for a Pro tool (wp.org guidelines 5 and 11). Builder
