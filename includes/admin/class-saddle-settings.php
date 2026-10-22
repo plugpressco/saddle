@@ -54,9 +54,9 @@ class Saddle_Settings {
 			// escaped here. Labels only, no icons (#369).
 			$hook = add_submenu_page(
 				self::PAGE_SLUG,
-				/* translators: %s: page name, such as Dashboard or AI apps. */
+				/* translators: %s: page name, such as Overview or MCP. */
 				sprintf( __( '%s ‹ Saddle', 'saddle' ), $area['title'] ),
-				esc_html( $area['title'] ),
+				self::menu_title( $key, $area ),
 				$area['capability'],
 				$area['slug'],
 				array( __CLASS__, 'render_page' )
@@ -68,32 +68,39 @@ class Saddle_Settings {
 		}
 
 		add_action( 'in_admin_header', array( __CLASS__, 'setup_notice_quarantine' ) );
-		add_action( 'admin_head', array( __CLASS__, 'menu_styles' ) );
 	}
 
 	/**
-	 * The menu's hairline, on every admin screen where the Saddle menu shows.
-	 * Printed only for users who can see the menu.
+	 * A page's label in the Saddle menu: its name, escaped (WordPress prints
+	 * a submenu title as HTML), and for Get Pro a gold crown before it. No
+	 * other item has an icon (#369, #373).
+	 *
+	 * @param string $key  Area key.
+	 * @param array  $area The area.
+	 * @return string Markup.
 	 */
-	public static function menu_styles() {
-		if ( ! current_user_can( 'manage_options' ) ) {
-			return;
+	public static function menu_title( $key, array $area ) {
+		$label = esc_html( $area['title'] );
+		if ( 'plans' !== $key ) {
+			return $label;
 		}
 
-		echo '<style id="saddle-menu-css">' . Saddle_Nav_Icons::menu_css() . "</style>\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- A fixed stylesheet; no input reaches it.
+		$crown = Saddle_Nav_Icons::svg( 'crown', 16 );
+
+		return '' === $crown
+			? $label
+			: '<span class="saddle-get-pro-crown" style="display:inline-block;vertical-align:-3px;margin-inline-end:6px;color:#f0c33c" aria-hidden="true">' . $crown . '</span>' . $label;
 	}
 
 	/**
-	 * Keep Agent setup, Context, Settings and Get Pro last in the Saddle menu.
+	 * The Saddle menu's order (Fahim, 2026-10-23): Overview, the modules
+	 * (Analytics first), then Context, Agent setup, Logs, Settings and Get Pro. A plain
+	 * list with no dividing line; only Get Pro carries an icon, its crown.
 	 *
 	 * A sibling that adds its own submenu (Saddle Rank does, at priority 20)
-	 * lands after whatever is already there. The modules belong between Dashboard
-	 * and Core's configuration pages, so those move to the end once every
-	 * plugin has had its turn.
-	 *
-	 * When a product sits under Home, the first of Core's pages after it
-	 * carries `saddle-menu-group`, which draws a hairline between the two
-	 * groups (see menu_styles()).
+	 * lands after whatever is already there, so the order is settled once
+	 * every plugin has had its turn: Core's first pages lead, Core's last
+	 * pages close, and everything else keeps its order between them.
 	 */
 	public static function order_submenu() {
 		global $submenu;
@@ -103,34 +110,32 @@ class Saddle_Settings {
 		}
 
 		$areas = Saddle_Modules::areas();
-		$last  = array( $areas['connections']['slug'], $areas['context']['slug'], $areas['settings']['slug'] );
+		$lead  = array( $areas['home']['slug'] );
+		$close = array( $areas['context']['slug'], $areas['connections']['slug'], $areas['logs']['slug'], $areas['settings']['slug'] );
 		if ( isset( $areas['plans'] ) ) {
-			$last[] = $areas['plans']['slug'];
+			$close[] = $areas['plans']['slug'];
 		}
-		$head = array();
-		$tail = array();
 
+		$first  = array();
+		$middle = array();
+		$last   = array();
 		foreach ( $submenu[ self::PAGE_SLUG ] as $item ) {
-			$position = isset( $item[2] ) ? array_search( $item[2], $last, true ) : false;
-			if ( false === $position ) {
-				$head[] = $item;
+			$slug     = isset( $item[2] ) ? $item[2] : '';
+			$lead_at  = array_search( $slug, $lead, true );
+			$close_at = array_search( $slug, $close, true );
+			if ( false !== $lead_at ) {
+				$first[ $lead_at ] = $item;
+			} elseif ( false !== $close_at ) {
+				$last[ $close_at ] = $item;
 			} else {
-				$tail[ $position ] = $item;
+				$middle[] = $item;
 			}
 		}
 
-		ksort( $tail );
-		$items = array_merge( $head, array_values( $tail ) );
+		ksort( $first );
+		ksort( $last );
 
-		$first = count( $head );
-		if ( $first > 1 && isset( $items[ $first ] ) ) {
-			$classes = isset( $items[ $first ][4] ) ? trim( (string) $items[ $first ][4] ) : '';
-			if ( ! in_array( 'saddle-menu-group', explode( ' ', $classes ), true ) ) {
-				$items[ $first ][4] = trim( $classes . ' saddle-menu-group' );
-			}
-		}
-
-		$submenu[ self::PAGE_SLUG ] = $items; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Reordering our own menu's items, after every plugin has added to it.
+		$submenu[ self::PAGE_SLUG ] = array_merge( array_values( $first ), $middle, array_values( $last ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Reordering our own menu's items, after every plugin has added to it.
 	}
 
 	/**

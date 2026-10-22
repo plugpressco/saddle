@@ -74,6 +74,11 @@ class Saddle_REST_Admin {
 						'type'     => 'boolean',
 						'required' => false,
 					),
+					// "Mark as expected" on the address-changed notice.
+					'confirm_domain'     => array(
+						'type'     => 'boolean',
+						'required' => false,
+					),
 				),
 			),
 		);
@@ -715,6 +720,15 @@ class Saddle_REST_Admin {
 
 		if ( array_key_exists( 'core_major_updates', $params ) ) {
 			Saddle_Offer_Runner::set_core_majors( (bool) $request->get_param( 'core_major_updates' ) );
+		}
+
+		// The owner says the address change was expected: this address is
+		// the one the apps' access holds on now. Re-saving the site-wide
+		// tier did that before each app had its own role; with the tier at
+		// Read only and an app at Edit content, it recorded nothing and the
+		// warning never cleared.
+		if ( array_key_exists( 'confirm_domain', $params ) && $request->get_param( 'confirm_domain' ) ) {
+			Saddle_Capabilities::record_tier_domain();
 		}
 
 		// Key absent from the body ⇒ untouched; '' or null ⇒ cleared;

@@ -532,7 +532,7 @@ function endLine( role, label ) {
 			return sprintf(
 				/* translators: %s: the app name. */
 				__(
-					'Done. %s can now draft and edit your content. Anything big still waits for your OK, and every change shows up on Home.',
+					'Done. %s can now draft and edit your content. Anything big still waits for your OK, and every change shows up on Overview.',
 					'saddle'
 				),
 				label
@@ -541,7 +541,7 @@ function endLine( role, label ) {
 			return sprintf(
 				/* translators: %s: the app name. */
 				__(
-					'Done. %s can now help run the site. Anything big still waits for your OK, and every change shows up on Home.',
+					'Done. %s can now help run the site. Anything big still waits for your OK, and every change shows up on Overview.',
 					'saddle'
 				),
 				label
@@ -550,7 +550,7 @@ function endLine( role, label ) {
 			return sprintf(
 				/* translators: %s: the app name. */
 				__(
-					'Done. %s can look around, and you can give it more on Agent setup any time.',
+					'Done. %s can look around, and you can give it more on Saddle → Agent setup any time.',
 					'saddle'
 				),
 				label

@@ -35,6 +35,11 @@ const AREAS = [
 		tabs: [ { key: 'overview', url: `${ BASE }?page=saddle-context` } ],
 	},
 	{
+		key: 'logs',
+		url: `${ BASE }?page=saddle-logs`,
+		tabs: [ { key: 'overview', url: `${ BASE }?page=saddle-logs` } ],
+	},
+	{
 		key: 'settings',
 		url: `${ BASE }?page=saddle-settings`,
 		tabs: [ { key: 'general', url: `${ BASE }?page=saddle-settings` } ],
@@ -45,8 +50,8 @@ describe( 'legacy hash addresses', () => {
 	it.each( [
 		[ '#dashboard', `${ BASE }?page=saddle` ],
 		[ '#home', `${ BASE }?page=saddle` ],
-		// Activity is Home's feed since #309.
-		[ '#activity', `${ BASE }?page=saddle#activity` ],
+		// Activity was Home's feed from #309; it is the Logs page now.
+		[ '#activity', `${ BASE }?page=saddle-logs` ],
 		[ '#connect', `${ BASE }?page=saddle-connections` ],
 		// Permissions was a tab of Connections until #285: both land on AI apps.
 		[ '#permissions', `${ BASE }?page=saddle-connections` ],
@@ -107,7 +112,7 @@ describe( 'tabs and places', () => {
 			tab: 'apps',
 		} );
 		expect( placeFor( 'activity' ) ).toEqual( {
-			area: 'home',
+			area: 'logs',
 			tab: 'overview',
 		} );
 		expect( placeFor( 'permissions' ) ).toEqual( {

@@ -38,6 +38,13 @@ class Saddle_Nav_Icons {
 	private static $names = null;
 
 	/**
+	 * File contents already read, by name.
+	 *
+	 * @var array<string,string>
+	 */
+	private static $markup = array();
+
+	/**
 	 * Every icon name: the files in assets/icons/, without `.svg`, sorted.
 	 *
 	 * @return string[]
@@ -98,12 +105,35 @@ class Saddle_Nav_Icons {
 	}
 
 	/**
-	 * The menu's stylesheet: the hairline between the products and Core's
-	 * configuration pages. The labels carry no icons (#369).
+	 * An icon's markup, ready to sit before a label: sized and hidden from
+	 * assistive technology (the label carries the name). The menu uses it
+	 * for Get Pro's crown only (#373).
 	 *
-	 * @return string CSS.
+	 * @param string $name Icon name.
+	 * @param int    $size Pixel size.
+	 * @return string `<svg>` markup, or '' for an unknown name.
 	 */
-	public static function menu_css() {
-		return '#adminmenu li.saddle-menu-group{box-shadow:inset 0 1px 0 rgba(128,128,128,.3);margin-top:6px;padding-top:6px}';
+	public static function svg( $name, $size = 16 ) {
+		$name = self::pick( $name );
+		if ( '' === $name ) {
+			return '';
+		}
+
+		if ( ! isset( self::$markup[ $name ] ) ) {
+			$file = SADDLE_DIR . self::DIR . $name . '.svg';
+			$svg  = file_exists( $file )
+				? file_get_contents( $file ) // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local plugin file, not a remote request.
+				: false;
+
+			self::$markup[ $name ] = is_string( $svg ) ? trim( $svg ) : '';
+		}
+
+		if ( 0 !== strpos( self::$markup[ $name ], '<svg' ) ) {
+			return '';
+		}
+
+		$size = max( 1, absint( $size ) );
+
+		return '<svg class="saddle-nav-icon" width="' . $size . '" height="' . $size . '" aria-hidden="true" focusable="false"' . substr( self::$markup[ $name ], 4 );
 	}
 }

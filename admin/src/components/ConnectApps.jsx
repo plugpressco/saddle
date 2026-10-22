@@ -667,7 +667,9 @@ export default function ConnectApps( { oauth, onConnected, focus = null } ) {
 									{ each.label }
 								</span>
 								<span className="saddle-setup__app-kind">
-									{ each.kind }
+									{ unreachableHere( each, IS_LOCAL )
+										? __( 'Needs a public site', 'saddle' )
+										: each.kind }
 								</span>
 							</span>
 							{ connectedApps.has( key ) && (
@@ -723,13 +725,22 @@ export default function ConnectApps( { oauth, onConnected, focus = null } ) {
 
 				{ /* A web app and a site on this computer: point at the apps
 				     that can reach it (P7). */ }
+				{ /* A web app and a site on this computer: say why once, and
+				     point at the apps that run here (P7). */ }
 				{ unreachable && ! deciding && ! made && ! duplicate && (
-					<>
+					<div className="saddle-connect__away">
+						<p className="saddle-connect__away-title">
+							{ sprintf(
+								/* translators: %s: app name, such as Claude. */
+								__( '%s can’t reach this site', 'saddle' ),
+								app.label
+							) }
+						</p>
 						<p className="saddle-connect__hint">
 							{ sprintf(
 								/* translators: %s: app name, such as Claude. */
 								__(
-									'%s runs on its own servers, so it can’t reach a site on this computer. These apps run here:',
+									'This site runs on this computer, and %s connects from the internet. Pick an app that runs here instead.',
 									'saddle'
 								),
 								app.label
@@ -754,7 +765,7 @@ export default function ConnectApps( { oauth, onConnected, focus = null } ) {
 									{ sprintf(
 										/* translators: %s: app name, such as Claude. */
 										__(
-											'The %s desktop app can reach it through a small bridge.',
+											'Or use the %s desktop app through a small bridge.',
 											'saddle'
 										),
 										app.label
@@ -763,7 +774,7 @@ export default function ConnectApps( { oauth, onConnected, focus = null } ) {
 								{ keyButton( 'secondary' ) }
 							</>
 						) }
-					</>
+					</div>
 				) }
 
 				{ why && ! made && ! duplicate && (

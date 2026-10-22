@@ -496,6 +496,9 @@ export default function Frame( {
 			area.tabs && area.tabs[ 0 ] && area.tabs[ 0 ].key === tab
 				? ONE_PAGE_WIDTH
 				: MODULE_WIDTH;
+	} else if ( 'plans' === area.key ) {
+		// Get Pro's three plans side by side, as big as a one-page module.
+		width = ONE_PAGE_WIDTH;
 	}
 
 	const content = (

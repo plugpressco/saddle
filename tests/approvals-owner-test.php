@@ -131,7 +131,7 @@ class Saddle_Approvals_Owner_Test extends WP_UnitTestCase {
 	public function test_preview_tells_the_agent_about_the_dashboard() {
 		$reply = Saddle_Approval::gate( $this->args( $calls ) );
 
-		$this->assertStringContainsString( 'The owner can also approve this on their Saddle Home page.', $reply['instructions'] );
+		$this->assertStringContainsString( 'The owner can also approve this on their Saddle Overview page.', $reply['instructions'] );
 	}
 
 	public function test_pending_approval_is_recorded_and_listed() {

@@ -24,10 +24,10 @@ class Saddle_Modules_View {
 	 */
 	public static function all() {
 		$areas = array();
-		foreach ( array_keys( Saddle_Modules::areas() ) as $key ) {
-			// Get Pro is for the owner's eyes only: never in what an agent
-			// reads (#373).
-			if ( 'plans' === $key ) {
+		foreach ( Saddle_Modules::areas() as $key => $area ) {
+			// Get Pro and the Analytics placeholder are for the owner's eyes
+			// only: never in what an agent reads (#373).
+			if ( 'plans' === $key || ! empty( $area['placeholder'] ) ) {
 				continue;
 			}
 			$areas[] = self::one( $key );
@@ -110,6 +110,7 @@ class Saddle_Modules_View {
 			'home'        => __( 'Whether AI access is on, what your connected apps have been doing, and what is left to set up.', 'saddle' ),
 			'connections' => __( 'The AI apps connected to this site: connect another, and choose what each may do.', 'saddle' ),
 			'context'     => __( 'What every connected app knows about this site: your instructions, skills and memory.', 'saddle' ),
+			'logs'        => __( 'Every change your apps made and every attempt Saddle blocked, newest first, with Undo.', 'saddle' ),
 			'settings'    => __( 'Safety switches, outside accounts like Unsplash, single tools, sign-in, plugins that add tools and the connection check.', 'saddle' ),
 		);
 

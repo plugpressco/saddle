@@ -9,8 +9,7 @@ import { useState } from '@wordpress/element';
 import { Button } from '@plugpress/ui';
 import { __ } from '@wordpress/i18n';
 import { addAnalytics, addError, analyticsOffer } from '../analytics-addon';
-import { addonTone } from '../home-logic';
-import { NavIcon } from '../icons/iconoir';
+import { AddonIcon } from './icons';
 
 export default function AnalyticsTile() {
 	// What the page knew when this tile first drew: it keeps drawing after
@@ -72,14 +71,7 @@ export default function AnalyticsTile() {
 
 	return (
 		<li className="saddle-addon">
-			<span
-				className={ `saddle-tile saddle-tile--${ addonTone(
-					'analytics'
-				) }` }
-				aria-hidden="true"
-			>
-				<NavIcon name="graph-up" size={ 20 } />
-			</span>
+			<AddonIcon addon="analytics" className="saddle-addon__icon" />
 			<span className="saddle-addon__text">
 				<span className="saddle-addon__name">
 					{ __( 'Saddle Analytics', 'saddle' ) }

@@ -19,6 +19,7 @@ import WindsurfLogo from '@lobehub/icons-static-svg/icons/windsurf.svg';
 import OpenClawLogo from '@lobehub/icons-static-svg/icons/openclaw-color.svg';
 import GrokLogo from '@lobehub/icons-static-svg/icons/grok.svg';
 import { ReactComponent as Mark } from '../../../assets/brand/mark.svg';
+import AnalyticsIcon from '../../../assets/addons/saddle-analytics.svg';
 
 // The Saddle brand mark (a saddle draped over the horse's back, knocked out
 // of a filled disc — the PlugPress portfolio motif), single-sourced from
@@ -121,4 +122,48 @@ export function appKeyFromLabel( label ) {
 		return 'antigravity';
 	}
 	return 'other';
+}
+
+/* ---------- Add-on icons ----------
+ *
+ * Each add-on's own WordPress.org icon, copied into Saddle
+ * (assets/addons/, from the add-on's `.wordpress.org/icon.svg`) and bundled
+ * as a data URI like the app logos, so showing it asks nothing of
+ * WordPress.org. An add-on without one keeps its Iconoir tile.
+ */
+const ADDON_ICONS = {
+	analytics: AnalyticsIcon,
+};
+
+/**
+ * Whether Saddle carries this add-on's own icon.
+ *
+ * @param {string} addon The module key, such as `analytics`.
+ * @return {boolean} True when AddonIcon draws one.
+ */
+export const hasAddonIcon = ( addon ) =>
+	Object.prototype.hasOwnProperty.call( ADDON_ICONS, addon );
+
+/**
+ * An add-on's own icon, as WordPress.org shows it; nothing for one Saddle
+ * does not carry.
+ *
+ * @param {Object} props
+ * @param {string} props.addon The module key.
+ * @return {?Element} The icon.
+ */
+export function AddonIcon( { addon, ...props } ) {
+	if ( ! hasAddonIcon( addon ) ) {
+		return null;
+	}
+	return (
+		<img
+			src={ ADDON_ICONS[ addon ] }
+			alt=""
+			aria-hidden="true"
+			width="40"
+			height="40"
+			{ ...props }
+		/>
+	);
 }

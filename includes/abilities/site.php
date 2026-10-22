@@ -64,7 +64,7 @@ function saddle_register_site_abilities() {
 		'saddle/activate-plugin',
 		array(
 			'label'               => __( 'Activate plugin', 'saddle' ),
-			'description'         => __( 'Activates an installed plugin. Provide its "plugin" file (e.g. "akismet/akismet.php") or its folder slug (e.g. "akismet"). It takes two calls. The first call changes nothing: it returns a preview naming the plugin and its version, and a "confirm_token". Call again with the same "plugin" and that token to activate it. The token works once and expires in 15 minutes, and the site owner can approve or refuse the request on their Saddle Home page until then. A plugin that is already active returns at once, with no preview. Reversible with deactivate-plugin. Returns the plugin that was activated. A plugin that fatals on activation returns an error and stays inactive.', 'saddle' ),
+			'description'         => __( 'Activates an installed plugin. Provide its "plugin" file (e.g. "akismet/akismet.php") or its folder slug (e.g. "akismet"). It takes two calls. The first call changes nothing: it returns a preview naming the plugin and its version, and a "confirm_token". Call again with the same "plugin" and that token to activate it. The token works once and expires in 15 minutes, and the site owner can approve or refuse the request on their Saddle Overview page until then. A plugin that is already active returns at once, with no preview. Reversible with deactivate-plugin. Returns the plugin that was activated. A plugin that fatals on activation returns an error and stays inactive.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -90,7 +90,7 @@ function saddle_register_site_abilities() {
 		'saddle/deactivate-plugin',
 		array(
 			'label'               => __( 'Deactivate plugin', 'saddle' ),
-			'description'         => __( 'Deactivates an active plugin. Provide its "plugin" file or folder slug. It takes two calls. The first call changes nothing: it returns a preview naming the plugin and its version, any active plugins that require it ("required_by"; they may stop working), whether it is network active on a multisite, and a "confirm_token". Call again with the same "plugin" and that token to deactivate it. The token works once and expires in 15 minutes, and the site owner can approve or refuse the request on their Saddle Home page until then. A plugin that is already inactive returns at once, with no preview. Refuses to deactivate Saddle itself. Reversible with activate-plugin. Returns the plugin that was deactivated.', 'saddle' ),
+			'description'         => __( 'Deactivates an active plugin. Provide its "plugin" file or folder slug. It takes two calls. The first call changes nothing: it returns a preview naming the plugin and its version, any active plugins that require it ("required_by"; they may stop working), whether it is network active on a multisite, and a "confirm_token". Call again with the same "plugin" and that token to deactivate it. The token works once and expires in 15 minutes, and the site owner can approve or refuse the request on their Saddle Overview page until then. A plugin that is already inactive returns at once, with no preview. Refuses to deactivate Saddle itself. Reversible with activate-plugin. Returns the plugin that was deactivated.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -139,7 +139,7 @@ function saddle_register_site_abilities() {
 		'saddle/activate-theme',
 		array(
 			'label'               => __( 'Activate theme', 'saddle' ),
-			'description'         => __( 'Switches the active theme. Provide its "stylesheet" (theme directory name, e.g. "twentytwentyfour"). It takes two calls. The first call changes nothing: it returns a preview naming the theme to switch to and the theme active now, and a "confirm_token". Call again with the same "stylesheet" and that token to switch. The token works once and expires in 15 minutes, and the site owner can approve or refuse the request on their Saddle Home page until then. The theme that is already active returns at once, with no preview. Refuses a broken theme (missing files). Every page on the site changes how it looks. Reversible by activating the previous theme, or with undo-changes. Returns the newly active theme.', 'saddle' ),
+			'description'         => __( 'Switches the active theme. Provide its "stylesheet" (theme directory name, e.g. "twentytwentyfour"). It takes two calls. The first call changes nothing: it returns a preview naming the theme to switch to and the theme active now, and a "confirm_token". Call again with the same "stylesheet" and that token to switch. The token works once and expires in 15 minutes, and the site owner can approve or refuse the request on their Saddle Overview page until then. The theme that is already active returns at once, with no preview. Refuses a broken theme (missing files). Every page on the site changes how it looks. Reversible by activating the previous theme, or with undo-changes. Returns the newly active theme.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',

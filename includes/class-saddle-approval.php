@@ -341,8 +341,8 @@ class Saddle_Approval {
 				'preview'               => isset( $args['preview'] ) ? $args['preview'] : null,
 				'approve_at'            => admin_url( 'admin.php?page=saddle' ),
 				'instructions'          => sprintf(
-					/* translators: %s: address of the Saddle Dashboard in wp-admin. */
-					__( 'Nothing has changed. The site owner set this tool to ask them first, so it waits for their OK, not for a yes in this chat. Tell the user it is waiting under Needs your OK on the Saddle Dashboard (%s). After the owner approves it there, call this tool again with the same arguments plus "confirm_token" set to the value above. Until then that call is refused. The token is single-use and expires in 15 minutes.', 'saddle' ),
+					/* translators: %s: address of the Saddle Overview page in wp-admin. */
+					__( 'Nothing has changed. The site owner set this tool to ask them first, so it waits for their OK, not for a yes in this chat. Tell the user it is waiting under Needs your OK on the Saddle Overview page (%s). After the owner approves it there, call this tool again with the same arguments plus "confirm_token" set to the value above. Until then that call is refused. The token is single-use and expires in 15 minutes.', 'saddle' ),
 					admin_url( 'admin.php?page=saddle' )
 				),
 			);
@@ -358,7 +358,7 @@ class Saddle_Approval {
 			// Every app reads this, whatever it does with the server instructions
 			// (Claude Code keeps only their first 2,048 characters, #333), so the
 			// ask-first rule lives here too, not only in the context.
-			'instructions'          => __( 'This is a preview. Nothing has changed. Show the user the summary above and ask whether to go ahead. Only after they agree, call this tool again with the same arguments plus "confirm_token" set to the value above. The token is single-use and expires in 15 minutes. The owner can also approve this on their Saddle Home page.', 'saddle' ),
+			'instructions'          => __( 'This is a preview. Nothing has changed. Show the user the summary above and ask whether to go ahead. Only after they agree, call this tool again with the same arguments plus "confirm_token" set to the value above. The token is single-use and expires in 15 minutes. The owner can also approve this on their Saddle Overview page.', 'saddle' ),
 		);
 	}
 
@@ -583,7 +583,7 @@ class Saddle_Approval {
 			return new WP_Error(
 				'saddle_awaiting_owner',
 				sprintf(
-					/* translators: %s: address of the Saddle Dashboard in wp-admin. */
+					/* translators: %s: address of the Saddle Overview page in wp-admin. */
 					__( 'The site owner has not approved this yet. It is waiting under Needs your OK on the Saddle Dashboard (%s). Ask them to approve it there, then call again with the same token. Don’t ask for a new preview.', 'saddle' ),
 					admin_url( 'admin.php?page=saddle' )
 				),

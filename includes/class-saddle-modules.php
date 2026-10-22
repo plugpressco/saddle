@@ -34,7 +34,7 @@ class Saddle_Modules {
 	/**
 	 * Keys a module may not take: Core's own pages.
 	 */
-	const RESERVED = array( 'home', 'connections', 'services', 'context', 'settings', 'plans' );
+	const RESERVED = array( 'home', 'connections', 'services', 'context', 'logs', 'settings', 'plans' );
 
 	/**
 	 * Core's pages, in menu order around the modules.
@@ -55,10 +55,10 @@ class Saddle_Modules {
 		return array(
 			'home'        => array(
 				'slug'  => 'saddle',
-				'title' => __( 'Home', 'saddle' ),
+				'title' => __( 'Overview', 'saddle' ),
 				'icon'  => 'home-simple-door',
 				'tabs'  => array(
-					'overview' => __( 'Home', 'saddle' ),
+					'overview' => __( 'Overview', 'saddle' ),
 				),
 			),
 			'connections' => array(
@@ -69,8 +69,18 @@ class Saddle_Modules {
 					'apps' => __( 'Agent setup', 'saddle' ),
 				),
 			),
+			// Logs: every change an app made and every blocked attempt, the
+			// feed that was Overview's until 2026-10-23.
+			'logs'        => array(
+				'slug'  => 'saddle-logs',
+				'title' => __( 'Logs', 'saddle' ),
+				'icon'  => 'activity',
+				'tabs'  => array(
+					'overview' => __( 'Logs', 'saddle' ),
+				),
+			),
 			// Get Pro (#373): the plans, last in the menu, only while Saddle
-			// Pro is not active (offers_pro()).
+			// Pro is not installed (offers_pro()).
 			'plans'       => array(
 				'slug'  => 'saddle-plans',
 				'title' => __( 'Get Pro', 'saddle' ),
@@ -230,22 +240,63 @@ class Saddle_Modules {
 	/**
 	 * Whether Saddle shows its Get Pro page (#373). The one place free Saddle
 	 * names its paid plans (non-negotiable #3, amended 2026-10-23): a page in
-	 * the menu, nothing else, never while Saddle Pro is active.
+	 * the menu, nothing else, never once Saddle Pro is installed, active or
+	 * not.
 	 *
 	 * @return bool
 	 */
 	public static function offers_pro() {
+		$has_pro = defined( 'SADDLE_PRO_VERSION' )
+			|| ( defined( 'WP_PLUGIN_DIR' ) && file_exists( WP_PLUGIN_DIR . '/saddle-pro/saddle-pro.php' ) );
+
 		/**
 		 * Filter whether the Saddle menu shows Get Pro.
 		 *
-		 * @param bool $show True unless Saddle Pro is active.
+		 * @param bool $show True unless Saddle Pro is installed.
 		 */
-		return (bool) apply_filters( 'saddle_show_get_pro', ! defined( 'SADDLE_PRO_VERSION' ) );
+		return (bool) apply_filters( 'saddle_show_get_pro', ! $has_pro );
 	}
 
 	/**
-	 * Every page, in menu order: Home, the modules, Agent setup, Context,
-	 * Settings, and Get Pro while offers_pro() says so.
+	 * Whether the menu shows Analytics while Saddle Analytics is not on
+	 * (#373): a page that recommends it and installs it in one click.
+	 *
+	 * @return bool
+	 */
+	public static function offers_analytics() {
+		/**
+		 * Filter whether the Saddle menu recommends Saddle Analytics while it
+		 * is not on.
+		 *
+		 * @param bool $show True by default.
+		 */
+		return (bool) apply_filters( 'saddle_show_analytics_offer', true );
+	}
+
+	/**
+	 * Saddle's own Analytics page, until Saddle Analytics takes the slug. A
+	 * Core page (not a module), and a placeholder no agent reads about.
+	 *
+	 * @return array An area.
+	 */
+	private static function analytics_placeholder() {
+		return array(
+			'slug'        => 'saddle-analytics',
+			'title'       => __( 'Analytics', 'saddle' ),
+			'icon'        => 'graph-up',
+			'tabs'        => array(
+				'overview' => __( 'Analytics', 'saddle' ),
+			),
+			'module'      => false,
+			'placeholder' => true,
+		);
+	}
+
+	/**
+	 * Every page, in menu order (Fahim, 2026-10-23): Overview (the `home`
+	 * area), the modules (Analytics first among them, Saddle's placeholder
+	 * until Saddle Analytics is on), Context, Agent setup (the `connections` area),
+	 * Logs, Settings, and Get Pro while offers_pro() says so.
 	 *
 	 * @return array<string,array> Keyed by area; each has `slug`, `title`,
 	 *                             `tabs`, `nav`, `capability`, `module`,
@@ -256,12 +307,21 @@ class Saddle_Modules {
 		$core  = self::core_areas();
 		$areas = array( 'home' => $core['home'] );
 
-		foreach ( self::modules() as $key => $module ) {
+		// Analytics is always in the menu (#373): Saddle Analytics' own page
+		// once it is on, Saddle's page recommending it until then. Both use
+		// `page=saddle-analytics`, so the address never changes.
+		$modules = self::modules();
+		if ( ! isset( $modules['analytics'] ) && self::offers_analytics() ) {
+			$areas['analytics'] = self::analytics_placeholder();
+		}
+
+		foreach ( $modules as $key => $module ) {
 			$areas[ $key ] = $module;
 		}
 
-		$areas['connections'] = $core['connections'];
 		$areas['context']     = $core['context'];
+		$areas['connections'] = $core['connections'];
+		$areas['logs']        = $core['logs'];
 		$areas['settings']    = $core['settings'];
 		if ( self::offers_pro() ) {
 			$areas['plans'] = $core['plans'];

@@ -113,4 +113,29 @@ class Saddle_REST_Abilities_Test extends WP_UnitTestCase {
 
 		$this->assertFalse( $data['domain_warning'] );
 	}
+
+	/**
+	 * Found 2026-10-23: "Mark as expected" did nothing. It re-saved the
+	 * site-wide tier, which stays Read only once each app has its own role,
+	 * and re-saving Read only records no address. `confirm_domain` records
+	 * it, so the warning clears.
+	 */
+	public function test_confirm_domain_clears_the_warning_when_only_an_app_is_elevated() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+		Saddle_Access::set_role( 'key:release-check', 'write' );
+		update_option( Saddle_Capabilities::TIER_DOMAIN_OPTION, 'old-domain.example.test' );
+		$post = static function ( $data ) {
+			$request = new WP_REST_Request( 'POST', '/saddle/v1/preferences' );
+			$request->set_header( 'Content-Type', 'application/json' );
+			$request->set_body( wp_json_encode( $data ) );
+			return rest_do_request( $request )->get_data();
+		};
+
+		$this->assertSame( 'read', Saddle_Capabilities::get_tier() );
+		$this->assertTrue( Saddle_REST_Admin::get_settings()->get_data()['domain_warning'] );
+		$this->assertTrue( $post( array( 'tier' => 'read' ) )['domain_warning'], 'The old way records nothing.' );
+
+		$this->assertFalse( $post( array( 'confirm_domain' => true ) )['domain_warning'] );
+		$this->assertSame( Saddle_Capabilities::current_domain(), Saddle_Capabilities::recorded_tier_domain() );
+	}
 }

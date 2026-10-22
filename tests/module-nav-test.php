@@ -345,7 +345,7 @@ class Saddle_Module_Nav_Test extends WP_UnitTestCase {
 		$this->assertSame( 'traffic', $saddle['sub'] );
 		$this->assertStringContainsString( rawurlencode( 'tab=visibility&sub=traffic' ), $saddle['loginUrl'] );
 
-		$rank = $saddle['areas'][1];
+		$rank = array_combine( array_column( $saddle['areas'], 'key' ), $saddle['areas'] )['rank'];
 		$this->assertSame( 'rank', $rank['key'] );
 		$tabs = array_combine( array_column( $rank['tabs'], 'key' ), $rank['tabs'] );
 

@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-22T19:56:10+00:00\n"
+"POT-Creation-Date: 2026-10-22T22:28:34+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -20,7 +20,7 @@ msgstr ""
 #: includes/admin/class-saddle-settings.php:35
 #: includes/admin/class-saddle-settings.php:36
 #: includes/class-saddle-core-settings.php:40
-#: admin/build/index.js:82
+#: admin/build/index.js:83
 #: admin/src/components/Frame.jsx:444
 msgid "Saddle"
 msgstr ""
@@ -2723,7 +2723,7 @@ msgid "List Saddle pages and modules"
 msgstr ""
 
 #: includes/abilities/modules.php:20
-msgid "Lists every page of the owner's Saddle admin (Home, Agent setup, Context, Settings) and every installed Saddle module (for example Analytics), in menu order. Each entry has a one-sentence \"summary\" you can repeat to the owner, its \"state\" and status \"line\" where a module reports one, setup progress with each unfinished task, the \"admin_url\" of the page, of each tab and of each page inside a tab (\"subtabs\"), how many tools it owns and how many of those you can call now, and which of its settings you may change (\"agent_writable\"). Use it first when the owner asks what is installed, what is left to set up, or where something lives. When you point the owner somewhere, give them the \"admin_url\" instead of describing clicks. Read-only. A Saddle module is an add-on plugin with its own page in the Saddle menu, such as Analytics; it is not a Divi module or a block on a page, which the saddle-divi-* and block tools handle."
+msgid "Lists every page of the owner's Saddle admin (Overview, Context, Agent setup, Logs, Settings) and every installed Saddle module (for example Analytics), in menu order: Overview, the modules, Context, Agent setup, Logs, Settings. Each entry has a one-sentence \"summary\" you can repeat to the owner, its \"state\" and status \"line\" where a module reports one, setup progress with each unfinished task, the \"admin_url\" of the page, of each tab and of each page inside a tab (\"subtabs\"), how many tools it owns and how many of those you can call now, and which of its settings you may change (\"agent_writable\"). Use it first when the owner asks what is installed, what is left to set up, or where something lives. When you point the owner somewhere, give them the \"admin_url\" instead of describing clicks. Read-only. A Saddle module is an add-on plugin with its own page in the Saddle menu, such as Analytics; it is not a Divi module or a block on a page, which the saddle-divi-* and block tools handle."
 msgstr ""
 
 #: includes/abilities/modules.php:36
@@ -2803,23 +2803,23 @@ msgid "off"
 msgstr ""
 
 #: includes/abilities/modules.php:273
-#: admin/build/index.js:89
+#: admin/build/index.js:90
 #: admin/src/components/NeedsYourOk.jsx:172
 #: admin/src/components/NeedsYourOk.jsx:177
 msgid "(empty)"
 msgstr ""
 
-#: includes/abilities/modules.php:295
+#: includes/abilities/modules.php:296
 msgid "The owner's admin"
 msgstr ""
 
 #. translators: %s: the owner's Saddle pages, comma separated.
-#: includes/abilities/modules.php:299
+#: includes/abilities/modules.php:300
 #, php-format
 msgid "Owner's admin: Saddle → %s."
 msgstr ""
 
-#: includes/abilities/modules.php:302
+#: includes/abilities/modules.php:303
 msgid "To explain or change a setting, call saddle-get-module-settings and give the owner the admin_url instead of describing clicks."
 msgstr ""
 
@@ -3209,7 +3209,7 @@ msgid "Activate plugin"
 msgstr ""
 
 #: includes/abilities/site.php:67
-msgid "Activates an installed plugin. Provide its \"plugin\" file (e.g. \"akismet/akismet.php\") or its folder slug (e.g. \"akismet\"). It takes two calls. The first call changes nothing: it returns a preview naming the plugin and its version, and a \"confirm_token\". Call again with the same \"plugin\" and that token to activate it. The token works once and expires in 15 minutes, and the site owner can approve or refuse the request on their Saddle Home page until then. A plugin that is already active returns at once, with no preview. Reversible with deactivate-plugin. Returns the plugin that was activated. A plugin that fatals on activation returns an error and stays inactive."
+msgid "Activates an installed plugin. Provide its \"plugin\" file (e.g. \"akismet/akismet.php\") or its folder slug (e.g. \"akismet\"). It takes two calls. The first call changes nothing: it returns a preview naming the plugin and its version, and a \"confirm_token\". Call again with the same \"plugin\" and that token to activate it. The token works once and expires in 15 minutes, and the site owner can approve or refuse the request on their Saddle Overview page until then. A plugin that is already active returns at once, with no preview. Reversible with deactivate-plugin. Returns the plugin that was activated. A plugin that fatals on activation returns an error and stays inactive."
 msgstr ""
 
 #: includes/abilities/site.php:75
@@ -3226,7 +3226,7 @@ msgid "Deactivate plugin"
 msgstr ""
 
 #: includes/abilities/site.php:93
-msgid "Deactivates an active plugin. Provide its \"plugin\" file or folder slug. It takes two calls. The first call changes nothing: it returns a preview naming the plugin and its version, any active plugins that require it (\"required_by\"; they may stop working), whether it is network active on a multisite, and a \"confirm_token\". Call again with the same \"plugin\" and that token to deactivate it. The token works once and expires in 15 minutes, and the site owner can approve or refuse the request on their Saddle Home page until then. A plugin that is already inactive returns at once, with no preview. Refuses to deactivate Saddle itself. Reversible with activate-plugin. Returns the plugin that was deactivated."
+msgid "Deactivates an active plugin. Provide its \"plugin\" file or folder slug. It takes two calls. The first call changes nothing: it returns a preview naming the plugin and its version, any active plugins that require it (\"required_by\"; they may stop working), whether it is network active on a multisite, and a \"confirm_token\". Call again with the same \"plugin\" and that token to deactivate it. The token works once and expires in 15 minutes, and the site owner can approve or refuse the request on their Saddle Overview page until then. A plugin that is already inactive returns at once, with no preview. Refuses to deactivate Saddle itself. Reversible with activate-plugin. Returns the plugin that was deactivated."
 msgstr ""
 
 #: includes/abilities/site.php:105
@@ -3246,7 +3246,7 @@ msgid "Activate theme"
 msgstr ""
 
 #: includes/abilities/site.php:142
-msgid "Switches the active theme. Provide its \"stylesheet\" (theme directory name, e.g. \"twentytwentyfour\"). It takes two calls. The first call changes nothing: it returns a preview naming the theme to switch to and the theme active now, and a \"confirm_token\". Call again with the same \"stylesheet\" and that token to switch. The token works once and expires in 15 minutes, and the site owner can approve or refuse the request on their Saddle Home page until then. The theme that is already active returns at once, with no preview. Refuses a broken theme (missing files). Every page on the site changes how it looks. Reversible by activating the previous theme, or with undo-changes. Returns the newly active theme."
+msgid "Switches the active theme. Provide its \"stylesheet\" (theme directory name, e.g. \"twentytwentyfour\"). It takes two calls. The first call changes nothing: it returns a preview naming the theme to switch to and the theme active now, and a \"confirm_token\". Call again with the same \"stylesheet\" and that token to switch. The token works once and expires in 15 minutes, and the site owner can approve or refuse the request on their Saddle Overview page until then. The theme that is already active returns at once, with no preview. Refuses a broken theme (missing files). Every page on the site changes how it looks. Reversible by activating the previous theme, or with undo-changes. Returns the newly active theme."
 msgstr ""
 
 #: includes/abilities/site.php:150
@@ -4071,14 +4071,14 @@ msgid "That is not an access role Saddle knows."
 msgstr ""
 
 #: includes/admin/class-saddle-connections-rest.php:159
-#: includes/admin/class-saddle-rest.php:560
-#: includes/admin/class-saddle-rest.php:590
+#: includes/admin/class-saddle-rest.php:565
+#: includes/admin/class-saddle-rest.php:595
 msgid "That connection no longer exists. It may already be disconnected."
 msgstr ""
 
 #. translators: 1: app name, 2: its new access, e.g. "Edit content".
 #: includes/admin/class-saddle-connections-rest.php:173
-#: includes/admin/class-saddle-rest.php:608
+#: includes/admin/class-saddle-rest.php:613
 #, php-format
 msgid "Set %1$s to “%2$s”"
 msgstr ""
@@ -4103,139 +4103,139 @@ msgstr ""
 msgid "You need to be an administrator to do that."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:692
+#: includes/admin/class-saddle-rest.php:697
 #: includes/class-saddle-core-settings.php:236
 msgid "Unknown access tier."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:796
-#: includes/admin/class-saddle-rest.php:809
+#: includes/admin/class-saddle-rest.php:810
+#: includes/admin/class-saddle-rest.php:823
 msgid "No skill with that name."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:878
-#: includes/admin/class-saddle-rest.php:894
+#: includes/admin/class-saddle-rest.php:892
+#: includes/admin/class-saddle-rest.php:908
 msgid "No memory entry with that key."
 msgstr ""
 
 #. translators: %d: entries removed.
-#: includes/admin/class-saddle-rest.php:933
+#: includes/admin/class-saddle-rest.php:947
 #, php-format
 msgid "Owner cleared all agent-written memory (%d entries)."
 msgstr ""
 
 #. translators: %s: plugin name.
-#: includes/admin/class-saddle-rest.php:1208
+#: includes/admin/class-saddle-rest.php:1222
 #, php-format
 msgid "Switched on the %s integration"
 msgstr ""
 
 #. translators: %s: plugin name.
-#: includes/admin/class-saddle-rest.php:1208
+#: includes/admin/class-saddle-rest.php:1222
 #, php-format
 msgid "Switched off the %s integration"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1231
+#: includes/admin/class-saddle-rest.php:1245
 msgid "Yoast SEO"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1231
+#: includes/admin/class-saddle-rest.php:1245
 #: includes/class-saddle-service-sources.php:66
 msgid "Reads and edits Yoast’s own SEO fields."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1232
+#: includes/admin/class-saddle-rest.php:1246
 msgid "Rank Math"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1232
+#: includes/admin/class-saddle-rest.php:1246
 #: includes/class-saddle-service-sources.php:67
 msgid "Reads and edits Rank Math’s own SEO fields."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1233
+#: includes/admin/class-saddle-rest.php:1247
 msgid "AIOSEO"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1233
+#: includes/admin/class-saddle-rest.php:1247
 #: includes/class-saddle-service-sources.php:68
 msgid "Reads and edits AIOSEO’s own SEO fields."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1234
+#: includes/admin/class-saddle-rest.php:1248
 msgid "WooCommerce"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1234
+#: includes/admin/class-saddle-rest.php:1248
 #: includes/class-saddle-service-sources.php:69
 msgid "Products and orders."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1235
+#: includes/admin/class-saddle-rest.php:1249
 #: includes/class-saddle-unsplash.php:574
 #: includes/class-saddle-unsplash.php:626
 msgid "Unsplash"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1235
+#: includes/admin/class-saddle-rest.php:1249
 msgid "Stock-photo search and import, built into Saddle. Needs an Access Key under Saddle → Settings."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1287
+#: includes/admin/class-saddle-rest.php:1301
 msgid "MCP Client"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1322
-#: includes/admin/class-saddle-rest.php:1433
-#: includes/admin/class-saddle-rest.php:1488
+#: includes/admin/class-saddle-rest.php:1336
+#: includes/admin/class-saddle-rest.php:1447
+#: includes/admin/class-saddle-rest.php:1502
 msgid "Application Passwords are not available on this site."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1326
+#: includes/admin/class-saddle-rest.php:1340
 msgid "Application Passwords are off on this site. Serve the site over HTTPS, or turn them back on in your security plugin."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1331
+#: includes/admin/class-saddle-rest.php:1345
 msgid "AI app"
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1442
-#: includes/admin/class-saddle-rest.php:1494
+#: includes/admin/class-saddle-rest.php:1456
+#: includes/admin/class-saddle-rest.php:1508
 msgid "No Saddle client with that ID."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1514
+#: includes/admin/class-saddle-rest.php:1528
 msgid "The old key was removed, but issuing its replacement failed. Connect the app again from the Connections screen."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1622
+#: includes/admin/class-saddle-rest.php:1636
 msgid "Only the site owner can undo from here. Apps use their own undo tool."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1631
+#: includes/admin/class-saddle-rest.php:1645
 msgid "Choose at least one change to undo."
 msgstr ""
 
 #. translators: %s: the change that was undone, as the activity log recorded it.
-#: includes/admin/class-saddle-rest.php:1707
+#: includes/admin/class-saddle-rest.php:1721
 #, php-format
 msgid "Undid this change: %s"
 msgstr ""
 
 #. translators: %d: number of changes undone.
-#: includes/admin/class-saddle-rest.php:1713
+#: includes/admin/class-saddle-rest.php:1727
 #, php-format
 msgid "Undid %d change."
 msgid_plural "Undid %d changes."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/admin/class-saddle-rest.php:1758
+#: includes/admin/class-saddle-rest.php:1772
 msgid "That preview has expired or was already used. Choose Undo again."
 msgstr ""
 
-#: includes/admin/class-saddle-rest.php:1766
+#: includes/admin/class-saddle-rest.php:1780
 msgid "Something changed since the preview. Choose Undo again to see what comes back."
 msgstr ""
 
@@ -4255,26 +4255,26 @@ msgstr ""
 msgid "No service with that key."
 msgstr ""
 
-#. translators: %s: page name, such as Dashboard or AI apps.
+#. translators: %s: page name, such as Overview or MCP.
 #: includes/admin/class-saddle-settings.php:58
 #, php-format
 msgid "%s ‹ Saddle"
 msgstr ""
 
-#: includes/admin/class-saddle-settings.php:191
-#: includes/class-saddle-modules.php:92
-#: includes/class-saddle-modules.php:192
+#: includes/admin/class-saddle-settings.php:196
+#: includes/class-saddle-modules.php:102
+#: includes/class-saddle-modules.php:202
 msgid "Settings"
 msgstr ""
 
-#: includes/admin/class-saddle-settings.php:192
+#: includes/admin/class-saddle-settings.php:197
 #: includes/class-saddle-notices.php:60
 #: includes/class-saddle-recipes.php:77
 #: includes/class-saddle-recipes.php:124
 msgid "Get started"
 msgstr ""
 
-#: includes/admin/class-saddle-settings.php:457
+#: includes/admin/class-saddle-settings.php:462
 msgid "Saddle: the admin UI has not been built yet. Run \"npm install && npm run build\" in the plugin folder."
 msgstr ""
 
@@ -4430,8 +4430,8 @@ msgstr ""
 
 #: includes/builders/divi/class-saddle-divi-recipes.php:96
 #: includes/class-saddle-recipes.php:100
-#: admin/build/index.js:97
-#: admin/src/get-pro-logic.js:47
+#: admin/build/index.js:94
+#: admin/src/get-pro-logic.js:51
 msgid "Pro"
 msgstr ""
 
@@ -4505,8 +4505,8 @@ msgstr ""
 #: includes/builders/divi/class-saddle-divi-recipes.php:345
 #: includes/class-saddle-context.php:80
 #: admin/build/index.js:1
-#: admin/build/index.js:39
-#: admin/src/components/ConnectApps.jsx:951
+#: admin/build/index.js:40
+#: admin/src/components/ConnectApps.jsx:962
 #: admin/src/connect-apps.js:379
 msgid "Name"
 msgstr ""
@@ -4578,8 +4578,8 @@ msgstr ""
 #: includes/oauth/class-saddle-oauth-consent.php:189
 #: admin/build/index.js:1
 #: admin/build/index.js:23
-#: admin/build/index.js:50
-#: admin/build/index.js:115
+#: admin/build/index.js:51
+#: admin/build/index.js:118
 #: admin/src/activity-format.js:136
 #: admin/src/api.js:127
 #: admin/src/components/ConnectedClients.jsx:56
@@ -4591,8 +4591,8 @@ msgstr ""
 #: includes/oauth/class-saddle-oauth-consent.php:193
 #: admin/build/index.js:1
 #: admin/build/index.js:23
-#: admin/build/index.js:50
-#: admin/build/index.js:115
+#: admin/build/index.js:51
+#: admin/build/index.js:118
 #: admin/src/activity-format.js:137
 #: admin/src/api.js:141
 #: admin/src/components/ConnectedClients.jsx:61
@@ -4604,8 +4604,8 @@ msgstr ""
 #: includes/oauth/class-saddle-oauth-consent.php:197
 #: admin/build/index.js:1
 #: admin/build/index.js:23
-#: admin/build/index.js:50
-#: admin/build/index.js:115
+#: admin/build/index.js:51
+#: admin/build/index.js:118
 #: admin/src/activity-format.js:138
 #: admin/src/api.js:155
 #: admin/src/components/ConnectedClients.jsx:66
@@ -4648,7 +4648,7 @@ msgid "Nothing has changed. The site owner set this tool to ask them first, so i
 msgstr ""
 
 #: includes/class-saddle-approval.php:361
-msgid "This is a preview. Nothing has changed. Show the user the summary above and ask whether to go ahead. Only after they agree, call this tool again with the same arguments plus \"confirm_token\" set to the value above. The token is single-use and expires in 15 minutes. The owner can also approve this on their Saddle Home page."
+msgid "This is a preview. Nothing has changed. Show the user the summary above and ask whether to go ahead. Only after they agree, call this tool again with the same arguments plus \"confirm_token\" set to the value above. The token is single-use and expires in 15 minutes. The owner can also approve this on their Saddle Overview page."
 msgstr ""
 
 #: includes/class-saddle-approval.php:382
@@ -4703,7 +4703,7 @@ msgid "Your browser"
 msgstr ""
 
 #: includes/class-saddle-approval.php:736
-#: admin/build/index.js:84
+#: admin/build/index.js:85
 #: admin/src/approvals-logic.js:57
 msgid "An app"
 msgstr ""
@@ -5177,8 +5177,8 @@ msgstr ""
 
 #: includes/class-saddle-context.php:87
 #: admin/build/index.js:1
-#: admin/build/index.js:39
-#: admin/src/components/ConnectApps.jsx:955
+#: admin/build/index.js:40
+#: admin/src/components/ConnectApps.jsx:966
 #: admin/src/connect-apps.js:380
 msgid "Address"
 msgstr ""
@@ -5319,7 +5319,7 @@ msgid "# When a call is refused"
 msgstr ""
 
 #: includes/class-saddle-context.php:263
-msgid "A permission error on a tool call means one of the site owner's controls blocked it: the global pause switch, the site's access level, or that specific tool being turned off. These are the owner's deliberate choices — never retry in a loop; tell the user which control to check in Saddle: the AI switch at the top of any Saddle page, this app's access on Agent setup, or single tools under Settings."
+msgid "A permission error on a tool call means one of the site owner's controls blocked it: the global pause switch, the site's access level, or that specific tool being turned off. These are the owner's deliberate choices — never retry in a loop; tell the user which control to check in Saddle: the AI switch at the top of any Saddle page, this app's access on Saddle → Agent setup, or single tools under Settings."
 msgstr ""
 
 #: includes/class-saddle-context.php:264
@@ -5453,7 +5453,7 @@ msgid "Apps connect from the site address and you approve them on a consent scre
 msgstr ""
 
 #: includes/class-saddle-core-settings.php:107
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:226
 #: admin/src/components/SignInCard.jsx:238
 msgid "Let apps register themselves"
@@ -5500,7 +5500,7 @@ msgid "Security"
 msgstr ""
 
 #: includes/class-saddle-core-settings.php:148
-#: admin/build/index.js:122
+#: admin/build/index.js:125
 #: admin/src/components/SettingsPage.jsx:185
 msgid "Major WordPress releases"
 msgstr ""
@@ -5519,7 +5519,7 @@ msgstr ""
 
 #: includes/class-saddle-core-settings.php:161
 #: includes/class-saddle-core-settings.php:172
-#: admin/build/index.js:101
+#: admin/build/index.js:104
 #: admin/src/components/Memory.jsx:125
 msgid "Memory"
 msgstr ""
@@ -5542,7 +5542,7 @@ msgstr ""
 
 #: includes/class-saddle-core-settings.php:181
 #: includes/class-saddle-core-settings.php:192
-#: admin/build/index.js:126
+#: admin/build/index.js:129
 #: admin/src/components/SettingsPage.jsx:537
 msgid "Recent changes"
 msgstr ""
@@ -5969,44 +5969,57 @@ msgid "What every connected app knows about this site: your instructions, skills
 msgstr ""
 
 #: includes/class-saddle-modules-view.php:113
+msgid "Every change your apps made and every attempt Saddle blocked, newest first, with Undo."
+msgstr ""
+
+#: includes/class-saddle-modules-view.php:114
 msgid "Safety switches, outside accounts like Unsplash, single tools, sign-in, plugins that add tools and the connection check."
 msgstr ""
 
 #. translators: %s: module name.
-#: includes/class-saddle-modules-view.php:119
+#: includes/class-saddle-modules-view.php:120
 #, php-format
 msgid "%s is installed."
 msgstr ""
 
 #: includes/class-saddle-modules.php:58
 #: includes/class-saddle-modules.php:61
-#: admin/build/index.js:127
+#: includes/class-saddle-modules.php:189
+#: admin/build/index.js:130
 #: admin/src/App.jsx:60
 #: admin/src/App.jsx:62
-msgid "Home"
+msgid "Overview"
 msgstr ""
 
 #: includes/class-saddle-modules.php:66
 #: includes/class-saddle-modules.php:69
+#: admin/build/index.js:91
+#: admin/src/components/Home.jsx:510
 msgid "Agent setup"
 msgstr ""
 
 #: includes/class-saddle-modules.php:76
 #: includes/class-saddle-modules.php:79
+msgid "Logs"
+msgstr ""
+
+#: includes/class-saddle-modules.php:86
+#: includes/class-saddle-modules.php:89
 msgid "Get Pro"
 msgstr ""
 
-#: includes/class-saddle-modules.php:84
-#: includes/class-saddle-modules.php:87
+#: includes/class-saddle-modules.php:94
+#: includes/class-saddle-modules.php:97
 msgid "Context"
 msgstr ""
 
-#: includes/class-saddle-modules.php:95
+#: includes/class-saddle-modules.php:105
 msgid "General"
 msgstr ""
 
-#: includes/class-saddle-modules.php:179
-msgid "Overview"
+#: includes/class-saddle-modules.php:285
+#: includes/class-saddle-modules.php:288
+msgid "Analytics"
 msgstr ""
 
 #: includes/class-saddle-notices.php:58
@@ -6022,7 +6035,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: includes/class-saddle-notices.php:84
-#: admin/build/index.js:88
+#: admin/build/index.js:89
 #: admin/src/components/NeedsYourOk.jsx:134
 msgid "Review"
 msgstr ""
@@ -6384,6 +6397,8 @@ msgid "Learn more"
 msgstr ""
 
 #: includes/class-saddle-recipes.php:84
+#: admin/build/index.js:94
+#: admin/src/get-pro-logic.js:39
 msgid "What you get"
 msgstr ""
 
@@ -7419,7 +7434,7 @@ msgid "When you decide, you will be sent back to %s"
 msgstr ""
 
 #: includes/oauth/class-saddle-oauth-consent.php:168
-#: admin/build/index.js:122
+#: admin/build/index.js:125
 #: admin/src/components/SettingsPage.jsx:202
 msgid "Allow"
 msgstr ""
@@ -7920,8 +7935,8 @@ msgid "Code editors"
 msgstr ""
 
 #: admin/build/index.js:1
-#: admin/build/index.js:39
-#: admin/src/components/ConnectApps.jsx:970
+#: admin/build/index.js:40
+#: admin/src/components/ConnectApps.jsx:981
 #: admin/src/connect-apps.js:381
 msgid "Authentication"
 msgstr ""
@@ -8181,7 +8196,7 @@ msgid "A security or firewall layer on your hosting strips the X-WP-Nonce header
 msgstr ""
 
 #: admin/build/index.js:23
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/AuthTrouble.jsx:160
 #: admin/src/components/ConnectionHealth.jsx:118
 #: admin/src/components/ConnectionHealth.jsx:235
@@ -8189,7 +8204,7 @@ msgid "Checking…"
 msgstr ""
 
 #: admin/build/index.js:23
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/AuthTrouble.jsx:161
 #: admin/src/components/ConnectionHealth.jsx:119
 #: admin/src/components/ConnectionHealth.jsx:236
@@ -8337,16 +8352,16 @@ msgid "The app connects only when you use it. Once you add Saddle, ask it someth
 msgstr ""
 
 #: admin/build/index.js:23
-#: admin/build/index.js:39
-#: admin/build/index.js:46
-#: admin/src/components/ConnectApps.jsx:894
+#: admin/build/index.js:40
+#: admin/build/index.js:47
+#: admin/src/components/ConnectApps.jsx:905
 #: admin/src/components/ConnectWizard.jsx:577
 #: admin/src/components/SelfCheck.jsx:95
 msgid "Use a key instead"
 msgstr ""
 
 #: admin/build/index.js:23
-#: admin/build/index.js:69
+#: admin/build/index.js:70
 #: admin/src/components/FirstRun.jsx:925
 #: admin/src/components/SelfCheck.jsx:99
 msgid "Skip for now"
@@ -8426,8 +8441,8 @@ msgid "Your address"
 msgstr ""
 
 #: admin/build/index.js:27
-#: admin/build/index.js:45
-#: admin/build/index.js:48
+#: admin/build/index.js:46
+#: admin/build/index.js:49
 #: admin/src/components/ConnectApps.jsx:363
 #: admin/src/components/ConnectWizard.jsx:532
 #: admin/src/components/McpDiagnostics.jsx:144
@@ -8435,15 +8450,15 @@ msgid "Copied"
 msgstr ""
 
 #: admin/build/index.js:27
-#: admin/build/index.js:39
+#: admin/build/index.js:40
 #: admin/src/components/ConnectApps.jsx:365
-#: admin/src/components/ConnectApps.jsx:964
+#: admin/src/components/ConnectApps.jsx:975
 msgid "Copy"
 msgstr ""
 
 #. translators: 1: app name, 2: what the app calls itself, e.g. claude-ai 0.1.0.
 #: admin/build/index.js:28
-#: admin/build/index.js:71
+#: admin/build/index.js:72
 #: admin/src/components/ConnectApps.jsx:393
 #: admin/src/onboarding-logic.js:218
 #, js-format
@@ -8503,113 +8518,121 @@ msgid "Make a key for %s"
 msgstr ""
 
 #: admin/build/index.js:34
-#: admin/build/index.js:96
 #: admin/src/components/ConnectApps.jsx:651
-#: admin/src/components/Home.jsx:512
 msgid "AI apps"
 msgstr ""
 
 #: admin/build/index.js:34
-#: admin/build/index.js:50
-#: admin/src/components/ConnectApps.jsx:677
+#: admin/src/components/ConnectApps.jsx:671
+msgid "Needs a public site"
+msgstr ""
+
+#: admin/build/index.js:34
+#: admin/build/index.js:51
+#: admin/src/components/ConnectApps.jsx:679
 #: admin/src/components/ConnectedClients.jsx:272
 msgid "Connected"
 msgstr ""
 
 #. translators: %s: app name, such as Claude.
 #: admin/build/index.js:35
-#: admin/src/components/ConnectApps.jsx:706
+#: admin/src/components/ConnectApps.jsx:708
 #, js-format
 msgid "Connect %s"
 msgstr ""
 
 #: admin/build/index.js:35
-#: admin/build/index.js:112
-#: admin/build/index.js:127
-#: admin/src/components/ConnectApps.jsx:714
+#: admin/build/index.js:115
+#: admin/build/index.js:130
+#: admin/src/components/ConnectApps.jsx:716
 #: admin/src/components/SignInCard.jsx:186
-#: admin/src/screens.jsx:289
+#: admin/src/screens.jsx:294
 msgid "Loading"
 msgstr ""
 
 #. translators: %s: app name, such as Claude.
 #: admin/build/index.js:36
-#: admin/src/components/ConnectApps.jsx:731
+#: admin/src/components/ConnectApps.jsx:735
 #, js-format
-msgid "%s runs on its own servers, so it can’t reach a site on this computer. These apps run here:"
+msgid "%s can’t reach this site"
 msgstr ""
 
 #. translators: %s: app name, such as Claude.
 #: admin/build/index.js:37
-#: admin/build/index.js:43
-#: admin/src/components/ConnectApps.jsx:756
-#: admin/src/components/ConnectWizard.jsx:419
+#: admin/src/components/ConnectApps.jsx:742
 #, js-format
-msgid "The %s desktop app can reach it through a small bridge."
-msgstr ""
-
-#: admin/build/index.js:37
-#: admin/src/components/ConnectApps.jsx:776
-msgid "Turn it on"
+msgid "This site runs on this computer, and %s connects from the internet. Pick an app that runs here instead."
 msgstr ""
 
 #. translators: %s: app name, such as Claude.
 #: admin/build/index.js:38
-#: admin/src/components/ConnectApps.jsx:793
+#: admin/src/components/ConnectApps.jsx:767
+#, js-format
+msgid "Or use the %s desktop app through a small bridge."
+msgstr ""
+
+#: admin/build/index.js:38
+#: admin/src/components/ConnectApps.jsx:787
+msgid "Turn it on"
+msgstr ""
+
+#. translators: %s: app name, such as Claude.
+#: admin/build/index.js:39
+#: admin/src/components/ConnectApps.jsx:804
 #, js-format
 msgid "Approve it on the screen %s opens here."
 msgstr ""
 
 #. translators: %s: app name, such as Claude Code.
-#: admin/build/index.js:39
 #: admin/build/index.js:40
-#: admin/src/components/ConnectApps.jsx:813
+#: admin/build/index.js:41
+#: admin/src/components/ConnectApps.jsx:824
 #: admin/src/components/ConnectWizard.jsx:314
 #, js-format
 msgid "%s already has a key."
 msgstr ""
 
-#: admin/build/index.js:39
 #: admin/build/index.js:40
-#: admin/src/components/ConnectApps.jsx:817
+#: admin/build/index.js:41
+#: admin/src/components/ConnectApps.jsx:828
 #: admin/src/components/ConnectWizard.jsx:318
 msgid "That connection has been used. Replacing its key stops the old one at once, then you paste the new setup into the app. Add a separate connection only for a second computer."
 msgstr ""
 
-#: admin/build/index.js:39
 #: admin/build/index.js:40
-#: admin/src/components/ConnectApps.jsx:821
+#: admin/build/index.js:41
+#: admin/src/components/ConnectApps.jsx:832
 #: admin/src/components/ConnectWizard.jsx:322
 msgid "That connection was never used, so its setup probably didn’t finish. Replace its key to try again without leaving an extra key behind."
 msgstr ""
 
-#: admin/build/index.js:39
 #: admin/build/index.js:40
-#: admin/src/components/ConnectApps.jsx:838
+#: admin/build/index.js:41
+#: admin/src/components/ConnectApps.jsx:849
 #: admin/src/components/ConnectWizard.jsx:337
 msgid "Replace its key (recommended)"
 msgstr ""
 
-#: admin/build/index.js:39
 #: admin/build/index.js:40
-#: admin/src/components/ConnectApps.jsx:851
+#: admin/build/index.js:41
+#: admin/src/components/ConnectApps.jsx:862
 #: admin/src/components/ConnectWizard.jsx:349
 msgid "Add another connection"
 msgstr ""
 
-#: admin/build/index.js:39
 #: admin/build/index.js:40
-#: admin/build/index.js:89
-#: admin/build/index.js:101
+#: admin/build/index.js:41
+#: admin/build/index.js:98
 #: admin/build/index.js:104
-#: admin/build/index.js:105
-#: admin/build/index.js:106
 #: admin/build/index.js:107
 #: admin/build/index.js:108
-#: admin/build/index.js:118
-#: admin/build/index.js:119
+#: admin/build/index.js:109
+#: admin/build/index.js:110
+#: admin/build/index.js:111
+#: admin/build/index.js:121
+#: admin/build/index.js:122
 #: admin/src/components/Activity.jsx:142
-#: admin/src/components/ConnectApps.jsx:858
+#: admin/src/components/ConnectApps.jsx:869
 #: admin/src/components/ConnectWizard.jsx:356
 #: admin/src/components/Guidance.jsx:188
 #: admin/src/components/Guidance.jsx:260
@@ -8623,35 +8646,35 @@ msgstr ""
 msgid "Cancel"
 msgstr ""
 
-#: admin/build/index.js:39
-#: admin/build/index.js:46
-#: admin/src/components/ConnectApps.jsx:908
+#: admin/build/index.js:40
+#: admin/build/index.js:47
+#: admin/src/components/ConnectApps.jsx:919
 #: admin/src/components/ConnectWizard.jsx:593
 msgid "Use the address instead"
 msgstr ""
 
-#: admin/build/index.js:39
-#: admin/src/components/ConnectApps.jsx:971
+#: admin/build/index.js:40
+#: admin/src/components/ConnectApps.jsx:982
 msgid "OAuth, client ID and secret blank"
 msgstr ""
 
-#: admin/build/index.js:39
-#: admin/src/components/ConnectApps.jsx:1033
+#: admin/build/index.js:40
+#: admin/src/components/ConnectApps.jsx:1044
 msgid "The key is shown once. If you leave without copying it, Saddle deletes it."
 msgstr ""
 
-#: admin/build/index.js:40
-#: admin/build/index.js:79
-#: admin/build/index.js:111
+#: admin/build/index.js:41
+#: admin/build/index.js:80
+#: admin/build/index.js:114
 #: admin/src/components/AuthTrouble.jsx:143
 #: admin/src/components/ConnectWizard.jsx:369
 #: admin/src/components/SettingsForm.jsx:382
 msgid "Try again"
 msgstr ""
 
-#: admin/build/index.js:40
 #: admin/build/index.js:41
-#: admin/build/index.js:46
+#: admin/build/index.js:42
+#: admin/build/index.js:47
 #: admin/src/components/ConnectWizard.jsx:372
 #: admin/src/components/ConnectWizard.jsx:395
 #: admin/src/components/ConnectWizard.jsx:646
@@ -8659,208 +8682,215 @@ msgid "Back"
 msgstr ""
 
 #. translators: %s: app name, such as ChatGPT.
-#: admin/build/index.js:41
+#: admin/build/index.js:42
 #: admin/src/components/ConnectWizard.jsx:386
 #, js-format
 msgid "%s runs on its own servers, so it can’t reach a site on this computer. Try Claude Code, Cursor or Codex here, or connect once the site is online."
 msgstr ""
 
 #. translators: %s: app name, such as Claude.
-#: admin/build/index.js:42
+#: admin/build/index.js:43
 #: admin/src/components/ConnectWizard.jsx:411
 #, js-format
 msgid "%s runs on its own servers, so it can’t reach a site on this computer."
 msgstr ""
 
-#: admin/build/index.js:43
+#. translators: %s: app name, such as Claude.
+#: admin/build/index.js:44
+#: admin/src/components/ConnectWizard.jsx:419
+#, js-format
+msgid "The %s desktop app can reach it through a small bridge."
+msgstr ""
+
+#: admin/build/index.js:44
 #: admin/src/components/ConnectWizard.jsx:441
 msgid "One switch first: sign-in for apps"
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/build/index.js:44
+#: admin/build/index.js:45
 #: admin/src/components/ConnectWizard.jsx:447
 #, js-format
 msgid "%s signs in through your WordPress instead of a pasted key, and that sign-in is off. Turn it on, and the app gets no access until you approve it here."
 msgstr ""
 
-#: admin/build/index.js:44
+#: admin/build/index.js:45
 #: admin/src/components/ConnectWizard.jsx:460
 msgid "Turn on sign-in"
 msgstr ""
 
-#: admin/build/index.js:44
+#: admin/build/index.js:45
 #: admin/src/components/ConnectWizard.jsx:482
 msgid "Your site can’t offer sign-in yet"
 msgstr ""
 
-#: admin/build/index.js:44
+#: admin/build/index.js:45
 #: admin/src/components/ConnectWizard.jsx:488
 msgid "This needs HTTPS first. A sign-in token sent over plain HTTP can be read in transit."
 msgstr ""
 
-#: admin/build/index.js:44
+#: admin/build/index.js:45
 #: admin/src/components/ConnectWizard.jsx:492
 msgid "This needs pretty permalinks. Go to Settings → Permalinks, choose anything other than Plain, and come back."
 msgstr ""
 
-#: admin/build/index.js:44
+#: admin/build/index.js:45
 #: admin/src/components/ConnectWizard.jsx:506
 msgid "Your connection address"
 msgstr ""
 
 #. translators: %s: the connection label.
-#: admin/build/index.js:45
+#: admin/build/index.js:46
 #: admin/src/components/ConnectWizard.jsx:512
 #, js-format
 msgid "Made for “%s” just now"
 msgstr ""
 
-#: admin/build/index.js:45
+#: admin/build/index.js:46
 #: admin/src/components/ConnectWizard.jsx:533
 msgid "Copy setup"
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/build/index.js:46
+#: admin/build/index.js:47
 #: admin/src/components/ConnectWizard.jsx:545
 #, js-format
 msgid "Or open %s with the server filled in, and confirm it there."
 msgstr ""
 
-#: admin/build/index.js:46
+#: admin/build/index.js:47
 #: admin/src/components/ConnectWizard.jsx:568
 msgid "A key also works, including from a script."
 msgstr ""
 
-#: admin/build/index.js:46
+#: admin/build/index.js:47
 #: admin/src/components/ConnectWizard.jsx:585
 msgid "This app can also connect with the address and a sign-in screen."
 msgstr ""
 
-#: admin/build/index.js:46
+#: admin/build/index.js:47
 #: admin/src/components/ConnectWizard.jsx:603
 msgid "This site runs on a local address, so the app must run on this same computer to reach it."
 msgstr ""
 
-#: admin/build/index.js:46
+#: admin/build/index.js:47
 #: admin/src/components/McpDiagnostics.jsx:74
 msgid "Loading client traffic…"
 msgstr ""
 
-#: admin/build/index.js:46
+#: admin/build/index.js:47
 #: admin/src/components/McpDiagnostics.jsx:85
 msgid "Client traffic"
 msgstr ""
 
-#: admin/build/index.js:46
+#: admin/build/index.js:47
 #: admin/src/components/McpDiagnostics.jsx:86
 msgid "If an app can’t see any tools, record its next attempt. You’ll see what it asked for and what Saddle sent back."
 msgstr ""
 
-#: admin/build/index.js:46
+#: admin/build/index.js:47
 #: admin/src/components/McpDiagnostics.jsx:94
 msgid "No app has asked for the tool list yet. Requests are recorded below either way."
 msgstr ""
 
 #. translators: 1: number of tools that loaded, 2: number installed.
-#: admin/build/index.js:47
+#: admin/build/index.js:48
 #: admin/src/components/McpDiagnostics.jsx:100
 #, js-format
 msgid "%1$d of the %2$d installed tools loaded. The requests below show how many each app was offered, which depends on its access level."
 msgstr ""
 
 #. translators: %s: comma-separated tool names.
-#: admin/build/index.js:48
+#: admin/build/index.js:49
 #: admin/src/components/McpDiagnostics.jsx:114
 #, js-format
 msgid "These tools didn’t load, so apps can’t call them: %s. Reload this page; if they’re still missing, send the report below."
 msgstr ""
 
-#: admin/build/index.js:48
+#: admin/build/index.js:49
 #: admin/src/components/McpDiagnostics.jsx:120
 msgid "No tools loaded at all, which is never normal. Reload this page; if it persists, send the report below."
 msgstr ""
 
-#: admin/build/index.js:48
+#: admin/build/index.js:49
 #: admin/src/components/McpDiagnostics.jsx:136
 msgid "Stop recording"
 msgstr ""
 
-#: admin/build/index.js:48
+#: admin/build/index.js:49
 #: admin/src/components/McpDiagnostics.jsx:137
 msgid "Record the next hour"
 msgstr ""
 
-#: admin/build/index.js:48
+#: admin/build/index.js:49
 #: admin/src/components/McpDiagnostics.jsx:145
 msgid "Copy report"
 msgstr ""
 
-#: admin/build/index.js:48
+#: admin/build/index.js:49
 #: admin/src/components/McpDiagnostics.jsx:152
 msgid "Hide report"
 msgstr ""
 
-#: admin/build/index.js:48
+#: admin/build/index.js:49
 #: admin/src/components/McpDiagnostics.jsx:153
 msgid "Show report"
 msgstr ""
 
-#: admin/build/index.js:48
+#: admin/build/index.js:49
 #: admin/src/components/McpDiagnostics.jsx:160
 msgid "Clear"
 msgstr ""
 
-#: admin/build/index.js:48
+#: admin/build/index.js:49
 #: admin/src/components/McpDiagnostics.jsx:168
 msgid "Recording. Ask the app to refresh its actions or run any request, then come back here."
 msgstr ""
 
-#: admin/build/index.js:48
+#: admin/build/index.js:49
 #: admin/src/components/McpDiagnostics.jsx:178
 msgid "Nothing has arrived yet."
 msgstr ""
 
-#: admin/build/index.js:48
+#: admin/build/index.js:49
 #: admin/src/components/McpDiagnostics.jsx:179
 msgid "Nothing recorded. If an app is misbehaving, start recording and then retry it from the app."
 msgstr ""
 
-#: admin/build/index.js:48
+#: admin/build/index.js:49
 #: admin/src/components/McpDiagnostics.jsx:188
 msgid "When"
 msgstr ""
 
-#: admin/build/index.js:48
+#: admin/build/index.js:49
 #: admin/src/components/McpDiagnostics.jsx:189
 msgid "Asked for"
 msgstr ""
 
-#: admin/build/index.js:48
+#: admin/build/index.js:49
 #: admin/src/components/McpDiagnostics.jsx:190
 msgid "Signed in with"
 msgstr ""
 
-#: admin/build/index.js:48
+#: admin/build/index.js:49
 #: admin/src/components/McpDiagnostics.jsx:191
 msgid "Result"
 msgstr ""
 
-#: admin/build/index.js:48
-#: admin/build/index.js:50
+#: admin/build/index.js:49
+#: admin/build/index.js:51
 #: admin/src/components/ConnectedClients.jsx:106
 #: admin/src/components/McpDiagnostics.jsx:192
 msgid "App"
 msgstr ""
 
-#: admin/build/index.js:48
+#: admin/build/index.js:49
 #: admin/src/components/McpDiagnostics.jsx:215
 msgid "nothing sent"
 msgstr ""
 
 #. translators: %d: how many tools Saddle sent the app.
-#: admin/build/index.js:49
+#: admin/build/index.js:50
 #: admin/src/components/McpDiagnostics.jsx:231
 #, js-format
 msgid "%d tool sent"
@@ -8868,36 +8898,36 @@ msgid_plural "%d tools sent"
 msgstr[0] ""
 msgstr[1] ""
 
-#: admin/build/index.js:49
+#: admin/build/index.js:50
 #: admin/src/components/McpDiagnostics.jsx:239
 msgid "OK"
 msgstr ""
 
 #. translators: %d: HTTP status code.
-#: admin/build/index.js:50
+#: admin/build/index.js:51
 #: admin/src/components/McpDiagnostics.jsx:245
 #, js-format
 msgid "refused (%d)"
 msgstr ""
 
-#: admin/build/index.js:50
+#: admin/build/index.js:51
 #: admin/src/components/ConnectedClients.jsx:57
 msgid "Looks at everything, changes nothing"
 msgstr ""
 
-#: admin/build/index.js:50
+#: admin/build/index.js:51
 #: admin/src/components/ConnectedClients.jsx:62
 msgid "Posts, pages, media, menus and SEO"
 msgstr ""
 
-#: admin/build/index.js:50
+#: admin/build/index.js:51
 #: admin/src/components/ConnectedClients.jsx:67
 msgid "Also plugins, themes, updates and settings"
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/build/index.js:51
-#: admin/build/index.js:69
+#: admin/build/index.js:52
+#: admin/build/index.js:70
 #: admin/src/components/ConnectedClients.jsx:301
 #: admin/src/components/FirstRun.jsx:495
 #, js-format
@@ -8905,111 +8935,111 @@ msgid "What %s can do"
 msgstr ""
 
 #. translators: 1: the app name, 2: its access, such as "Edit content".
-#: admin/build/index.js:52
+#: admin/build/index.js:53
 #: admin/src/components/ConnectedClients.jsx:172
 #, js-format
 msgid "%1$s is now set to “%2$s”. Reopen the app to pick up its new tools."
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/build/index.js:53
+#: admin/build/index.js:54
 #: admin/src/components/ConnectedClients.jsx:313
 #, js-format
 msgid "More for %s"
 msgstr ""
 
-#: admin/build/index.js:53
+#: admin/build/index.js:54
 #: admin/src/components/ConnectedClients.jsx:328
 msgid "Setup guide"
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/build/index.js:54
+#: admin/build/index.js:55
 #: admin/src/components/ConnectedClients.jsx:192
 #, js-format
 msgid "Rotate “%s”’s key?"
 msgstr ""
 
-#: admin/build/index.js:54
+#: admin/build/index.js:55
 #: admin/src/components/ConnectedClients.jsx:195
 msgid "The current key stops working when you confirm, and a new one is issued under the same name. The app can’t connect until you paste the new setup into it."
 msgstr ""
 
-#: admin/build/index.js:54
+#: admin/build/index.js:55
 #: admin/src/components/ConnectedClients.jsx:200
 #: admin/src/components/ConnectedClients.jsx:338
 msgid "Rotate key"
 msgstr ""
 
-#: admin/build/index.js:54
+#: admin/build/index.js:55
 #: admin/src/components/ConnectedClients.jsx:201
 msgid "Keep the current key"
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/build/index.js:55
+#: admin/build/index.js:56
 #: admin/src/components/ConnectedClients.jsx:215
 #, js-format
 msgid "Disconnect “%s”?"
 msgstr ""
 
-#: admin/build/index.js:55
+#: admin/build/index.js:56
 #: admin/src/components/ConnectedClients.jsx:219
 msgid "Its key stops working when you confirm, and the app loses access to this site. You can connect it again later with a new key."
 msgstr ""
 
-#: admin/build/index.js:55
+#: admin/build/index.js:56
 #: admin/src/components/ConnectedClients.jsx:223
 msgid "It loses access when you confirm. To use it again, you approve it once more."
 msgstr ""
 
-#: admin/build/index.js:55
+#: admin/build/index.js:56
 #: admin/src/components/ConnectedClients.jsx:228
 #: admin/src/components/ConnectedClients.jsx:347
 msgid "Disconnect"
 msgstr ""
 
-#: admin/build/index.js:55
+#: admin/build/index.js:56
 #: admin/src/components/ConnectedClients.jsx:229
 msgid "Keep it connected"
 msgstr ""
 
-#: admin/build/index.js:55
+#: admin/build/index.js:56
 #: admin/src/components/ConnectedClients.jsx:247
 msgid "Disconnected. That app’s sign-in no longer works."
 msgstr ""
 
-#: admin/build/index.js:55
+#: admin/build/index.js:56
 #: admin/src/components/FirstRun.jsx:71
 msgid "Pages are built with Divi 5, and your AI can edit them module by module."
 msgstr ""
 
-#: admin/build/index.js:55
+#: admin/build/index.js:56
 #: admin/src/components/FirstRun.jsx:76
 msgid "It’s a block theme, so your AI can edit pages, templates and patterns."
 msgstr ""
 
-#: admin/build/index.js:55
+#: admin/build/index.js:56
 #: admin/src/components/FirstRun.jsx:81
 msgid "Your AI can edit your pages and posts."
 msgstr ""
 
 #. translators: %s: site name.
-#: admin/build/index.js:56
+#: admin/build/index.js:57
 #: admin/src/components/FirstRun.jsx:87
 #, js-format
 msgid "I had a quick look around %s."
 msgstr ""
 
 #. translators: %s: SEO plugin name.
-#: admin/build/index.js:57
+#: admin/build/index.js:58
 #: admin/src/components/FirstRun.jsx:96
 #, js-format
 msgid "%s is active, so your AI can write titles and descriptions too."
 msgstr ""
 
 #. translators: %d: number of updates.
-#: admin/build/index.js:58
+#: admin/build/index.js:59
 #: admin/src/components/FirstRun.jsx:109
 #, js-format
 msgid "%d update is waiting."
@@ -9017,13 +9047,13 @@ msgid_plural "%d updates are waiting."
 msgstr[0] ""
 msgstr[1] ""
 
-#: admin/build/index.js:58
+#: admin/build/index.js:59
 #: admin/src/components/FirstRun.jsx:117
 msgid "Everything is up to date."
 msgstr ""
 
 #. translators: %d: number of images.
-#: admin/build/index.js:59
+#: admin/build/index.js:60
 #: admin/src/components/FirstRun.jsx:125
 #, js-format
 msgid "%d image has no alt text."
@@ -9032,7 +9062,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of pages and posts.
-#: admin/build/index.js:60
+#: admin/build/index.js:61
 #: admin/src/components/FirstRun.jsx:139
 #, js-format
 msgid "%d page or post has no search description of its own."
@@ -9041,449 +9071,453 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: one or two sentences, e.g. "12 images have no alt text."
-#: admin/build/index.js:61
+#: admin/build/index.js:62
 #: admin/src/components/FirstRun.jsx:155
 #, js-format
 msgid "Something your AI could start with: %s"
 msgstr ""
 
-#: admin/build/index.js:61
+#: admin/build/index.js:62
 #: admin/src/components/FirstRun.jsx:209
 msgid "Saddle is typing"
 msgstr ""
 
-#: admin/build/index.js:61
-#: admin/build/index.js:69
+#: admin/build/index.js:62
+#: admin/build/index.js:70
 #: admin/src/components/FirstRun.jsx:268
 #: admin/src/components/FirstRun.jsx:789
 msgid "Which AI do you use?"
 msgstr ""
 
-#: admin/build/index.js:61
+#: admin/build/index.js:62
 #: admin/src/components/FirstRun.jsx:289
 msgid "More…"
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/build/index.js:62
+#: admin/build/index.js:63
 #: admin/src/components/FirstRun.jsx:323
 #, js-format
 msgid "Let’s try it. Paste this into %s:"
 msgstr ""
 
 #. translators: 1: app name, 2: a tool name such as list-menus.
-#: admin/build/index.js:63
+#: admin/build/index.js:64
 #: admin/src/onboarding-logic.js:352
 #, js-format
 msgid "%1$s used %2$s"
 msgstr ""
 
-#: admin/build/index.js:63
-#: admin/build/index.js:76
+#: admin/build/index.js:64
+#: admin/build/index.js:77
 #: admin/src/components/FirstRun.jsx:1024
 #: admin/src/onboarding-logic.js:397
 msgid "It works."
 msgstr ""
 
 #. translators: %s: app name.
-#: admin/build/index.js:64
+#: admin/build/index.js:65
 #: admin/src/onboarding-logic.js:387
 #, js-format
 msgid "Waiting for %s to use Saddle…"
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/build/index.js:65
+#: admin/build/index.js:66
 #: admin/src/components/FirstRun.jsx:344
 #, js-format
 msgid "Waiting for %s to ask me something…"
 msgstr ""
 
-#: admin/build/index.js:65
+#: admin/build/index.js:66
 #: admin/src/components/FirstRun.jsx:355
 msgid "Nothing has arrived yet"
 msgstr ""
 
-#: admin/build/index.js:65
+#: admin/build/index.js:66
 #: admin/src/components/FirstRun.jsx:361
 msgid "Skip this step"
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/build/index.js:66
+#: admin/build/index.js:67
 #: admin/src/components/FirstRun.jsx:454
 #, js-format
 msgid "Checking what %s may do…"
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/build/index.js:67
+#: admin/build/index.js:68
 #: admin/src/components/FirstRun.jsx:469
 #, js-format
 msgid "Right now %s can only look. How much should it do?"
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/build/index.js:68
+#: admin/build/index.js:69
 #: admin/src/components/FirstRun.jsx:477
 #, js-format
 msgid "%s can already do more than look. Keep it that way, or change it:"
 msgstr ""
 
-#: admin/build/index.js:69
+#: admin/build/index.js:70
 #: admin/src/components/FirstRun.jsx:179
 msgid "A security layer at your host answered instead of WordPress. Reload, and if it keeps happening, ask your host to allow the WordPress REST API for signed-in administrators."
 msgstr ""
 
-#: admin/build/index.js:69
+#: admin/build/index.js:70
 #: admin/src/components/FirstRun.jsx:513
 msgid "Now"
 msgstr ""
 
-#: admin/build/index.js:69
+#: admin/build/index.js:70
 #: admin/src/components/FirstRun.jsx:582
 msgid "Yes, turn it on"
 msgstr ""
 
-#: admin/build/index.js:69
+#: admin/build/index.js:70
 #: admin/src/components/FirstRun.jsx:583
 msgid "Yes, add it"
 msgstr ""
 
-#: admin/build/index.js:69
+#: admin/build/index.js:70
 #: admin/src/components/FirstRun.jsx:611
 msgid "One more question. Saddle Analytics is installed but off. It counts visits without cookies, and your AI can read the numbers. Turn it on?"
 msgstr ""
 
-#: admin/build/index.js:69
+#: admin/build/index.js:70
 #: admin/src/components/FirstRun.jsx:615
 msgid "One more question. Do you want visitor stats? Saddle Analytics counts visits without cookies, and your AI can read the numbers."
 msgstr ""
 
-#: admin/build/index.js:69
+#: admin/build/index.js:70
 #: admin/src/components/FirstRun.jsx:626
 msgid "Visitor stats"
 msgstr ""
 
-#: admin/build/index.js:69
+#: admin/build/index.js:70
 #: admin/src/components/FirstRun.jsx:640
 #: admin/src/components/FirstRun.jsx:647
 msgid "Not now"
 msgstr ""
 
-#: admin/build/index.js:69
+#: admin/build/index.js:70
 #: admin/src/components/FirstRun.jsx:655
 msgid "Turning on Saddle Analytics…"
 msgstr ""
 
-#: admin/build/index.js:69
+#: admin/build/index.js:70
 #: admin/src/components/FirstRun.jsx:656
 msgid "Installing Saddle Analytics from WordPress.org…"
 msgstr ""
 
-#: admin/build/index.js:69
+#: admin/build/index.js:70
+#: admin/build/index.js:104
+#: admin/src/components/AnalyticsOffer.jsx:48
 #: admin/src/components/FirstRun.jsx:666
 msgid "Saddle Analytics is on."
 msgstr ""
 
-#: admin/build/index.js:69
+#: admin/build/index.js:70
 #: admin/src/components/FirstRun.jsx:668
 msgid "It counts visits from now on, and has its own page in the Saddle menu."
 msgstr ""
 
-#: admin/build/index.js:69
+#: admin/build/index.js:70
 #: admin/src/components/FirstRun.jsx:681
 msgid "You can add it from the Plugins screen instead."
 msgstr ""
 
-#: admin/build/index.js:69
-#: admin/build/index.js:82
-#: admin/src/components/AnalyticsTile.jsx:68
+#: admin/build/index.js:70
+#: admin/build/index.js:83
+#: admin/build/index.js:104
+#: admin/src/components/AnalyticsOffer.jsx:126
+#: admin/src/components/AnalyticsTile.jsx:67
 #: admin/src/components/FirstRun.jsx:686
 msgid "Open Plugins"
 msgstr ""
 
-#: admin/build/index.js:69
+#: admin/build/index.js:70
 #: admin/src/components/FirstRun.jsx:697
 msgid "You can turn it on any time from Home."
 msgstr ""
 
-#: admin/build/index.js:69
+#: admin/build/index.js:70
 #: admin/src/components/FirstRun.jsx:701
 msgid "You can add it any time from Home."
 msgstr ""
 
-#: admin/build/index.js:69
+#: admin/build/index.js:70
 #: admin/src/components/FirstRun.jsx:784
 msgid "Hi, I’m Saddle. I let your AI work on this site, and I ask you before anything risky."
 msgstr ""
 
-#: admin/build/index.js:69
+#: admin/build/index.js:70
 #: admin/src/components/FirstRun.jsx:856
 msgid "Finish"
 msgstr ""
 
-#: admin/build/index.js:69
-#: admin/build/index.js:128
-#: admin/src/App.jsx:576
+#: admin/build/index.js:70
+#: admin/build/index.js:131
+#: admin/src/App.jsx:579
 #: admin/src/components/FirstRun.jsx:933
 msgid "Welcome"
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/build/index.js:70
+#: admin/build/index.js:71
 #: admin/src/components/FirstRun.jsx:962
 #, js-format
 msgid "Let’s connect %s."
 msgstr ""
 
-#: admin/build/index.js:70
+#: admin/build/index.js:71
 #: admin/src/components/FirstRun.jsx:968
 msgid "This preview runs in your browser"
 msgstr ""
 
-#: admin/build/index.js:70
+#: admin/build/index.js:71
 #: admin/src/components/FirstRun.jsx:972
 msgid "So no AI app can connect to it. To connect one, install Saddle on your own site."
 msgstr ""
 
-#: admin/build/index.js:70
+#: admin/build/index.js:71
 #: admin/src/components/FirstRun.jsx:978
 msgid "Skip and look around"
 msgstr ""
 
 #. translators: %s: app name.
-#: admin/build/index.js:72
+#: admin/build/index.js:73
 #: admin/src/onboarding-logic.js:224
 #, js-format
 msgid "%s connected"
 msgstr ""
 
 #. translators: %s: app name.
-#: admin/build/index.js:73
+#: admin/build/index.js:74
 #: admin/src/onboarding-logic.js:237
 #, js-format
 msgid "%s asked to connect. Approve it on the screen that opened."
 msgstr ""
 
 #. translators: %s: app name.
-#: admin/build/index.js:74
+#: admin/build/index.js:75
 #: admin/src/onboarding-logic.js:251
 #, js-format
 msgid "Waiting for %s…"
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/build/index.js:75
+#: admin/build/index.js:76
 #: admin/src/components/FirstRun.jsx:908
 #, js-format
 msgid "I’ll know the moment %s connects…"
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/build/index.js:76
+#: admin/build/index.js:77
 #: admin/src/components/FirstRun.jsx:1004
 #, js-format
 msgid "%s is connected."
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/build/index.js:77
+#: admin/build/index.js:78
 #: admin/src/components/FirstRun.jsx:534
 #, js-format
-msgid "Done. %s can now draft and edit your content. Anything big still waits for your OK, and every change shows up on Home."
+msgid "Done. %s can now draft and edit your content. Anything big still waits for your OK, and every change shows up on Overview."
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/build/index.js:78
+#: admin/build/index.js:79
 #: admin/src/components/FirstRun.jsx:543
 #, js-format
-msgid "Done. %s can now help run the site. Anything big still waits for your OK, and every change shows up on Home."
+msgid "Done. %s can now help run the site. Anything big still waits for your OK, and every change shows up on Overview."
 msgstr ""
 
 #. translators: %s: the app name.
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/FirstRun.jsx:552
 #, js-format
-msgid "Done. %s can look around, and you can give it more on Agent setup any time."
+msgid "Done. %s can look around, and you can give it more on Saddle → Agent setup any time."
 msgstr ""
 
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/Tour.jsx:41
 msgid "Pause your AI from here"
 msgstr ""
 
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/Tour.jsx:42
 msgid "It shows AI on or Paused at the top of every Saddle page. Click it to pause every app at once."
 msgstr ""
 
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/Tour.jsx:53
 msgid "Everything else is in the Saddle menu"
 msgstr ""
 
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/Tour.jsx:54
-msgid "Modules, Agent setup, Context and Settings."
+msgid "Your add-ons, Context, Agent setup and Settings."
 msgstr ""
 
-#: admin/build/index.js:79
-#: admin/src/components/Tour.jsx:65
-msgid "Every change shows up here"
+#: admin/build/index.js:80
+#: admin/src/components/Tour.jsx:69
+msgid "Every change is in Logs"
 msgstr ""
 
-#: admin/build/index.js:79
-#: admin/src/components/Tour.jsx:66
-msgid "Changes your AI made and what Saddle blocked, newest first."
+#: admin/build/index.js:80
+#: admin/src/components/Tour.jsx:70
+msgid "Changes your AI made and what Saddle blocked, newest first, with Undo."
 msgstr ""
 
-#: admin/build/index.js:79
-#: admin/src/components/Tour.jsx:156
+#: admin/build/index.js:80
+#: admin/src/components/Tour.jsx:160
 msgid "Done"
 msgstr ""
 
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/AuthTrouble.jsx:26
 msgid "Your host is removing a WordPress header"
 msgstr ""
 
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/AuthTrouble.jsx:27
 msgid "A security or firewall layer on your hosting strips the X-WP-Nonce header before WordPress sees it. Saddle also sends its sign-in token another way, so reloading may fix this. If it keeps happening, ask your host to let that header through."
 msgstr ""
 
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/AuthTrouble.jsx:31
 msgid "Please allow the X-WP-Nonce request header through to WordPress for this site. Your security layer is currently stripping it, which signs admin users out of plugin settings screens."
 msgstr ""
 
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/AuthTrouble.jsx:38
 msgid "Your host is blocking this site’s admin screens"
 msgstr ""
 
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/AuthTrouble.jsx:42
 msgid "The sign-in token WordPress uses for admin requests isn’t reaching it, as a header or in the address. Saddle can’t work around that. Your host needs to stop filtering these requests."
 msgstr ""
 
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/AuthTrouble.jsx:46
 msgid "Please stop filtering requests to /wp-json/ on this site. The X-WP-Nonce header and the _wpnonce parameter are both being removed, which signs administrators out of every plugin settings screen."
 msgstr ""
 
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/AuthTrouble.jsx:53
 msgid "Your login isn’t reaching WordPress"
 msgstr ""
 
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/AuthTrouble.jsx:54
 msgid "A caching or security layer is dropping your WordPress login cookie from requests to the site’s API. The requests arrive as if nobody is signed in, and Saddle can’t work around that."
 msgstr ""
 
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/AuthTrouble.jsx:58
 msgid "Please exclude /wp-json/ from caching and cookie stripping on this site. WordPress login cookies are not reaching the REST API, so signed-in administrators are treated as logged out."
 msgstr ""
 
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/AuthTrouble.jsx:65
 msgid "Your sign-in has expired"
 msgstr ""
 
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/AuthTrouble.jsx:66
 msgid "Your credentials reached WordPress, but it no longer recognises them. The session may have timed out, or the site was copied from another one, which changes the keys WordPress signs sessions with. Sign in again to fix it."
 msgstr ""
 
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/AuthTrouble.jsx:74
 msgid "Something else refused the request"
 msgstr ""
 
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/AuthTrouble.jsx:75
 msgid "Your sign-in reached WordPress and it recognises you. The usual cause is a security plugin filtering the site’s API. Deactivate security plugins one at a time to find it."
 msgstr ""
 
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/AuthTrouble.jsx:83
 msgid "Saddle can’t reach this site’s API"
 msgstr ""
 
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/AuthTrouble.jsx:84
 msgid "Even the check that needs no sign-in didn’t answer, so requests to /wp-json/ are being blocked or redirected before WordPress handles them. Your host or a security plugin is the place to look."
 msgstr ""
 
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/AuthTrouble.jsx:88
 msgid "Please allow requests to /wp-json/ on this site. They are currently being blocked before WordPress can handle them, which breaks the WordPress REST API and any plugin that relies on it."
 msgstr ""
 
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/AuthTrouble.jsx:132
 msgid "Send this to your host"
 msgstr ""
 
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/AuthTrouble.jsx:151
 msgid "Sign in again"
 msgstr ""
 
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/SectionNav.jsx:80
 msgid "Sections"
 msgstr ""
 
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/Frame.jsx:197
 msgid "Paused"
 msgstr ""
 
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/Frame.jsx:198
 msgid "AI on"
 msgstr ""
 
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/Frame.jsx:206
 msgid "AI is paused"
 msgstr ""
 
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/Frame.jsx:207
 msgid "AI is on"
 msgstr ""
 
-#: admin/build/index.js:79
-#: admin/build/index.js:82
+#: admin/build/index.js:80
+#: admin/build/index.js:83
 #: admin/src/components/Frame.jsx:211
-#: admin/src/components/Frame.jsx:577
+#: admin/src/components/Frame.jsx:580
 msgid "No app can read or change this site until you resume."
 msgstr ""
 
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/Frame.jsx:215
 msgid "Your apps can work on this site, each within the access you gave it."
 msgstr ""
 
-#: admin/build/index.js:79
-#: admin/build/index.js:82
+#: admin/build/index.js:80
+#: admin/build/index.js:83
 #: admin/src/components/Frame.jsx:231
-#: admin/src/components/Frame.jsx:589
+#: admin/src/components/Frame.jsx:592
 msgid "Resume"
 msgstr ""
 
-#: admin/build/index.js:79
+#: admin/build/index.js:80
 #: admin/src/components/Frame.jsx:232
 msgid "Pause all apps"
 msgstr ""
 
 #. translators: %d: number of notices.
-#: admin/build/index.js:80
+#: admin/build/index.js:81
 #: admin/src/components/Frame.jsx:293
 #, js-format
 msgid "%d notice from other plugins"
@@ -9492,7 +9526,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of notices.
-#: admin/build/index.js:81
+#: admin/build/index.js:82
 #: admin/src/components/Frame.jsx:304
 #, js-format
 msgid "%d notice"
@@ -9500,85 +9534,89 @@ msgid_plural "%d notices"
 msgstr[0] ""
 msgstr[1] ""
 
-#: admin/build/index.js:81
+#: admin/build/index.js:82
 #: admin/src/components/Frame.jsx:329
 msgid "From Saddle"
 msgstr ""
 
 #. translators: %s: plugin version.
-#: admin/build/index.js:82
+#: admin/build/index.js:83
 #: admin/src/components/Frame.jsx:364
 #, js-format
 msgid "Saddle %s"
 msgstr ""
 
-#: admin/build/index.js:82
+#: admin/build/index.js:83
 #: admin/src/components/Frame.jsx:382
 msgid "Docs"
 msgstr ""
 
-#: admin/build/index.js:82
+#: admin/build/index.js:83
 #: admin/src/components/Frame.jsx:387
 msgid "Rate Saddle"
 msgstr ""
 
-#: admin/build/index.js:82
-#: admin/src/components/Frame.jsx:534
+#: admin/build/index.js:83
+#: admin/src/components/Frame.jsx:537
 msgid "Skip to content"
 msgstr ""
 
-#: admin/build/index.js:82
-#: admin/src/components/Frame.jsx:576
+#: admin/build/index.js:83
+#: admin/src/components/Frame.jsx:579
 msgid "AI is paused."
 msgstr ""
 
-#: admin/build/index.js:82
-#: admin/src/components/AnalyticsTile.jsx:39
+#: admin/build/index.js:83
+#: admin/src/components/AnalyticsTile.jsx:38
 msgid "Visitor stats, no cookies"
 msgstr ""
 
-#: admin/build/index.js:82
-#: admin/src/components/AnalyticsTile.jsx:49
+#: admin/build/index.js:83
+#: admin/src/components/AnalyticsTile.jsx:48
 msgid "Turn on"
 msgstr ""
 
-#: admin/build/index.js:82
-#: admin/src/components/AnalyticsTile.jsx:50
+#: admin/build/index.js:83
+#: admin/src/components/AnalyticsTile.jsx:49
 msgid "Install"
 msgstr ""
 
-#: admin/build/index.js:82
-#: admin/src/components/AnalyticsTile.jsx:55
+#: admin/build/index.js:83
+#: admin/build/index.js:104
+#: admin/src/components/AnalyticsOffer.jsx:65
+#: admin/src/components/AnalyticsTile.jsx:54
 msgid "Turning it on…"
 msgstr ""
 
-#: admin/build/index.js:82
-#: admin/src/components/AnalyticsTile.jsx:56
+#: admin/build/index.js:83
+#: admin/build/index.js:104
+#: admin/src/components/AnalyticsOffer.jsx:66
+#: admin/src/components/AnalyticsTile.jsx:55
 msgid "Installing from WordPress.org…"
 msgstr ""
 
-#: admin/build/index.js:82
-#: admin/src/components/AnalyticsTile.jsx:58
+#: admin/build/index.js:83
+#: admin/src/components/AnalyticsTile.jsx:57
 msgid "On"
 msgstr ""
 
-#: admin/build/index.js:82
-#: admin/src/components/AnalyticsTile.jsx:61
+#: admin/build/index.js:83
+#: admin/src/components/AnalyticsTile.jsx:60
 msgid "Open"
 msgstr ""
 
-#: admin/build/index.js:82
-#: admin/src/components/AnalyticsTile.jsx:85
+#: admin/build/index.js:83
+#: admin/src/components/AnalyticsTile.jsx:77
 msgid "Saddle Analytics"
 msgstr ""
 
-#: admin/build/index.js:82
+#: admin/build/index.js:83
 #: admin/src/approvals-logic.js:17
 msgid "just now"
 msgstr ""
 
 #. translators: %d: minutes.
-#: admin/build/index.js:83
+#: admin/build/index.js:84
 #: admin/src/approvals-logic.js:23
 #, js-format
 msgid "%d min ago"
@@ -9587,7 +9625,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: hours.
-#: admin/build/index.js:84
+#: admin/build/index.js:85
 #: admin/src/approvals-logic.js:30
 #, js-format
 msgid "%d hour ago"
@@ -9596,878 +9634,969 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: app name.
-#: admin/build/index.js:85
+#: admin/build/index.js:86
 #: admin/src/approvals-logic.js:61
 #, js-format
 msgid "%s wants to make a change"
 msgstr ""
 
 #. translators: 1: app name, 2: what it wants to do, e.g. "publish “Spring sale”".
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:71
 #, js-format
 msgid "%1$s wants to %2$s"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:122
 msgid "Type"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:123
 msgid "Title"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:124
 msgid "Status"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:125
 msgid "Status now"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:126
 msgid "New status"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:127
 msgid "Can be restored"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:128
 msgid "What changes"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:129
 msgid "File type"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:130
 msgid "File"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:131
 msgid "Menu"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:132
 msgid "Blocks inside"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:133
 msgid "Sub-items that move up"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:134
 msgid "Setting"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:135
 msgid "Value now"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:136
 msgid "New value"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:137
 msgid "Module"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:138
 msgid "Items"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:139
 msgid "Note"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:140
 #: admin/src/approvals-logic.js:196
 msgid "Plugin"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:141
 #: admin/src/approvals-logic.js:197
 msgid "Theme"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:142
 msgid "Version"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:178
 msgid "Published"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:179
 #: admin/src/approvals-logic.js:180
 msgid "Draft"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:181
 msgid "Pending review"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:182
 msgid "Private"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:183
 msgid "Scheduled"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:184
 msgid "In the trash"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:193
 msgid "Post"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:194
 msgid "Page"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:195
 msgid "Media"
 msgstr ""
 
-#: admin/build/index.js:86
-#: admin/build/index.js:112
+#: admin/build/index.js:87
+#: admin/build/index.js:115
 #: admin/src/approvals-logic.js:260
 #: admin/src/components/SignInCard.jsx:107
 msgid "Yes"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/approvals-logic.js:260
 msgid "No"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/components/NeedsYourOk.jsx:84
 msgid "Reject"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/components/NeedsYourOk.jsx:91
 msgid "Approve"
 msgstr ""
 
-#: admin/build/index.js:86
+#: admin/build/index.js:87
 #: admin/src/components/NeedsYourOk.jsx:98
 msgid "Needs your OK"
 msgstr ""
 
 #. translators: %s: how long ago, e.g. "3 min ago".
-#: admin/build/index.js:87
+#: admin/build/index.js:88
 #: admin/src/components/NeedsYourOk.jsx:113
 #, js-format
 msgid "Asked %s · set to ask you first, so only you can approve it"
 msgstr ""
 
 #. translators: %s: how long ago, e.g. "3 min ago".
-#: admin/build/index.js:88
+#: admin/build/index.js:89
 #: admin/src/components/NeedsYourOk.jsx:121
 #, js-format
 msgid "Asked %s · waits until you decide"
 msgstr ""
 
-#: admin/build/index.js:88
+#: admin/build/index.js:89
 #: admin/src/components/NeedsYourOk.jsx:149
 msgid "Review a request"
 msgstr ""
 
 #. translators: 1: the value now, 2: the value after the change.
-#: admin/build/index.js:89
+#: admin/build/index.js:90
 #: admin/src/components/NeedsYourOk.jsx:167
 #, js-format
 msgid "%1$s → %2$s"
 msgstr ""
 
-#: admin/build/index.js:89
-#: admin/src/components/Activity.jsx:66
-msgid "Loading activity"
-msgstr ""
-
-#: admin/build/index.js:89
-#: admin/src/components/Activity.jsx:126
-msgid "What comes back"
-msgstr ""
-
-#: admin/build/index.js:89
-#: admin/src/components/Activity.jsx:150
-msgid "Undo change"
-msgstr ""
-
-#: admin/build/index.js:89
-#: admin/src/components/Activity.jsx:106
-msgid "This change can’t be undone"
-msgstr ""
-
-#: admin/build/index.js:89
-#: admin/build/index.js:95
-#: admin/build/index.js:119
-#: admin/src/components/Activity.jsx:115
-#: admin/src/components/Activity.jsx:455
-#: admin/src/components/Services.jsx:302
-msgid "Close"
-msgstr ""
-
-#: admin/build/index.js:89
-#: admin/src/components/Activity.jsx:282
-msgid "All"
-msgstr ""
-
-#: admin/build/index.js:89
-#: admin/build/index.js:96
-#: admin/src/components/Activity.jsx:283
-#: admin/src/home-logic.js:64
-msgid "Changes"
-msgstr ""
-
-#: admin/build/index.js:89
-#: admin/build/index.js:96
-#: admin/src/components/Activity.jsx:284
-#: admin/src/home-logic.js:69
-msgid "Blocked"
-msgstr ""
-
-#: admin/build/index.js:89
-#: admin/src/components/Activity.jsx:289
-msgid "Rehearsed"
-msgstr ""
-
-#: admin/build/index.js:89
-#: admin/src/activity-format.js:78
-msgid "Today"
-msgstr ""
-
-#: admin/build/index.js:89
-#: admin/src/activity-format.js:81
-msgid "Yesterday"
-msgstr ""
-
-#: admin/build/index.js:89
-#: admin/src/activity-format.js:208
-msgid "Earlier"
-msgstr ""
-
-#: admin/build/index.js:89
-#: admin/src/components/Activity.jsx:308
-msgid "Filter activity"
-msgstr ""
-
-#: admin/build/index.js:89
-#: admin/src/components/Activity.jsx:324
-msgid "Nothing has been blocked"
-msgstr ""
-
-#: admin/build/index.js:89
-#: admin/src/components/Activity.jsx:325
-msgid "No activity yet"
-msgstr ""
-
-#: admin/build/index.js:89
-#: admin/src/components/Activity.jsx:329
-msgid "Attempts outside an app’s access appear here."
-msgstr ""
-
-#: admin/build/index.js:89
-#: admin/src/components/Activity.jsx:333
-msgid "Changes your apps make appear here. Reading is not logged."
-msgstr ""
-
-#. translators: 1: a tool's name, 2: the access level it needs.
 #: admin/build/index.js:90
-#: admin/src/activity-format.js:177
-#, js-format
-msgid "Blocked · %1$s · needs %2$s"
-msgstr ""
-
-#. translators: %s: a tool's name.
-#: admin/build/index.js:91
-#: admin/src/activity-format.js:183
-#, js-format
-msgid "Blocked · %s"
-msgstr ""
-
-#. translators: %s: a tool's name.
-#: admin/build/index.js:92
-#: admin/src/activity-format.js:190
-#, js-format
-msgid "Rehearsed · %s"
-msgstr ""
-
-#. translators: %s: the app that made the change, such as "Claude Code".
-#: admin/build/index.js:93
-#: admin/src/activity-format.js:348
-#, js-format
-msgid "via %s"
-msgstr ""
-
-#: admin/build/index.js:93
-#: admin/src/activity-format.js:356
-msgid "by you"
-msgstr ""
-
-#. translators: %s: the name of the person who made the change.
-#: admin/build/index.js:94
-#: admin/src/activity-format.js:360
-#, js-format
-msgid "by %s"
-msgstr ""
-
-#. translators: %s: the change, as the activity log shows it.
-#: admin/build/index.js:95
-#: admin/src/components/Activity.jsx:401
-#, js-format
-msgid "Undo: %s"
-msgstr ""
-
-#: admin/build/index.js:95
-#: admin/src/components/Activity.jsx:405
-msgid "Undo"
-msgstr ""
-
-#: admin/build/index.js:95
-#: admin/src/components/Activity.jsx:410
-msgid "Undone"
-msgstr ""
-
-#: admin/build/index.js:95
-#: admin/src/components/Activity.jsx:443
-msgid "Show older"
-msgstr ""
-
-#: admin/build/index.js:95
-#: admin/src/components/Activity.jsx:453
-msgid "Undo this change"
-msgstr ""
-
-#: admin/build/index.js:95
-#: admin/src/activity-format.js:322
-msgid "Change undone."
-msgstr ""
-
-#: admin/build/index.js:95
-#: admin/src/activity-format.js:331
-msgid "Nothing was undone. Try again."
-msgstr ""
-
-#: admin/build/index.js:95
-#: admin/src/components/Home.jsx:63
+#: admin/src/components/Home.jsx:68
 msgid "Set up"
 msgstr ""
 
-#: admin/build/index.js:95
-#: admin/build/index.js:96
-#: admin/src/components/Home.jsx:64
-#: admin/src/components/Home.jsx:499
+#: admin/build/index.js:90
+#: admin/build/index.js:91
+#: admin/src/components/Home.jsx:69
+#: admin/src/components/Home.jsx:494
 msgid "Check"
 msgstr ""
 
-#: admin/build/index.js:95
-#: admin/build/index.js:112
-#: admin/build/index.js:113
-#: admin/build/index.js:122
-#: admin/src/components/Home.jsx:65
+#: admin/build/index.js:90
+#: admin/build/index.js:115
+#: admin/build/index.js:116
+#: admin/build/index.js:125
+#: admin/src/components/Home.jsx:70
 #: admin/src/components/SettingsPage.jsx:204
 #: admin/src/components/SignInCard.jsx:152
 #: admin/src/services-logic.js:25
 msgid "Off"
 msgstr ""
 
-#: admin/build/index.js:95
-#: admin/src/components/Home.jsx:137
+#: admin/build/index.js:90
+#: admin/src/components/Home.jsx:142
 msgid "Changes each day this week"
 msgstr ""
 
 #. translators: 1: a day, such as "Monday, October 20", 2: how many changes.
-#: admin/build/index.js:96
-#: admin/src/components/Home.jsx:149
+#: admin/build/index.js:91
+#: admin/src/components/Home.jsx:154
 #, js-format
 msgid "%1$s: %2$d change"
 msgid_plural "%1$s: %2$d changes"
 msgstr[0] ""
 msgstr[1] ""
 
-#: admin/build/index.js:96
+#: admin/build/index.js:91
+#: admin/build/index.js:98
+#: admin/src/components/Activity.jsx:283
+#: admin/src/home-logic.js:64
+msgid "Changes"
+msgstr ""
+
+#: admin/build/index.js:91
+#: admin/build/index.js:98
+#: admin/src/components/Activity.jsx:284
+#: admin/src/home-logic.js:69
+msgid "Blocked"
+msgstr ""
+
+#: admin/build/index.js:91
 #: admin/src/home-logic.js:74
 msgid "Waiting for you"
 msgstr ""
 
-#: admin/build/index.js:96
-#: admin/src/components/Home.jsx:219
+#: admin/build/index.js:91
+#: admin/src/components/Home.jsx:226
 msgid "This week"
 msgstr ""
 
-#: admin/build/index.js:96
-#: admin/src/components/Home.jsx:402
+#: admin/build/index.js:91
+#: admin/src/components/Home.jsx:230
+msgid "See logs"
+msgstr ""
+
+#: admin/build/index.js:91
+#: admin/src/components/Home.jsx:404
 msgid "No AI app is connected yet."
 msgstr ""
 
-#: admin/build/index.js:96
-#: admin/src/components/Home.jsx:405
+#: admin/build/index.js:91
+#: admin/src/components/Home.jsx:407
+#: admin/src/components/Home.jsx:580
 msgid "Connect an app"
 msgstr ""
 
-#: admin/build/index.js:96
-#: admin/src/components/Home.jsx:411
-#: admin/src/components/Home.jsx:646
-msgid "Activity"
-msgstr ""
-
-#: admin/build/index.js:96
-#: admin/src/components/Home.jsx:483
+#: admin/build/index.js:91
+#: admin/src/components/Home.jsx:478
 msgid "Connections may not work"
 msgstr ""
 
-#: admin/build/index.js:96
-#: admin/src/components/Home.jsx:486
+#: admin/build/index.js:91
+#: admin/src/components/Home.jsx:481
 msgid "Your server may block the sign-in header apps need, or Application Passwords are off."
 msgstr ""
 
-#: admin/build/index.js:96
-#: admin/src/components/Home.jsx:520
+#: admin/build/index.js:91
+#: admin/src/components/Home.jsx:517
 msgid "Manage"
 msgstr ""
 
-#: admin/build/index.js:96
-#: admin/src/components/Home.jsx:528
-msgid "Connect app"
-msgstr ""
-
-#: admin/build/index.js:96
-#: admin/src/components/Home.jsx:453
+#: admin/build/index.js:91
+#: admin/src/components/Home.jsx:448
 msgid "Try it"
 msgstr ""
 
-#: admin/build/index.js:96
-#: admin/src/components/Home.jsx:464
+#: admin/build/index.js:91
+#: admin/src/components/Home.jsx:459
 msgid "Change access"
 msgstr ""
 
-#: admin/build/index.js:96
-#: admin/src/components/Home.jsx:579
+#: admin/build/index.js:91
+#: admin/src/components/Home.jsx:588
 msgid "Add-ons"
 msgstr ""
 
-#: admin/build/index.js:96
-#: admin/src/components/Home.jsx:632
+#: admin/build/index.js:91
+#: admin/src/components/Home.jsx:648
 msgid "Works with"
 msgstr ""
 
 #. translators: %s: an amount in US dollars, such as 19.
-#: admin/build/index.js:97
-#: admin/src/get-pro-logic.js:128
+#: admin/build/index.js:92
+#: admin/src/get-pro-logic.js:196
 #, js-format
 msgid "$%s"
 msgstr ""
 
-#: admin/build/index.js:97
-#: admin/build/index.js:118
-#: admin/src/components/GetPro.jsx:19
+#: admin/build/index.js:92
+#: admin/build/index.js:104
+#: admin/build/index.js:121
+#: admin/src/components/AnalyticsOffer.jsx:83
+#: admin/src/components/GetPro.jsx:32
 #: admin/src/components/Services.jsx:245
 msgid "(opens in a new tab)"
 msgstr ""
 
-#: admin/build/index.js:97
-#: admin/src/get-pro-logic.js:30
-msgid "Go"
-msgstr ""
-
-#: admin/build/index.js:97
-#: admin/src/get-pro-logic.js:31
-msgid "Keep every site updated and online."
-msgstr ""
-
-#: admin/build/index.js:97
-#: admin/src/get-pro-logic.js:33
-msgid "What you get:"
-msgstr ""
-
-#: admin/build/index.js:97
-#: admin/src/get-pro-logic.js:35
-msgid "One AI connection for all your sites"
-msgstr ""
-
-#: admin/build/index.js:97
-#: admin/src/get-pro-logic.js:36
-msgid "Plugin, theme and WordPress updates on every site"
-msgstr ""
-
-#: admin/build/index.js:97
-#: admin/src/get-pro-logic.js:40
-msgid "Uptime monitoring and Site Health alerts"
-msgstr ""
-
-#: admin/build/index.js:97
-#: admin/src/get-pro-logic.js:41
-msgid "Google Search Console and Site Audit"
-msgstr ""
-
-#: admin/build/index.js:97
-#: admin/src/get-pro-logic.js:42
-msgid "Email support"
-msgstr ""
-
-#: admin/build/index.js:97
-#: admin/src/get-pro-logic.js:48
-msgid "Build with Divi and WooCommerce."
-msgstr ""
-
-#: admin/build/index.js:97
-#: admin/src/get-pro-logic.js:50
-msgid "Everything in Go, plus:"
-msgstr ""
-
-#: admin/build/index.js:97
-#: admin/src/get-pro-logic.js:52
-msgid "Saddle Pro on every site"
-msgstr ""
-
-#: admin/build/index.js:97
-#: admin/src/get-pro-logic.js:53
-msgid "Build or copy a whole Divi page in one step"
-msgstr ""
-
-#: admin/build/index.js:97
-#: admin/src/get-pro-logic.js:54
-msgid "Divi design system, Library and Theme Builder"
-msgstr ""
-
-#: admin/build/index.js:97
-#: admin/src/get-pro-logic.js:55
-msgid "Pages held to your design brief"
-msgstr ""
-
-#: admin/build/index.js:97
-#: admin/src/get-pro-logic.js:56
-msgid "Site-wide changes and WooCommerce bulk edits, with undo"
-msgstr ""
-
-#: admin/build/index.js:97
-#: admin/src/get-pro-logic.js:64
-msgid "Reach"
-msgstr ""
-
-#: admin/build/index.js:97
-#: admin/src/get-pro-logic.js:65
-msgid "Get found on Google and in AI answers."
-msgstr ""
-
-#: admin/build/index.js:97
-#: admin/src/get-pro-logic.js:68
-msgid "Everything in Pro, plus:"
-msgstr ""
-
-#: admin/build/index.js:97
-#: admin/src/get-pro-logic.js:70
-msgid "Keyword research with live Google data"
-msgstr ""
-
-#: admin/build/index.js:97
-#: admin/src/get-pro-logic.js:71
-msgid "Weekly rankings, with Google’s AI Overview"
-msgstr ""
-
-#: admin/build/index.js:97
-#: admin/src/get-pro-logic.js:72
-msgid "Competitors checked every week"
-msgstr ""
-
-#: admin/build/index.js:97
-#: admin/src/get-pro-logic.js:73
-msgid "Article plans your AI writes as drafts"
-msgstr ""
-
-#: admin/build/index.js:97
-#: admin/src/get-pro-logic.js:74
-msgid "Credit packs when you need more"
-msgstr ""
-
-#. translators: %s: a number of SEO credits, such as 4,500.
-#: admin/build/index.js:98
-#: admin/src/get-pro-logic.js:98
-#, js-format
-msgid "%s SEO credits a month"
-msgstr ""
-
-#: admin/build/index.js:98
-#: admin/src/components/GetPro.jsx:29
-msgid "Saddle stays free. A plan adds Saddle Cloud, one AI connection for all your sites, and Saddle Pro on Pro and Reach."
-msgstr ""
-
-#: admin/build/index.js:98
-#: admin/src/components/GetPro.jsx:36
-msgid "How many sites"
-msgstr ""
-
-#. translators: %d: a number of sites.
-#: admin/build/index.js:99
-#: admin/src/components/GetPro.jsx:41
-#, js-format
-msgid "%d sites"
-msgstr ""
-
-#: admin/build/index.js:99
-#: admin/src/components/GetPro.jsx:68
-msgid "Saddle Pro"
-msgstr ""
-
-#: admin/build/index.js:99
-#: admin/src/components/GetPro.jsx:78
-msgid "a month"
+#: admin/build/index.js:92
+#: admin/src/components/GetPro.jsx:67
+msgid "/ month"
 msgstr ""
 
 #. translators: %s: the price for a year, such as $228.
-#: admin/build/index.js:100
-#: admin/src/components/GetPro.jsx:84
+#: admin/build/index.js:93
+#: admin/src/components/GetPro.jsx:74
 #, js-format
-msgid "Billed yearly, %s a year"
+msgid "%s billed yearly"
 msgstr ""
 
 #. translators: %s: a plan's name, such as Pro.
-#: admin/build/index.js:101
-#: admin/src/components/GetPro.jsx:97
+#: admin/build/index.js:94
+#: admin/src/components/GetPro.jsx:88
 #, js-format
 msgid "Choose %s"
 msgstr ""
 
-#: admin/build/index.js:101
-#: admin/src/components/GetPro.jsx:121
-msgid "7-day money-back guarantee"
+#: admin/build/index.js:94
+#: admin/src/get-pro-logic.js:35
+msgid "Go"
 msgstr ""
 
-#: admin/build/index.js:101
+#: admin/build/index.js:94
+#: admin/src/get-pro-logic.js:36
+msgid "Keep your sites updated and online"
+msgstr ""
+
+#: admin/build/index.js:94
+#: admin/src/get-pro-logic.js:41
+msgid "Updates on every site"
+msgstr ""
+
+#: admin/build/index.js:94
+#: admin/src/get-pro-logic.js:42
+msgid "Uptime and health alerts"
+msgstr ""
+
+#: admin/build/index.js:94
+#: admin/src/get-pro-logic.js:43
+msgid "Search Console and site audit"
+msgstr ""
+
+#: admin/build/index.js:94
+#: admin/src/get-pro-logic.js:44
+msgid "Email support"
+msgstr ""
+
+#: admin/build/index.js:94
+#: admin/src/get-pro-logic.js:52
+msgid "Build with Divi and WooCommerce"
+msgstr ""
+
+#: admin/build/index.js:94
+#: admin/src/get-pro-logic.js:55
+msgid "Everything in Go, plus"
+msgstr ""
+
+#: admin/build/index.js:94
+#: admin/src/get-pro-logic.js:57
+msgid "Saddle Pro on every site"
+msgstr ""
+
+#: admin/build/index.js:94
+#: admin/src/get-pro-logic.js:58
+msgid "Whole Divi pages in one step"
+msgstr ""
+
+#: admin/build/index.js:94
+#: admin/src/get-pro-logic.js:59
+msgid "WooCommerce bulk edits"
+msgstr ""
+
+#: admin/build/index.js:94
+#: admin/src/get-pro-logic.js:60
+msgid "Undo for site-wide changes"
+msgstr ""
+
+#: admin/build/index.js:94
+#: admin/src/get-pro-logic.js:67
+msgid "Reach"
+msgstr ""
+
+#: admin/build/index.js:94
+#: admin/src/get-pro-logic.js:68
+msgid "Get found on Google and in AI answers"
+msgstr ""
+
+#: admin/build/index.js:94
+#: admin/src/get-pro-logic.js:72
+msgid "Everything in Pro, plus"
+msgstr ""
+
+#: admin/build/index.js:94
+#: admin/src/get-pro-logic.js:74
+msgid "Keyword research with Google data"
+msgstr ""
+
+#: admin/build/index.js:94
+#: admin/src/get-pro-logic.js:75
+msgid "Weekly rankings and AI Overviews"
+msgstr ""
+
+#: admin/build/index.js:94
+#: admin/src/get-pro-logic.js:76
+msgid "Competitors checked every week"
+msgstr ""
+
+#: admin/build/index.js:94
+#: admin/src/get-pro-logic.js:77
+msgid "Article drafts your AI writes"
+msgstr ""
+
+#. translators: %d: a number of sites.
+#: admin/build/index.js:95
+#: admin/build/index.js:98
+#: admin/src/components/GetPro.jsx:143
+#: admin/src/get-pro-logic.js:116
+#, js-format
+msgid "%d sites"
+msgstr ""
+
+#. translators: %s: a number of calls, such as 5,000.
+#: admin/build/index.js:96
+#: admin/src/get-pro-logic.js:124
+#, js-format
+msgid "%s AI-app calls a day"
+msgstr ""
+
+#. translators: %s: a number of SEO credits, such as 4,500.
+#: admin/build/index.js:97
+#: admin/src/get-pro-logic.js:134
+#, js-format
+msgid "%s SEO credits a month"
+msgstr ""
+
+#: admin/build/index.js:97
+#: admin/src/get-pro-logic.js:137
+msgid "No SEO credits"
+msgstr ""
+
+#: admin/build/index.js:97
 #: admin/src/components/GetPro.jsx:128
-msgid "Compare plans on saddle.to"
+msgid "One AI connection for all your sites"
 msgstr ""
 
+#: admin/build/index.js:97
+#: admin/src/components/GetPro.jsx:131
+msgid "Saddle is free and stays free. Pick a plan to work on every site from one AI app."
+msgstr ""
+
+#: admin/build/index.js:97
+#: admin/src/components/GetPro.jsx:138
+msgid "How many sites"
+msgstr ""
+
+#: admin/build/index.js:98
+#: admin/src/components/GetPro.jsx:160
+msgid "7-day money-back guarantee on every plan"
+msgstr ""
+
+#: admin/build/index.js:98
+#: admin/src/components/GetPro.jsx:165
+msgid "Questions"
+msgstr ""
+
+#: admin/build/index.js:98
+#: admin/src/get-pro-logic.js:156
+msgid "Do I need a plan?"
+msgstr ""
+
+#: admin/build/index.js:98
+#: admin/src/get-pro-logic.js:157
+msgid "No. Saddle is free on every site. A plan lets one AI app work on all your sites through Saddle Cloud."
+msgstr ""
+
+#: admin/build/index.js:98
+#: admin/src/get-pro-logic.js:163
+msgid "What is an AI-app call?"
+msgstr ""
+
+#: admin/build/index.js:98
+#: admin/src/get-pro-logic.js:164
+msgid "One request your AI app sends through Saddle Cloud. A site you connect to your AI app directly is never counted."
+msgstr ""
+
+#: admin/build/index.js:98
+#: admin/src/get-pro-logic.js:170
+msgid "What is an SEO credit?"
+msgstr ""
+
+#: admin/build/index.js:98
+#: admin/src/get-pro-logic.js:171
+msgid "Credits pay for Google data on Reach. A keyword search uses about 15. Unused credits carry over for a month."
+msgstr ""
+
+#: admin/build/index.js:98
+#: admin/src/get-pro-logic.js:177
+msgid "Can I change or cancel?"
+msgstr ""
+
+#: admin/build/index.js:98
+#: admin/src/get-pro-logic.js:178
+msgid "Yes, from your Saddle Cloud account. Moving up, you pay the difference. Every plan has a 7-day money-back guarantee."
+msgstr ""
+
+#: admin/build/index.js:98
+#: admin/src/components/GetPro.jsx:181
+msgid "Compare every detail on saddle.to"
+msgstr ""
+
+#: admin/build/index.js:98
+#: admin/src/components/Activity.jsx:66
+msgid "Loading activity"
+msgstr ""
+
+#: admin/build/index.js:98
+#: admin/src/components/Activity.jsx:126
+msgid "What comes back"
+msgstr ""
+
+#: admin/build/index.js:98
+#: admin/src/components/Activity.jsx:150
+msgid "Undo change"
+msgstr ""
+
+#: admin/build/index.js:98
+#: admin/src/components/Activity.jsx:106
+msgid "This change can’t be undone"
+msgstr ""
+
+#: admin/build/index.js:98
+#: admin/build/index.js:104
+#: admin/build/index.js:122
+#: admin/src/components/Activity.jsx:115
+#: admin/src/components/Activity.jsx:455
+#: admin/src/components/Services.jsx:302
+msgid "Close"
+msgstr ""
+
+#: admin/build/index.js:98
+#: admin/src/components/Activity.jsx:282
+msgid "All"
+msgstr ""
+
+#: admin/build/index.js:98
+#: admin/src/components/Activity.jsx:289
+msgid "Rehearsed"
+msgstr ""
+
+#: admin/build/index.js:98
+#: admin/src/activity-format.js:78
+msgid "Today"
+msgstr ""
+
+#: admin/build/index.js:98
+#: admin/src/activity-format.js:81
+msgid "Yesterday"
+msgstr ""
+
+#: admin/build/index.js:98
+#: admin/src/activity-format.js:208
+msgid "Earlier"
+msgstr ""
+
+#: admin/build/index.js:98
+#: admin/src/components/Activity.jsx:308
+msgid "Filter activity"
+msgstr ""
+
+#: admin/build/index.js:98
+#: admin/src/components/Activity.jsx:324
+msgid "Nothing has been blocked"
+msgstr ""
+
+#: admin/build/index.js:98
+#: admin/src/components/Activity.jsx:325
+msgid "No activity yet"
+msgstr ""
+
+#: admin/build/index.js:98
+#: admin/src/components/Activity.jsx:329
+msgid "Attempts outside an app’s access appear here."
+msgstr ""
+
+#: admin/build/index.js:98
+#: admin/src/components/Activity.jsx:333
+msgid "Changes your apps make appear here. Reading is not logged."
+msgstr ""
+
+#. translators: 1: a tool's name, 2: the access level it needs.
+#: admin/build/index.js:99
+#: admin/src/activity-format.js:177
+#, js-format
+msgid "Blocked · %1$s · needs %2$s"
+msgstr ""
+
+#. translators: %s: a tool's name.
+#: admin/build/index.js:100
+#: admin/src/activity-format.js:183
+#, js-format
+msgid "Blocked · %s"
+msgstr ""
+
+#. translators: %s: a tool's name.
 #: admin/build/index.js:101
+#: admin/src/activity-format.js:190
+#, js-format
+msgid "Rehearsed · %s"
+msgstr ""
+
+#. translators: %s: the app that made the change, such as "Claude Code".
+#: admin/build/index.js:102
+#: admin/src/activity-format.js:348
+#, js-format
+msgid "via %s"
+msgstr ""
+
+#: admin/build/index.js:102
+#: admin/src/activity-format.js:356
+msgid "by you"
+msgstr ""
+
+#. translators: %s: the name of the person who made the change.
+#: admin/build/index.js:103
+#: admin/src/activity-format.js:360
+#, js-format
+msgid "by %s"
+msgstr ""
+
+#. translators: %s: the change, as the activity log shows it.
+#: admin/build/index.js:104
+#: admin/src/components/Activity.jsx:401
+#, js-format
+msgid "Undo: %s"
+msgstr ""
+
+#: admin/build/index.js:104
+#: admin/src/components/Activity.jsx:405
+msgid "Undo"
+msgstr ""
+
+#: admin/build/index.js:104
+#: admin/src/components/Activity.jsx:410
+msgid "Undone"
+msgstr ""
+
+#: admin/build/index.js:104
+#: admin/src/components/Activity.jsx:443
+msgid "Show older"
+msgstr ""
+
+#: admin/build/index.js:104
+#: admin/src/components/Activity.jsx:453
+msgid "Undo this change"
+msgstr ""
+
+#: admin/build/index.js:104
+#: admin/src/activity-format.js:322
+msgid "Change undone."
+msgstr ""
+
+#: admin/build/index.js:104
+#: admin/src/activity-format.js:331
+msgid "Nothing was undone. Try again."
+msgstr ""
+
+#: admin/build/index.js:104
+#: admin/src/components/AnalyticsOffer.jsx:36
+msgid "Visitors, pages and sources, without cookies"
+msgstr ""
+
+#: admin/build/index.js:104
+#: admin/src/components/AnalyticsOffer.jsx:37
+msgid "The visitors AI apps send you"
+msgstr ""
+
+#: admin/build/index.js:104
+#: admin/src/components/AnalyticsOffer.jsx:38
+msgid "The AI crawlers that read your site"
+msgstr ""
+
+#: admin/build/index.js:104
+#: admin/src/components/AnalyticsOffer.jsx:39
+msgid "Your AI app can read the numbers"
+msgstr ""
+
+#: admin/build/index.js:104
+#: admin/src/components/AnalyticsOffer.jsx:51
+msgid "Open Analytics"
+msgstr ""
+
+#: admin/build/index.js:104
+#: admin/src/components/AnalyticsOffer.jsx:69
+msgid "Turn on Saddle Analytics"
+msgstr ""
+
+#: admin/build/index.js:104
+#: admin/src/components/AnalyticsOffer.jsx:70
+msgid "Install Saddle Analytics"
+msgstr ""
+
+#: admin/build/index.js:104
+#: admin/src/components/AnalyticsOffer.jsx:76
+msgid "Ask a site administrator to install Saddle Analytics."
+msgstr ""
+
+#: admin/build/index.js:104
+#: admin/src/components/AnalyticsOffer.jsx:81
+msgid "See it on WordPress.org"
+msgstr ""
+
+#: admin/build/index.js:104
+#: admin/src/components/AnalyticsOffer.jsx:102
+msgid "See who visits your site"
+msgstr ""
+
+#: admin/build/index.js:104
+#: admin/src/components/AnalyticsOffer.jsx:105
+msgid "Saddle Analytics is free and counts visits without cookies. Add it and the stats show here."
+msgstr ""
+
+#: admin/build/index.js:104
 #: admin/src/context-fields.js:21
 msgid "About this site"
 msgstr ""
 
-#: admin/build/index.js:101
+#: admin/build/index.js:104
 #: admin/src/context-fields.js:22
 msgid "What the site is, who it is for, and what they come to do."
 msgstr ""
 
-#: admin/build/index.js:101
+#: admin/build/index.js:104
 #: admin/src/context-fields.js:26
 msgid "e.g. A bakery in Leeds. Most visitors want the opening hours, the menu, or to order a cake."
 msgstr ""
 
-#: admin/build/index.js:101
+#: admin/build/index.js:104
 #: admin/src/context-fields.js:34
 msgid "Current goal"
 msgstr ""
 
-#: admin/build/index.js:101
+#: admin/build/index.js:104
 #: admin/src/context-fields.js:35
 msgid "What you are working toward right now, and by when."
 msgstr ""
 
-#: admin/build/index.js:101
+#: admin/build/index.js:104
 #: admin/src/context-fields.js:39
 msgid "e.g. More cake orders before December. The new Shop pages come first."
 msgstr ""
 
-#: admin/build/index.js:101
+#: admin/build/index.js:104
 #: admin/src/context-fields.js:47
 msgid "Voice and style"
 msgstr ""
 
-#: admin/build/index.js:101
+#: admin/build/index.js:104
 #: admin/src/context-fields.js:48
 msgid "How the writing should sound, and words to avoid."
 msgstr ""
 
-#: admin/build/index.js:101
+#: admin/build/index.js:104
 #: admin/src/context-fields.js:52
 msgid "e.g. Warm and short. British spelling. Never say “artisanal”."
 msgstr ""
 
-#: admin/build/index.js:101
+#: admin/build/index.js:104
 #: admin/src/context-fields.js:60
 msgid "Rules"
 msgstr ""
 
-#: admin/build/index.js:101
+#: admin/build/index.js:104
 #: admin/src/context-fields.js:61
 msgid "What your AI must always or never do on this site."
 msgstr ""
 
-#: admin/build/index.js:101
+#: admin/build/index.js:104
 #: admin/src/context-fields.js:65
 msgid "e.g. Save new posts as drafts for me to review. Never edit the homepage."
 msgstr ""
 
-#: admin/build/index.js:101
+#: admin/build/index.js:104
 #: admin/src/context-fields.js:73
 msgid "Other instructions"
 msgstr ""
 
-#: admin/build/index.js:101
+#: admin/build/index.js:104
 #: admin/src/context-fields.js:74
 msgid "Anything else every connected app should follow."
 msgstr ""
 
-#: admin/build/index.js:101
+#: admin/build/index.js:104
 #: admin/src/components/Memory.jsx:126
 msgid "Notes kept between sessions, saved by you or by your AI. Pin an entry to tell every session."
 msgstr ""
 
-#: admin/build/index.js:101
+#: admin/build/index.js:104
 #: admin/src/components/Memory.jsx:137
 msgid "Add memory"
 msgstr ""
 
-#: admin/build/index.js:101
+#: admin/build/index.js:104
 #: admin/src/components/Memory.jsx:147
 msgid "Add something to remember"
 msgstr ""
 
-#: admin/build/index.js:101
+#: admin/build/index.js:104
 #: admin/src/components/Memory.jsx:163
 msgid "e.g. The pricing page is “Plans” (page 42). Update it, never create a new one."
 msgstr ""
 
-#: admin/build/index.js:101
+#: admin/build/index.js:104
 #: admin/src/components/Memory.jsx:170
 msgid "Name (optional)"
 msgstr ""
 
-#: admin/build/index.js:101
+#: admin/build/index.js:104
 #: admin/src/components/Memory.jsx:181
 msgid "e.g. pricing-page"
 msgstr ""
 
-#: admin/build/index.js:101
+#: admin/build/index.js:104
 #: admin/src/components/Memory.jsx:195
 msgid "Remember this"
 msgstr ""
 
-#: admin/build/index.js:101
+#: admin/build/index.js:104
 #: admin/src/components/Memory.jsx:218
 msgid "Nothing remembered yet."
 msgstr ""
 
 #. translators: %s: app name.
-#: admin/build/index.js:102
+#: admin/build/index.js:105
 #: admin/src/components/Memory.jsx:235
 #, js-format
 msgid "Saved by %s · "
 msgstr ""
 
-#: admin/build/index.js:102
+#: admin/build/index.js:105
 #: admin/src/components/Memory.jsx:237
 msgid "an app"
 msgstr ""
 
-#: admin/build/index.js:102
-#: admin/build/index.js:103
+#: admin/build/index.js:105
+#: admin/build/index.js:106
 #: admin/src/components/Memory.jsx:246
 #: admin/src/components/Memory.jsx:291
 msgid "Pinned"
 msgstr ""
 
-#: admin/build/index.js:102
+#: admin/build/index.js:105
 #: admin/src/components/Memory.jsx:261
 msgid "Hide"
 msgstr ""
 
-#: admin/build/index.js:102
-#: admin/build/index.js:107
+#: admin/build/index.js:105
+#: admin/build/index.js:110
 #: admin/src/components/Guidance.jsx:490
 #: admin/src/components/Memory.jsx:262
 msgid "View"
 msgstr ""
 
 #. translators: %s: entry key.
-#: admin/build/index.js:103
+#: admin/build/index.js:106
 #: admin/src/components/Memory.jsx:284
 #, js-format
 msgid "Pin “%s” so every session is told it"
 msgstr ""
 
 #. translators: %s: entry key.
-#: admin/build/index.js:104
+#: admin/build/index.js:107
 #: admin/src/components/Memory.jsx:80
 #, js-format
 msgid "Forget “%s”?"
 msgstr ""
 
-#: admin/build/index.js:104
-#: admin/build/index.js:108
+#: admin/build/index.js:107
+#: admin/build/index.js:111
 #: admin/src/components/Guidance.jsx:329
 #: admin/src/components/Memory.jsx:83
 msgid "This cannot be undone."
 msgstr ""
 
-#: admin/build/index.js:104
+#: admin/build/index.js:107
 #: admin/src/components/Memory.jsx:85
 msgid "Forget"
 msgstr ""
 
-#: admin/build/index.js:104
-#: admin/build/index.js:108
+#: admin/build/index.js:107
+#: admin/build/index.js:111
 #: admin/src/components/Guidance.jsx:331
 #: admin/src/components/Memory.jsx:299
 msgid "Delete"
 msgstr ""
 
-#: admin/build/index.js:104
-#: admin/build/index.js:105
+#: admin/build/index.js:107
+#: admin/build/index.js:108
 #: admin/src/components/Memory.jsx:314
 #: admin/src/components/Memory.jsx:352
 msgid "Auto-include AI-written memory"
 msgstr ""
 
-#: admin/build/index.js:104
+#: admin/build/index.js:107
 #: admin/src/components/Memory.jsx:319
 msgid "Your own and pinned entries go to every new session. An entry an AI saved is found only when it searches, unless you pin it or turn this on. Off is safest, so pin the entries worth keeping. Memory never changes what an app may do."
 msgstr ""
 
-#: admin/build/index.js:104
+#: admin/build/index.js:107
 #: admin/src/components/Memory.jsx:95
 msgid "Clear AI-written memory?"
 msgstr ""
 
 #. translators: %d: how many AI-written memory entries will be deleted.
-#: admin/build/index.js:105
+#: admin/build/index.js:108
 #: admin/src/components/Memory.jsx:98
 #, js-format
 msgid "This deletes %d AI-written entry. Your own entries are kept."
@@ -10475,47 +10604,47 @@ msgid_plural "This deletes %d AI-written entries. Your own entries are kept."
 msgstr[0] ""
 msgstr[1] ""
 
-#: admin/build/index.js:105
+#: admin/build/index.js:108
 #: admin/src/components/Memory.jsx:107
 msgid "Clear it"
 msgstr ""
 
-#: admin/build/index.js:105
+#: admin/build/index.js:108
 #: admin/src/components/Memory.jsx:337
 msgid "Clear AI-written memory"
 msgstr ""
 
-#: admin/build/index.js:105
+#: admin/build/index.js:108
 #: admin/src/components/Guidance.jsx:148
 msgid "Not written yet"
 msgstr ""
 
-#: admin/build/index.js:105
-#: admin/build/index.js:107
+#: admin/build/index.js:108
+#: admin/build/index.js:110
 #: admin/src/components/Guidance.jsx:156
 #: admin/src/components/Guidance.jsx:630
 msgid "Edit"
 msgstr ""
 
-#: admin/build/index.js:105
+#: admin/build/index.js:108
 #: admin/src/components/Guidance.jsx:157
 msgid "Add"
 msgstr ""
 
-#: admin/build/index.js:105
-#: admin/build/index.js:107
-#: admin/build/index.js:112
+#: admin/build/index.js:108
+#: admin/build/index.js:110
+#: admin/build/index.js:115
 #: admin/src/components/Guidance.jsx:180
 #: admin/src/components/Guidance.jsx:597
 #: admin/src/components/SettingsForm.jsx:436
 msgid "Save"
 msgstr ""
 
-#: admin/build/index.js:105
-#: admin/build/index.js:107
-#: admin/build/index.js:112
-#: admin/build/index.js:122
-#: admin/build/index.js:123
+#: admin/build/index.js:108
+#: admin/build/index.js:110
+#: admin/build/index.js:115
+#: admin/build/index.js:125
+#: admin/build/index.js:126
 #: admin/src/components/Guidance.jsx:303
 #: admin/src/components/Guidance.jsx:362
 #: admin/src/components/SettingsForm.jsx:348
@@ -10525,277 +10654,277 @@ msgstr ""
 msgid "Saved."
 msgstr ""
 
-#: admin/build/index.js:105
+#: admin/build/index.js:108
 #: admin/src/components/Guidance.jsx:382
 msgid "What your AI is told"
 msgstr ""
 
-#: admin/build/index.js:105
+#: admin/build/index.js:108
 #: admin/src/components/Guidance.jsx:390
 msgid "About your site"
 msgstr ""
 
-#: admin/build/index.js:105
+#: admin/build/index.js:108
 #: admin/src/components/Guidance.jsx:412
 msgid "Skills"
 msgstr ""
 
-#: admin/build/index.js:105
+#: admin/build/index.js:108
 #: admin/src/components/Guidance.jsx:413
 msgid "Playbook files (.md) that teach your AI a job on this site, such as “how we publish a post” or “our SEO checklist”. Every connected app sees the list and reads a skill when a task matches. Only you can add skills, and a skill never gives an app more access than you set."
 msgstr ""
 
-#: admin/build/index.js:105
+#: admin/build/index.js:108
 #: admin/src/components/Guidance.jsx:423
 msgid "Add skill"
 msgstr ""
 
 #. translators: %s: skill name.
-#: admin/build/index.js:106
+#: admin/build/index.js:109
 #: admin/src/components/Guidance.jsx:247
 #, js-format
 msgid "Replace the skill “%s”?"
 msgstr ""
 
-#: admin/build/index.js:106
+#: admin/build/index.js:109
 #: admin/src/components/Guidance.jsx:251
 msgid "Apps will read this file instead of the built-in skill."
 msgstr ""
 
-#: admin/build/index.js:106
+#: admin/build/index.js:109
 #: admin/src/components/Guidance.jsx:255
 msgid "This file replaces the text you have now."
 msgstr ""
 
-#: admin/build/index.js:106
+#: admin/build/index.js:109
 #: admin/src/components/Guidance.jsx:259
 msgid "Replace"
 msgstr ""
 
-#: admin/build/index.js:106
+#: admin/build/index.js:109
 #: admin/src/components/Guidance.jsx:271
 msgid "Skill replaced."
 msgstr ""
 
-#: admin/build/index.js:106
+#: admin/build/index.js:109
 #: admin/src/components/Guidance.jsx:272
 msgid "Skill installed."
 msgstr ""
 
-#: admin/build/index.js:106
+#: admin/build/index.js:109
 #: admin/src/components/Guidance.jsx:462
 msgid "Built in"
 msgstr ""
 
 #. translators: %s: skill name.
-#: admin/build/index.js:107
+#: admin/build/index.js:110
 #: admin/src/components/Guidance.jsx:475
 #, js-format
 msgid "Enable the skill “%s”"
 msgstr ""
 
-#: admin/build/index.js:107
+#: admin/build/index.js:110
 #: admin/src/components/Guidance.jsx:502
 msgid "No skills yet."
 msgstr ""
 
-#: admin/build/index.js:107
+#: admin/build/index.js:110
 #: admin/src/components/Guidance.jsx:518
 msgid "What apps see"
 msgstr ""
 
-#: admin/build/index.js:107
+#: admin/build/index.js:110
 #: admin/src/components/Guidance.jsx:519
 msgid "Saddle writes this from your site’s pages, design and plugins, and from what each app may do. It stays current on its own, and you can’t edit it here."
 msgstr ""
 
-#: admin/build/index.js:107
+#: admin/build/index.js:110
 #: admin/src/components/Guidance.jsx:526
 msgid "Show what your AI is told"
 msgstr ""
 
-#: admin/build/index.js:107
+#: admin/build/index.js:110
 #: admin/src/components/Guidance.jsx:552
 msgid "Show readable view"
 msgstr ""
 
-#: admin/build/index.js:107
+#: admin/build/index.js:110
 #: admin/src/components/Guidance.jsx:553
 msgid "View exact text"
 msgstr ""
 
-#: admin/build/index.js:107
+#: admin/build/index.js:110
 #: admin/src/components/Guidance.jsx:570
 msgid "Skill"
 msgstr ""
 
-#: admin/build/index.js:107
+#: admin/build/index.js:110
 #: admin/src/components/Guidance.jsx:582
 msgid "Skill text"
 msgstr ""
 
 #. translators: %s: skill name.
-#: admin/build/index.js:108
+#: admin/build/index.js:111
 #: admin/src/components/Guidance.jsx:326
 #, js-format
 msgid "Delete the skill “%s”?"
 msgstr ""
 
-#: admin/build/index.js:108
+#: admin/build/index.js:111
 #: admin/src/components/Guidance.jsx:637
 msgid "Delete this skill"
 msgstr ""
 
 #. translators: %s: the smallest allowed number.
-#: admin/build/index.js:109
+#: admin/build/index.js:112
 #: admin/src/components/SettingsForm.jsx:75
 #, js-format
 msgid "Must be %s or more."
 msgstr ""
 
 #. translators: %s: the largest allowed number.
-#: admin/build/index.js:110
+#: admin/build/index.js:113
 #: admin/src/components/SettingsForm.jsx:82
 #, js-format
 msgid "Must be %s or less."
 msgstr ""
 
-#: admin/build/index.js:110
+#: admin/build/index.js:113
 #: admin/src/components/SettingsForm.jsx:86
 msgid "Enter a whole number."
 msgstr ""
 
 #. translators: %s: the last characters of a saved key.
-#: admin/build/index.js:111
+#: admin/build/index.js:114
 #: admin/src/components/SettingsForm.jsx:157
 #, js-format
 msgid "Set (%s)"
 msgstr ""
 
-#: admin/build/index.js:111
+#: admin/build/index.js:114
 #: admin/src/components/SettingsForm.jsx:160
 msgid "Not set"
 msgstr ""
 
-#: admin/build/index.js:111
+#: admin/build/index.js:114
 #: admin/src/components/SettingsForm.jsx:170
 msgid "Type a new value to replace it"
 msgstr ""
 
-#: admin/build/index.js:111
+#: admin/build/index.js:114
 #: admin/src/components/SettingsForm.jsx:260
 msgid "Could not load these settings."
 msgstr ""
 
-#: admin/build/index.js:111
+#: admin/build/index.js:114
 #: admin/src/components/SettingsForm.jsx:391
 msgid "There are no settings to change here."
 msgstr ""
 
 #. translators: %d: number of advanced settings.
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SettingsForm.jsx:423
 #, js-format
 msgid "More settings (%d)"
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SettingsForm.jsx:435
 msgid "You have unsaved changes."
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SettingsForm.jsx:437
 msgid "Discard"
 msgstr ""
 
-#: admin/build/index.js:112
-#: admin/build/index.js:122
+#: admin/build/index.js:115
+#: admin/build/index.js:125
 #: admin/src/components/SettingsForm.jsx:354
 #: admin/src/components/SettingsPage.jsx:108
 #: admin/src/components/SignInCard.jsx:62
 msgid "Could not save that setting."
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:86
 msgid "Apps can find this site’s sign-in details on their own."
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:93
 msgid "This site answers too slowly for some apps. The sign-in details are correct, but ChatGPT gives up after a few seconds and reports that the site doesn’t support sign-in. A page cache or a faster host usually fixes it."
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:99
 msgid "Apps may not be able to find the sign-in details automatically. This usually means WordPress lives in a subfolder, or your host blocks addresses starting with a dot. Most apps will still connect; ChatGPT may not."
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:111
 msgid "Too slow"
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:114
 msgid "Maybe not"
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:150
 msgid "On. You approve each app."
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:144
 msgid "Needs HTTPS first."
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:145
 msgid "Needs pretty permalinks: Settings → Permalinks, anything but Plain."
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:161
 msgid "With this on, an app needs only this site’s address. It opens your browser and you approve it here, like “Sign in with Google”. Claude, ChatGPT, Claude Code, Codex, Cursor, VS Code and Gemini CLI connect this way, and ChatGPT connects no other way. Pasted keys keep working."
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:166
 #: admin/src/components/SignInCard.jsx:180
 msgid "Let apps sign in"
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:195
 msgid "Advanced sign-in options"
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:203
 msgid "Discoverable"
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:221
 msgid "Needed to connect by address. An app that registers still cannot do anything until you approve it on screen."
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:248
 msgid "When an app identifies itself by web address, Saddle fetches that address to confirm it vouches for the app. Turning this off means every app shows as unverified."
 msgstr ""
 
-#: admin/build/index.js:112
+#: admin/build/index.js:115
 #: admin/src/components/SignInCard.jsx:253
 #: admin/src/components/SignInCard.jsx:262
 msgid "Check app identity"
 msgstr ""
 
 #. translators: %d: number of tools.
-#: admin/build/index.js:113
+#: admin/build/index.js:116
 #: admin/src/services-logic.js:62
 #, js-format
 msgid "%d tool"
@@ -10803,131 +10932,131 @@ msgid_plural "%d tools"
 msgstr[0] ""
 msgstr[1] ""
 
-#: admin/build/index.js:113
+#: admin/build/index.js:116
 #: admin/src/services-logic.js:18
 msgid "Not set up"
 msgstr ""
 
-#: admin/build/index.js:113
+#: admin/build/index.js:116
 #: admin/src/services-logic.js:20
 msgid "Ready"
 msgstr ""
 
-#: admin/build/index.js:113
+#: admin/build/index.js:116
 #: admin/src/services-logic.js:23
 msgid "Active"
 msgstr ""
 
 #. translators: 1: what a service is for, such as "Stock photos", 2: its status, such as "Not set up".
-#: admin/build/index.js:114
+#: admin/build/index.js:117
 #: admin/src/services-page-logic.js:31
 #, js-format
 msgid "%1$s · %2$s"
 msgstr ""
 
 #. translators: %s: host names, e.g. "api.unsplash.com, images.unsplash.com".
-#: admin/build/index.js:115
+#: admin/build/index.js:118
 #: admin/src/components/Services.jsx:83
 #, js-format
 msgid "Sends to %s"
 msgstr ""
 
 #. translators: %s: service name, such as Unsplash.
-#: admin/build/index.js:116
+#: admin/build/index.js:119
 #: admin/src/services-logic.js:45
 #, js-format
 msgid "Get a key from %s"
 msgstr ""
 
 #. translators: %s: service name, such as Unsplash.
-#: admin/build/index.js:117
+#: admin/build/index.js:120
 #: admin/src/components/Services.jsx:152
 #, js-format
 msgid "%s key saved."
 msgstr ""
 
 #. translators: %s: service name, such as Unsplash.
-#: admin/build/index.js:118
+#: admin/build/index.js:121
 #: admin/src/components/Services.jsx:157
 #, js-format
 msgid "%s key removed."
 msgstr ""
 
-#: admin/build/index.js:118
+#: admin/build/index.js:121
 #: admin/src/components/Services.jsx:164
 msgid "Could not save that key."
 msgstr ""
 
-#: admin/build/index.js:118
+#: admin/build/index.js:121
 #: admin/src/components/Services.jsx:195
 #: admin/src/components/Services.jsx:224
 msgid "Your key"
 msgstr ""
 
-#: admin/build/index.js:118
+#: admin/build/index.js:121
 #: admin/src/components/Services.jsx:231
 msgid "Paste your access key"
 msgstr ""
 
-#: admin/build/index.js:118
+#: admin/build/index.js:121
 #: admin/src/components/Services.jsx:258
 msgid "Save key"
 msgstr ""
 
-#: admin/build/index.js:118
+#: admin/build/index.js:121
 #: admin/src/components/Services.jsx:204
 msgid "Change"
 msgstr ""
 
 #. translators: %s: service name, such as Unsplash.
-#: admin/build/index.js:119
+#: admin/build/index.js:122
 #: admin/src/components/Services.jsx:174
 #, js-format
 msgid "Remove the %s key?"
 msgstr ""
 
-#: admin/build/index.js:119
+#: admin/build/index.js:122
 #: admin/src/components/Services.jsx:177
 msgid "Your apps lose this service’s tools until a new key is added. Anything already saved on your site is kept."
 msgstr ""
 
-#: admin/build/index.js:119
+#: admin/build/index.js:122
 #: admin/src/components/Services.jsx:182
 #: admin/src/components/Services.jsx:213
 msgid "Remove"
 msgstr ""
 
-#: admin/build/index.js:119
+#: admin/build/index.js:122
 #: admin/src/components/Services.jsx:305
 msgid "Add key"
 msgstr ""
 
-#: admin/build/index.js:119
+#: admin/build/index.js:122
 #: admin/src/components/Services.jsx:306
 msgid "Change key"
 msgstr ""
 
-#: admin/build/index.js:119
+#: admin/build/index.js:122
 #: admin/src/components/Services.jsx:343
 msgid "Accounts"
 msgstr ""
 
 #. translators: %s: plugin name.
-#: admin/build/index.js:120
+#: admin/build/index.js:123
 #: admin/src/components/Services.jsx:396
 #, js-format
 msgid "%s is on."
 msgstr ""
 
 #. translators: %s: plugin name.
-#: admin/build/index.js:121
+#: admin/build/index.js:124
 #: admin/src/components/Services.jsx:401
 #, js-format
 msgid "%s is off."
 msgstr ""
 
-#: admin/build/index.js:121
-#: admin/build/index.js:123
+#: admin/build/index.js:124
+#: admin/build/index.js:126
 #: admin/src/components/Services.jsx:409
 #: admin/src/components/SettingsPage.jsx:261
 #: admin/src/components/SettingsPage.jsx:298
@@ -10935,99 +11064,99 @@ msgid "Could not save that change."
 msgstr ""
 
 #. translators: %s: plugin name.
-#: admin/build/index.js:122
+#: admin/build/index.js:125
 #: admin/src/components/Services.jsx:424
 #, js-format
 msgid "Let apps use %s"
 msgstr ""
 
-#: admin/build/index.js:122
+#: admin/build/index.js:125
 #: admin/src/components/SettingsPage.jsx:139
 msgid "Safety"
 msgstr ""
 
-#: admin/build/index.js:122
+#: admin/build/index.js:125
 #: admin/src/components/SettingsPage.jsx:144
 msgid "Publishing needs my OK"
 msgstr ""
 
-#: admin/build/index.js:122
+#: admin/build/index.js:125
 #: admin/src/components/SettingsPage.jsx:145
 msgid "New posts and pages an app asks to publish or schedule are saved as drafts. Publishing or scheduling an existing item needs your confirmation. Edits to content that is already live still go through."
 msgstr ""
 
-#: admin/build/index.js:122
+#: admin/build/index.js:125
 #: admin/src/components/SettingsPage.jsx:149
 msgid "Apps save drafts; you approve what goes live."
 msgstr ""
 
-#: admin/build/index.js:122
+#: admin/build/index.js:125
 #: admin/src/components/SettingsPage.jsx:157
 msgid "Practice mode"
 msgstr ""
 
-#: admin/build/index.js:122
+#: admin/build/index.js:125
 #: admin/src/components/SettingsPage.jsx:158
 msgid "Apps can try anything their access allows and nothing is saved. Each tool that would change the site says what it would have done, and the attempt shows in Activity as rehearsed. Reading works as usual."
 msgstr ""
 
-#: admin/build/index.js:122
+#: admin/build/index.js:125
 #: admin/src/components/SettingsPage.jsx:162
 msgid "Apps try changes but nothing is saved."
 msgstr ""
 
-#: admin/build/index.js:122
+#: admin/build/index.js:125
 #: admin/src/components/SettingsPage.jsx:170
 msgid "Stop writes if the site moves"
 msgstr ""
 
-#: admin/build/index.js:122
+#: admin/build/index.js:125
 #: admin/src/components/SettingsPage.jsx:171
 msgid "If the site address changes, for example after copying it to another domain, apps are refused writes until you confirm their access again."
 msgstr ""
 
-#: admin/build/index.js:122
+#: admin/build/index.js:125
 #: admin/src/components/SettingsPage.jsx:175
 msgid "After an address change, confirm access again."
 msgstr ""
 
-#: admin/build/index.js:122
+#: admin/build/index.js:125
 #: admin/src/components/SettingsPage.jsx:186
 msgid "Lets an app update WordPress to a new major version, such as 7.1 to 7.2, after you approve its preview. A major release has no automatic rollback and upgrades the database. Minor and security releases never need this. WordPress’s own “automatic updates for all new versions” in Dashboard → Updates is a separate setting."
 msgstr ""
 
-#: admin/build/index.js:122
+#: admin/build/index.js:125
 #: admin/src/components/SettingsPage.jsx:190
 msgid "Apps can update WordPress to a new major version."
 msgstr ""
 
-#: admin/build/index.js:122
+#: admin/build/index.js:125
 #: admin/src/components/SettingsPage.jsx:203
 msgid "Ask first"
 msgstr ""
 
-#: admin/build/index.js:122
+#: admin/build/index.js:125
 #: admin/src/components/SettingsPage.jsx:234
 msgid "Other"
 msgstr ""
 
-#: admin/build/index.js:122
+#: admin/build/index.js:125
 #: admin/src/components/SettingsPage.jsx:307
 msgid "Ask first: the app shows you the change and it waits under Needs your OK on the Dashboard. It runs only after you approve it there."
 msgstr ""
 
-#: admin/build/index.js:122
+#: admin/build/index.js:125
 #: admin/src/components/SettingsPage.jsx:314
 msgid "Recommended set"
 msgstr ""
 
-#: admin/build/index.js:122
+#: admin/build/index.js:125
 #: admin/src/components/SettingsPage.jsx:315
 msgid "Ask first for plugins, themes, updates, settings and anything that deletes. Publishing needs your OK. Content edits stay allowed. Nothing you turned off is turned on."
 msgstr ""
 
 #. translators: %d: number of tools.
-#: admin/build/index.js:123
+#: admin/build/index.js:126
 #: admin/src/components/SettingsPage.jsx:276
 #, js-format
 msgid "%d tool now asks you first. Publishing needs your OK."
@@ -11035,108 +11164,108 @@ msgid_plural "%d tools now ask you first. Publishing needs your OK."
 msgstr[0] ""
 msgstr[1] ""
 
-#: admin/build/index.js:123
+#: admin/build/index.js:126
 #: admin/src/components/SettingsPage.jsx:284
 msgid "Already set. Publishing needs your OK."
 msgstr ""
 
-#: admin/build/index.js:123
+#: admin/build/index.js:126
 #: admin/src/components/SettingsPage.jsx:326
 msgid "Use it"
 msgstr ""
 
-#: admin/build/index.js:123
+#: admin/build/index.js:126
 #: admin/src/components/SettingsPage.jsx:336
 msgid "Search tools…"
 msgstr ""
 
-#: admin/build/index.js:123
+#: admin/build/index.js:126
 #: admin/src/components/SettingsPage.jsx:337
 msgid "Search tools"
 msgstr ""
 
-#: admin/build/index.js:123
+#: admin/build/index.js:126
 #: admin/src/components/SettingsPage.jsx:341
 msgid "No tools match."
 msgstr ""
 
-#: admin/build/index.js:123
+#: admin/build/index.js:126
 #: admin/src/components/SettingsPage.jsx:362
 msgid "Added since you last chose. It asks you first until you pick."
 msgstr ""
 
-#: admin/build/index.js:123
+#: admin/build/index.js:126
 #: admin/src/components/SettingsPage.jsx:369
 msgid "New"
 msgstr ""
 
 #. translators: %s: tool name.
-#: admin/build/index.js:124
+#: admin/build/index.js:127
 #: admin/src/components/SettingsPage.jsx:392
 #, js-format
 msgid "What %s may do"
 msgstr ""
 
-#: admin/build/index.js:124
+#: admin/build/index.js:127
 #: admin/src/components/SettingsPage.jsx:488
 msgid "Advanced"
 msgstr ""
 
 #. translators: %d: number of tools.
-#: admin/build/index.js:125
+#: admin/build/index.js:128
 #: admin/src/components/SettingsPage.jsx:493
 #, js-format
 msgid "What each tool may do (%d)"
 msgstr ""
 
-#: admin/build/index.js:125
+#: admin/build/index.js:128
 #: admin/src/components/SettingsPage.jsx:508
 msgid "Sign-in for apps"
 msgstr ""
 
 #. translators: %d: number of plugins.
-#: admin/build/index.js:126
+#: admin/build/index.js:129
 #: admin/src/components/SettingsPage.jsx:519
 #, js-format
 msgid "Plugins that add tools (%d)"
 msgstr ""
 
-#: admin/build/index.js:126
+#: admin/build/index.js:129
 #: admin/src/components/SettingsPage.jsx:529
 msgid "Memory limits"
 msgstr ""
 
-#: admin/build/index.js:126
+#: admin/build/index.js:129
 #: admin/src/components/SettingsPage.jsx:546
 msgid "Connection check"
 msgstr ""
 
 #. translators: %s: module name, such as Saddle Analytics.
-#: admin/build/index.js:127
-#: admin/src/screens.jsx:136
+#: admin/build/index.js:130
+#: admin/src/screens.jsx:141
 #, js-format
 msgid "%s did not add this screen. Updating it may add it."
 msgstr ""
 
-#: admin/build/index.js:127
-#: admin/src/screens.jsx:267
+#: admin/build/index.js:130
+#: admin/src/screens.jsx:272
 msgid "Run setup again"
 msgstr ""
 
 #. translators: %s: error message.
-#: admin/build/index.js:128
+#: admin/build/index.js:131
 #: admin/src/App.jsx:323
 #, js-format
 msgid "Couldn’t refresh the connections list: %s"
 msgstr ""
 
-#: admin/build/index.js:128
-#: admin/src/App.jsx:507
+#: admin/build/index.js:131
+#: admin/src/App.jsx:510
 msgid "This site’s address changed after AI write access was turned on, which can mean a copy or migration carried over live credentials. If you didn’t expect that, review your AI apps and disconnect any you don’t recognise."
 msgstr ""
 
-#: admin/build/index.js:128
-#: admin/src/App.jsx:512
+#: admin/build/index.js:131
+#: admin/src/App.jsx:515
 msgid "Mark as expected"
 msgstr ""
 
