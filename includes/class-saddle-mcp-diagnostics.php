@@ -512,7 +512,7 @@ class Saddle_MCP_Diagnostics {
 			$problems[] = array(
 				'code'    => 'site_address_changed',
 				'message' => __( 'The site\'s address changed since write access was granted, and the owner turned on domain enforcement, so every write tool is refused.', 'saddle' ),
-				'fix'     => __( 'The owner re-confirms this app\'s access in Saddle → MCP, or turns the domain check off in Saddle → Settings.', 'saddle' ),
+				'fix'     => __( 'The owner re-confirms this app\'s access in Saddle → Agent setup, or turns the domain check off in Saddle → Settings.', 'saddle' ),
 			);
 		}
 

@@ -10,7 +10,7 @@ import { Button, Notice, VisuallyHidden } from '@plugpress/ui';
 import { __ } from '@wordpress/i18n';
 import { addAnalytics, addError, analyticsOffer } from '../analytics-addon';
 import { icons } from '../icons/kit';
-import { NavIcon } from '../icons/iconoir';
+import { AddonIcon } from './icons';
 
 const DIRECTORY = 'https://wordpress.org/plugins/saddle-analytics/';
 
@@ -92,12 +92,12 @@ export default function AnalyticsOffer() {
 			className="saddle-soft-card saddle-offer"
 			aria-labelledby="saddle-offer-title"
 		>
-			<span
-				className="saddle-tile saddle-tile--pink saddle-tile--lg"
-				aria-hidden="true"
-			>
-				<NavIcon name="graph-up" size={ 28 } />
-			</span>
+			<AddonIcon
+				addon="analytics"
+				className="saddle-offer__icon"
+				width="72"
+				height="72"
+			/>
 			<h2 className="saddle-offer__title" id="saddle-offer-title">
 				{ __( 'See who visits your site', 'saddle' ) }
 			</h2>

@@ -331,7 +331,7 @@ class Saddle_Module_Abilities_Test extends WP_UnitTestCase {
 		$context = Saddle_Context::system_context();
 
 		$this->assertStringContainsString( "# The owner's admin", $context );
-		$this->assertMatchesRegularExpression( "/Owner's admin: Saddle → Overview, [^\\n]*Demo[^\\n]*, Context, MCP, Settings\\./", $context, 'The modules sit between Overview and Context.' );
+		$this->assertMatchesRegularExpression( "/Owner's admin: Saddle → Overview, [^\\n]*Demo[^\\n]*, Context, Agent setup, Logs, Settings\\./", $context, 'The modules sit between Overview and Context.' );
 		$this->assertStringContainsString( 'call saddle-get-module-settings and give the owner the admin_url instead of describing clicks.', $context );
 	}
 }

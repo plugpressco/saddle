@@ -34,7 +34,7 @@ class Saddle_Modules {
 	/**
 	 * Keys a module may not take: Core's own pages.
 	 */
-	const RESERVED = array( 'home', 'connections', 'services', 'context', 'settings', 'plans' );
+	const RESERVED = array( 'home', 'connections', 'services', 'context', 'logs', 'settings', 'plans' );
 
 	/**
 	 * Core's pages, in menu order around the modules.
@@ -63,14 +63,24 @@ class Saddle_Modules {
 			),
 			'connections' => array(
 				'slug'  => 'saddle-connections',
-				'title' => __( 'MCP', 'saddle' ),
+				'title' => __( 'Agent setup', 'saddle' ),
 				'icon'  => 'sparks',
 				'tabs'  => array(
-					'apps' => __( 'MCP', 'saddle' ),
+					'apps' => __( 'Agent setup', 'saddle' ),
+				),
+			),
+			// Logs: every change an app made and every blocked attempt, the
+			// feed that was Overview's until 2026-10-23.
+			'logs'        => array(
+				'slug'  => 'saddle-logs',
+				'title' => __( 'Logs', 'saddle' ),
+				'icon'  => 'activity',
+				'tabs'  => array(
+					'overview' => __( 'Logs', 'saddle' ),
 				),
 			),
 			// Get Pro (#373): the plans, last in the menu, only while Saddle
-			// Pro is not active (offers_pro()).
+			// Pro is not installed (offers_pro()).
 			'plans'       => array(
 				'slug'  => 'saddle-plans',
 				'title' => __( 'Get Pro', 'saddle' ),
@@ -285,8 +295,8 @@ class Saddle_Modules {
 	/**
 	 * Every page, in menu order (Fahim, 2026-10-23): Overview (the `home`
 	 * area), the modules (Analytics first among them, Saddle's placeholder
-	 * until Saddle Analytics is on), Context, MCP (the `connections` area),
-	 * Settings, and Get Pro while offers_pro() says so.
+	 * until Saddle Analytics is on), Context, Agent setup (the `connections` area),
+	 * Logs, Settings, and Get Pro while offers_pro() says so.
 	 *
 	 * @return array<string,array> Keyed by area; each has `slug`, `title`,
 	 *                             `tabs`, `nav`, `capability`, `module`,
@@ -311,6 +321,7 @@ class Saddle_Modules {
 
 		$areas['context']     = $core['context'];
 		$areas['connections'] = $core['connections'];
+		$areas['logs']        = $core['logs'];
 		$areas['settings']    = $core['settings'];
 		if ( self::offers_pro() ) {
 			$areas['plans'] = $core['plans'];

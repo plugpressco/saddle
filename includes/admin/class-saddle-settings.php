@@ -94,7 +94,7 @@ class Saddle_Settings {
 
 	/**
 	 * The Saddle menu's order (Fahim, 2026-10-23): Overview, the modules
-	 * (Analytics first), then Context, MCP, Settings and Get Pro. A plain
+	 * (Analytics first), then Context, Agent setup, Logs, Settings and Get Pro. A plain
 	 * list with no dividing line; only Get Pro carries an icon, its crown.
 	 *
 	 * A sibling that adds its own submenu (Saddle Rank does, at priority 20)
@@ -111,7 +111,7 @@ class Saddle_Settings {
 
 		$areas = Saddle_Modules::areas();
 		$lead  = array( $areas['home']['slug'] );
-		$close = array( $areas['context']['slug'], $areas['connections']['slug'], $areas['settings']['slug'] );
+		$close = array( $areas['context']['slug'], $areas['connections']['slug'], $areas['logs']['slug'], $areas['settings']['slug'] );
 		if ( isset( $areas['plans'] ) ) {
 			$close[] = $areas['plans']['slug'];
 		}

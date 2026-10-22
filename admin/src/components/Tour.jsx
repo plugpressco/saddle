@@ -52,7 +52,7 @@ function stopsFor() {
 				visible( document.getElementById( 'toplevel_page_saddle' ) ),
 			title: __( 'Everything else is in the Saddle menu', 'saddle' ),
 			description: __(
-				'Your add-ons, Context, MCP and Settings.',
+				'Your add-ons, Context, Agent setup and Settings.',
 				'saddle'
 			),
 			side: 'right',
@@ -61,13 +61,17 @@ function stopsFor() {
 		{
 			id: 'activity',
 			find: () =>
-				visible( document.querySelector( '#activity h2, #activity' ) ),
-			title: __( 'Every change shows up here', 'saddle' ),
+				visible(
+					document.querySelector(
+						'#toplevel_page_saddle .wp-submenu a[href*="page=saddle-logs"]'
+					)
+				),
+			title: __( 'Every change is in Logs', 'saddle' ),
 			description: __(
-				'Changes your AI made and what Saddle blocked, newest first.',
+				'Changes your AI made and what Saddle blocked, newest first, with Undo.',
 				'saddle'
 			),
-			side: 'top',
+			side: 'right',
 			align: 'start',
 		},
 	];

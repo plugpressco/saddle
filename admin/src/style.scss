@@ -1892,8 +1892,9 @@ body.saddle-admin-page {
 	}
 }
 
-// The apps: a tile with the logo, the name and its last use, the role as a
-// chip, and the one next step. A soft ground under the row pointed at.
+// The apps as cards, three to a row on a wide screen: the logo's tile and
+// the role's chip, the name, its last use, and its one next step; a last
+// card connects another app.
 .saddle-home__apps,
 .saddle-home__addons,
 .saddle-home__chips {
@@ -1904,60 +1905,98 @@ body.saddle-admin-page {
 
 .saddle-home__apps {
 	display: grid;
-	gap: var( --pp-space-1 );
-	margin-inline: calc( var( --pp-space-2 ) * -1 );
-}
-
-.saddle-app-row {
-	display: grid;
-	grid-template-columns: auto minmax( 0, 1fr ) auto;
-	align-items: center;
-	gap: var( --pp-space-1 ) var( --pp-space-3 );
-	margin: 0;
-	padding: var( --pp-space-2 );
-	border-radius: 10px;
-
-	&:hover {
-		background: var( --pp-n-50 );
-	}
-}
-
-.saddle-app-row__text {
-	display: grid;
-	min-width: 0;
-}
-
-// The role and the next step, together: on the right, or on a phone under
-// the name.
-.saddle-app-row__end {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	justify-content: flex-end;
+	grid-template-columns: repeat( auto-fill, minmax( 220px, 1fr ) );
 	gap: var( --pp-space-3 );
+}
 
-	@media ( max-width: 600px ) {
-		grid-column: 2 / -1;
-		justify-content: flex-start;
+.saddle-app-card {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+	margin: 0;
+	padding: var( --pp-space-4 );
+	border-radius: 12px;
+	background: var( --pp-n-50 );
+}
+
+.saddle-app-card__top {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: var( --pp-space-2 );
+	margin-block-end: var( --pp-space-3 );
+
+	.saddle-tile {
+		background: var( --s-bg );
 	}
 }
 
-.saddle-app-row:has( .saddle-app-row__end:empty ) {
-	grid-template-columns: auto minmax( 0, 1fr );
-}
-
-.saddle-app-row__name {
+.saddle-app-card__name {
 	font-size: var( --s-text );
 	font-weight: 600;
 	color: var( --s-fg );
 }
 
-.saddle-app-row__meta {
-	overflow: hidden;
+.saddle-app-card__meta {
 	font-size: var( --s-text );
 	color: var( --s-fg-subtle );
-	white-space: nowrap;
-	text-overflow: ellipsis;
+}
+
+.saddle-app-card__next {
+	margin-block-start: auto;
+	padding-block-start: var( --pp-space-3 );
+}
+
+// The last card: a quiet button to connect another app.
+.saddle-app-card--add {
+	padding: 0;
+	background: none;
+}
+
+.saddle-app-card__add {
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: var( --pp-space-2 );
+	min-height: 132px;
+	padding: var( --pp-space-4 );
+	border: 0;
+	border-radius: 12px;
+	background: rgb( 29 35 39 / 0.03 );
+	color: var( --s-fg-subtle );
+	font: inherit;
+	font-size: var( --s-text );
+	font-weight: 600;
+	cursor: pointer;
+	transition: background-color var( --s-dur ) var( --s-ease ), color var( --s-dur ) var( --s-ease );
+
+	&:hover {
+		background: var( --pp-n-50 );
+		color: var( --s-fg );
+	}
+
+	&:focus-visible {
+		outline: 2px solid var( --s-focus );
+		outline-offset: 2px;
+	}
+
+	@media ( prefers-reduced-motion: reduce ) {
+		transition: none;
+	}
+}
+
+.saddle-app-card__plus {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	inline-size: 36px;
+	block-size: 36px;
+	border-radius: 50%;
+	background: var( --s-bg );
+	box-shadow: var( --s-card-edge );
 }
 
 // Add-ons: tiles, two or three to a row, each opening its add-on.
@@ -1985,6 +2024,14 @@ body.saddle-admin-page {
 	@media ( prefers-reduced-motion: reduce ) {
 		transition: none;
 	}
+}
+
+// An add-on's own WordPress.org icon, a tile already.
+.saddle-addon__icon {
+	flex: none;
+	inline-size: 40px;
+	block-size: 40px;
+	border-radius: 10px;
 }
 
 .saddle-addon__text {
@@ -2985,6 +3032,11 @@ body.saddle-admin-page {
 	margin-inline: auto;
 	padding: var( --pp-space-8 ) var( --pp-space-6 );
 	text-align: center;
+}
+
+.saddle-offer__icon {
+	inline-size: 72px;
+	block-size: 72px;
 }
 
 .saddle-offer__title {

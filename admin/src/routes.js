@@ -26,8 +26,9 @@ const cleanKey = ( value ) =>
 export const LEGACY = {
 	dashboard: { area: 'home', tab: 'overview' },
 	home: { area: 'home', tab: 'overview' },
-	// Activity was a tab of the Dashboard until #309; it is Home's feed now.
-	activity: { area: 'home', tab: 'overview', anchor: 'activity' },
+	// Activity was a tab of the Dashboard until #309, then Home's feed; it is
+	// the Logs page since 2026-10-23.
+	activity: { area: 'logs', tab: 'overview' },
 	connect: { area: 'connections', tab: 'apps' },
 	// Permissions was a tab of Connections until #285; access is now chosen
 	// per app on AI apps.

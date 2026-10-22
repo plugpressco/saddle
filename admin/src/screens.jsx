@@ -10,6 +10,7 @@
  *   memory, and what Saddle tells every app automatically
  * - Settings: one page, in sections, Accounts and the plugins that add tools
  *   among them
+ * - Logs: every change an app made and every blocked attempt, with Undo
  * - Get Pro: Saddle Cloud's plans, while Saddle Pro is not installed (#373)
  * - Analytics, until Saddle Analytics is on: what it does and one button
  *   that adds it (#373)
@@ -33,6 +34,7 @@ import { findScreen } from './frame-logic';
 import { findArea, subtabsOf, withArg } from './routes';
 import Home, { HomeSkeleton } from './components/Home';
 import GetPro from './components/GetPro';
+import Activity from './components/Activity';
 import AnalyticsOffer from './components/AnalyticsOffer';
 import Context from './components/Guidance';
 import ConnectApps, { SetupIntro } from './components/ConnectApps';
@@ -349,7 +351,6 @@ export default function Screen( props ) {
 						paused={ paused }
 						pausing={ pausing }
 						onTogglePause={ onTogglePause }
-						caps={ caps }
 						onNavigate={ navigate }
 						onConnect={ () => openConnect() }
 						homeUrl={ area.url }
@@ -386,6 +387,10 @@ export default function Screen( props ) {
 
 		case 'plans/overview':
 			return <GetPro />;
+
+		// Every change and blocked attempt, Overview's feed until 2026-10-23.
+		case 'logs/overview':
+			return <Activity caps={ caps } className="saddle-soft-card" />;
 
 		// Saddle Analytics is not on: Saddle's page recommends it (#373).
 		case 'analytics/overview':

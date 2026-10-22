@@ -194,7 +194,10 @@ The plan and the section maps for Rank, CRM and Analytics are in
   menus", then "instead home can we call overview - analytics, then context
   then mcp or settings and get pro with crown icon"): Overview (was Home),
   the add-ons (Analytics first and always, Saddle's placeholder until
-  Saddle Analytics is on), Context, MCP (was Agent setup), Settings, Get
+  Saddle Analytics is on), Context, Agent setup (briefly named MCP the
+  same day; Fahim: "call it context and Agent setup"), Logs (Overview's
+  activity feed, moved: "Activity move to submenu as new page call
+  Logs"), Settings, Get
   Pro; no dividing line. Get Pro is the one item with an icon: a 16px gold
   crown (`#f0c33c`, inline style, no menu stylesheet), and it is gone once
   Saddle Pro is installed, active or not.** Labels
@@ -393,8 +396,14 @@ saddle cloud".
   brand on today's and on the one pointed at; a day with changes shows its
   count over its bar, today's in brand text; the weekdays under them, today
   in 600. The times come from `GET /audit-log?times=1`, one query of dates.
-  Then **AI apps**: "Manage" (to Agent setup) and "Connect app" (that
-  page's steps) in the card's heading row;
+  Then **Agent setup** (the card was "AI apps" until 2026-10-23; Fahim:
+  "overview AI apps should agent setup right", "make those as card, 2 or
+  3 in a row"): "Manage" (to Agent setup) in the heading row, then one
+  card per app on the soft grey (`--pp-n-50`), as many to a row as fit
+  220px: the logo's tile (white here) and the role's chip, the name, its
+  last use, its next step at the foot; a last card, "Connect an app" under
+  a plus in a white circle, opens Agent setup's steps. (What follows
+  describes the row layout before the cards.)
   each app as its logo tile, name, "Last used …", its role chip and its one
   next step ("Try it", or "Change access" as a link). On a phone the chip
   and the step sit under the name. Then **Add-ons** as tiles, as many to a
@@ -408,7 +417,7 @@ saddle cloud".
 - Nothing generated: no suggested prompts, no tips, no captions under
   numbers.
 
-## MCP (#369 as Agent setup; AI apps until then; named MCP 2026-10-23)
+## Agent setup (#369; AI apps until then)
 
 Fahim, 2026-10-22: "instead AI Apps call Agent Setup.. make setup nice way
 present", then "no drawer, make like saddle cloud". The page follows Cloud's
@@ -484,6 +493,24 @@ names a paid plan.
   credit, changing or cancelling) and "Compare every detail on saddle.to".
 - The plans, numbers and answers live in `admin/src/get-pro-logic.js`; a
   change on saddle.to needs a Saddle release.
+
+## Logs (2026-10-23)
+
+Fahim: "Activity move to submenu as new page call Logs". Saddle → Logs
+(`logs`, `saddle-logs`) is the activity feed that was Overview's: one soft
+card with the filters (All, Changes, Blocked, and Rehearsed when one
+exists), days as grey labels, one-line rows with Undo. Overview's This
+week links to it ("See logs"); an old `#activity` link lands on it; the
+tour's third stop points at its menu item.
+
+## Add-on icons (2026-10-23)
+
+Fahim: "use real icon of Add-ons what in wp repo u used". An add-on's own
+WordPress.org icon (`assets/addons/<slug>.svg`, copied from the add-on's
+`.wordpress.org/icon.svg`) replaces its Iconoir tile on Overview's
+Add-ons and on the Analytics placeholder; bundled as a data URI, so no
+request reaches WordPress.org. Saddle Analytics has one; an add-on without
+one keeps its pastel tile.
 
 ## Analytics until Saddle Analytics is on (#373)
 

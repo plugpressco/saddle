@@ -30,9 +30,14 @@ import { parseModules } from '../onboarding-logic';
 import { findArea, withArg } from '../routes';
 import AnalyticsTile from './AnalyticsTile';
 import NeedsYourOk from './NeedsYourOk';
-import Activity, { ActivitySkeleton } from './Activity';
 import { ROLES } from './ConnectedClients';
-import { AppLogo, BrandMark, appKeyFromLabel } from './icons';
+import {
+	AddonIcon,
+	AppLogo,
+	BrandMark,
+	appKeyFromLabel,
+	hasAddonIcon,
+} from './icons';
 import { icons } from '../icons/kit';
 import { NavIcon } from '../icons/iconoir';
 import {
@@ -200,10 +205,11 @@ function WeekBars( { days } ) {
  * number that failed to load is left out, and nothing is drawn when all
  * three failed.
  *
- * @param {Object}  props
- * @param {?Object} props.week `{ changes, blocked, waiting, times }`, or null while loading.
+ * @param {Object}    props
+ * @param {?Object}   props.week   `{ changes, blocked, waiting, times }`, or null while loading.
+ * @param {Function=} props.onLogs Opens Logs, every change and blocked attempt.
  */
-function WeekCard( { week } ) {
+function WeekCard( { week, onLogs } ) {
 	const loading = null === week;
 	const tiles = weekTiles(
 		loading ? { changes: 0, blocked: 0, waiting: 0 } : week
@@ -216,7 +222,16 @@ function WeekCard( { week } ) {
 			className="saddle-soft-card saddle-week"
 			aria-busy={ loading || undefined }
 		>
-			<CardHead title={ __( 'This week', 'saddle' ) } />
+			<CardHead
+				title={ __( 'This week', 'saddle' ) }
+				actions={
+					onLogs && (
+						<Button variant="link" size="sm" onClick={ onLogs }>
+							{ __( 'See logs', 'saddle' ) }
+						</Button>
+					)
+				}
+			/>
 			<div className="saddle-week__numbers">
 				{ tiles.map( ( t ) => (
 					<div className="saddle-week__number" key={ t.key }>
@@ -258,28 +273,18 @@ export function HomeSkeleton() {
 				<Skeleton height={ 120 } />
 			</div>
 			<div className="saddle-soft-card" aria-hidden="true">
-				<Skeleton height={ 15 } width={ 56 } />
-				{ [ 0, 1 ].map( ( i ) => (
-					<div className="saddle-app-row" key={ i }>
-						<Skeleton width={ 40 } height={ 40 } />
-						<Skeleton height={ 13 } width={ `${ 40 - i * 10 }%` } />
-					</div>
-				) ) }
-			</div>
-			<div className="saddle-soft-card saddle-activity">
-				<ActivitySkeleton />
+				<Skeleton height={ 15 } width={ 80 } />
+				<div className="saddle-home__apps">
+					{ [ 0, 1, 2 ].map( ( i ) => (
+						<Skeleton key={ i } height={ 132 } />
+					) ) }
+				</div>
 			</div>
 		</div>
 	);
 }
 
-export default function Home( {
-	clients,
-	caps,
-	onNavigate,
-	onConnect,
-	homeUrl,
-} ) {
+export default function Home( { clients, onNavigate, onConnect, homeUrl } ) {
 	// Keys and address (OAuth) connections, from the connection registry.
 	// `false` means the route failed: fall back to the keys the app already
 	// loaded rather than claim there are none.
@@ -287,11 +292,8 @@ export default function Home( {
 	// Every page and module, fetched once for Add-ons.
 	const [ areas, setAreas ] = useState( null );
 	const [ health, setHealth ] = useState( healthCache );
-	// Bumped after an approve or reject, so the feed and the counts show it.
+	// Bumped after an approve or reject, so the counts show it.
 	const [ feedKey, setFeedKey ] = useState( 0 );
-	// Bumped after the owner undid a change in the feed, which reloads
-	// itself: only the counts need it.
-	const [ countKey, setCountKey ] = useState( 0 );
 	// This week: changes and when each happened, blocked attempts, and what
 	// waits for the owner.
 	const [ week, setWeek ] = useState( null );
@@ -346,7 +348,7 @@ export default function Home( {
 		return () => {
 			alive = false;
 		};
-	}, [ feedKey, countKey, connected ] );
+	}, [ feedKey, connected ] );
 
 	useEffect( () => {
 		api( 'connections' )
@@ -387,7 +389,7 @@ export default function Home( {
 		return <HomeSkeleton />;
 	}
 
-	// Nothing connected: one card, and the feed only when there is history.
+	// Nothing connected: one card. The history is on Logs.
 	if ( ! connected ) {
 		return (
 			<div className="saddle-home">
@@ -405,13 +407,6 @@ export default function Home( {
 						{ __( 'Connect an app', 'saddle' ) }
 					</Button>
 				</div>
-
-				<Activity
-					caps={ caps }
-					title={ __( 'Activity', 'saddle' ) }
-					hideEmpty
-					className="saddle-soft-card"
-				/>
 			</div>
 		);
 	}
@@ -505,58 +500,45 @@ export default function Home( {
 			     Draws nothing when there are none. */ }
 			<NeedsYourOk onChange={ () => setFeedKey( ( k ) => k + 1 ) } />
 
-			<WeekCard week={ week } />
+			<WeekCard
+				week={ week }
+				onLogs={ () => onNavigate( { area: 'logs', tab: 'overview' } ) }
+			/>
 
 			<section className="saddle-soft-card">
 				<CardHead
-					title={ __( 'AI apps', 'saddle' ) }
+					title={ __( 'Agent setup', 'saddle' ) }
 					actions={
-						<>
-							<Button
-								variant="link"
-								size="sm"
-								onClick={ () => onNavigate( 'connect' ) }
-							>
-								{ __( 'Manage', 'saddle' ) }
-							</Button>
-							<Button
-								variant="secondary"
-								size="sm"
-								onClick={ onConnect }
-							>
-								<icons.Plus size={ 16 } />
-								{ __( 'Connect app', 'saddle' ) }
-							</Button>
-						</>
+						<Button
+							variant="link"
+							size="sm"
+							onClick={ () => onNavigate( 'connect' ) }
+						>
+							{ __( 'Manage', 'saddle' ) }
+						</Button>
 					}
 				/>
+				{ /* One card per app, three to a row on a wide screen, and a
+				     last card that connects another (Fahim, 2026-10-23: "make
+				     those as card, 2 or 3 in a row"). */ }
 				<ul className="saddle-home__apps">
 					{ apps.map( ( c ) => {
 						const app =
 							c.app || appKeyFromLabel( c.name || c.client );
 						const role = ROLES.find( ( r ) => r.key === c.role );
 						const meta = known ? metaLine( c ) : '';
+						const next = appAction( c );
 						return (
-							<li className="saddle-app-row" key={ c.id }>
-								<span
-									className={ `saddle-tile saddle-tile--${ appTone(
-										app
-									) }` }
-									aria-hidden="true"
-								>
-									<AppLogo app={ app } />
-								</span>
-								<span className="saddle-app-row__text">
-									<span className="saddle-app-row__name">
-										{ connectionLabel( c ) }
+							<li className="saddle-app-card" key={ c.id }>
+								<div className="saddle-app-card__top">
+									<span
+										className={ `saddle-tile saddle-tile--${ appTone(
+											app
+										) }` }
+										aria-hidden="true"
+									>
+										<AppLogo app={ app } />
 									</span>
-									{ meta && (
-										<span className="saddle-app-row__meta">
-											{ meta }
-										</span>
-									) }
-								</span>
-								<span className="saddle-app-row__end">
 									{ role && (
 										<span
 											className={ `saddle-chip saddle-chip--${
@@ -566,11 +548,38 @@ export default function Home( {
 											{ role.label }
 										</span>
 									) }
-									{ appAction( c ) }
+								</div>
+								<span className="saddle-app-card__name">
+									{ connectionLabel( c ) }
 								</span>
+								{ meta && (
+									<span className="saddle-app-card__meta">
+										{ meta }
+									</span>
+								) }
+								{ next && (
+									<span className="saddle-app-card__next">
+										{ next }
+									</span>
+								) }
 							</li>
 						);
 					} ) }
+					<li className="saddle-app-card saddle-app-card--add">
+						<button
+							type="button"
+							className="saddle-app-card__add"
+							onClick={ onConnect }
+						>
+							<span
+								className="saddle-app-card__plus"
+								aria-hidden="true"
+							>
+								<icons.Plus size={ 18 } />
+							</span>
+							{ __( 'Connect an app', 'saddle' ) }
+						</button>
+					</li>
 				</ul>
 			</section>
 
@@ -583,20 +592,27 @@ export default function Home( {
 							const chip = STATE_CHIP[ m.state ];
 							return (
 								<li className="saddle-addon" key={ m.key }>
-									<span
-										className={ `saddle-tile saddle-tile--${ addonTone(
-											m.key
-										) }` }
-										aria-hidden="true"
-									>
-										<NavIcon
-											name={
-												( area && area.icon ) ||
-												'view-grid'
-											}
-											size={ 20 }
+									{ hasAddonIcon( m.key ) ? (
+										<AddonIcon
+											addon={ m.key }
+											className="saddle-addon__icon"
 										/>
-									</span>
+									) : (
+										<span
+											className={ `saddle-tile saddle-tile--${ addonTone(
+												m.key
+											) }` }
+											aria-hidden="true"
+										>
+											<NavIcon
+												name={
+													( area && area.icon ) ||
+													'view-grid'
+												}
+												size={ 20 }
+											/>
+										</span>
+									) }
 									<span className="saddle-addon__text">
 										<a
 											className="saddle-addon__name saddle-addon__link"
@@ -639,14 +655,6 @@ export default function Home( {
 					</ul>
 				</section>
 			) }
-
-			<Activity
-				key={ feedKey }
-				caps={ caps }
-				title={ __( 'Activity', 'saddle' ) }
-				onChange={ () => setCountKey( ( k ) => k + 1 ) }
-				className="saddle-soft-card"
-			/>
 		</div>
 	);
 }

@@ -120,7 +120,7 @@ class Saddle_Context {
 		$labels  = Saddle_Access::labels();
 		$lines[] = '- ' . sprintf(
 			/* translators: %s: the access role's name, e.g. "Edit content". */
-			__( 'Your access on this site: %s. The owner sets it for each app on Saddle → MCP.', 'saddle' ),
+			__( 'Your access on this site: %s. The owner sets it for each app on Saddle → Agent setup.', 'saddle' ),
 			$labels[ $tier ]
 		);
 		$lines[] = '- ' . __( 'Saddle exposes content: posts, pages, media, the site\'s custom content types, and their block structure.', 'saddle' );
@@ -260,8 +260,8 @@ class Saddle_Context {
 
 		$lines[] = __( '# When a call is refused', 'saddle' );
 		$lines[] = '';
-		$lines[] = '- ' . __( 'A permission error on a tool call means one of the site owner\'s controls blocked it: the global pause switch, the site\'s access level, or that specific tool being turned off. These are the owner\'s deliberate choices — never retry in a loop; tell the user which control to check in Saddle: the AI switch at the top of any Saddle page, this app\'s access on Saddle → MCP, or single tools under Settings.', 'saddle' );
-		$lines[] = '- ' . __( 'A 401 saying the key was rejected means the sign-in key was revoked or rotated. Ask the user to reconnect this app from Saddle → MCP (or paste the fresh setup if they just rotated the key).', 'saddle' );
+		$lines[] = '- ' . __( 'A permission error on a tool call means one of the site owner\'s controls blocked it: the global pause switch, the site\'s access level, or that specific tool being turned off. These are the owner\'s deliberate choices — never retry in a loop; tell the user which control to check in Saddle: the AI switch at the top of any Saddle page, this app\'s access on Saddle → Agent setup, or single tools under Settings.', 'saddle' );
+		$lines[] = '- ' . __( 'A 401 saying the key was rejected means the sign-in key was revoked or rotated. Ask the user to reconnect this app from Saddle → Agent setup (or paste the fresh setup if they just rotated the key).', 'saddle' );
 		$lines[] = '- ' . __( 'A 401 saying no key arrived usually means the web server strips the Authorization header. Ask the user to open Saddle → Settings → Connection check and run it — it can fix this automatically on most hosts.', 'saddle' );
 		$lines[] = '- ' . __( 'A destructive tool answering with a preview and a confirm_token is NOT an error — that is the approval gate. Show the user the preview; call again with the token only after they agree.', 'saddle' );
 		$lines[] = '- ' . __( 'Plugins and themes are installed only from the WordPress.org directory, by slug (search-plugins finds a plugin), and arrive inactive: activating is a separate, confirmed step (activate-plugin or activate-theme). Saddle never installs from a zip or a URL and never deletes a plugin or theme, so send the user to wp-admin for those.', 'saddle' );
@@ -464,8 +464,8 @@ class Saddle_Context {
 			$lines[] = '- ' . sprintf(
 				/* translators: 1: number of tools, 2: current access level. */
 				_n(
-					'%1$d further tool exists on this site but is not offered to you, because it needs a higher access level than the "%2$s" one this connection has. Only the site owner can change it, on Saddle → MCP. If a request needs it, say which level it would take rather than reporting that the site cannot do it.',
-					'%1$d further tools exist on this site but are not offered to you, because they need a higher access level than the "%2$s" one this connection has. Only the site owner can change it, on Saddle → MCP. If a request needs one, say which level it would take rather than reporting that the site cannot do it.',
+					'%1$d further tool exists on this site but is not offered to you, because it needs a higher access level than the "%2$s" one this connection has. Only the site owner can change it, on Saddle → Agent setup. If a request needs it, say which level it would take rather than reporting that the site cannot do it.',
+					'%1$d further tools exist on this site but are not offered to you, because they need a higher access level than the "%2$s" one this connection has. Only the site owner can change it, on Saddle → Agent setup. If a request needs one, say which level it would take rather than reporting that the site cannot do it.',
 					(int) $counts['tier'],
 					'saddle'
 				),

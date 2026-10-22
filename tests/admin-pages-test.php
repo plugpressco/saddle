@@ -108,16 +108,17 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 	 * always, Saddle's placeholder until Saddle Analytics is on), Context,
 	 * MCP, Settings, and Get Pro with its crown.
 	 */
-	public function test_the_menu_reads_overview_add_ons_context_mcp_settings_get_pro() {
+	public function test_the_menu_reads_overview_add_ons_context_agent_setup_logs_settings_get_pro() {
 		$this->build_menu();
 
 		$items = $this->saddle_items();
 		$this->assertSame(
-			array( 'saddle', 'saddle-analytics', 'saddle-context', 'saddle-connections', 'saddle-settings', 'saddle-plans' ),
+			array( 'saddle', 'saddle-analytics', 'saddle-context', 'saddle-connections', 'saddle-logs', 'saddle-settings', 'saddle-plans' ),
 			array_keys( $items )
 		);
+		$this->assertSame( 'Logs', $items['saddle-logs'][0] );
 		$this->assertSame( 'Overview', $items['saddle'][0] );
-		$this->assertSame( 'MCP', $items['saddle-connections'][0] );
+		$this->assertSame( 'Agent setup', $items['saddle-connections'][0] );
 		$this->assertStringStartsWith( '<span class="saddle-get-pro-crown"', $items['saddle-plans'][0] );
 		$this->assertStringContainsString( '<svg class="saddle-nav-icon" width="16" height="16" aria-hidden="true"', $items['saddle-plans'][0] );
 		$this->assertStringEndsWith( '</span>Get Pro', $items['saddle-plans'][0] );
@@ -197,7 +198,7 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		$this->build_menu();
 
 		$this->assertSame(
-			array( 'saddle', 'saddle-analytics', 'saddle-context', 'saddle-connections', 'saddle-settings', 'saddle-plans' ),
+			array( 'saddle', 'saddle-analytics', 'saddle-context', 'saddle-connections', 'saddle-logs', 'saddle-settings', 'saddle-plans' ),
 			array_keys( $this->saddle_submenu() )
 		);
 		$this->assertSame( 'Analytics', $this->saddle_submenu()['saddle-analytics'] );
@@ -214,7 +215,7 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		Saddle_Settings::order_submenu();
 
 		$this->assertSame(
-			array( 'saddle', 'saddle-analytics', 'saddle-rank', 'saddle-context', 'saddle-connections', 'saddle-settings', 'saddle-plans' ),
+			array( 'saddle', 'saddle-analytics', 'saddle-rank', 'saddle-context', 'saddle-connections', 'saddle-logs', 'saddle-settings', 'saddle-plans' ),
 			array_keys( $this->saddle_submenu() )
 		);
 		foreach ( $this->saddle_items() as $slug => $item ) {
@@ -231,8 +232,9 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		$labels = array(
 			'saddle'             => 'Overview',
 			'saddle-analytics'   => 'Analytics',
-			'saddle-connections' => 'MCP',
+			'saddle-connections' => 'Agent setup',
 			'saddle-context'     => 'Context',
+			'saddle-logs'        => 'Logs',
 			'saddle-settings'    => 'Settings',
 		);
 		foreach ( $this->saddle_items() as $slug => $item ) {
@@ -279,7 +281,7 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 
 		$this->assertSame( array( 'rank', 'crm' ), array_keys( Saddle_Modules::modules() ) );
 		$this->assertSame(
-			array( 'home', 'analytics', 'rank', 'crm', 'context', 'connections', 'settings', 'plans' ),
+			array( 'home', 'analytics', 'rank', 'crm', 'context', 'connections', 'logs', 'settings', 'plans' ),
 			array_keys( Saddle_Modules::areas() )
 		);
 		$this->assertSame( array( 'overview' => 'Overview' ), Saddle_Modules::modules()['crm']['tabs'], 'A module with no tabs gets one.' );
@@ -502,16 +504,16 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 
 		$this->assertSame( 'connections', $saddle['area'] );
 		$this->assertSame( 'apps', $saddle['tab'] );
-		$this->assertSame( array( 'home', 'analytics', 'context', 'connections', 'settings', 'plans' ), array_column( $saddle['areas'], 'key' ) );
+		$this->assertSame( array( 'home', 'analytics', 'context', 'connections', 'logs', 'settings', 'plans' ), array_column( $saddle['areas'], 'key' ) );
 		$this->assertSame( 2, $saddle['shellVersion'] );
 
 		$connections = $saddle['areas'][3];
 		$this->assertSame( array( 'apps' ), array_column( $connections['tabs'], 'key' ) );
-		$this->assertSame( 'MCP', $connections['title'] );
+		$this->assertSame( 'Agent setup', $connections['title'] );
 		$this->assertSame( array( 'overview' ), array_column( $saddle['areas'][0]['tabs'], 'key' ) );
 		$this->assertSame( 'Overview', $saddle['areas'][0]['title'] );
 		$this->assertSame(
-			array( 'home-simple-door', 'graph-up', 'brain', 'sparks', 'settings', 'star' ),
+			array( 'home-simple-door', 'graph-up', 'brain', 'sparks', 'activity', 'settings', 'star' ),
 			array_column( $saddle['areas'], 'icon' )
 		);
 	}
