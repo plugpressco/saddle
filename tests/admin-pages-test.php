@@ -103,14 +103,13 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 
 	/* ------------------------------------------------------------- the menu */
 
-	public function test_core_has_five_pages_under_one_menu() {
+	public function test_core_has_four_pages_under_one_menu() {
 		$this->build_menu();
 
 		$this->assertSame(
 			array(
 				'saddle'             => 'Home',
-				'saddle-connections' => 'AI apps',
-				'saddle-services'    => 'Services',
+				'saddle-connections' => 'Agent setup',
 				'saddle-context'     => 'Context',
 				'saddle-settings'    => 'Settings',
 			),
@@ -123,7 +122,7 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		$this->build_menu();
 
 		$this->assertSame(
-			array( 'saddle', 'saddle-analytics', 'saddle-connections', 'saddle-services', 'saddle-context', 'saddle-settings' ),
+			array( 'saddle', 'saddle-analytics', 'saddle-connections', 'saddle-context', 'saddle-settings' ),
 			array_keys( $this->saddle_submenu() )
 		);
 		$this->assertSame( 'Analytics', $this->saddle_submenu()['saddle-analytics'] );
@@ -139,40 +138,35 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		Saddle_Settings::order_submenu();
 
 		$this->assertSame(
-			array( 'saddle', 'saddle-rank', 'saddle-connections', 'saddle-services', 'saddle-context', 'saddle-settings' ),
+			array( 'saddle', 'saddle-rank', 'saddle-connections', 'saddle-context', 'saddle-settings' ),
 			array_keys( $this->saddle_submenu() )
 		);
 	}
 
-	/* ------------------------------------------------- icons and the hairline */
+	/* ------------------------------------------------------ labels and the hairline */
 
-	public function test_each_menu_title_is_an_icon_and_the_label() {
+	public function test_each_menu_title_is_the_label_alone() {
 		$this->analytics_module( array( 'icon' => 'graph-up' ) );
 		$this->build_menu();
 
-		$icons = array(
-			'saddle'             => 'home-simple-door',
-			'saddle-analytics'   => 'graph-up',
-			'saddle-connections' => 'sparks',
-			'saddle-services'    => 'puzzle',
-			'saddle-context'     => 'brain',
-			'saddle-settings'    => 'settings',
+		$labels = array(
+			'saddle'             => 'Home',
+			'saddle-analytics'   => 'Analytics',
+			'saddle-connections' => 'Agent setup',
+			'saddle-context'     => 'Context',
+			'saddle-settings'    => 'Settings',
 		);
 		foreach ( $this->saddle_items() as $slug => $item ) {
-			$this->assertSame( Saddle_Nav_Icons::svg( $icons[ $slug ] ), substr( $item[0], 0, strlen( Saddle_Nav_Icons::svg( $icons[ $slug ] ) ) ), $slug );
-			$this->assertStringStartsWith( '<svg class="saddle-nav-icon"', $item[0], $slug );
-			$this->assertStringNotContainsString( '<svg', $item[3], 'The page title stays plain text: ' . $slug );
+			$this->assertSame( $labels[ $slug ], $item[0], 'No icon before the label (#369): ' . $slug );
 		}
 		$this->assertSame( 'Analytics ‹ Saddle', $this->saddle_items()['saddle-analytics'][3] );
 	}
 
-	public function test_a_label_is_escaped_after_the_icon() {
+	public function test_a_label_is_escaped() {
 		$this->analytics_module( array( 'title' => 'Q&A <b>' ) );
 		$this->build_menu();
 
-		$title = $this->saddle_items()['saddle-analytics'][0];
-		$this->assertStringEndsWith( 'Q&amp;A &lt;b&gt;', $title );
-		$this->assertStringNotContainsString( '<svg', $title, 'A module without an icon gets none.' );
+		$this->assertSame( 'Q&amp;A &lt;b&gt;', $this->saddle_items()['saddle-analytics'][0] );
 	}
 
 	public function test_the_group_line_needs_a_product_under_home() {
@@ -186,7 +180,7 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		$this->build_menu();
 		$items = $this->saddle_items();
 		$this->assertSame( 'saddle-menu-group', $items['saddle-connections'][4], 'The first of Core\'s pages after the products.' );
-		foreach ( array( 'saddle', 'saddle-analytics', 'saddle-services', 'saddle-context', 'saddle-settings' ) as $slug ) {
+		foreach ( array( 'saddle', 'saddle-analytics', 'saddle-context', 'saddle-settings' ) as $slug ) {
 			$this->assertArrayNotHasKey( 4, $items[ $slug ], $slug );
 		}
 
@@ -251,7 +245,7 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 
 		$this->assertSame( array( 'rank', 'crm' ), array_keys( Saddle_Modules::modules() ) );
 		$this->assertSame(
-			array( 'home', 'rank', 'crm', 'connections', 'services', 'context', 'settings' ),
+			array( 'home', 'rank', 'crm', 'connections', 'context', 'settings' ),
 			array_keys( Saddle_Modules::areas() )
 		);
 		$this->assertSame( array( 'overview' => 'Overview' ), Saddle_Modules::modules()['crm']['tabs'], 'A module with no tabs gets one.' );
@@ -474,16 +468,16 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 
 		$this->assertSame( 'connections', $saddle['area'] );
 		$this->assertSame( 'apps', $saddle['tab'] );
-		$this->assertSame( array( 'home', 'connections', 'services', 'context', 'settings' ), array_column( $saddle['areas'], 'key' ) );
+		$this->assertSame( array( 'home', 'connections', 'context', 'settings' ), array_column( $saddle['areas'], 'key' ) );
 		$this->assertSame( 2, $saddle['shellVersion'] );
 
 		$connections = $saddle['areas'][1];
 		$this->assertSame( array( 'apps' ), array_column( $connections['tabs'], 'key' ) );
-		$this->assertSame( 'AI apps', $connections['title'] );
+		$this->assertSame( 'Agent setup', $connections['title'] );
 		$this->assertSame( array( 'overview' ), array_column( $saddle['areas'][0]['tabs'], 'key' ) );
 		$this->assertSame( 'Home', $saddle['areas'][0]['title'] );
 		$this->assertSame(
-			array( 'home-simple-door', 'sparks', 'puzzle', 'brain', 'settings' ),
+			array( 'home-simple-door', 'sparks', 'brain', 'settings' ),
 			array_column( $saddle['areas'], 'icon' )
 		);
 	}

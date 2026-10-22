@@ -135,7 +135,7 @@ class Saddle_Services {
 			$prefix = 'saddle-' . $record['key'] . '-*';
 			if ( 'needs_key' === $record['status'] ) {
 				/* translators: %s: service name. */
-				$lines[] = sprintf( __( '- %s: not set up; ask the owner to add a key under Saddle → Services.', 'saddle' ), $record['name'] );
+				$lines[] = sprintf( __( '- %s: not set up; ask the owner to add a key under Saddle → Settings.', 'saddle' ), $record['name'] );
 			} elseif ( 'ready' === $record['status'] ) {
 				/* translators: 1: service name, 2: what it does. */
 				$lines[] = sprintf( __( '- %1$s: ready (%2$s).', 'saddle' ), $record['name'], '' !== $record['agent'] ? $record['agent'] : $record['description'] );

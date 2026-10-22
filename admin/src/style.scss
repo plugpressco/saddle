@@ -610,6 +610,22 @@ body.saddle-admin-page {
 	padding: var( --pp-space-5 ) var( --pp-space-5 ) var( --pp-space-8 );
 }
 
+// Home's floor, Saddle Cloud's: a faint pink and lilac glow at the top
+// (#369). Only on Home, and only once it has drawn.
+.saddle-frame[data-saddle-screen='home/overview'] {
+	background:
+		radial-gradient(
+			56rem 20rem at 88% -7rem,
+			rgb( 253 228 250 / 0.75 ),
+			transparent 70%
+		),
+		radial-gradient(
+			48rem 18rem at 28% -8rem,
+			rgb( 237 232 255 / 0.7 ),
+			transparent 70%
+		);
+}
+
 .saddle-frame__notice {
 	margin-block-end: var( --pp-space-4 );
 }
@@ -865,130 +881,226 @@ body.saddle-admin-page {
 	gap: 6px;
 }
 
-/* ---------- AI apps: Connect an app drawer (#274, #285) ---------- */
-// The app tiles in three small groups; picking one swaps the grid for that
-// app's steps ("All apps" brings the grid back). First run shows the same grid.
-.saddle-connect {
+/* ---------- Agent setup (#369, after Saddle Cloud's) ---------- */
+// The address on top, the connected apps, then every app down the side
+// with the chosen one's steps beside it. Nothing opens in a drawer.
+.saddle-setup {
 	display: grid;
-	gap: var(--pp-space-3);
+	grid-template-columns: minmax( 0, 1fr );
+	gap: var( --pp-space-5 );
+}
+
+.saddle-setup__intro-head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: var( --pp-space-4 ) var( --pp-space-8 );
+}
+
+.saddle-setup__intro-text {
+	display: grid;
+	flex: 1 1 320px;
+	gap: var( --pp-space-1 );
 	min-width: 0;
+}
 
-	&__groups {
-		display: grid;
-		gap: var(--pp-space-4);
+.saddle-setup__lede {
+	margin: 0;
+	font-size: var( --s-text );
+	line-height: 1.55;
+	color: var( --s-fg-subtle );
+}
+
+// A few app logos on white discs, overlapping.
+.saddle-setup__logos {
+	display: flex;
+}
+
+.saddle-setup__logo {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	inline-size: 40px;
+	block-size: 40px;
+	border-radius: 50%;
+	background: var( --pp-n-50 );
+	box-shadow: 0 0 0 3px var( --s-bg );
+
+	& + & {
+		margin-inline-start: -8px;
+	}
+
+	img {
+		inline-size: 22px;
+		block-size: 22px;
+	}
+}
+
+.saddle-setup__address {
+	display: grid;
+	gap: var( --pp-space-2 );
+}
+
+.saddle-setup__address-label {
+	font-size: var( --s-text );
+	font-weight: 600;
+	color: var( --s-fg );
+}
+
+// An address in a soft field with Copy at its end, Cloud's CopyField.
+.saddle-copy-field {
+	display: flex;
+	align-items: center;
+	gap: var( --pp-space-3 );
+	min-width: 0;
+	padding: var( --pp-space-2 ) var( --pp-space-2 ) var( --pp-space-2 )
+		var( --pp-space-3 );
+	border-radius: 10px;
+	background: var( --pp-n-50 );
+
+	code {
+		flex: 1 1 auto;
 		min-width: 0;
-	}
-
-	&__group {
-		display: grid;
-		gap: 8px;
-	}
-
-	&__group-title {
 		margin: 0;
+		padding: 0;
+		background: none;
 		font-size: var( --s-text );
-		font-weight: 600;
-		color: var(--s-fg-muted);
+		overflow-wrap: anywhere;
 	}
+}
 
-	&__other {
+// The apps down the side, the steps beside them; on a phone the apps scroll
+// in one row above the steps.
+.saddle-setup__picker {
+	display: grid;
+	grid-template-columns: minmax( 0, 1fr );
+	gap: var( --pp-space-4 );
+
+	@media ( min-width: 900px ) {
+		grid-template-columns: 260px minmax( 0, 1fr );
+		align-items: start;
+	}
+}
+
+.saddle-setup__apps {
+	display: flex;
+	gap: var( --pp-space-1 );
+	margin-inline: calc( var( --pp-space-1 ) * -1 );
+	padding: var( --pp-space-1 );
+	overflow-x: auto;
+
+	@media ( min-width: 900px ) {
+		flex-direction: column;
 		margin: 0;
-		font-size: var( --s-text );
-		color: var(--s-fg-subtle);
+		padding: 0;
+		overflow: visible;
+	}
+}
+
+.saddle-setup__app {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: var( --pp-space-3 );
+	padding: 10px 12px;
+	border: 0;
+	border-radius: 12px;
+	background: transparent;
+	color: var( --s-fg );
+	font: inherit;
+	text-align: start;
+	cursor: pointer;
+	transition: background-color var( --s-dur ) var( --s-ease );
+
+	img {
+		flex: none;
+		inline-size: 20px;
+		block-size: 20px;
 	}
 
-	&__apps {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
-		gap: 8px;
+	&:hover {
+		background: rgb( 29 35 39 / 0.04 );
 	}
 
-	&__app {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		min-width: 0;
-		padding: 8px 10px;
-		border: 1px solid var(--s-border);
-		border-radius: var(--s-radius);
-		background: var(--s-bg);
-		color: var(--s-fg);
-		font: inherit;
-		font-size: var( --s-text );
-		text-align: start;
-		cursor: pointer;
-
-		img {
-			flex: 0 0 auto;
-			width: 18px;
-			height: 18px;
-		}
-
-		&:hover {
-			background: var(--s-surface-2);
-		}
-
-		&[aria-pressed='true'] {
-			border-color: var(--s-border-strong);
-			background: var(--s-surface-3);
-			font-weight: 600;
-		}
+	&[aria-pressed='true'] {
+		background: var( --s-bg );
+		box-shadow: var( --s-card-edge );
 	}
 
-	&__app-label {
-		flex: 1;
-		min-width: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
+	&:focus-visible {
+		outline: 2px solid var( --s-focus );
+		outline-offset: 1px;
 	}
 
-	// While the connections load, a placeholder the size of a tile, so no
-	// "Connected" dot pops in late (R10).
-	&__app-skeleton {
-		display: block;
-		width: 100%;
-		border-radius: var(--s-radius);
+	@media ( prefers-reduced-motion: reduce ) {
+		transition: none;
 	}
+}
 
-	// The picked app's steps sit straight in the drawer: no box in a box.
-	&__steps {
-		display: grid;
-		gap: var(--pp-space-4);
-		min-width: 0;
+.saddle-setup__app-text {
+	display: grid;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.saddle-setup__app-name {
+	font-size: var( --s-text );
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+// Where the app runs, under its name; the phone's row has no room for it.
+.saddle-setup__app-kind {
+	overflow: hidden;
+	font-size: var( --s-text-sm );
+	color: var( --s-fg-subtle );
+	white-space: nowrap;
+	text-overflow: ellipsis;
+
+	@media ( max-width: 899px ) {
+		display: none;
 	}
+}
+
+.saddle-setup__app-on {
+	flex: none;
+	color: var( --saddle-pop-mint-ink );
+}
+
+.saddle-setup__steps {
+	gap: var( --pp-space-5 );
+	scroll-margin-block-start: 56px;
+
+	// Beside the long list of apps, the steps stay in view.
+	@media ( min-width: 900px ) {
+		position: sticky;
+		top: 56px;
+	}
+}
+
+.saddle-setup__steps-head {
+	display: flex;
+	align-items: center;
+	gap: var( --pp-space-3 );
+}
+
+// The chosen app's steps: one line of fact, numbered steps, the waiting line.
+.saddle-connect {
+	min-width: 0;
 
 	// One quiet line of fact (sign-in is off; a web app can't reach localhost).
 	&__hint {
 		margin: 0;
-		color: var(--s-fg-muted);
+		color: var( --s-fg-muted );
 		font-size: var( --s-text );
+		line-height: 1.55;
 	}
 
-	&__steps-head {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 12px;
-	}
-
-	&__steps-title {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		margin: 0;
-		font-size: var( --s-text );
-		font-weight: 600;
-
-		img {
-			width: 20px;
-			height: 20px;
-		}
-	}
-
+	// Numbered steps, Cloud's: a soft grey disc with the number.
 	&__list {
 		display: grid;
-		gap: var(--pp-space-4);
+		gap: var( --pp-space-5 );
 		margin: 0;
 		padding: 0;
 		list-style: none;
@@ -999,23 +1111,27 @@ body.saddle-admin-page {
 			display: grid;
 			gap: 10px;
 			margin: 0;
-			padding-inline-start: 34px;
+			padding-inline-start: 36px;
+			font-size: var( --s-text );
+			line-height: 1.55;
 			counter-increment: saddle-step;
 
 			&::before {
-				content: counter(saddle-step);
+				content: counter( saddle-step );
 				position: absolute;
 				inset-inline-start: 0;
 				top: 0;
 				display: inline-flex;
 				align-items: center;
 				justify-content: center;
-				width: 22px;
-				height: 22px;
-				border: 1px solid var(--s-border);
+				width: 24px;
+				height: 24px;
 				border-radius: 50%;
-				color: var(--s-fg-muted);
+				background: rgb( 29 35 39 / 0.06 );
+				color: var( --s-fg );
 				font-size: var( --s-text-sm );
+				font-weight: 600;
+				font-variant-numeric: tabular-nums;
 			}
 		}
 
@@ -1028,11 +1144,16 @@ body.saddle-admin-page {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 8px;
+
+		img {
+			inline-size: 16px;
+			block-size: 16px;
+		}
 	}
 
-	// A command or config wraps instead of clipping in the drawer's width:
-	// at spaces and after hyphens, and inside a word only when the word is
-	// wider than the line on its own.
+	// A command or config wraps instead of clipping: at spaces and after
+	// hyphens, and inside a word only when the word is wider than the line
+	// on its own.
 	&__config {
 		min-width: 0;
 
@@ -1071,7 +1192,7 @@ body.saddle-admin-page {
 		justify-items: start;
 	}
 
-	&__steps > .pp-btn--link {
+	> .pp-btn--link {
 		justify-self: start;
 	}
 
@@ -1080,15 +1201,20 @@ body.saddle-admin-page {
 		align-items: center;
 		gap: 8px;
 		margin: 0;
-		color: var(--s-fg-muted);
+		color: var( --s-fg-muted );
 		font-size: var( --s-text );
+	}
+
+	&__done {
+		flex: none;
+		color: var( --saddle-pop-mint-ink );
 	}
 
 	&__spinner {
 		width: 10px;
 		height: 10px;
-		border: 2px solid var(--s-border-strong);
-		border-top-color: var(--s-accent);
+		border: 2px solid var( --s-border-strong );
+		border-top-color: var( --s-accent );
 		border-radius: 50%;
 		animation: saddle-spin 0.9s linear infinite;
 	}
@@ -1096,14 +1222,36 @@ body.saddle-admin-page {
 
 @keyframes saddle-spin {
 	to {
-		transform: rotate(360deg);
+		transform: rotate( 360deg );
 	}
 }
 
-// `&key=<app>` on AI apps: the drawer's steps on the page, about as wide as
-// they read in the drawer, with Done at the end of their own line.
-.saddle-connect-page {
-	max-width: 640px;
+// The connected apps on Agent setup: rows flat in their card, each logo on
+// its tile.
+.saddle-apps {
+	gap: var( --pp-space-3 );
+
+	.pp-rowlist {
+		margin-inline: calc( var( --pp-space-2 ) * -1 );
+		border: 0;
+		box-shadow: none;
+		background: none;
+	}
+
+	.pp-rowlist__row {
+		padding-inline: var( --pp-space-2 );
+		border-bottom: 0;
+		border-radius: 10px;
+
+		&:hover {
+			background: var( --pp-n-50 );
+		}
+	}
+
+	.pp-rowlist__icon {
+		width: auto;
+		height: auto;
+	}
 }
 
 /* ---------- Context (#274) ---------- */
@@ -1472,33 +1620,14 @@ body.saddle-admin-page {
 
 /* ---------- Home ---------- */
 
-// The feed and what waits on the left, the apps on the right (#309). One
-// column below 1100px, the apps after the feed. With no app connected there
-// is no side column, so the page is one column at every width.
+// One column of soft cards, Saddle Cloud's overview (#369): white on the
+// page grey, an edge you barely see in place of a border, 12px corners, and
+// no rules between rows. Tiles, chips and space carry the structure. The
+// card, its heading row, the tiles and the chips are Agent setup's too.
 .saddle-home {
 	display: grid;
-	grid-template-columns: minmax( 0, 1fr ) 280px;
-	gap: var( --pp-space-6 );
-	align-items: start;
-
-	// The inner track is minmax( 0, 1fr ) too: an implicit auto track grows to
-	// fit a long unwrapped Activity line and slid the column under the side
-	// column, covering Approve (1.5.0 release QA).
-	&__main,
-	&__side {
-		display: grid;
-		grid-template-columns: minmax( 0, 1fr );
-		gap: var( --pp-space-6 );
-		min-width: 0;
-	}
-
-	&--single {
-		grid-template-columns: minmax( 0, 1fr );
-	}
-
-	@media ( max-width: 1100px ) {
-		grid-template-columns: minmax( 0, 1fr );
-	}
+	grid-template-columns: minmax( 0, 1fr );
+	gap: var( --pp-space-5 );
 }
 
 // A page's shape while the app loads (P12): a heading's place, then a block
@@ -1508,44 +1637,445 @@ body.saddle-admin-page {
 	gap: var( --pp-space-3 );
 }
 
-// No app connected: one sentence and one button, centred in one block.
-.saddle-home__connect {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
+.saddle-soft-card {
+	display: grid;
+	grid-template-columns: minmax( 0, 1fr );
 	gap: var( --pp-space-4 );
+	min-width: 0;
+	padding: var( --pp-space-5 );
+	background: var( --s-bg );
+	border-radius: var( --s-radius-card );
+	box-shadow: var( --s-card-edge );
+
+	@media ( max-width: 600px ) {
+		padding: var( --pp-space-4 );
+	}
+}
+
+.saddle-soft-card__head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: var( --pp-space-2 );
+}
+
+.saddle-soft-card__title {
+	margin: 0;
+	font-size: var( --s-text-title );
+	font-weight: 600;
+	color: var( --s-fg );
+}
+
+.saddle-soft-card__actions {
+	display: flex;
+	align-items: center;
+	gap: var( --pp-space-3 );
+}
+
+// A soft square behind an icon or a logo, in one of Cloud's pastel tones.
+.saddle-tile {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	inline-size: 40px;
+	block-size: 40px;
+	border-radius: 10px;
+
+	img {
+		inline-size: 20px;
+		block-size: 20px;
+	}
+
+	&--lg {
+		inline-size: 56px;
+		block-size: 56px;
+		border-radius: 16px;
+	}
+
+	@each $tone in pink, lilac, sky, mint, butter, peach {
+		&--#{$tone} {
+			background: var( --saddle-pop-#{$tone} );
+			color: var( --saddle-pop-#{$tone}-ink );
+		}
+	}
+}
+
+// A short label on a pastel ground: an app's role, an add-on that asks for
+// the owner, a plugin the apps work with.
+.saddle-chip {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	padding: 3px 10px;
+	border-radius: var( --s-radius-pill );
+	background: var( --pp-n-50 );
+	color: var( --s-fg );
+	font-size: var( --s-text-sm );
+	font-weight: 500;
+	line-height: 1.5;
+	white-space: nowrap;
+
+	@each $tone in pink, lilac, sky, mint, butter, peach {
+		&--#{$tone} {
+			background: var( --saddle-pop-#{$tone} );
+			color: var( --saddle-pop-#{$tone}-ink );
+		}
+	}
+}
+
+// No app connected: the mark, one sentence and one button, centred.
+.saddle-home__connect {
+	justify-items: center;
 	padding-block: var( --pp-space-8 );
 	text-align: center;
 }
 
 .saddle-home__connect-text {
 	margin: 0;
-	font-size: var( --s-text );
+	font-size: var( --s-text-title );
+	font-weight: 600;
 }
 
-// This week: three numbers in one block, its title in the header row.
-.saddle-home__week {
-	padding: var( --pp-space-4 ) var( --pp-space-5 );
+// Connections may not work: a butter tile, two lines, one button.
+.saddle-home__alert {
+	display: flex;
+	align-items: center;
+	gap: var( --pp-space-4 );
+	background: var( --saddle-pop-butter );
+	box-shadow: none;
 
-	.pp-card__header {
-		margin-block-end: var( --pp-space-3 );
+	.saddle-tile {
+		background: var( --s-bg );
 	}
 
-	.pp-stat {
-		padding-block: 0;
+	@media ( max-width: 600px ) {
+		flex-wrap: wrap;
+	}
+}
+
+.saddle-home__alert-text {
+	flex: 1 1 240px;
+	min-width: 0;
+}
+
+.saddle-home__alert-title,
+.saddle-home__alert-line {
+	margin: 0;
+	font-size: var( --s-text );
+	line-height: 1.5;
+	color: var( --saddle-pop-butter-ink );
+}
+
+.saddle-home__alert-title {
+	font-weight: 600;
+}
+
+// This week: three big numbers, then the changes of each day as bars.
+.saddle-week__numbers {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var( --pp-space-4 ) var( --pp-space-8 );
+}
+
+.saddle-week__number {
+	display: grid;
+	gap: var( --pp-space-1 );
+}
+
+.saddle-week__value {
+	font-size: var( --s-text-hero );
+	font-weight: 600;
+	line-height: 1.1;
+	letter-spacing: -0.02em;
+	font-variant-numeric: tabular-nums;
+	color: var( --s-fg );
+}
+
+.saddle-week__label {
+	font-size: var( --s-text );
+	color: var( --s-fg-subtle );
+}
+
+.saddle-bars {
+	display: grid;
+	gap: var( --pp-space-2 );
+	margin: 0;
+}
+
+.saddle-bars__plot {
+	display: flex;
+	align-items: flex-end;
+	gap: var( --pp-space-2 );
+	block-size: 136px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.saddle-bars__day {
+	display: flex;
+	flex: 1 1 0;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-end;
+	gap: var( --pp-space-1 );
+	block-size: 100%;
+	margin: 0;
+}
+
+.saddle-bars__count {
+	font-size: var( --s-text-sm );
+	font-weight: 600;
+	color: var( --s-fg-subtle );
+	font-variant-numeric: tabular-nums;
+
+	.is-today & {
+		color: var( --saddle-brand-text );
+	}
+}
+
+.saddle-bars__bar {
+	display: block;
+	inline-size: 100%;
+	max-inline-size: 44px;
+	border-radius: 8px 8px 4px 4px;
+	background: var( --saddle-chart-bar );
+	transition: background-color var( --s-dur ) var( --s-ease );
+
+	.is-today &,
+	.saddle-bars__day:hover & {
+		background: var( --saddle-chart-ink );
 	}
 
-	// Three short numbers fit side by side down to phone width (#367); the
-	// kit would break them 2 + 1 below 900px and stack them below 560px.
-	// The kit drops the dividers there, so a gap keeps them apart.
-	@media ( max-width: 900px ) {
-		.pp-stat-grid--fixed {
-			gap: var( --pp-space-3 );
-			grid-template-columns: repeat(
-				var( --pp-stat-grid-cols, 3 ),
-				minmax( 0, 1fr )
-			);
+	@media ( prefers-reduced-motion: reduce ) {
+		transition: none;
+	}
+}
+
+.saddle-bars__ticks {
+	display: flex;
+	gap: var( --pp-space-2 );
+
+	span {
+		flex: 1 1 0;
+		font-size: var( --s-text-sm );
+		color: var( --s-fg-subtle );
+		text-align: center;
+	}
+
+	span:last-child {
+		font-weight: 600;
+		color: var( --s-fg );
+	}
+}
+
+// The apps: a tile with the logo, the name and its last use, the role as a
+// chip, and the one next step. A soft ground under the row pointed at.
+.saddle-home__apps,
+.saddle-home__addons,
+.saddle-home__chips {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.saddle-home__apps {
+	display: grid;
+	gap: var( --pp-space-1 );
+	margin-inline: calc( var( --pp-space-2 ) * -1 );
+}
+
+.saddle-app-row {
+	display: grid;
+	grid-template-columns: auto minmax( 0, 1fr ) auto;
+	align-items: center;
+	gap: var( --pp-space-1 ) var( --pp-space-3 );
+	margin: 0;
+	padding: var( --pp-space-2 );
+	border-radius: 10px;
+
+	&:hover {
+		background: var( --pp-n-50 );
+	}
+}
+
+.saddle-app-row__text {
+	display: grid;
+	min-width: 0;
+}
+
+// The role and the next step, together: on the right, or on a phone under
+// the name.
+.saddle-app-row__end {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-end;
+	gap: var( --pp-space-3 );
+
+	@media ( max-width: 600px ) {
+		grid-column: 2 / -1;
+		justify-content: flex-start;
+	}
+}
+
+.saddle-app-row:has( .saddle-app-row__end:empty ) {
+	grid-template-columns: auto minmax( 0, 1fr );
+}
+
+.saddle-app-row__name {
+	font-size: var( --s-text );
+	font-weight: 600;
+	color: var( --s-fg );
+}
+
+.saddle-app-row__meta {
+	overflow: hidden;
+	font-size: var( --s-text );
+	color: var( --s-fg-subtle );
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+// Add-ons: tiles, two or three to a row, each opening its add-on.
+.saddle-home__addons {
+	display: grid;
+	grid-template-columns: repeat( auto-fit, minmax( 260px, 1fr ) );
+	gap: var( --pp-space-3 );
+}
+
+.saddle-addon {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: var( --pp-space-3 );
+	margin: 0;
+	padding: var( --pp-space-3 );
+	border-radius: 10px;
+	background: var( --pp-n-50 );
+	transition: background-color var( --s-dur ) var( --s-ease );
+
+	&:hover {
+		background: var( --pp-n-100 );
+	}
+
+	@media ( prefers-reduced-motion: reduce ) {
+		transition: none;
+	}
+}
+
+.saddle-addon__text {
+	display: grid;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.saddle-addon__name {
+	font-size: var( --s-text );
+	font-weight: 600;
+	color: var( --s-fg );
+}
+
+// The name is the link, stretched over the whole tile. The id beats the
+// kit's `#wpbody-content .pp-app a`, which paints links blue.
+#wpbody-content .saddle-addon .saddle-addon__link {
+	color: var( --s-fg );
+	text-decoration: none;
+
+	&::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+	}
+
+	&:focus {
+		box-shadow: none;
+		outline: none;
+	}
+
+	&:focus-visible::after {
+		outline: 2px solid var( --s-focus );
+		outline-offset: 2px;
+		border-radius: 10px;
+	}
+}
+
+.saddle-addon__line {
+	overflow: hidden;
+	font-size: var( --s-text );
+	color: var( --s-fg-subtle );
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.saddle-addon__go {
+	flex: none;
+	color: var( --s-fg-subtle );
+}
+
+// Works with: the plugins' names as chips.
+.saddle-home__chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var( --pp-space-2 );
+
+	.saddle-chip {
+		margin: 0;
+		padding: 6px 12px;
+		font-size: var( --s-text );
+	}
+}
+
+// The feed inside its card: days on the card itself, no box around them.
+.saddle-soft-card.saddle-activity {
+	gap: 0;
+
+	.saddle-activity__list {
+		margin-inline: calc( var( --pp-space-2 ) * -1 );
+		background: none;
+		border: 0;
+		border-radius: 0;
+		box-shadow: none;
+		overflow: visible;
+	}
+
+	.saddle-activity__row {
+		padding: 8px;
+		border-radius: 10px;
+
+		& + .saddle-activity__row {
+			border-top: 0;
 		}
+
+		&:hover {
+			background: var( --pp-n-50 );
+		}
+	}
+
+	.saddle-activity__day:last-of-type {
+		margin-bottom: 0;
+	}
+}
+
+// Needs your OK on Home is a card too, its rows flat inside it.
+.saddle-home .saddle-needs-ok {
+	display: grid;
+	gap: var( --pp-space-3 );
+	padding: var( --pp-space-5 );
+	background: var( --s-bg );
+	border-radius: var( --s-radius-card );
+	box-shadow: var( --s-card-edge );
+
+	.pp-rowlist {
+		border: 0;
+		box-shadow: none;
+	}
+
+	.pp-rowlist__row {
+		border-bottom: 0;
 	}
 }
 
@@ -1555,49 +2085,6 @@ body.saddle-admin-page {
 	font-size: var( --s-text );
 	line-height: 1.55;
 	color: var(--s-fg-muted);
-}
-
-// Per-app setup guide drawer: three numbered sections with one rhythm.
-.saddle-setup-guide {
-	display: grid;
-	gap: 20px;
-
-	&__app {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		font-weight: 600;
-
-		img {
-			width: 24px;
-			height: 24px;
-		}
-	}
-
-	&__step {
-		display: grid;
-		gap: 10px;
-		justify-items: start;
-
-		h3 {
-			margin: 0;
-			font-size: var( --s-text );
-			font-weight: 600;
-			color: var(--s-fg);
-		}
-
-		p {
-			margin: 0;
-			font-size: var( --s-text );
-			line-height: 1.55;
-			color: var(--s-fg-muted);
-		}
-
-		.pp-codeblock,
-		.pp-snippet {
-			width: 100%;
-		}
-	}
 }
 
 // Quiet destructive row action (e.g. Disconnect) — link button, danger ink.
@@ -1795,7 +2282,7 @@ body.saddle-admin-page {
 	color: var(--s-fg-muted);
 }
 
-/* ---------- AI apps: the connected list (#285) ---------- */
+/* ---------- Agent setup: the connected list (#285) ---------- */
 // Rows, the ⋯ menu, the disconnect confirm and the endpoint snippet all come
 // from the design system.
 
@@ -1839,100 +2326,6 @@ body.saddle-admin-page {
 	// noise. Arrow keys still move the highlight.
 	.pp-select__item:focus-visible {
 		outline: none;
-	}
-}
-
-// The site's address for AI apps: one quiet line, not a block. A label, the
-// address in a code chip, and Copy as a link.
-.saddle-apps__address {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: 8px;
-	margin: 0;
-	font-size: var( --s-text );
-}
-
-.saddle-apps__address-label {
-	color: var( --s-fg-muted );
-}
-
-.saddle-apps__url {
-	min-width: 0;
-	margin: 0;
-	padding: 2px 6px;
-	border-radius: var( --s-radius );
-	background: var( --s-surface-2 );
-	color: var( --s-fg );
-	font-size: var( --s-text-sm );
-	overflow-wrap: anywhere;
-}
-
-// Nothing connected yet: a light tile per app, logo and name, in three
-// groups. Tiles are picked from, not read, so they are light: a hairline, no
-// shadow, and the field edge on hover. The whole tile is the button.
-.saddle-quick {
-	&__group {
-		display: grid;
-		gap: var( --pp-space-2 );
-	}
-
-	&__group-title {
-		margin: 0;
-		font-size: var( --s-text );
-		font-weight: 600;
-		color: var( --s-fg-muted );
-	}
-
-	&__cards {
-		display: grid;
-		grid-template-columns: repeat( auto-fill, minmax( 160px, 1fr ) );
-		gap: var( --pp-space-2 );
-	}
-
-	&__card {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		box-sizing: border-box;
-		min-width: 0;
-		min-height: 44px;
-		padding: 0 12px;
-		border: 1px solid var( --s-border );
-		border-radius: 6px;
-		background: var( --s-bg );
-		color: var( --s-fg );
-		font: inherit;
-		font-size: var( --s-text );
-		text-align: start;
-		cursor: pointer;
-		transition: border-color var( --s-dur ) var( --s-ease );
-
-		&:hover {
-			border-color: var( --s-field-edge );
-		}
-
-		img {
-			flex: 0 0 auto;
-		}
-	}
-
-	&__name {
-		overflow: hidden;
-		font-weight: 600;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	// "Another MCP app" and the address: two quiet lines after the groups.
-	&__more {
-		display: grid;
-		gap: var( --pp-space-2 );
-	}
-
-	&__other {
-		margin: 0;
-		font-size: var( --s-text );
 	}
 }
 
@@ -2175,7 +2568,8 @@ body.saddle-admin-page {
 		}
 	}
 
-	// The app that did it; a dot when no app did (the owner, a cron run).
+	// The app that did it; a person tile when no app did (the owner, a cron
+	// run). The row's words say when it was blocked (#369: no dots).
 	&__logo {
 		flex: 0 0 auto;
 		width: 20px;
@@ -2183,16 +2577,15 @@ body.saddle-admin-page {
 	}
 
 	&__mark {
+		display: inline-flex;
 		flex: 0 0 auto;
-		width: 8px;
-		height: 8px;
-		margin-inline: 6px;
-		border-radius: 50%;
-		background: var(--s-safe);
-
-		.saddle-activity__row.is-denied & {
-			background: var(--s-danger);
-		}
+		align-items: center;
+		justify-content: center;
+		width: 20px;
+		height: 20px;
+		border-radius: 6px;
+		background: var( --saddle-pop-lilac );
+		color: var( --saddle-pop-lilac-ink );
 	}
 
 	&__summary {
@@ -2307,55 +2700,21 @@ body.saddle-admin-page {
 	margin-top: 8px;
 }
 
-/* ---------- Services (#291) ---------- */
-// One row per service: its name and one status line. "Add key" is the only
-// button a row carries; any other row is itself the button that opens the
-// drawer, with a chevron at its end.
-.saddle-svc__row.pp-rowlist__row--clickable:focus-visible {
-	// The block clips anything outside a row, so the ring sits inside it.
-	outline: 2px solid var( --s-focus );
-	outline-offset: -2px;
-	box-shadow: none;
-}
-
-.saddle-svc__line {
-	display: flex;
-	align-items: center;
-	gap: var( --pp-space-3 );
+/* ---------- Accounts and plugins that add tools, on Settings (#291, #369) ---------- */
+// An account is a row with "Add key" or "Change key"; the form opens right
+// under it, inside the same block. A plugin that adds tools is its switch
+// and name, what it sends and its tools, folded.
+.saddle-svc__detail {
+	display: grid;
+	gap: var( --pp-space-4 );
 	min-width: 0;
+	padding: 0 var( --pp-space-4 ) var( --pp-space-4 );
 }
 
-.saddle-svc__name {
-	display: flex;
-	flex: 1 1 auto;
-	flex-direction: column;
-	gap: var( --pp-space-05 );
-	min-width: 0;
-}
-
-.saddle-svc__go {
-	flex: 0 0 auto;
-	color: var( --s-fg-subtle );
-}
-
-.saddle-svc__empty {
-	margin: 0;
-	color: var( --s-fg-subtle );
-	font-size: var( --s-text );
-}
-
-// The drawer: the key form or the switch, then the tools, folded. Its one
-// line of what the service is lives in the drawer's head.
 .saddle-svc__sends {
 	margin: 0;
 	color: var( --s-fg-muted );
 	font-size: var( --s-text );
-}
-
-.saddle-svc__detail {
-	display: grid;
-	gap: var( --pp-space-5 );
-	min-width: 0;
 }
 
 .saddle-svc__key {
@@ -2399,6 +2758,17 @@ body.saddle-admin-page {
 	gap: var( --pp-space-2 );
 }
 
+.saddle-svc__addons {
+	display: grid;
+	gap: var( --pp-space-5 );
+}
+
+.saddle-svc__addon {
+	display: grid;
+	gap: var( --pp-space-2 );
+	min-width: 0;
+}
+
 .saddle-svc__switch {
 	display: flex;
 	align-items: center;
@@ -2406,16 +2776,18 @@ body.saddle-admin-page {
 	font-size: var( --s-text );
 }
 
-// The drawer is portaled outside the app root, where Saddle's focus rule
-// does not reach, and the kit draws no ring on this trigger.
+.saddle-svc__name {
+	font-weight: 600;
+}
+
 .saddle-svc__tools .pp-collapsible__trigger:focus-visible {
 	outline: 2px solid var( --s-focus );
 	outline-offset: 2px;
 	border-radius: var( --s-radius );
 }
 
-// The tools: a small bordered list, each tool's name and the role it needs.
-// The tool's id is its tooltip.
+// The tools: a small list, each tool's name and the role it needs. The
+// tool's id is its tooltip.
 .saddle-svc__tool-list {
 	display: grid;
 	margin: 0;
@@ -2628,6 +3000,11 @@ body.saddle-admin-page {
 	.saddle-apps .pp-rowlist__actions {
 		flex-basis: 100%;
 		justify-content: flex-start;
+	}
+
+	// Under the app's name, past its 40px tile and the row's gap.
+	.saddle-apps .pp-rowlist__actions {
+		padding-inline-start: calc( 40px + var( --pp-space-3 ) );
 	}
 }
 

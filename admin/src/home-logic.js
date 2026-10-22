@@ -1,19 +1,50 @@
 /**
- * Pure helpers for Home (#309): the week's numbers, each app's next step and
- * the plugins the apps can work inside. No React, no network.
+ * Pure helpers for Home (#309): the week's numbers and its days, each app's
+ * next step and the plugins the apps can work inside. No React, no network.
  */
 import { __ } from '@wordpress/i18n';
 
-const WEEK_SECONDS = 7 * 24 * 60 * 60;
-
 /**
- * The start of the last seven days, for GET /audit-log's `since`.
+ * The start of this week, for GET /audit-log's `since`: midnight six days
+ * ago, so the week is today and the six days before it, the days the chart
+ * draws (#369). Local time, as the Activity feed groups its days.
  *
  * @param {number} now Milliseconds, for tests.
- * @return {number} Unix seconds (UTC).
+ * @return {number} Unix seconds.
  */
 export function weekStart( now = Date.now() ) {
-	return Math.floor( now / 1000 ) - WEEK_SECONDS;
+	const d = new Date( now );
+	d.setHours( 0, 0, 0, 0 );
+	d.setDate( d.getDate() - 6 );
+	return Math.floor( d.getTime() / 1000 );
+}
+
+/**
+ * The week's seven days, oldest first, each with how many of `times` fell on
+ * it, for Home's chart (#369). A time before the week is left out; one after
+ * now (a server clock ahead of the browser's) counts for today.
+ *
+ * @param {number[]} times When each change happened, Unix seconds.
+ * @param {number}   now   Milliseconds, for tests.
+ * @return {Array<{date:Date,count:number,today:boolean}>} The days.
+ */
+export function weekDays( times, now = Date.now() ) {
+	const first = new Date( weekStart( now ) * 1000 );
+	const days = Array.from( { length: 7 }, ( _, i ) => {
+		const date = new Date( first );
+		date.setDate( first.getDate() + i );
+		return { date, count: 0, today: 6 === i };
+	} );
+	( Array.isArray( times ) ? times : [] ).forEach( ( time ) => {
+		const at = time * 1000;
+		for ( let i = 6; i >= 0; i-- ) {
+			if ( at >= days[ i ].date.getTime() ) {
+				days[ i ].count++;
+				return;
+			}
+		}
+	} );
+	return days;
 }
 
 /**
@@ -104,4 +135,64 @@ export function worksWith( records, listed = [] ) {
  */
 export function selfCheckDue( connected, week ) {
 	return !! connected && null !== week && undefined !== week;
+}
+
+// The pastel tones Home's tiles and chips come in (#369), Cloud's set.
+const TONES = [ 'pink', 'lilac', 'sky', 'mint', 'butter', 'peach' ];
+
+// An app's tile, picked to sit well under its logo's own colours.
+const APP_TONES = {
+	claude: 'peach',
+	'claude-code': 'peach',
+	'claude-desktop': 'peach',
+	chatgpt: 'mint',
+	codex: 'mint',
+	cursor: 'sky',
+	'gemini-cli': 'sky',
+	antigravity: 'sky',
+	vscode: 'lilac',
+	windsurf: 'mint',
+	grok: 'lilac',
+	openclaw: 'peach',
+};
+
+// A first-party add-on's tile; any other add-on gets one by its key.
+const ADDON_TONES = {
+	analytics: 'pink',
+	rank: 'sky',
+	mailpuff: 'butter',
+};
+
+/**
+ * A tone for anything without its own, the same every time for one key.
+ *
+ * @param {string} key Any key.
+ * @return {string} One of TONES.
+ */
+function toneFor( key ) {
+	let sum = 0;
+	for ( const ch of String( key || '' ) ) {
+		sum = ( sum * 31 + ch.charCodeAt( 0 ) ) % 9973;
+	}
+	return TONES[ sum % TONES.length ];
+}
+
+/**
+ * The tile behind an app's logo on Home (#369).
+ *
+ * @param {string} app The app key (connect-apps.js), or ''.
+ * @return {string} A tone.
+ */
+export function appTone( app ) {
+	return APP_TONES[ app ] || ( app ? toneFor( app ) : 'pink' );
+}
+
+/**
+ * The tile behind an add-on's icon on Home (#369).
+ *
+ * @param {string} key The module key.
+ * @return {string} A tone.
+ */
+export function addonTone( key ) {
+	return ADDON_TONES[ key ] || toneFor( key );
 }

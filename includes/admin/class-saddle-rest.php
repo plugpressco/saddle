@@ -364,6 +364,11 @@ class Saddle_REST_Admin {
 						'type' => 'string',
 						'enum' => array( 'app' ),
 					),
+					// Home's chart of the week: when each entry happened.
+					'times' => array(
+						'type'    => 'boolean',
+						'default' => false,
+					),
 				),
 			)
 		);
@@ -1227,7 +1232,7 @@ class Saddle_REST_Admin {
 			'rank-math' => array( __( 'Rank Math', 'saddle' ), __( 'Reads and edits Rank Math’s own SEO fields.', 'saddle' ), array( 'Saddle_Rank_Math', 'is_active' ) ),
 			'aioseo'    => array( __( 'AIOSEO', 'saddle' ), __( 'Reads and edits AIOSEO’s own SEO fields.', 'saddle' ), array( 'Saddle_Aioseo', 'is_active' ) ),
 			'wc'        => array( __( 'WooCommerce', 'saddle' ), __( 'Products and orders.', 'saddle' ), array( 'Saddle_WC', 'is_active' ) ),
-			'unsplash'  => array( __( 'Unsplash', 'saddle' ), __( 'Stock-photo search and import, built into Saddle. Needs an Access Key under Saddle → Services.', 'saddle' ), null ),
+			'unsplash'  => array( __( 'Unsplash', 'saddle' ), __( 'Stock-photo search and import, built into Saddle. Needs an Access Key under Saddle → Settings.', 'saddle' ), null ),
 		);
 		foreach ( $natives as $slug => $native ) {
 			list( $title, $description, $probe ) = $native;
@@ -1545,7 +1550,9 @@ class Saddle_REST_Admin {
 	 * GET /audit-log — real entries from the Saddle_Log store.
 	 *
 	 * Optional `since` (Unix seconds, UTC) keeps only entries at or after it;
-	 * Home reads `total` with it for the week's exact counts.
+	 * Home reads `total` with it for the week's exact counts. With `times`,
+	 * the answer also carries `times`: when every matching entry happened
+	 * (Unix seconds, newest first), for Home's chart of the week.
 	 *
 	 * @param WP_REST_Request $request Request.
 	 * @return WP_REST_Response
@@ -1576,6 +1583,10 @@ class Saddle_REST_Admin {
 		 */
 		$result['entries'] = array_values( (array) apply_filters( 'saddle_audit_log', $result['entries'] ) );
 		$result['enabled'] = true;
+
+		if ( $request->get_param( 'times' ) ) {
+			$result['times'] = class_exists( 'Saddle_Log' ) ? Saddle_Log::times( $type, $since, $by ) : array();
+		}
 
 		return new WP_REST_Response( $result, 200 );
 	}

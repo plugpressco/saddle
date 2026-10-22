@@ -1,17 +1,17 @@
 /**
- * AI apps → Connected (#285, #309): one row per app that can reach the site.
+ * Agent setup → Connected (#285, #309; a soft card since #369): one row per
+ * app that can reach the site.
  *
  * Each row is an app with its own access: a dropdown of Read only, Edit
  * content, Manage the site, changed on the spot (`POST
  * /connections/{id}/role`), one line under its name (when it was last used
  * or connected), and a ⋯ menu for the setup guide, a new key and
  * disconnecting. Keys and apps that signed in themselves are one list, from
- * the connection registry. With nothing connected the page shows a light
- * tile per app instead (QuickStart); a tile, the "Another MCP app" link, or
- * the section button once an app is connected, opens the connect drawer
- * (ConnectApps). The site's address sits on one line under either. The
- * endpoint test and server health checks are their own collapsed section
- * (ConnectionDetails), which Settings → Advanced shows.
+ * the connection registry. With nothing connected the card is not drawn:
+ * the apps and their steps below it are the page. The setup guide and a new
+ * key show in those steps, not in a drawer. The endpoint test and server
+ * health checks are their own collapsed section (ConnectionDetails), which
+ * Settings → Advanced shows.
  */
 import { useState, useEffect } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
@@ -28,21 +28,20 @@ import {
 	DropdownItem,
 	DropdownSeparator,
 	IconButton,
-	CopyButton,
 	useConfirm,
 	toast,
 } from '@plugpress/ui';
 import SectionHeader from './SectionHeader';
 import { __, sprintf } from '@wordpress/i18n';
 import { saddleData, api, connectionPath } from '../api';
-import { APPS, APP_GROUPS } from '../connect-apps';
+import { APPS } from '../connect-apps';
 import { metaLine } from '../apps-logic';
 import { useConnections } from './ConnectApps';
 import ConnectionHealth from './ConnectionHealth';
 import McpDiagnostics from './McpDiagnostics';
-import SetupGuideDrawer from './SetupGuideDrawer';
 import { AppLogo, appKeyFromLabel } from './icons';
 import { icons } from '../icons/kit';
+import { appTone } from '../home-logic';
 
 const MCP_URL = saddleData.mcpUrl || '';
 
@@ -108,85 +107,12 @@ function nameOf( c ) {
 }
 
 /**
- * The site's address for AI apps on one quiet line: a label, the address in
- * a code chip, and Copy.
- */
-function AddressLine() {
-	if ( ! MCP_URL ) {
-		return null;
-	}
-	return (
-		<p className="saddle-apps__address">
-			<span className="saddle-apps__address-label">
-				{ __( 'Address', 'saddle' ) }
-			</span>
-			<code className="saddle-apps__url">{ MCP_URL }</code>
-			<CopyButton
-				value={ MCP_URL }
-				variant="link"
-				copiedLabel={ __( 'Copied', 'saddle' ) }
-			>
-				{ __( 'Copy', 'saddle' ) }
-			</CopyButton>
-		</p>
-	);
-}
-
-/**
- * Nothing connected yet: a light tile per app, logo and name, in the connect
- * drawer's groups. A tile opens that app's setup; "Another MCP app" opens
- * the generic one.
+ * Which app a connection is, for its logo and its steps.
  *
- * @param {Object}   props
- * @param {Function} props.onPick Called with an app key.
+ * @param {Object} c A row from GET /connections.
+ * @return {string} An app key; `other` when Saddle can't tell.
  */
-function QuickStart( { onPick } ) {
-	const byKey = Object.fromEntries( APPS.map( ( a ) => [ a.key, a ] ) );
-	return (
-		<section className="saddle-stack saddle-quick">
-			<SectionHeader title={ __( 'Connect an app', 'saddle' ) } />
-			{ APP_GROUPS.map( ( g ) => (
-				<div key={ g.key } className="saddle-quick__group">
-					<h3
-						className="saddle-quick__group-title"
-						id={ `saddle-quick-${ g.key }` }
-					>
-						{ g.label }
-					</h3>
-					<div
-						className="saddle-quick__cards"
-						role="group"
-						aria-labelledby={ `saddle-quick-${ g.key }` }
-					>
-						{ g.apps
-							.filter( ( key ) => byKey[ key ] )
-							.map( ( key ) => (
-								<button
-									key={ key }
-									type="button"
-									className="saddle-quick__card"
-									onClick={ () => onPick( key ) }
-								>
-									<AppLogo app={ key } />
-									<span className="saddle-quick__name">
-										{ byKey[ key ].label }
-									</span>
-								</button>
-							) ) }
-					</div>
-				</div>
-			) ) }
-			<div className="saddle-quick__more">
-				<p className="saddle-quick__other">
-					<Button variant="link" onClick={ () => onPick( 'other' ) }>
-						{ __( 'Another MCP app', 'saddle' ) }
-					</Button>
-				</p>
-				<AddressLine />
-			</div>
-		</section>
-	);
-}
+const appOf = ( c ) => c.app || appKeyFromLabel( c.name || c.client );
 
 /**
  * @param {Object}   props
@@ -195,21 +121,22 @@ function QuickStart( { onPick } ) {
  * @param {Function} props.onClientsChanged Reloads the keys.
  * @param {Function} props.onClientRemoved  Drops a revoked key from the list.
  * @param {string}   props.siteTier         The site's level (older Core).
- * @param {Function} props.onConnect        Opens the connect drawer.
+ * @param {Function} props.onGuide          Shows an app's steps, by app key.
+ * @param {Function} props.onRotate         Shows an app's steps with a new
+ *                                          key in place of its old one: the
+ *                                          app key and the key's uuid.
  */
 export default function Apps( {
 	clients,
 	onClientsChanged,
 	onClientRemoved,
 	siteTier,
-	onConnect,
+	onGuide,
+	onRotate,
 } ) {
 	const confirm = useConfirm();
-	// The setup-guide drawer: { app, label, password? } — password only right
-	// after a rotation (shown once), otherwise placeholder mode.
-	const [ guide, setGuide ] = useState( null );
-	// The connect drawer reads the same cache, so it opens with this list's
-	// answer instead of fetching its own (R10).
+	// The apps' steps read the same cache, so they know at once which apps
+	// are connected (R10).
 	const connections = useConnections();
 	const { refresh } = connections;
 	// null until the list arrives; an empty list if it can't.
@@ -276,19 +203,8 @@ export default function Apps( {
 		if ( ! ok ) {
 			return;
 		}
-		const uuid = c.id.replace( /^key:/, '' );
-		api( `clients/${ uuid }/rotate`, { method: 'POST' } )
-			.then( ( res ) => {
-				setGuide( {
-					app: appKeyFromLabel( res.label || res.name ),
-					label: res.label || res.name,
-					password: res.password,
-				} );
-				if ( onClientsChanged ) {
-					onClientsChanged();
-				}
-			} )
-			.catch( ( e ) => toast.error( e.message ) );
+		// The steps make the new key and show its setup once.
+		onRotate( appOf( c ), c.id.replace( /^key:/, '' ) );
 	};
 
 	const askRevoke = async ( c ) => {
@@ -344,156 +260,99 @@ export default function Apps( {
 			} );
 	};
 
-	const none = null !== rows && 0 === rows.length;
+	// Nothing connected: the apps and their steps below are the page.
+	if ( null !== rows && 0 === rows.length ) {
+		return null;
+	}
 
 	return (
-		<>
-			{ none && onConnect && (
-				<QuickStart onPick={ ( key ) => onConnect( key ) } />
-			) }
+		<section className="saddle-soft-card saddle-apps">
+			<div className="saddle-soft-card__head">
+				<h2 className="saddle-soft-card__title">
+					{ __( 'Connected', 'saddle' ) }
+				</h2>
+			</div>
 
-			{ ! ( none && onConnect ) && (
-				<section className="saddle-stack saddle-apps">
-					<SectionHeader
-						title={ __( 'Connected', 'saddle' ) }
-						actions={
-							onConnect && (
-								<Button
-									variant="primary"
-									size="sm"
-									onClick={ () => onConnect() }
-								>
-									{ __( 'Connect an app', 'saddle' ) }
-								</Button>
-							)
+			<RowList loading={ null === rows } loadingRows={ 1 }>
+				{ ( rows || [] ).map( ( c ) => (
+					<Row
+						key={ c.id }
+						icon={
+							<span
+								className={ `saddle-tile saddle-tile--${ appTone(
+									appOf( c )
+								) }` }
+								aria-hidden="true"
+							>
+								<AppLogo app={ appOf( c ) } />
+							</span>
 						}
-					/>
-
-					<RowList loading={ null === rows } loadingRows={ 1 }>
-						{ null !== rows && 0 === rows.length && (
-							<Row
-								title={
-									<span className="saddle-apps__empty">
-										{ __(
-											'No apps connected yet.',
-											'saddle'
-										) }
-									</span>
-								}
-							/>
-						) }
-						{ ( rows || [] ).map( ( c ) => (
-							<Row
-								key={ c.id }
-								icon={
-									<AppLogo
-										app={
-											c.app ||
-											appKeyFromLabel(
-												c.name || c.client
-											)
-										}
-									/>
-								}
-								title={ nameOf( c ) }
-								description={ metaLine( c ) }
-								actions={
-									<>
-										<Select
-											className="saddle-apps__access"
-											contentClassName="saddle-role__list"
-											options={ ROLE_OPTIONS }
-											value={ roleOf( c, siteTier ) }
+						title={ nameOf( c ) }
+						description={ metaLine( c ) }
+						actions={
+							<>
+								<Select
+									className="saddle-apps__access"
+									contentClassName="saddle-role__list"
+									options={ ROLE_OPTIONS }
+									value={ roleOf( c, siteTier ) }
+									aria-label={ sprintf(
+										/* translators: %s: the app name. */
+										__( 'What %s can do', 'saddle' ),
+										nameOf( c )
+									) }
+									onChange={ ( role ) =>
+										changeRole( c, role )
+									}
+								/>
+								<DropdownMenu
+									trigger={
+										<IconButton
 											aria-label={ sprintf(
 												/* translators: %s: the app name. */
-												__(
-													'What %s can do',
-													'saddle'
-												),
+												__( 'More for %s', 'saddle' ),
 												nameOf( c )
 											) }
-											onChange={ ( role ) =>
-												changeRole( c, role )
-											}
-										/>
-										<DropdownMenu
-											trigger={
-												<IconButton
-													aria-label={ sprintf(
-														/* translators: %s: the app name. */
-														__(
-															'More for %s',
-															'saddle'
-														),
-														nameOf( c )
-													) }
-												>
-													<icons.MoreHorizontal
-														size={ 16 }
-													/>
-												</IconButton>
-											}
 										>
-											{ 'key' === c.kind && (
-												<>
-													<DropdownItem
-														onSelect={ () =>
-															setGuide( {
-																app: appKeyFromLabel(
-																	c.name
-																),
-																label: nameOf(
-																	c
-																),
-															} )
-														}
-													>
-														{ __(
-															'Setup guide',
-															'saddle'
-														) }
-													</DropdownItem>
-													<DropdownItem
-														onSelect={ () =>
-															askRotate( c )
-														}
-													>
-														{ __(
-															'Rotate key',
-															'saddle'
-														) }
-													</DropdownItem>
-													<DropdownSeparator />
-												</>
-											) }
+											<icons.MoreHorizontal size={ 16 } />
+										</IconButton>
+									}
+								>
+									{ 'key' === c.kind && (
+										<>
 											<DropdownItem
-												danger
 												onSelect={ () =>
-													askRevoke( c )
+													onGuide( appOf( c ) )
 												}
 											>
-												{ __( 'Disconnect', 'saddle' ) }
+												{ __(
+													'Setup guide',
+													'saddle'
+												) }
 											</DropdownItem>
-										</DropdownMenu>
-									</>
-								}
-							/>
-						) ) }
-					</RowList>
-					<AddressLine />
-				</section>
-			) }
-
-			{ guide && (
-				<SetupGuideDrawer
-					open={ !! guide }
-					onOpenChange={ ( open ) => ! open && setGuide( null ) }
-					app={ guide.app }
-					label={ guide.label }
-					password={ guide.password }
-				/>
-			) }
-		</>
+											<DropdownItem
+												onSelect={ () =>
+													askRotate( c )
+												}
+											>
+												{ __( 'Rotate key', 'saddle' ) }
+											</DropdownItem>
+											<DropdownSeparator />
+										</>
+									) }
+									<DropdownItem
+										danger
+										onSelect={ () => askRevoke( c ) }
+									>
+										{ __( 'Disconnect', 'saddle' ) }
+									</DropdownItem>
+								</DropdownMenu>
+							</>
+						}
+					/>
+				) ) }
+			</RowList>
+		</section>
 	);
 }
 

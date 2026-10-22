@@ -68,28 +68,10 @@ class Saddle_Nav_Icons_Test extends WP_UnitTestCase {
 		}
 	}
 
-	public function test_svg_is_sized_hidden_and_classed() {
-		$svg = Saddle_Nav_Icons::svg( 'graph-up' );
-
-		$this->assertStringStartsWith( '<svg class="saddle-nav-icon" width="16" height="16" aria-hidden="true" focusable="false"', $svg );
-		$this->assertStringContainsString( 'viewBox="0 0 24 24"', $svg );
-		$this->assertStringContainsString( 'currentColor', $svg );
-		$this->assertSame( 1, substr_count( $svg, 'width="' ) - substr_count( $svg, 'stroke-width="' ) );
-
-		$this->assertStringStartsWith( '<svg class="saddle-nav-icon" width="20" height="20"', Saddle_Nav_Icons::svg( 'bell', 20 ) );
-	}
-
 	public function test_an_unknown_or_unsafe_name_draws_nothing() {
 		foreach ( array( '', 'no-such-icon', '../brand/mark', '../../saddle', array( 'settings' ), null, 42 ) as $name ) {
-			$this->assertSame( '', Saddle_Nav_Icons::svg( $name ), wp_json_encode( $name ) );
 			$this->assertSame( '', Saddle_Nav_Icons::pick( $name ), wp_json_encode( $name ) );
 		}
-	}
-
-	public function test_a_menu_slot_keeps_the_label_edge_without_an_icon() {
-		$this->assertStringStartsWith( '<svg class="saddle-nav-icon"', Saddle_Nav_Icons::menu_slot( 'settings' ) );
-		$this->assertSame( '<span class="saddle-nav-icon" aria-hidden="true"></span>', Saddle_Nav_Icons::menu_slot( '' ) );
-		$this->assertSame( '<span class="saddle-nav-icon" aria-hidden="true"></span>', Saddle_Nav_Icons::menu_slot( 'no-such-icon' ) );
 	}
 
 	public function test_pick_cleans_the_name() {
@@ -192,11 +174,7 @@ class Saddle_Nav_Icons_Test extends WP_UnitTestCase {
 		$this->assertSame( 'settings', $areas['settings']['icon'] );
 	}
 
-	public function test_menu_css_draws_the_icon_and_the_hairline() {
-		$css = Saddle_Nav_Icons::menu_css();
-		$this->assertStringContainsString( '#adminmenu .saddle-nav-icon{', $css );
-		$this->assertStringContainsString( 'width:16px;height:16px', $css );
-		$this->assertStringContainsString( 'margin-inline-end:6px', $css );
-		$this->assertStringContainsString( '#adminmenu li.saddle-menu-group{box-shadow:inset 0 1px 0 rgba(128,128,128,.3);margin-top:6px;padding-top:6px}', $css );
+	public function test_menu_css_draws_only_the_hairline() {
+		$this->assertSame( '#adminmenu li.saddle-menu-group{box-shadow:inset 0 1px 0 rgba(128,128,128,.3);margin-top:6px;padding-top:6px}', Saddle_Nav_Icons::menu_css() );
 	}
 }

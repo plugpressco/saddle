@@ -32,9 +32,10 @@ export const LEGACY = {
 	// Permissions was a tab of Connections until #285; access is now chosen
 	// per app on AI apps.
 	permissions: { area: 'connections', tab: 'apps' },
-	// Services moved out of Settings onto a page of its own (#291).
-	integrations: { area: 'services', tab: 'overview' },
-	services: { area: 'services', tab: 'overview' },
+	// Services was a page from #291 to #369; its accounts and add-on
+	// switches are on Settings.
+	integrations: { area: 'settings', tab: 'general', anchor: 'accounts' },
+	services: { area: 'settings', tab: 'general', anchor: 'accounts' },
 	guidance: { area: 'context', tab: 'overview' },
 	memory: { area: 'context', tab: 'overview', anchor: 'memory' },
 	settings: { area: 'settings', tab: 'general' },
@@ -137,25 +138,6 @@ export function legacyUrl( areas, hash ) {
 		return null;
 	}
 	return target.anchor ? `${ url }#${ target.anchor }` : url;
-}
-
-/**
- * Where `page=saddle-settings&section=services` lives now: the Services page
- * (#291). Null on any other page, or when Services is not registered.
- *
- * @param {Object} area   The current page.
- * @param {Array}  areas  Pages from saddleData.areas.
- * @param {string} search `window.location.search`.
- * @return {string|null} The Services URL.
- */
-export function servicesSectionUrl( area, areas, search ) {
-	if ( ! area || 'settings' !== area.key ) {
-		return null;
-	}
-	if ( 'services' !== new URLSearchParams( search || '' ).get( 'section' ) ) {
-		return null;
-	}
-	return areaUrl( areas, 'services' ) || null;
 }
 
 /**

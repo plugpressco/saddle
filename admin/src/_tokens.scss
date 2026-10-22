@@ -120,6 +120,21 @@
 	--pp-text-2xl: 15px;
 	--pp-text-3xl: 20px; // Numbers only (stat cards).
 	--pp-text-4xl: 20px;
+
+	// Pastel tiles, Saddle Cloud's (#369): a soft square behind an icon or a
+	// logo on Home, each with its own ink (3:1 or better on its tile).
+	--saddle-pop-pink: #fde4fa;
+	--saddle-pop-pink-ink: #a3009a;
+	--saddle-pop-lilac: #ede8ff;
+	--saddle-pop-lilac-ink: #5b3fc4;
+	--saddle-pop-sky: #e0eefc;
+	--saddle-pop-sky-ink: #1f63ad;
+	--saddle-pop-mint: #ddf4e7;
+	--saddle-pop-mint-ink: #1d7a4e;
+	--saddle-pop-butter: #fcf1cc;
+	--saddle-pop-butter-ink: #7f5c00;
+	--saddle-pop-peach: #ffe8da;
+	--saddle-pop-peach-ink: #b04a12;
 }
 
 // Every --s-* token aliases a shared --pp-* token, so the whole stylesheet
@@ -178,6 +193,7 @@
 	--s-text-sm: var( --pp-text-2xs ); // 12: badges, counts, code chips
 	--s-text: var( --pp-text-sm ); // 13: everything you read
 	--s-text-title: var( --pp-text-md ); // 15: page and section titles
+	--s-text-hero: 32px; // Home's week numbers only (#369)
 }
 
 // Geometry and motion ride the body too, so portaled layers (the Connect
@@ -188,6 +204,12 @@
 	--s-radius-pill: var( --pp-r-pill );
 	--s-ease: cubic-bezier( 0.4, 0, 0.2, 1 );
 	--s-dur: 160ms;
+
+	// Home's cards, Saddle Cloud's (#369): 12px corners and an edge you
+	// barely see, drawn as a shadow, never a border.
+	--s-radius-card: 12px;
+	--s-card-edge: 0 0 0 1px rgb( 29 35 39 / 0.05 ),
+		0 1px 2px rgb( 29 35 39 / 0.03 );
 }
 
 
@@ -198,6 +220,9 @@
 @mixin chart {
 	--saddle-chart-ink: var( --saddle-brand );
 	--saddle-chart-ink-soft: color-mix( in srgb, var( --saddle-brand ) 14%, transparent );
+	// Bars at rest, Cloud's palest pink: the bar pointed at, and today's, take
+	// the ink (#369).
+	--saddle-chart-bar: #f7e4f5;
 	--saddle-chart-compare: #707070;
 	--saddle-chart-grid: var( --pp-border );
 	--saddle-chart-text: var( --pp-text-secondary );

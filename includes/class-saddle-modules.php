@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * One list of every Saddle admin page, so one code path draws them all.
  *
- * Core has five pages: Dashboard, AI apps, Services, Context and Settings. A sibling plugin
+ * Core has four pages: Home, Agent setup, Context and Settings. A sibling plugin
  * (Analytics, SEO, CRM) joins through the `saddle_modules` filter under the
  * same key it uses for `saddle_integrations`, and gets a submenu page at
  * `admin.php?page=saddle-{key}` with Core's frame around its content. A
@@ -44,8 +44,10 @@ class Saddle_Modules {
 	 * its Activity tab became Home's own feed, so no core page has tabs; an
 	 * old `&tab=activity` address lands on Home. The area keys and slugs
 	 * are older than the names (`home`, `connections`) and stay, because agent
-	 * tools and browser hooks carry them. Access is chosen per app on the AI
-	 * apps page, so there is no Permissions page or tab any more.
+	 * tools and browser hooks carry them. Access is chosen per app on Agent
+	 * setup, so there is no Permissions page or tab any more. Services was a
+	 * page from #291 to #369; its accounts and add-on switches are on
+	 * Settings, and `services` stays reserved so no module takes its slug.
 	 *
 	 * @return array<string,array>
 	 */
@@ -61,18 +63,10 @@ class Saddle_Modules {
 			),
 			'connections' => array(
 				'slug'  => 'saddle-connections',
-				'title' => __( 'AI apps', 'saddle' ),
+				'title' => __( 'Agent setup', 'saddle' ),
 				'icon'  => 'sparks',
 				'tabs'  => array(
-					'apps' => __( 'AI apps', 'saddle' ),
-				),
-			),
-			'services'    => array(
-				'slug'  => 'saddle-services',
-				'title' => __( 'Services', 'saddle' ),
-				'icon'  => 'puzzle',
-				'tabs'  => array(
-					'overview' => __( 'Services', 'saddle' ),
+					'apps' => __( 'Agent setup', 'saddle' ),
 				),
 			),
 			'context'     => array(
@@ -224,8 +218,8 @@ class Saddle_Modules {
 	}
 
 	/**
-	 * Every page, in menu order: Dashboard, the modules, AI apps, Services,
-	 * Context, Settings.
+	 * Every page, in menu order: Home, the modules, Agent setup, Context,
+	 * Settings.
 	 *
 	 * @return array<string,array> Keyed by area; each has `slug`, `title`,
 	 *                             `tabs`, `nav`, `capability`, `module`,
@@ -241,7 +235,6 @@ class Saddle_Modules {
 		}
 
 		$areas['connections'] = $core['connections'];
-		$areas['services']    = $core['services'];
 		$areas['context']     = $core['context'];
 		$areas['settings']    = $core['settings'];
 

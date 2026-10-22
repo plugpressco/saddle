@@ -144,7 +144,7 @@ class Saddle_Unsplash {
 		if ( '' === $key ) {
 			return new WP_Error(
 				'saddle_unsplash_not_configured',
-				__( 'Unsplash is not set up on this site. The site owner must add an Unsplash Access Key under Saddle → Services — keys are free at unsplash.com/developers. Do not retry until it is configured.', 'saddle' ),
+				__( 'Unsplash is not set up on this site. The site owner must add an Unsplash Access Key under Saddle → Settings — keys are free at unsplash.com/developers. Do not retry until it is configured.', 'saddle' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -183,7 +183,7 @@ class Saddle_Unsplash {
 		if ( 401 === $status ) {
 			return new WP_Error(
 				'saddle_unsplash_invalid_key',
-				__( 'Unsplash rejected the configured Access Key. The site owner should re-check it under Saddle → Services. Do not retry until it is fixed.', 'saddle' ),
+				__( 'Unsplash rejected the configured Access Key. The site owner should re-check it under Saddle → Settings. Do not retry until it is fixed.', 'saddle' ),
 				array( 'status' => 502 )
 			);
 		}

@@ -72,7 +72,7 @@ text; its red `#D63638` (4.73) is too thin for text, so text uses `#B32D2E`.
 
 **Only:** the mark in the header band · primary
 buttons (`--pp-action`) · switches, radios and checkboxes when on · the
-selected role (its tick and tint) in an app's access list on AI apps · chart
+selected role (its tick and tint) in an app's access list on Agent setup · chart
 ink, through `--saddle-chart-ink` (the one data series; see "The family").
 
 **Never:** links (WordPress blue), focus rings (WordPress's theme color), text,
@@ -92,7 +92,7 @@ Every Saddle page, module pages and first run included, is drawn by
   content area, `16px 24px`, one `#F0F0F0` hairline under it. Row 1 is the
   breadcrumb in the `h1` (15px): the 22px mark in Petrol and "Saddle", then
   `/` and the page's name. Home reads `[mark] Saddle`; every other page
-  `[mark] Saddle / Page` ("Saddle / AI apps", "Saddle / Rank", "Saddle /
+  `[mark] Saddle / Page` ("Saddle / Agent setup", "Saddle / Rank", "Saddle /
   Welcome" on first run). The parts before the last are grey links (Saddle
   goes to Home); the last is `#1E1E1E` at 600. See "Navigation" for a
   drill-in. On the right, the notices bell and the **AI switch**: a pill
@@ -188,8 +188,9 @@ The plan and the section maps for Rank, CRM and Analytics are in
   switch (range, size, grouping) stays `SegmentedControl`. Neither carries
   icons.
 - **The menu.** Saddle → Home, then the products (Analytics, Rank, CRM),
-  then a hairline, then AI apps, Services, Context and Settings. Every item
-  has its Iconoir icon before its label. The hairline is drawn only when at
+  then a hairline, then Agent setup, Context and Settings. Labels
+  only, no icons (#369, 2026-10-22, Fahim: "remove icons of submenu of
+  saddle"; they had one each since 2026-10-03). The hairline is drawn only when at
   least one product is there: `Saddle_Settings::order_submenu()` gives the
   first of Core's pages after the products the `saddle-menu-group` class,
   and one `admin_head` stylesheet (printed only for users who can see the
@@ -244,8 +245,8 @@ Fahim: "for sidebar and tab icons ... use https://iconoir.com/ svg icons".
 Iconoir 7.12.1 (MIT) is the family's one icon set: regular style, stroke
 1.5, `currentColor`.
 
-- **Sizes:** 16px in the menu and the tabs, 20px in the header, a 6px gap to
-  the label.
+- **Sizes:** 16px in the tabs, 20px in the header and on Home's tiles, a
+  6px gap to the label. The WordPress menu has none (#369).
 - **Colour:** never Petrol. An icon is the colour of the text beside it.
 - **Labels:** no icon without a label. The one exception is an icon button
   with a tooltip and an `aria-label`.
@@ -261,8 +262,7 @@ Iconoir 7.12.1 (MIT) is the family's one icon set: regular style, stroke
 | Analytics | `graph-up` | The map in `planning/MODULE-LAYOUT.md` |
 | Rank | `search-engine` | The map in `planning/MODULE-LAYOUT.md` |
 | CRM | `send-mail` | The map in `planning/MODULE-LAYOUT.md` |
-| AI apps | `sparks` | none |
-| Services | `puzzle` | none |
+| Agent setup | `sparks` (no longer drawn in the menu) | none |
 | Context | `brain` | none |
 | Settings | `settings` | General (one tab, no row) |
 | Header | notices `bell` | |
@@ -338,7 +338,7 @@ Analytics, CRM, Rank and Pro.
 6. Buttons are a verb and an object ("Add key", "Review and send"). A toast
    states the result ("Saved", "Key added").
 7. An error says what failed, then what to do. No apology.
-8. Use the names on screen today: Saddle → Services, Saddle → Settings,
+8. Use the names on screen today: Saddle → Agent setup, Saddle → Settings,
    Writing assistant, Anthropic key. One word per thing across the family:
    "Visitors" not "Users", "and" not "&".
 9. Exact numbers. Never "100+".
@@ -351,64 +351,102 @@ Analytics, CRM, Rank and Pro.
     names, code comments, and `.pot` files. If unsure whether text reaches
     the owner's screen, trace it. If it reaches only an agent, leave it.
 
-## Home (#309, v2 the same day)
+## Home (#309; one column after Saddle Cloud, #369)
 
-Home replaced the Dashboard on 2026-10-02. The first build had captioned stat
-tiles, a row of suggested prompts and three ways to say "connect"; Fahim:
-"more ugly now … no ai slop, random text box, ai text, no repeat unnecessary
-things". The v2 plan is `planning/HOME-APPS-SERVICES-V2.md`. Home is now:
+Home replaced the Dashboard on 2026-10-02 (v2 plan:
+`planning/HOME-APPS-SERVICES-V2.md`), was made clearer in #367, and on
+2026-10-22 became one column of soft cards after Saddle Cloud's overview.
+Fahim: "make home better, bring stats, playful home with clean ui, no AI
+slop of ui like dot, force border everywhere.. no 2 column.. inspire by
+saddle cloud".
 
-- **Nothing connected:** one block, centred, "No AI app is connected yet." and
-  a primary "Connect an app". Then the feed if there is history. No stats,
-  no side column.
-- **Connected (clearer in #367, 2026-10-22, Fahim: "rework saddle dashboard
-  homepage cleaner view and make clear"):** left, "Needs your OK" while
-  something waits; **AI apps** first, because they are what the page is
-  about: logo, name, "Read only · Last used 2 minutes ago", and the app's one
-  next step on its own row ("Try it" for an app that has not used Saddle,
-  "Change access" as a link for one that can only read), "Manage" in the
-  heading, "Connect another app" as the last row. This replaces the
-  floating next-step line, which had no block and named one app at a time.
-  Then **This week**, one block with its title in the header row and three
-  numbers with labels only, Changes · Blocked · Waiting for you, exact (the
-  log's `since` argument), on one row at every width; then **Activity**: the
-  heading and the filters (All · Changes · Blocked, and Rehearsed only when
-  one exists) on one row, days as 13/600 grey labels, one-line rows (the
-  app's logo or a status dot, the summary, the time; the actor in the row's
-  tooltip), "Show older". Right, **Add-ons** (the installed modules, and
+- **The look, Home only.** The page grey with Cloud's faint pink and lilac
+  glow at the top (on `main[data-saddle-screen="home/overview"]`). White
+  cards with 12px corners (`--s-radius-card`) and an edge you barely see,
+  drawn as a shadow (`--s-card-edge`), never a border. No rules between
+  rows: a row pointed at gets a soft `#F6F7F7` ground. No status dots
+  anywhere on Home. 960px, like every Core page.
+- **Pastel tiles and chips** (`--saddle-pop-*`, Cloud's six tones, each with
+  its own ink at 3:1 or better): a 40px tile with 10px corners behind an
+  app's logo or an add-on's icon; a pill chip for an app's role (Read only
+  sky, Edit content lilac, Manage the site pink), an add-on that asks for the
+  owner (butter: Set up, Check, Off) and each plugin under Works with. An
+  app or add-on keeps its tone (`appTone`, `addonTone` in `home-logic.js`).
+- **Nothing connected:** one card, centred: the mark on a pink tile, "No AI
+  app is connected yet." at 15/600 and a primary "Connect an app". Then the
+  feed, in its card, if there is history.
+- **Connected, top to bottom:** the connection warning (a butter card with a
+  warning tile, two lines and Check) when the self-check fails; Needs your
+  OK while something waits; **This week**: Changes, Blocked and Waiting for
+  you at 32/600 with their labels under them, then the changes of each of
+  the last seven days (today and the six before, local midnight; the week
+  the numbers count) as bars. Bars are `--saddle-chart-bar` pale pink, the
+  brand on today's and on the one pointed at; a day with changes shows its
+  count over its bar, today's in brand text; the weekdays under them, today
+  in 600. The times come from `GET /audit-log?times=1`, one query of dates.
+  Then **AI apps**: "Manage" (to Agent setup) and "Connect app" (that
+  page's steps) in the card's heading row;
+  each app as its logo tile, name, "Last used …", its role chip and its one
+  next step ("Try it", or "Change access" as a link). On a phone the chip
+  and the step sit under the name. Then **Add-ons** as tiles, as many to a
+  row as fit 260px, each a link to its add-on (the name, stretched over the
+  tile), with its icon, its line ("12 visitors today") and a chevron;
   Saddle Analytics with Install or Turn on while it is not on and the owner
-  may add it), **Works with** (plugin names only, "Services" link; an add-on
-  already under Add-ons is not repeated) when non-empty, the connection
-  warning.
+  may add it. Then **Works with** as chips. Then **Activity**: heading and
+  filters on one row, days as 13/600 grey labels, one-line rows (the app's
+  logo, or a lilac person tile for the owner's own steps; the summary,
+  which says "Blocked · …" for a refusal; the time).
 - Nothing generated: no suggested prompts, no tips, no captions under
   numbers.
 
-## AI apps (#309 v2)
+## Agent setup (#369; AI apps until then)
 
-- **Nothing connected:** "Connect an app" (15/600, no sentence), then Chat
-  apps · Agents · Code editors as rows of light tiles: logo and name only,
-  44px, hairline, no shadow, 6px corners, `#949494` on hover. Under them one
-  link, "Another MCP app", and one line, "Address", the URL in a code chip,
-  "Copy" as a link-button. No boxes besides the tiles.
-- **Connected:** the list; each row has at most one meta fact ("Last used …"
-  or "Connected …", the more recent) and never repeats the role shown in the
-  dropdown beside it.
+Fahim, 2026-10-22: "instead AI Apps call Agent Setup.. make setup nice way
+present", then "no drawer, make like saddle cloud". The page follows Cloud's
+Agent setup (`saddle-cloud/src/routes/_app/agent-setup.tsx`), on Home's soft
+cards, tiles and chips.
 
-## Services (#309 v2)
+- **The address card:** "Connect your AI app" (15/600), one line ("Add this
+  site to your AI app with the address below. You choose what each app may
+  do."), four app logos on soft discs, overlapping, and "Your address": the
+  URL in a soft field with Copy at its end.
+- **Connected,** when any app is: one card, each row the app's logo on its
+  tile, its name, at most one meta fact ("Last used …" or "Connected …", the
+  more recent; never the role, which the dropdown beside it shows), the role
+  dropdown and the ⋯ menu. No rules between rows. On a phone the dropdown
+  sits under the name.
+- **The apps and their steps:** every app down the side, in the old groups'
+  order then "Any MCP app", each a button with its logo, name and where it
+  runs, a mint tick when it has connected; the chosen one sits on a white
+  ground with the card edge. Beside them, one card: the app's tile and
+  "Connect X", the one line of fact where one applies, the numbered steps
+  (Cloud's soft grey discs) and the waiting line. It stays in view beside
+  the long list on a wide screen. On a phone the apps are one row that
+  scrolls, the chosen one kept in view, and the steps follow. One app's
+  steps always show (Claude Code on a site on this computer, Claude
+  otherwise).
+- **No drawer.** Home's "Connect app", `&add=<app>` and `&key=<app>` (a key
+  at once), the list's Setup guide and Rotate key all show that app's steps
+  on this page and bring them into view.
 
-- No section notes. Every section is named, "Accounts" / "Plugins" /
-  "Add-ons", even when it is the only one (1.5.0 QA P23: a page of one
-  unnamed list doesn't say what the list is), and nothing under the name.
-- Rows: the name and one status word ("Not set up" · "Ready" · "Active" ·
-  "Off"). An outside account says what it is for first ("Stock photos · Not
-  set up"), because its name alone may not; a plugin's name says it. No
-  letter avatar, no tool count. "Add key" (secondary) only for `needs_key`;
-  every other row is the button that opens the drawer, with a chevron.
-- The drawer: the service's one-line summary under its name, the key form
-  or the on/off switch, "Get a key from <service>", **"Sends to <hosts>"**
-  (the one privacy fact an owner needs; never remove it), and the tools as a
-  collapsed list.
-- Empty page: one grey line, "Nothing here yet."
+## Accounts and plugins that add tools (Settings, #369; Services until then)
+
+Fahim, 2026-10-23: "the services i think useless". The Services page (#291)
+is gone; its two jobs are on Settings, and Home's Add-ons and Works with
+show the rest.
+
+- **Settings → Accounts,** after Safety: one row per outside account, its
+  name and line ("Stock photos · Not set up"). "Add key" (secondary) or
+  "Change key" (link) opens the key form right under the row, inside the
+  same block: the key field, "Get a key from <service>", and **"Sends to
+  <hosts>"** (the one privacy fact an owner needs; never remove it). Saving
+  a key closes it. No drawer. `&section=services`, where every old Services
+  address lands, brings Accounts into view.
+- **Settings → Advanced → Plugins that add tools (n),** only when another
+  developer's plugin adds tools: each one its switch and name, "Sends to",
+  and its tools, folded. `&section=services` opens it too.
+- Saddle's own add-ons and the plugins Saddle edits need nothing from the
+  owner, so Settings does not list them.
 
 ## The welcome (#309)
 
@@ -435,6 +473,7 @@ pills, "Yes, add it" (or "Yes, turn it on") and "Not now". Yes shows a grey
 | `--s-text` | 13 | everything you read: body, row titles (600), descriptions, meta, hints, buttons, tabs, footer |
 | `--s-text-sm` | 12 | badges, counts, code chips, the uppercase day label |
 | (numbers) | 20 / 600 | stat card values only |
+| `--s-text-hero` | 32 / 600 | Home's three week numbers only (#369) |
 
 **Why numbers are 20 (1.5.0 QA P21).** A count is read at a glance, before
 its label, and 20 is the smallest size at which three numbers in a row
@@ -447,8 +486,9 @@ a heading, a sentence or a label.
 Every `font-size` in `style.scss` is one of the three tokens; no raw px value
 (the one exception is a 24px icon box). The kit's steps are mapped onto the
 same three through `--pp-text-*`, so kit components land on the scale too.
-Checked by computed style on every page: only 12, 13 and 15px render.
-Nothing is bigger, anywhere: no hero sentences, no 24px ledes, no 27px titles.
+Checked by computed style on every page: only 12, 13 and 15px render, plus
+20 for stat values and 32 for Home's week numbers. Nothing else is bigger:
+no hero sentences, no 24px ledes, no 27px titles.
 
 ## Structure: page → tab → section → block → row
 
@@ -478,11 +518,11 @@ the pill stays for badges, dots and switches. Blocks carry one faint shadow
 3. **Say nothing rather than say nothing.** A tile reading `—` is worse than no
    tile.
 4. **Plain, task-first names.** WordPress's Saddle submenu picks the page:
-   Home, each installed module, then AI apps, Services, Context and
+   Home, each installed module, then Agent setup, Context and
    Settings. Inside a module, its sidebar picks the section and the icon tab
    row the page (see "Navigation").
 5. **A choice explains itself where it is made.** An option list carries one
-   line per option (the access list on AI apps) instead of a separate "what
+   line per option (the access list on Agent setup) instead of a separate "what
    each option means" section.
 
 ## Constraints that still apply

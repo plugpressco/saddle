@@ -27,7 +27,7 @@ Click **Live Preview** at the top of this page. A test WordPress opens in your b
 = How it works =
 
 1. Install Saddle and choose what your AI may do.
-2. Add your AI app under **Saddle → AI apps**. Paste the address Saddle shows into the app and approve the connection when your browser opens.
+2. Add your AI app under **Saddle → Agent setup**. Paste the address Saddle shows into the app and approve the connection when your browser opens.
 3. Ask your AI to write, edit or check your content.
 
 Saddle works with Claude and Claude Code, ChatGPT, Cursor, VS Code, Codex, Gemini CLI and other apps that support MCP (Model Context Protocol). Step-by-step setup for each app is at [saddle.to/docs](https://saddle.to/docs).
@@ -77,7 +77,7 @@ The SEO and WooCommerce tools work when that plugin is active.
 * All in One SEO: Read and edit the SEO title, meta description, robots and social fields of posts and pages.
 * WooCommerce: List and read products and variations. Orders show customer names and emails, so listing them needs Edit content.
 * Unsplash: Find and import free stock photos. This needs your own Unsplash API key.
-* Other plugins: Any plugin can add its own tools to Saddle. Tools from other developers stay off until you switch them on under Saddle > Services.
+* Other plugins: Any plugin can add its own tools to Saddle. Tools from other developers stay off until you switch them on under Saddle > Settings > Advanced.
 
 = Skills and memory =
 
@@ -138,9 +138,9 @@ Every feature in this free plugin stays free.
 == Installation ==
 
 1. Install and activate Saddle from **Plugins → Add New**.
-2. Go to **Saddle → AI apps**, click Connect an app, and pick your app.
+2. Go to **Saddle → Agent setup** and pick your app.
 3. Paste the address into your AI app and approve the connection when your browser opens.
-4. To allow changes, choose Edit content or Manage the site next to the app on **Saddle → AI apps**.
+4. To allow changes, choose Edit content or Manage the site next to the app on **Saddle → Agent setup**.
 
 == Frequently Asked Questions ==
 
@@ -166,7 +166,7 @@ No. Every action uses standard WordPress functions.
 
 = Does it work with ChatGPT? =
 
-Yes. Go to **Saddle → AI apps**, click Connect an app, pick ChatGPT, and turn on sign-in when Saddle offers it. Then add your site as a connector in ChatGPT and approve it when ChatGPT sends you to your site.
+Yes. Go to **Saddle → Agent setup**, pick ChatGPT, and turn on sign-in when Saddle offers it. Then add your site as a connector in ChatGPT and approve it when ChatGPT sends you to your site.
 
 = Does it work with page builders? =
 
@@ -183,7 +183,7 @@ Saddle sends no tracking or usage data. It connects to another site only in thes
 1. Upload from URL: WordPress downloads the one file you asked for.
 2. Connection check: Saddle sends a test request to your own site.
 3. Live page check (optional): This runs only when your AI app asks for it after editing a published page. Saddle loads that page from your own site, as a visitor would, to confirm the change is live.
-4. Unsplash (optional): This runs only after you add your own API key under **Saddle → Services**. Saddle sends your search words or a photo ID to `api.unsplash.com`. It downloads photos from `images.unsplash.com`. Each imported photo gets a caption that credits the photographer, as Unsplash requires. You can edit or remove it. See the [API Guidelines](https://help.unsplash.com/en/articles/2511245-unsplash-api-guidelines), [API Terms](https://unsplash.com/api-terms) and [Privacy Policy](https://unsplash.com/privacy).
+4. Unsplash (optional): This runs only after you add your own API key under **Saddle → Settings**. Saddle sends your search words or a photo ID to `api.unsplash.com`. It downloads photos from `images.unsplash.com`. Each imported photo gets a caption that credits the photographer, as Unsplash requires. You can edit or remove it. See the [API Guidelines](https://help.unsplash.com/en/articles/2511245-unsplash-api-guidelines), [API Terms](https://unsplash.com/api-terms) and [Privacy Policy](https://unsplash.com/privacy).
 5. OAuth app check (optional): This runs only when OAuth sign-in is on. Saddle reads a public web address the app provides to confirm who the app is. It sends nothing about your site.
 6. Updates and Site Health (optional): When your AI app lists or applies updates, or reads Site Health, WordPress runs its own checks with WordPress.org and downloads the update packages it already offers, from WordPress.org or a plugin's own update server, exactly as the Updates screen does. After updating an active plugin, WordPress loads your own home page once to check for a fatal error.
 7. Plugin and theme directory (optional): When your AI app searches for a plugin, or installs a plugin or theme, WordPress sends the search words or the slug to `api.wordpress.org`, as the **Add New** screens do. The same happens when you choose to add Saddle Analytics in Saddle's welcome or on Home. Like every WordPress.org request WordPress makes, it includes your WordPress version, language and site address. Saddle keeps search results on your site for an hour. An install downloads the package from `downloads.wordpress.org`. Saddle refuses a package from anywhere else.
@@ -202,7 +202,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 == Screenshots ==
 
 1. Home: see what your AI changed and undo it, what waits for your OK, and what each app may do.
-2. AI apps: connect Claude, ChatGPT, Claude Code, Cursor and other MCP apps.
+2. Agent setup: connect Claude, ChatGPT, Claude Code, Cursor and other MCP apps.
 3. Needs your OK: deletes and plugin changes wait for you. See what an app wants, then approve or reject it.
 4. Context: tell every app about your site, its voice and its rules, and add Skills.
 5. Settings: choose the safety switches, sign-in for apps and advanced options.
@@ -215,7 +215,10 @@ The WordPress.org version never checks for its own updates. The version from plu
 * New: Ask first. In Saddle → Settings → Advanced → What each tool may do, set any tool to Allow, Ask first or Off. A tool set to Ask first shows you the change and waits under Needs your OK on the Dashboard. It runs only after you approve it there; a yes in the chat is not enough. Each app's access level still applies.
 * New: A recommended set in the same place, applied in one click. Plugins, themes, updates, settings and anything that deletes ask you first, and publishing needs your OK. Content edits stay allowed, and a tool you turned off stays off. Nothing is set until you click.
 * New: A tool added by a later Saddle update, or by a plugin you activate later, asks you first until you choose what it may do. Tools that exist when you update to this version keep working exactly as before.
-* New: Home is easier to read. Your AI apps come first, each with what it may do and when it was last used. An app that has not tried Saddle yet shows Try it, and one that can only look shows Change access. This week's numbers stay on one row on a phone.
+* New: Home is one column of soft cards. This week leads with big numbers and a bar for each of the last seven days. Your AI apps follow, each with what it may do as a coloured label, when it was last used and its next step: Try it for an app that has not tried Saddle yet, Change access for one that can only look. Add-ons are tiles that open them, and Saddle Analytics shows today's visitors there.
+* Changed: AI apps is now Agent setup. Your site's address sits on top with Copy, then your connected apps, then every app down the side with its steps beside it. Connecting no longer opens a panel, and Setup guide and Rotate key show that app's steps on the page.
+* Changed: The Saddle menu shows its page names without icons.
+* Changed: The Services page is gone. Add your Unsplash key under Settings → Accounts, and switch on plugins from other developers under Settings → Advanced → Plugins that add tools. Old links to Services open Settings.
 * New: The welcome ends with one more question: do you want visitor stats? Say yes and Saddle Analytics installs from WordPress.org and turns on, without leaving the page. Home offers it under Add-ons too. It is asked only when you may install plugins and Saddle Analytics is not on yet.
 * Fix: A list item your AI app writes now keeps its CSS class and style on the page. They used to reach the block's settings only, so an icon or style set by class disappeared.
 * Fix: A block's anchor now becomes its HTML id, so links to #anchor reach it. An anchor made in the block editor is kept when your AI app edits that block.

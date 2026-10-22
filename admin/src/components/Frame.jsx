@@ -44,11 +44,12 @@ import { BrandMark } from './icons';
 import NoticeItem from './NoticeItem';
 import SectionNav, { revealActive } from './SectionNav';
 
-// One content width for every page: sparse pages don't feel empty and the
-// column never resizes between tabs. Home is wider, for its two columns; a
-// module's column is narrower and starts on the left, beside its sidebar.
+// One content width for every page, Home's one column included (#369):
+// sparse pages don't feel empty and the column never resizes between tabs.
+// A one-page module is wider; a module's column is narrower and starts on
+// the left, beside its sidebar.
 const PAGE_WIDTH = 960;
-const HOME_WIDTH = 1040;
+const ONE_PAGE_WIDTH = 1040;
 const MODULE_WIDTH = 920;
 
 // A page shows at most one tab row (Core's header row or a module
@@ -490,13 +491,11 @@ export default function Frame( {
 	if ( head.showSidebar ) {
 		width = MODULE_WIDTH;
 	} else if ( 'page' === head.layout ) {
-		// One page is as wide as Home; its Settings reads like a module's.
+		// One page is wide; its Settings reads like a module's.
 		width =
 			area.tabs && area.tabs[ 0 ] && area.tabs[ 0 ].key === tab
-				? HOME_WIDTH
+				? ONE_PAGE_WIDTH
 				: MODULE_WIDTH;
-	} else if ( 'home' === area.key && 'overview' === tab ) {
-		width = HOME_WIDTH;
 	}
 
 	const content = (

@@ -44,7 +44,6 @@ import {
 	legacyUrl,
 	readRoute,
 	routeUrl,
-	servicesSectionUrl,
 	placeFor,
 	resolveSub,
 	resolveTab,
@@ -73,8 +72,8 @@ const SERVER_NOTICES = Array.isArray( saddleData.notices )
 	? saddleData.notices
 	: [];
 
-// AI apps: `&add=1` opens the Connect drawer, `&add=claude` opens it on that
-// app, and `&key=cursor` opens the key setup for an app.
+// Agent setup: `&add=1` brings its apps into view, `&add=claude` opens that
+// app's steps, and `&key=cursor` also makes a key for it at once.
 const addParam = () =>
 	CURRENT.key === 'connections'
 		? new URLSearchParams( window.location.search ).get( 'add' )
@@ -83,9 +82,22 @@ const keyParam = () =>
 	CURRENT.key === 'connections'
 		? new URLSearchParams( window.location.search ).get( 'key' )
 		: null;
-const wantsConnect = () => null !== addParam();
-const wantsWizard = () => null !== keyParam();
 const appParam = ( value ) => ( value && '1' !== value ? value : null );
+
+/**
+ * What the address asks Agent setup to show (#369): an app's steps, and
+ * whether to make a key for it at once.
+ *
+ * @return {?Object} `{ app, key, n }`, or null.
+ */
+const setupAsk = () => {
+	const key = keyParam();
+	if ( null !== key ) {
+		return { app: appParam( key ), key: true, n: 0 };
+	}
+	const add = addParam();
+	return null !== add ? { app: appParam( add ), key: false, n: 0 } : null;
+};
 
 export default function App() {
 	const area = CURRENT;
@@ -96,7 +108,7 @@ export default function App() {
 		() =>
 			area.key === 'home'
 				? legacyUrl( AREAS, window.location.hash )
-				: servicesSectionUrl( area, AREAS, window.location.search ),
+				: null,
 		[ area ]
 	);
 	useEffect( () => {
@@ -165,23 +177,13 @@ export default function App() {
 	// rather than arriving without permission. Nothing on this screen can load,
 	// so it gets its own view instead of an error strip over an empty frame.
 	const [ authError, setAuthError ] = useState( false );
-	const [ wizardOpen, setWizardOpen ] = useState( wantsWizard );
-	// The app a key is being made for, when AI apps sent the owner to the key
-	// setup for one app.
-	const [ wizardApp, setWizardApp ] = useState( () =>
-		appParam( keyParam() )
-	);
-	// The Connect an app drawer on AI apps, and the app it opens on.
-	const [ connectOpen, setConnectOpen ] = useState( wantsConnect );
-	const [ connectApp, setConnectApp ] = useState( () =>
-		appParam( addParam() )
-	);
+	// The app Agent setup shows the steps for, when something asked for one.
+	const [ setupFocus, setSetupFocus ] = useState( setupAsk );
 
 	const setTab = useCallback(
 		( next ) => {
 			const resolved = resolveTab( area, next );
 			setTabState( resolved );
-			setWizardOpen( false );
 			const url = areaUrl( AREAS, area.key, resolved );
 			if ( url && window.history && window.history.pushState ) {
 				window.history.pushState( {}, '', url );
@@ -210,7 +212,6 @@ export default function App() {
 				args: next.args || {},
 			};
 			setRoute( target );
-			setWizardOpen( false );
 			const url = routeUrl( AREAS, area.key, target );
 			if ( url && window.history && window.history.pushState ) {
 				window.history.pushState( {}, '', url );
@@ -249,9 +250,7 @@ export default function App() {
 				view: here.view,
 				args: here.args,
 			} );
-			setWizardOpen( wantsWizard() );
-			setConnectOpen( wantsConnect() );
-			setConnectApp( appParam( addParam() ) );
+			setSetupFocus( setupAsk() );
 		};
 		window.addEventListener( 'popstate', onPop );
 		return () => window.removeEventListener( 'popstate', onPop );
@@ -418,8 +417,8 @@ export default function App() {
 	const connectBase =
 		areaUrl( AREAS, 'connections', 'apps' ) || window.location.href;
 
-	// The Connect an app drawer, from any page: on AI apps it opens at once,
-	// anywhere else it goes there and opens.
+	// An app's steps on Agent setup, from any page: there it shows them at
+	// once, anywhere else it goes there.
 	const openConnect = ( appKey = null ) => {
 		const url = withArg( connectBase, 'add', appKey || '1' );
 		if ( area.key !== 'connections' ) {
@@ -427,44 +426,10 @@ export default function App() {
 			return;
 		}
 		setTabState( 'apps' );
-		setConnectApp( appKey );
-		setConnectOpen( true );
+		setSetupFocus( { app: appKey, key: false, n: Date.now() } );
 		if ( window.history && window.history.pushState ) {
 			window.history.pushState( {}, '', url );
 		}
-	};
-
-	const closeConnect = () => {
-		setConnectOpen( false );
-		setConnectApp( null );
-		if ( window.history && window.history.replaceState ) {
-			window.history.replaceState( {}, '', connectBase );
-		}
-		refreshClients();
-	};
-
-	// The key setup for one app, a page of its own.
-	const openWizard = ( appKey = null ) => {
-		const url = withArg( connectBase, 'key', appKey || '1' );
-		if ( area.key !== 'connections' ) {
-			window.location.assign( url );
-			return;
-		}
-		setTabState( 'apps' );
-		setConnectOpen( false );
-		setWizardApp( appKey );
-		setWizardOpen( true );
-		if ( window.history && window.history.pushState ) {
-			window.history.pushState( {}, '', url );
-		}
-	};
-
-	const closeWizard = () => {
-		setWizardOpen( false );
-		if ( window.history && window.history.replaceState ) {
-			window.history.replaceState( {}, '', connectBase );
-		}
-		refreshClients();
 	};
 
 	// First run is over (finished or skipped): the events were already sent.
@@ -534,7 +499,7 @@ export default function App() {
 		...( error
 			? [ { id: 'app-error', severity: 'error', message: error } ]
 			: [] ),
-		...( domainWarning && ! wizardOpen
+		...( domainWarning
 			? [
 					{
 						id: 'domain-drift',
@@ -638,7 +603,7 @@ export default function App() {
 				onSub={ ( next ) => goRoute( { sub: next } ) }
 				onBack={ () => goRoute( { sub } ) }
 				status={ { paused, pausing, onToggle: togglePause } }
-				notices={ ! wizardOpen }
+				notices
 				notice={ slotNotice }
 				moreNotices={ bellNotices }
 				onDismissNotice={ dismissNotice }
@@ -647,7 +612,7 @@ export default function App() {
 					className="saddle-tabpane"
 					key={ `${ area.key }/${ tab }${
 						routeView ? `/${ routeView }` : ''
-					}${ wizardOpen ? '/add' : '' }` }
+					}` }
 				>
 					<Screen
 						area={ area }
@@ -662,22 +627,16 @@ export default function App() {
 						clients={ clients }
 						paused={ paused }
 						pausing={ pausing }
-						wizardOpen={ wizardOpen }
-						wizardApp={ wizardApp }
-						openWizard={ openWizard }
-						closeWizard={ closeWizard }
-						connectOpen={ connectOpen }
-						connectApp={ connectApp }
+						setupFocus={ setupFocus }
+						onSetupFocus={ setSetupFocus }
 						openConnect={ openConnect }
-						closeConnect={ closeConnect }
 						refreshClients={ refreshClients }
 						removeClient={ removeClient }
 						onTogglePause={ togglePause }
 						loadCaps={ loadCaps }
 					/>
 				</div>
-				{ ! wizardOpen &&
-					area.key === 'home' &&
+				{ area.key === 'home' &&
 					'overview' === tab &&
 					! tourDismissed &&
 					tourDue( onboarding ) && <Tour onFinish={ finishTour } /> }

@@ -1,29 +1,26 @@
 /**
- * AI apps → "Connect an app": the picker, in a drawer (#285).
- *
- * The tiles, grouped by where you use the AI; then, in their place, the
- * short steps for the one you pick; then a line that says the moment it
+ * Agent setup's apps (#369; the Connect an app drawer since #285 until
+ * then), after Saddle Cloud's page: every app down the side, the chosen
+ * one's short steps beside it, then a line that says the moment it
  * connects. It is the site's own way: the address is this site's, and the
  * app is approved on this site's own screen. Nothing goes through anyone
  * else's server.
  *
- * Both ways to connect read the same (#312, 1.5.0 S7): the app's name and
- * "All apps" on one row, a muted line of fact where one applies, one line
- * per step, and the waiting line.
+ * Both ways to connect read the same (#312, 1.5.0 S7): a muted line of fact
+ * where one applies, one line per step, and the waiting line.
  *
  * - **Address.** Needs "sign-in for apps" (off by default; Settings has the
  *   switch). The app gets the address and the owner approves it here.
  * - **Key.** Sign-in is off, the app can't sign in, or the owner chose
- *   "Use a key instead". "Make a key for X" makes it here, in the drawer,
- *   and the steps carry it. A key nobody copied is deleted when the owner
- *   leaves: All apps, the address instead, closing the drawer, or a reload.
+ *   "Use a key instead". "Make a key for X" makes it here and the steps
+ *   carry it. A key nobody copied is deleted when the owner leaves: another
+ *   app, the address instead, or a reload.
  *
  * A web app (Claude, ChatGPT, Grok) can't reach a site on this computer, so
- * there the drawer leads with the apps that run here (P7).
+ * there the steps point at the apps that run here (P7).
  *
  * Until the sign-in setting is known, an app that can use either path shows
- * a spinner rather than a path it may not take. Until the connections are
- * known, the tiles wait too, so no "Connected" dot pops in late (R10).
+ * a spinner rather than a path it may not take.
  */
 import { useState, useEffect, useRef } from '@wordpress/element';
 import {
@@ -32,9 +29,7 @@ import {
 	CopyButton,
 	KeyValueList,
 	Notice,
-	Skeleton,
 	Spinner,
-	StatusDot,
 	useAsyncCache,
 } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
@@ -58,8 +53,10 @@ import {
 	unreachableHere,
 } from '../connect-apps';
 import { AppLogo, appKeyFromLabel } from './icons';
+import { icons } from '../icons/kit';
 import { areaUrl, withArg } from '../routes';
 import { hasBeenUsed, usedAppKeys } from '../apps-logic';
+import { appTone } from '../home-logic';
 
 // Every 3 seconds while the tab is visible, for up to 3 minutes.
 const PULSE_MS = 3000;
@@ -313,98 +310,70 @@ function usePulse( watch, onConnected ) {
 	return arrived;
 }
 
-/**
- * One app tile: logo, name, and a green dot once the app has connected.
- *
- * @param {Object}   props
- * @param {string}   props.app       App key.
- * @param {boolean}  props.connected The app has connected and been used.
- * @param {Function} props.onPick    Called with the app key.
- */
-function AppTile( { app, connected = false, onPick } ) {
-	return (
-		<button
-			type="button"
-			className="saddle-connect__app"
-			onClick={ () => onPick( app ) }
-		>
-			<AppLogo app={ app } />
-			<span className="saddle-connect__app-label">
-				{ labelFor( app ) }
-			</span>
-			{ connected && (
-				<StatusDot
-					tone="success"
-					aria-label={ __( 'Connected', 'saddle' ) }
-				/>
-			) }
-		</button>
-	);
-}
+// The app the steps open on when nothing asked for one: one that can reach
+// this site.
+const firstApp = () => ( IS_LOCAL ? 'claude-code' : 'claude' );
+
+// The side list, in the picker's groups, then any MCP app.
+const ORDER = [ ...APP_GROUPS.flatMap( ( g ) => g.apps ), 'other' ];
+
+// The logos in the intro, overlapping.
+const INTRO_LOGOS = [ 'claude', 'chatgpt', 'cursor', 'gemini-cli' ];
+
+const isApp = ( key ) => APPS.some( ( a ) => a.key === key );
 
 /**
- * The app tiles, in three groups (chat apps, agents, code editors), and
- * "Any MCP app" as a quiet link under them.
- *
- * @param {Object}   props
- * @param {Function} props.onPick    Called with an app key.
- * @param {Set}      props.connected App keys that have connected and been
- *                                   used (a key never used does not count).
- * @param {boolean}  props.loading   Which apps are connected is not known
- *                                   yet: the tiles wait as placeholders.
+ * Agent setup's first card (#369): what the page is for, a few app logos,
+ * and the site's address with Copy.
  */
-export function AppGrid( { onPick, connected = new Set(), loading = false } ) {
+export function SetupIntro() {
 	return (
-		<div
-			id="saddle-connect-apps"
-			className="saddle-connect__groups"
-			aria-busy={ loading || undefined }
-		>
-			{ APP_GROUPS.map( ( g ) => (
-				<div key={ g.key } className="saddle-connect__group">
-					<h3
-						className="saddle-connect__group-title"
-						id={ `saddle-apps-${ g.key }` }
-					>
-						{ g.label }
-					</h3>
-					<div
-						className="saddle-connect__apps"
-						role="group"
-						aria-labelledby={ `saddle-apps-${ g.key }` }
-					>
-						{ g.apps.map( ( key ) =>
-							loading ? (
-								<Skeleton
-									key={ key }
-									className="saddle-connect__app-skeleton"
-									height={ 36 }
-									delay
-								/>
-							) : (
-								<AppTile
-									key={ key }
-									app={ key }
-									connected={ connected.has( key ) }
-									onPick={ onPick }
-								/>
-							)
+		<section className="saddle-soft-card saddle-setup__intro">
+			<div className="saddle-setup__intro-head">
+				<div className="saddle-setup__intro-text">
+					<h2 className="saddle-soft-card__title">
+						{ __( 'Connect your AI app', 'saddle' ) }
+					</h2>
+					<p className="saddle-setup__lede">
+						{ __(
+							'Add this site to your AI app with the address below. You choose what each app may do.',
+							'saddle'
 						) }
+					</p>
+				</div>
+				<span className="saddle-setup__logos" aria-hidden="true">
+					{ INTRO_LOGOS.map( ( key ) => (
+						<span className="saddle-setup__logo" key={ key }>
+							<AppLogo app={ key } />
+						</span>
+					) ) }
+				</span>
+			</div>
+			{ MCP_URL && (
+				<div className="saddle-setup__address">
+					<span className="saddle-setup__address-label">
+						{ __( 'Your address', 'saddle' ) }
+					</span>
+					<div className="saddle-copy-field">
+						<code>{ MCP_URL }</code>
+						<CopyButton
+							value={ MCP_URL }
+							variant="secondary"
+							size="sm"
+							copiedLabel={ __( 'Copied', 'saddle' ) }
+						>
+							{ __( 'Copy', 'saddle' ) }
+						</CopyButton>
 					</div>
 				</div>
-			) ) }
-			<p className="saddle-connect__other">
-				<Button variant="link" onClick={ () => onPick( 'other' ) }>
-					{ __( 'Another MCP app', 'saddle' ) }
-				</Button>
-			</p>
-		</div>
+			) }
+		</section>
 	);
 }
 
 /**
  * The waiting line under the steps: a spinner and "Waiting for X to
- * connect…", then a green dot and "X connected (what it calls itself)".
+ * connect…", then a tick and "X connected (what it calls itself)".
  *
  * @param {Object}      props
  * @param {Object}      props.app     The APPS entry.
@@ -415,7 +384,10 @@ function WaitingFor( { app, arrived } ) {
 		<p className="saddle-connect__waiting" role="status">
 			{ arrived ? (
 				<>
-					<StatusDot tone="success" />
+					<icons.CheckCircle
+						size={ 16 }
+						className="saddle-connect__done"
+					/>
 					{ sprintf(
 						/* translators: 1: app name, 2: what the app calls itself, e.g. claude-ai 0.1.0. */
 						__( '%1$s connected (%2$s)', 'saddle' ),
@@ -438,33 +410,31 @@ function WaitingFor( { app, arrived } ) {
 }
 
 /**
+ * Agent setup's apps (#369; the Connect an app drawer until then), after
+ * Saddle Cloud's: every app down the side with its logo and where it runs,
+ * a tick on the ones already connected, and the chosen app's steps beside
+ * them. One app's steps always show; nothing opens in a drawer.
+ *
  * @param {Object}   props
- * @param {Object}   props.oauth        The sign-in settings (SignInCard's
- *                                      hook), or null while they load.
- * @param {Function} props.onConnected  Called when the apps change: one
- *                                      connected, or a key made here was
- *                                      made or removed.
- * @param {string}   props.initialApp   An app to start on (`&add=<app>`).
- * @param {boolean}  props.startWithKey Make a key for `initialApp` at once
- *                                      (the key setup's own address,
- *                                      `&key=<app>`).
+ * @param {Object}   props.oauth       The sign-in settings (SignInCard's
+ *                                     hook), or null while they load.
+ * @param {Function} props.onConnected Called when the apps change: one
+ *                                     connected, or a key made here was made
+ *                                     or removed.
+ * @param {?Object}  props.focus       An app to show, from the address or
+ *                                     the connected list: `{ app, key,
+ *                                     rotate, n }`. `key` makes a key for it
+ *                                     at once; `rotate` replaces that key.
  */
-export default function ConnectApps( {
-	oauth,
-	onConnected,
-	initialApp = null,
-	startWithKey = false,
-} ) {
-	// Nothing is picked until the owner picks: no steps, warnings or code yet.
-	const [ selected, setSelected ] = useState(
-		APPS.some( ( a ) => a.key === initialApp ) ? initialApp : null
+export default function ConnectApps( { oauth, onConnected, focus = null } ) {
+	const [ selected, setSelected ] = useState( () =>
+		focus && isApp( focus.app ) ? focus.app : firstApp()
 	);
 	// The owner chose "Use a key instead" for this app.
-	const [ preferKey, setPreferKey ] = useState(
-		startWithKey && APPS.some( ( a ) => a.key === initialApp )
-	);
+	const [ preferKey, setPreferKey ] = useState( false );
 	// A key for this app already exists: replace it, or add another.
 	const [ duplicate, setDuplicate ] = useState( null );
+	const panel = useRef( null );
 
 	const conns = useConnections();
 	const connections = Array.isArray( conns.data ) ? conns.data : [];
@@ -477,18 +447,18 @@ export default function ConnectApps( {
 		}
 	} );
 
-	const app = APPS.find( ( a ) => a.key === selected ) || null;
+	const app = APPS.find( ( a ) => a.key === selected ) || APPS[ 0 ];
 	const signInOn = !! ( oauth && oauth.enabled );
 	// The sign-in setting is still loading: which path this app takes is
 	// not known yet, so neither is offered.
-	const deciding = !! app && ! oauth && app.viaAddress;
+	const deciding = ! oauth && app.viaAddress;
 	const unreachable = unreachableHere( app, IS_LOCAL );
 	const path = connectPath( app, {
 		signIn: oauth,
 		local: IS_LOCAL,
 		prefer: preferKey ? false : null,
 	} );
-	const byAddress = !! app && ! deciding && 'address' === path;
+	const byAddress = ! deciding && 'address' === path;
 	const steps = byAddress && signInOn && ! unreachable;
 	const made = keys.made;
 
@@ -516,40 +486,75 @@ export default function ConnectApps( {
 		? withArg( settingsPage, 'section', 'signin' )
 		: '';
 
-	// A key made but never used has not connected: no green dot for it.
+	// A key made but never used has not connected: no tick for it.
 	const connectedApps = usedAppKeys( connections );
 
-	// Make a key for the picked app, unless it already has one: then ask.
-	const makeKey = () => {
+	// Make a key for an app, unless it already has one: then ask.
+	const makeKey = ( forApp = app ) => {
 		const old = existingKey(
 			connections.filter( ( c ) => c.id !== `key:${ keys.stale }` ),
-			app.key,
+			forApp.key,
 			appKeyFromLabel
 		);
 		if ( old ) {
 			setDuplicate( old );
 			return;
 		}
-		keys.make( app.label );
+		keys.make( forApp.label );
 	};
 
-	// `&key=<app>`: the key is the reason the owner is here. Wait for the
-	// connections, so an old key for the app is offered first.
-	const started = useRef( false );
-	useEffect( () => {
-		if ( startWithKey && app && known && ! started.current ) {
-			started.current = true;
-			makeKey();
-		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps -- once, when the connections are known.
-	}, [ known ] );
-
 	const pick = ( key ) => {
+		if ( key === selected ) {
+			return;
+		}
 		keys.discard();
 		setDuplicate( null );
 		setPreferKey( false );
 		setSelected( key );
 	};
+
+	// Something asked for an app (the address, the connected list, Home):
+	// show its steps, make or replace its key if asked, and bring them into
+	// view. Waits for the connections, so an old key is offered first.
+	const handled = useRef( null );
+	useEffect( () => {
+		if ( ! focus || handled.current === focus || ! known ) {
+			return;
+		}
+		handled.current = focus;
+		const asked = APPS.find( ( a ) => a.key === focus.app ) || app;
+		if ( asked.key !== selected ) {
+			keys.discard();
+			setDuplicate( null );
+			setSelected( asked.key );
+		}
+		if ( focus.rotate ) {
+			setDuplicate( null );
+			setPreferKey( true );
+			keys.replace( focus.rotate );
+		} else if ( focus.key ) {
+			setPreferKey( true );
+			makeKey( asked );
+		} else {
+			setPreferKey( false );
+		}
+		if ( panel.current && panel.current.scrollIntoView ) {
+			panel.current.scrollIntoView( { block: 'start' } );
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- once per request, when the connections are known.
+	}, [ focus, known ] );
+
+	// On a phone the apps are one row that scrolls: keep the chosen one in
+	// view.
+	const list = useRef( null );
+	useEffect( () => {
+		const on =
+			list.current &&
+			list.current.querySelector( '[aria-pressed="true"]' );
+		if ( on && on.scrollIntoView ) {
+			on.scrollIntoView( { block: 'nearest', inline: 'nearest' } );
+		}
+	}, [ selected ] );
 
 	const switchToKey = () => {
 		setPreferKey( true );
@@ -561,18 +566,6 @@ export default function ConnectApps( {
 		setDuplicate( null );
 		setPreferKey( false );
 	};
-
-	if ( ! app ) {
-		return (
-			<div className="saddle-connect" id="saddle-connect">
-				<AppGrid
-					onPick={ pick }
-					connected={ connectedApps }
-					loading={ ! known }
-				/>
-			</div>
-		);
-	}
 
 	// Why this app connects with a key, while the owner hasn't chosen one.
 	let why = null;
@@ -616,7 +609,7 @@ export default function ConnectApps( {
 		}
 	}
 
-	const keyPath = !! app && ! deciding && 'key' === path;
+	const keyPath = ! deciding && 'key' === path;
 	const keyButton = ( variant ) =>
 		saddleData.appPasswords === false ? (
 			<p className="saddle-connect__hint">
@@ -634,7 +627,7 @@ export default function ConnectApps( {
 			<div className="saddle-connect__key">
 				<Button
 					variant={ variant }
-					onClick={ makeKey }
+					onClick={ () => makeKey() }
 					loading={ keys.busy }
 					// Until the connections are known, an old key for the app
 					// can't be offered first.
@@ -650,20 +643,70 @@ export default function ConnectApps( {
 		);
 
 	return (
-		<div className="saddle-connect" id="saddle-connect">
-			<div className="saddle-connect__steps">
-				<div className="saddle-connect__steps-head">
-					<h3 className="saddle-connect__steps-title">
-						<AppLogo app={ app.key } />
-						{ app.label }
-					</h3>
-					<Button
-						variant="link"
-						size="sm"
-						onClick={ () => pick( null ) }
+		<div className="saddle-setup__picker">
+			<div
+				ref={ list }
+				className="saddle-setup__apps"
+				role="group"
+				aria-label={ __( 'AI apps', 'saddle' ) }
+			>
+				{ ORDER.filter( isApp ).map( ( key ) => {
+					const each = APPS.find( ( a ) => a.key === key );
+					return (
+						<button
+							key={ key }
+							type="button"
+							className="saddle-setup__app"
+							aria-pressed={ key === app.key }
+							aria-controls="saddle-app-steps"
+							onClick={ () => pick( key ) }
+						>
+							<AppLogo app={ key } />
+							<span className="saddle-setup__app-text">
+								<span className="saddle-setup__app-name">
+									{ each.label }
+								</span>
+								<span className="saddle-setup__app-kind">
+									{ each.kind }
+								</span>
+							</span>
+							{ connectedApps.has( key ) && (
+								<icons.CheckCircle
+									size={ 16 }
+									className="saddle-setup__app-on"
+									aria-label={ __( 'Connected', 'saddle' ) }
+								/>
+							) }
+						</button>
+					);
+				} ) }
+			</div>
+
+			<section
+				id="saddle-app-steps"
+				ref={ panel }
+				className="saddle-soft-card saddle-setup__steps saddle-connect"
+				aria-labelledby="saddle-app-steps-title"
+			>
+				<div className="saddle-setup__steps-head">
+					<span
+						className={ `saddle-tile saddle-tile--${ appTone(
+							app.key
+						) }` }
+						aria-hidden="true"
 					>
-						{ __( 'All apps', 'saddle' ) }
-					</Button>
+						<AppLogo app={ app.key } />
+					</span>
+					<h2
+						className="saddle-soft-card__title"
+						id="saddle-app-steps-title"
+					>
+						{ sprintf(
+							/* translators: %s: app name, such as Claude. */
+							__( 'Connect %s', 'saddle' ),
+							app.label
+						) }
+					</h2>
 				</div>
 
 				{ deciding && (
@@ -678,41 +721,32 @@ export default function ConnectApps( {
 					</Notice>
 				) }
 
-				{ /* A web app and a site on this computer: lead with the
-				     apps that can reach it (P7). */ }
+				{ /* A web app and a site on this computer: point at the apps
+				     that can reach it (P7). */ }
 				{ unreachable && ! deciding && ! made && ! duplicate && (
 					<>
 						<p className="saddle-connect__hint">
 							{ sprintf(
 								/* translators: %s: app name, such as Claude. */
 								__(
-									'%s runs on its own servers, so it can’t reach a site on this computer.',
+									'%s runs on its own servers, so it can’t reach a site on this computer. These apps run here:',
 									'saddle'
 								),
 								app.label
 							) }
 						</p>
-						<div className="saddle-connect__group">
-							<h4
-								className="saddle-connect__group-title"
-								id="saddle-apps-here"
-							>
-								{ __( 'On this computer', 'saddle' ) }
-							</h4>
-							<div
-								className="saddle-connect__apps"
-								role="group"
-								aria-labelledby="saddle-apps-here"
-							>
-								{ LOCAL_APPS.map( ( key ) => (
-									<AppTile
-										key={ key }
-										app={ key }
-										connected={ connectedApps.has( key ) }
-										onPick={ pick }
-									/>
-								) ) }
-							</div>
+						<div className="saddle-connect__links">
+							{ LOCAL_APPS.map( ( key ) => (
+								<Button
+									key={ key }
+									variant="secondary"
+									size="sm"
+									onClick={ () => pick( key ) }
+								>
+									<AppLogo app={ key } />
+									{ labelFor( key ) }
+								</Button>
+							) ) }
 						</div>
 						{ app.viaKey && (
 							<>
@@ -874,7 +908,7 @@ export default function ConnectApps( {
 							{ __( 'Use the address instead', 'saddle' ) }
 						</Button>
 					) }
-			</div>
+			</section>
 		</div>
 	);
 }
