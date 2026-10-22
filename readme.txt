@@ -211,6 +211,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 == Changelog ==
 
 = 1.6.0 =
+* Changed: Saddle CRM is now Mailpuff, PlugPress's standalone newsletter plugin. Its tools work as soon as it is active, like Bridle's.
 * New: Ask first. In Saddle → Settings → Advanced → What each tool may do, set any tool to Allow, Ask first or Off. A tool set to Ask first shows you the change and waits under Needs your OK on the Dashboard. It runs only after you approve it there; a yes in the chat is not enough. Each app's access level still applies.
 * New: A recommended set in the same place, applied in one click. Plugins, themes, updates, settings and anything that deletes ask you first, and publishing needs your OK. Content edits stay allowed, and a tool you turned off stays off. Nothing is set until you click.
 * New: A tool added by a later Saddle update, or by a plugin you activate later, asks you first until you choose what it may do. Tools that exist when you update to this version keep working exactly as before.
