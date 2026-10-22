@@ -305,7 +305,7 @@ function ToolModes( { caps, listed, onChanged, onApplied } ) {
 		<div className="saddle-tools">
 			<p className="saddle-tools__intro">
 				{ __(
-					'Ask first: the app shows you the change and it waits under Needs your OK on the Dashboard. It runs only after you approve it there.',
+					'Ask first: the app shows you the change and it waits under Needs your OK on Overview. It runs only after you approve it there.',
 					'saddle'
 				) }
 			</p>
