@@ -58,7 +58,8 @@ and finding each fails at least one. Check every change against all three.
    build** checks for its own updates — plugin slug and installed version only,
    to one fixed endpoint, at most once every six hours, admin/cron only. No site
    URL, no user data, no telemetry. The **WordPress.org build makes no outbound
-   request at all**, because the updater file isn't in that zip. Any wording
+   request on its own**, because the updater file isn't in that zip (Insight,
+   below, sends only after the owner clicks). Any wording
    anywhere — readme, docs, marketing — must state it this precisely rather than
    the old absolute, or it is simply false. *readme.txt was corrected on
    2026-09-22: it now leads with "never checks for its own updates" and lists
@@ -81,12 +82,39 @@ and finding each fails at least one. Check every change against all three.
      the user chose with their own key. The connect screen says both before the
      owner agrees.
    - The connector lives in **Saddle Pro only**. Free — its code, its UI and
-     every WordPress.org build — contains no Cloud code and keeps making no
-     outbound request at all.
+     every WordPress.org build — contains no Cloud code and makes no outbound
+     request for Cloud.
    - Direct MCP keeps working unchanged (R5 in `../planning/ROADMAP-PRODUCT.md`).
 
    "Nothing leaves your site" describes the plugin. It is false the moment it is
    said of a Cloud-connected site; marketing keeps the two apart.
+
+   *Insight, decided by Fahim 2026-10-26 ("take what ever best decission is ..
+   go ahead"): opt-in usage data, Saddle news and deactivation feedback, like
+   Freemius collects.* Free sends to PlugPress's `insight.plugpress.io` (a
+   Worker, `plugpressco/plugpress-insight`) only after one of three clicks,
+   and nothing else ever does:
+
+   - **Allow and continue** on Overview's card (or Usage data on in Settings):
+     the WordPress and PHP versions, language, timezone, the family plugins
+     and a random site id; the address and title, and the plugins and theme,
+     unless their parts are unticked; the admin's name and email only if that
+     part (off by default) is ticked. Then a weekly update while it stays on,
+     only when something changed. Off sends one opt-out that clears what
+     identifies the site.
+   - **Subscribe** to Saddle news (on the card or in Settings): the typed
+     address, passed to Mailpuff's double opt-in form on plugpress.io.
+   - **Send and deactivate** in the Plugins screen's dialog: the reason, the
+     comment, a reply email if typed, the plugin's version, and WordPress,
+     PHP and the language. Never the address.
+
+   Skip, "No thanks" and "Skip and deactivate" send nothing. The card is never
+   pre-answered, its two buttons are equal, and no agent tool reads or
+   changes the answer (`saddle_insight` and `plugpress_insight_site_id` are
+   protected options). `define( 'PLUGPRESS_INSIGHT', false );` or the
+   `saddle_insight_enabled` filter turns all of it off. Saddle speaks for the
+   whole family (`Saddle_Insight_Payload::FAMILY`), so the add-ons carry no
+   code. The public line becomes "Nothing leaves your site unless you opt in."
 
 2. **Default-safe, not opt-out-unsafe.** New installs default to the `read` tier.
    Never change this default. Power is something the owner turns on, never
@@ -451,8 +479,9 @@ PHPUnit, SQLite-backed, running against a real WordPress — 68 test files in
 - [ ] A destructive call without `confirm_token` returns a preview and mutates nothing
 - [ ] A destructive call with a valid, unused token executes exactly once
 - [ ] `delete-post` / `delete-page` without `force` trashes, never permanently deletes
-- [ ] The **wporg** zip contains no `class-saddle-updater.php` and makes no
-      outbound request at all (verify in the zip, not in the source tree)
+- [ ] The **wporg** zip contains no `class-saddle-updater.php`, and makes no
+      outbound request until the owner clicks Allow, Subscribe or Send
+      (Insight), verified in the zip, not in the source tree
 - [ ] Connect flow round-trips and revoke actually invalidates the credential
 - [ ] Grep for the six execution functions — zero hits outside the vendored adapter
 - [ ] Plugin Check runs clean **against the built zip**, not the dev tree
