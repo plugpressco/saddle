@@ -3409,3 +3409,86 @@ body.saddle-admin-page {
 .saddle-module-setup {
 	margin-block-end: 16px;
 }
+
+/* ---------- Usage data and Saddle news (Saddle_Insight) ---------- */
+// Overview's opt-in card, once per site: what is always sent, the parts the
+// owner can switch off, Saddle news, and two buttons of the same size.
+.saddle-insight__head {
+	display: flex;
+	align-items: flex-start;
+	gap: var( --pp-space-3 );
+}
+
+.saddle-insight__lede {
+	margin: var( --pp-space-1 ) 0 0;
+	font-size: var( --s-text );
+	color: var( --s-fg-subtle );
+}
+
+.saddle-insight__sends {
+	display: grid;
+	gap: var( --pp-space-3 );
+	padding: var( --pp-space-4 );
+	border-radius: 12px;
+	background: var( --pp-n-50 );
+	font-size: var( --s-text );
+}
+
+.saddle-insight__always {
+	margin: 0;
+	color: var( --s-fg-subtle );
+}
+
+.saddle-insight__parts {
+	display: grid;
+	gap: var( --pp-space-2 );
+	margin: 0;
+	padding: 0;
+	list-style: none;
+
+	li {
+		margin: 0;
+	}
+}
+
+.saddle-insight__news {
+	display: grid;
+	gap: var( --pp-space-3 );
+	max-width: 420px;
+}
+
+.saddle-insight__actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var( --pp-space-3 );
+}
+
+.saddle-insight__done {
+	display: flex;
+	align-items: center;
+	gap: var( --pp-space-2 );
+	margin: 0;
+	font-size: var( --s-text );
+	font-weight: 600;
+	color: var( --saddle-pop-mint-ink );
+}
+
+.saddle-insight__note {
+	margin: 0;
+	font-size: var( --s-text );
+	color: var( --s-fg-subtle );
+}
+
+// Settings: the news address and its button on one line, under the text on
+// a phone.
+.saddle-insight__subscribe {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	gap: var( --pp-space-2 );
+
+	.pp-field {
+		min-width: 220px;
+	}
+}

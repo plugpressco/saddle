@@ -1,0 +1,96 @@
+// The Plugins screen's deactivation dialog (insight-deactivate.js). It sits on
+// a WordPress screen, not a Saddle page, so it wears wp-admin's own look:
+// core's buttons and colors, no design-system tokens.
+.saddle-insight-dialog {
+	box-sizing: border-box;
+	width: min( 520px, calc( 100vw - 32px ) );
+	max-height: calc( 100vh - 64px );
+	padding: 24px;
+	border: 0;
+	border-radius: 8px;
+	box-shadow: 0 12px 40px rgba( 0, 0, 0, 0.2 );
+	color: #1e1e1e;
+	overflow: auto;
+
+	&::backdrop {
+		background: rgba( 0, 0, 0, 0.45 );
+	}
+
+	form {
+		position: relative;
+		display: grid;
+		gap: 12px;
+	}
+
+	h2 {
+		margin: 0 32px 4px 0;
+		font-size: 18px;
+		line-height: 1.4;
+	}
+
+	fieldset {
+		display: grid;
+		gap: 6px;
+		margin: 0;
+		padding: 0;
+		border: 0;
+	}
+
+	textarea,
+	input[type="email"] {
+		width: 100%;
+		margin: 0;
+	}
+}
+
+.saddle-insight-dialog__choice {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 14px;
+
+	input[type="radio"] {
+		margin: 0;
+	}
+}
+
+.saddle-insight-dialog__label {
+	margin-top: 4px;
+	font-weight: 600;
+}
+
+.saddle-insight-dialog__note {
+	margin: 0;
+	color: #50575e;
+	font-size: 13px;
+}
+
+.saddle-insight-dialog__actions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-top: 4px;
+}
+
+.saddle-insight-dialog__close {
+	position: absolute;
+	top: -8px;
+	right: -8px;
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	border: 0;
+	border-radius: 4px;
+	background: transparent;
+	color: #50575e;
+	font-size: 22px;
+	line-height: 1;
+	cursor: pointer;
+
+	&:hover,
+	&:focus-visible {
+		background: #f0f0f1;
+		color: #1e1e1e;
+	}
+}

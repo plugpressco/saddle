@@ -6,6 +6,8 @@
  *   doesn't (R9, P16).
  * - Accounts: outside services with a key, such as Unsplash (#369; the
  *   Services page until then).
+ * - Usage data and news: the opt-in to PlugPress's usage data, and Saddle
+ *   news (Saddle_Insight).
  * - Advanced: rarely used things, each collapsed — what each tool may do
  *   (Allow, Ask first or Off, #364), sign-in for apps, plugins that add
  *   tools (only when another developer's is installed), memory limits,
@@ -48,6 +50,7 @@ import SignInCard, { useOauthSettings } from './SignInCard';
 import ConnectionHealth from './ConnectionHealth';
 import McpDiagnostics from './McpDiagnostics';
 import { Accounts, AddonSwitches, switchable, useServices } from './Services';
+import InsightSettings from './InsightSettings';
 
 // A label with its longer explanation behind a "?".
 const Labelled = ( { children, help } ) => (
@@ -483,6 +486,8 @@ export default function SettingsPage( {
 				records={ services.records }
 				onChanged={ services.update }
 			/>
+
+			<InsightSettings />
 
 			<section className="saddle-section">
 				<SectionHeader title={ __( 'Advanced', 'saddle' ) } />
