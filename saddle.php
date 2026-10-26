@@ -176,6 +176,8 @@ require_once SADDLE_DIR . 'includes/class-saddle-settings-view.php';
 require_once SADDLE_DIR . 'includes/class-saddle-core-settings.php';
 require_once SADDLE_DIR . 'includes/class-saddle-modules-view.php';
 require_once SADDLE_DIR . 'includes/class-saddle-notices.php';
+require_once SADDLE_DIR . 'includes/class-saddle-insight.php';
+require_once SADDLE_DIR . 'includes/class-saddle-insight-payload.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-notices-admin.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-connections-rest.php';
@@ -183,6 +185,7 @@ require_once SADDLE_DIR . 'includes/admin/class-saddle-approvals-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-tool-modes-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-services-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-onboarding-rest.php';
+require_once SADDLE_DIR . 'includes/admin/class-saddle-insight-admin.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-modules-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-nav-icons.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-module-nav.php';
@@ -320,6 +323,10 @@ final class Saddle {
 
 		// First-run and module onboarding state (#277).
 		add_action( 'rest_api_init', array( 'Saddle_Onboarding_REST', 'register_routes' ) );
+
+		// Opt-in usage data, Saddle news and the deactivation dialog: nothing
+		// leaves the site until the owner clicks Allow or Send (Saddle_Insight).
+		Saddle_Insight_Admin::register();
 
 		// The background update runner: hooks its one-shot cron event so a run
 		// queued by update-plugin / update-theme fires even when the abilities
@@ -611,6 +618,9 @@ final class Saddle {
 		// A queued update run must not fire while Saddle is inactive. The run
 		// records stay (uninstall removes them).
 		wp_clear_scheduled_hook( Saddle_Update_Runner::HOOK );
+		// The weekly insight update waits too; admin_init schedules it again
+		// after reactivation if the owner is still opted in.
+		wp_clear_scheduled_hook( Saddle_Insight::HOOK );
 
 		// Nothing confines Saddle's keys while it is off, so they go now and
 		// apps connect again after reactivation (#319).

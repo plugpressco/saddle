@@ -150,7 +150,7 @@ No. Saddle is free and runs on your own site.
 
 = Does my content go through your servers? =
 
-No. Your AI app connects to your site directly. Saddle sends no tracking data.
+No. Your AI app connects to your site directly. Saddle sends no usage data unless you choose to share it on Saddle's Overview.
 
 = Can I try Saddle before installing it? =
 
@@ -178,7 +178,7 @@ No. Saddle works on its own. If MCP Adapter is active, Saddle uses it.
 
 == External services ==
 
-Saddle sends no tracking or usage data. It connects to another site only in these cases:
+Saddle sends no tracking or usage data unless you choose to. It connects to another site only in these cases:
 
 1. Upload from URL: WordPress downloads the one file you asked for.
 2. Connection check: Saddle sends a test request to your own site.
@@ -188,6 +188,10 @@ Saddle sends no tracking or usage data. It connects to another site only in thes
 6. Updates and Site Health (optional): When your AI app lists or applies updates, or reads Site Health, WordPress runs its own checks with WordPress.org and downloads the update packages it already offers, from WordPress.org or a plugin's own update server, exactly as the Updates screen does. After updating an active plugin, WordPress loads your own home page once to check for a fatal error.
 7. Plugin and theme directory (optional): When your AI app searches for a plugin, or installs a plugin or theme, WordPress sends the search words or the slug to `api.wordpress.org`, as the **Add New** screens do. The same happens when you choose to add Saddle Analytics in Saddle's welcome or on Home. Like every WordPress.org request WordPress makes, it includes your WordPress version, language and site address. Saddle keeps search results on your site for an hour. An install downloads the package from `downloads.wordpress.org`. Saddle refuses a package from anywhere else.
 
+8. Usage data (optional, off until you choose): Saddle's Overview asks once whether to share how your site runs Saddle with PlugPress. Nothing is sent until you click **Allow and continue**, and **Skip** sends nothing. Allowing sends your WordPress and PHP versions, language, timezone, the Saddle plugins you use and a random id for your site to `insight.plugpress.io`. It also sends your site address and title, and your plugins and theme with their versions, unless you untick those parts. Your name and email go only if you tick that part. After that, Saddle sends an update once a week while sharing is on, and only when something changed. Turn it off under **Saddle → Settings → Usage data and news**, and PlugPress forgets what identifies your site. Add `define( 'PLUGPRESS_INSIGHT', false );` to `wp-config.php` to remove the question entirely. See the [Privacy Policy](https://saddle.to/privacy/).
+9. Saddle news (optional): Only when you tick it on Overview or click **Subscribe** in Settings. Saddle sends the email address you typed to `insight.plugpress.io`, which passes it to PlugPress's newsletter on `plugpress.io`. You get an email to confirm first, and every newsletter has an unsubscribe link.
+10. Deactivation feedback (optional): When you deactivate Saddle or one of its add-ons on the Plugins screen, a short form asks why. **Skip and deactivate** sends nothing. **Send and deactivate** sends the reason you picked, anything you typed, the reply email if you added one, the plugin's version, and your WordPress and PHP versions and language to `insight.plugpress.io`. It never sends your site address.
+
 The WordPress.org version never checks for its own updates. The version from plugpress.co checks at most once every six hours. It sends only the plugin name and version number.
 
 == Privacy ==
@@ -195,7 +199,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 * Saddle stores its settings, Skills, memory, activity log and short-lived confirmation codes on your site.
 * With OAuth on, it also stores approved apps and a one-way hash of their tokens.
 * For each connected app, it stores the name the app reports, when it connected and last called, and the names of its last five tools. It stores no tool inputs or results.
-* Saddle sends no personal data off your site.
+* Saddle sends no personal data off your site unless you choose to: your name and email if you tick that part of usage data, an address you give for Saddle news, and a reply address you add to deactivation feedback. PlugPress keeps usage data while you share it and clears what identifies your site after 12 months without an update. It deletes deactivation feedback after 24 months.
 * Deactivating or deleting Saddle deletes the app keys it made, because nothing limits them while Saddle is off. Apps that connected with a key need to connect again after you turn Saddle back on. Keys you made yourself stay.
 * Uninstalling removes all Saddle data.
 
@@ -209,6 +213,12 @@ The WordPress.org version never checks for its own updates. The version from plu
 6. Welcome: Saddle looks around your site and helps you connect your first AI app.
 
 == Changelog ==
+
+= 1.7.0 =
+* New: Overview asks once whether to share usage data with PlugPress: your WordPress and PHP versions, language and the Saddle plugins you use, plus your site address and plugins unless you untick them. Nothing is sent until you click Allow and continue, and Skip sends nothing. Change it any time in Settings.
+* New: Saddle news. Tick it on Overview or subscribe in Settings to get about one email a month. You confirm by email first.
+* New: When you deactivate Saddle or one of its add-ons, a short form asks why. Skip and deactivate sends nothing.
+* New: `define( 'PLUGPRESS_INSIGHT', false );` in `wp-config.php` turns off the question, Saddle news and the form.
 
 = 1.6.2 =
 * Changed: The Saddle menu reads Overview, your add-ons, Context, Agent setup, Logs, Settings and Get Pro, as one plain list with no dividing line. Home is now called Overview. Get Pro carries a crown, and it is gone once Saddle Pro is installed, even while switched off.
