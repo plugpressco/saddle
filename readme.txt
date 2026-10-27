@@ -1,4 +1,4 @@
-=== Saddle MCP – AI Agent for WordPress SEO & Content ===
+=== Saddle MCP – AI SEO, Content & Site Care for WordPress ===
 Contributors: badhonrocks
 Tags: mcp, ai, seo, claude, chatgpt
 Requires at least: 6.9
@@ -8,17 +8,29 @@ Stable tag: 1.6.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Let Claude or ChatGPT do your WordPress SEO and content work. It starts read-only, deletes always ask first, and changes can be undone.
+Let Claude or ChatGPT grow and look after your WordPress site: SEO, content, pages and updates. Read-only to start; deletes always ask first.
 
 == Description ==
 
-Saddle MCP lets the AI app you already use work on your WordPress site, without handing it the keys.
+Saddle MCP turns the AI app you already pay for into a helper for your WordPress site. Ask Claude, ChatGPT or Cursor in plain words, and it does the work on your site: better SEO, fresh content, new pages, updates. You stay in charge of what it may change.
 
-Saddle is audience, rankings and SEO for WordPress, run by your AI app. It measures who visits, finds what to fix, does the work, and tracks whether it worked. Saddle MCP is the part that does the work.
+Saddle is audience, rankings and SEO for WordPress, run by your AI app. It measures who visits, finds what to fix, does the work, and tracks whether it worked. Saddle MCP is the part that does the work, and it is free.
 
-Ask Claude, ChatGPT or Cursor to rewrite your SEO titles, redirect a missing page, write a draft or fix a layout. The app does the work through Saddle MCP, using real WordPress tools. You decide which tools it may use.
+= What it does for your site =
 
-Saddle MCP is built for live sites. A new install can only read. Every delete shows a preview and waits for your approval, and any tool can be set to ask first. Your AI app connects straight to your site, so your content never passes through our servers.
+* **More visitors from Google:** your AI app rewrites SEO titles and descriptions with Saddle Rank, Yoast SEO, Rank Math or All in One SEO. With Saddle Rank it also fixes broken links, redirects missing pages and writes FAQ schema.
+* **Fresh content, written your way:** drafts of new posts, updates to old ones, images from a link or from Unsplash, and menus kept in order. Teach it your voice and rules once with Skills, and it remembers.
+* **Pages that look like your site:** real block editor and Divi 5 pages in your theme's colors, fonts and patterns. A page check finds layout, contrast and accessibility problems, and a preview link shows the page before it goes live.
+* **A site that stays healthy:** plugin, theme and WordPress updates through WordPress's own updater, with its backup and rollback, and Site Health in plain words.
+* **Know who visits:** with Saddle Analytics, ask "how many people did ChatGPT send us this week?" and get the numbers your dashboard shows.
+* **All your sites from one chat:** with Saddle Cloud, one AI connection for every site, plus Google Search Console, keyword tracking and uptime alerts.
+
+= Safe on a live site =
+
+* A new app can only read. You choose Read only, Edit content or Manage the site for each one.
+* Deletes, installs and other big changes show a preview and wait for your OK, and any tool can be set to ask first.
+* Every change is logged, and most can be undone in one step.
+* Your AI app connects straight to your site, so your content never passes through our servers. Saddle MCP never runs code from the AI.
 
 Guides, examples and docs: [saddle.to](https://saddle.to)
 
