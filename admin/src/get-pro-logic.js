@@ -16,7 +16,8 @@ export const STORE = 'https://saddle.to';
  * The plans, smallest first: each includes the one before it. `year` is the
  * price in US dollars, billed once a year; `calls` the AI-app calls a day
  * through Saddle Cloud; `credits` the SEO credits a month (Reach only).
- * Every plan lists four things it adds, so the cards line up. Its icon (Pro
+ * Every plan lists four things it adds, two or three words each, so the
+ * cards line up (Fahim, 2026-10-28: "not use sentce in table"). Its icon (Pro
  * wears the crown) sits on a tile of its tone.
  *
  * @return {Array<Object>} Plans.
@@ -37,10 +38,10 @@ function plans() {
 			calls: 150,
 			lead: __( 'What you get', 'saddle' ),
 			items: [
-				__( 'Updates on every site', 'saddle' ),
-				__( 'Uptime and health alerts', 'saddle' ),
-				__( 'SEO actions from Search Console', 'saddle' ),
-				__( 'Keyword tracking from Search Console', 'saddle' ),
+				__( 'Site updates', 'saddle' ),
+				__( 'Uptime monitoring', 'saddle' ),
+				__( 'SEO actions', 'saddle' ),
+				__( 'Keyword tracking', 'saddle' ),
 			],
 		},
 		{
@@ -54,10 +55,10 @@ function plans() {
 			calls: 3000,
 			lead: __( 'Everything in Go, plus', 'saddle' ),
 			items: [
-				__( 'Saddle Pro on every site', 'saddle' ),
-				__( 'Whole Divi pages in one step', 'saddle' ),
+				__( 'Saddle Pro plugin', 'saddle' ),
+				__( 'Whole Divi pages', 'saddle' ),
 				__( 'WooCommerce bulk edits', 'saddle' ),
-				__( 'Undo for site-wide changes', 'saddle' ),
+				__( 'Site-wide undo', 'saddle' ),
 			],
 		},
 		{
@@ -75,10 +76,10 @@ function plans() {
 			credits: 1000,
 			lead: __( 'Everything in Pro, plus', 'saddle' ),
 			items: [
-				__( 'Keyword research with Google data', 'saddle' ),
-				__( 'Weekly Google checks with AI Overviews', 'saddle' ),
-				__( 'Competitors checked every week', 'saddle' ),
-				__( 'Article drafts your AI writes', 'saddle' ),
+				__( 'Keyword research', 'saddle' ),
+				__( 'Weekly Google checks', 'saddle' ),
+				__( 'Competitor tracking', 'saddle' ),
+				__( 'Article plans', 'saddle' ),
 			],
 		},
 	];
