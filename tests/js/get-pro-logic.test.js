@@ -1,62 +1,44 @@
 /**
- * Get Pro's plans (#373): the prices saddle.to shows, a whole price a month
- * at every size, each checkout link, and Reach's credits first.
+ * Get Pro's plans (#373; flat pricing 2026-10-27): the prices saddle.to
+ * shows, each checkout link, and Reach's credits.
  */
-import {
-	FIRST_SIZE,
-	SIZES,
-	planCards,
-	price,
-} from '../../admin/src/get-pro-logic';
+import { planCards, price } from '../../admin/src/get-pro-logic';
 
 describe( 'plan cards', () => {
-	it( 'shows saddle.to’s prices, billed yearly, for each size', () => {
-		const byKey = ( size ) =>
-			Object.fromEntries(
-				planCards( size ).map( ( c ) => [
-					c.key,
-					[ c.monthly, c.yearly ],
-				] )
-			);
-		expect( byKey( 5 ) ).toEqual( {
-			go: [ 5, 60 ],
-			pro: [ 9, 108 ],
-			reach: [ 19, 228 ],
-		} );
-		expect( byKey( 20 ) ).toEqual( {
-			go: [ 12, 144 ],
-			pro: [ 19, 228 ],
-			reach: [ 39, 468 ],
-		} );
-		expect( byKey( 50 ) ).toEqual( {
-			go: [ 25, 300 ],
-			pro: [ 39, 468 ],
-			reach: [ 79, 948 ],
-		} );
+	it( 'shows saddle.to’s yearly prices and the sites each includes', () => {
+		expect(
+			planCards().map( ( c ) => [ c.key, c.yearly, c.sites ] )
+		).toEqual( [
+			[ 'go', 49, 5 ],
+			[ 'pro', 99, 20 ],
+			[ 'reach', 249, 50 ],
+		] );
 	} );
 
-	it( 'opens each plan’s checkout on saddle.to for the size picked', () => {
-		expect( planCards( 50 ).map( ( c ) => c.href ) ).toEqual( [
-			'https://saddle.to/go/go-50/',
-			'https://saddle.to/go/pro-50/',
+	it( 'opens each plan’s checkout on saddle.to', () => {
+		expect( planCards().map( ( c ) => c.href ) ).toEqual( [
+			'https://saddle.to/go/go-5/',
+			'https://saddle.to/go/pro-20/',
 			'https://saddle.to/go/reach-50/',
 		] );
 	} );
 
-	it( 'gives every plan the same three numbers, credits only on Reach', () => {
-		const [ go, pro, reach ] = planCards( 20 );
+	it( 'gives every plan the same two numbers, credits on Pro and Reach', () => {
+		const [ go, pro, reach ] = planCards();
+		expect( pro.facts.map( ( f ) => f.text ) ).toEqual( [
+			'1,000 AI-app calls a day',
+			'200 SEO credits a month',
+		] );
 		expect( reach.facts.map( ( f ) => f.text ) ).toEqual( [
-			'20 sites',
-			'5,000 AI-app calls a day',
-			'4,500 SEO credits a month',
+			'4,000 AI-app calls a day',
+			'1,000 SEO credits a month',
 		] );
 		expect( go.facts.map( ( f ) => f.text ) ).toEqual( [
-			'20 sites',
-			'1,000 AI-app calls a day',
+			'150 AI-app calls a day',
 			'No SEO credits',
 		] );
-		expect( go.facts[ 2 ].none ).toBe( true );
-		expect( reach.facts[ 2 ].none ).toBe( false );
+		expect( go.facts[ 1 ].none ).toBe( true );
+		expect( reach.facts[ 1 ].none ).toBe( false );
 		// Four things each, so the cards line up.
 		expect(
 			[ go, pro, reach ].map( ( plan ) => plan.items.length )
@@ -68,16 +50,11 @@ describe( 'plan cards', () => {
 		] );
 		expect( pro.icon ).toBe( 'crown' );
 	} );
-
-	it( 'falls back to the first size for one it does not sell', () => {
-		expect( SIZES ).toContain( FIRST_SIZE );
-		expect( planCards( 7 ) ).toEqual( planCards( FIRST_SIZE ) );
-	} );
 } );
 
 describe( 'price', () => {
 	it( 'says a whole price without cents, and cents when there are some', () => {
-		expect( price( 19 ) ).toBe( '$19' );
+		expect( price( 49 ) ).toBe( '$49' );
 		expect( price( 8.5 ) ).toBe( '$8.50' );
 	} );
 } );
