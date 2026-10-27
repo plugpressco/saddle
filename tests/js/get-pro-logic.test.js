@@ -23,8 +23,12 @@ describe( 'plan cards', () => {
 		] );
 	} );
 
-	it( 'gives every plan the same two numbers, credits only on Reach', () => {
+	it( 'gives every plan the same two numbers, credits on Pro and Reach', () => {
 		const [ go, pro, reach ] = planCards();
+		expect( pro.facts.map( ( f ) => f.text ) ).toEqual( [
+			'1,000 AI-app calls a day',
+			'200 SEO credits a month',
+		] );
 		expect( reach.facts.map( ( f ) => f.text ) ).toEqual( [
 			'4,000 AI-app calls a day',
 			'1,000 SEO credits a month',

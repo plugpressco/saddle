@@ -15,7 +15,7 @@ export const STORE = 'https://saddle.to';
 /**
  * The plans, smallest first: each includes the one before it. `year` is the
  * price in US dollars, billed once a year; `calls` the AI-app calls a day
- * through Saddle Cloud; `credits` the SEO credits a month (Reach only).
+ * through Saddle Cloud; `credits` the SEO credits a month (Pro and Reach).
  * Every plan lists four things it adds, two or three words each, so the
  * cards line up (Fahim, 2026-10-28: "not use sentce in table"). Its icon (Pro
  * wears the crown) sits on a tile of its tone.
@@ -49,16 +49,20 @@ function plans() {
 			icon: 'crown',
 			tone: 'pink',
 			name: __( 'Pro', 'saddle' ),
-			job: __( 'Divi and WooCommerce for your AI app', 'saddle' ),
+			job: __(
+				'Divi, WooCommerce and SEO research for your AI app',
+				'saddle'
+			),
 			year: 99,
 			sites: 20,
-			calls: 3000,
+			calls: 1000,
+			credits: 200,
 			lead: __( 'Everything in Go, plus', 'saddle' ),
 			items: [
+				__( 'Keyword research', 'saddle' ),
+				__( 'Weekly Google checks', 'saddle' ),
 				__( 'Saddle Pro plugin', 'saddle' ),
 				__( 'Whole Divi pages', 'saddle' ),
-				__( 'WooCommerce bulk edits', 'saddle' ),
-				__( 'Site-wide undo', 'saddle' ),
 			],
 		},
 		{
@@ -67,7 +71,7 @@ function plans() {
 			tone: 'mint',
 			name: __( 'Reach', 'saddle' ),
 			job: __(
-				'Grow your audience: research, competitors and weekly checks',
+				'For agencies: 50 sites and five times the SEO credits',
 				'saddle'
 			),
 			year: 249,
@@ -76,10 +80,10 @@ function plans() {
 			credits: 1000,
 			lead: __( 'Everything in Pro, plus', 'saddle' ),
 			items: [
-				__( 'Keyword research', 'saddle' ),
-				__( 'Weekly Google checks', 'saddle' ),
-				__( 'Competitor tracking', 'saddle' ),
-				__( 'Article plans', 'saddle' ),
+				__( '50 sites', 'saddle' ),
+				__( '5x SEO credits', 'saddle' ),
+				__( '4x AI-app calls', 'saddle' ),
+				__( 'Made for agencies', 'saddle' ),
 			],
 		},
 	];
@@ -162,7 +166,7 @@ export function questions() {
 		{
 			q: __( 'What is an SEO credit?', 'saddle' ),
 			a: __(
-				'Credits pay for Google data on Reach. A keyword search uses about 15. Unused credits carry over for a month.',
+				'Credits pay for Google data on Pro and Reach. A keyword search uses about 15. Unused credits carry over for a month.',
 				'saddle'
 			),
 		},
