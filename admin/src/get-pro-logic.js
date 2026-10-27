@@ -30,7 +30,7 @@ function plans() {
 			tone: 'sky',
 			name: __( 'Go', 'saddle' ),
 			job: __(
-				'Updates, uptime and SEO actions on every site',
+				'Build and run: updates, uptime and SEO actions',
 				'saddle'
 			),
 			year: 49,
@@ -50,7 +50,7 @@ function plans() {
 			tone: 'pink',
 			name: __( 'Pro', 'saddle' ),
 			job: __(
-				'Divi, WooCommerce and SEO research for your AI app',
+				'Build, rank and grow: SEO research, Divi and WooCommerce',
 				'saddle'
 			),
 			year: 99,
