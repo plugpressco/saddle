@@ -116,7 +116,10 @@ export default function GetPro() {
 		<div className="saddle-plans">
 			<div className="saddle-plans__intro">
 				<h2 className="saddle-plans__title">
-					{ __( 'One AI connection for all your sites', 'saddle' ) }
+					{ __(
+						'Build, rank and grow every site from one AI app',
+						'saddle'
+					) }
 				</h2>
 				<p className="saddle-plans__lede">
 					{ __(
