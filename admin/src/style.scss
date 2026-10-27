@@ -2801,11 +2801,7 @@ body.saddle-admin-page {
 	color: var( --s-fg-subtle );
 }
 
-.saddle-plans__sizes {
-	margin-block-start: var( --pp-space-3 );
-}
-
-// Six rows per plan: head, price, billed, button, numbers, what it adds.
+// Six rows per plan: head, price, sites, button, numbers, what it adds.
 .saddle-plans__table {
 	display: grid;
 	grid-template-columns: minmax( 0, 1fr );

@@ -1,32 +1,24 @@
 /**
- * Saddle → Get Pro (#373; clearer the same day): Saddle Cloud's Go, Pro and
- * Reach plans for 5, 20 or 50 sites, after saddle.to's pricing page.
+ * Saddle → Get Pro (#373; clearer the same day; flat pricing 2026-10-27):
+ * Saddle Cloud's Go, Pro and Reach plans, one yearly price each, after
+ * saddle.to's pricing page.
  *
- * Centred: a heading, one line, the sites picker. Then the plans as one
- * table of three cards whose rows line up (subgrid): the plan's icon (Pro
- * wears the crown) and what it is for, the price a month, what a year
- * costs, the button to that plan's checkout on saddle.to, the same three
- * numbers on every card (sites, AI-app calls a day, SEO credits a month),
- * then the four things it adds. Then four short answers and the money-back
+ * Centred: a heading and one line. Then the plans as one table of three
+ * cards whose rows line up (subgrid): the plan's icon (Pro wears the crown)
+ * and what it is for, the price a year, the sites it includes, the button
+ * to that plan's checkout on saddle.to, the same two numbers on every card
+ * (AI-app calls a day, SEO credits a month), then the four things it adds. Then four short answers and the money-back
  * line. Every button opens saddle.to in a new tab; the page sends nothing.
  *
  * The one place free Saddle names its paid plans (non-negotiable #3,
  * amended 2026-10-23). Saddle shows it only while Saddle Pro is not installed
  * (`Saddle_Modules::offers_pro()`), and no agent is told about it.
  */
-import { useState } from '@wordpress/element';
-import { Button, SegmentedControl, VisuallyHidden } from '@plugpress/ui';
+import { Button, VisuallyHidden } from '@plugpress/ui';
 import { __, sprintf } from '@wordpress/i18n';
 import { icons } from '../icons/kit';
 import { NavIcon } from '../icons/iconoir';
-import {
-	FIRST_SIZE,
-	SIZES,
-	STORE,
-	planCards,
-	price,
-	questions,
-} from '../get-pro-logic';
+import { STORE, planCards, price, questions } from '../get-pro-logic';
 
 // Said once for every link that leaves the page.
 const NEW_TAB = __( '(opens in a new tab)', 'saddle' );
@@ -61,18 +53,18 @@ function Plan( { plan } ) {
 
 			<p className="saddle-plan__price">
 				<span className="saddle-plan__amount">
-					{ price( plan.monthly ) }
+					{ price( plan.yearly ) }
 				</span>
 				<span className="saddle-plan__per">
-					{ __( '/ month', 'saddle' ) }
+					{ __( '/ year', 'saddle' ) }
 				</span>
 			</p>
 
 			<p className="saddle-plan__billed">
 				{ sprintf(
-					/* translators: %s: the price for a year, such as $228. */
-					__( '%s billed yearly', 'saddle' ),
-					price( plan.yearly )
+					/* translators: %d: a number of sites, such as 20. */
+					__( '%d sites included', 'saddle' ),
+					plan.sites
 				) }
 			</p>
 
@@ -118,8 +110,7 @@ function Plan( { plan } ) {
 }
 
 export default function GetPro() {
-	const [ size, setSize ] = useState( String( FIRST_SIZE ) );
-	const plans = planCards( Number( size ) );
+	const plans = planCards();
 
 	return (
 		<div className="saddle-plans">
@@ -133,20 +124,6 @@ export default function GetPro() {
 						'saddle'
 					) }
 				</p>
-				<SegmentedControl
-					className="saddle-plans__sizes"
-					aria-label={ __( 'How many sites', 'saddle' ) }
-					options={ SIZES.map( ( s ) => ( {
-						value: String( s ),
-						label: sprintf(
-							/* translators: %d: a number of sites. */
-							__( '%d sites', 'saddle' ),
-							s
-						),
-					} ) ) }
-					value={ size }
-					onChange={ setSize }
-				/>
 			</div>
 
 			<div className="saddle-plans__table">

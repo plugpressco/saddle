@@ -1,18 +1,13 @@
 /**
- * Get Pro's plans (#373): Saddle Cloud's Go, Pro and Reach, each for 5, 20
- * or 50 sites, as saddle.to's pricing page shows them. The one place free
- * Saddle names its paid plans (non-negotiable #3, amended 2026-10-23). No
- * React, no network: the prices live here, so a price change on saddle.to
- * needs a Saddle update. Keep them equal to saddle-cloud's
- * `src/shared/plans.ts` and the theme's pricing pattern.
+ * Get Pro's plans (#373): Saddle Cloud's Go, Pro and Reach, one yearly price
+ * each with its sites included, as saddle.to's pricing page shows them
+ * (flat pricing, 2026-10-27). The one place free Saddle names its paid plans
+ * (non-negotiable #3, amended 2026-10-23). No React, no network: the prices
+ * live here, so a price change on saddle.to needs a Saddle update. Keep them
+ * equal to saddle-cloud's `src/shared/plans.ts` and the theme's pricing
+ * pattern.
  */
 import { __, sprintf } from '@wordpress/i18n';
-
-/** The sizes every plan is sold in, by sites. */
-export const SIZES = [ 5, 20, 50 ];
-
-/** The size the page opens on. */
-export const FIRST_SIZE = 20;
 
 /** Where every plan is bought, and compared. */
 export const STORE = 'https://saddle.to';
@@ -20,9 +15,9 @@ export const STORE = 'https://saddle.to';
 /**
  * The plans, smallest first: each includes the one before it. `year` is the
  * price in US dollars, billed once a year; `calls` the AI-app calls a day
- * through Saddle Cloud; `credits` the SEO credits a month (Reach only); all
- * by size. Every plan lists four things it adds, so the cards line up. Its
- * icon (Pro wears the crown) sits on a tile of its tone.
+ * through Saddle Cloud; `credits` the SEO credits a month (Reach only).
+ * Every plan lists four things it adds, so the cards line up. Its icon (Pro
+ * wears the crown) sits on a tile of its tone.
  *
  * @return {Array<Object>} Plans.
  */
@@ -33,15 +28,19 @@ function plans() {
 			icon: 'flash',
 			tone: 'sky',
 			name: __( 'Go', 'saddle' ),
-			job: __( 'Keep your sites updated and online', 'saddle' ),
-			year: { 5: 60, 20: 144, 50: 300 },
-			calls: { 5: 250, 20: 1000, 50: 2500 },
+			job: __(
+				'Updates, uptime and SEO actions on every site',
+				'saddle'
+			),
+			year: 49,
+			sites: 5,
+			calls: 150,
 			lead: __( 'What you get', 'saddle' ),
 			items: [
 				__( 'Updates on every site', 'saddle' ),
 				__( 'Uptime and health alerts', 'saddle' ),
-				__( 'Search Console and site audit', 'saddle' ),
-				__( 'Email support', 'saddle' ),
+				__( 'SEO actions from Search Console', 'saddle' ),
+				__( 'Keyword tracking from Search Console', 'saddle' ),
 			],
 		},
 		{
@@ -49,9 +48,10 @@ function plans() {
 			icon: 'crown',
 			tone: 'pink',
 			name: __( 'Pro', 'saddle' ),
-			job: __( 'Build with Divi and WooCommerce', 'saddle' ),
-			year: { 5: 108, 20: 228, 50: 468 },
-			calls: { 5: 2000, 20: 5000, 50: 10000 },
+			job: __( 'Divi and WooCommerce for your AI app', 'saddle' ),
+			year: 99,
+			sites: 20,
+			calls: 3000,
 			lead: __( 'Everything in Go, plus', 'saddle' ),
 			items: [
 				__( 'Saddle Pro on every site', 'saddle' ),
@@ -65,14 +65,18 @@ function plans() {
 			icon: 'graph-up',
 			tone: 'mint',
 			name: __( 'Reach', 'saddle' ),
-			job: __( 'Get found on Google and in AI answers', 'saddle' ),
-			year: { 5: 228, 20: 468, 50: 948 },
-			calls: { 5: 2000, 20: 5000, 50: 10000 },
-			credits: { 5: 2000, 20: 4500, 50: 9000 },
+			job: __(
+				'Grow your audience: research, competitors and weekly checks',
+				'saddle'
+			),
+			year: 249,
+			sites: 50,
+			calls: 4000,
+			credits: 1000,
 			lead: __( 'Everything in Pro, plus', 'saddle' ),
 			items: [
 				__( 'Keyword research with Google data', 'saddle' ),
-				__( 'Weekly rankings and AI Overviews', 'saddle' ),
+				__( 'Weekly Google checks with AI Overviews', 'saddle' ),
 				__( 'Competitors checked every week', 'saddle' ),
 				__( 'Article drafts your AI writes', 'saddle' ),
 			],
@@ -80,49 +84,37 @@ function plans() {
 	];
 }
 
-// A count as saddle.to writes it: 4,500.
+// A count as saddle.to writes it: 1,000.
 const count = ( n ) => n.toLocaleString( 'en-US' );
 
 /**
- * The plan cards for one size: the price a month (the yearly price over
- * twelve, as saddle.to shows it) and a year, the checkout link, the same
- * three numbers on every card (sites, AI-app calls a day, SEO credits a
- * month, with `none` set where a plan has no credits), and the four things
- * it adds. An unknown size falls back to the first size.
+ * The plan cards: the price a year, the sites it includes, the checkout
+ * link, the same two numbers on every card (AI-app calls a day, SEO credits
+ * a month, with `none` set where a plan has no credits), and the four things
+ * it adds.
  *
- * @param {number} size 5, 20 or 50.
- * @return {Array<Object>} `{ key, icon, tone, name, job, monthly, yearly,
+ * @return {Array<Object>} `{ key, icon, tone, name, job, yearly, sites,
  *         href, facts, lead, items, pro }`, smallest plan first.
  */
-export function planCards( size ) {
-	const sites = SIZES.includes( size ) ? size : FIRST_SIZE;
+export function planCards() {
 	return plans().map( ( p ) => {
-		const yearly = p.year[ sites ];
-		const credits = p.credits ? p.credits[ sites ] : 0;
+		const credits = p.credits || 0;
 		return {
 			key: p.key,
 			icon: p.icon,
 			tone: p.tone,
 			name: p.name,
 			job: p.job,
-			monthly: yearly / 12,
-			yearly,
-			href: `${ STORE }/go/${ p.key }-${ sites }/`,
+			yearly: p.year,
+			sites: p.sites,
+			href: `${ STORE }/go/${ p.key }-${ p.sites }/`,
 			facts: [
-				{
-					key: 'sites',
-					text: sprintf(
-						/* translators: %d: a number of sites. */
-						__( '%d sites', 'saddle' ),
-						sites
-					),
-				},
 				{
 					key: 'calls',
 					text: sprintf(
-						/* translators: %s: a number of calls, such as 5,000. */
+						/* translators: %s: a number of calls, such as 3,000. */
 						__( '%s AI-app calls a day', 'saddle' ),
-						count( p.calls[ sites ] )
+						count( p.calls )
 					),
 				},
 				{
@@ -130,7 +122,7 @@ export function planCards( size ) {
 					none: ! credits,
 					text: credits
 						? sprintf(
-								/* translators: %s: a number of SEO credits, such as 4,500. */
+								/* translators: %s: a number of SEO credits, such as 1,000. */
 								__( '%s SEO credits a month', 'saddle' ),
 								count( credits )
 						  )
@@ -184,7 +176,7 @@ export function questions() {
 }
 
 /**
- * A price in US dollars, whole when it is whole: "$19", "$8.50".
+ * A price in US dollars, whole when it is whole: "$49", "$8.50".
  *
  * @param {number} usd Dollars.
  * @return {string} Price.
@@ -192,7 +184,7 @@ export function questions() {
 export function price( usd ) {
 	const amount = Number.isInteger( usd ) ? String( usd ) : usd.toFixed( 2 );
 	return sprintf(
-		/* translators: %s: an amount in US dollars, such as 19. */
+		/* translators: %s: an amount in US dollars, such as 49. */
 		__( '$%s', 'saddle' ),
 		amount
 	);
