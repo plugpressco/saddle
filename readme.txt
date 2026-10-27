@@ -1,6 +1,6 @@
-=== Saddle – AI Site Control (MCP) ===
+=== Saddle – Build, Rank & Grow Your Website with AI ===
 Contributors: badhonrocks
-Tags: mcp, ai, claude, chatgpt, divi
+Tags: ai, seo, mcp, claude, chatgpt
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
@@ -8,17 +8,50 @@ Stable tag: 1.6.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Let Claude, ChatGPT and Cursor work on your WordPress site. Your AI starts read-only, and every delete asks first.
+Build, rank and grow your website with Claude, ChatGPT or Cursor: pages, SEO and updates done by your AI app. Read-only to start; deletes ask first.
 
 == Description ==
 
-Saddle lets your AI app work on your WordPress site without handing it the keys.
+**Built and run by AI agents: found on Google, cited in AI answers.**
 
-Ask Claude, ChatGPT or Cursor to write a post, fix a page or update SEO titles. The app does the work through Saddle, using real WordPress tools. You decide which tools it may use.
+Saddle lets the AI app you already use build, rank and grow your website. Ask Claude, ChatGPT or Cursor in plain words, and it does the work on your site with real WordPress tools. You decide what it may change.
 
-Saddle is built for live sites. A new install can only read. Every delete shows a preview and waits for your approval. Your AI app connects straight to your site, so your content never passes through our servers.
+Saddle is the free core of WP Saddle. It works on its own, and each free add-on gives your AI app more to work with.
+
+= Build =
+
+* **Pages that look like your site:** real block editor and Divi 5 pages in your theme's colors, fonts and patterns. A page check finds layout, contrast and accessibility problems, and a preview link shows the page before it goes live.
+* **Content written your way:** drafts of new posts, updates to old ones, images from a link or from Unsplash, and menus kept in order. Teach it your voice and rules once with Skills, and it remembers.
+* **A site that keeps running:** plugin, theme and WordPress updates through WordPress's own updater, with its backup and rollback, and Site Health in plain words.
+
+= Rank =
+
+* **SEO fixes:** your AI app rewrites SEO titles and descriptions with Saddle Rank, Yoast SEO, Rank Math or All in One SEO.
+* **Ready for AI answers:** with Saddle Rank it also writes FAQ schema and page summaries, fixes broken links, redirects missing pages and keeps an llms.txt, so search engines and AI answers can read your pages.
+* **Where you rank:** with Saddle Cloud, Google Search Console and keyword tracking, and weekly Google checks that show whether Google's AI Overview cites you.
+
+= Grow =
+
+* **Know who visits:** with Saddle Analytics, ask "how many people did ChatGPT send us this week?" and get the numbers your dashboard shows.
+* **Find what to write next:** with Saddle Cloud, keyword research, competitors checked every week and article plans your AI app writes as drafts.
+* **Every site from one chat:** with Saddle Cloud, one AI connection for all your sites, with uptime alerts.
+
+= Safe on a live site =
+
+* A new app can only read. You choose Read only, Edit content or Manage the site for each one.
+* Deletes, installs and other big changes show a preview and wait for your OK, and any tool can be set to ask first.
+* Every change is logged, and most can be undone in one step.
+* Your AI app connects straight to your site, so your content never passes through our servers. Saddle never runs code from the AI.
 
 Guides, examples and docs: [saddle.to](https://saddle.to)
+
+= Part of WP Saddle =
+
+Saddle Rank and Saddle Analytics are free plugins of their own; Saddle Cloud is the paid service for many sites. Your AI app uses whichever you have.
+
+* **Saddle Rank (Rank):** SEO titles and descriptions, redirects, a 404 log, broken links, schema, a sitemap and llms.txt.
+* **Saddle Analytics (Grow):** cookieless visitor stats kept in your own database, including the visitors ChatGPT, Claude and Perplexity send you. [On WordPress.org](https://wordpress.org/plugins/saddle-analytics/)
+* **Saddle Cloud:** one AI connection for all your sites, with Google Search Console, keyword tracking, SEO research, updates and uptime alerts. [saddle.to](https://saddle.to)
 
 = Try it now =
 
@@ -215,6 +248,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 == Changelog ==
 
 = 1.7.0 =
+* Changed: Saddle is now named "Saddle – Build, Rank & Grow Your Website with AI", here and on the Plugins screen: the free core of WP Saddle. Its menu, settings and address are unchanged.
 * New: Overview asks once whether to share usage data with PlugPress: your WordPress and PHP versions, language and the Saddle plugins you use, plus your site address and plugins unless you untick them. Nothing is sent until you click Allow and continue, and Skip sends nothing. Change it any time in Settings.
 * New: Saddle news. Tick it on Overview or subscribe in Settings to get about one email a month. You confirm by email first.
 * New: When you deactivate Saddle or one of its add-ons, a short form asks why. Skip and deactivate sends nothing.
