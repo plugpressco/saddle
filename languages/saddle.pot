@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-25T21:03:26+00:00\n"
+"POT-Creation-Date: 2026-10-28T00:37:15+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -5501,7 +5501,7 @@ msgstr ""
 
 #: includes/class-saddle-core-settings.php:148
 #: admin/build/index.js:125
-#: admin/src/components/SettingsPage.jsx:188
+#: admin/src/components/SettingsPage.jsx:185
 msgid "Major WordPress releases"
 msgstr ""
 
@@ -5543,7 +5543,7 @@ msgstr ""
 #: includes/class-saddle-core-settings.php:181
 #: includes/class-saddle-core-settings.php:192
 #: admin/build/index.js:129
-#: admin/src/components/SettingsPage.jsx:542
+#: admin/src/components/SettingsPage.jsx:537
 msgid "Recent changes"
 msgstr ""
 
@@ -5994,7 +5994,7 @@ msgstr ""
 #: includes/class-saddle-modules.php:66
 #: includes/class-saddle-modules.php:69
 #: admin/build/index.js:91
-#: admin/src/components/Home.jsx:516
+#: admin/src/components/Home.jsx:510
 msgid "Agent setup"
 msgstr ""
 
@@ -6975,6 +6975,141 @@ msgstr ""
 msgid "Background updates are disabled on this site."
 msgstr ""
 
+#: includes/insight/class-plugpress-insight.php:106
+msgid "You are in"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:107
+msgid "Check your inbox to confirm your email."
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:108
+msgid "Thanks for helping us test."
+msgstr ""
+
+#. translators: %s: plugin name.
+#: includes/insight/class-plugpress-insight.php:115
+#, php-format
+msgid "News from %s"
+msgstr ""
+
+#. translators: %s: plugin name.
+#: includes/insight/class-plugpress-insight.php:116
+msgid "Features, tips and fixes, now and then"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:119
+msgid "Email"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:121
+msgid "Subscribe"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:125
+msgid "No thanks"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:130
+msgid "Also share basic site info to help us test"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:133
+msgid "What is shared"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:134
+msgid "Your site address and title, WordPress and PHP versions, language, timezone, theme, and plugins with their versions, once a week while the box is ticked. Your email goes only to our newsletter, which asks you to confirm it."
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:153
+msgid "I only needed it for a short time"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:154
+msgid "It broke something on my site"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:154
+msgid "What broke? An error message helps a lot"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:155
+msgid "It was hard to set up"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:155
+msgid "Where did you get stuck?"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:156
+msgid "It didn't do what I needed"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:156
+msgid "What were you hoping it would do?"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:157
+msgid "I found a better plugin"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:157
+msgid "Which one? We would love to learn from it"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:158
+msgid "It's temporary, I'm troubleshooting"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:159
+msgid "Something else"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:159
+msgid "Tell us a little more"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:164
+msgid "Close, and keep the plugin on"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:165
+msgid "Quick feedback"
+msgstr ""
+
+#. translators: %s: plugin name.
+#: includes/insight/class-plugpress-insight.php:166
+#, php-format
+msgid "Why are you turning off %s?"
+msgstr ""
+
+#. translators: %s: the admin's email address.
+#: includes/insight/class-plugpress-insight.php:177
+#, php-format
+msgid "Reply to me at %s"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:180
+msgid "Skip and deactivate"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:181
+msgid "Send and deactivate"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:183
+msgid "Sends your answer, the plugin's version, and your WordPress and PHP versions."
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:225
+msgid "Sharing stopped"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:225
+msgid "Stop sharing site info"
+msgstr ""
+
 #: includes/integrations/aioseo/class-saddle-aioseo-seo.php:77
 #: includes/integrations/aioseo/class-saddle-aioseo-seo.php:104
 msgid "AIOSEO's post model is unavailable."
@@ -7435,7 +7570,7 @@ msgstr ""
 
 #: includes/oauth/class-saddle-oauth-consent.php:168
 #: admin/build/index.js:125
-#: admin/src/components/SettingsPage.jsx:205
+#: admin/src/components/SettingsPage.jsx:202
 msgid "Allow"
 msgstr ""
 
@@ -7620,7 +7755,7 @@ msgid "This persisted attribute does nothing — rewrite it on a path the block 
 msgstr ""
 
 #. translators: %s: minimum WordPress version.
-#: saddle.php:586
+#: saddle.php:579
 #, php-format
 msgid "Saddle requires WordPress %s or later (the core Abilities API). The MCP server is disabled until you upgrade."
 msgstr ""
@@ -9611,103 +9746,6 @@ msgid "Saddle Analytics"
 msgstr ""
 
 #: admin/build/index.js:83
-#: admin/src/components/InsightCard.jsx:44
-msgid "Could not save your answer."
-msgstr ""
-
-#: admin/build/index.js:83
-#: admin/src/components/InsightCard.jsx:60
-msgid "Thanks. You can turn this off in Settings."
-msgstr ""
-
-#: admin/build/index.js:83
-#: admin/src/components/InsightCard.jsx:67
-msgid "Check your inbox to confirm Saddle news."
-msgstr ""
-
-#: admin/build/index.js:83
-#: admin/src/components/InsightCard.jsx:96
-msgid "Help make Saddle better"
-msgstr ""
-
-#: admin/build/index.js:83
-#: admin/src/components/InsightCard.jsx:99
-msgid "Share how this site runs Saddle with PlugPress, so we test against what you use. Nothing is sent until you choose Allow."
-msgstr ""
-
-#: admin/build/index.js:83
-#: admin/src/components/InsightCard.jsx:109
-msgid "Always sent: your WordPress and PHP versions, language and timezone, the Saddle plugins you use, and a random id for this site. Then once a week while it is on, only when something changed."
-msgstr ""
-
-#: admin/build/index.js:83
-#: admin/src/insight.js:52
-msgid "Website info"
-msgstr ""
-
-#: admin/build/index.js:83
-#: admin/src/insight.js:53
-msgid "Its address and title"
-msgstr ""
-
-#: admin/build/index.js:83
-#: admin/src/insight.js:57
-msgid "Plugins and themes"
-msgstr ""
-
-#: admin/build/index.js:83
-#: admin/src/insight.js:58
-msgid "Their names and versions, and which are on"
-msgstr ""
-
-#: admin/build/index.js:83
-#: admin/src/insight.js:65
-msgid "Your name and email"
-msgstr ""
-
-#: admin/build/index.js:83
-#: admin/src/insight.js:66
-msgid "So we can write to you about your site"
-msgstr ""
-
-#: admin/build/index.js:83
-#: admin/src/components/InsightCard.jsx:142
-msgid "Email me Saddle news"
-msgstr ""
-
-#: admin/build/index.js:83
-#: admin/build/index.js:125
-#: admin/src/components/InsightCard.jsx:146
-#: admin/src/components/InsightSettings.jsx:110
-msgid "Email"
-msgstr ""
-
-#: admin/build/index.js:83
-#: admin/src/components/InsightCard.jsx:147
-msgid "About one email a month: new features and tips. You confirm by email first and can leave any time."
-msgstr ""
-
-#: admin/build/index.js:83
-#: admin/src/components/InsightCard.jsx:153
-msgid "Enter an email address."
-msgstr ""
-
-#: admin/build/index.js:83
-#: admin/src/components/InsightCard.jsx:177
-msgid "Allow and continue"
-msgstr ""
-
-#: admin/build/index.js:83
-#: admin/src/components/InsightCard.jsx:184
-msgid "Skip"
-msgstr ""
-
-#: admin/build/index.js:83
-#: admin/src/components/InsightCard.jsx:188
-msgid "Change it later in Settings"
-msgstr ""
-
-#: admin/build/index.js:83
 #: admin/src/approvals-logic.js:17
 msgid "just now"
 msgstr ""
@@ -9951,14 +9989,14 @@ msgid "%1$s → %2$s"
 msgstr ""
 
 #: admin/build/index.js:90
-#: admin/src/components/Home.jsx:69
+#: admin/src/components/Home.jsx:68
 msgid "Set up"
 msgstr ""
 
 #: admin/build/index.js:90
 #: admin/build/index.js:91
-#: admin/src/components/Home.jsx:70
-#: admin/src/components/Home.jsx:500
+#: admin/src/components/Home.jsx:69
+#: admin/src/components/Home.jsx:494
 msgid "Check"
 msgstr ""
 
@@ -9966,21 +10004,21 @@ msgstr ""
 #: admin/build/index.js:115
 #: admin/build/index.js:116
 #: admin/build/index.js:125
-#: admin/src/components/Home.jsx:71
-#: admin/src/components/SettingsPage.jsx:207
+#: admin/src/components/Home.jsx:70
+#: admin/src/components/SettingsPage.jsx:204
 #: admin/src/components/SignInCard.jsx:152
 #: admin/src/services-logic.js:25
 msgid "Off"
 msgstr ""
 
 #: admin/build/index.js:90
-#: admin/src/components/Home.jsx:143
+#: admin/src/components/Home.jsx:142
 msgid "Changes each day this week"
 msgstr ""
 
 #. translators: 1: a day, such as "Monday, October 20", 2: how many changes.
 #: admin/build/index.js:91
-#: admin/src/components/Home.jsx:155
+#: admin/src/components/Home.jsx:154
 #, js-format
 msgid "%1$s: %2$d change"
 msgid_plural "%1$s: %2$d changes"
@@ -10007,58 +10045,58 @@ msgid "Waiting for you"
 msgstr ""
 
 #: admin/build/index.js:91
-#: admin/src/components/Home.jsx:227
+#: admin/src/components/Home.jsx:226
 msgid "This week"
 msgstr ""
 
 #: admin/build/index.js:91
-#: admin/src/components/Home.jsx:231
+#: admin/src/components/Home.jsx:230
 msgid "See logs"
 msgstr ""
 
 #: admin/build/index.js:91
-#: admin/src/components/Home.jsx:409
+#: admin/src/components/Home.jsx:404
 msgid "No AI app is connected yet."
 msgstr ""
 
 #: admin/build/index.js:91
-#: admin/src/components/Home.jsx:412
-#: admin/src/components/Home.jsx:586
+#: admin/src/components/Home.jsx:407
+#: admin/src/components/Home.jsx:580
 msgid "Connect an app"
 msgstr ""
 
 #: admin/build/index.js:91
-#: admin/src/components/Home.jsx:484
+#: admin/src/components/Home.jsx:478
 msgid "Connections may not work"
 msgstr ""
 
 #: admin/build/index.js:91
-#: admin/src/components/Home.jsx:487
+#: admin/src/components/Home.jsx:481
 msgid "Your server may block the sign-in header apps need, or Application Passwords are off."
 msgstr ""
 
 #: admin/build/index.js:91
-#: admin/src/components/Home.jsx:523
+#: admin/src/components/Home.jsx:517
 msgid "Manage"
 msgstr ""
 
 #: admin/build/index.js:91
-#: admin/src/components/Home.jsx:454
+#: admin/src/components/Home.jsx:448
 msgid "Try it"
 msgstr ""
 
 #: admin/build/index.js:91
-#: admin/src/components/Home.jsx:465
+#: admin/src/components/Home.jsx:459
 msgid "Change access"
 msgstr ""
 
 #: admin/build/index.js:91
-#: admin/src/components/Home.jsx:594
+#: admin/src/components/Home.jsx:588
 msgid "Add-ons"
 msgstr ""
 
 #: admin/build/index.js:91
-#: admin/src/components/Home.jsx:654
+#: admin/src/components/Home.jsx:648
 msgid "Works with"
 msgstr ""
 
@@ -10745,8 +10783,8 @@ msgstr ""
 #: admin/src/components/Guidance.jsx:303
 #: admin/src/components/Guidance.jsx:362
 #: admin/src/components/SettingsForm.jsx:348
-#: admin/src/components/SettingsPage.jsx:103
-#: admin/src/components/SettingsPage.jsx:259
+#: admin/src/components/SettingsPage.jsx:100
+#: admin/src/components/SettingsPage.jsx:256
 #: admin/src/components/SignInCard.jsx:57
 msgid "Saved."
 msgstr ""
@@ -10937,9 +10975,8 @@ msgstr ""
 
 #: admin/build/index.js:115
 #: admin/build/index.js:125
-#: admin/src/components/InsightSettings.jsx:45
 #: admin/src/components/SettingsForm.jsx:354
-#: admin/src/components/SettingsPage.jsx:111
+#: admin/src/components/SettingsPage.jsx:108
 #: admin/src/components/SignInCard.jsx:62
 msgid "Could not save that setting."
 msgstr ""
@@ -11156,8 +11193,8 @@ msgstr ""
 #: admin/build/index.js:124
 #: admin/build/index.js:126
 #: admin/src/components/Services.jsx:409
-#: admin/src/components/SettingsPage.jsx:264
-#: admin/src/components/SettingsPage.jsx:301
+#: admin/src/components/SettingsPage.jsx:261
+#: admin/src/components/SettingsPage.jsx:298
 msgid "Could not save that change."
 msgstr ""
 
@@ -11169,149 +11206,93 @@ msgid "Let apps use %s"
 msgstr ""
 
 #: admin/build/index.js:125
-#: admin/src/components/InsightSettings.jsx:76
-msgid "Usage data and news"
-msgstr ""
-
-#: admin/build/index.js:125
-#: admin/src/components/InsightSettings.jsx:79
-#: admin/src/components/InsightSettings.jsx:90
-msgid "Share usage data with PlugPress"
-msgstr ""
-
-#: admin/build/index.js:125
-#: admin/src/components/InsightSettings.jsx:80
-msgid "Your WordPress and PHP versions, language, timezone and the Saddle plugins you use, once a week when something changed. Off sends nothing."
-msgstr ""
-
-#: admin/build/index.js:125
-#: admin/src/components/InsightSettings.jsx:39
-msgid "Usage data is off."
-msgstr ""
-
-#: admin/build/index.js:125
-#: admin/src/components/InsightSettings.jsx:40
-msgid "Usage data is on."
-msgstr ""
-
-#: admin/build/index.js:125
-#: admin/src/components/InsightSettings.jsx:98
-msgid "Saddle news"
-msgstr ""
-
-#: admin/build/index.js:125
-#: admin/src/components/InsightSettings.jsx:101
-msgid "Check your inbox to confirm."
-msgstr ""
-
-#: admin/build/index.js:125
-#: admin/src/components/InsightSettings.jsx:102
-msgid "About one email a month: new features and tips. Only the address you type is sent."
-msgstr ""
-
-#: admin/build/index.js:125
-#: admin/src/components/InsightSettings.jsx:59
-msgid "Saddle news could not be reached. Try again later."
-msgstr ""
-
-#: admin/build/index.js:125
-#: admin/src/components/InsightSettings.jsx:68
-msgid "Could not subscribe."
-msgstr ""
-
-#: admin/build/index.js:125
-#: admin/src/components/InsightSettings.jsx:130
-msgid "Subscribe"
-msgstr ""
-
-#: admin/build/index.js:125
-#: admin/src/components/SettingsPage.jsx:142
+#: admin/src/components/SettingsPage.jsx:139
 msgid "Safety"
 msgstr ""
 
 #: admin/build/index.js:125
-#: admin/src/components/SettingsPage.jsx:147
+#: admin/src/components/SettingsPage.jsx:144
 msgid "Publishing needs my OK"
 msgstr ""
 
 #: admin/build/index.js:125
-#: admin/src/components/SettingsPage.jsx:148
+#: admin/src/components/SettingsPage.jsx:145
 msgid "New posts and pages an app asks to publish or schedule are saved as drafts. Publishing or scheduling an existing item needs your confirmation. Edits to content that is already live still go through."
 msgstr ""
 
 #: admin/build/index.js:125
-#: admin/src/components/SettingsPage.jsx:152
+#: admin/src/components/SettingsPage.jsx:149
 msgid "Apps save drafts; you approve what goes live."
 msgstr ""
 
 #: admin/build/index.js:125
-#: admin/src/components/SettingsPage.jsx:160
+#: admin/src/components/SettingsPage.jsx:157
 msgid "Practice mode"
 msgstr ""
 
 #: admin/build/index.js:125
-#: admin/src/components/SettingsPage.jsx:161
+#: admin/src/components/SettingsPage.jsx:158
 msgid "Apps can try anything their access allows and nothing is saved. Each tool that would change the site says what it would have done, and the attempt shows in Activity as rehearsed. Reading works as usual."
 msgstr ""
 
 #: admin/build/index.js:125
-#: admin/src/components/SettingsPage.jsx:165
+#: admin/src/components/SettingsPage.jsx:162
 msgid "Apps try changes but nothing is saved."
 msgstr ""
 
 #: admin/build/index.js:125
-#: admin/src/components/SettingsPage.jsx:173
+#: admin/src/components/SettingsPage.jsx:170
 msgid "Stop writes if the site moves"
 msgstr ""
 
 #: admin/build/index.js:125
-#: admin/src/components/SettingsPage.jsx:174
+#: admin/src/components/SettingsPage.jsx:171
 msgid "If the site address changes, for example after copying it to another domain, apps are refused writes until you confirm their access again."
 msgstr ""
 
 #: admin/build/index.js:125
-#: admin/src/components/SettingsPage.jsx:178
+#: admin/src/components/SettingsPage.jsx:175
 msgid "After an address change, confirm access again."
 msgstr ""
 
 #: admin/build/index.js:125
-#: admin/src/components/SettingsPage.jsx:189
+#: admin/src/components/SettingsPage.jsx:186
 msgid "Lets an app update WordPress to a new major version, such as 7.1 to 7.2, after you approve its preview. A major release has no automatic rollback and upgrades the database. Minor and security releases never need this. WordPress’s own “automatic updates for all new versions” in Dashboard → Updates is a separate setting."
 msgstr ""
 
 #: admin/build/index.js:125
-#: admin/src/components/SettingsPage.jsx:193
+#: admin/src/components/SettingsPage.jsx:190
 msgid "Apps can update WordPress to a new major version."
 msgstr ""
 
 #: admin/build/index.js:125
-#: admin/src/components/SettingsPage.jsx:206
+#: admin/src/components/SettingsPage.jsx:203
 msgid "Ask first"
 msgstr ""
 
 #: admin/build/index.js:125
-#: admin/src/components/SettingsPage.jsx:237
+#: admin/src/components/SettingsPage.jsx:234
 msgid "Other"
 msgstr ""
 
 #: admin/build/index.js:125
-#: admin/src/components/SettingsPage.jsx:310
+#: admin/src/components/SettingsPage.jsx:307
 msgid "Ask first: the app shows you the change and it waits under Needs your OK on Overview. It runs only after you approve it there."
 msgstr ""
 
 #: admin/build/index.js:125
-#: admin/src/components/SettingsPage.jsx:317
+#: admin/src/components/SettingsPage.jsx:314
 msgid "Recommended set"
 msgstr ""
 
 #: admin/build/index.js:125
-#: admin/src/components/SettingsPage.jsx:318
+#: admin/src/components/SettingsPage.jsx:315
 msgid "Ask first for plugins, themes, updates, settings and anything that deletes. Publishing needs your OK. Content edits stay allowed. Nothing you turned off is turned on."
 msgstr ""
 
 #. translators: %d: number of tools.
 #: admin/build/index.js:126
-#: admin/src/components/SettingsPage.jsx:279
+#: admin/src/components/SettingsPage.jsx:276
 #, js-format
 msgid "%d tool now asks you first. Publishing needs your OK."
 msgid_plural "%d tools now ask you first. Publishing needs your OK."
@@ -11319,78 +11300,78 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: admin/build/index.js:126
-#: admin/src/components/SettingsPage.jsx:287
+#: admin/src/components/SettingsPage.jsx:284
 msgid "Already set. Publishing needs your OK."
 msgstr ""
 
 #: admin/build/index.js:126
-#: admin/src/components/SettingsPage.jsx:329
+#: admin/src/components/SettingsPage.jsx:326
 msgid "Use it"
 msgstr ""
 
 #: admin/build/index.js:126
-#: admin/src/components/SettingsPage.jsx:339
+#: admin/src/components/SettingsPage.jsx:336
 msgid "Search tools…"
 msgstr ""
 
 #: admin/build/index.js:126
-#: admin/src/components/SettingsPage.jsx:340
+#: admin/src/components/SettingsPage.jsx:337
 msgid "Search tools"
 msgstr ""
 
 #: admin/build/index.js:126
-#: admin/src/components/SettingsPage.jsx:344
+#: admin/src/components/SettingsPage.jsx:341
 msgid "No tools match."
 msgstr ""
 
 #: admin/build/index.js:126
-#: admin/src/components/SettingsPage.jsx:365
+#: admin/src/components/SettingsPage.jsx:362
 msgid "Added since you last chose. It asks you first until you pick."
 msgstr ""
 
 #: admin/build/index.js:126
-#: admin/src/components/SettingsPage.jsx:372
+#: admin/src/components/SettingsPage.jsx:369
 msgid "New"
 msgstr ""
 
 #. translators: %s: tool name.
 #: admin/build/index.js:127
-#: admin/src/components/SettingsPage.jsx:395
+#: admin/src/components/SettingsPage.jsx:392
 #, js-format
 msgid "What %s may do"
 msgstr ""
 
 #: admin/build/index.js:127
-#: admin/src/components/SettingsPage.jsx:493
+#: admin/src/components/SettingsPage.jsx:488
 msgid "Advanced"
 msgstr ""
 
 #. translators: %d: number of tools.
 #: admin/build/index.js:128
-#: admin/src/components/SettingsPage.jsx:498
+#: admin/src/components/SettingsPage.jsx:493
 #, js-format
 msgid "What each tool may do (%d)"
 msgstr ""
 
 #: admin/build/index.js:128
-#: admin/src/components/SettingsPage.jsx:513
+#: admin/src/components/SettingsPage.jsx:508
 msgid "Sign-in for apps"
 msgstr ""
 
 #. translators: %d: number of plugins.
 #: admin/build/index.js:129
-#: admin/src/components/SettingsPage.jsx:524
+#: admin/src/components/SettingsPage.jsx:519
 #, js-format
 msgid "Plugins that add tools (%d)"
 msgstr ""
 
 #: admin/build/index.js:129
-#: admin/src/components/SettingsPage.jsx:534
+#: admin/src/components/SettingsPage.jsx:529
 msgid "Memory limits"
 msgstr ""
 
 #: admin/build/index.js:129
-#: admin/src/components/SettingsPage.jsx:551
+#: admin/src/components/SettingsPage.jsx:546
 msgid "Connection check"
 msgstr ""
 
@@ -11421,89 +11402,6 @@ msgstr ""
 #: admin/build/index.js:131
 #: admin/src/App.jsx:515
 msgid "Mark as expected"
-msgstr ""
-
-#: admin/build/insight-deactivate.js:1
-#: admin/src/insight-deactivate-logic.js:18
-msgid "It didn’t do what I needed"
-msgstr ""
-
-#: admin/build/insight-deactivate.js:1
-#: admin/src/insight-deactivate-logic.js:22
-msgid "It was hard to set up"
-msgstr ""
-
-#: admin/build/insight-deactivate.js:1
-#: admin/src/insight-deactivate-logic.js:26
-msgid "It broke something or caused an error"
-msgstr ""
-
-#: admin/build/insight-deactivate.js:1
-#: admin/src/insight-deactivate-logic.js:30
-msgid "I found another plugin"
-msgstr ""
-
-#: admin/build/insight-deactivate.js:1
-#: admin/src/insight-deactivate-logic.js:34
-msgid "I only needed it for a short time"
-msgstr ""
-
-#: admin/build/insight-deactivate.js:1
-#: admin/src/insight-deactivate-logic.js:38
-msgid "I’m only turning it off for a moment"
-msgstr ""
-
-#: admin/build/insight-deactivate.js:1
-#: admin/src/insight-deactivate-logic.js:40
-msgid "Something else"
-msgstr ""
-
-#: admin/build/insight-deactivate.js:1
-#: admin/src/insight-deactivate.js:67
-msgid "Skip and deactivate"
-msgstr ""
-
-#: admin/build/insight-deactivate.js:1
-#: admin/src/insight-deactivate.js:73
-#: admin/src/insight-deactivate.js:190
-msgid "Send and deactivate"
-msgstr ""
-
-#: admin/build/insight-deactivate.js:1
-#: admin/src/insight-deactivate.js:78
-msgid "Close, and keep the plugin on"
-msgstr ""
-
-#: admin/build/insight-deactivate.js:1
-#: admin/src/insight-deactivate.js:87
-msgid "Reason"
-msgstr ""
-
-#: admin/build/insight-deactivate.js:1
-#: admin/src/insight-deactivate.js:94
-msgid "Anything we should know? (optional)"
-msgstr ""
-
-#: admin/build/insight-deactivate.js:1
-#: admin/src/insight-deactivate.js:100
-msgid "Email, if you’d like a reply (optional)"
-msgstr ""
-
-#: admin/build/insight-deactivate.js:1
-#: admin/src/insight-deactivate.js:105
-msgid "Send shares your answer, this plugin’s version, and your WordPress and PHP versions and language with PlugPress. Skip sends nothing."
-msgstr ""
-
-#: admin/build/insight-deactivate.js:1
-#: admin/src/insight-deactivate.js:170
-msgid "Sending…"
-msgstr ""
-
-#. translators: %s: plugin name, such as Saddle Rank.
-#: admin/build/insight-deactivate.js:2
-#: admin/src/insight-deactivate.js:193
-#, js-format
-msgid "Before you go, what made you turn off %s?"
 msgstr ""
 
 #: admin/src/activity-format.js:122

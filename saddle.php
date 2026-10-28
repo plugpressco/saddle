@@ -176,8 +176,6 @@ require_once SADDLE_DIR . 'includes/class-saddle-settings-view.php';
 require_once SADDLE_DIR . 'includes/class-saddle-core-settings.php';
 require_once SADDLE_DIR . 'includes/class-saddle-modules-view.php';
 require_once SADDLE_DIR . 'includes/class-saddle-notices.php';
-require_once SADDLE_DIR . 'includes/class-saddle-insight.php';
-require_once SADDLE_DIR . 'includes/class-saddle-insight-payload.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-notices-admin.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-connections-rest.php';
@@ -185,7 +183,6 @@ require_once SADDLE_DIR . 'includes/admin/class-saddle-approvals-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-tool-modes-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-services-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-onboarding-rest.php';
-require_once SADDLE_DIR . 'includes/admin/class-saddle-insight-admin.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-modules-rest.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-nav-icons.php';
 require_once SADDLE_DIR . 'includes/admin/class-saddle-module-nav.php';
@@ -323,10 +320,6 @@ final class Saddle {
 
 		// First-run and module onboarding state (#277).
 		add_action( 'rest_api_init', array( 'Saddle_Onboarding_REST', 'register_routes' ) );
-
-		// Opt-in usage data, Saddle news and the deactivation dialog: nothing
-		// leaves the site until the owner clicks Allow or Send (Saddle_Insight).
-		Saddle_Insight_Admin::register();
 
 		// The background update runner: hooks its one-shot cron event so a run
 		// queued by update-plugin / update-theme fires even when the abilities
@@ -619,8 +612,8 @@ final class Saddle {
 		// records stay (uninstall removes them).
 		wp_clear_scheduled_hook( Saddle_Update_Runner::HOOK );
 		// The weekly insight update waits too; admin_init schedules it again
-		// after reactivation if the owner is still opted in.
-		wp_clear_scheduled_hook( Saddle_Insight::HOOK );
+		// after reactivation if the owner still shares site info.
+		wp_clear_scheduled_hook( 'plugpress_insight_weekly' );
 
 		// Nothing confines Saddle's keys while it is off, so they go now and
 		// apps connect again after reactivation (#319).
@@ -632,3 +625,19 @@ register_activation_hook( __FILE__, array( 'Saddle', 'activate' ) );
 register_deactivation_hook( __FILE__, array( 'Saddle', 'deactivate' ) );
 
 Saddle::init();
+
+// PlugPress Insight: the news bar on Overview and quick feedback on
+// Deactivate. Nothing leaves the site until the owner clicks Subscribe or
+// Send and deactivate.
+require_once SADDLE_DIR . 'includes/insight/insight.php';
+plugpress_insight(
+	array(
+		'file'    => __FILE__,
+		'slug'    => 'saddle',
+		'name'    => 'Saddle',
+		'version' => SADDLE_VERSION,
+		'page'    => 'saddle',
+		'news'    => 'saddle',
+		'color'   => '#d000c4',
+	)
+);

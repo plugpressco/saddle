@@ -33,7 +33,7 @@ class Saddle_Settings_Guard {
 		'saddle_tier_domain',
 		'saddle_enforce_tier_domain',
 		'saddle_core_major_updates',
-		'saddle_insight',
+		'plugpress_insight',
 		'plugpress_insight_site_id',
 	);
 
