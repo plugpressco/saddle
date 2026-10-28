@@ -2,19 +2,21 @@
 /**
  * PlugPress Insight SDK. Load it from your plugin's main file:
  *
- *     require __DIR__ . '/insight/insight.php';
+ *     require __DIR__ . '/includes/insight/insight.php';
  *     plugpress_insight(
  *         array(
  *             'file'    => __FILE__,
- *             'slug'    => 'my-plugin',
- *             'name'    => 'My Plugin',
+ *             'product' => 'my-brand',  // The brand: its plugins share one card and one answer.
+ *             'brand'   => 'My Brand',  // The brand's name on the card.
+ *             'name'    => 'My Plugin', // This plugin's name, in the feedback dialog.
  *             'version' => '1.2.0',
  *             'page'    => 'my-plugin', // Optional: the ?page= that shows the card.
  *         )
  *     );
  *
  * Every PlugPress plugin on a site carries its own copy. Only the newest copy
- * runs, and one answer on the card covers all of them. README.md has the rest.
+ * runs. Site info is asked once per site, news once per brand. README.md has
+ * the rest.
  *
  * @package PlugPress_Insight
  */
@@ -33,10 +35,10 @@ if ( ! function_exists( 'plugpress_insight' ) ) {
 	/**
 	 * Add a plugin to Insight. Call it from the plugin's main file.
 	 *
-	 * @param array $product file, slug, name, version; optionally page, news and color.
+	 * @param array $plugin file, product, brand, name, version; optionally page, color and slot.
 	 */
-	function plugpress_insight( array $product ) {
-		$GLOBALS['plugpress_insight_products'][] = $product;
+	function plugpress_insight( array $plugin ) {
+		$GLOBALS['plugpress_insight_products'][] = $plugin;
 	}
 
 	/**

@@ -1,9 +1,9 @@
 /*
- * PlugPress Insight: the news card and quick feedback. The accent is the
+ * PlugPress Insight: the card and quick feedback. The accent is the
  * plugin's color when it passes one, else the admin color scheme's.
  */
 
-/* The news card. */
+/* The card. */
 
 .plugpress-insight-bar {
 	--plugpress-insight-ink: var(--plugpress-insight-accent, var(--wp-admin-theme-color, #2271b1));
@@ -39,11 +39,8 @@
 	opacity: 0;
 }
 
-.plugpress-insight-bar p {
+.plugpress-insight-bar form {
 	margin: 0;
-	padding: 0;
-	font-size: 13px;
-	line-height: 20px;
 }
 
 .plugpress-insight-bar__main {
@@ -80,16 +77,28 @@
 	color: #646970;
 }
 
-.plugpress-insight-bar form {
-	display: flex;
-	gap: 8px;
-	margin: 0;
+.plugpress-insight-bar__list {
+	max-width: 640px;
+	margin-top: 4px;
+	font-size: 12px;
+	line-height: 18px;
 }
 
-.plugpress-insight-bar.is-done form,
-.plugpress-insight-bar.is-done .plugpress-insight-bar__close,
-.plugpress-insight-bar.is-done .plugpress-insight-bar__more {
-	display: none;
+/* "What is shared": a link inside the line. */
+.plugpress-insight-bar__what {
+	margin: 0 0 0 4px;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: inherit;
+	font: inherit;
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	cursor: pointer;
+}
+
+.plugpress-insight-bar__what:hover {
+	color: #1d2327;
 }
 
 .plugpress-insight-bar input[type="email"] {
@@ -114,7 +123,9 @@
 	outline: none;
 }
 
-.plugpress-insight-bar button[type="submit"] {
+.plugpress-insight-bar button[type="submit"],
+.plugpress-insight-bar button.plugpress-insight-bar__skip {
+	flex: none;
 	height: 32px;
 	padding: 0 14px;
 	border: 1px solid var(--plugpress-insight-ink);
@@ -137,40 +148,53 @@
 	cursor: default;
 }
 
-.plugpress-insight-bar__close {
+/* No thanks: the quiet button beside Allow. */
+.plugpress-insight-bar button.plugpress-insight-bar__skip {
+	border-color: #dcdcde;
+	background: #fff;
+	color: #1d2327;
+}
+
+.plugpress-insight-bar button.plugpress-insight-bar__skip:hover {
+	background: #f6f7f7;
+}
+
+/* The news card's ×. */
+.plugpress-insight-bar button.plugpress-insight-bar__close {
 	display: flex;
-	flex: none;
 	align-items: center;
 	justify-content: center;
 	width: 32px;
-	height: 32px;
 	margin-right: -6px;
 	padding: 0;
 	border: 0;
-	border-radius: 4px;
 	background: none;
 	color: #8c8f94;
-	cursor: pointer;
 }
 
-.plugpress-insight-bar__close:hover {
+.plugpress-insight-bar button.plugpress-insight-bar__close:hover {
 	background: #f0f0f1;
 	color: #1d2327;
 }
 
 .plugpress-insight-bar button:focus-visible,
-.plugpress-insight-bar summary:focus-visible,
 .plugpress-insight-bar__more input:focus-visible {
 	outline: 2px solid var(--plugpress-insight-ink);
 	outline-offset: 2px;
 }
 
-/* Site info: a quiet line under the card's main row, lined up with its text. */
+.plugpress-insight-bar.is-done button,
+.plugpress-insight-bar.is-done input,
+.plugpress-insight-bar.is-done .plugpress-insight-bar__more {
+	display: none;
+}
+
+/* The news box: a quiet line under the main row, lined up with its text. */
 .plugpress-insight-bar__more {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 6px 16px;
-	align-items: flex-start;
+	gap: 8px;
+	align-items: center;
 	padding: 8px 16px 9px 64px;
 	border-top: 1px solid #f0f0f1;
 	color: #646970;
@@ -183,6 +207,15 @@
 	gap: 8px;
 	align-items: center;
 	cursor: pointer;
+}
+
+.plugpress-insight-bar__more input[type="email"] {
+	width: 220px;
+	height: 26px;
+	min-height: 26px;
+	padding: 0 8px;
+	font-size: 12px;
+	line-height: 24px;
 }
 
 /* A checkbox in the accent, not wp-admin's. */
@@ -224,49 +257,16 @@
 	opacity: 1;
 }
 
-.plugpress-insight-bar summary {
-	text-decoration: underline;
-	text-underline-offset: 2px;
-	list-style: none;
-	cursor: pointer;
-}
-
-.plugpress-insight-bar summary:hover {
-	color: #1d2327;
-}
-
-.plugpress-insight-bar summary::-webkit-details-marker {
-	display: none;
-}
-
-/* Open, the explanation fills the rest of the line beside the checkbox. */
-.plugpress-insight-bar details[open] {
-	flex: 1 1 0;
-	min-width: 200px;
-}
-
-.plugpress-insight-bar details p {
-	max-width: 640px;
-	margin-top: 6px;
-	font-size: 12px;
-	line-height: 18px;
-}
-
 @media (max-width: 782px) {
 	.plugpress-insight-bar__main {
 		flex-wrap: wrap;
 	}
 
-	.plugpress-insight-bar__close {
-		order: 2;
+	.plugpress-insight-bar__text {
+		flex-basis: calc(100% - 48px);
 	}
 
-	.plugpress-insight-bar form {
-		flex-basis: 100%;
-		order: 3;
-	}
-
-	.plugpress-insight-bar input[type="email"] {
+	.plugpress-insight-bar.is-news input[type="email"] {
 		flex: 1;
 		width: auto;
 		min-width: 0;

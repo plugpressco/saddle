@@ -93,15 +93,17 @@ and finding each fails at least one. Check every change against all three.
    go ahead"); since 2026-10-28 through the PlugPress Insight SDK
    (`includes/insight/`, a copy of `sdk/` in `plugpressco/plugpress-insight`;
    Fahim: "make simple tiny sdk", "one for all").* Free sends to PlugPress's
-   `insight.plugpress.io` only after one of three clicks, and nothing else
+   `insight.plugpress.io` only after one of these clicks, and nothing else
    ever does:
 
-   - **Subscribe** on the news bar (Overview, once per site): the address in
-     the bar, passed to Mailpuff's double opt-in form on plugpress.io. With
-     "Also share basic site info" ticked, also the address and title,
+   - **Allow** on the card (Overview, once per site): the address and title,
      WordPress and PHP versions, language, timezone, theme, plugins and a
      random site id, then a weekly update while it stays on, only when
-     something changed.
+     something changed. All Saddle plugins report as one brand, `saddle`.
+   - **Also email me Saddle news** ticked on that card, or **Subscribe** on
+     the news card (shown once site info has an answer): the address typed,
+     passed to Mailpuff on plugpress.io with the Saddle news tag; Mailpuff
+     asks the person to confirm. Insight keeps no address.
    - **Send and deactivate** in the Plugins screen's quick feedback: the
      reason, the answer to its question, the admin's email only if "Reply to
      me" is ticked, the version, and WordPress, PHP and the language. Never
@@ -109,7 +111,8 @@ and finding each fails at least one. Check every change against all three.
    - **Stop sharing site info** under Saddle on the Plugins screen: one
      opt-out that clears what identifies the site.
 
-   The × and "Skip and deactivate" send nothing. No agent tool reads or
+   No thanks, the × and "Skip and deactivate" send nothing. A copy of the
+   site at another address gets a new id and is asked again. No agent tool reads or
    changes the answer (`plugpress_insight` and `plugpress_insight_site_id`
    are protected options; both are shared by every PlugPress plugin, so
    uninstall leaves them). `define( 'PLUGPRESS_INSIGHT', false );` or the

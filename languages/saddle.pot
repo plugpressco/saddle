@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-28T12:56:58+00:00\n"
+"POT-Creation-Date: 2026-10-28T13:45:31+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -6975,138 +6975,163 @@ msgstr ""
 msgid "Background updates are disabled on this site."
 msgstr ""
 
-#: includes/insight/class-plugpress-insight.php:111
-msgid "You are in"
-msgstr ""
-
-#: includes/insight/class-plugpress-insight.php:112
-msgid "Check your inbox to confirm your email."
-msgstr ""
-
-#: includes/insight/class-plugpress-insight.php:113
-msgid "Thanks for helping us test."
-msgstr ""
-
-#. translators: %s: plugin name.
-#: includes/insight/class-plugpress-insight.php:120
-#, php-format
-msgid "News from %s"
-msgstr ""
-
-#. translators: %s: plugin name.
-#: includes/insight/class-plugpress-insight.php:121
-msgid "Features, tips and fixes, now and then."
-msgstr ""
-
-#: includes/insight/class-plugpress-insight.php:124
-msgid "Email"
-msgstr ""
-
-#: includes/insight/class-plugpress-insight.php:125
-msgid "Subscribe"
-msgstr ""
-
-#: includes/insight/class-plugpress-insight.php:127
-msgid "No thanks"
-msgstr ""
-
-#: includes/insight/class-plugpress-insight.php:132
-msgid "Also share basic site info to help us test"
+#: includes/insight/class-plugpress-insight.php:134
+msgid "Thanks for helping"
 msgstr ""
 
 #: includes/insight/class-plugpress-insight.php:134
-msgid "What is shared"
+msgid "You are in"
 msgstr ""
 
 #: includes/insight/class-plugpress-insight.php:135
-msgid "Your site address and title, WordPress and PHP versions, language, timezone, theme, and plugins with their versions, once a week while the box is ticked. Your email goes only to our newsletter, which asks you to confirm it."
+msgid "Check your inbox to confirm your email."
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:136
+msgid "Stop any time under the plugin on the Plugins screen."
+msgstr ""
+
+#. translators: %s: brand name, such as Saddle.
+#: includes/insight/class-plugpress-insight.php:149
+#, php-format
+msgid "Help make %s better"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:151
+msgid "Share basic site info with PlugPress once a week. No posts, no visitor data."
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:152
+msgid "What is shared"
 msgstr ""
 
 #: includes/insight/class-plugpress-insight.php:154
-msgid "I only needed it for a short time"
+msgid "Your site address and title, WordPress and PHP versions, language, timezone, theme, and plugins with their versions. Sent again only when something changed."
 msgstr ""
 
-#: includes/insight/class-plugpress-insight.php:155
-msgid "It broke something on my site"
-msgstr ""
-
-#: includes/insight/class-plugpress-insight.php:155
-msgid "What broke? An error message helps a lot"
-msgstr ""
-
+#. translators: %s: brand name, such as Saddle.
 #: includes/insight/class-plugpress-insight.php:156
-msgid "It was hard to set up"
+#, php-format
+msgid "%s news"
 msgstr ""
 
-#: includes/insight/class-plugpress-insight.php:156
-msgid "Where did you get stuck?"
-msgstr ""
-
+#. translators: %s: brand name, such as Saddle.
 #: includes/insight/class-plugpress-insight.php:157
-msgid "It didn't do what I needed"
+msgid "Features, tips and fixes, now and then."
 msgstr ""
 
-#: includes/insight/class-plugpress-insight.php:157
-msgid "What were you hoping it would do?"
+#: includes/insight/class-plugpress-insight.php:161
+#: includes/insight/class-plugpress-insight.php:166
+msgid "No thanks"
 msgstr ""
 
-#: includes/insight/class-plugpress-insight.php:158
-msgid "I found a better plugin"
+#: includes/insight/class-plugpress-insight.php:162
+#: includes/oauth/class-saddle-oauth-consent.php:168
+#: admin/build/index.js:125
+#: admin/src/components/SettingsPage.jsx:202
+msgid "Allow"
 msgstr ""
 
-#: includes/insight/class-plugpress-insight.php:158
-msgid "Which one? We would love to learn from it"
-msgstr ""
-
-#: includes/insight/class-plugpress-insight.php:159
-msgid "It's temporary, I'm troubleshooting"
-msgstr ""
-
-#: includes/insight/class-plugpress-insight.php:160
-msgid "Something else"
-msgstr ""
-
-#: includes/insight/class-plugpress-insight.php:160
-msgid "Tell us a little more"
+#: includes/insight/class-plugpress-insight.php:164
+#: includes/insight/class-plugpress-insight.php:177
+msgid "Email"
 msgstr ""
 
 #: includes/insight/class-plugpress-insight.php:165
+msgid "Subscribe"
+msgstr ""
+
+#. translators: %s: brand name, such as Saddle.
+#: includes/insight/class-plugpress-insight.php:175
+#, php-format
+msgid "Also email me %s news at"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:197
+msgid "I only needed it for a short time"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:198
+msgid "It broke something on my site"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:198
+msgid "What broke? An error message helps a lot"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:199
+msgid "It was hard to set up"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:199
+msgid "Where did you get stuck?"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:200
+msgid "It didn't do what I needed"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:200
+msgid "What were you hoping it would do?"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:201
+msgid "I found a better plugin"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:201
+msgid "Which one? We would love to learn from it"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:202
+msgid "It's temporary, I'm troubleshooting"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:203
+msgid "Something else"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:203
+msgid "Tell us a little more"
+msgstr ""
+
+#: includes/insight/class-plugpress-insight.php:208
 msgid "Close, and keep the plugin on"
 msgstr ""
 
-#: includes/insight/class-plugpress-insight.php:166
+#: includes/insight/class-plugpress-insight.php:209
 msgid "Quick feedback"
 msgstr ""
 
 #. translators: %s: plugin name.
-#: includes/insight/class-plugpress-insight.php:167
+#: includes/insight/class-plugpress-insight.php:210
 #, php-format
 msgid "Why are you turning off %s?"
 msgstr ""
 
 #. translators: %s: the admin's email address.
-#: includes/insight/class-plugpress-insight.php:178
+#: includes/insight/class-plugpress-insight.php:221
 #, php-format
 msgid "Reply to me at %s"
 msgstr ""
 
-#: includes/insight/class-plugpress-insight.php:181
+#: includes/insight/class-plugpress-insight.php:224
 msgid "Skip and deactivate"
 msgstr ""
 
-#: includes/insight/class-plugpress-insight.php:182
+#: includes/insight/class-plugpress-insight.php:225
 msgid "Send and deactivate"
 msgstr ""
 
-#: includes/insight/class-plugpress-insight.php:184
+#: includes/insight/class-plugpress-insight.php:227
 msgid "Sends your answer, the plugin's version, and your WordPress and PHP versions."
 msgstr ""
 
-#: includes/insight/class-plugpress-insight.php:227
+#: includes/insight/class-plugpress-insight.php:270
 msgid "Sharing stopped"
 msgstr ""
 
-#: includes/insight/class-plugpress-insight.php:227
+#: includes/insight/class-plugpress-insight.php:270
 msgid "Stop sharing site info"
 msgstr ""
 
@@ -7566,12 +7591,6 @@ msgstr ""
 #: includes/oauth/class-saddle-oauth-consent.php:162
 #, php-format
 msgid "When you decide, you will be sent back to %s"
-msgstr ""
-
-#: includes/oauth/class-saddle-oauth-consent.php:168
-#: admin/build/index.js:125
-#: admin/src/components/SettingsPage.jsx:202
-msgid "Allow"
 msgstr ""
 
 #: includes/oauth/class-saddle-oauth-consent.php:169

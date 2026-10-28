@@ -1,6 +1,6 @@
 <?php
 /**
- * PlugPress Insight: a news bar, quick feedback on deactivate, and a weekly
+ * PlugPress Insight: a news card, quick feedback on deactivate, and a weekly
  * update while the owner shares site info. Nothing is sent before a click;
  * README.md says what is sent and when.
  *
@@ -20,7 +20,7 @@ class PlugPress_Insight {
 	const CRON    = 'plugpress_insight_weekly';
 
 	/**
-	 * The plugins that called plugpress_insight(), by slug.
+	 * The plugins that called plugpress_insight(), by plugin slug.
 	 *
 	 * @var array
 	 */
@@ -29,29 +29,43 @@ class PlugPress_Insight {
 	/**
 	 * Hook in once for every registered plugin.
 	 *
-	 * @param array $products What each plugin passed to plugpress_insight().
+	 * @param array $plugins What each plugin passed to plugpress_insight().
 	 */
-	public static function start( array $products ) {
-		foreach ( $products as $product ) {
-			if ( empty( $product['file'] ) || empty( $product['slug'] ) ) {
+	public static function start( array $plugins ) {
+		foreach ( $plugins as $plugin ) {
+			if ( empty( $plugin['file'] ) ) {
 				continue;
 			}
-			$product += array(
-				'name'    => $product['slug'],
+			$basename = plugin_basename( $plugin['file'] );
+			$plugin  += array(
+				'slug' => false === strpos( $basename, '/' ) ? basename( $basename, '.php' ) : dirname( $basename ),
+			);
+			$plugin  += array(
+				'product' => $plugin['slug'],
+				'name'    => $plugin['slug'],
 				'version' => '0',
 				'page'    => '',
-				'news'    => 'plugpress',
 				'color'   => '',
 				'slot'    => '',
 			);
+			$plugin  += array( 'brand' => $plugin['name'] );
 
-			$product['basename']                = plugin_basename( $product['file'] );
-			self::$products[ $product['slug'] ] = $product;
+			$plugin['basename']                = $basename;
+			self::$products[ $plugin['slug'] ] = $plugin;
 		}
 
 		$on = ! ( defined( 'PLUGPRESS_INSIGHT' ) && false === PLUGPRESS_INSIGHT );
 		if ( ! self::$products || ! apply_filters( 'plugpress_insight_enabled', $on ) ) {
 			return;
+		}
+
+		// A copy of the site (staging, a clone, a move) starts over: a new id,
+		// and every question asked again.
+		$state = self::state();
+		if ( $state['home'] && self::home() !== $state['home'] ) {
+			delete_option( self::OPTION );
+			delete_option( self::SITE_ID );
+			wp_clear_scheduled_hook( self::CRON );
 		}
 
 		add_action( self::CRON, array( __CLASS__, 'weekly' ) );
@@ -67,74 +81,103 @@ class PlugPress_Insight {
 	}
 
 	/**
-	 * The owner's answer: when (0 = not yet), whether site info is shared,
-	 * and a hash of the last weekly send.
+	 * The owner's answers: site info shared (null until asked, once per site),
+	 * the brands whose card was answered, a hash of the last weekly send, and
+	 * the address all of it belongs to.
 	 *
-	 * @return array{answered:int,usage:bool,hash:string}
+	 * @return array{usage:bool|null,asked:array,hash:string,home:string}
 	 */
 	public static function state() {
-		return wp_parse_args(
+		$state          = wp_parse_args(
 			(array) get_option( self::OPTION, array() ),
 			array(
-				'answered' => 0,
-				'usage'    => false,
-				'hash'     => '',
+				'usage' => null,
+				'asked' => array(),
+				'hash'  => '',
+				'home'  => '',
 			)
 		);
+		$state['asked'] = (array) $state['asked'];
+		return $state;
 	}
 
 	/**
 	 * Keep the weekly update scheduled while site info is shared.
 	 */
 	public static function schedule() {
-		if ( self::state()['usage'] && ! wp_next_scheduled( self::CRON ) ) {
+		if ( true === self::state()['usage'] && ! wp_next_scheduled( self::CRON ) ) {
 			wp_schedule_event( time() + DAY_IN_SECONDS, 'weekly', self::CRON );
 		}
 	}
 
 	/**
-	 * The news card, once per site, on a registered plugin's page (the Plugins
-	 * screen for a plugin with no page). With a slot, the script moves it into
-	 * that element of the plugin's own page.
+	 * The card, once per brand, on a registered plugin's page (the Plugins
+	 * screen for a plugin with no page). It asks for site info until that has
+	 * an answer, then only for the brand's news. With a slot, the script moves
+	 * it into that element of the plugin's own page.
 	 */
 	public static function bar() {
-		$product = self::product_on_screen();
-		if ( ! $product || self::state()['answered'] || ! current_user_can( 'manage_options' ) ) {
+		$plugin = self::product_on_screen();
+		$state  = self::state();
+		if ( ! $plugin || isset( $state['asked'][ $plugin['product'] ] ) || ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
-		$color = sanitize_hex_color( $product['color'] );
+		$ask   = null === $state['usage'];
+		$brand = $plugin['brand'];
+		$email = wp_get_current_user()->user_email;
+		$color = sanitize_hex_color( $plugin['color'] );
 		?>
-		<div class="notice <?php echo $product['slot'] ? 'inline ' : ''; ?>plugpress-insight-bar" data-slug="<?php echo esc_attr( $product['slug'] ); ?>"
-			<?php if ( $product['slot'] ) : ?>
-				data-slot="<?php echo esc_attr( $product['slot'] ); ?>"
+		<div class="notice <?php echo $plugin['slot'] ? 'inline ' : ''; ?>plugpress-insight-bar<?php echo $ask ? '' : ' is-news'; ?>" data-product="<?php echo esc_attr( $plugin['product'] ); ?>"
+			<?php if ( $plugin['slot'] ) : ?>
+				data-slot="<?php echo esc_attr( $plugin['slot'] ); ?>"
 			<?php endif; ?>
-			data-done="<?php esc_attr_e( 'You are in', 'saddle' ); ?>"
-			data-thanks="<?php esc_attr_e( 'Check your inbox to confirm your email.', 'saddle' ); ?>"
-			data-shared="<?php esc_attr_e( 'Thanks for helping us test.', 'saddle' ); ?>"
+			data-done="<?php echo esc_attr( $ask ? __( 'Thanks for helping', 'saddle' ) : __( 'You are in', 'saddle' ) ); ?>"
+			data-confirm="<?php esc_attr_e( 'Check your inbox to confirm your email.', 'saddle' ); ?>"
+			data-stop="<?php esc_attr_e( 'Stop any time under the plugin on the Plugins screen.', 'saddle' ); ?>"
 			style="<?php echo esc_attr( $color ? '--plugpress-insight-accent:' . $color : '' ); ?>">
-			<div class="plugpress-insight-bar__main">
-				<span class="plugpress-insight-bar__icon" aria-hidden="true">
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.5 7.5 8.5 6 8.5-6"/></svg>
-				</span>
-				<p class="plugpress-insight-bar__text">
-					<strong><?php /* translators: %s: plugin name. */ echo esc_html( sprintf( __( 'News from %s', 'saddle' ), $product['name'] ) ); ?></strong>
-					<span><?php esc_html_e( 'Features, tips and fixes, now and then.', 'saddle' ); ?></span>
-				</p>
-				<form>
-					<input type="email" name="email" value="<?php echo esc_attr( wp_get_current_user()->user_email ); ?>" aria-label="<?php esc_attr_e( 'Email', 'saddle' ); ?>">
-					<button type="submit"><?php esc_html_e( 'Subscribe', 'saddle' ); ?></button>
-				</form>
-				<button type="button" class="plugpress-insight-bar__close" aria-label="<?php esc_attr_e( 'No thanks', 'saddle' ); ?>">
-					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
-				</button>
-			</div>
-			<div class="plugpress-insight-bar__more">
-				<label><input type="checkbox" name="usage" checked> <?php esc_html_e( 'Also share basic site info to help us test', 'saddle' ); ?></label>
-				<details>
-					<summary><?php esc_html_e( 'What is shared', 'saddle' ); ?></summary>
-					<p><?php esc_html_e( 'Your site address and title, WordPress and PHP versions, language, timezone, theme, and plugins with their versions, once a week while the box is ticked. Your email goes only to our newsletter, which asks you to confirm it.', 'saddle' ); ?></p>
-				</details>
-			</div>
+			<form>
+				<div class="plugpress-insight-bar__main">
+					<span class="plugpress-insight-bar__icon" aria-hidden="true">
+						<?php if ( $ask ) : ?>
+							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20v-7M12 20V5M19 20v-10"/></svg>
+						<?php else : ?>
+							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.5 7.5 8.5 6 8.5-6"/></svg>
+						<?php endif; ?>
+					</span>
+					<div class="plugpress-insight-bar__text">
+						<?php if ( $ask ) : ?>
+							<strong><?php /* translators: %s: brand name, such as Saddle. */ echo esc_html( sprintf( __( 'Help make %s better', 'saddle' ), $brand ) ); ?></strong>
+							<span>
+								<?php esc_html_e( 'Share basic site info with PlugPress once a week. No posts, no visitor data.', 'saddle' ); ?>
+								<button type="button" class="plugpress-insight-bar__what" aria-expanded="false"><?php esc_html_e( 'What is shared', 'saddle' ); ?></button>
+							</span>
+							<span class="plugpress-insight-bar__list" hidden><?php esc_html_e( 'Your site address and title, WordPress and PHP versions, language, timezone, theme, and plugins with their versions. Sent again only when something changed.', 'saddle' ); ?></span>
+						<?php else : ?>
+							<strong><?php /* translators: %s: brand name, such as Saddle. */ echo esc_html( sprintf( __( '%s news', 'saddle' ), $brand ) ); ?></strong>
+							<span><?php esc_html_e( 'Features, tips and fixes, now and then.', 'saddle' ); ?></span>
+						<?php endif; ?>
+					</div>
+					<?php if ( $ask ) : ?>
+						<button type="button" class="plugpress-insight-bar__skip"><?php esc_html_e( 'No thanks', 'saddle' ); ?></button>
+						<button type="submit"><?php esc_html_e( 'Allow', 'saddle' ); ?></button>
+					<?php else : ?>
+						<input type="email" name="email" value="<?php echo esc_attr( $email ); ?>" aria-label="<?php esc_attr_e( 'Email', 'saddle' ); ?>">
+						<button type="submit"><?php esc_html_e( 'Subscribe', 'saddle' ); ?></button>
+						<button type="button" class="plugpress-insight-bar__skip plugpress-insight-bar__close" aria-label="<?php esc_attr_e( 'No thanks', 'saddle' ); ?>">
+							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+						</button>
+					<?php endif; ?>
+				</div>
+				<?php if ( $ask ) : ?>
+					<div class="plugpress-insight-bar__more">
+						<label>
+							<input type="checkbox" name="news">
+							<?php /* translators: %s: brand name, such as Saddle. */ echo esc_html( sprintf( __( 'Also email me %s news at', 'saddle' ), $brand ) ); ?>
+						</label>
+						<input type="email" name="email" value="<?php echo esc_attr( $email ); ?>" aria-label="<?php esc_attr_e( 'Email', 'saddle' ); ?>">
+					</div>
+				<?php endif; ?>
+			</form>
 		</div>
 		<?php
 	}
@@ -188,7 +231,7 @@ class PlugPress_Insight {
 	}
 
 	/**
-	 * The script and styles, where the bar or the dialog can show.
+	 * The script and styles, where the card or the dialog can show.
 	 */
 	public static function assets() {
 		$screen  = get_current_screen();
@@ -204,8 +247,8 @@ class PlugPress_Insight {
 
 		// Plugin file => slug and name, for the Deactivate links.
 		$deactivate = array();
-		foreach ( $plugins ? self::$products : array() as $product ) {
-			$deactivate[ $product['basename'] ] = array( $product['slug'], $product['name'] );
+		foreach ( $plugins ? self::$products : array() as $plugin ) {
+			$deactivate[ $plugin['basename'] ] = array( $plugin['slug'], $plugin['name'] );
 		}
 		$config = array(
 			'ajax'    => admin_url( 'admin-ajax.php' ),
@@ -223,30 +266,31 @@ class PlugPress_Insight {
 	 * @return array
 	 */
 	public static function row_meta( $meta, $basename ) {
-		if ( in_array( $basename, wp_list_pluck( self::$products, 'basename' ), true ) && self::state()['usage'] && current_user_can( 'manage_options' ) ) {
+		if ( in_array( $basename, wp_list_pluck( self::$products, 'basename' ), true ) && true === self::state()['usage'] && current_user_can( 'manage_options' ) ) {
 			$meta[] = '<a href="#" data-plugpress-insight-off="' . esc_attr__( 'Sharing stopped', 'saddle' ) . '">' . esc_html__( 'Stop sharing site info', 'saddle' ) . '</a>';
 		}
 		return $meta;
 	}
 
 	/**
-	 * Every click from the script: allow, skip, off and deactivate.
+	 * Every click from the script: allow, subscribe, skip, off and deactivate.
 	 */
 	public static function ajax() {
 		check_ajax_referer( 'plugpress_insight' );
 		// phpcs:disable WordPress.Security.NonceVerification.Missing -- checked above.
 		$do      = isset( $_POST['do'] ) ? sanitize_key( $_POST['do'] ) : '';
 		$slug    = isset( $_POST['slug'] ) ? sanitize_key( $_POST['slug'] ) : '';
+		$brand   = isset( $_POST['product'] ) ? sanitize_key( $_POST['product'] ) : '';
 		$email   = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '';
 		$reason  = isset( $_POST['reason'] ) ? sanitize_key( $_POST['reason'] ) : '';
 		$comment = isset( $_POST['comment'] ) ? sanitize_textarea_field( wp_unslash( $_POST['comment'] ) ) : '';
-		$usage   = isset( $_POST['usage'] ) && '1' === $_POST['usage'];
 		// phpcs:enable
-		$product = isset( self::$products[ $slug ] ) ? self::$products[ $slug ] : null;
 		$reasons = array( 'short_time', 'broke_something', 'hard_to_set_up', 'not_what_i_needed', 'found_another', 'temporary', 'other' );
+		$email   = is_email( $email ) ? $email : '';
 
 		if ( 'deactivate' === $do ) {
-			if ( ! $product || ! in_array( $reason, $reasons, true ) || ! current_user_can( 'activate_plugins' ) ) {
+			$plugin = isset( self::$products[ $slug ] ) ? self::$products[ $slug ] : null;
+			if ( ! $plugin || ! in_array( $reason, $reasons, true ) || ! current_user_can( 'activate_plugins' ) ) {
 				wp_send_json_error( null, 400 );
 			}
 			self::send(
@@ -254,12 +298,15 @@ class PlugPress_Insight {
 				array(
 					'site'    => self::site( false ),
 					'product' => array(
-						'slug'    => $product['slug'],
-						'version' => $product['version'],
+						'slug'    => $plugin['product'],
+						'version' => $plugin['version'],
+						'plugin'  => $plugin['slug'],
+						// Another plugin of the brand stays on.
+						'active'  => count( wp_list_filter( self::$products, array( 'product' => $plugin['product'] ) ) ) > 1,
 					),
 					'reason'  => $reason,
 					'comment' => mb_substr( $comment, 0, 500 ),
-					'email'   => is_email( $email ) ? $email : '',
+					'email'   => $email,
 				)
 			);
 			wp_send_json_success();
@@ -268,32 +315,39 @@ class PlugPress_Insight {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_send_json_error( null, 403 );
 		}
-		if ( 'allow' === $do ) {
-			$news = $product && is_email( $email ) ? array(
-				'list'  => $product['news'],
-				'email' => $email,
-			) : null;
-			if ( $usage ) {
-				self::send( 'optin', array_filter( self::body() + array( 'news' => $news ) ) );
-			} elseif ( $news ) {
-				self::send( 'news', $news );
-			}
-			self::save( $usage );
-			self::schedule();
-		} elseif ( 'skip' === $do ) {
-			self::save( false );
-		} elseif ( 'off' === $do ) {
-			if ( self::state()['usage'] ) {
+		if ( 'off' === $do ) {
+			if ( true === self::state()['usage'] ) {
 				self::send(
 					'optout',
 					array(
 						'site'     => array( 'id' => self::site_id() ),
-						'products' => array_keys( self::$products ),
+						'products' => array_keys( self::brands() ),
 					)
 				);
 			}
-			self::save( false );
+			self::remember( array( 'usage' => false ) );
 			wp_clear_scheduled_hook( self::CRON );
+			wp_send_json_success();
+		}
+
+		if ( ! isset( self::brands()[ $brand ] ) ) {
+			wp_send_json_error( null, 400 );
+		}
+		$news   = array(
+			'product' => $brand,
+			'email'   => $email,
+		);
+		$answer = array( 'asked' => array( $brand => time() ) + self::state()['asked'] );
+		if ( 'allow' === $do ) {
+			self::send( 'optin', self::body() + ( $email ? array( 'news' => $news ) : array() ) );
+			self::remember( $answer + array( 'usage' => true ) );
+			self::schedule();
+		} elseif ( 'subscribe' === $do && $email ) {
+			self::send( 'news', $news );
+			self::remember( $answer );
+		} elseif ( 'skip' === $do ) {
+			// No thanks to site info holds for every brand; to news, for this one.
+			self::remember( $answer + ( null === self::state()['usage'] ? array( 'usage' => false ) : array() ) );
 		}
 		wp_send_json_success();
 	}
@@ -303,28 +357,28 @@ class PlugPress_Insight {
 	 */
 	public static function weekly() {
 		$state = self::state();
-		if ( ! $state['usage'] ) {
+		if ( true !== $state['usage'] ) {
 			wp_clear_scheduled_hook( self::CRON );
 			return;
 		}
 		$body = self::body();
 		$hash = md5( (string) wp_json_encode( $body ) );
 		if ( $hash !== $state['hash'] && self::send( 'update', $body ) ) {
-			self::save( true, $hash );
+			self::remember( array( 'hash' => $hash ) );
 		}
 	}
 
 	/**
-	 * The opt-in and weekly body: the site and every registered plugin.
+	 * The opt-in and weekly body: the site, and each brand once.
 	 *
 	 * @return array
 	 */
 	private static function body() {
 		$products = array();
-		foreach ( self::$products as $product ) {
+		foreach ( self::brands() as $brand => $version ) {
 			$products[] = array(
-				'slug'    => $product['slug'],
-				'version' => $product['version'],
+				'slug'    => $brand,
+				'version' => $version,
 				'active'  => true,
 			);
 		}
@@ -332,6 +386,22 @@ class PlugPress_Insight {
 			'site'     => self::site( true ),
 			'products' => $products,
 		);
+	}
+
+	/**
+	 * Each brand on the site with its version: the version of its plugin of
+	 * the same slug (Saddle's for saddle), else of its first plugin.
+	 *
+	 * @return array Brand => version.
+	 */
+	private static function brands() {
+		$brands = array();
+		foreach ( self::$products as $plugin ) {
+			if ( ! isset( $brands[ $plugin['product'] ] ) || $plugin['slug'] === $plugin['product'] ) {
+				$brands[ $plugin['product'] ] = $plugin['version'];
+			}
+		}
+		return $brands;
 	}
 
 	/**
@@ -390,36 +460,38 @@ class PlugPress_Insight {
 	}
 
 	/**
-	 * The registered plugin whose bar belongs on this screen, or null.
+	 * The site's address as stored, without the scheme or www. The stored
+	 * option, not home_url(), which language plugins change per request.
+	 *
+	 * @return string
+	 */
+	private static function home() {
+		return strtolower( untrailingslashit( (string) preg_replace( '#^https?://(www\.)?#i', '', (string) get_option( 'home' ) ) ) );
+	}
+
+	/**
+	 * The registered plugin whose card belongs on this screen, or null.
 	 *
 	 * @return array|null
 	 */
 	private static function product_on_screen() {
 		$screen = get_current_screen();
 		$page   = isset( $_GET['page'] ) ? sanitize_key( $_GET['page'] ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- which page, not an action.
-		foreach ( self::$products as $product ) {
-			if ( $product['page'] ? $page === $product['page'] : ( $screen && 'plugins' === $screen->id ) ) {
-				return $product;
+		foreach ( self::$products as $plugin ) {
+			if ( $plugin['page'] ? $page === $plugin['page'] : ( $screen && 'plugins' === $screen->id ) ) {
+				return $plugin;
 			}
 		}
 		return null;
 	}
 
 	/**
-	 * Store the answer.
+	 * Store answers over the ones already given, with the site's address.
 	 *
-	 * @param bool   $usage Whether site info is shared.
-	 * @param string $hash  The last weekly send's hash.
+	 * @param array $changes Any of usage, asked and hash.
 	 */
-	private static function save( $usage, $hash = '' ) {
-		update_option(
-			self::OPTION,
-			array(
-				'answered' => time(),
-				'usage'    => (bool) $usage,
-				'hash'     => $hash,
-			)
-		);
+	private static function remember( array $changes ) {
+		update_option( self::OPTION, array_merge( self::state(), $changes, array( 'home' => self::home() ) ) );
 	}
 
 	/**

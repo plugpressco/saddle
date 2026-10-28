@@ -626,18 +626,18 @@ register_deactivation_hook( __FILE__, array( 'Saddle', 'deactivate' ) );
 
 Saddle::init();
 
-// PlugPress Insight: the news bar on Overview and quick feedback on
-// Deactivate. Nothing leaves the site until the owner clicks Subscribe or
-// Send and deactivate.
+// PlugPress Insight: the card on Overview (site info, Saddle news) and quick
+// feedback on Deactivate. Nothing leaves the site until the owner clicks
+// Allow, Subscribe or Send and deactivate.
 require_once SADDLE_DIR . 'includes/insight/insight.php';
 plugpress_insight(
 	array(
 		'file'    => __FILE__,
-		'slug'    => 'saddle',
+		'product' => 'saddle',
+		'brand'   => 'Saddle',
 		'name'    => 'Saddle',
 		'version' => SADDLE_VERSION,
 		'page'    => 'saddle',
-		'news'    => 'saddle',
 		'color'   => '#d000c4',
 		// Overview's and the add-ons' first card; not on the welcome.
 		'slot'    => '.saddle-app .pp-content:has(> .saddle-tabpane)',

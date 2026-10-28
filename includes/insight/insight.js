@@ -17,7 +17,8 @@
 		return fetch( config.ajax, { method: 'POST', credentials: 'same-origin', body } );
 	}
 
-	// The news card: Subscribe sends what it says, the × sends nothing.
+	// The card: Allow shares site info (and the email, if its box is ticked),
+	// Subscribe sends the email, No thanks and the × send nothing.
 	const bar = document.querySelector( '.plugpress-insight-bar' );
 	if ( bar && bar.dataset.slot ) {
 		// Into the plugin's own page once it draws the slot; hidden until then,
@@ -38,32 +39,52 @@
 	if ( bar ) {
 		const form = bar.querySelector( 'form' );
 		const email = form.elements.email;
-		const usage = bar.querySelector( '[name="usage"]' );
-		const send = form.querySelector( 'button' );
+		const news = form.elements.news; // Only on the site-info card.
+		const send = form.querySelector( '[type="submit"]' );
+		const product = bar.dataset.product;
+		const wanted = () => ! news || news.checked;
 		const ready = () => {
-			send.disabled = ! email.checkValidity() || ( ! email.value && ! usage.checked );
+			send.disabled = wanted() && ! ( email.value && email.checkValidity() );
 		};
 		const fade = ( wait ) => {
 			setTimeout( () => bar.classList.add( 'is-gone' ), wait );
 			setTimeout( () => bar.remove(), wait + 400 );
 		};
-		email.addEventListener( 'input', ready );
-		usage.addEventListener( 'change', ready );
+		email.addEventListener( 'input', () => {
+			if ( news ) {
+				news.checked = !! email.value;
+			}
+			ready();
+		} );
+		if ( news ) {
+			news.addEventListener( 'change', ready );
+		}
 		ready();
+
+		const what = bar.querySelector( '.plugpress-insight-bar__what' );
+		if ( what ) {
+			what.addEventListener( 'click', () => {
+				const list = bar.querySelector( '.plugpress-insight-bar__list' );
+				list.hidden = ! list.hidden;
+				what.setAttribute( 'aria-expanded', String( ! list.hidden ) );
+			} );
+		}
 
 		form.addEventListener( 'submit', ( event ) => {
 			event.preventDefault();
 			send.disabled = true;
-			post( { do: 'allow', slug: bar.dataset.slug, email: email.value, usage: usage.checked ? '1' : '0' } ).finally( () => {
+			const address = wanted() ? email.value : '';
+			post( { do: news ? 'allow' : 'subscribe', product, email: address } ).finally( () => {
 				const text = bar.querySelector( '.plugpress-insight-bar__text' );
+				text.replaceChildren( document.createElement( 'strong' ), document.createElement( 'span' ) );
 				text.children[ 0 ].textContent = bar.dataset.done;
-				text.children[ 1 ].textContent = email.value ? bar.dataset.thanks : bar.dataset.shared;
+				text.children[ 1 ].textContent = address ? bar.dataset.confirm : bar.dataset.stop;
 				bar.classList.add( 'is-done' );
 				fade( 5000 );
 			} );
 		} );
-		bar.querySelector( '.plugpress-insight-bar__close' ).addEventListener( 'click', () => {
-			post( { do: 'skip' } );
+		bar.querySelector( '.plugpress-insight-bar__skip' ).addEventListener( 'click', () => {
+			post( { do: 'skip', product } );
 			fade( 0 );
 		} );
 	}
