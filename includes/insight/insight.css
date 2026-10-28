@@ -1,0 +1,438 @@
+/*
+ * PlugPress Insight: the card and quick feedback. The accent is the
+ * plugin's color when it passes one, else the admin color scheme's.
+ */
+
+/* The card. */
+
+.plugpress-insight-bar {
+	--plugpress-insight-ink: var(--plugpress-insight-accent, var(--wp-admin-theme-color, #2271b1));
+	margin: 16px 0 !important;
+	padding: 0 !important;
+	border: 1px solid #dcdcde !important;
+	border-radius: 8px;
+	background: #fff !important;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+	color: #1d2327;
+	font-size: 13px;
+	line-height: 20px;
+	transition: opacity 0.3s;
+}
+
+/* Waiting for its place in the plugin's own page. */
+.plugpress-insight-bar[data-slot]:not(.is-placed) {
+	display: none;
+}
+
+/* In the plugin's own page: the first card of its content. The slot spaces
+   its children, as Saddle's content grid does. */
+.plugpress-insight-bar.is-placed {
+	margin: 0 !important;
+}
+
+/* Left outside a .wrap, keep wp-admin's gutter. */
+#wpbody-content > .plugpress-insight-bar {
+	margin: 16px 20px !important;
+}
+
+.plugpress-insight-bar.is-gone {
+	opacity: 0;
+}
+
+.plugpress-insight-bar form {
+	margin: 0;
+}
+
+.plugpress-insight-bar__main {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	padding: 12px 16px;
+}
+
+.plugpress-insight-bar__icon {
+	display: flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	border-radius: 8px;
+	background: color-mix(in srgb, var(--plugpress-insight-ink) 9%, #fff);
+	color: var(--plugpress-insight-ink);
+}
+
+.plugpress-insight-bar__text {
+	display: flex;
+	flex: 1 1 0;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.plugpress-insight-bar__text strong {
+	font-weight: 600;
+}
+
+.plugpress-insight-bar__text span {
+	color: #646970;
+}
+
+/* What is shared, one line each, like a permissions list. */
+.plugpress-insight-bar__list:not([hidden]) {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	max-width: 640px;
+	margin-top: 6px;
+	font-size: 12px;
+	line-height: 18px;
+}
+
+.plugpress-insight-bar__list b {
+	display: inline-block;
+	min-width: 84px;
+	color: #1d2327;
+	font-weight: 600;
+}
+
+/* "What is shared": a link inside the line. */
+.plugpress-insight-bar__what {
+	margin: 0 0 0 4px;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: inherit;
+	font: inherit;
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	cursor: pointer;
+}
+
+.plugpress-insight-bar__what:hover {
+	color: #1d2327;
+}
+
+.plugpress-insight-bar input[type="email"] {
+	width: 240px;
+	height: 32px;
+	min-height: 32px;
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0 10px;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	background: #fff;
+	box-shadow: none;
+	color: #1d2327;
+	font-size: 13px;
+	line-height: 30px;
+}
+
+.plugpress-insight-bar input[type="email"]:focus {
+	border-color: var(--plugpress-insight-ink);
+	box-shadow: 0 0 0 1px var(--plugpress-insight-ink);
+	outline: none;
+}
+
+.plugpress-insight-bar button[type="submit"],
+.plugpress-insight-bar button.plugpress-insight-bar__skip {
+	flex: none;
+	height: 32px;
+	padding: 0 14px;
+	border: 1px solid var(--plugpress-insight-ink);
+	border-radius: 4px;
+	background: var(--plugpress-insight-ink);
+	color: #fff;
+	font-size: 13px;
+	font-weight: 500;
+	line-height: 30px;
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+.plugpress-insight-bar button[type="submit"]:hover {
+	background: color-mix(in srgb, var(--plugpress-insight-ink) 88%, #000);
+}
+
+.plugpress-insight-bar button[type="submit"]:disabled {
+	opacity: 0.5;
+	cursor: default;
+}
+
+/* No thanks: the quiet button beside Allow. */
+.plugpress-insight-bar button.plugpress-insight-bar__skip {
+	border-color: #dcdcde;
+	background: #fff;
+	color: #1d2327;
+}
+
+.plugpress-insight-bar button.plugpress-insight-bar__skip:hover {
+	background: #f6f7f7;
+}
+
+/* The news card's ×. */
+.plugpress-insight-bar button.plugpress-insight-bar__close {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	margin-right: -6px;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: #8c8f94;
+}
+
+.plugpress-insight-bar button.plugpress-insight-bar__close:hover {
+	background: #f0f0f1;
+	color: #1d2327;
+}
+
+.plugpress-insight-bar button:focus-visible,
+.plugpress-insight-bar__more input:focus-visible {
+	outline: 2px solid var(--plugpress-insight-ink);
+	outline-offset: 2px;
+}
+
+.plugpress-insight-bar.is-done button,
+.plugpress-insight-bar.is-done input,
+.plugpress-insight-bar.is-done .plugpress-insight-bar__more {
+	display: none;
+}
+
+/* The news box: a quiet line under the main row, lined up with its text. */
+.plugpress-insight-bar__more {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: center;
+	padding: 8px 16px 9px 64px;
+	border-top: 1px solid #f0f0f1;
+	color: #646970;
+	font-size: 12px;
+	line-height: 16px;
+}
+
+.plugpress-insight-bar__more label {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	cursor: pointer;
+}
+
+.plugpress-insight-bar__more input[type="email"] {
+	width: 220px;
+	height: 26px;
+	min-height: 26px;
+	padding: 0 8px;
+	font-size: 12px;
+	line-height: 24px;
+}
+
+/* A checkbox in the accent, not wp-admin's. */
+.plugpress-insight-bar__more input[type="checkbox"] {
+	display: inline-grid;
+	place-content: center;
+	width: 14px;
+	min-width: 14px;
+	height: 14px;
+	margin: 0;
+	padding: 0;
+	border: 1px solid #8c8f94;
+	border-radius: 3px;
+	background: #fff;
+	box-shadow: none;
+	appearance: none;
+	cursor: pointer;
+}
+
+.plugpress-insight-bar__more input[type="checkbox"]:checked {
+	border-color: var(--plugpress-insight-ink);
+	background: var(--plugpress-insight-ink);
+}
+
+.plugpress-insight-bar__more input[type="checkbox"]::before,
+.plugpress-insight-bar__more input[type="checkbox"]:checked::before {
+	content: "";
+	float: none;
+	width: 7px;
+	height: 4px;
+	margin: -2px 0 0;
+	border: solid #fff;
+	border-width: 0 0 2px 2px;
+	opacity: 0;
+	transform: rotate(-45deg);
+}
+
+.plugpress-insight-bar__more input[type="checkbox"]:checked::before {
+	opacity: 1;
+}
+
+@media (max-width: 782px) {
+	.plugpress-insight-bar__main {
+		flex-wrap: wrap;
+	}
+
+	.plugpress-insight-bar__text {
+		flex-basis: calc(100% - 48px);
+	}
+
+	.plugpress-insight-bar.is-news input[type="email"] {
+		flex: 1;
+		width: auto;
+		min-width: 0;
+	}
+
+	.plugpress-insight-bar__more {
+		padding-left: 16px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.plugpress-insight-bar {
+		transition: none;
+	}
+}
+
+/* Quick feedback. */
+
+.plugpress-insight-dialog {
+	width: min(440px, calc(100vw - 32px));
+	padding: 0;
+	border: 0;
+	border-radius: 12px;
+	box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.35);
+	color: #1d2327;
+}
+
+.plugpress-insight-dialog::backdrop {
+	background: rgba(29, 35, 39, 0.45);
+}
+
+.plugpress-insight-dialog form {
+	position: relative;
+	margin: 0;
+	padding: 18px 20px 14px;
+}
+
+.plugpress-insight-dialog__eyebrow {
+	margin: 0 0 2px;
+	color: #646970;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 14px;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+.plugpress-insight-dialog h2 {
+	margin: 0 32px 10px 0;
+	font-size: 16px;
+	line-height: 22px;
+}
+
+.plugpress-insight-dialog__reasons {
+	display: flex;
+	flex-direction: column;
+	margin: 0 -8px;
+}
+
+.plugpress-insight-dialog__reasons label {
+	display: flex;
+	gap: 10px;
+	align-items: center;
+	min-height: 30px;
+	padding: 0 8px;
+	border-radius: 6px;
+	font-size: 13px;
+	cursor: pointer;
+}
+
+.plugpress-insight-dialog__reasons label:hover {
+	background: #f6f7f7;
+}
+
+.plugpress-insight-dialog__reasons label:has(:checked) {
+	font-weight: 600;
+}
+
+.plugpress-insight-dialog__reasons label input {
+	margin: 0;
+}
+
+/* The picked reason's own question. */
+.plugpress-insight-dialog__reasons [data-for] {
+	width: calc(100% - 42px);
+	height: 32px;
+	box-sizing: border-box;
+	margin: 2px 8px 6px 34px;
+	padding: 0 10px;
+	border: 1px solid #c3c4c7;
+	border-radius: 6px;
+	font-size: 13px;
+}
+
+.plugpress-insight-dialog__reply {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	margin-top: 8px;
+	color: #3c434a;
+	font-size: 12px;
+}
+
+.plugpress-insight-dialog__reply input {
+	margin: 0;
+}
+
+.plugpress-insight-dialog__foot {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 14px;
+	padding-top: 12px;
+	border-top: 1px solid #f0f0f1;
+}
+
+.plugpress-insight-dialog__skip {
+	padding: 0;
+	border: 0;
+	background: none;
+	color: #646970;
+	font-size: 13px;
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	cursor: pointer;
+}
+
+.plugpress-insight-dialog__skip:hover {
+	color: #1d2327;
+}
+
+.plugpress-insight-dialog__note {
+	margin: 8px 0 0;
+	color: #8c8f94;
+	font-size: 11px;
+	line-height: 14px;
+}
+
+.plugpress-insight-dialog__close {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	border: 0;
+	border-radius: 16px;
+	background: none;
+	color: #8c8f94;
+	font-size: 20px;
+	line-height: 32px;
+	cursor: pointer;
+}
+
+.plugpress-insight-dialog__close:hover {
+	background: #f0f0f1;
+	color: #1d2327;
+}

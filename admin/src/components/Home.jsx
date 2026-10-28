@@ -29,7 +29,6 @@ import { APPS } from '../connect-apps';
 import { parseModules } from '../onboarding-logic';
 import { findArea, withArg } from '../routes';
 import AnalyticsTile from './AnalyticsTile';
-import InsightCard from './InsightCard';
 import NeedsYourOk from './NeedsYourOk';
 import { ROLES } from './ConnectedClients';
 import {
@@ -304,10 +303,6 @@ export default function Home( { clients, onNavigate, onConnect, homeUrl } ) {
 	// tile stays after the add, to say it is on.
 	const [ offerAnalytics ] = useState( () => analyticsOffer().canAdd );
 
-	// The opt-in card's "Change it later" goes to Settings.
-	const toUsageData = () =>
-		onNavigate( { area: 'settings', tab: 'general' } );
-
 	const known = Array.isArray( connections );
 	const apps =
 		false === connections
@@ -412,7 +407,6 @@ export default function Home( { clients, onNavigate, onConnect, homeUrl } ) {
 						{ __( 'Connect an app', 'saddle' ) }
 					</Button>
 				</div>
-				<InsightCard onSettings={ toUsageData } />
 			</div>
 		);
 	}
@@ -661,9 +655,6 @@ export default function Home( { clients, onNavigate, onConnect, homeUrl } ) {
 					</ul>
 				</section>
 			) }
-
-			{ /* Usage data and Saddle news, once per site (Saddle_Insight). */ }
-			<InsightCard onSettings={ toUsageData } />
 		</div>
 	);
 }

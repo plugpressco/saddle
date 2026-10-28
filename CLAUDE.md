@@ -90,31 +90,38 @@ and finding each fails at least one. Check every change against all three.
    said of a Cloud-connected site; marketing keeps the two apart.
 
    *Insight, decided by Fahim 2026-10-26 ("take what ever best decission is ..
-   go ahead"): opt-in usage data, Saddle news and deactivation feedback, like
-   Freemius collects.* Free sends to PlugPress's `insight.plugpress.io` (a
-   Worker, `plugpressco/plugpress-insight`) only after one of three clicks,
-   and nothing else ever does:
+   go ahead"); since 2026-10-28 through the PlugPress Insight SDK
+   (`includes/insight/`, a copy of `sdk/` in `plugpressco/plugpress-insight`;
+   Fahim: "make simple tiny sdk", "one for all").* Free sends to PlugPress's
+   `insight.plugpress.io` only after one of these clicks, and nothing else
+   ever does:
 
-   - **Allow and continue** on Overview's card (or Usage data on in Settings):
-     the WordPress and PHP versions, language, timezone, the family plugins
-     and a random site id; the address and title, and the plugins and theme,
-     unless their parts are unticked; the admin's name and email only if that
-     part (off by default) is ticked. Then a weekly update while it stays on,
-     only when something changed. Off sends one opt-out that clears what
-     identifies the site.
-   - **Subscribe** to Saddle news (on the card or in Settings): the typed
-     address, passed to Mailpuff's double opt-in form on plugpress.io.
-   - **Send and deactivate** in the Plugins screen's dialog: the reason, the
-     comment, a reply email if typed, the plugin's version, and WordPress,
-     PHP and the language. Never the address.
+   - **Allow** on the card (Overview and the Plugins screen, once per site):
+     the name and email of the admin who clicked it (for support), the
+     address and title,
+     WordPress and PHP versions, language, timezone, theme, plugins and a
+     random site id, then a weekly update while it stays on, only when
+     something changed. All Saddle plugins report as one brand, `saddle`.
+   - **Also email me Saddle news** ticked on that card, or **Subscribe** on
+     the news card (shown once site info has an answer): the address typed,
+     passed to Mailpuff on plugpress.io with the Saddle news tag; Mailpuff
+     asks the person to confirm. Insight keeps no address.
+   - **Send and deactivate** in the Plugins screen's quick feedback: the
+     reason, the answer to its question, the admin's email only if "Reply to
+     me" is ticked, the version, and WordPress, PHP and the language. Never
+     the address.
+   - **Stop sharing site info** under Saddle on the Plugins screen: one
+     opt-out that clears what identifies the site.
 
-   Skip, "No thanks" and "Skip and deactivate" send nothing. The card is never
-   pre-answered, its two buttons are equal, and no agent tool reads or
-   changes the answer (`saddle_insight` and `plugpress_insight_site_id` are
-   protected options). `define( 'PLUGPRESS_INSIGHT', false );` or the
-   `saddle_insight_enabled` filter turns all of it off. Saddle speaks for the
-   whole family (`Saddle_Insight_Payload::FAMILY`), so the add-ons carry no
-   code. The public line becomes "Nothing leaves your site unless you opt in."
+   No thanks, the × and "Skip and deactivate" send nothing. A copy of the
+   site at another address gets a new id and is asked again. No agent tool reads or
+   changes the answer (`plugpress_insight` and `plugpress_insight_site_id`
+   are protected options; both are shared by every PlugPress plugin, so
+   uninstall leaves them). `define( 'PLUGPRESS_INSIGHT', false );` or the
+   `plugpress_insight_enabled` filter turns all of it off. Update the SDK by
+   copying the four files from `sdk/` again (text domain `saddle`), never by
+   editing them here. The public line is "Nothing leaves your site unless you
+   opt in."
 
 2. **Default-safe, not opt-out-unsafe.** New installs default to the `read` tier.
    Never change this default. Power is something the owner turns on, never
@@ -480,7 +487,7 @@ PHPUnit, SQLite-backed, running against a real WordPress — 68 test files in
 - [ ] A destructive call with a valid, unused token executes exactly once
 - [ ] `delete-post` / `delete-page` without `force` trashes, never permanently deletes
 - [ ] The **wporg** zip contains no `class-saddle-updater.php`, and makes no
-      outbound request until the owner clicks Allow, Subscribe or Send
+      outbound request until the owner clicks Subscribe, Send or Stop sharing
       (Insight), verified in the zip, not in the source tree
 - [ ] Connect flow round-trips and revoke actually invalidates the credential
 - [ ] Grep for the six execution functions — zero hits outside the vendored adapter

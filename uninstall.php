@@ -48,8 +48,6 @@ $saddle_options = array(
 	'saddle_access_version',          // Saddle_Access::VERSION_OPTION.
 	'saddle_access_legacy_before',    // Saddle_Access::LEGACY_BEFORE_OPTION.
 	'saddle_access_legacy_tier',      // Saddle_Access::LEGACY_TIER_OPTION.
-	'saddle_insight',                 // Saddle_Insight::OPTION.
-	'plugpress_insight_site_id',      // Saddle_Insight_Payload::SITE_ID_OPTION.
 );
 foreach ( $saddle_options as $saddle_option ) {
 	delete_option( $saddle_option );
@@ -89,7 +87,10 @@ if ( $saddle_gc_timestamp ) {
 	wp_unschedule_event( $saddle_gc_timestamp, 'saddle_gc_tokens' );
 }
 wp_clear_scheduled_hook( 'saddle_apply_updates' ); // Saddle_Update_Runner::HOOK.
-wp_clear_scheduled_hook( 'saddle_insight_weekly' ); // Saddle_Insight::HOOK.
+// PlugPress Insight's options (plugpress_insight, plugpress_insight_site_id)
+// are shared by every PlugPress plugin on the site, so they stay. Its weekly
+// event goes; another PlugPress plugin schedules it again on admin_init.
+wp_clear_scheduled_hook( 'plugpress_insight_weekly' );
 
 // Remove the managed .htaccess block the connection self-check may have added.
 if ( class_exists( 'Saddle_Connection' ) ) {
