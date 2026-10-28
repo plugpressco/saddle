@@ -96,7 +96,9 @@ and finding each fails at least one. Check every change against all three.
    `insight.plugpress.io` only after one of these clicks, and nothing else
    ever does:
 
-   - **Allow** on the card (Overview, once per site): the address and title,
+   - **Allow** on the card (Overview and the Plugins screen, once per site):
+     the name and email of the admin who clicked it (for support), the
+     address and title,
      WordPress and PHP versions, language, timezone, theme, plugins and a
      random site id, then a weekly update while it stays on, only when
      something changed. All Saddle plugins report as one brand, `saddle`.

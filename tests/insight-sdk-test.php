@@ -66,11 +66,12 @@ class Saddle_Insight_SDK_Test extends WP_UnitTestCase {
 		return trim( ob_get_clean() );
 	}
 
-	private function share( $usage, $asked = array(), $home = '' ) {
+	private function share( $usage, $asked = array(), $home = '', $by = 0 ) {
 		update_option(
 			PlugPress_Insight::OPTION,
 			array(
 				'usage' => $usage,
+				'by'    => $by,
 				'asked' => $asked,
 				'home'  => $home,
 			)
@@ -86,7 +87,8 @@ class Saddle_Insight_SDK_Test extends WP_UnitTestCase {
 		set_current_screen( 'toplevel_page_saddle' );
 		$_GET['page'] = 'saddle';
 		$html         = $this->bar();
-		$this->assertStringContainsString( 'Help make Saddle better', $html );
+		$this->assertStringContainsString( 'Get better support for Saddle', $html );
+		$this->assertStringContainsString( 'Your profile', $html, 'What is shared names the profile.' );
 		$this->assertStringContainsString( '>Allow<', $html );
 		$this->assertMatchesRegularExpression( '/<input type="checkbox" name="news">/', $html, 'The news box starts unticked.' );
 		$this->assertStringContainsString( '--plugpress-insight-accent:#d000c4', $html );
@@ -126,6 +128,13 @@ class Saddle_Insight_SDK_Test extends WP_UnitTestCase {
 		$this->assertSame( '', $this->bar() );
 	}
 
+	public function test_card_is_a_plain_notice_on_the_plugins_screen() {
+		set_current_screen( 'plugins' );
+		$html = $this->bar();
+		$this->assertStringContainsString( 'Get better support for Saddle', $html );
+		$this->assertStringNotContainsString( 'data-slot', $html, 'Saddle\'s slot is for its own page only.' );
+	}
+
 	public function test_dialog_prints_only_on_the_plugins_screen() {
 		set_current_screen( 'dashboard' );
 		$this->assertSame( '', $this->dialog() );
@@ -150,12 +159,26 @@ class Saddle_Insight_SDK_Test extends WP_UnitTestCase {
 		PlugPress_Insight::weekly();
 		$this->assertCount( 0, $this->sent, 'Not shared: nothing goes.' );
 
-		$this->share( true );
+		$by = self::factory()->user->create(
+			array(
+				'role'         => 'administrator',
+				'display_name' => 'Ada Owner',
+				'user_email'   => 'ada@example.com',
+			)
+		);
+		$this->share( true, array(), '', $by );
 		PlugPress_Insight::weekly();
 		$this->assertCount( 1, $this->sent );
+		$this->assertSame(
+			array(
+				'name'  => 'Ada Owner',
+				'email' => 'ada@example.com',
+			),
+			$this->sent[0]['body']['site']['admin'],
+			'The person who clicked Allow, for support.'
+		);
 		$this->assertStringEndsWith( '/api/v1/update', $this->sent[0]['url'] );
 		$this->assertSame( array( 'saddle' ), wp_list_pluck( $this->sent[0]['body']['products'], 'slug' ), 'One entry per brand.' );
-		$this->assertArrayNotHasKey( 'admin', $this->sent[0]['body']['site'], 'The admin is never sent.' );
 
 		PlugPress_Insight::weekly();
 		$this->assertCount( 1, $this->sent, 'Nothing changed, so nothing goes.' );

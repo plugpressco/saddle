@@ -77,11 +77,22 @@
 	color: #646970;
 }
 
-.plugpress-insight-bar__list {
+/* What is shared, one line each, like a permissions list. */
+.plugpress-insight-bar__list:not([hidden]) {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
 	max-width: 640px;
-	margin-top: 4px;
+	margin-top: 6px;
 	font-size: 12px;
 	line-height: 18px;
+}
+
+.plugpress-insight-bar__list b {
+	display: inline-block;
+	min-width: 84px;
+	color: #1d2327;
+	font-weight: 600;
 }
 
 /* "What is shared": a link inside the line. */
