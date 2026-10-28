@@ -85,6 +85,7 @@ class Saddle_Insight_SDK_Test extends WP_UnitTestCase {
 		$html         = $this->bar();
 		$this->assertStringContainsString( 'News from Saddle', $html );
 		$this->assertStringContainsString( '--plugpress-insight-accent:#d000c4', $html );
+		$this->assertStringContainsString( 'data-slot=".saddle-app .pp-content:has(&gt; .saddle-tabpane)"', $html, 'The card opens Overview\'s content, not the welcome.' );
 
 		$this->share( false );
 		$this->assertSame( '', $this->bar(), 'Answered once, never again.' );

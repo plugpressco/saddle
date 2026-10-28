@@ -42,6 +42,7 @@ class PlugPress_Insight {
 				'page'    => '',
 				'news'    => 'plugpress',
 				'color'   => '',
+				'slot'    => '',
 			);
 
 			$product['basename']                = plugin_basename( $product['file'] );
@@ -92,8 +93,9 @@ class PlugPress_Insight {
 	}
 
 	/**
-	 * The news bar, once per site, on a registered plugin's page (the Plugins
-	 * screen for a plugin with no page).
+	 * The news card, once per site, on a registered plugin's page (the Plugins
+	 * screen for a plugin with no page). With a slot, the script moves it into
+	 * that element of the plugin's own page.
 	 */
 	public static function bar() {
 		$product = self::product_on_screen();
@@ -102,25 +104,25 @@ class PlugPress_Insight {
 		}
 		$color = sanitize_hex_color( $product['color'] );
 		?>
-		<div class="notice plugpress-insight-bar" data-slug="<?php echo esc_attr( $product['slug'] ); ?>"
+		<div class="notice <?php echo $product['slot'] ? 'inline ' : ''; ?>plugpress-insight-bar" data-slug="<?php echo esc_attr( $product['slug'] ); ?>"
+			<?php if ( $product['slot'] ) : ?>
+				data-slot="<?php echo esc_attr( $product['slot'] ); ?>"
+			<?php endif; ?>
 			data-done="<?php esc_attr_e( 'You are in', 'saddle' ); ?>"
 			data-thanks="<?php esc_attr_e( 'Check your inbox to confirm your email.', 'saddle' ); ?>"
 			data-shared="<?php esc_attr_e( 'Thanks for helping us test.', 'saddle' ); ?>"
 			style="<?php echo esc_attr( $color ? '--plugpress-insight-accent:' . $color : '' ); ?>">
-			<div class="plugpress-insight-bar__pill">
+			<div class="plugpress-insight-bar__main">
 				<span class="plugpress-insight-bar__icon" aria-hidden="true">
 					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.5 7.5 8.5 6 8.5-6"/></svg>
 				</span>
 				<p class="plugpress-insight-bar__text">
 					<strong><?php /* translators: %s: plugin name. */ echo esc_html( sprintf( __( 'News from %s', 'saddle' ), $product['name'] ) ); ?></strong>
-					<span><?php esc_html_e( 'Features, tips and fixes, now and then', 'saddle' ); ?></span>
+					<span><?php esc_html_e( 'Features, tips and fixes, now and then.', 'saddle' ); ?></span>
 				</p>
 				<form>
 					<input type="email" name="email" value="<?php echo esc_attr( wp_get_current_user()->user_email ); ?>" aria-label="<?php esc_attr_e( 'Email', 'saddle' ); ?>">
-					<button type="submit">
-						<?php esc_html_e( 'Subscribe', 'saddle' ); ?>
-						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-					</button>
+					<button type="submit"><?php esc_html_e( 'Subscribe', 'saddle' ); ?></button>
 				</form>
 				<button type="button" class="plugpress-insight-bar__close" aria-label="<?php esc_attr_e( 'No thanks', 'saddle' ); ?>">
 					<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
@@ -128,7 +130,6 @@ class PlugPress_Insight {
 			</div>
 			<div class="plugpress-insight-bar__more">
 				<label><input type="checkbox" name="usage" checked> <?php esc_html_e( 'Also share basic site info to help us test', 'saddle' ); ?></label>
-				<span aria-hidden="true">&middot;</span>
 				<details>
 					<summary><?php esc_html_e( 'What is shared', 'saddle' ); ?></summary>
 					<p><?php esc_html_e( 'Your site address and title, WordPress and PHP versions, language, timezone, theme, and plugins with their versions, once a week while the box is ticked. Your email goes only to our newsletter, which asks you to confirm it.', 'saddle' ); ?></p>
@@ -197,8 +198,9 @@ class PlugPress_Insight {
 		}
 		$file    = $GLOBALS['plugpress_insight_sdk']['dir'] . '/class-plugpress-insight.php';
 		$version = $GLOBALS['plugpress_insight_sdk']['version'];
-		wp_enqueue_style( 'saddle', plugins_url( 'insight.css', $file ), array(), $version );
-		wp_enqueue_script( 'saddle', plugins_url( 'insight.js', $file ), array(), $version, true );
+		// The handle is not the text domain, so renaming the domain leaves it.
+		wp_enqueue_style( 'plugpress-insight-sdk', plugins_url( 'insight.css', $file ), array(), $version );
+		wp_enqueue_script( 'plugpress-insight-sdk', plugins_url( 'insight.js', $file ), array(), $version, true );
 
 		// Plugin file => slug and name, for the Deactivate links.
 		$deactivate = array();
@@ -210,7 +212,7 @@ class PlugPress_Insight {
 			'nonce'   => wp_create_nonce( 'plugpress_insight' ),
 			'plugins' => $deactivate,
 		);
-		wp_add_inline_script( 'saddle', 'var plugpressInsight = ' . wp_json_encode( $config ) . ';', 'before' );
+		wp_add_inline_script( 'plugpress-insight-sdk', 'var plugpressInsight = ' . wp_json_encode( $config ) . ';', 'before' );
 	}
 
 	/**

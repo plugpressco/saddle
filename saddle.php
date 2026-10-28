@@ -639,5 +639,7 @@ plugpress_insight(
 		'page'    => 'saddle',
 		'news'    => 'saddle',
 		'color'   => '#d000c4',
+		// Overview's and the add-ons' first card; not on the welcome.
+		'slot'    => '.saddle-app .pp-content:has(> .saddle-tabpane)',
 	)
 );

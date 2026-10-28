@@ -1,5 +1,5 @@
 /**
- * PlugPress Insight: the news bar, "Stop sharing" and quick feedback. The
+ * PlugPress Insight: the news card, "Stop sharing" and quick feedback. The
  * markup comes from PHP; this only answers clicks. Every click posts to the
  * site's own admin-ajax.php, and the site's server does the sending.
  */
@@ -17,8 +17,24 @@
 		return fetch( config.ajax, { method: 'POST', credentials: 'same-origin', body } );
 	}
 
-	// The news bar: Subscribe sends what it says, the × sends nothing.
+	// The news card: Subscribe sends what it says, the × sends nothing.
 	const bar = document.querySelector( '.plugpress-insight-bar' );
+	if ( bar && bar.dataset.slot ) {
+		// Into the plugin's own page once it draws the slot; hidden until then,
+		// so a page that leaves the slot out (a welcome screen) shows no card.
+		const place = () => {
+			const slot = document.querySelector( bar.dataset.slot );
+			if ( slot ) {
+				slot.prepend( bar );
+				bar.classList.add( 'is-placed' );
+			}
+			return !! slot;
+		};
+		if ( ! place() ) {
+			const watch = new MutationObserver( () => place() && watch.disconnect() );
+			watch.observe( document.body, { childList: true, subtree: true } );
+		}
+	}
 	if ( bar ) {
 		const form = bar.querySelector( 'form' );
 		const email = form.elements.email;
