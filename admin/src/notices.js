@@ -27,7 +27,7 @@ const rank = ( notice ) => {
  * Split notices into the one the frame shows and the ones for the bell.
  *
  * The most severe wins; among equals the earlier one in the list does, so the
- * caller puts the app's own (live) notices first. Every notice is kept: the
+ * caller puts the agent's own (live) notices first. Every notice is kept: the
  * rest keep their relative order.
  *
  * @param {Array<Object>} notices Client-side notices, then server notices.

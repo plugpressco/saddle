@@ -1,25 +1,25 @@
 /**
- * Agent setup's apps (#369; the Connect an app drawer since #285 until
- * then), after Saddle Cloud's page: every app down the side, the chosen
+ * Agent setup's agents (#369; the Connect an agent drawer since #285 until
+ * then), after Saddle Cloud's page: every agent down the side, the chosen
  * one's short steps beside it, then a line that says the moment it
  * connects. It is the site's own way: the address is this site's, and the
- * app is approved on this site's own screen. Nothing goes through anyone
+ * agent is approved on this site's own screen. Nothing goes through anyone
  * else's server.
  *
  * Both ways to connect read the same (#312, 1.5.0 S7): a muted line of fact
  * where one applies, one line per step, and the waiting line.
  *
- * - **Address.** Needs "sign-in for apps" (off by default; Settings has the
- *   switch). The app gets the address and the owner approves it here.
- * - **Key.** Sign-in is off, the app can't sign in, or the owner chose
+ * - **Address.** Needs "sign-in for agents" (off by default; Settings has the
+ *   switch). The agent gets the address and the owner approves it here.
+ * - **Key.** Sign-in is off, the agent can't sign in, or the owner chose
  *   "Use a key instead". "Make a key for X" makes it here and the steps
  *   carry it. A key nobody copied is deleted when the owner leaves: another
- *   app, the address instead, or a reload.
+ *   agent, the address instead, or a reload.
  *
  * A web app (Claude, ChatGPT, Grok) can't reach a site on this computer, so
- * there the steps point at the apps that run here (P7).
+ * there the steps point at the agents that run here (P7).
  *
- * Until the sign-in setting is known, an app that can use either path shows
+ * Until the sign-in setting is known, an agent that can use either path shows
  * a spinner rather than a path it may not take.
  */
 import { useState, useEffect, useRef } from '@wordpress/element';
@@ -87,7 +87,7 @@ const labelFor = ( key ) => {
 
 /**
  * Remove the key an earlier load made and never copied (R1): a reload runs
- * no clean-up, so the next screen does it. A key an app has used since
+ * no clean-up, so the next screen does it. A key an agent has used since
  * stays.
  *
  * @param {string}   uuid    The pending key, or ''.
@@ -188,7 +188,7 @@ export function useKeyMaker( onChanged ) {
 			.finally( () => setBusy( false ) );
 	};
 
-	// A new key for the app, under its name.
+	// A new key for the agent, under its name.
 	const make = ( label ) => {
 		discard();
 		return run( () =>
@@ -196,7 +196,7 @@ export function useKeyMaker( onChanged ) {
 		);
 	};
 
-	// The app's old key stops at once, and a new one takes its name.
+	// The agent's old key stops at once, and a new one takes its name.
 	const replace = ( uuid ) => {
 		discard();
 		return run( () =>
@@ -204,7 +204,7 @@ export function useKeyMaker( onChanged ) {
 		);
 	};
 
-	// The setup left the page (copied, or opened in the app), or the app
+	// The setup left the page (copied, or opened in the agent), or the agent
 	// used the key: it stays from now on.
 	const keep = () => {
 		if ( latest.current.made && ! latest.current.kept ) {
@@ -310,7 +310,7 @@ function usePulse( watch, onConnected ) {
 	return arrived;
 }
 
-// The app the steps open on when nothing asked for one: one that can reach
+// The agent the steps open on when nothing asked for one: one that can reach
 // this site.
 const firstApp = () => ( IS_LOCAL ? 'claude-code' : 'claude' );
 
@@ -323,7 +323,7 @@ const INTRO_LOGOS = [ 'claude', 'chatgpt', 'cursor', 'gemini-cli' ];
 const isApp = ( key ) => APPS.some( ( a ) => a.key === key );
 
 /**
- * Agent setup's first card (#369): what the page is for, a few app logos,
+ * Agent setup's first card (#369): what the page is for, a few agent logos,
  * and the site's address with Copy.
  */
 export function SetupIntro() {
@@ -389,7 +389,7 @@ function WaitingFor( { app, arrived } ) {
 						className="saddle-connect__done"
 					/>
 					{ sprintf(
-						/* translators: 1: app name, 2: what the app calls itself, e.g. claude-ai 0.1.0. */
+						/* translators: 1: agent name, 2: what the agent calls itself, e.g. claude-ai 0.1.0. */
 						__( '%1$s connected (%2$s)', 'saddle' ),
 						labelFor( arrived.app ) || arrived.name || app.label,
 						arrived.client || arrived.name
@@ -399,7 +399,7 @@ function WaitingFor( { app, arrived } ) {
 				<>
 					<span className="saddle-connect__spinner" />
 					{ sprintf(
-						/* translators: %s: app name, such as Claude. */
+						/* translators: %s: agent name, such as Claude. */
 						__( 'Waiting for %s to connect…', 'saddle' ),
 						app.label
 					) }
@@ -432,7 +432,7 @@ export default function ConnectApps( { oauth, onConnected, focus = null } ) {
 	);
 	// The owner chose "Use a key instead" for this app.
 	const [ preferKey, setPreferKey ] = useState( false );
-	// A key for this app already exists: replace it, or add another.
+	// A key for this agent already exists: replace it, or add another.
 	const [ duplicate, setDuplicate ] = useState( null );
 	const panel = useRef( null );
 
@@ -449,7 +449,7 @@ export default function ConnectApps( { oauth, onConnected, focus = null } ) {
 
 	const app = APPS.find( ( a ) => a.key === selected ) || APPS[ 0 ];
 	const signInOn = !! ( oauth && oauth.enabled );
-	// The sign-in setting is still loading: which path this app takes is
+	// The sign-in setting is still loading: which path this agent takes is
 	// not known yet, so neither is offered.
 	const deciding = ! oauth && app.viaAddress;
 	const unreachable = unreachableHere( app, IS_LOCAL );
@@ -471,7 +471,7 @@ export default function ConnectApps( { oauth, onConnected, focus = null } ) {
 		watch = 'address';
 	}
 	const arrived = usePulse( watch, () => {
-		// The app used the key: it stays, whatever happens next.
+		// The agent used the key: it stays, whatever happens next.
 		keys.keep();
 		conns.refresh();
 		if ( onConnected ) {
@@ -489,7 +489,7 @@ export default function ConnectApps( { oauth, onConnected, focus = null } ) {
 	// A key made but never used has not connected: no tick for it.
 	const connectedApps = usedAppKeys( connections );
 
-	// Make a key for an app, unless it already has one: then ask.
+	// Make a key for an agent, unless it already has one: then ask.
 	const makeKey = ( forApp = app ) => {
 		const old = existingKey(
 			connections.filter( ( c ) => c.id !== `key:${ keys.stale }` ),
@@ -513,7 +513,7 @@ export default function ConnectApps( { oauth, onConnected, focus = null } ) {
 		setSelected( key );
 	};
 
-	// Something asked for an app (the address, the connected list, Home):
+	// Something asked for an agent (the address, the connected list, Home):
 	// show its steps, make or replace its key if asked, and bring them into
 	// view. Waits for the connections, so an old key is offered first.
 	const handled = useRef( null );
@@ -544,7 +544,7 @@ export default function ConnectApps( { oauth, onConnected, focus = null } ) {
 		// eslint-disable-next-line react-hooks/exhaustive-deps -- once per request, when the connections are known.
 	}, [ focus, known ] );
 
-	// On a phone the apps are one row that scrolls: keep the chosen one in
+	// On a phone the agents are one row that scrolls: keep the chosen one in
 	// view.
 	const list = useRef( null );
 	useEffect( () => {
@@ -567,23 +567,23 @@ export default function ConnectApps( { oauth, onConnected, focus = null } ) {
 		setPreferKey( false );
 	};
 
-	// Why this app connects with a key, while the owner hasn't chosen one.
+	// Why this agent connects with a key, while the owner hasn't chosen one.
 	let why = null;
 	if ( oauth && ! signInOn && app.viaAddress && ! unreachable ) {
 		if ( app.viaKey ) {
 			why = oauth.ready
 				? sprintf(
-						/* translators: %s: app name, such as Claude. */
+						/* translators: %s: agent name, such as Claude. */
 						__(
-							'Sign-in for apps is off, so %s connects with a key.',
+							'Sign-in for agents is off, so %s connects with a key.',
 							'saddle'
 						),
 						app.label
 				  )
 				: sprintf(
-						/* translators: %s: app name, such as Claude. */
+						/* translators: %s: agent name, such as Claude. */
 						__(
-							'Sign-in for apps needs HTTPS and pretty permalinks, so %s connects with a key.',
+							'Sign-in for agents needs HTTPS and pretty permalinks, so %s connects with a key.',
 							'saddle'
 						),
 						app.label
@@ -591,17 +591,17 @@ export default function ConnectApps( { oauth, onConnected, focus = null } ) {
 		} else {
 			why = oauth.ready
 				? sprintf(
-						/* translators: %s: app name, such as ChatGPT. */
+						/* translators: %s: agent name, such as ChatGPT. */
 						__(
-							'%s connects only through sign-in for apps, which is off.',
+							'%s connects only through sign-in for agents, which is off.',
 							'saddle'
 						),
 						app.label
 				  )
 				: sprintf(
-						/* translators: %s: app name, such as ChatGPT. */
+						/* translators: %s: agent name, such as ChatGPT. */
 						__(
-							'%s connects only through sign-in for apps, which needs HTTPS and pretty permalinks.',
+							'%s connects only through sign-in for agents, which needs HTTPS and pretty permalinks.',
 							'saddle'
 						),
 						app.label
@@ -619,7 +619,7 @@ export default function ConnectApps( { oauth, onConnected, focus = null } ) {
 							'saddle'
 					  )
 					: __(
-							'WordPress turns off app connections on sites without HTTPS, such as http://localhost. They work once the site uses HTTPS.',
+							'WordPress turns off agent connections on sites without HTTPS, such as http://localhost. They work once the site uses HTTPS.',
 							'saddle'
 					  ) }
 			</p>
@@ -629,12 +629,12 @@ export default function ConnectApps( { oauth, onConnected, focus = null } ) {
 					variant={ variant }
 					onClick={ () => makeKey() }
 					loading={ keys.busy }
-					// Until the connections are known, an old key for the app
+					// Until the connections are known, an old key for the agent
 					// can't be offered first.
 					disabled={ keys.busy || ! known }
 				>
 					{ sprintf(
-						/* translators: %s: app name, such as Cursor. */
+						/* translators: %s: agent name, such as Cursor. */
 						__( 'Make a key for %s', 'saddle' ),
 						app.label
 					) }
@@ -704,7 +704,7 @@ export default function ConnectApps( { oauth, onConnected, focus = null } ) {
 						id="saddle-app-steps-title"
 					>
 						{ sprintf(
-							/* translators: %s: app name, such as Claude. */
+							/* translators: %s: agent name, such as Claude. */
 							__( 'Connect %s', 'saddle' ),
 							app.label
 						) }
@@ -723,24 +723,24 @@ export default function ConnectApps( { oauth, onConnected, focus = null } ) {
 					</Notice>
 				) }
 
-				{ /* A web app and a site on this computer: point at the apps
+				{ /* A web app and a site on this computer: point at the agents
 				     that can reach it (P7). */ }
 				{ /* A web app and a site on this computer: say why once, and
-				     point at the apps that run here (P7). */ }
+				     point at the agents that run here (P7). */ }
 				{ unreachable && ! deciding && ! made && ! duplicate && (
 					<div className="saddle-connect__away">
 						<p className="saddle-connect__away-title">
 							{ sprintf(
-								/* translators: %s: app name, such as Claude. */
+								/* translators: %s: agent name, such as Claude. */
 								__( '%s can’t reach this site', 'saddle' ),
 								app.label
 							) }
 						</p>
 						<p className="saddle-connect__hint">
 							{ sprintf(
-								/* translators: %s: app name, such as Claude. */
+								/* translators: %s: agent name, such as Claude. */
 								__(
-									'This site runs on this computer, and %s connects from the internet. Pick an app that runs here instead.',
+									'This site runs on this computer, and %s connects from the internet. Pick an agent that runs here instead.',
 									'saddle'
 								),
 								app.label
@@ -763,7 +763,7 @@ export default function ConnectApps( { oauth, onConnected, focus = null } ) {
 							<>
 								<p className="saddle-connect__hint">
 									{ sprintf(
-										/* translators: %s: app name, such as Claude. */
+										/* translators: %s: agent name, such as Claude. */
 										__(
 											'Or use the %s desktop app through a small bridge.',
 											'saddle'
@@ -800,7 +800,7 @@ export default function ConnectApps( { oauth, onConnected, focus = null } ) {
 						<li>
 							<p>
 								{ sprintf(
-									/* translators: %s: app name, such as Claude. */
+									/* translators: %s: agent name, such as Claude. */
 									__(
 										'Approve it on the screen %s opens here.',
 										'saddle'
@@ -820,13 +820,13 @@ export default function ConnectApps( { oauth, onConnected, focus = null } ) {
 					<>
 						<p className="saddle-connect__hint">
 							{ sprintf(
-								/* translators: %s: app name, such as Claude Code. */
+								/* translators: %s: agent name, such as Claude Code. */
 								__( '%s already has a key.', 'saddle' ),
 								app.label
 							) }{ ' ' }
 							{ hasBeenUsed( duplicate )
 								? __(
-										'That connection has been used. Replacing its key stops the old one at once, then you paste the new setup into the app. Add a separate connection only for a second computer.',
+										'That connection has been used. Replacing its key stops the old one at once, then you paste the new setup into the agent. Add a separate connection only for a second computer.',
 										'saddle'
 								  )
 								: __(

@@ -248,8 +248,8 @@ class Saddle_Install_Abilities {
 			return new WP_Error(
 				'saddle_cannot_install',
 				$theme
-					? __( 'The WordPress account this app is connected as cannot install themes here (on a multisite network, only a network administrator can). No Saddle setting changes that.', 'saddle' )
-					: __( 'The WordPress account this app is connected as cannot install plugins here (on a multisite network, only a network administrator can). No Saddle setting changes that.', 'saddle' ),
+					? __( 'The WordPress account this agent is connected as cannot install themes here (on a multisite network, only a network administrator can). No Saddle setting changes that.', 'saddle' )
+					: __( 'The WordPress account this agent is connected as cannot install plugins here (on a multisite network, only a network administrator can). No Saddle setting changes that.', 'saddle' ),
 				array( 'status' => 403 )
 			);
 		}

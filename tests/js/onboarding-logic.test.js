@@ -34,20 +34,20 @@ describe( 'the step machine', () => {
 		);
 	} );
 
-	it( 'resumes at the stored step when the app is known', () => {
+	it( 'resumes at the stored step when the agent is known', () => {
 		STEPS.forEach( ( step ) =>
 			expect( resumeStep( { step, app: 'claude' } ) ).toBe( step )
 		);
 	} );
 
-	it( 'falls back to choosing an app when the app was not stored', () => {
+	it( 'falls back to choosing an agent when the agent was not stored', () => {
 		[ 'connect', 'try', 'choose' ].forEach( ( step ) =>
 			expect( resumeStep( { step, app: '' } ) ).toBe( 'app' )
 		);
 		expect( resumeStep( { step: 'app', app: '' } ) ).toBe( 'app' );
 	} );
 
-	it( 'goes app, connect, try, choose, then ends', () => {
+	it( 'goes agent, connect, try, choose, then ends', () => {
 		expect( stepAfter( 'app' ) ).toBe( 'connect' );
 		expect( stepAfter( 'connect' ) ).toBe( 'try' );
 		expect( stepAfter( 'try' ) ).toBe( 'choose' );
@@ -118,7 +118,7 @@ describe( 'connect status: the finest true thing to say', () => {
 		expect( s.text ).toBe( 'Waiting for Claude…' );
 	} );
 
-	it( 'says the app asked to connect once it has registered', () => {
+	it( 'says the agent asked to connect once it has registered', () => {
 		const s = connectStatus( {
 			...base,
 			rows: [],
@@ -130,7 +130,7 @@ describe( 'connect status: the finest true thing to say', () => {
 		);
 	} );
 
-	it( 'ignores another app that registered', () => {
+	it( 'ignores another agent that registered', () => {
 		const s = connectStatus( {
 			...base,
 			rows: [],
@@ -139,7 +139,7 @@ describe( 'connect status: the finest true thing to say', () => {
 		expect( s.phase ).toBe( 'waiting' );
 	} );
 
-	it( 'treats an unrecognised pending app as possibly ours', () => {
+	it( 'treats an unrecognised pending agent as possibly ours', () => {
 		const s = connectStatus( {
 			...base,
 			rows: [],
@@ -148,7 +148,7 @@ describe( 'connect status: the finest true thing to say', () => {
 		expect( s.phase ).toBe( 'asked' );
 	} );
 
-	it( 'is done when an address connection for this app reaches the site', () => {
+	it( 'is done when an address connection for this agent reaches the site', () => {
 		const row = {
 			id: 'oauth:1',
 			kind: 'oauth',
@@ -161,7 +161,7 @@ describe( 'connect status: the finest true thing to say', () => {
 		expect( s.text ).toBe( 'Claude connected (claude-ai 0.1.0)' );
 	} );
 
-	it( 'does not count another app’s connection', () => {
+	it( 'does not count another agent’s connection', () => {
 		const s = connectStatus( {
 			...base,
 			rows: [ { id: 'oauth:2', kind: 'oauth', app: 'cursor' } ],
@@ -235,7 +235,7 @@ describe( 'try-it status', () => {
 		] );
 	} );
 
-	it( 'ignores another app’s tool calls', () => {
+	it( 'ignores another agent’s tool calls', () => {
 		const s = tryStatus( {
 			rows: [
 				row( { app: 'cursor', first_tool_at: 10, last_tool_at: 10 } ),
@@ -280,7 +280,7 @@ describe( 'tool names in plain words', () => {
 } );
 
 describe( 'timeout tips and the first prompt', () => {
-	it( 'has a tip per common app and a generic one', () => {
+	it( 'has a tip per common agent and a generic one', () => {
 		expect( timeoutTip( 'claude', 'Claude' ) ).toMatch( /tools menu/ );
 		expect( timeoutTip( 'chatgpt', 'ChatGPT' ) ).toMatch( /\+ menu/ );
 		expect( timeoutTip( 'grok', 'Grok' ) ).toMatch( /Grok/ );
@@ -341,7 +341,7 @@ describe( 'the self-check after three minutes', () => {
 	} );
 
 	it( 'lists only what can stop a key on the key path (R2)', () => {
-		// The symptom: on the key path for an app on this computer, "The
+		// The symptom: on the key path for an agent on this computer, "The
 		// site uses HTTPS" and "This is a local site" showed as To do, and
 		// neither stops a key.
 		const rows = selfCheckFindings( {
@@ -356,7 +356,7 @@ describe( 'the self-check after three minutes', () => {
 		expect( rows.filter( ( r ) => false === r.ok ) ).toEqual( [] );
 	} );
 
-	it( 'names a local site only for apps that connect from the web', () => {
+	it( 'names a local site only for agents that connect from the web', () => {
 		const base = {
 			ssl: true,
 			permalinks: true,
@@ -525,7 +525,7 @@ describe( 'resuming the connect step', () => {
 	const appOf = ( label ) =>
 		label.toLowerCase().includes( 'claude code' ) ? 'claude-code' : 'x';
 
-	it( 'moves on when the chosen app already used its key', () => {
+	it( 'moves on when the chosen agent already used its key', () => {
 		const clients = [ { label: 'Claude Code', last_used: 1790849110 } ];
 		expect(
 			resumeConnect( 'connect', 'claude-code', clients, appOf )
@@ -539,7 +539,7 @@ describe( 'resuming the connect step', () => {
 		).toBe( 'connect' );
 	} );
 
-	it( 'ignores another app’s key and other steps', () => {
+	it( 'ignores another agent’s key and other steps', () => {
 		const clients = [ { label: 'Cursor', last_used: 1 } ];
 		expect(
 			resumeConnect( 'connect', 'claude-code', clients, appOf )

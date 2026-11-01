@@ -1,6 +1,6 @@
 <?php
 /**
- * Which app a connection is, as far as the evidence says.
+ * Which agent a connection is, as far as the evidence says.
  *
  * @package Saddle
  */
@@ -57,7 +57,7 @@ class Saddle_Connection_Apps {
 	);
 
 	/**
-	 * App names as the wizard labels them, lowercased. Longer names first, so
+	 * Agent names as the wizard labels them, lowercased. Longer names first, so
 	 * "Claude Code" is not taken for "Claude".
 	 */
 	const LABELS = array(
@@ -102,7 +102,7 @@ class Saddle_Connection_Apps {
 	}
 
 	/**
-	 * The app a credential's own name refers to: "Claude Code", "Claude Code
+	 * The agent a credential's own name refers to: "Claude Code", "Claude Code
 	 * 2" (the wizard's counter for a second key), "Cursor (laptop)".
 	 *
 	 * @param string $name Credential name.

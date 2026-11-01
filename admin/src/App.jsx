@@ -177,7 +177,7 @@ export default function App() {
 	// rather than arriving without permission. Nothing on this screen can load,
 	// so it gets its own view instead of an error strip over an empty frame.
 	const [ authError, setAuthError ] = useState( false );
-	// The app Agent setup shows the steps for, when something asked for one.
+	// The agent Agent setup shows the steps for, when something asked for one.
 	const [ setupFocus, setSetupFocus ] = useState( setupAsk );
 
 	const setTab = useCallback(
@@ -417,7 +417,7 @@ export default function App() {
 	const connectBase =
 		areaUrl( AREAS, 'connections', 'apps' ) || window.location.href;
 
-	// An app's steps on Agent setup, from any page: there it shows them at
+	// An agent's steps on Agent setup, from any page: there it shows them at
 	// once, anywhere else it goes there.
 	const openConnect = ( appKey = null ) => {
 		const url = withArg( connectBase, 'add', appKey || '1' );
@@ -471,7 +471,7 @@ export default function App() {
 	};
 
 	// The owner expected the address change: the server records this address
-	// as the one the apps' access holds on, which clears the warning.
+	// as the one the agents' access holds on, which clears the warning.
 	const clearDomainWarning = () => {
 		api( 'preferences', {
 			method: 'POST',
@@ -496,7 +496,7 @@ export default function App() {
 	}, [] );
 
 	// One slot under the header for the most severe notice; the rest go behind
-	// the bell. The app's own notices come first so they win a tie: they are
+	// the bell. The agent's own notices come first so they win a tie: they are
 	// about what is happening now.
 	const { slot: slotNotice, rest: bellNotices } = pickSlot( [
 		...( error

@@ -2,17 +2,17 @@
  * Home (#309, the Dashboard until then; clearer in #367; one column after
  * Saddle Cloud's overview in #369): an action page.
  *
- * With no app connected, one card asks the owner to connect one, and the
+ * With no agent connected, one card asks the owner to connect one, and the
  * activity feed follows only when there is history. Nothing else is drawn:
- * the week's numbers are about apps.
+ * the week's numbers are about agents.
  *
- * Once an app is connected, one column of soft cards. "Needs your OK" while
+ * Once an agent is connected, one column of soft cards. "Needs your OK" while
  * something waits, and a warning when connections may not work. Then This
  * week: three numbers and the changes of each of the last seven days as
  * bars. Then the AI agents, each with what it may do, when it was last used
  * and its one next step ("Try it", "Change access"). Then the add-ons as
  * tiles (the installed modules, and Saddle Analytics while it is not on),
- * the plugins on this site the apps can work inside ("Works with"), and the
+ * the plugins on this site the agents can work inside ("Works with"), and the
  * activity feed by day.
  *
  * No status dots and no rules between rows: tiles, chips and space carry the
@@ -72,8 +72,8 @@ const STATE_CHIP = {
 };
 
 /**
- * A connection's name as the owner knows it: the app Saddle recognised, else
- * the name it was connected under, else what the app calls itself.
+ * A connection's name as the owner knows it: the agent Saddle recognised, else
+ * the name it was connected under, else what the agent calls itself.
  *
  * @param {Object} c A row from GET /connections.
  * @return {string} Label.
@@ -257,8 +257,8 @@ function WeekCard( { week, onLogs } ) {
 }
 
 /**
- * Home's shape while it loads (P12): the week, the apps and the feed, as
- * placeholders. No h1 or h2 in it: the app draws this before WordPress has
+ * Home's shape while it loads (P12): the week, the agents and the feed, as
+ * placeholders. No h1 or h2 in it: the agent draws this before WordPress has
  * moved its notices (see Frame).
  */
 export function HomeSkeleton() {
@@ -417,7 +417,7 @@ export default function Home( { clients, onNavigate, onConnect, homeUrl } ) {
 		);
 	}
 
-	// Whether connected apps can reach the site. A stripped X-WP-Nonce header
+	// Whether connected agents can reach the site. A stripped X-WP-Nonce header
 	// only affects this screen's own requests, which Saddle already works
 	// around — so it counts as healthy here.
 	const healthProblem =
@@ -432,7 +432,7 @@ export default function Home( { clients, onNavigate, onConnect, homeUrl } ) {
 		modules.map( ( m ) => m.key )
 	);
 
-	// The app's one next step, on its own row.
+	// The agent's one next step, on its own row.
 	const appAction = ( c ) => {
 		const next = known ? appNext( c ) : '';
 		if ( 'try' === next ) {
@@ -485,7 +485,7 @@ export default function Home( { clients, onNavigate, onConnect, homeUrl } ) {
 						</p>
 						<p className="saddle-home__alert-line">
 							{ __(
-								'Your server may block the sign-in header apps need, or Application Passwords are off.',
+								'Your server may block the sign-in header agents need, or Application Passwords are off.',
 								'saddle'
 							) }
 						</p>
@@ -502,7 +502,7 @@ export default function Home( { clients, onNavigate, onConnect, homeUrl } ) {
 				</div>
 			) }
 
-			{ /* Big changes an app asked for, waiting for the owner (#287).
+			{ /* Big changes an agent asked for, waiting for the owner (#287).
 			     Draws nothing when there are none. */ }
 			<NeedsYourOk onChange={ () => setFeedKey( ( k ) => k + 1 ) } />
 
@@ -524,7 +524,7 @@ export default function Home( { clients, onNavigate, onConnect, homeUrl } ) {
 						</Button>
 					}
 				/>
-				{ /* One card per app, three to a row on a wide screen, and a
+				{ /* One card per agent, three to a row on a wide screen, and a
 				     last card that connects another (Fahim, 2026-10-23: "make
 				     those as card, 2 or 3 in a row"). */ }
 				<ul className="saddle-home__apps">

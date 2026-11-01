@@ -77,7 +77,7 @@ A delete or overwrite takes two calls. The first call shows a preview and return
 ## Getting started
 
 1. Install and activate Saddle from **Plugins → Add New**.
-2. Go to **Saddle → Apps** and add an app.
+2. Go to **Saddle → Agent setup** and add an agent.
 3. Copy the connection settings into your AI agent.
 4. To allow changes, go to **Saddle → Permissions** and choose a higher level.
 
@@ -87,7 +87,7 @@ The MCP endpoint is `POST /wp-json/saddle/v1/mcp`.
 
 Saddle uses WordPress Application Passwords. Each key works only with Saddle. It cannot reach the rest of the REST API.
 
-ChatGPT cannot use a pasted key. Turn on OAuth sign-in under **Saddle → Settings** instead. An administrator must approve each app.
+ChatGPT cannot use a pasted key. Turn on OAuth sign-in under **Saddle → Settings** instead. An administrator must approve each agent.
 
 ## Writing a Skill
 

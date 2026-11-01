@@ -105,7 +105,7 @@ class Saddle_OAuth_Consent_Test extends WP_UnitTestCase {
 
 		$this->assertFalse(
 			$this->admin_can_reach_consent_screen(),
-			'Someone without the authorize capability must not be able to approve an app.'
+			'Someone without the authorize capability must not be able to approve an agent.'
 		);
 	}
 }

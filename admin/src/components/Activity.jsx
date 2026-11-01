@@ -1,10 +1,10 @@
 /**
- * Activity — the full record of what connected apps have done through Saddle,
+ * Activity — the full record of what connected agents have done through Saddle,
  * Home's feed since #309.
  *
  * Every executed change and every blocked attempt, newest first, grouped by
- * day. Each row is one line: the logo of the app that did it (a person tile
- * when no app did, #369), what happened, and the time. The row's tooltip holds the whole
+ * day. Each row is one line: the logo of the agent that did it (a person tile
+ * when no agent did, #369), what happened, and the time. The row's tooltip holds the whole
  * line, which the row may cut short, and who did it ("via Claude Code", or
  * "by you" for the owner's own steps).
  * Filterable to just changes or just blocked attempts, and to rehearsals when
@@ -13,7 +13,7 @@
  *
  * A change Saddle recorded can be undone from its row (shown on hover and
  * focus). Undo previews what comes back in a drawer, through the same journal
- * the apps' undo tool uses, and the owner confirms there (POST /undo). The
+ * the agents' undo tool uses, and the owner confirms there (POST /undo). The
  * owner's undo then shows in the feed as their own step.
  */
 import { useState, useEffect, useCallback } from '@wordpress/element';
@@ -160,7 +160,7 @@ function UndoPreview( { plan, confirming, onConfirm, onCancel } ) {
  * @param {string=}   props.title     A heading drawn on the filters' row (Home).
  * @param {boolean=}  props.hideEmpty Draw nothing at all, not even while
  *                                    loading, when the log is empty (Home with
- *                                    no app connected).
+ *                                    no agent connected).
  * @param {Function=} props.onChange  Called after the owner undid a change, so
  *                                    the page can refresh what it counts.
  * @param {string=}   props.className More classes on the feed (Home's card).
@@ -327,11 +327,11 @@ export default function Activity( {
 					description={
 						filter === 'denied'
 							? __(
-									'Attempts outside an app’s access appear here.',
+									'Attempts outside an agent’s access appear here.',
 									'saddle'
 							  )
 							: __(
-									'Changes your apps make appear here. Reading is not logged.',
+									'Changes your agents make appear here. Reading is not logged.',
 									'saddle'
 							  )
 					}

@@ -209,11 +209,11 @@ function AiSwitch( { paused, pausing, onToggle } ) {
 			<p className="saddle-ai__text">
 				{ paused
 					? __(
-							'No app can read or change this site until you resume.',
+							'No agent can read or change this site until you resume.',
 							'saddle'
 					  )
 					: __(
-							'Your apps can work on this site, each within the access you gave it.',
+							'Your agents can work on this site, each within the access you gave it.',
 							'saddle'
 					  ) }
 			</p>
@@ -229,7 +229,7 @@ function AiSwitch( { paused, pausing, onToggle } ) {
 			>
 				{ paused
 					? __( 'Resume', 'saddle' )
-					: __( 'Pause all apps', 'saddle' ) }
+					: __( 'Pause all agents', 'saddle' ) }
 			</Button>
 		</Popover>
 	);
@@ -578,7 +578,7 @@ export default function Frame( {
 					<span>
 						<strong>{ __( 'AI is paused.', 'saddle' ) }</strong>{ ' ' }
 						{ __(
-							'No app can read or change this site until you resume.',
+							'No agent can read or change this site until you resume.',
 							'saddle'
 						) }
 					</span>

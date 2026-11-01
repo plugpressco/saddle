@@ -133,14 +133,14 @@ class Saddle_Access {
 	 * under Users → Profile, and 1.3.0 kept no record of which keys used
 	 * Saddle. migrate() can only give roles to the keys it can tell were
 	 * Saddle's. Any other key that existed then keeps the old site tier the
-	 * first time it calls Saddle, so an update never takes away what an app
+	 * first time it calls Saddle, so an update never takes away what an agent
 	 * could do, and that becomes its stored role, which the owner can change on
 	 * AI agents. A key made after the update starts at Read only, as every new
 	 * key does. This never widens anything: the key could do exactly this
 	 * before the update.
 	 *
 	 * Only the calling user's own key is looked up: that is the case on an
-	 * app's request, and a key that has called once has its role stored.
+	 * agent's request, and a key that has called once has its role stored.
 	 *
 	 * @param string $uuid Application Password UUID.
 	 * @return string One of ROLES, or ''.
@@ -201,7 +201,7 @@ class Saddle_Access {
 	}
 
 	/**
-	 * Choosing write or admin for an app records the domain it was granted on,
+	 * Choosing write or admin for an agent records the domain it was granted on,
 	 * exactly as choosing the site tier used to.
 	 *
 	 * @param string $role The role just set.

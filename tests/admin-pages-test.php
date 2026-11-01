@@ -2,7 +2,7 @@
 /**
  * The Saddle admin as WordPress pages (#274): one menu, a submenu per page,
  * modules between Home and the two configuration pages, the page and tab
- * handed to the app, and assets only on Saddle's own screens.
+ * handed to the agent, and assets only on Saddle's own screens.
  *
  * @package Saddle
  */

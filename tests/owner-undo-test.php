@@ -2,7 +2,7 @@
 /**
  * POST /saddle/v1/undo: the owner's Undo on Home's Activity feed.
  *
- * What must hold: only an administrator in wp-admin reaches it, never an app;
+ * What must hold: only an administrator in wp-admin reaches it, never an agent;
  * a call without a token previews and changes nothing; the token confirms
  * that preview exactly once; what saddle/undo-changes refuses (edited since,
  * a permanent delete, a plugin update) is refused here with the same reason;
@@ -44,7 +44,7 @@ class Saddle_Owner_Undo_Test extends WP_UnitTestCase {
 		return wp_get_ability( 'saddle/' . $name )->execute( $input );
 	}
 
-	/** An app's edit of a post's title, logged with its journal. Returns [post id, entry id]. */
+	/** An agent's edit of a post's title, logged with its journal. Returns [post id, entry id]. */
 	private function app_retitles( $before = 'Before', $after = 'After' ) {
 		$id = self::factory()->post->create( array( 'post_title' => $before ) );
 		$this->assertNotWPError(
@@ -104,7 +104,7 @@ class Saddle_Owner_Undo_Test extends WP_UnitTestCase {
 		$this->assertSame( 401, $this->undo( array( $entry ) )->get_status() );
 	}
 
-	/** Even if a filter lets Saddle keys reach admin routes, an app can't use the owner's undo. */
+	/** Even if a filter lets Saddle keys reach admin routes, an agent can't use the owner's undo. */
 	public function test_an_app_connection_is_refused() {
 		list( $id, $entry ) = $this->app_retitles();
 
@@ -259,9 +259,9 @@ class Saddle_Owner_Undo_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * The owner's browser has no app, so the access level it reads is the
+	 * The owner's browser has no agent, so the access level it reads is the
 	 * old site-wide one, Read only by default. That level must not stop the
-	 * owner undoing a setting an app changed; WordPress capabilities still
+	 * owner undoing a setting an agent changed; WordPress capabilities still
 	 * apply. Found while joining the owner Undo to Activity (1.5.0).
 	 */
 	public function test_the_owner_can_undo_a_setting_whatever_the_old_site_level() {
@@ -308,11 +308,11 @@ class Saddle_Owner_Undo_Test extends WP_UnitTestCase {
 		$this->assertSame( (string) $entry, $feed['target'] );
 		$this->assertSame( 'executed', $feed['type'] );
 		$this->assertSame( get_userdata( $this->admin )->user_login, $feed['user'] );
-		$this->assertSame( '', $feed['app'], 'The owner acted, not an app.' );
+		$this->assertSame( '', $feed['app'], 'The owner acted, not an agent.' );
 		$this->assertStringStartsWith( 'Undid this change: ', $feed['summary'] );
 		$this->assertSame( 'undone', Saddle_Undo::availability( $entry ) );
 
-		// The owner's undo has its own journal: undoing it puts the app's edit back.
+		// The owner's undo has its own journal: undoing it puts the agent's edit back.
 		$own   = $this->newest_entry();
 		$token = $this->preview( array( $own ) )['confirm_token'];
 		$this->assertSame( 200, $this->undo( array( $own ), $token )->get_status() );

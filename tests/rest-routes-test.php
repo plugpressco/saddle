@@ -45,7 +45,7 @@ class Saddle_REST_Routes_Test extends WP_UnitTestCase {
 		}
 	}
 
-	/** Both paths must answer: the app needs /preferences, old bundles /settings. */
+	/** Both paths must answer: the agent needs /preferences, old bundles /settings. */
 	public function test_preferences_and_settings_are_both_registered() {
 		$routes = rest_get_server()->get_routes( 'saddle/v1' );
 

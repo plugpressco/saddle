@@ -364,7 +364,7 @@ class Saddle_REST_Admin {
 						'minimum'           => 0,
 						'sanitize_callback' => 'absint',
 					),
-					// Home's "Changes" counts only what apps did.
+					// Home's "Changes" counts only what agents did.
 					'by'    => array(
 						'type' => 'string',
 						'enum' => array( 'app' ),
@@ -522,7 +522,7 @@ class Saddle_REST_Admin {
 	}
 
 	/**
-	 * GET /oauth-connections — apps that completed a consent screen.
+	 * GET /oauth-connections — agents that completed a consent screen.
 	 *
 	 * @return WP_REST_Response
 	 */
@@ -536,7 +536,7 @@ class Saddle_REST_Admin {
 				'id'         => (string) $grant['grant_id'],
 				'name'       => '' !== (string) $grant['client_name'] ? (string) $grant['client_name'] : (string) $grant['client_id'],
 				'client_id'  => (string) $grant['client_id'],
-				// Whether the app's identity was checked, or merely asserted.
+				// Whether the agent's identity was checked, or merely asserted.
 				// The Connections screen says which, in as many words.
 				'verified'   => 0 === stripos( (string) $grant['client_id'], 'https://' ),
 				'scope'      => (string) $grant['scope'],
@@ -609,7 +609,7 @@ class Saddle_REST_Admin {
 					'action'  => 'oauth-level-changed',
 					'target'  => (string) $grant['client_id'],
 					'summary' => sprintf(
-						/* translators: 1: app name, 2: its new access, e.g. "Edit content". */
+						/* translators: 1: agent name, 2: its new access, e.g. "Edit content". */
 						__( 'Set %1$s to “%2$s”', 'saddle' ),
 						'' !== (string) $grant['client_name'] ? (string) $grant['client_name'] : (string) $grant['client_id'],
 						Saddle_Access::labels()[ $level ]
@@ -723,9 +723,9 @@ class Saddle_REST_Admin {
 		}
 
 		// The owner says the address change was expected: this address is
-		// the one the apps' access holds on now. Re-saving the site-wide
-		// tier did that before each app had its own role; with the tier at
-		// Read only and an app at Edit content, it recorded nothing and the
+		// the one the agents' access holds on now. Re-saving the site-wide
+		// tier did that before each agent had its own role; with the tier at
+		// Read only and an agent at Edit content, it recorded nothing and the
 		// warning never cleared.
 		if ( array_key_exists( 'confirm_domain', $params ) && $request->get_param( 'confirm_domain' ) ) {
 			Saddle_Capabilities::record_tier_domain();
@@ -1525,7 +1525,7 @@ class Saddle_REST_Admin {
 		if ( is_wp_error( $created ) ) {
 			return new WP_Error(
 				'saddle_rotate_failed',
-				__( 'The old key was removed, but issuing its replacement failed. Connect the app again from the Connections screen.', 'saddle' ),
+				__( 'The old key was removed, but issuing its replacement failed. Connect the agent again from the Connections screen.', 'saddle' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -1542,7 +1542,7 @@ class Saddle_REST_Admin {
 		Saddle_Connection::unmark_issued( $user->ID, $uuid );
 		Saddle_Connection::mark_issued( $user->ID, $new_item['uuid'] );
 
-		// Rotating a key replaces the secret, not what the app may do.
+		// Rotating a key replaces the secret, not what the agent may do.
 		Saddle_Access::set_role( 'key:' . $new_item['uuid'], $role );
 
 		return new WP_REST_Response(
@@ -1607,7 +1607,7 @@ class Saddle_REST_Admin {
 
 	/**
 	 * How long the owner's undo preview can be confirmed, in seconds. The
-	 * same window an app's preview gets.
+	 * same window an agent's preview gets.
 	 */
 	const UNDO_TOKEN_TTL = 900;
 
@@ -1626,14 +1626,14 @@ class Saddle_REST_Admin {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public static function owner_undo( WP_REST_Request $request ) {
-		// The owner's step only. An app undoes through its own tool, which is
+		// The owner's step only. An agent undoes through its own tool, which is
 		// tiered and gated; a Saddle key never reaches this route anyway
 		// (Saddle_Connection::scope_credentials), and this holds if a filter
 		// widens that.
 		if ( '' !== Saddle_Access::current_connection() ) {
 			return new WP_Error(
 				'saddle_owner_only',
-				__( 'Only the site owner can undo from here. Apps use their own undo tool.', 'saddle' ),
+				__( 'Only the site owner can undo from here. Agents use their own undo tool.', 'saddle' ),
 				array( 'status' => 403 )
 			);
 		}

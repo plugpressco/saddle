@@ -399,7 +399,7 @@ class Saddle_Connection_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * A stripped Authorization header breaks every external app; a stripped nonce
+	 * A stripped Authorization header breaks every external agent; a stripped nonce
 	 * only costs this dashboard a workaround it already applies. The louder
 	 * problem must win, or the fixable one hides behind the cosmetic one.
 	 */

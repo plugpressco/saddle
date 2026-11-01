@@ -14,7 +14,7 @@ Let Claude, ChatGPT and Cursor work on your WordPress site. Your AI starts read-
 
 Saddle lets your AI agent work on your WordPress site without handing it the keys.
 
-Ask Claude, ChatGPT or Cursor to write a post, fix a page or update SEO titles. The app does the work through Saddle, using real WordPress tools. You decide which tools it may use.
+Ask Claude, ChatGPT or Cursor to write a post, fix a page or update SEO titles. The agent does the work through Saddle, using real WordPress tools. You decide which tools it may use.
 
 Saddle is built for live sites. A new install can only read. Every delete shows a preview and waits for your approval. Your AI agent connects straight to your site, so your content never passes through our servers.
 
@@ -30,7 +30,7 @@ Click **Live Preview** at the top of this page. A test WordPress opens in your b
 2. Add your AI agent under **Saddle → Agent setup**. Paste the address Saddle shows into the agent and approve the connection when your browser opens.
 3. Ask your AI to write, edit or check your content.
 
-Saddle works with Claude and Claude Code, ChatGPT, Cursor, VS Code, Codex, Gemini CLI and other apps that support MCP (Model Context Protocol). Step-by-step setup for each app is at [saddle.to/docs](https://saddle.to/docs).
+Saddle works with Claude and Claude Code, ChatGPT, Cursor, VS Code, Codex, Gemini CLI and other agents that support MCP (Model Context Protocol). Step-by-step setup for each agent is at [saddle.to/docs](https://saddle.to/docs).
 
 = Content =
 
@@ -88,21 +88,21 @@ The SEO and WooCommerce tools work when that plugin is active.
 
 = Site management =
 
-These tools stay off until you give an app Manage the site.
+These tools stay off until you give an agent Manage the site.
 
 * Settings: Change the site title, permalinks and reading options.
 * Plugins and themes: Activate and deactivate plugins and switch the active theme, each after a preview.
 * Install from WordPress.org: Search the WordPress.org plugin directory, and install a plugin or theme from WordPress.org by name after a preview. A new plugin or theme arrives inactive, and turning it on is a separate step. Saddle never installs from a zip file or a link, and never deletes a plugin or theme.
-* Updates: See which plugin, theme and WordPress updates are waiting. Apply plugin, theme, WordPress and translation updates through WordPress's own updater, and turn automatic updates on or off per plugin. WordPress keeps a backup and restores a plugin that breaks the site. A major WordPress release is applied only if you turn on Major WordPress releases in Saddle → Settings. It is off by default, and no app can turn it on.
+* Updates: See which plugin, theme and WordPress updates are waiting. Apply plugin, theme, WordPress and translation updates through WordPress's own updater, and turn automatic updates on or off per plugin. WordPress keeps a backup and restores a plugin that breaks the site. A major WordPress release is applied only if you turn on Major WordPress releases in Saddle → Settings. It is off by default, and no agent can turn it on.
 * Site Health: Read the results of WordPress's own Site Health checks.
 * Cache: Clear the site cache.
 
 = Safety =
 
-* Access for each app: Choose Read only, Edit content or Manage the site for each connected app. New apps start at Read only.
+* Access for each agent: Choose Read only, Edit content or Manage the site for each connected agent. New agents start at Read only.
 * Confirmation: Review a preview before anything is deleted or overwritten, a plugin or theme is installed, a plugin is turned on or off, or the theme changes.
 * Drafts only: Save new posts as drafts until you publish them.
-* Rehearsal: Let an app try anything its level allows while nothing is saved. Each change it would have made shows in the activity log as rehearsed.
+* Rehearsal: Let an agent try anything its level allows while nothing is saved. Each change it would have made shows in the activity log as rehearsed.
 * Tool switches: Set each tool to Allow, Ask first or Off. A tool set to Ask first waits for your approval on the Dashboard, and a yes in the chat is not enough. A recommended set applies this to plugins, themes, updates, settings and deletes in one click. A tool added by a later update asks first until you choose.
 * Pause: Block all AI requests with one switch.
 * Activity log: See every change and every blocked request.
@@ -111,11 +111,11 @@ These tools stay off until you give an app Manage the site.
 
 Saddle never runs code from the AI and has no shell access. Your AI agent cannot write or edit files on your server. WordPress itself still saves uploads, applies updates, installs plugins and themes from WordPress.org and saves permalink rules the way it always does. The one file Saddle changes is .htaccess, and only when you click Fix it for me in the connection check. That adds one marked block so your server passes sign-in headers to WordPress. Uninstalling Saddle removes it.
 
-= Connecting an app =
+= Connecting an agent =
 
-Turn on sign-in for apps once, when the wizard offers it. After that every app needs only your site's address: it opens your browser, and an administrator approves it on your own site. Nothing is installed and no key is copied. Sign-in needs HTTPS and pretty permalinks.
+Turn on sign-in for agents once, when the wizard offers it. After that every agent needs only your site's address: it opens your browser, and an administrator approves it on your own site. Nothing is installed and no key is copied. Sign-in needs HTTPS and pretty permalinks.
 
-Apps can also connect with a pasted key. Saddle uses WordPress Application Passwords for that. Each key works only with Saddle, not with the rest of the REST API. ChatGPT cannot use a pasted key.
+Agents can also connect with a pasted key. Saddle uses WordPress Application Passwords for that. Each key works only with Saddle, not with the rest of the REST API. ChatGPT cannot use a pasted key.
 
 = Saddle Pro =
 
@@ -138,9 +138,9 @@ Every feature in this free plugin stays free. Saddle → Get Pro shows the plans
 == Installation ==
 
 1. Install and activate Saddle from **Plugins → Add New**.
-2. Go to **Saddle → Agent setup** and pick your app.
+2. Go to **Saddle → Agent setup** and pick your agent.
 3. Paste the address into your AI agent and approve the connection when your browser opens.
-4. To allow changes, choose Edit content or Manage the site next to the app on **Saddle → Agent setup**.
+4. To allow changes, choose Edit content or Manage the site next to the agent on **Saddle → Agent setup**.
 
 == Frequently Asked Questions ==
 
@@ -158,7 +158,7 @@ Yes. Click Live Preview on this page. You can explore every screen. To connect a
 
 = Can the AI delete my content? =
 
-Only for an app with Edit content or higher. Each delete shows a preview first. It runs only after a second confirmation. By default, deleted posts go to the trash.
+Only for an agent with Edit content or higher. Each delete shows a preview first. It runs only after a second confirmation. By default, deleted posts go to the trash.
 
 = Can the AI run code on my server? =
 
@@ -184,7 +184,7 @@ Saddle sends no tracking or usage data unless you choose to. It connects to anot
 2. Connection check: Saddle sends a test request to your own site.
 3. Live page check (optional): This runs only when your AI agent asks for it after editing a published page. Saddle loads that page from your own site, as a visitor would, to confirm the change is live.
 4. Unsplash (optional): This runs only after you add your own API key under **Saddle → Settings**. Saddle sends your search words or a photo ID to `api.unsplash.com`. It downloads photos from `images.unsplash.com`. Each imported photo gets a caption that credits the photographer, as Unsplash requires. You can edit or remove it. See the [API Guidelines](https://help.unsplash.com/en/articles/2511245-unsplash-api-guidelines), [API Terms](https://unsplash.com/api-terms) and [Privacy Policy](https://unsplash.com/privacy).
-5. OAuth app check (optional): This runs only when OAuth sign-in is on. Saddle reads a public web address the app provides to confirm who the app is. It sends nothing about your site.
+5. OAuth agent check (optional): This runs only when OAuth sign-in is on. Saddle reads a public web address the agent provides to confirm who the agent is. It sends nothing about your site.
 6. Updates and Site Health (optional): When your AI agent lists or applies updates, or reads Site Health, WordPress runs its own checks with WordPress.org and downloads the update packages it already offers, from WordPress.org or a plugin's own update server, exactly as the Updates screen does. After updating an active plugin, WordPress loads your own home page once to check for a fatal error.
 7. Plugin and theme directory (optional): When your AI agent searches for a plugin, or installs a plugin or theme, WordPress sends the search words or the slug to `api.wordpress.org`, as the **Add New** screens do. The same happens when you choose to add Saddle Analytics in Saddle's welcome or on Home. Like every WordPress.org request WordPress makes, it includes your WordPress version, language and site address. Saddle keeps search results on your site for an hour. An install downloads the package from `downloads.wordpress.org`. Saddle refuses a package from anywhere else.
 
@@ -197,19 +197,19 @@ The WordPress.org version never checks for its own updates. The version from plu
 == Privacy ==
 
 * Saddle stores its settings, Skills, memory, activity log and short-lived confirmation codes on your site.
-* With OAuth on, it also stores approved apps and a one-way hash of their tokens.
-* For each connected app, it stores the name the app reports, when it connected and last called, and the names of its last five tools. It stores no tool inputs or results.
+* With OAuth on, it also stores approved agents and a one-way hash of their tokens.
+* For each connected agent, it stores the name the agent reports, when it connected and last called, and the names of its last five tools. It stores no tool inputs or results.
 * Saddle sends no personal data off your site unless you choose to: your name and email if you tick that part of usage data, an address you give for Saddle news, and a reply address you add to deactivation feedback. PlugPress keeps usage data while you share it and clears what identifies your site after 12 months without an update. It deletes deactivation feedback after 24 months.
-* Deactivating or deleting Saddle deletes the app keys it made, because nothing limits them while Saddle is off. Apps that connected with a key need to connect again after you turn Saddle back on. Keys you made yourself stay.
+* Deactivating or deleting Saddle deletes the agent keys it made, because nothing limits them while Saddle is off. Agents that connected with a key need to connect again after you turn Saddle back on. Keys you made yourself stay.
 * Uninstalling removes all Saddle data.
 
 == Screenshots ==
 
 1. Overview: what waits for your OK, your week in numbers, and the AI agents you connected.
-2. Agent setup: copy your address, connect any MCP app, and choose what each app may do.
+2. Agent setup: copy your address, connect any MCP agent, and choose what each agent may do.
 3. Logs: every change your AI agents made, and every one Saddle stopped.
 4. Settings: for each tool, choose Allow, Ask first or Off.
-5. Context: tell every app about your site, its goal, its voice and its rules.
+5. Context: tell every agent about your site, its goal, its voice and its rules.
 6. Welcome: Saddle looks around your site and helps you connect your first AI agent.
 
 == Changelog ==

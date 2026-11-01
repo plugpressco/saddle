@@ -126,9 +126,9 @@ export default function ConnectionHealth() {
 	const snippets = report.fix_snippet || {};
 
 	// The partial case is the one that costs people weeks, so it gets its own
-	// words rather than the generic warning. Pasted-key apps keep working, so
+	// words rather than the generic warning. Pasted-key agents keep working, so
 	// every obvious test passes and the natural conclusion — "sign-in headers
-	// are fine here" — is wrong. Only apps that sign in through Saddle break,
+	// are fine here" — is wrong. Only agents that sign in through Saddle break,
 	// and ChatGPT is the one that can only connect that way.
 	const bearerOnly = report.status === 'bearer_header_stripped';
 

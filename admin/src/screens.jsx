@@ -102,7 +102,7 @@ function MountSlot( { module, tab } ) {
  * @param {string}   props.view     The view inside the page, or ''.
  * @param {Object}   props.args     The module's own query arguments.
  * @param {Function} props.navigate Navigation helper.
- * @param {Object}   props.header   The drill-in header (K4), from App.
+ * @param {Object}   props.header   The drill-in header (K4), from Agent.
  */
 function ModuleScreen( { area, tab, sub, view, args, navigate, header } ) {
 	const screens = useMemo( collectScreens, [] );
@@ -233,7 +233,7 @@ function AppsTab( {
  * @param {Function} props.onRehearsalChanged Tells the frame about practice mode.
  */
 function SettingsScreen( { extTabs, caps, loadCaps, onRehearsalChanged } ) {
-	// Collected at mount: addon bundles registered before the app mounted.
+	// Collected at mount: addon bundles registered before the agent mounted.
 	const cards = useMemo( collectSettingsCards, [] );
 	const home = findArea( saddleData.areas, 'home' );
 
@@ -278,7 +278,7 @@ function SettingsScreen( { extTabs, caps, loadCaps, onRehearsalChanged } ) {
 }
 
 /**
- * A page's shape while the app loads (P12): Home's columns, or a heading and
+ * A page's shape while the agent loads (P12): Home's columns, or a heading and
  * a block of rows. No h1 or h2 (see Frame).
  *
  * @param {Object} props
@@ -301,7 +301,7 @@ export function ScreenSkeleton( { area, tab } ) {
 /**
  * The content of one tab of one page.
  *
- * @param {Object} props See App.jsx for each prop; they are the app's state.
+ * @param {Object} props See Agent.jsx for each prop; they are the agent's state.
  */
 export default function Screen( props ) {
 	const {

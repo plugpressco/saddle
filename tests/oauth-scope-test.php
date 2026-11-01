@@ -264,7 +264,7 @@ class Saddle_OAuth_Scope_Test extends WP_UnitTestCase {
 		$this->assertSame(
 			'saddle:read',
 			$this->pending_scope( array( 'scope' => 'saddle:read' ) ),
-			'An app that deliberately asked for read-only must be taken at its word.'
+			'An agent that deliberately asked for read-only must be taken at its word.'
 		);
 	}
 
@@ -318,7 +318,7 @@ class Saddle_OAuth_Scope_Test extends WP_UnitTestCase {
 		$this->assertSame(
 			array( 'read', 'write', 'admin' ),
 			array_keys( $choices->invoke( null ) ),
-			'Access is per app; no site-wide level caps what the owner may give one.'
+			'Access is per agent; no site-wide level caps what the owner may give one.'
 		);
 	}
 
@@ -360,7 +360,7 @@ class Saddle_OAuth_Scope_Test extends WP_UnitTestCase {
 		Saddle_Capabilities::set_tier( 'read' );
 		$this->connect( 'saddle:read saddle:write saddle:admin' );
 
-		$this->assertSame( 'admin', $this->tier_now(), 'The grant holds what the owner gave this app.' );
+		$this->assertSame( 'admin', $this->tier_now(), 'The grant holds what the owner gave this agent.' );
 	}
 
 	public function test_the_rest_route_can_raise_a_grant_above_the_site_tier() {

@@ -201,7 +201,7 @@ class Saddle_OAuth_Bearer {
 	 * reaching Saddle's own control plane — where it could raise its own tier.
 	 *
 	 * Hooked one priority ahead of {@see Saddle_Connection::scope_credentials()}
-	 * so a strayed bearer token gets told to reconnect the app, rather than
+	 * so a strayed bearer token gets told to reconnect the agent, rather than
 	 * getting the message about rotating an Application Password.
 	 *
 	 * @param mixed           $response Current response, if something decided already.
@@ -221,7 +221,7 @@ class Saddle_OAuth_Bearer {
 
 		return new WP_Error(
 			'saddle_oauth_scope',
-			__( 'This app signed in through Saddle and can only reach Saddle’s tools — the rest of the WordPress API is off limits to it by design.', 'saddle' ),
+			__( 'This agent signed in through Saddle and can only reach Saddle’s tools — the rest of the WordPress API is off limits to it by design.', 'saddle' ),
 			array( 'status' => 403 )
 		);
 	}
@@ -289,7 +289,7 @@ class Saddle_OAuth_Bearer {
 		// What this site would actually grant, not a constant. Naming the read
 		// scope here told every spec-following client to ask for read-only even
 		// on a site the owner had set to write or admin, and the answer to "why
-		// can't my connected app edit anything" started right here.
+		// can't my connected agent edit anything" started right here.
 		$params['scope'] = Saddle_OAuth::site_scope();
 
 		$parts = array();

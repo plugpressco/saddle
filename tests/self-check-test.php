@@ -150,7 +150,7 @@ class Saddle_Self_Check_Test extends WP_UnitTestCase {
 
 		$this->assertSame( 'read', $result['connection']['effective_tier'] );
 		$this->assertSame( 'write', $result['connection']['site_tier'] );
-		$this->assertNotContains( 'scope_below_site_tier', $this->codes( $result ), 'Access is per app; differing from the legacy site tier is normal.' );
+		$this->assertNotContains( 'scope_below_site_tier', $this->codes( $result ), 'Access is per agent; differing from the legacy site tier is normal.' );
 	}
 
 	public function test_plain_permalinks_are_reported_with_the_fix() {

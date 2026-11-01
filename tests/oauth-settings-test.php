@@ -100,7 +100,7 @@ class Saddle_OAuth_Settings_Test extends WP_UnitTestCase {
 			array(
 				'grant_id'    => str_repeat( 'ab', 16 ),
 				'client_id'   => 'https://client.example/id.json',
-				'client_name' => 'Test App',
+				'client_name' => 'Test Agent',
 				'user_id'     => $this->admin,
 				'scope'       => 'saddle:read',
 				'resource'    => Saddle_OAuth::resource_id(),

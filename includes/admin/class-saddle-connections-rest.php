@@ -169,7 +169,7 @@ class Saddle_Connections_REST {
 				'action'  => 'access-changed',
 				'target'  => $id,
 				'summary' => sprintf(
-					/* translators: 1: app name, 2: its new access, e.g. "Edit content". */
+					/* translators: 1: agent name, 2: its new access, e.g. "Edit content". */
 					__( 'Set %1$s to “%2$s”', 'saddle' ),
 					'' !== (string) $found['name'] ? $found['name'] : $id,
 					Saddle_Access::labels()[ $role ]
@@ -301,13 +301,13 @@ class Saddle_Connections_REST {
 		return array(
 			'id'            => $id,
 			'kind'          => $credential['kind'],
-			// What this app may do: read, write or admin, and its plain name.
+			// What this agent may do: read, write or admin, and its plain name.
 			'role'          => $role,
 			'role_label'    => Saddle_Access::labels()[ $role ],
 			'app'           => $app,
 			'name'          => $credential['name'],
-			// What the app calls itself, e.g. "claude-ai 0.1.0". The admin shows
-			// it when no app was detected.
+			// What the agent calls itself, e.g. "claude-ai 0.1.0". The admin shows
+			// it when no agent was detected.
 			'client'        => trim( $field( 'client_name' ) . ' ' . $field( 'client_version' ) ),
 			'user_login'    => $credential['user_login'],
 			'created_at'    => (int) $credential['created_at'],
@@ -360,13 +360,13 @@ class Saddle_Connections_REST {
 
 		return array(
 			'kind'       => 'key',
-			// The app picked in the wizard, without the "Saddle: " prefix.
+			// The agent picked in the wizard, without the "Saddle: " prefix.
 			'name'       => 0 === strpos( $name, Saddle_REST_Admin::CLIENT_PREFIX ) ? trim( substr( $name, strlen( Saddle_REST_Admin::CLIENT_PREFIX ) ) ) : $name,
 			'user_login' => $user->user_login,
 			'created_at' => isset( $item['created'] ) ? (int) $item['created'] : 0,
 			'urls'       => array(),
 			'extra'      => array(
-				// The key's last four characters, as the Apps tab shows them.
+				// The key's last four characters, as the Agents tab shows them.
 				'hint' => is_array( $hints ) && isset( $hints[ $uuid ] ) ? (string) $hints[ $uuid ] : null,
 			),
 		);
@@ -389,7 +389,7 @@ class Saddle_Connections_REST {
 			'user_login' => $user ? $user->user_login : '',
 			'created_at' => (int) $grant['grant_created'],
 			// The client id is the metadata URL for a CIMD client; the redirect
-			// URIs name the app for a registered one.
+			// URIs name the agent for a registered one.
 			'urls'       => array_merge( array( $client_id ), $client && isset( $client['redirect_uris'] ) ? (array) $client['redirect_uris'] : array() ),
 			'extra'      => array(
 				'level' => Saddle_OAuth::scope_to_tier( (string) $grant['scope'] ),

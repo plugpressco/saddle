@@ -52,7 +52,7 @@ class Saddle_Connections_Test extends WP_UnitTestCase {
 	 * Mint a Saddle key the way the connect wizard does.
 	 *
 	 * @param int    $user_id Owner.
-	 * @param string $label   The app picked in the wizard.
+	 * @param string $label   The agent picked in the wizard.
 	 * @return string uuid.
 	 */
 	private function saddle_key( $user_id, $label = 'Cursor' ) {
@@ -336,7 +336,7 @@ class Saddle_Connections_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * A refusal proves the request reached WordPress, not that the app can do
+	 * A refusal proves the request reached WordPress, not that the agent can do
 	 * anything. It must not tick "first tool call".
 	 */
 	public function test_a_refused_tool_call_is_not_a_first_tool_call() {
@@ -635,7 +635,7 @@ class Saddle_Connections_Test extends WP_UnitTestCase {
 		$this->assertCount( 3, $rows );
 		$this->assertArrayNotHasKey( 'key:' . $foreign, $byid );
 
-		$this->assertSame( 'claude-code', $byid[ 'key:' . $unused ]['app'], 'The app picked in the wizard.' );
+		$this->assertSame( 'claude-code', $byid[ 'key:' . $unused ]['app'], 'The agent picked in the wizard.' );
 		$this->assertSame( 0, $byid[ 'key:' . $unused ]['first_seen_at'] );
 		$this->assertSame( 'cursor', $byid[ 'key:' . $used ]['app'], 'clientInfo outranks the key\'s name.' );
 		$this->assertSame( 'AI agent', $byid[ 'key:' . $used ]['name'] );
@@ -689,7 +689,7 @@ class Saddle_Connections_Test extends WP_UnitTestCase {
 		}
 	}
 
-	/* ------------------------------------------------------ app detection */
+	/* ------------------------------------------------------ agent detection */
 
 	/**
 	 * @dataProvider detections

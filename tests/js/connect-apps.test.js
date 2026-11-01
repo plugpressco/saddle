@@ -95,7 +95,7 @@ describe( 'installLinks', () => {
 		expect( installLinks( 'vscode', null, 'key' ) ).toEqual( [] );
 	} );
 
-	it( 'offers no link for apps without an install URL', () => {
+	it( 'offers no link for agents without an install URL', () => {
 		const { installLinks } = load( site );
 
 		for ( const app of [
@@ -164,7 +164,7 @@ describe( 'buildConfig', () => {
 
 	it( 'puts only "Basic …" in a JSON key config’s Authorization header', () => {
 		// The symptom: Cursor, VS Code, Windsurf and "Any MCP app" got
-		// "Authorization": "Authorization: Basic …", so the app sent the
+		// "Authorization": "Authorization: Basic …", so the agent sent the
 		// header name twice and every call was refused.
 		const { buildConfig, buildGuideConfig } = load( site );
 		const basic = `Basic ${ btoa( 'admin:abcdEFGH' ) }`;
@@ -184,7 +184,7 @@ describe( 'buildConfig', () => {
 				'saddle-example'
 			].headers.Authorization
 		).toBe( 'Basic PASTE-YOUR-KEY-HERE' );
-		// The command-line apps name the header themselves.
+		// The command-line agents name the header themselves.
 		expect( buildConfig( 'claude-code', 'abcd EFGH', 'key' ) ).toContain(
 			`--header "Authorization: ${ basic }"`
 		);
@@ -207,7 +207,7 @@ describe( 'connectPath: which path the connect wizard takes', () => {
 	const meta = ( APPS, key ) => APPS.find( ( a ) => a.key === key );
 	const both = ( APPS ) => APPS.filter( ( a ) => a.viaKey && a.viaAddress );
 
-	it( 'gives an address-only app the address whatever the switch says', () => {
+	it( 'gives an address-only agent the address whatever the switch says', () => {
 		const { APPS, connectPath } = load( site );
 		[ null, off, on, noHttps, plain ].forEach( ( signIn ) => {
 			[ 'chatgpt', 'grok' ].forEach( ( key ) =>
@@ -310,7 +310,7 @@ describe( 'connectPath: which path the connect wizard takes', () => {
 		expect( connectPath( claude, { signIn: on } ) ).toBe( 'address' );
 	} );
 
-	it( 'follows the switch before an app is picked', () => {
+	it( 'follows the switch before an agent is picked', () => {
 		const { connectPath } = load( site );
 
 		expect( connectPath( null, { signIn: on } ) ).toBe( 'address' );
@@ -323,7 +323,7 @@ describe( 'connectPath: which path the connect wizard takes', () => {
 } );
 
 describe( 'APP_GROUPS', () => {
-	it( 'puts every app in exactly one group, and leaves "other" for the link', () => {
+	it( 'puts every agent in exactly one group, and leaves "other" for the link', () => {
 		const { APPS, APP_GROUPS } = load( site );
 		const grouped = APP_GROUPS.flatMap( ( g ) => g.apps );
 
@@ -364,7 +364,7 @@ describe( 'a site on this computer (P7)', () => {
 		).toBe( true );
 	} );
 
-	it( 'says only web apps can’t reach it', () => {
+	it( 'says only web agents can’t reach it', () => {
 		const { APPS, WEB_APPS, LOCAL_APPS, unreachableHere } = load( site );
 
 		APPS.forEach( ( app ) =>
@@ -395,11 +395,11 @@ describe( 'a site on this computer (P7)', () => {
 	} );
 } );
 
-describe( 'existingKey: an older key for the same app', () => {
+describe( 'existingKey: an older key for the same agent', () => {
 	const appOf = ( name ) =>
 		( { 'Claude Code': 'claude-code', Cursor: 'cursor' } )[ name ] || '';
 
-	it( 'finds the newest key for the app, by app or by name', () => {
+	it( 'finds the newest key for the agent, by agent or by name', () => {
 		const { existingKey } = load( site );
 		const rows = [
 			{
@@ -429,7 +429,7 @@ describe( 'existingKey: an older key for the same app', () => {
 		expect( existingKey( rows, 'cursor', appOf ).id ).toBe( 'key:cur' );
 	} );
 
-	it( 'finds none for a sign-in, another app, or "Any MCP app"', () => {
+	it( 'finds none for a sign-in, another agent, or "Any MCP app"', () => {
 		const { existingKey } = load( site );
 		const rows = [
 			{ id: 'oauth:1', kind: 'oauth', app: 'claude' },

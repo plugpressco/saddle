@@ -84,7 +84,7 @@ const roleLabel = ( key ) =>
 	( ROLES.find( ( r ) => r.key === key ) || {} ).label || key;
 
 /**
- * What an app's role is. Until the server sends one (an older Core), a
+ * What an agent's role is. Until the server sends one (an older Core), a
  * grant's own level stands in, and a key falls back to the site's tier.
  *
  * @param {Object} c        A row from GET /connections.
@@ -95,8 +95,8 @@ const roleOf = ( c, siteTier ) =>
 	c.role || ( 'oauth' === c.kind ? c.level : siteTier ) || 'read';
 
 /**
- * The app as the owner knows it: what they named it, else the app Saddle
- * recognised, else what the app calls itself.
+ * The agent as the owner knows it: what they named it, else the agent Saddle
+ * recognised, else what the agent calls itself.
  *
  * @param {Object} c A row from GET /connections.
  * @return {string} Label.
@@ -121,10 +121,10 @@ const appOf = ( c ) => c.app || appKeyFromLabel( c.name || c.client );
  * @param {Function} props.onClientsChanged Reloads the keys.
  * @param {Function} props.onClientRemoved  Drops a revoked key from the list.
  * @param {string}   props.siteTier         The site's level (older Core).
- * @param {Function} props.onGuide          Shows an app's steps, by app key.
- * @param {Function} props.onRotate         Shows an app's steps with a new
+ * @param {Function} props.onGuide          Shows an agent's steps, by agent key.
+ * @param {Function} props.onRotate         Shows an agent's steps with a new
  *                                          key in place of its old one: the
- *                                          app key and the key's uuid.
+ *                                          agent key and the key's uuid.
  */
 export default function Apps( {
 	clients,
@@ -135,7 +135,7 @@ export default function Apps( {
 	onRotate,
 } ) {
 	const confirm = useConfirm();
-	// The apps' steps read the same cache, so they know at once which apps
+	// The agents' steps read the same cache, so they know at once which agents
 	// are connected (R10).
 	const connections = useConnections();
 	const { refresh } = connections;
@@ -168,9 +168,9 @@ export default function Apps( {
 			.then( () => {
 				toast.success(
 					sprintf(
-						/* translators: 1: the app name, 2: its access, such as "Edit content". */
+						/* translators: 1: the agent name, 2: its access, such as "Edit content". */
 						__(
-							'%1$s is now set to “%2$s”. Reopen the app to pick up its new tools.',
+							'%1$s is now set to “%2$s”. Reopen the agent to pick up its new tools.',
 							'saddle'
 						),
 						nameOf( c ),
@@ -188,12 +188,12 @@ export default function Apps( {
 	const askRotate = async ( c ) => {
 		const ok = await confirm( {
 			title: sprintf(
-				/* translators: %s: the app name. */
+				/* translators: %s: the agent name. */
 				__( 'Rotate “%s”’s key?', 'saddle' ),
 				nameOf( c )
 			),
 			description: __(
-				'The current key stops working when you confirm, and a new one is issued under the same name. The app can’t connect until you paste the new setup into it.',
+				'The current key stops working when you confirm, and a new one is issued under the same name. The agent can’t connect until you paste the new setup into it.',
 				'saddle'
 			),
 			danger: true,
@@ -211,13 +211,13 @@ export default function Apps( {
 		const isKey = 'key' === c.kind;
 		const ok = await confirm( {
 			title: sprintf(
-				/* translators: %s: the app name. */
+				/* translators: %s: the agent name. */
 				__( 'Disconnect “%s”?', 'saddle' ),
 				nameOf( c )
 			),
 			description: isKey
 				? __(
-						'Its key stops working when you confirm, and the app loses access to this site. You can connect it again later with a new key.',
+						'Its key stops working when you confirm, and the agent loses access to this site. You can connect it again later with a new key.',
 						'saddle'
 				  )
 				: __(
@@ -245,7 +245,7 @@ export default function Apps( {
 				}
 				toast.success(
 					__(
-						'Disconnected. That app’s sign-in no longer works.',
+						'Disconnected. That agent’s sign-in no longer works.',
 						'saddle'
 					)
 				);
@@ -260,7 +260,7 @@ export default function Apps( {
 			} );
 	};
 
-	// Nothing connected: the apps and their steps below are the page.
+	// Nothing connected: the agents and their steps below are the page.
 	if ( null !== rows && 0 === rows.length ) {
 		return null;
 	}
@@ -297,7 +297,7 @@ export default function Apps( {
 									options={ ROLE_OPTIONS }
 									value={ roleOf( c, siteTier ) }
 									aria-label={ sprintf(
-										/* translators: %s: the app name. */
+										/* translators: %s: the agent name. */
 										__( 'What %s can do', 'saddle' ),
 										nameOf( c )
 									) }
@@ -309,7 +309,7 @@ export default function Apps( {
 									trigger={
 										<IconButton
 											aria-label={ sprintf(
-												/* translators: %s: the app name. */
+												/* translators: %s: the agent name. */
 												__( 'More for %s', 'saddle' ),
 												nameOf( c )
 											) }

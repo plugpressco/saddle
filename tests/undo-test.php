@@ -82,7 +82,7 @@ class Saddle_Undo_Test extends WP_UnitTestCase {
 
 	/**
 	 * Found in the 1.5.0 release QA: undoing a trash listed WordPress's own
-	 * bookkeeping ("Restore the _wp_trash_meta_status field…") to the app and
+	 * bookkeeping ("Restore the _wp_trash_meta_status field…") to the agent and
 	 * on Needs your OK. It is still restored, just not listed.
 	 */
 	public function test_undoing_a_trash_lists_no_wordpress_bookkeeping() {

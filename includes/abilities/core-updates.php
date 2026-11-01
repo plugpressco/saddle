@@ -13,7 +13,7 @@
  * WordPress's own "automatic updates for all new versions" switch (#351):
  * WordPress turns that on by default for sites installed since 5.6, so it
  * was rarely the owner's choice, and it decides what WordPress does
- * unattended, not what an app may do after a preview. A major has no
+ * unattended, not what an agent may do after a preview. A major has no
  * automatic rollback and upgrades the database.
  *
  * @package Saddle
@@ -96,7 +96,7 @@ class Saddle_Core_Update_Abilities {
 			return new WP_Error( 'saddle_updates_unavailable', implode( ' ', $blocked ), array( 'status' => 409 ) );
 		}
 		if ( ! current_user_can( 'update_core' ) ) {
-			return new WP_Error( 'saddle_cannot_update_core', __( 'The WordPress account this app is connected as cannot update WordPress here (on a multisite network, only a network administrator can). No Saddle setting changes that.', 'saddle' ), array( 'status' => 403 ) );
+			return new WP_Error( 'saddle_cannot_update_core', __( 'The WordPress account this agent is connected as cannot update WordPress here (on a multisite network, only a network administrator can). No Saddle setting changes that.', 'saddle' ), array( 'status' => 403 ) );
 		}
 
 		$offer = self::choose();
@@ -110,7 +110,7 @@ class Saddle_Core_Update_Abilities {
 		$risks = $major ? array(
 			__( 'WordPress has no automatic rollback for a core update. If the new version breaks a plugin or the theme, the site stays on it until someone fixes it.', 'saddle' ),
 			__( 'A major release upgrades the database, so going back means restoring a database backup.', 'saddle' ),
-			__( 'Saddle runs on WordPress\'s own APIs. If the release changes them, this app may lose its connection before it can report the result.', 'saddle' ),
+			__( 'Saddle runs on WordPress\'s own APIs. If the release changes them, this agent may lose its connection before it can report the result.', 'saddle' ),
 		) : array();
 
 		return Saddle_Approval::gate(
@@ -187,7 +187,7 @@ class Saddle_Core_Update_Abilities {
 			return new WP_Error( 'saddle_updates_unavailable', implode( ' ', $blocked ), array( 'status' => 409 ) );
 		}
 		if ( ! current_user_can( 'update_languages' ) ) {
-			return new WP_Error( 'saddle_cannot_update_translations', __( 'The WordPress account this app is connected as cannot update translations here (on a multisite network, only a network administrator can). No Saddle setting changes that.', 'saddle' ), array( 'status' => 403 ) );
+			return new WP_Error( 'saddle_cannot_update_translations', __( 'The WordPress account this agent is connected as cannot update translations here (on a multisite network, only a network administrator can). No Saddle setting changes that.', 'saddle' ), array( 'status' => 403 ) );
 		}
 
 		$namer = new Language_Pack_Upgrader( new Automatic_Upgrader_Skin() );

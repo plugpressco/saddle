@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Saddle
  * Plugin URI:        https://saddle.to
- * Description:       Let Claude, ChatGPT and Cursor work on your site through MCP. Each app starts read-only, and every delete asks you first.
+ * Description:       Let Claude, ChatGPT and Cursor work on your site through MCP. Each agent starts read-only, and every delete asks you first.
  * Version:           1.6.2
  * Requires at least: 6.9
  * Requires PHP:      7.4
@@ -23,7 +23,7 @@ define( 'SADDLE_FILE', __FILE__ );
 define( 'SADDLE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SADDLE_URL', plugin_dir_url( __FILE__ ) );
 define( 'SADDLE_MIN_WP', '6.9' );
-// The admin app's extension-contract version (admin/src/extensions.js).
+// The admin agent's extension-contract version (admin/src/extensions.js).
 // Deliberately decoupled from SADDLE_VERSION: addons feature-detect this
 // constant (never a plugin-version floor), and it bumps ONLY on breaking
 // changes to the wp.hooks seams or the ui context object.
@@ -309,7 +309,7 @@ final class Saddle {
 		// exists alongside Application Passwords rather than replacing them.
 		Saddle_OAuth::register();
 
-		// The connection registry: which app each credential is, and whether it
+		// The connection registry: which agent each credential is, and whether it
 		// has made its first tool call. Observes the MCP route on either
 		// transport, and forgets a credential when it is revoked.
 		Saddle_Connections::register();
@@ -623,7 +623,7 @@ final class Saddle {
 		wp_clear_scheduled_hook( Saddle_Insight::HOOK );
 
 		// Nothing confines Saddle's keys while it is off, so they go now and
-		// apps connect again after reactivation (#319).
+		// agents connect again after reactivation (#319).
 		Saddle_Connection::revoke_issued_keys();
 	}
 }

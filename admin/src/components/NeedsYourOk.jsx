@@ -3,7 +3,7 @@
  * approve or reject here, instead of (or as well as) in the chat.
  *
  * Renders nothing when nothing is waiting. The approval itself is recorded by
- * the server; the app's own confirm then goes through or is refused.
+ * the server; the agent's own confirm then goes through or is refused.
  */
 import { useState, useEffect, useCallback } from '@wordpress/element';
 import {
@@ -152,7 +152,7 @@ export default function NeedsYourOk( { onChange } ) {
 			>
 				{ review && (
 					<div className="saddle-doc saddle-doc--bare">
-						{ /* The title already says what the app asks; the
+						{ /* The title already says what the agent asks; the
 						     details are the preview as plain rows, with
 						     "was → becomes" for a change. */ }
 						{ rows.length > 0 && (

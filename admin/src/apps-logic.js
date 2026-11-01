@@ -1,14 +1,14 @@
 /**
- * Pure helpers for AI agents (#309): the one line under a connected app's
- * name, and which apps have really connected. No React, no network.
+ * Pure helpers for AI agents (#309): the one line under a connected agent's
+ * name, and which agents have really connected. No React, no network.
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { relativeWhen } from './activity-format';
 
 /**
- * When the app last reached the site: its last tool call, else its last
+ * When the agent last reached the site: its last tool call, else its last
  * request. 0 when it never has. A key that was made but never pasted into
- * an app has neither.
+ * an agent has neither.
  *
  * @param {Object} c A row from GET /connections; times are Unix seconds.
  * @return {number} Unix seconds, or 0.
@@ -18,21 +18,21 @@ export function usedAt( c ) {
 }
 
 /**
- * Whether an app has ever reached the site with its key or sign-in.
+ * Whether an agent has ever reached the site with its key or sign-in.
  *
  * @param {Object} c A row from GET /connections.
- * @return {boolean} True once the app has made a request.
+ * @return {boolean} True once the agent has made a request.
  */
 export function hasBeenUsed( c ) {
 	return usedAt( c ) > 0;
 }
 
 /**
- * The apps that have connected for real, by app key, for the green dot on
- * the Connect an app tiles. A key that was never used does not count.
+ * The agents that have connected for real, by agent key, for the green dot on
+ * the Connect an agent tiles. A key that was never used does not count.
  *
  * @param {Array} connections Rows from GET /connections.
- * @return {Set<string>} App keys.
+ * @return {Set<string>} Agent keys.
  */
 export function usedAppKeys( connections ) {
 	return new Set(
