@@ -63,7 +63,7 @@ export function openingStep( firstRun, search ) {
 /**
  * Whether this page runs in WordPress Playground's in-browser preview, the
  * Live Preview on WordPress.org. The whole site runs inside the visitor's
- * browser there, so no AI app can ever reach it.
+ * browser there, so no AI agent can ever reach it.
  *
  * @param {string} hostname `window.location.hostname`.
  * @return {boolean} True on playground.wordpress.net.

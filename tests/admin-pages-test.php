@@ -459,8 +459,8 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		return array(
 			'Home'                       => array( 'saddle', null, 'home', 'overview' ),
 			'an old Activity tab link'   => array( 'saddle', 'activity', 'home', 'overview' ),
-			'AI apps'                    => array( 'saddle-connections', null, 'connections', 'apps' ),
-			'AI apps, an old Permissions link' => array( 'saddle-connections', 'permissions', 'connections', 'apps' ),
+			'AI agents'                    => array( 'saddle-connections', null, 'connections', 'apps' ),
+			'AI agents, an old Permissions link' => array( 'saddle-connections', 'permissions', 'connections', 'apps' ),
 			'Context'                    => array( 'saddle-context', null, 'context', 'overview' ),
 			'Settings'                   => array( 'saddle-settings', null, 'settings', 'general' ),
 			'an old Advanced link'       => array( 'saddle-settings', 'advanced', 'settings', 'general' ),

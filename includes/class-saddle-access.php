@@ -135,7 +135,7 @@ class Saddle_Access {
 	 * Saddle's. Any other key that existed then keeps the old site tier the
 	 * first time it calls Saddle, so an update never takes away what an app
 	 * could do, and that becomes its stored role, which the owner can change on
-	 * AI apps. A key made after the update starts at Read only, as every new
+	 * AI agents. A key made after the update starts at Read only, as every new
 	 * key does. This never widens anything: the key could do exactly this
 	 * before the update.
 	 *

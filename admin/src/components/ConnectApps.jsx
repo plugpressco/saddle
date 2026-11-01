@@ -62,7 +62,7 @@ import { appTone } from '../home-logic';
 const PULSE_MS = 3000;
 const PULSE_LIMIT_MS = 3 * 60 * 1000;
 
-// One cache for GET /connections: the AI apps list fills it, so the drawer
+// One cache for GET /connections: the AI agents list fills it, so the drawer
 // opens with the right dots at once.
 const CONNECTIONS = 'saddle-connections';
 
@@ -332,11 +332,11 @@ export function SetupIntro() {
 			<div className="saddle-setup__intro-head">
 				<div className="saddle-setup__intro-text">
 					<h2 className="saddle-soft-card__title">
-						{ __( 'Connect your AI app', 'saddle' ) }
+						{ __( 'Connect your AI agent', 'saddle' ) }
 					</h2>
 					<p className="saddle-setup__lede">
 						{ __(
-							'Add this site to your AI app with the address below. You choose what each app may do.',
+							'Add this site to your AI agent with the address below. You choose what each agent may do.',
 							'saddle'
 						) }
 					</p>
@@ -648,7 +648,7 @@ export default function ConnectApps( { oauth, onConnected, focus = null } ) {
 				ref={ list }
 				className="saddle-setup__apps"
 				role="group"
-				aria-label={ __( 'AI apps', 'saddle' ) }
+				aria-label={ __( 'AI agents', 'saddle' ) }
 			>
 				{ ORDER.filter( isApp ).map( ( key ) => {
 					const each = APPS.find( ( a ) => a.key === key );

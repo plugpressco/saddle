@@ -1,5 +1,5 @@
 /**
- * Needs your OK (#287): changes an AI app has previewed that the owner can
+ * Needs your OK (#287): changes an AI agent has previewed that the owner can
  * approve or reject here, instead of (or as well as) in the chat.
  *
  * Renders nothing when nothing is waiting. The approval itself is recorded by

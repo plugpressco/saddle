@@ -232,7 +232,7 @@ describe( 'connectPath: which path the connect wizard takes', () => {
 		} );
 	} );
 
-	it( 'keeps AI apps’ key wizard on the key while sign-in is off', () => {
+	it( 'keeps AI agents’ key wizard on the key while sign-in is off', () => {
 		const { APPS, connectPath } = load( site );
 		both( APPS ).forEach( ( app ) =>
 			expect( connectPath( app, { signIn: off } ) ).toBe( 'key' )
@@ -433,7 +433,7 @@ describe( 'existingKey: an older key for the same app', () => {
 		const { existingKey } = load( site );
 		const rows = [
 			{ id: 'oauth:1', kind: 'oauth', app: 'claude' },
-			{ id: 'key:x', kind: 'key', app: 'other', name: 'AI app' },
+			{ id: 'key:x', kind: 'key', app: 'other', name: 'AI agent' },
 		];
 
 		expect( existingKey( rows, 'claude', appOf ) ).toBeNull();

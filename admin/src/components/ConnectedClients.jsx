@@ -440,7 +440,7 @@ export function ConnectionDetails() {
 					<div className="saddle-apps__field">
 						<span className="saddle-apps__fieldlabel">
 							{ __(
-								'Your site’s address for AI apps',
+								'Your site’s address for AI agents',
 								'saddle'
 							) }
 						</span>

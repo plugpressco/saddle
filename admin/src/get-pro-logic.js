@@ -19,7 +19,7 @@ export const STORE = 'https://saddle.to';
 
 /**
  * The plans, smallest first: each includes the one before it. `year` is the
- * price in US dollars, billed once a year; `calls` the AI-app calls a day
+ * price in US dollars, billed once a year; `calls` the AI agent calls a day
  * through Saddle Cloud; `credits` the SEO credits a month (Reach only); all
  * by size. Every plan lists four things it adds, so the cards line up. Its
  * icon (Pro wears the crown) sits on a tile of its tone.
@@ -86,7 +86,7 @@ const count = ( n ) => n.toLocaleString( 'en-US' );
 /**
  * The plan cards for one size: the price a month (the yearly price over
  * twelve, as saddle.to shows it) and a year, the checkout link, the same
- * three numbers on every card (sites, AI-app calls a day, SEO credits a
+ * three numbers on every card (sites, AI agent calls a day, SEO credits a
  * month, with `none` set where a plan has no credits), and the four things
  * it adds. An unknown size falls back to the first size.
  *
@@ -121,7 +121,7 @@ export function planCards( size ) {
 					key: 'calls',
 					text: sprintf(
 						/* translators: %s: a number of calls, such as 5,000. */
-						__( '%s AI-app calls a day', 'saddle' ),
+						__( '%s AI agent calls a day', 'saddle' ),
 						count( p.calls[ sites ] )
 					),
 				},
@@ -155,14 +155,14 @@ export function questions() {
 		{
 			q: __( 'Do I need a plan?', 'saddle' ),
 			a: __(
-				'No. Saddle is free on every site. A plan lets one AI app work on all your sites through Saddle Cloud.',
+				'No. Saddle is free on every site. A plan lets one AI agent work on all your sites through Saddle Cloud.',
 				'saddle'
 			),
 		},
 		{
-			q: __( 'What is an AI-app call?', 'saddle' ),
+			q: __( 'What is an AI agent call?', 'saddle' ),
 			a: __(
-				'One request your AI app sends through Saddle Cloud. A site you connect to your AI app directly is never counted.',
+				'One request your AI agent sends through Saddle Cloud. A site you connect to your AI agent directly is never counted.',
 				'saddle'
 			),
 		},

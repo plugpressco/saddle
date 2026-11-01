@@ -1,5 +1,5 @@
 /**
- * The one line under a connected app's name on AI apps (#309), and which
+ * The one line under a connected app's name on AI agents (#309), and which
  * apps count as connected.
  */
 import {

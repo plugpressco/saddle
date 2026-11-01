@@ -53,7 +53,7 @@ class Saddle_Core_Settings {
 	 */
 	public static function fields() {
 		// Permissions was a tab of Connections until #285. Access is chosen per
-		// app on AI apps; the safety switches, sign-in and services live in
+		// app on AI agents; the safety switches, sign-in and services live in
 		// Settings; pausing is the Dashboard's switch.
 		$apps     = 'connections/apps';
 		$settings = 'settings/general';

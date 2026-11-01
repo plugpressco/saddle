@@ -1,10 +1,10 @@
-# Connecting apps to Saddle
+# Connecting AI agents to Saddle
 
-Saddle turns your WordPress site into something an AI app can talk to. This page
+Saddle turns your WordPress site into something an AI agent can talk to. This page
 covers every way to connect one, what a connection can and cannot do, and what to
 try when it doesn't work.
 
-Your site's address for AI apps is always the same:
+Your site's address for AI agents is always the same:
 
 ```
 https://your-site.com/wp-json/saddle/v1/mcp

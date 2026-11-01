@@ -2,7 +2,7 @@
  * Saddle admin: one app, mounted on each Saddle page (#274).
  *
  * Every page is a real wp-admin submenu page under the Saddle menu: Home,
- * the installed modules, AI apps, Services, Context and Settings. The server
+ * the installed modules, AI agents, Services, Context and Settings. The server
  * says which page, tab and page inside the tab this is (`saddleData.area`,
  * `.tab`, `.sub`) and lists every page (`saddleData.areas`). Frame draws the
  * header, the AI on / Paused pill, a module's sidebar and its icon tab row;
@@ -508,7 +508,7 @@ export default function App() {
 						id: 'domain-drift',
 						severity: 'warning',
 						message: __(
-							'This site’s address changed after AI write access was turned on, which can mean a copy or migration carried over live credentials. If you didn’t expect that, review your AI apps and disconnect any you don’t recognise.',
+							'This site’s address changed after AI write access was turned on, which can mean a copy or migration carried over live credentials. If you didn’t expect that, review your AI agents and disconnect any you don’t recognise.',
 							'saddle'
 						),
 						action: {

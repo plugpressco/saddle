@@ -177,7 +177,7 @@ class Saddle_OAuth_Consent {
 	 * The access levels an app can be given, most limited first.
 	 *
 	 * All three are offered: access is per app now, so no site-wide level caps
-	 * the choice. The wording matches the AI apps page on purpose: the same
+	 * the choice. The wording matches the AI agents page on purpose: the same
 	 * three levels described two different ways is how an owner ends up unsure
 	 * which one they picked.
 	 *

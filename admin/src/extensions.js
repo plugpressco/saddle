@@ -80,7 +80,7 @@
  *   See icons/kit.js; the names come from scripts/icons.mjs.
  * - `saddle.admin.homeCards` — a card on Dashboard → Overview: `{ id, order,
  *   Component }`.
- * - `saddle.admin.connectionCards` — a card on AI apps.
+ * - `saddle.admin.connectionCards` — a card on AI agents.
  * - `kit.SettingsForm` (feature `settings-form`): `<SettingsForm scope="key" />`
  *   draws a module's settings from its schema. Core mounts it on a module's
  *   Settings tab on its own; a module only needs it inside its own screen.
@@ -352,7 +352,7 @@ export function collectScreens() {
 }
 
 /**
- * Cards contributed to Dashboard → Overview or AI apps.
+ * Cards contributed to Dashboard → Overview or AI agents.
  *
  * @param {string} where `home` or `connections`.
  * @return {Array} Entries of shape { id, order, Component }.

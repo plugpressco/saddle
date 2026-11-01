@@ -366,7 +366,7 @@ class Saddle_Access_Test extends WP_UnitTestCase {
 
 		$this->sign_in_with_key( $hand_made );
 		$this->assertSame( 'write', Saddle_Capabilities::get_tier(), 'The key does what it could do in 1.3.0.' );
-		$this->assertSame( 'write', get_option( Saddle_Access::KEY_ROLES_OPTION )[ $hand_made ], 'It is stored, so AI apps shows it and the owner can change it.' );
+		$this->assertSame( 'write', get_option( Saddle_Access::KEY_ROLES_OPTION )[ $hand_made ], 'It is stored, so AI agents shows it and the owner can change it.' );
 		$this->assertNotWPError( $this->create_post_as_current() );
 	}
 

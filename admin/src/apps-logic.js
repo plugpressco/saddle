@@ -1,5 +1,5 @@
 /**
- * Pure helpers for AI apps (#309): the one line under a connected app's
+ * Pure helpers for AI agents (#309): the one line under a connected app's
  * name, and which apps have really connected. No React, no network.
  */
 import { __, sprintf } from '@wordpress/i18n';

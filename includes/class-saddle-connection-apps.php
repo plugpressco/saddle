@@ -9,7 +9,7 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Names the app behind a connection, so the admin can say "Claude" rather
- * than "Saddle: AI app" or a random OAuth client id.
+ * than "Saddle: AI agent" or a random OAuth client id.
  *
  * A display hint only, never a security decision: every piece of evidence
  * here is self-reported by the client. The keys match the connect wizard's

@@ -1,5 +1,5 @@
 /**
- * The Saddle brand mark and the AI app logos from @lobehub/icons-static-svg
+ * The Saddle brand mark and the AI agent logos from @lobehub/icons-static-svg
  * (MIT). Logos are logos, not icons: they keep their own colours.
  *
  * Interface icons are Iconoir (MIT): `NavIcon` in icons/iconoir.js for the
@@ -37,7 +37,7 @@ export function BrandMark( props ) {
 	);
 }
 
-/* ---------- AI app brand logos ----------
+/* ---------- AI agent brand logos ----------
  *
  * From @lobehub/icons-static-svg (MIT, imported at the top of this file),
  * bundled at build time via @svgr. VS Code has no lobe icon (the set is

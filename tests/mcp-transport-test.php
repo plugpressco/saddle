@@ -495,7 +495,7 @@ class Saddle_MCP_Transport_Test extends WP_UnitTestCase {
 
 		$this->assertStringContainsString( 'not offered to you', $instructions );
 		$this->assertStringContainsString( 'Saddle → Agent setup', $instructions );
-		// The owner's word for the level, the one AI apps shows, not the tier key.
+		// The owner's word for the level, the one AI agents shows, not the tier key.
 		$this->assertStringContainsString( 'than the "Read only" one', $instructions );
 	}
 

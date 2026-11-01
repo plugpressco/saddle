@@ -9,7 +9,7 @@
  * Once an app is connected, one column of soft cards. "Needs your OK" while
  * something waits, and a warning when connections may not work. Then This
  * week: three numbers and the changes of each of the last seven days as
- * bars. Then the AI apps, each with what it may do, when it was last used
+ * bars. Then the AI agents, each with what it may do, when it was last used
  * and its one next step ("Try it", "Change access"). Then the add-ons as
  * tiles (the installed modules, and Saddle Analytics while it is not on),
  * the plugins on this site the apps can work inside ("Works with"), and the
@@ -406,10 +406,10 @@ export default function Home( { clients, onNavigate, onConnect, homeUrl } ) {
 						<BrandMark width={ 28 } height={ 28 } />
 					</span>
 					<p className="saddle-home__connect-text">
-						{ __( 'No AI app is connected yet.', 'saddle' ) }
+						{ __( 'No AI agent is connected yet.', 'saddle' ) }
 					</p>
 					<Button variant="primary" onClick={ onConnect }>
-						{ __( 'Connect an app', 'saddle' ) }
+						{ __( 'Connect an agent', 'saddle' ) }
 					</Button>
 				</div>
 				<InsightCard onSettings={ toUsageData } />
@@ -583,7 +583,7 @@ export default function Home( { clients, onNavigate, onConnect, homeUrl } ) {
 							>
 								<icons.Plus size={ 18 } />
 							</span>
-							{ __( 'Connect an app', 'saddle' ) }
+							{ __( 'Connect an agent', 'saddle' ) }
 						</button>
 					</li>
 				</ul>

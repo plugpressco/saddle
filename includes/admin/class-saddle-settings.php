@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
  * onto them.
  *
  * Saddle is one top-level menu. Every page is a submenu under it: Home, the
- * installed modules, AI apps, Services, Context and Settings (see
+ * installed modules, AI agents, Services, Context and Settings (see
  * Saddle_Modules). The submenu picks the page. Every page has a header whose
  * breadcrumb reads "Saddle / Page". A module's page adds a left sidebar of
  * its sections (`&tab=`) and, in a section with pages, an icon tab row

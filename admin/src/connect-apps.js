@@ -251,11 +251,11 @@ export const APPS = [
 		viaAddress: true,
 		viaKey: true,
 		howAddress: __(
-			'Find “Add MCP server” in your app’s settings and paste this. If it only takes a key, use the key instead.',
+			'Find “Add MCP server” in your agent’s settings and paste this. If it only takes a key, use the key instead.',
 			'saddle'
 		),
 		how: __(
-			'Most AI apps accept this standard setup. Find “Add MCP server” in your app’s settings and paste it there.',
+			'Most AI agents accept this standard setup. Find “Add MCP server” in your agent’s settings and paste it there.',
 			'saddle'
 		),
 		next: __( 'Open your app and ask it about your site.', 'saddle' ),

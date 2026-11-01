@@ -167,7 +167,7 @@ const PATIENCE = 120000;
 const TRY_SETTLE = 6000;
 
 // WordPress.org's Live Preview runs the whole site in the visitor's browser,
-// where no AI app can reach it.
+// where no AI agent can reach it.
 const IN_PREVIEW = isBrowserPreview( window.location.hostname );
 
 const appMeta = ( key ) => APPS.find( ( a ) => a.key === key );
@@ -970,7 +970,7 @@ export default function FirstRun( {
 										'saddle'
 									) }
 									description={ __(
-										'So no AI app can connect to it. To connect one, install Saddle on your own site.',
+										'So no AI agent can connect to it. To connect one, install Saddle on your own site.',
 										'saddle'
 									) }
 								>

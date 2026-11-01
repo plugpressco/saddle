@@ -78,7 +78,7 @@ export function weekTiles( week ) {
 }
 
 /**
- * The one next step for a connected app, shown on its row in Home's AI apps
+ * The one next step for a connected app, shown on its row in Home's AI agents
  * (#367; a line of its own before): try it while it has not used Saddle
  * yet, then give it more than Read only.
  *

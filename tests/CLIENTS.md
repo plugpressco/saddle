@@ -1,6 +1,6 @@
-# The AI app matrix
+# The AI agent matrix
 
-Phase 1's exit bar (#223): each of six AI apps can connect, read, and make a
+Phase 1's exit bar (#223): each of six AI agents can connect, read, and make a
 gated write that previews before it changes anything. Real apps can't run in
 CI or in an agent's sandbox, so `scripts/client-matrix.mjs` replays what each
 one sends. A pass with the real app is still the proof; the script tells you
@@ -25,7 +25,7 @@ How each one connects, and the setup the connect wizard gives for it
 
 "Verified" names were read from each app's own code on 2026-09-30
 (`includes/class-saddle-connection-apps.php`). Saddle uses the name only to
-label the connection under AI apps; it never decides access on it.
+label the connection under AI agents; it never decides access on it.
 
 A key is an Application Password sent as `Authorization: Basic`. Sign-in is
 Saddle's own OAuth server, off until the owner turns it on, and it sends
@@ -73,7 +73,7 @@ the date here.
 ## Run the script
 
 Node 22 or newer, no dependencies. Run it against a local or staging site,
-never a live one: each run is recorded under AI apps as a connection of the key
+never a live one: each run is recorded under AI agents as a connection of the key
 you use, and with `--write` the gated write aims a preview at the newest post
 (it waits under Needs your OK for 15 minutes).
 
@@ -82,7 +82,7 @@ SADDLE_USER=admin SADDLE_KEY='abcd efgh ijkl mnop qrst uvwx' \
   node scripts/client-matrix.mjs --site https://example.test
 ```
 
-- **A key:** Saddle → AI apps → connect any app → use a key. Give it Edit
+- **A key:** Saddle → Agent setup → connect any agent → use a key. Give it Edit
   content to see the gated write preview. At Read only the write is refused
   with a reason instead, which also passes.
 - **Sign-in:** turn on sign-in for apps. Without `--token` (or `SADDLE_TOKEN`)
@@ -225,11 +225,11 @@ The Codex and Cursor rows ran later the same day, on the 1.5.1 zip with
 
 | Date | App | Version | Path | Connect | Read | Gated write | Refusal at Read only | Notes |
 |---|---|---|---|---|---|---|---|---|
-| 2026-10-05 | Claude Code | 2.1.289 | key | Pass | Pass: names the site, lists the four drafts, explains its access | **Fail on 1.5.1:** got the preview and confirmed in the same turn without asking (#333). **Pass on `main` since #334 (a0f8676):** quotes the preview, asks, trashes only after "yes" | Pass: says the level needed and points to AI apps; nothing changes | Activity shows "Moved post #4 … to the trash." with Undo. Called the levels "write" and "read" (since #334 it says "Edit content", "Read only") |
+| 2026-10-05 | Claude Code | 2.1.289 | key | Pass | Pass: names the site, lists the four drafts, explains its access | **Fail on 1.5.1:** got the preview and confirmed in the same turn without asking (#333). **Pass on `main` since #334 (a0f8676):** quotes the preview, asks, trashes only after "yes" | Pass: says the level needed and points to AI agents; nothing changes | Activity shows "Moved post #4 … to the trash." with Undo. Called the levels "write" and "read" (since #334 it says "Edit content", "Read only") |
 | 2026-10-05 | Claude Code | 2.1.289 | sign-in | Pass: client metadata document, consent screen, Edit content chosen | Pass | **Fail on 1.5.1**, as with the key (#333) | Pass | On Playground, needed a test-only DNS stand-in for `claude.ai` (#335) |
 | 2026-10-14 | Claude (claude.ai connector) | 2026-10 | sign-in | Pass: the connector on Fahim's claude.ai account, signed in by address to https://saddle.to (Saddle 1.5.1, built-in transport); self-check says `oauth`, Manage the site | Pass: names the site, 12 pages, 117 tools | Pass: a test draft (#417) previewed "Move post #417 … to the trash", nothing changed; confirmed with the token; trashed | Not run: it would mean lowering the role on the live site | Run from Claude Code, which uses the claude.ai connector through the same Anthropic connector service as Claude web and desktop. On 1.5.1 the preview's own text predates #334, so it does not yet say to ask the user first; 1.5.2 does |
 | | ChatGPT | | sign-in | | | | | Not run: needs an HTTPS address the web app can reach |
-| 2026-10-05 | Codex | 0.157.0 | key | Pass | Pass: calls get-instructions first, names the site and the drafts, says "Edit content" | Pass on `main` (a0f8676): quotes the preview, "Nothing has changed yet. Shall I confirm?", trashes only after "Yes, confirm" | Pass: says Read only and links to AI apps; nothing changes | Codex asks its own approval for a destructive tool. With approvals off it refuses `delete-post` before Saddle sees it; the run passed that one tool through (see below) to test Saddle's gate |
+| 2026-10-05 | Codex | 0.157.0 | key | Pass | Pass: calls get-instructions first, names the site and the drafts, says "Edit content" | Pass on `main` (a0f8676): quotes the preview, "Nothing has changed yet. Shall I confirm?", trashes only after "Yes, confirm" | Pass: says Read only and links to AI agents; nothing changes | Codex asks its own approval for a destructive tool. With approvals off it refuses `delete-post` before Saddle sees it; the run passed that one tool through (see below) to test Saddle's gate |
 | 2026-10-05 | Codex | 0.157.0 | sign-in | Pass: client metadata document `chatgpt.com/oauth/codex/client.json`, consent screen, Edit content; client `codex-mcp-client 0.157.0` | Pass | Pass on `main`, as with the key | Pass | On Playground, needed the DNS stand-in for `chatgpt.com` (#335) |
 | | Gemini CLI | | key | | | | | Not run: not installed here, and needs a Google sign-in |
 | 2026-10-05 | Cursor | 2026.01.23 (`cursor-agent`) | key | Pass: "ready", 69 tools at Edit content; Saddle labels it "Cursor 1.0.0" | | | | Read and the gated write not run: `cursor-agent` needs the owner's Cursor sign-in |

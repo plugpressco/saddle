@@ -47,12 +47,12 @@ describe( 'plan cards', () => {
 		const [ go, pro, reach ] = planCards( 20 );
 		expect( reach.facts.map( ( f ) => f.text ) ).toEqual( [
 			'20 sites',
-			'5,000 AI-app calls a day',
+			'5,000 AI agent calls a day',
 			'4,500 SEO credits a month',
 		] );
 		expect( go.facts.map( ( f ) => f.text ) ).toEqual( [
 			'20 sites',
-			'1,000 AI-app calls a day',
+			'1,000 AI agent calls a day',
 			'No SEO credits',
 		] );
 		expect( go.facts[ 2 ].none ).toBe( true );

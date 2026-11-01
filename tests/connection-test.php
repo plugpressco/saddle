@@ -295,7 +295,7 @@ class Saddle_Connection_Test extends WP_UnitTestCase {
 	 * PHP_AUTH_USER, so it reaches PHP on setups that never forward the raw
 	 * header — and a firewall rule can match `Bearer` alone. On such a host
 	 * every pasted-key client works and every app that signs in through Saddle
-	 * gets 401, which reads from the outside as "the AI app is broken" rather
+	 * gets 401, which reads from the outside as "the AI agent is broken" rather
 	 * than "my server is dropping a header". A customer lost two weeks in it.
 	 */
 	public function test_self_check_catches_a_bearer_stripped_while_basic_survives() {

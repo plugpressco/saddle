@@ -1342,7 +1342,7 @@ class Saddle_REST_Admin {
 
 		$name = sanitize_text_field( (string) $request->get_param( 'name' ) );
 		if ( '' === $name ) {
-			$name = __( 'AI app', 'saddle' );
+			$name = __( 'AI agent', 'saddle' );
 		}
 
 		// Core rejects duplicate names; suffix a counter so "Claude Code" can be
