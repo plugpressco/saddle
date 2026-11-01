@@ -108,6 +108,7 @@ require_once SADDLE_DIR . 'includes/verify/class-saddle-verify.php';
 require_once SADDLE_DIR . 'includes/class-saddle-capabilities.php';
 require_once SADDLE_DIR . 'includes/class-saddle-access.php';
 require_once SADDLE_DIR . 'includes/class-saddle-approval.php';
+require_once SADDLE_DIR . 'includes/class-saddle-records.php';
 require_once SADDLE_DIR . 'includes/class-saddle-context.php';
 require_once SADDLE_DIR . 'includes/class-saddle-context-bundle.php';
 require_once SADDLE_DIR . 'includes/class-saddle-playbook.php';
@@ -238,6 +239,8 @@ final class Saddle {
 		// The preview serving path stays up even when minting isn't — an
 		// outstanding token must keep working for its full (short) life.
 		Saddle_Preview::register();
+		// Internal records' own post status, and the one-time move off 'publish'.
+		Saddle_Records::register();
 		add_action( 'init', array( 'Saddle_Approval', 'register_cpt' ) );
 		add_action( 'init', array( 'Saddle_Log', 'register_cpt' ) );
 		add_action( 'init', array( 'Saddle_OAuth_Store', 'register_cpt' ) );
