@@ -2,7 +2,7 @@
  * Saddle admin: one app, mounted on each Saddle page (#274).
  *
  * Every page is a real wp-admin submenu page under the Saddle menu: Home,
- * the installed modules, AI agents, Services, Context and Settings. The server
+ * the installed modules, Agent setup, Services, Context and Settings. The server
  * says which page, tab and page inside the tab this is (`saddleData.area`,
  * `.tab`, `.sub`) and lists every page (`saddleData.areas`). Frame draws the
  * header, the AI on / Paused pill, a module's sidebar and its icon tab row;
@@ -496,7 +496,7 @@ export default function App() {
 	}, [] );
 
 	// One slot under the header for the most severe notice; the rest go behind
-	// the bell. The agent's own notices come first so they win a tie: they are
+	// the bell. The app's own notices come first so they win a tie: they are
 	// about what is happening now.
 	const { slot: slotNotice, rest: bellNotices } = pickSlot( [
 		...( error

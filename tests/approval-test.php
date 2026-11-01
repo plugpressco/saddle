@@ -258,7 +258,7 @@ class Saddle_Approval_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * With several agents on one site (separate users / agent passwords), a
+	 * With several agents on one site (separate users / application passwords), a
 	 * token previewed by one user must never be confirmable by another.
 	 */
 	public function test_token_bound_to_user_rejects_a_different_user() {

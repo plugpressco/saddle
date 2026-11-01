@@ -44,7 +44,7 @@ class Saddle_Scoping_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Create an agent password and authenticate the "request" with it, the way
+	 * Create an application password and authenticate the "request" with it, the way
 	 * core does for a real REST call (sets the authenticated-app-password
 	 * global via the application_password_did_authenticate action).
 	 *
@@ -63,7 +63,7 @@ class Saddle_Scoping_Test extends WP_UnitTestCase {
 
 		$this->assertNotEmpty(
 			rest_get_authenticated_app_password(),
-			'Core must record the agent password used for this request.'
+			'Core must record the application password used for this request.'
 		);
 	}
 
@@ -136,7 +136,7 @@ class Saddle_Scoping_Test extends WP_UnitTestCase {
 	}
 
 	public function test_cookie_sessions_are_untouched() {
-		wp_set_current_user( $this->admin ); // No agent password in play.
+		wp_set_current_user( $this->admin ); // No application password in play.
 
 		$res = rest_do_request( new WP_REST_Request( 'GET', '/wp/v2/posts' ) );
 		$this->assertSame( 200, $res->get_status() );

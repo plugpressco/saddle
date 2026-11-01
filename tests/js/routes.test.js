@@ -53,7 +53,7 @@ describe( 'legacy hash addresses', () => {
 		// Activity was Home's feed from #309; it is the Logs page now.
 		[ '#activity', `${ BASE }?page=saddle-logs` ],
 		[ '#connect', `${ BASE }?page=saddle-connections` ],
-		// Permissions was a tab of Connections until #285: both land on AI agents.
+		// Permissions was a tab of Connections until #285: both land on Agent setup.
 		[ '#permissions', `${ BASE }?page=saddle-connections` ],
 		// Services was a page from #291 to #369: its accounts are on Settings.
 		[ '#integrations', `${ BASE }?page=saddle-settings#accounts` ],

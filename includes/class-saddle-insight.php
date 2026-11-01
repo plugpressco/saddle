@@ -101,7 +101,7 @@ class Saddle_Insight {
 	}
 
 	/**
-	 * What the admin agent needs for the Overview card and Settings.
+	 * What the admin app needs for the Overview card and Settings.
 	 *
 	 * @return array
 	 */
@@ -122,7 +122,7 @@ class Saddle_Insight {
 	 * @param string $choice 'allow', 'skip' or 'off'.
 	 * @param array  $parts  The parts left on (allow only).
 	 * @param string $news   An address for Saddle news, or ''.
-	 * @return array The agent state after the answer.
+	 * @return array The app state after the answer.
 	 */
 	public static function answer( $choice, array $parts = array(), $news = '' ) {
 		if ( ! self::enabled() ) {

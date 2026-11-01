@@ -1,5 +1,5 @@
 /**
- * The one line under a connected agent's name on AI agents (#309), and which
+ * The one line under a connected agent's name on Agent setup (#309), and which
  * agents count as connected.
  */
 import {

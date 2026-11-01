@@ -117,7 +117,7 @@ function setup( data, routes ) {
 		ConnectWizard: require( '../../admin/src/components/ConnectWizard' )
 			.default,
 		SignInCard: require( '../../admin/src/components/SignInCard' ).default,
-		// The agent mounts every screen inside one, as Agent.jsx does.
+		// The app mounts every screen inside one, as App.jsx does.
 		TooltipProvider: require( '@plugpress/ui' ).TooltipProvider,
 	};
 }

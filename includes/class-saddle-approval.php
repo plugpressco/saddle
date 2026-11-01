@@ -409,7 +409,7 @@ class Saddle_Approval {
 		update_post_meta( $post_id, '_saddle_target', $target );
 		update_post_meta( $post_id, '_saddle_bind', $bind );
 		// The token belongs to whoever saw the preview: with several agents on
-		// one site (separate agent passwords / users), agent A's preview must
+		// one site (separate application passwords / users), agent A's preview must
 		// not be confirmable by agent B.
 		update_post_meta( $post_id, '_saddle_user', get_current_user_id() );
 		update_post_meta( $post_id, '_saddle_expires', time() + self::TOKEN_TTL );

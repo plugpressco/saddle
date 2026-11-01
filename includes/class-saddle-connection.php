@@ -34,7 +34,7 @@ class Saddle_Connection {
 	const HTACCESS_MARKER = 'Saddle Authorization Header';
 
 	/**
-	 * User-meta key recording the UUIDs of agent passwords Saddle issued.
+	 * User-meta key recording the UUIDs of application passwords Saddle issued.
 	 *
 	 * The immutable identity credential scoping keys on: the display name
 	 * ("Saddle: …") is user-editable in wp-admin, and scoping that silently
