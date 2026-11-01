@@ -219,6 +219,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 * New: Saddle news. Tick it on Overview or subscribe in Settings to get about one email a month. You confirm by email first.
 * New: When you deactivate Saddle or one of its add-ons, a short form asks why. Skip and deactivate sends nothing.
 * New: `define( 'PLUGPRESS_INSIGHT', false );` in `wp-config.php` turns off the question, Saddle news and the form.
+* Changed: Get Pro shows one yearly price for each plan, with its sites included: Go $49 for 5 sites, Pro $99 for 20 and Reach $249 for 50. There is no sites picker.
 * Changed: AI apps are now called AI agents everywhere in Saddle.
 
 = 1.6.2 =
