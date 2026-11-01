@@ -77,7 +77,7 @@ class Saddle_Log {
 		$post_id = wp_insert_post(
 			array(
 				'post_type'   => self::CPT,
-				'post_status' => 'publish',
+				'post_status' => Saddle_Records::STATUS,
 				'post_title'  => $summary,
 				'post_author' => get_current_user_id(),
 			),
@@ -231,7 +231,7 @@ class Saddle_Log {
 
 		$args = array(
 			'post_type'   => self::CPT,
-			'post_status' => 'publish',
+			'post_status' => Saddle_Records::statuses(),
 			'orderby'     => 'date',
 			'order'       => 'DESC',
 		);
@@ -312,7 +312,7 @@ class Saddle_Log {
 		$q = new WP_Query(
 			array(
 				'post_type'      => self::CPT,
-				'post_status'    => 'publish',
+				'post_status'    => Saddle_Records::statuses(),
 				'posts_per_page' => $limit,
 				'orderby'        => 'date',
 				'order'          => 'DESC',
@@ -445,7 +445,7 @@ class Saddle_Log {
 		$q = new WP_Query(
 			array(
 				'post_type'      => self::CPT,
-				'post_status'    => 'publish',
+				'post_status'    => Saddle_Records::statuses(),
 				'posts_per_page' => 500, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page -- Bounded GC batch trimming a private log CPT to its cap.
 				'offset'         => $max,
 				'orderby'        => 'date',
