@@ -176,7 +176,7 @@ class Saddle_Log_Test extends WP_UnitTestCase {
 		$newest = get_posts(
 			array(
 				'post_type'   => Saddle_Log::CPT,
-				'post_status' => 'publish',
+				'post_status' => Saddle_Records::statuses(),
 				'numberposts' => 1,
 				'orderby'     => 'ID',
 				'order'       => 'DESC',

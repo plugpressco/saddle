@@ -4,7 +4,7 @@ Tags: mcp, ai, claude, chatgpt, divi
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.6.2
+Stable tag: 1.6.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -209,6 +209,9 @@ The WordPress.org version never checks for its own updates. The version from plu
 6. Welcome: Saddle looks around your site and helps you connect your first AI app.
 
 == Changelog ==
+
+= 1.6.3 =
+* Fix: Saddle's own records (app connections, approvals, the log, skills and memory) are no longer saved as published posts. SEO plugins that tell search engines about new posts, such as AIOSEO's IndexNow, could send links like `?post_type=saddle_oauth&p=123` to Bing. The links never showed anything (they return 404), and now they stop. Existing records move over once, on the first page load after the update.
 
 = 1.6.2 =
 * Changed: The Saddle menu reads Overview, your add-ons, Context, Agent setup, Logs, Settings and Get Pro, as one plain list with no dividing line. Home is now called Overview. Get Pro carries a crown, and it is gone once Saddle Pro is installed, even while switched off.

@@ -103,7 +103,7 @@ class Saddle_Approval {
 			array(
 				'post_type'      => self::CPT,
 				'title'          => self::hash_token( (string) $token ),
-				'post_status'    => 'publish',
+				'post_status'    => Saddle_Records::statuses(),
 				'posts_per_page' => 1,
 				'fields'         => 'ids',
 				'no_found_rows'  => true,
@@ -125,7 +125,7 @@ class Saddle_Approval {
 			array(
 				'post_type'              => self::CPT,
 				'title'                  => self::hash_token( (string) $token ),
-				'post_status'            => 'publish',
+				'post_status'            => Saddle_Records::statuses(),
 				'posts_per_page'         => 1,
 				'fields'                 => 'ids',
 				'no_found_rows'          => true,
@@ -382,11 +382,11 @@ class Saddle_Approval {
 			return new WP_Error( 'saddle_token_generation_failed', __( 'Could not generate a secure confirmation token.', 'saddle' ) );
 		}
 
-		// Stored as 'publish' on a non-public, non-queryable CPT. Using 'private'
-		// would make WP_Query apply read_private_posts capability filtering, so a
-		// valid token issued to a write-tier author/contributor would look
-		// invalid on confirmation. The CPT is hidden from every surface, so
-		// 'publish' here is not publicly exposed.
+		// Stored under Saddle's own record status on a non-public,
+		// non-queryable CPT. Not 'private': WP_Query would apply
+		// read_private_posts filtering, so a valid token issued to a write-tier
+		// author/contributor would look invalid on confirmation. Not 'publish':
+		// plugins that act on published posts would see the token (#386).
 		//
 		// Only the SHA-256 hash of the token is persisted, never the token
 		// itself: a DB-read path (a backup, an over-broad plugin query) then sees
@@ -396,7 +396,7 @@ class Saddle_Approval {
 			array(
 				'post_type'   => self::CPT,
 				'post_title'  => self::hash_token( $token ),
-				'post_status' => 'publish',
+				'post_status' => Saddle_Records::STATUS,
 			),
 			true
 		);
@@ -526,7 +526,7 @@ class Saddle_Approval {
 			array(
 				'post_type'              => self::CPT,
 				'title'                  => self::hash_token( $token ),
-				'post_status'            => 'publish',
+				'post_status'            => Saddle_Records::statuses(),
 				'posts_per_page'         => 1,
 				'fields'                 => 'ids',
 				'no_found_rows'          => true,
@@ -743,7 +743,7 @@ class Saddle_Approval {
 		$query = new WP_Query(
 			array(
 				'post_type'      => self::CPT,
-				'post_status'    => 'publish',
+				'post_status'    => Saddle_Records::statuses(),
 				'posts_per_page' => 100,
 				'fields'         => 'ids',
 				'no_found_rows'  => true,
@@ -776,7 +776,7 @@ class Saddle_Approval {
 		$query = new WP_Query(
 			array(
 				'post_type'      => self::CPT,
-				'post_status'    => 'publish',
+				'post_status'    => Saddle_Records::statuses(),
 				'posts_per_page' => 50,
 				'orderby'        => 'ID',
 				'order'          => 'DESC',

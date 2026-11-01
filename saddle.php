@@ -3,7 +3,7 @@
  * Plugin Name:       Saddle
  * Plugin URI:        https://saddle.to
  * Description:       Let Claude, ChatGPT and Cursor work on your site through MCP. Each app starts read-only, and every delete asks you first.
- * Version:           1.6.2
+ * Version:           1.6.3
  * Requires at least: 6.9
  * Requires PHP:      7.4
  * Author:            PlugPress
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SADDLE_VERSION', '1.6.2' );
+define( 'SADDLE_VERSION', '1.6.3' );
 define( 'SADDLE_FILE', __FILE__ );
 define( 'SADDLE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SADDLE_URL', plugin_dir_url( __FILE__ ) );
@@ -108,6 +108,7 @@ require_once SADDLE_DIR . 'includes/verify/class-saddle-verify.php';
 require_once SADDLE_DIR . 'includes/class-saddle-capabilities.php';
 require_once SADDLE_DIR . 'includes/class-saddle-access.php';
 require_once SADDLE_DIR . 'includes/class-saddle-approval.php';
+require_once SADDLE_DIR . 'includes/class-saddle-records.php';
 require_once SADDLE_DIR . 'includes/class-saddle-context.php';
 require_once SADDLE_DIR . 'includes/class-saddle-context-bundle.php';
 require_once SADDLE_DIR . 'includes/class-saddle-playbook.php';
@@ -238,6 +239,8 @@ final class Saddle {
 		// The preview serving path stays up even when minting isn't — an
 		// outstanding token must keep working for its full (short) life.
 		Saddle_Preview::register();
+		// Internal records' own post status, and the one-time move off 'publish'.
+		Saddle_Records::register();
 		add_action( 'init', array( 'Saddle_Approval', 'register_cpt' ) );
 		add_action( 'init', array( 'Saddle_Log', 'register_cpt' ) );
 		add_action( 'init', array( 'Saddle_OAuth_Store', 'register_cpt' ) );

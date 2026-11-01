@@ -156,7 +156,7 @@ class Saddle_Onboarding {
 		) as $source ) {
 			$args = array(
 				'post_type'              => $source[0],
-				'post_status'            => 'publish',
+				'post_status'            => Saddle_Records::statuses(),
 				'posts_per_page'         => 1,
 				'fields'                 => 'ids',
 				'no_found_rows'          => true,

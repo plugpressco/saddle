@@ -44,7 +44,7 @@ class Saddle_Approval_Test extends WP_UnitTestCase {
 			array(
 				'post_type'   => Saddle_Approval::CPT,
 				'title'       => hash( 'sha256', $token ),
-				'post_status' => 'publish',
+				'post_status' => Saddle_Records::statuses(),
 				'fields'      => 'ids',
 				'numberposts' => 1,
 			)
@@ -60,7 +60,7 @@ class Saddle_Approval_Test extends WP_UnitTestCase {
 			array(
 				'post_type'   => Saddle_Approval::CPT,
 				'title'       => $token,
-				'post_status' => 'publish',
+				'post_status' => Saddle_Records::statuses(),
 				'fields'      => 'ids',
 				'numberposts' => 1,
 			)
