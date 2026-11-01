@@ -34,9 +34,9 @@ export default function AnalyticsOffer() {
 
 	const points = [
 		__( 'Visitors, pages and sources, without cookies', 'saddle' ),
-		__( 'The visitors AI apps send you', 'saddle' ),
+		__( 'The visitors AI answers send you', 'saddle' ),
 		__( 'The AI crawlers that read your site', 'saddle' ),
-		__( 'Your AI app can read the numbers', 'saddle' ),
+		__( 'Your AI agent can read the numbers', 'saddle' ),
 	];
 
 	let action;

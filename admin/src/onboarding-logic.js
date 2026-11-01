@@ -63,7 +63,7 @@ export function openingStep( firstRun, search ) {
 /**
  * Whether this page runs in WordPress Playground's in-browser preview, the
  * Live Preview on WordPress.org. The whole site runs inside the visitor's
- * browser there, so no AI app can ever reach it.
+ * browser there, so no AI agent can ever reach it.
  *
  * @param {string} hostname `window.location.hostname`.
  * @return {boolean} True on playground.wordpress.net.
@@ -214,13 +214,13 @@ export function connectStatus( { rows, pending, app, appLabel, keyId } ) {
 			connection: match,
 			text: client
 				? sprintf(
-						/* translators: 1: app name, 2: what the app calls itself, e.g. claude-ai 0.1.0. */
+						/* translators: 1: agent name, 2: what the agent calls itself, e.g. claude-ai 0.1.0. */
 						__( '%1$s connected (%2$s)', 'saddle' ),
 						appLabel,
 						client
 				  )
 				: sprintf(
-						/* translators: %s: app name. */
+						/* translators: %s: agent name. */
 						__( '%s connected', 'saddle' ),
 						appLabel
 				  ),
@@ -233,7 +233,7 @@ export function connectStatus( { rows, pending, app, appLabel, keyId } ) {
 			phase: 'asked',
 			connection: null,
 			text: sprintf(
-				/* translators: %s: app name. */
+				/* translators: %s: agent name. */
 				__(
 					'%s asked to connect. Approve it on the screen that opened.',
 					'saddle'
@@ -247,7 +247,7 @@ export function connectStatus( { rows, pending, app, appLabel, keyId } ) {
 		phase: 'waiting',
 		connection: null,
 		text: sprintf(
-			/* translators: %s: app name. */
+			/* translators: %s: agent name. */
 			__( 'Waiting for %s…', 'saddle' ),
 			appLabel
 		),
@@ -256,71 +256,71 @@ export function connectStatus( { rows, pending, app, appLabel, keyId } ) {
 
 /* ---------------------------------------------------------- try-it lines */
 
-// Each phrase is a whole sentence with the app as its subject, so translators
+// Each phrase is a whole sentence with the agent as its subject, so translators
 // see it whole. Keys are tool names without the `saddle/` or `saddle-` prefix.
 const PHRASES = {
 	'get-site-info': ( app ) =>
-		/* translators: %s: app name. */
+		/* translators: %s: agent name. */
 		sprintf( __( '%s read the site summary', 'saddle' ), app ),
 	'context-bundle': ( app ) =>
-		/* translators: %s: app name. */
+		/* translators: %s: agent name. */
 		sprintf( __( '%s read the site overview', 'saddle' ), app ),
 	'get-instructions': ( app ) =>
-		/* translators: %s: app name. */
+		/* translators: %s: agent name. */
 		sprintf( __( '%s read your instructions', 'saddle' ), app ),
 	'list-media': ( app ) =>
-		/* translators: %s: app name. */
+		/* translators: %s: agent name. */
 		sprintf( __( '%s listed media', 'saddle' ), app ),
 	'get-media': ( app ) =>
-		/* translators: %s: app name. */
+		/* translators: %s: agent name. */
 		sprintf( __( '%s looked at a media item', 'saddle' ), app ),
 	'list-posts': ( app ) =>
-		/* translators: %s: app name. */
+		/* translators: %s: agent name. */
 		sprintf( __( '%s listed posts', 'saddle' ), app ),
 	'list-pages': ( app ) =>
-		/* translators: %s: app name. */
+		/* translators: %s: agent name. */
 		sprintf( __( '%s listed pages', 'saddle' ), app ),
 	'get-post': ( app ) =>
-		/* translators: %s: app name. */
+		/* translators: %s: agent name. */
 		sprintf( __( '%s read a post', 'saddle' ), app ),
 	'get-page': ( app ) =>
-		/* translators: %s: app name. */
+		/* translators: %s: agent name. */
 		sprintf( __( '%s read a page', 'saddle' ), app ),
 	'search-content': ( app ) =>
-		/* translators: %s: app name. */
+		/* translators: %s: agent name. */
 		sprintf( __( '%s searched your content', 'saddle' ), app ),
 	'list-categories': ( app ) =>
-		/* translators: %s: app name. */
+		/* translators: %s: agent name. */
 		sprintf( __( '%s listed categories', 'saddle' ), app ),
 	'list-tags': ( app ) =>
-		/* translators: %s: app name. */
+		/* translators: %s: agent name. */
 		sprintf( __( '%s listed tags', 'saddle' ), app ),
 	'list-users': ( app ) =>
-		/* translators: %s: app name. */
+		/* translators: %s: agent name. */
 		sprintf( __( '%s listed users', 'saddle' ), app ),
 	'list-plugins': ( app ) =>
-		/* translators: %s: app name. */
+		/* translators: %s: agent name. */
 		sprintf( __( '%s listed plugins', 'saddle' ), app ),
 	'list-themes': ( app ) =>
-		/* translators: %s: app name. */
+		/* translators: %s: agent name. */
 		sprintf( __( '%s listed themes', 'saddle' ), app ),
 	'get-blocks': ( app ) =>
-		/* translators: %s: app name. */
+		/* translators: %s: agent name. */
 		sprintf( __( '%s read a page’s blocks', 'saddle' ), app ),
 	'lint-page': ( app ) =>
-		/* translators: %s: app name. */
+		/* translators: %s: agent name. */
 		sprintf( __( '%s checked a page’s design', 'saddle' ), app ),
 	'list-skills': ( app ) =>
-		/* translators: %s: app name. */
+		/* translators: %s: agent name. */
 		sprintf( __( '%s looked at your skills', 'saddle' ), app ),
 	recall: ( app ) =>
-		/* translators: %s: app name. */
+		/* translators: %s: agent name. */
 		sprintf( __( '%s read what it remembers', 'saddle' ), app ),
 	'get-option': ( app ) =>
-		/* translators: %s: app name. */
+		/* translators: %s: agent name. */
 		sprintf( __( '%s read a setting', 'saddle' ), app ),
 	'list-modules': ( app ) =>
-		/* translators: %s: app name. */
+		/* translators: %s: agent name. */
 		sprintf( __( '%s listed your Saddle modules', 'saddle' ), app ),
 };
 
@@ -339,7 +339,7 @@ export function bareToolName( tool ) {
  * table falls back to the tool's own name.
  *
  * @param {string} tool     Tool name.
- * @param {string} appLabel The app's name.
+ * @param {string} appLabel The agent's name.
  * @return {string} A sentence.
  */
 export function toolPhrase( tool, appLabel ) {
@@ -348,7 +348,7 @@ export function toolPhrase( tool, appLabel ) {
 		return PHRASES[ name ]( appLabel );
 	}
 	return sprintf(
-		/* translators: 1: app name, 2: a tool name such as list-menus. */
+		/* translators: 1: agent name, 2: a tool name such as list-menus. */
 		__( '%1$s used %2$s', 'saddle' ),
 		appLabel,
 		name
@@ -383,7 +383,7 @@ export function tryStatus( { rows, app, appLabel } ) {
 			phase: 'waiting',
 			items: [],
 			text: sprintf(
-				/* translators: %s: app name. */
+				/* translators: %s: agent name. */
 				__( 'Waiting for %s to use Saddle…', 'saddle' ),
 				appLabel
 			),
@@ -436,7 +436,7 @@ export function timeoutTip( app, appLabel ) {
 			);
 		default:
 			return sprintf(
-				/* translators: %s: app name. */
+				/* translators: %s: agent name. */
 				__(
 					'Check that Saddle is switched on in %s, then send the message again in a new chat.',
 					'saddle'
@@ -512,7 +512,7 @@ export function selfCheckFindings( {
 				hint: ssl
 					? ''
 					: __(
-							'Apps that sign in by address need HTTPS. Use a key instead, or move the site to HTTPS.',
+							'Agents that sign in by address need HTTPS. Use a key instead, or move the site to HTTPS.',
 							'saddle'
 					  ),
 			},
@@ -552,7 +552,7 @@ export function selfCheckFindings( {
 			ok: false,
 			label: __( 'This is a local site', 'saddle' ),
 			hint: __(
-				'Apps that run on the web, like claude.ai and ChatGPT, cannot reach a site on your own computer. Use an app on this same computer, or a key.',
+				'Agents that run on the web, like claude.ai and ChatGPT, cannot reach a site on your own computer. Use an agent on this same computer, or a key.',
 				'saddle'
 			),
 		} );
@@ -575,7 +575,7 @@ export function selfCheckFindings( {
 		ok: null,
 		label: __( 'A firewall may be in the way', 'saddle' ),
 		hint: __(
-			'A security plugin or your host’s firewall can block the app. Ask your host to allow requests to this site’s /wp-json/saddle/ address.',
+			'A security plugin or your host’s firewall can block the agent. Ask your host to allow requests to this site’s /wp-json/saddle/ address.',
 			'saddle'
 		),
 	} );

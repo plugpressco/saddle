@@ -59,7 +59,7 @@ class Saddle_Approval {
 	private static $approved_tool = null;
 
 	/**
-	 * Run a call the owner approved under Needs your OK and the app then
+	 * Run a call the owner approved under Needs your OK and the agent then
 	 * confirmed (#364). A preview the tool's own code asks for on the way is
 	 * answered by that approval, so the owner is not asked twice.
 	 *
@@ -150,7 +150,7 @@ class Saddle_Approval {
 
 	/**
 	 * Whether a request waits for the owner, not the chat: its tool is set to
-	 * Ask first and an app (not the owner's own browser) made it.
+	 * Ask first and an agent (not the owner's own browser) made it.
 	 *
 	 * @param string $tool       Tool name without the namespace.
 	 * @param string $connection Connection id, '' for a browser session.
@@ -254,7 +254,7 @@ class Saddle_Approval {
 			return self::run_confirmed( $args, $action, $target, $execute );
 		}
 
-		// The owner approved this very call under Needs your OK and the app
+		// The owner approved this very call under Needs your OK and the agent
 		// confirmed it (#364), so the tool's own preview step is answered.
 		if ( null !== self::$approved_tool && self::tool_of( $args ) === self::$approved_tool ) {
 			return self::run_confirmed( $args, $action, $target, $execute );
@@ -355,7 +355,7 @@ class Saddle_Approval {
 			'action'                => $action,
 			'summary'               => isset( $args['summary'] ) ? (string) $args['summary'] : '',
 			'preview'               => isset( $args['preview'] ) ? $args['preview'] : null,
-			// Every app reads this, whatever it does with the server instructions
+			// Every agent reads this, whatever it does with the server instructions
 			// (Claude Code keeps only their first 2,048 characters, #333), so the
 			// ask-first rule lives here too, not only in the context.
 			'instructions'          => __( 'This is a preview. Nothing has changed. Show the user the summary above and ask whether to go ahead. Only after they agree, call this tool again with the same arguments plus "confirm_token" set to the value above. The token is single-use and expires in 15 minutes. The owner can also approve this on their Saddle Overview page.', 'saddle' ),
@@ -409,14 +409,14 @@ class Saddle_Approval {
 		update_post_meta( $post_id, '_saddle_target', $target );
 		update_post_meta( $post_id, '_saddle_bind', $bind );
 		// The token belongs to whoever saw the preview: with several agents on
-		// one site (separate app passwords / users), agent A's preview must
+		// one site (separate application passwords / users), agent A's preview must
 		// not be confirmable by agent B.
 		update_post_meta( $post_id, '_saddle_user', get_current_user_id() );
 		update_post_meta( $post_id, '_saddle_expires', time() + self::TOKEN_TTL );
 
-		// Which app asked. A preview is the asking app's own: another key of
+		// Which agent asked. A preview is the asking agent's own: another key of
 		// the same user cannot confirm it, and a browser session ('') cannot
-		// confirm an app's.
+		// confirm an agent's.
 		$connection = self::current_connection();
 		update_post_meta( $post_id, self::META_CONNECTION, $connection );
 
@@ -449,7 +449,7 @@ class Saddle_Approval {
 	}
 
 	/**
-	 * Whether the app behind a waiting request has lost the access level its
+	 * Whether the agent behind a waiting request has lost the access level its
 	 * tool needs since it asked. Its confirm would be refused before the gate,
 	 * so approving the request cannot help. A request whose level is unknown
 	 * is never treated as out of reach.
@@ -553,10 +553,10 @@ class Saddle_Approval {
 		$decision      = (string) get_post_meta( $post_id, self::META_DECISION, true );
 
 		// Whose token is it? Answered BEFORE the token is spent. A token
-		// presented by any user or app other than the one it was issued to can
+		// presented by any user or agent other than the one it was issued to can
 		// never run anything: both checks refuse it, on this call and on every
 		// later one. So it is left for its owner. Spending it here let one
-		// app's refused confirm destroy another app's pending preview, which
+		// agent's refused confirm destroy another agent's pending preview, which
 		// then could no longer be confirmed or approved.
 		if ( get_current_user_id() !== $stored_user ) {
 			return new WP_Error(
@@ -566,12 +566,12 @@ class Saddle_Approval {
 			);
 		}
 
-		// Bound to the app that asked, like it is to the item: two keys of one
+		// Bound to the agent that asked, like it is to the item: two keys of one
 		// user must not confirm each other's previews.
 		if ( $stored_conn !== (string) $connection ) {
 			return new WP_Error(
 				'saddle_token_connection_mismatch',
-				__( 'This confirmation token was issued to a different app. Preview the action yourself, then confirm with the token it returns.', 'saddle' ),
+				__( 'This confirmation token was issued to a different agent. Preview the action yourself, then confirm with the token it returns.', 'saddle' ),
 				array( 'status' => 403 )
 			);
 		}
@@ -592,7 +592,7 @@ class Saddle_Approval {
 		}
 
 		// Spend it, and only go on if THIS request spent it. Two requests from
-		// the owning app can both find the token above. wp_delete_post()
+		// the owning agent can both find the token above. wp_delete_post()
 		// returns false unless its own DELETE removed the row, and the database
 		// lets exactly one DELETE of a row succeed. So of any number of
 		// concurrent confirms, one gets the token and the rest are refused here,
@@ -657,7 +657,7 @@ class Saddle_Approval {
 	}
 
 	/**
-	 * The calling app's connection id, or '' for a browser session.
+	 * The calling agent's connection id, or '' for a browser session.
 	 *
 	 * @return string
 	 */
@@ -671,7 +671,7 @@ class Saddle_Approval {
 	}
 
 	/**
-	 * What to call the app behind a connection: its known name ("Claude"),
+	 * What to call the agent behind a connection: its known name ("Claude"),
 	 * else what it calls itself, else the key's name.
 	 *
 	 * @param string $connection Connection id.
@@ -733,7 +733,7 @@ class Saddle_Approval {
 			}
 		}
 
-		return __( 'An app', 'saddle' );
+		return __( 'An agent', 'saddle' );
 	}
 
 	/**
@@ -812,7 +812,7 @@ class Saddle_Approval {
 				'app'        => (string) get_post_meta( $post->ID, self::META_APP, true ),
 				'connection' => $connection,
 				// True when only the owner's OK lets it run (Ask first, #364);
-				// otherwise the app may also confirm after a yes in the chat.
+				// otherwise the agent may also confirm after a yes in the chat.
 				'waits'      => self::waits_for_owner( '' !== $tool ? $tool : str_replace( '_', '-', $action ), $connection ),
 				'tool'       => $action,
 				'target'     => (string) get_post_meta( $post->ID, '_saddle_target', true ),
@@ -857,7 +857,7 @@ class Saddle_Approval {
 			return new WP_Error(
 				'saddle_approval_out_of_reach',
 				sprintf(
-					/* translators: 1: app name, 2: access level the request needs, such as Edit content, 3: the app's access level now. */
+					/* translators: 1: agent name, 2: access level the request needs, such as Edit content, 3: the agent's access level now. */
 					__( '%1$s can no longer do this. It needs %2$s access and now has %3$s. Approving would not help.', 'saddle' ),
 					(string) get_post_meta( $id, self::META_APP, true ),
 					isset( $labels[ $tier ] ) ? $labels[ $tier ] : $tier,
@@ -899,7 +899,7 @@ class Saddle_Approval {
 	private static function decision_line( $id, $approved ) {
 		$asked = (string) get_post_meta( $id, self::META_SUMMARY, true );
 
-		// A request made with no app behind it came from a signed-in browser.
+		// A request made with no agent behind it came from a signed-in browser.
 		if ( '' === (string) get_post_meta( $id, self::META_CONNECTION, true ) ) {
 			return $approved
 				/* translators: %s: what was asked, such as "Publish post #18". */
@@ -911,9 +911,9 @@ class Saddle_Approval {
 		$app = (string) get_post_meta( $id, self::META_APP, true );
 
 		return $approved
-			/* translators: 1: app name, such as Claude Code, 2: what it asked, such as "Publish post #18". */
+			/* translators: 1: agent name, such as Claude Code, 2: what it asked, such as "Publish post #18". */
 			? sprintf( __( 'You approved %1$s’s request: %2$s', 'saddle' ), $app, $asked )
-			/* translators: 1: app name, such as Claude Code, 2: what it asked, such as "Publish post #18". */
+			/* translators: 1: agent name, such as Claude Code, 2: what it asked, such as "Publish post #18". */
 			: sprintf( __( 'You rejected %1$s’s request: %2$s', 'saddle' ), $app, $asked );
 	}
 }

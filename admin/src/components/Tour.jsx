@@ -40,7 +40,7 @@ function stopsFor() {
 			find: () => visible( document.querySelector( '.saddle-ai' ) ),
 			title: __( 'Pause your AI from here', 'saddle' ),
 			description: __(
-				'It shows AI on or Paused at the top of every Saddle page. Click it to pause every app at once.',
+				'It shows AI on or Paused at the top of every Saddle page. Click it to pause every agent at once.',
 				'saddle'
 			),
 			side: 'bottom',

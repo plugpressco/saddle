@@ -1,6 +1,6 @@
 /**
- * The one line under a connected app's name on AI apps (#309), and which
- * apps count as connected.
+ * The one line under a connected agent's name on Agent setup (#309), and which
+ * agents count as connected.
  */
 import {
 	hasBeenUsed,
@@ -12,7 +12,7 @@ import {
 const now = () => Math.floor( Date.now() / 1000 );
 
 describe( 'lastFact', () => {
-	it( 'says when the app was last used once it has been', () => {
+	it( 'says when the agent was last used once it has been', () => {
 		expect(
 			lastFact( {
 				created_at: 100,
@@ -49,7 +49,7 @@ describe( 'lastFact', () => {
 } );
 
 describe( 'metaLine', () => {
-	it( 'is one short fact, never the role or how the app signs in', () => {
+	it( 'is one short fact, never the role or how the agent signs in', () => {
 		const row = {
 			kind: 'oauth',
 			role: 'write',
@@ -81,7 +81,7 @@ describe( 'metaLine', () => {
 		expect( line ).not.toMatch( /Connected/ );
 	} );
 
-	it( 'says an app that signed in but never called is not used yet', () => {
+	it( 'says an agent that signed in but never called is not used yet', () => {
 		expect( metaLine( { kind: 'oauth', created_at: now() - 60 } ) ).toMatch(
 			/^Signed in .+, not used yet$/
 		);
@@ -103,7 +103,7 @@ describe( 'metaLine', () => {
 } );
 
 describe( 'usedAppKeys', () => {
-	it( 'counts only apps that reached the site', () => {
+	it( 'counts only agents that reached the site', () => {
 		const keys = usedAppKeys( [
 			{ app: 'claude', created_at: 100 },
 			{ app: 'cursor', created_at: 100, last_seen_at: 200 },

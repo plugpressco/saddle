@@ -69,7 +69,7 @@ class Saddle_Modules {
 					'apps' => __( 'Agent setup', 'saddle' ),
 				),
 			),
-			// Logs: every change an app made and every blocked attempt, the
+			// Logs: every change an agent made and every blocked attempt, the
 			// feed that was Overview's until 2026-10-23.
 			'logs'        => array(
 				'slug'  => 'saddle-logs',

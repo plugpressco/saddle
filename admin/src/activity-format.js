@@ -333,7 +333,7 @@ export const undoOutcome = ( res ) => {
 };
 
 /**
- * Who made an entry, in words: "via Claude Code" for an app; "by you" for
+ * Who made an entry, in words: "via Claude Code" for an agent; "by you" for
  * the person looking, who acted in wp-admin (an approval, a new role); "by
  * Jane" for another WordPress user, by display name when the log has it.
  *
@@ -344,7 +344,7 @@ export const undoOutcome = ( res ) => {
 export const madeBy = ( entry, me = '' ) => {
 	if ( entry && entry.app ) {
 		return sprintf(
-			/* translators: %s: the app that made the change, such as "Claude Code". */
+			/* translators: %s: the agent that made the change, such as "Claude Code". */
 			__( 'via %s', 'saddle' ),
 			entry.app
 		);

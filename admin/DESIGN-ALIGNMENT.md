@@ -424,8 +424,8 @@ present", then "no drawer, make like saddle cloud". The page follows Cloud's
 Agent setup (`saddle-cloud/src/routes/_app/agent-setup.tsx`), on Home's soft
 cards, tiles and chips.
 
-- **The address card:** "Connect your AI app" (15/600), one line ("Add this
-  site to your AI app with the address below. You choose what each app may
+- **The address card:** "Connect your AI agent" (15/600), one line ("Add this
+  site to your AI agent with the address below. You choose what each agent may
   do."), four app logos on soft discs, overlapping, and "Your address": the
   URL in a soft field with Copy at its end.
 - **Connected,** when any app is: one card, each row the app's logo on its
@@ -484,12 +484,12 @@ names a paid plan.
   `graph-up` mint), its name (20/600) and job; the price a month at 40/600
   with "/ month" and "$X billed yearly"; the button ("Choose Pro" primary,
   the others secondary, each opening saddle.to/go/<plan>-<sites>/ in a new
-  tab); the same three numbers on a soft ground (sites, AI-app calls a day,
+  tab); the same three numbers on a soft ground (sites, AI agent calls a day,
   SEO credits a month, "No SEO credits" grey on Go and Pro); then four
   things it adds with mint ticks. Pro: a pink wash from the top and a
   lifted pink shadow.
 - Then "7-day money-back guarantee on every plan" (mint, a shield), and
-  Questions: four short answers (do I need a plan, an AI-app call, an SEO
+  Questions: four short answers (do I need a plan, an AI agent call, an SEO
   credit, changing or cancelling) and "Compare every detail on saddle.to".
 - The plans, numbers and answers live in `admin/src/get-pro-logic.js`; a
   change on saddle.to needs a Saddle release.

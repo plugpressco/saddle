@@ -122,7 +122,7 @@ class Saddle_MCP_Diagnostics_Test extends WP_UnitTestCase {
 
 	/**
 	 * The reason this exists. A tools/list refused before the handler and a
-	 * tools/list that answers with nothing both present to the owner as "my app
+	 * tools/list that answers with nothing both present to the owner as "my agent
 	 * says it has no actions" — they must not look the same here.
 	 *
 	 * The refused shape is synthesized rather than provoked, because the shim
@@ -194,7 +194,7 @@ class Saddle_MCP_Diagnostics_Test extends WP_UnitTestCase {
 
 	/**
 	 * The pair that answers a 401. "The key was rejected" and "no key arrived"
-	 * are the same HTTP status and opposite fixes — one is reconnect the app,
+	 * are the same HTTP status and opposite fixes — one is reconnect the agent,
 	 * the other is talk to your host about a stripped Authorization header. A
 	 * customer lost two weeks inside that ambiguity.
 	 */

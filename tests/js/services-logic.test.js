@@ -89,7 +89,7 @@ describe( 'toolCount', () => {
 } );
 
 describe( 'roleLabel, replaceRecord', () => {
-	it( 'names the roles as AI apps does', () => {
+	it( 'names the roles as AI agents does', () => {
 		expect( roleLabel( 'read' ) ).toBe( 'Read only' );
 		expect( roleLabel( 'write' ) ).toBe( 'Edit content' );
 		expect( roleLabel( 'admin' ) ).toBe( 'Manage the site' );

@@ -61,8 +61,8 @@ class Saddle_OAuth_Consent {
 	public static function register_page() {
 		add_submenu_page(
 			'options.php',
-			__( 'Authorize app', 'saddle' ),
-			__( 'Authorize app', 'saddle' ),
+			__( 'Authorize agent', 'saddle' ),
+			__( 'Authorize agent', 'saddle' ),
 			Saddle_OAuth::authorize_capability(),
 			Saddle_OAuth::AUTHORIZE_PAGE,
 			array( __CLASS__, 'render' )
@@ -81,7 +81,7 @@ class Saddle_OAuth_Consent {
 
 		if ( ! $pending ) {
 			echo '<h1>' . esc_html__( 'This authorization request has expired', 'saddle' ) . '</h1>';
-			echo '<p>' . esc_html__( 'Authorization requests are only good for a few minutes. Start the connection again from the app, and approve it when this screen appears.', 'saddle' ) . '</p>';
+			echo '<p>' . esc_html__( 'Authorization requests are only good for a few minutes. Start the connection again from the agent, and approve it when this screen appears.', 'saddle' ) . '</p>';
 			echo '</div>';
 			return;
 		}
@@ -96,7 +96,7 @@ class Saddle_OAuth_Consent {
 			'<h1>%s</h1>',
 			esc_html(
 				sprintf(
-					/* translators: 1: connecting app name, 2: site name. */
+					/* translators: 1: connecting agent name, 2: site name. */
 					__( 'Connect %1$s to %2$s?', 'saddle' ),
 					$name,
 					get_bloginfo( 'name' )
@@ -104,22 +104,22 @@ class Saddle_OAuth_Consent {
 			)
 		);
 
-		// Provenance, stated plainly in both directions. A self-registered app is
+		// Provenance, stated plainly in both directions. A self-registered agent is
 		// not necessarily hostile, but the person approving it deserves to know
 		// that nothing about its identity was checked.
 		echo '<p>';
 		if ( $verified ) {
 			printf(
-				/* translators: %s: URL the app's identity document was fetched from. */
-				esc_html__( 'This app identified itself at %s, and Saddle confirmed that address vouches for it.', 'saddle' ),
+				/* translators: %s: URL the agent's identity document was fetched from. */
+				esc_html__( 'This agent identified itself at %s, and Saddle confirmed that address vouches for it.', 'saddle' ),
 				'<code>' . esc_html( (string) $pending['client_id'] ) . '</code>'
 			);
 		} else {
-			esc_html_e( 'This app registered itself with your site, and Saddle could not verify who it is. Connect it only if you started this yourself just now.', 'saddle' );
+			esc_html_e( 'This agent registered itself with your site, and Saddle could not verify who it is. Connect it only if you started this yourself just now.', 'saddle' );
 		}
 		echo '</p>';
 
-		// A new app starts read-only. The owner raises it here, per app; no
+		// A new agent starts read-only. The owner raises it here, per agent; no
 		// site-wide level caps the choice any more.
 		$asked_tier = 'read';
 
@@ -128,11 +128,11 @@ class Saddle_OAuth_Consent {
 		echo '<input type="hidden" name="action" value="' . esc_attr( self::ACTION ) . '">';
 		echo '<input type="hidden" name="saddle_req" value="' . esc_attr( $request_id ) . '">';
 
-		// The choice is the owner's, not the app's. Most apps ask for a level;
+		// The choice is the owner's, not the agent's. Most agents ask for a level;
 		// some — ChatGPT among them — ask for nothing at all. Either way this
 		// screen decides, and read is the pre-selected answer.
 		echo '<h2>' . esc_html__( 'What it will be able to do', 'saddle' ) . '</h2>';
-		echo '<p>' . esc_html__( 'This is the most this app can do. You can change it later on Saddle → Agent setup.', 'saddle' ) . '</p>';
+		echo '<p>' . esc_html__( 'This is the most this agent can do. You can change it later on Saddle → Agent setup.', 'saddle' ) . '</p>';
 
 		echo '<ul style="list-style:none;margin:0 0 1.5em">';
 		foreach ( self::level_choices() as $tier => $choice ) {
@@ -154,7 +154,7 @@ class Saddle_OAuth_Consent {
 			)
 		) . '</p>';
 
-		echo '<p>' . esc_html__( 'Deletions and overwrites will still show you a preview and ask for confirmation every time. You can disconnect this app at any point from Saddle → Agent setup.', 'saddle' ) . '</p>';
+		echo '<p>' . esc_html__( 'Deletions and overwrites will still show you a preview and ask for confirmation every time. You can disconnect this agent at any point from Saddle → Agent setup.', 'saddle' ) . '</p>';
 
 		echo '<p>' . esc_html(
 			sprintf(
@@ -174,10 +174,10 @@ class Saddle_OAuth_Consent {
 	}
 
 	/**
-	 * The access levels an app can be given, most limited first.
+	 * The access levels an agent can be given, most limited first.
 	 *
-	 * All three are offered: access is per app now, so no site-wide level caps
-	 * the choice. The wording matches the AI apps page on purpose: the same
+	 * All three are offered: access is per agent now, so no site-wide level caps
+	 * the choice. The wording matches the AI agents page on purpose: the same
 	 * three levels described two different ways is how an owner ends up unsure
 	 * which one they picked.
 	 *
@@ -213,12 +213,12 @@ class Saddle_OAuth_Consent {
 		check_admin_referer( self::ACTION . '_' . $request_id );
 
 		if ( ! current_user_can( Saddle_OAuth::authorize_capability() ) ) {
-			wp_die( esc_html__( 'You do not have permission to connect apps to this site.', 'saddle' ), 403 );
+			wp_die( esc_html__( 'You do not have permission to connect agents to this site.', 'saddle' ), 403 );
 		}
 
 		$pending = Saddle_OAuth_Store::consume_request( $request_id );
 		if ( ! $pending ) {
-			wp_die( esc_html__( 'This authorization request has expired or was already answered. Start the connection again from the app.', 'saddle' ), 400 );
+			wp_die( esc_html__( 'This authorization request has expired or was already answered. Start the connection again from the agent.', 'saddle' ), 400 );
 		}
 
 		$decision = isset( $_POST['decision'] ) ? sanitize_text_field( wp_unslash( (string) $_POST['decision'] ) ) : 'deny';
@@ -228,7 +228,7 @@ class Saddle_OAuth_Consent {
 				$pending,
 				'oauth-denied',
 				sprintf(
-					/* translators: %s: the app's name. */
+					/* translators: %s: the agent's name. */
 					__( 'Declined to connect %s', 'saddle' ),
 					self::app_name( $pending )
 				)
@@ -293,7 +293,7 @@ class Saddle_OAuth_Consent {
 			$pending,
 			'oauth-authorized',
 			sprintf(
-				/* translators: 1: the app's name, 2: the access it was given, e.g. "Read only". */
+				/* translators: 1: the agent's name, 2: the access it was given, e.g. "Read only". */
 				__( 'Connected %1$s (%2$s)', 'saddle' ),
 				self::app_name( $pending ),
 				Saddle_Access::labels()[ $level ]
@@ -362,7 +362,7 @@ class Saddle_OAuth_Consent {
 	}
 
 	/**
-	 * The app's name as it introduced itself, or its client id.
+	 * The agent's name as it introduced itself, or its client id.
 	 *
 	 * @param array $pending Pending request record.
 	 * @return string

@@ -31,7 +31,7 @@ export const LEGACY = {
 	activity: { area: 'logs', tab: 'overview' },
 	connect: { area: 'connections', tab: 'apps' },
 	// Permissions was a tab of Connections until #285; access is now chosen
-	// per app on AI apps.
+	// per agent on Agent setup.
 	permissions: { area: 'connections', tab: 'apps' },
 	// Services was a page from #291 to #369; its accounts and add-on
 	// switches are on Settings.

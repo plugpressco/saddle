@@ -1,6 +1,6 @@
 <?php
 /**
- * REST routes for "Needs your OK": the requests an AI app has previewed that
+ * REST routes for "Needs your OK": the requests an AI agent has previewed that
  * the owner can approve or reject from the Dashboard.
  *
  * @package Saddle

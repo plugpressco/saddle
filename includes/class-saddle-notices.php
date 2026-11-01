@@ -66,7 +66,7 @@ class Saddle_Notices {
 			),
 		);
 
-		// Changes an app asked for that wait on the owner (#287). The list is
+		// Changes an agent asked for that wait on the owner (#287). The list is
 		// on the Dashboard; every other Saddle page says how many and links
 		// there. It clears itself: nothing pending, no notice.
 		$pending = class_exists( 'Saddle_Approval' ) ? count( Saddle_Approval::pending() ) : 0;

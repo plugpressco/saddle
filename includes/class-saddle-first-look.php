@@ -1,6 +1,6 @@
 <?php
 /**
- * First look: what Saddle can tell the owner about their site before any app
+ * First look: what Saddle can tell the owner about their site before any agent
  * is connected. It feeds the first-run screen.
  *
  * Everything here is read locally, from data WordPress already holds: options,

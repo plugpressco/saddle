@@ -39,7 +39,7 @@ class Saddle_Site_Editor_Writes_Test extends WP_UnitTestCase {
 
 	/**
 	 * Sign the request in with a Saddle-issued key at Edit content, the way a
-	 * real app connects on a site without OAuth.
+	 * real agent connects on a site without OAuth.
 	 */
 	private function connect_with_a_saddle_key() {
 		add_filter( 'wp_is_application_passwords_available', '__return_true' );
@@ -57,7 +57,7 @@ class Saddle_Site_Editor_Writes_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Found in the 1.5.0 release QA: an app connected with a key could not
+	 * Found in the 1.5.0 release QA: an agent connected with a key could not
 	 * save a template or a part. The save is a nested REST request to core's
 	 * templates routes, and scope_credentials() refused it ("works only with
 	 * Saddle's endpoint"), so the confirm burned its token and saved nothing.

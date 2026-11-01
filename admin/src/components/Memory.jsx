@@ -2,7 +2,7 @@
  * Memory — what Saddle remembers between AI sessions.
  *
  * The owner's governance surface for the memory store: one row per entry
- * (yours, or saved by an app), View opens the full text with Pin and Delete,
+ * (yours, or saved by an agent), View opens the full text with Pin and Delete,
  * and the last row is the auto-include switch with a one-click clear of
  * agent-written memory. Agent-written entries are never served
  * automatically unless you pin them or turn the auto-include toggle on.
@@ -231,10 +231,10 @@ export default function Memory( { onChanged } ) {
 								>
 									{ 'owner' !== entry.source &&
 										sprintf(
-											/* translators: %s: app name. */
+											/* translators: %s: agent name. */
 											__( 'Saved by %s · ', 'saddle' ),
 											entry.client ||
-												__( 'an app', 'saddle' )
+												__( 'an agent', 'saddle' )
 										) }
 									{ entry.text }
 								</span>
@@ -317,7 +317,7 @@ export default function Memory( { onChanged } ) {
 								) }
 								<HelpTip>
 									{ __(
-										'Your own and pinned entries go to every new session. An entry an AI saved is found only when it searches, unless you pin it or turn this on. Off is safest, so pin the entries worth keeping. Memory never changes what an app may do.',
+										'Your own and pinned entries go to every new session. An entry an AI saved is found only when it searches, unless you pin it or turn this on. Off is safest, so pin the entries worth keeping. Memory never changes what an agent may do.',
 										'saddle'
 									) }
 								</HelpTip>

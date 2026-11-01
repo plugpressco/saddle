@@ -5,13 +5,13 @@
  * time. The owner answers with quick replies, which then show as the owner's
  * own messages. Saddle reads the site before it asks anything, connects the
  * owner's AI, proves the connection with a read-only prompt, and only then
- * asks how much the app may do.
+ * asks how much the agent may do.
  *
- * Steps: the site read (0), which AI (app), connect, try it, and how much it
+ * Steps: the site read (0), which AI (agent), connect, try it, and how much it
  * may do (choose). The step is stored with each change, so a reload rebuilds
- * the conversation up to where the owner was. "Skip for now" leaves the app
+ * the conversation up to where the owner was. "Skip for now" leaves the agent
  * at Read only: only the owner's pick on the last step ever raises it, and
- * only for the app that was just connected (#285). After that pick, while
+ * only for the agent that was just connected (#285). After that pick, while
  * Saddle Analytics is not on and the owner may add it, one more question
  * offers it (#367); it is part of the last step, not a stored step.
  */
@@ -47,7 +47,7 @@ import { AppLogo, BrandMark, appKeyFromLabel } from './icons';
 // Time between Saddle's lines, so each one can be read as it lands.
 const BEAT = 900;
 
-// The apps offered first; "More…" shows the rest.
+// The agents offered first; "More…" shows the rest.
 const FIRST_APPS = [ 'claude', 'chatgpt', 'claude-code', 'codex', 'cursor' ];
 
 const SEO_NAMES = {
@@ -167,7 +167,7 @@ const PATIENCE = 120000;
 const TRY_SETTLE = 6000;
 
 // WordPress.org's Live Preview runs the whole site in the visitor's browser,
-// where no AI app can reach it.
+// where no AI agent can reach it.
 const IN_PREVIEW = isBrowserPreview( window.location.hostname );
 
 const appMeta = ( key ) => APPS.find( ( a ) => a.key === key );
@@ -245,10 +245,10 @@ function Done( { children } ) {
 }
 
 /**
- * Which AI: the common apps as quick replies, and "More…" for the rest.
+ * Which AI: the common agents as quick replies, and "More…" for the rest.
  *
  * @param {Object}   props
- * @param {Function} props.onPick Called with an app key.
+ * @param {Function} props.onPick Called with an agent key.
  */
 function AppChips( { onPick } ) {
 	const [ more, setMore ] = useState( false );
@@ -319,7 +319,7 @@ function TryIt( { app, look, onDone } ) {
 		<Say>
 			<p>
 				{ sprintf(
-					/* translators: %s: the app name. */
+					/* translators: %s: the agent name. */
 					__( 'Let’s try it. Paste this into %s:', 'saddle' ),
 					label
 				) }
@@ -340,7 +340,7 @@ function TryIt( { app, look, onDone } ) {
 					} )
 				}
 				initialText={ sprintf(
-					/* translators: %s: the app name. */
+					/* translators: %s: the agent name. */
 					__( 'Waiting for %s to ask me something…', 'saddle' ),
 					label
 				) }
@@ -450,7 +450,7 @@ function Choose( { app, connectionId, tier, onTierSaved, onChosen } ) {
 			<Say cont>
 				<p className="saddle-chat__muted">
 					{ sprintf(
-						/* translators: %s: the app name. */
+						/* translators: %s: the agent name. */
 						__( 'Checking what %s may do…', 'saddle' ),
 						label
 					) }
@@ -465,7 +465,7 @@ function Choose( { app, connectionId, tier, onTierSaved, onChosen } ) {
 				<p>
 					{ 'read' === current
 						? sprintf(
-								/* translators: %s: the app name. */
+								/* translators: %s: the agent name. */
 								__(
 									'Right now %s can only look. How much should it do?',
 									'saddle'
@@ -473,7 +473,7 @@ function Choose( { app, connectionId, tier, onTierSaved, onChosen } ) {
 								label
 						  )
 						: sprintf(
-								/* translators: %s: the app name. */
+								/* translators: %s: the agent name. */
 								__(
 									'%s can already do more than look. Keep it that way, or change it:',
 									'saddle'
@@ -491,7 +491,7 @@ function Choose( { app, connectionId, tier, onTierSaved, onChosen } ) {
 				className="saddle-chat__options"
 				role="group"
 				aria-label={ sprintf(
-					/* translators: %s: the app name. */
+					/* translators: %s: the agent name. */
 					__( 'What %s can do', 'saddle' ),
 					label
 				) }
@@ -530,7 +530,7 @@ function endLine( role, label ) {
 	switch ( role ) {
 		case 'write':
 			return sprintf(
-				/* translators: %s: the app name. */
+				/* translators: %s: the agent name. */
 				__(
 					'Done. %s can now draft and edit your content. Anything big still waits for your OK, and every change shows up on Overview.',
 					'saddle'
@@ -539,7 +539,7 @@ function endLine( role, label ) {
 			);
 		case 'admin':
 			return sprintf(
-				/* translators: %s: the app name. */
+				/* translators: %s: the agent name. */
 				__(
 					'Done. %s can now help run the site. Anything big still waits for your OK, and every change shows up on Overview.',
 					'saddle'
@@ -548,7 +548,7 @@ function endLine( role, label ) {
 			);
 		default:
 			return sprintf(
-				/* translators: %s: the app name. */
+				/* translators: %s: the agent name. */
 				__(
 					'Done. %s can look around, and you can give it more on Saddle → Agent setup any time.',
 					'saddle'
@@ -879,7 +879,7 @@ export default function FirstRun( {
 			};
 		}
 		const attempt = pulseForConnect.current;
-		// The checks say nothing has reached the site. Once the app has asked
+		// The checks say nothing has reached the site. Once the agent has asked
 		// to connect, that is no longer true.
 		const slow = () => {
 			if ( 'waiting' === attempt.phase && onSlow ) {
@@ -904,7 +904,7 @@ export default function FirstRun( {
 					} )
 				}
 				initialText={ sprintf(
-					/* translators: %s: the app name. */
+					/* translators: %s: the agent name. */
 					__( 'I’ll know the moment %s connects…', 'saddle' ),
 					appLabel
 				) }
@@ -958,7 +958,7 @@ export default function FirstRun( {
 						<Say>
 							<p>
 								{ sprintf(
-									/* translators: %s: the app name. */
+									/* translators: %s: the agent name. */
 									__( 'Let’s connect %s.', 'saddle' ),
 									label
 								) }
@@ -970,7 +970,7 @@ export default function FirstRun( {
 										'saddle'
 									) }
 									description={ __(
-										'So no AI app can connect to it. To connect one, install Saddle on your own site.',
+										'So no AI agent can connect to it. To connect one, install Saddle on your own site.',
 										'saddle'
 									) }
 								>
@@ -1000,7 +1000,7 @@ export default function FirstRun( {
 						<Say>
 							<Done>
 								{ sprintf(
-									/* translators: %s: the app name. */
+									/* translators: %s: the agent name. */
 									__( '%s is connected.', 'saddle' ),
 									label
 								) }

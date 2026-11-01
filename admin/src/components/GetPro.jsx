@@ -7,7 +7,7 @@
  * cards whose rows line up (subgrid): the plan's icon (Pro wears the crown)
  * and what it is for, the price a year, the sites it includes, the button
  * to that plan's checkout on saddle.to, the same two numbers on every card
- * (AI-app calls a day, SEO credits a month), then the four things it adds. Then four short answers and the money-back
+ * (AI agent calls a day, SEO credits a month), then the four things it adds. Then four short answers and the money-back
  * line. Every button opens saddle.to in a new tab; the page sends nothing.
  *
  * The one place free Saddle names its paid plans (non-negotiable #3,
@@ -117,13 +117,13 @@ export default function GetPro() {
 			<div className="saddle-plans__intro">
 				<h2 className="saddle-plans__title">
 					{ __(
-						'Build, rank and grow every site from one AI app',
+						'Build, rank and grow every site from one AI agent',
 						'saddle'
 					) }
 				</h2>
 				<p className="saddle-plans__lede">
 					{ __(
-						'Saddle is free and stays free. Pick a plan to work on every site from one AI app.',
+						'Saddle is free and stays free. Pick a plan to work on every site from one AI agent.',
 						'saddle'
 					) }
 				</p>

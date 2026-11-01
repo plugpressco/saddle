@@ -161,8 +161,8 @@ class Saddle_Access_Test extends WP_UnitTestCase {
 
 	public function test_two_keys_of_one_user_are_held_to_their_own_role() {
 		Saddle_Capabilities::set_tier( 'read' ); // The legacy tier is irrelevant to a key.
-		$editor = $this->key( 'Editor app' );
-		$viewer = $this->key( 'Viewer app' );
+		$editor = $this->key( 'Editor agent' );
+		$viewer = $this->key( 'Viewer agent' );
 		Saddle_Access::set_role( 'key:' . $editor, 'write' );
 
 		$this->sign_in_with_key( $editor );
@@ -238,7 +238,7 @@ class Saddle_Access_Test extends WP_UnitTestCase {
 		Saddle_Access::set_role( 'key:' . $uuid, 'write' );
 		$this->sign_in_with_key( $uuid );
 
-		$this->assertStringContainsString( 'Your access on this site: Edit content. The owner sets it for each app on Saddle → Agent setup.', Saddle_Context::system_context() );
+		$this->assertStringContainsString( 'Your access on this site: Edit content. The owner sets it for each agent on Saddle → Agent setup.', Saddle_Context::system_context() );
 
 		Saddle_Access::set_role( 'key:' . $uuid, 'read' );
 		$this->assertStringContainsString( 'Your access on this site: Read only.', Saddle_Context::system_context() );
@@ -278,7 +278,7 @@ class Saddle_Access_Test extends WP_UnitTestCase {
 	public function test_a_key_created_from_the_admin_starts_read_only() {
 		Saddle_Capabilities::set_tier( 'admin' );
 
-		$response = $this->rest( 'POST', '/saddle/v1/clients', array( 'name' => 'Fresh app' ) );
+		$response = $this->rest( 'POST', '/saddle/v1/clients', array( 'name' => 'Fresh agent' ) );
 		$this->assertSame( 201, $response->get_status() );
 
 		$uuid = $response->get_data()['uuid'];
@@ -287,7 +287,7 @@ class Saddle_Access_Test extends WP_UnitTestCase {
 	}
 
 	public function test_rotating_a_key_keeps_its_role() {
-		$response = $this->rest( 'POST', '/saddle/v1/clients', array( 'name' => 'Rotating app' ) );
+		$response = $this->rest( 'POST', '/saddle/v1/clients', array( 'name' => 'Rotating agent' ) );
 		$old      = $response->get_data()['uuid'];
 		Saddle_Access::set_role( 'key:' . $old, 'write' );
 
@@ -366,7 +366,7 @@ class Saddle_Access_Test extends WP_UnitTestCase {
 
 		$this->sign_in_with_key( $hand_made );
 		$this->assertSame( 'write', Saddle_Capabilities::get_tier(), 'The key does what it could do in 1.3.0.' );
-		$this->assertSame( 'write', get_option( Saddle_Access::KEY_ROLES_OPTION )[ $hand_made ], 'It is stored, so AI apps shows it and the owner can change it.' );
+		$this->assertSame( 'write', get_option( Saddle_Access::KEY_ROLES_OPTION )[ $hand_made ], 'It is stored, so AI agents shows it and the owner can change it.' );
 		$this->assertNotWPError( $this->create_post_as_current() );
 	}
 

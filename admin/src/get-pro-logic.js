@@ -14,7 +14,7 @@ export const STORE = 'https://saddle.to';
 
 /**
  * The plans, smallest first: each includes the one before it. `year` is the
- * price in US dollars, billed once a year; `calls` the AI-app calls a day
+ * price in US dollars, billed once a year; `calls` the AI agent calls a day
  * through Saddle Cloud; `credits` the SEO credits a month (Pro and Reach).
  * Every plan lists four things it adds, two or three words each, so the
  * cards line up (Fahim, 2026-10-28: "not use sentce in table"). Its icon (Pro
@@ -82,7 +82,7 @@ function plans() {
 			items: [
 				__( '50 sites', 'saddle' ),
 				__( '5x SEO credits', 'saddle' ),
-				__( '4x AI-app calls', 'saddle' ),
+				__( '4x AI agent calls', 'saddle' ),
 				__( 'Made for agencies', 'saddle' ),
 			],
 		},
@@ -94,7 +94,7 @@ const count = ( n ) => n.toLocaleString( 'en-US' );
 
 /**
  * The plan cards: the price a year, the sites it includes, the checkout
- * link, the same two numbers on every card (AI-app calls a day, SEO credits
+ * link, the same two numbers on every card (AI agent calls a day, SEO credits
  * a month, with `none` set where a plan has no credits), and the four things
  * it adds.
  *
@@ -118,7 +118,7 @@ export function planCards() {
 					key: 'calls',
 					text: sprintf(
 						/* translators: %s: a number of calls, such as 3,000. */
-						__( '%s AI-app calls a day', 'saddle' ),
+						__( '%s AI agent calls a day', 'saddle' ),
 						count( p.calls )
 					),
 				},
@@ -152,14 +152,14 @@ export function questions() {
 		{
 			q: __( 'Do I need a plan?', 'saddle' ),
 			a: __(
-				'No. Saddle is free on every site. A plan lets one AI app work on all your sites through Saddle Cloud.',
+				'No. Saddle is free on every site. A plan lets one AI agent work on all your sites through Saddle Cloud.',
 				'saddle'
 			),
 		},
 		{
-			q: __( 'What is an AI-app call?', 'saddle' ),
+			q: __( 'What is an AI agent call?', 'saddle' ),
 			a: __(
-				'One request your AI app sends through Saddle Cloud. A site you connect to your AI app directly is never counted.',
+				'One request your AI agent sends through Saddle Cloud. A site you connect to your AI agent directly is never counted.',
 				'saddle'
 			),
 		},

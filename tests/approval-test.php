@@ -84,7 +84,7 @@ class Saddle_Approval_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Every app reads the preview, whatever it does with the server
+	 * Every agent reads the preview, whatever it does with the server
 	 * instructions. When it only said "to proceed, call again with the token",
 	 * Claude Code took that as permission and confirmed in the same turn (#333).
 	 */
@@ -258,7 +258,7 @@ class Saddle_Approval_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * With several agents on one site (separate users / app passwords), a
+	 * With several agents on one site (separate users / application passwords), a
 	 * token previewed by one user must never be confirmable by another.
 	 */
 	public function test_token_bound_to_user_rejects_a_different_user() {

@@ -53,7 +53,7 @@ class Saddle_Core_Settings {
 	 */
 	public static function fields() {
 		// Permissions was a tab of Connections until #285. Access is chosen per
-		// app on AI apps; the safety switches, sign-in and services live in
+		// agent on Agent setup; the safety switches, sign-in and services live in
 		// Settings; pausing is the Dashboard's switch.
 		$apps     = 'connections/apps';
 		$settings = 'settings/general';
@@ -65,7 +65,7 @@ class Saddle_Core_Settings {
 				'enum'    => Saddle_Capabilities::tiers(),
 				'default' => Saddle_Capabilities::DEFAULT_TIER,
 				'label'   => __( 'Access level', 'saddle' ),
-				'help'    => __( 'What connected apps may do: read only, write content, or administer the site.', 'saddle' ),
+				'help'    => __( 'What connected agents may do: read only, write content, or administer the site.', 'saddle' ),
 				'screen'  => $apps,
 				'control' => 'custom',
 			),
@@ -73,7 +73,7 @@ class Saddle_Core_Settings {
 				'type'    => 'boolean',
 				'default' => false,
 				'label'   => __( 'Drafts only', 'saddle' ),
-				'help'    => __( 'Apps can write, but nothing they make goes live until you publish it.', 'saddle' ),
+				'help'    => __( 'Agents can write, but nothing they make goes live until you publish it.', 'saddle' ),
 				'screen'  => $settings,
 				'control' => 'custom',
 			),
@@ -81,7 +81,7 @@ class Saddle_Core_Settings {
 				'type'    => 'boolean',
 				'default' => false,
 				'label'   => __( 'Rehearsal mode', 'saddle' ),
-				'help'    => __( 'Apps see what each change would do, and nothing is saved.', 'saddle' ),
+				'help'    => __( 'Agents see what each change would do, and nothing is saved.', 'saddle' ),
 				'screen'  => $settings,
 				'control' => 'custom',
 			),
@@ -89,7 +89,7 @@ class Saddle_Core_Settings {
 				'type'    => 'boolean',
 				'default' => false,
 				'label'   => __( 'Pause Saddle', 'saddle' ),
-				'help'    => __( 'Every app is refused until you turn this off. Nothing else changes.', 'saddle' ),
+				'help'    => __( 'Every agent is refused until you turn this off. Nothing else changes.', 'saddle' ),
 				'screen'  => $home,
 				'control' => 'custom',
 			),
@@ -97,23 +97,23 @@ class Saddle_Core_Settings {
 				'type'    => 'boolean',
 				'default' => false,
 				'label'   => __( 'Sign in with your address', 'saddle' ),
-				'help'    => __( 'Apps connect from the site address and you approve them on a consent screen.', 'saddle' ),
+				'help'    => __( 'Agents connect from the site address and you approve them on a consent screen.', 'saddle' ),
 				'screen'  => $settings,
 				'control' => 'custom',
 			),
 			'oauth_dcr'               => array(
 				'type'    => 'boolean',
 				'default' => true,
-				'label'   => __( 'Let apps register themselves', 'saddle' ),
-				'help'    => __( 'Apps that support it can ask to connect. They get no access until you approve.', 'saddle' ),
+				'label'   => __( 'Let agents register themselves', 'saddle' ),
+				'help'    => __( 'Agents that support it can ask to connect. They get no access until you approve.', 'saddle' ),
 				'screen'  => $settings,
 				'control' => 'custom',
 			),
 			'oauth_cimd'              => array(
 				'type'    => 'boolean',
 				'default' => true,
-				'label'   => __( 'Let apps identify themselves by address', 'saddle' ),
-				'help'    => __( 'Apps that publish a client document can ask to connect. They get no access until you approve.', 'saddle' ),
+				'label'   => __( 'Let agents identify themselves by address', 'saddle' ),
+				'help'    => __( 'Agents that publish a client document can ask to connect. They get no access until you approve.', 'saddle' ),
 				'screen'  => $settings,
 				'control' => 'custom',
 			),
@@ -121,15 +121,15 @@ class Saddle_Core_Settings {
 				'type'    => 'secret',
 				'default' => '',
 				'label'   => __( 'Unsplash Access Key', 'saddle' ),
-				'help'    => __( 'Lets apps search and import Unsplash photos.', 'saddle' ),
+				'help'    => __( 'Lets agents search and import Unsplash photos.', 'saddle' ),
 				'screen'  => $settings,
 				'control' => 'custom',
 			),
 			'memory_autoinject_agent' => array(
 				'type'    => 'boolean',
 				'default' => false,
-				'label'   => __( 'Share what apps remember', 'saddle' ),
-				'help'    => __( 'Put notes that apps wrote into every new session, not only yours.', 'saddle' ),
+				'label'   => __( 'Share what agents remember', 'saddle' ),
+				'help'    => __( 'Put notes that agents wrote into every new session, not only yours.', 'saddle' ),
 				'screen'  => 'context/overview',
 				'control' => 'custom',
 			),
@@ -146,7 +146,7 @@ class Saddle_Core_Settings {
 				'type'    => 'boolean',
 				'default' => false,
 				'label'   => __( 'Major WordPress releases', 'saddle' ),
-				'help'    => __( 'Let apps update WordPress to a new major version, such as 7.1 to 7.2, after you approve the preview. Minor and security releases never need this.', 'saddle' ),
+				'help'    => __( 'Let agents update WordPress to a new major version, such as 7.1 to 7.2, after you approve the preview. Minor and security releases never need this.', 'saddle' ),
 				'screen'  => $settings,
 				'control' => 'custom',
 			),
@@ -167,7 +167,7 @@ class Saddle_Core_Settings {
 				'maximum' => 10000,
 				'default' => Saddle_Memory::DEFAULT_CORE_BUDGET,
 				'label'   => __( 'Memory in each session', 'saddle' ),
-				'help'    => __( 'The most characters of memory handed to an app at the start of a session.', 'saddle' ),
+				'help'    => __( 'The most characters of memory handed to an agent at the start of a session.', 'saddle' ),
 				'screen'  => 'settings/general',
 				'section' => __( 'Memory', 'saddle' ),
 				'level'   => 'basic',
@@ -175,7 +175,7 @@ class Saddle_Core_Settings {
 			'memory_recent_changes'   => array(
 				'type'    => 'boolean',
 				'default' => true,
-				'label'   => __( 'Tell apps about recent changes', 'saddle' ),
+				'label'   => __( 'Tell agents about recent changes', 'saddle' ),
 				'help'    => __( 'New sessions start with a short list of what was changed lately.', 'saddle' ),
 				'screen'  => 'settings/general',
 				'section' => __( 'Recent changes', 'saddle' ),
@@ -304,8 +304,8 @@ class Saddle_Core_Settings {
 			return new WP_Error(
 				'saddle_oauth_not_ready',
 				$readiness['permalinks']
-					? __( 'Sign-in for apps needs HTTPS. An access token sent over plain HTTP can be read in transit.', 'saddle' )
-					: __( 'Sign-in for apps needs pretty permalinks. Choose any option but Plain in Settings → Permalinks, then try again.', 'saddle' ),
+					? __( 'Sign-in for agents needs HTTPS. An access token sent over plain HTTP can be read in transit.', 'saddle' )
+					: __( 'Sign-in for agents needs pretty permalinks. Choose any option but Plain in Settings → Permalinks, then try again.', 'saddle' ),
 				array( 'status' => 409 )
 			);
 		}

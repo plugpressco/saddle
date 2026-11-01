@@ -1,6 +1,6 @@
 <?php
 /**
- * The first-run summary (#269): what Saddle says about a site before any app
+ * The first-run summary (#269): what Saddle says about a site before any agent
  * is connected. It must stay local (no HTTP request, no update refresh), stay
  * behind manage_options, and leave a new install at the read tier.
  *

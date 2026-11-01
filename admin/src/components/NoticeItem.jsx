@@ -1,5 +1,5 @@
 /**
- * One notice, from Saddle_Notices or from the app itself (#276).
+ * One notice, from Saddle_Notices or from the agent itself (#276).
  *
  * Drawn the same in the frame's slot and in the bell, so a notice does not
  * change how it looks when a more severe one pushes it out of the slot.
