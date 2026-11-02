@@ -25,7 +25,7 @@ class Saddle_Modules_View {
 	public static function all() {
 		$areas = array();
 		foreach ( Saddle_Modules::areas() as $key => $area ) {
-			// Get Pro and the Analytics placeholder are for the owner's eyes
+			// Get Premium and the Analytics placeholder are for the owner's eyes
 			// only: never in what an agent reads (#373).
 			if ( 'plans' === $key || ! empty( $area['placeholder'] ) ) {
 				continue;

@@ -79,14 +79,16 @@ class Saddle_Modules {
 					'overview' => __( 'Logs', 'saddle' ),
 				),
 			),
-			// Get Pro (#373): the plans, last in the menu, only while Saddle
-			// Pro is not installed (offers_pro()).
+			// Get Premium (#373; Get Pro until 2026-11-02, renamed because
+			// Pro is also one of the plans): the plans, last in the menu,
+			// only while Saddle Pro is not installed (offers_pro()). The slug
+			// stays, so old links keep working.
 			'plans'       => array(
 				'slug'  => 'saddle-plans',
-				'title' => __( 'Get Pro', 'saddle' ),
+				'title' => __( 'Get Premium', 'saddle' ),
 				'icon'  => 'star',
 				'tabs'  => array(
-					'overview' => __( 'Get Pro', 'saddle' ),
+					'overview' => __( 'Get Premium', 'saddle' ),
 				),
 			),
 			'context'     => array(
@@ -238,10 +240,10 @@ class Saddle_Modules {
 	}
 
 	/**
-	 * Whether Saddle shows its Get Pro page (#373). The one place free Saddle
-	 * names its paid plans (non-negotiable #3, amended 2026-10-23): a page in
-	 * the menu, nothing else, never once Saddle Pro is installed, active or
-	 * not.
+	 * Whether Saddle shows its Get Premium page (#373). The one place free
+	 * Saddle names its paid plans (non-negotiable #3, amended 2026-10-23 and
+	 * 2026-11-02): a page in the menu, nothing else, never once Saddle Pro is
+	 * installed, active or not.
 	 *
 	 * @return bool
 	 */
@@ -250,7 +252,7 @@ class Saddle_Modules {
 			|| ( defined( 'WP_PLUGIN_DIR' ) && file_exists( WP_PLUGIN_DIR . '/saddle-pro/saddle-pro.php' ) );
 
 		/**
-		 * Filter whether the Saddle menu shows Get Pro.
+		 * Filter whether the Saddle menu shows Get Premium.
 		 *
 		 * @param bool $show True unless Saddle Pro is installed.
 		 */
@@ -296,7 +298,7 @@ class Saddle_Modules {
 	 * Every page, in menu order (Fahim, 2026-10-23): Overview (the `home`
 	 * area), the modules (Analytics first among them, Saddle's placeholder
 	 * until Saddle Analytics is on), Context, Agent setup (the `connections` area),
-	 * Logs, Settings, and Get Pro while offers_pro() says so.
+	 * Logs, Settings, and Get Premium while offers_pro() says so.
 	 *
 	 * @return array<string,array> Keyed by area; each has `slug`, `title`,
 	 *                             `tabs`, `nav`, `capability`, `module`,

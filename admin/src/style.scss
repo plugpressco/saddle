@@ -2768,7 +2768,7 @@ body.saddle-admin-page {
 	margin-top: 8px;
 }
 
-/* ---------- Get Pro (#373) ---------- */
+/* ---------- Get Premium (#373) ---------- */
 // Centred: a heading, one line and the sites picker; the plans as one table
 // of three cards whose rows line up (subgrid); four short answers. Pro wears
 // the crown, a soft pink wash and a lifted shadow.
@@ -2802,15 +2802,21 @@ body.saddle-admin-page {
 }
 
 // Six rows per plan: head, price, sites, button, numbers, what it adds.
+// Four plans: two by two on a mid screen, one row whose rows line up
+// (subgrid) on a wide one.
 .saddle-plans__table {
 	display: grid;
 	grid-template-columns: minmax( 0, 1fr );
 	gap: var( --pp-space-4 );
 
-	@media ( min-width: 900px ) {
-		grid-template-columns: repeat( 3, minmax( 0, 1fr ) );
+	@media ( min-width: 782px ) {
+		grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
+	}
+
+	@media ( min-width: 1280px ) {
+		grid-template-columns: repeat( 4, minmax( 0, 1fr ) );
 		grid-template-rows: repeat( 6, auto );
-		column-gap: var( --pp-space-5 );
+		column-gap: var( --pp-space-4 );
 		row-gap: 0;
 	}
 }
@@ -2824,7 +2830,7 @@ body.saddle-admin-page {
 	border-radius: 16px;
 	box-shadow: var( --s-card-edge );
 
-	@media ( min-width: 900px ) {
+	@media ( min-width: 1280px ) {
 		grid-row: span 6;
 		grid-template-rows: subgrid;
 		gap: 0;

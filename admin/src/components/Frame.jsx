@@ -51,6 +51,8 @@ import SectionNav, { revealActive } from './SectionNav';
 const PAGE_WIDTH = 960;
 const ONE_PAGE_WIDTH = 1040;
 const MODULE_WIDTH = 920;
+// Get Premium's four plans side by side.
+const PLANS_WIDTH = 1200;
 
 // A page shows at most one tab row (Core's header row or a module
 // section's pages), and its tabs swap the one content column. So every tab
@@ -497,8 +499,7 @@ export default function Frame( {
 				? ONE_PAGE_WIDTH
 				: MODULE_WIDTH;
 	} else if ( 'plans' === area.key ) {
-		// Get Pro's three plans side by side, as big as a one-page module.
-		width = ONE_PAGE_WIDTH;
+		width = PLANS_WIDTH;
 	}
 
 	const content = (
