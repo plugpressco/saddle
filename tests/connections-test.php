@@ -703,6 +703,7 @@ class Saddle_Connections_Test extends WP_UnitTestCase {
 			'Claude Code by its metadata URL'  => array( array( 'urls' => array( 'https://claude.ai/oauth/claude-code-client-metadata' ) ), 'claude-code' ),
 			'Claude by its redirect'           => array( array( 'urls' => array( 'abc123', 'https://claude.ai/api/mcp/auth_callback' ) ), 'claude' ),
 			'ChatGPT by its redirect host'     => array( array( 'urls' => array( 'https://chatgpt.com/connector_platform_oauth_redirect' ) ), 'chatgpt' ),
+			'Saddle Cloud by its metadata URL' => array( array( 'urls' => array( 'https://cloud.saddle.to/oauth/client-metadata.json' ) ), 'saddle-cloud' ),
 			'OAuth outranks clientInfo'        => array(
 				array(
 					'urls'        => array( 'https://chatgpt.com/x' ),

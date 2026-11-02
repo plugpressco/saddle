@@ -1,29 +1,77 @@
 /**
- * Get Pro's plans (#373): Saddle Cloud's Go, Pro and Reach, one yearly price
- * each with its sites included, as saddle.to's pricing page shows them
- * (flat pricing, 2026-10-27). The one place free Saddle names its paid plans
- * (non-negotiable #3, amended 2026-10-23). No React, no network: the prices
- * live here, so a price change on saddle.to needs a Saddle update. Keep them
- * equal to saddle-cloud's `src/shared/plans.ts` and the theme's pricing
- * pattern.
+ * Get Premium's plans (#373; Free to $299, 2026-11-02): Saddle Cloud's Free,
+ * Go, Pro and Reach, one yearly price each with unlimited sites, as
+ * saddle.to's pricing page shows them. The one place free Saddle names its
+ * paid plans (non-negotiable #3, amended 2026-10-23 and 2026-11-02). No
+ * React, no network: the prices live here, so a price change on saddle.to
+ * needs a Saddle update. Keep them equal to saddle-cloud's
+ * `src/shared/plans.ts` and the theme's pricing pattern.
  */
 import { __, sprintf } from '@wordpress/i18n';
 
-/** Where every plan is bought, and compared. */
+/** Where every paid plan is bought, and compared. */
 export const STORE = 'https://saddle.to';
+
+/** Saddle Cloud, where Free starts. */
+export const CLOUD = 'https://cloud.saddle.to';
+
+/**
+ * Saddle Cloud's Connect a site page with this site's address filled in. A
+ * plain link: the person signs up or signs in there, then this site shows
+ * its own Allow screen. Saddle sends nothing to Cloud.
+ *
+ * @param {string} home This site's address.
+ * @return {string} The link.
+ */
+export function cloudConnectUrl( home ) {
+	const site = String( home || '' ).replace( /\/+$/, '' );
+	return site
+		? `${ CLOUD }/connect?site=${ encodeURIComponent( site ) }`
+		: `${ CLOUD }/connect`;
+}
+
+/**
+ * Whether Saddle Cloud is connected to this site already: a row from GET
+ * /connections that Saddle recognised as Cloud (Saddle_Connection_Apps). The
+ * offers stop then.
+ *
+ * @param {Object[]} rows `connections`.
+ * @return {boolean} Connected.
+ */
+export function connectedToCloud( rows ) {
+	return ( rows || [] ).some( ( row ) => 'saddle-cloud' === row.app );
+}
 
 /**
  * The plans, smallest first: each includes the one before it. `year` is the
- * price in US dollars, billed once a year; `calls` the AI agent calls a day
- * through Saddle Cloud; `credits` the SEO credits a month (Pro and Reach).
- * Every plan lists four things it adds, two or three words each, so the
- * cards line up (Fahim, 2026-10-28: "not use sentce in table"). Its icon (Pro
- * wears the crown) sits on a tile of its tone.
+ * price in US dollars, billed once a year; `calls` the AI agent calls a
+ * month through Saddle Cloud; `credits` the SEO credits a month (Pro and
+ * Reach); `go` the plan's checkout route on saddle.to (the sizes the Polar
+ * links were made for; every plan has unlimited sites now). Every plan lists
+ * four things it adds, two or three words each, so the cards line up
+ * (Fahim, 2026-10-28: "not use sentce in table"). Its icon (Pro wears the
+ * crown) sits on a tile of its tone.
  *
  * @return {Array<Object>} Plans.
  */
 function plans() {
 	return [
+		{
+			key: 'free',
+			icon: 'globe',
+			tone: 'lilac',
+			name: __( 'Free', 'saddle' ),
+			job: __( 'One AI connection for every site you run', 'saddle' ),
+			year: 0,
+			calls: 500,
+			lead: __( 'What you get', 'saddle' ),
+			items: [
+				__( 'One AI connection', 'saddle' ),
+				__( 'Unlimited sites', 'saddle' ),
+				__( 'Updates on request', 'saddle' ),
+				__( 'Activity log', 'saddle' ),
+			],
+		},
 		{
 			key: 'go',
 			icon: 'flash',
@@ -34,14 +82,14 @@ function plans() {
 				'saddle'
 			),
 			year: 49,
-			sites: 5,
-			calls: 150,
-			lead: __( 'What you get', 'saddle' ),
+			calls: 10000,
+			go: 'go-5',
+			lead: __( 'Everything in Free, plus', 'saddle' ),
 			items: [
 				__( 'Site updates', 'saddle' ),
 				__( 'Uptime monitoring', 'saddle' ),
+				__( 'Site Health alerts', 'saddle' ),
 				__( 'SEO actions', 'saddle' ),
-				__( 'Keyword tracking', 'saddle' ),
 			],
 		},
 		{
@@ -54,13 +102,13 @@ function plans() {
 				'saddle'
 			),
 			year: 99,
-			sites: 20,
-			calls: 1000,
+			calls: 50000,
 			credits: 200,
+			go: 'pro-20',
 			lead: __( 'Everything in Go, plus', 'saddle' ),
 			items: [
+				__( 'Keyword tracking', 'saddle' ),
 				__( 'Keyword research', 'saddle' ),
-				__( 'Weekly Google checks', 'saddle' ),
 				__( 'Saddle Pro plugin', 'saddle' ),
 				__( 'Whole Divi pages', 'saddle' ),
 			],
@@ -71,18 +119,18 @@ function plans() {
 			tone: 'mint',
 			name: __( 'Reach', 'saddle' ),
 			job: __(
-				'For agencies: 50 sites and five times the SEO credits',
+				'For agencies: ten times the SEO credits of Pro',
 				'saddle'
 			),
-			year: 249,
-			sites: 50,
-			calls: 4000,
-			credits: 1000,
+			year: 299,
+			calls: 250000,
+			credits: 2000,
+			go: 'reach-50',
 			lead: __( 'Everything in Pro, plus', 'saddle' ),
 			items: [
-				__( '50 sites', 'saddle' ),
-				__( '5x SEO credits', 'saddle' ),
-				__( '4x AI agent calls', 'saddle' ),
+				__( '10x SEO credits', 'saddle' ),
+				__( '5x AI agent calls', 'saddle' ),
+				__( 'Priority support', 'saddle' ),
 				__( 'Made for agencies', 'saddle' ),
 			],
 		},
@@ -93,17 +141,19 @@ function plans() {
 const count = ( n ) => n.toLocaleString( 'en-US' );
 
 /**
- * The plan cards: the price a year, the sites it includes, the checkout
- * link, the same two numbers on every card (AI agent calls a day, SEO credits
- * a month, with `none` set where a plan has no credits), and the four things
- * it adds.
+ * The plan cards: the price a year, the button (Free's to Saddle Cloud with
+ * this site filled in, the others to their checkout on saddle.to), the same
+ * two numbers on every card (AI agent calls a month, SEO credits a month,
+ * with `none` set where a plan has no credits), and the four things it adds.
  *
- * @return {Array<Object>} `{ key, icon, tone, name, job, yearly, sites,
- *         href, facts, lead, items, pro }`, smallest plan first.
+ * @param {string} home This site's address, for Free's link.
+ * @return {Array<Object>} `{ key, icon, tone, name, job, yearly, href, buy,
+ *         facts, lead, items, pro, free }`, smallest plan first.
  */
-export function planCards() {
+export function planCards( home = '' ) {
 	return plans().map( ( p ) => {
 		const credits = p.credits || 0;
+		const free = 0 === p.year;
 		return {
 			key: p.key,
 			icon: p.icon,
@@ -111,14 +161,20 @@ export function planCards() {
 			name: p.name,
 			job: p.job,
 			yearly: p.year,
-			sites: p.sites,
-			href: `${ STORE }/go/${ p.key }-${ p.sites }/`,
+			href: free ? cloudConnectUrl( home ) : `${ STORE }/go/${ p.go }/`,
+			buy: free
+				? __( 'Start free', 'saddle' )
+				: sprintf(
+						/* translators: %s: a plan's name, such as Pro. */
+						__( 'Choose %s', 'saddle' ),
+						p.name
+				  ),
 			facts: [
 				{
 					key: 'calls',
 					text: sprintf(
-						/* translators: %s: a number of calls, such as 3,000. */
-						__( '%s AI agent calls a day', 'saddle' ),
+						/* translators: %s: a number of calls, such as 10,000. */
+						__( '%s AI agent calls a month', 'saddle' ),
 						count( p.calls )
 					),
 				},
@@ -127,7 +183,7 @@ export function planCards() {
 					none: ! credits,
 					text: credits
 						? sprintf(
-								/* translators: %s: a number of SEO credits, such as 1,000. */
+								/* translators: %s: a number of SEO credits, such as 2,000. */
 								__( '%s SEO credits a month', 'saddle' ),
 								count( credits )
 						  )
@@ -137,13 +193,14 @@ export function planCards() {
 			lead: p.lead,
 			items: p.items,
 			pro: 'pro' === p.key,
+			free,
 		};
 	} );
 }
 
 /**
- * Get Pro's short answers, under the cards: the four questions people ask
- * before they choose, in saddle.to's words.
+ * Get Premium's short answers, under the cards: the four questions people
+ * ask before they choose, in saddle.to's words.
  *
  * @return {Array<{q:string,a:string}>} Questions and answers.
  */
@@ -152,14 +209,14 @@ export function questions() {
 		{
 			q: __( 'Do I need a plan?', 'saddle' ),
 			a: __(
-				'No. Saddle is free on every site. A plan lets one AI agent work on all your sites through Saddle Cloud.',
+				'No. Saddle is free on every site, and so is Saddle Cloud’s Free plan. Paid plans add what runs for you: updates, uptime, SEO and Saddle Pro.',
 				'saddle'
 			),
 		},
 		{
 			q: __( 'What is an AI agent call?', 'saddle' ),
 			a: __(
-				'One request your AI agent sends through Saddle Cloud. A site you connect to your AI agent directly is never counted.',
+				'One step your AI agent takes on a site through Saddle Cloud. A site you connect to your AI agent directly is never counted.',
 				'saddle'
 			),
 		},
@@ -173,7 +230,7 @@ export function questions() {
 		{
 			q: __( 'Can I change or cancel?', 'saddle' ),
 			a: __(
-				'Yes, from your Saddle Cloud account. Moving up, you pay the difference. Every plan has a 7-day money-back guarantee.',
+				'Yes, from your Saddle Cloud account. Moving up, you pay the difference. Every paid plan has a 7-day money-back guarantee.',
 				'saddle'
 			),
 		},

@@ -128,7 +128,7 @@ Agents can also connect with a pasted key. Saddle uses WordPress Application Pas
 * Design brief: Save a page's design plan and check the page against it.
 * WooCommerce: Update prices, stock, status and categories across many products, with undo.
 
-Every feature in this free plugin stays free. Saddle → Get Pro shows the plans and their prices, and only while Saddle Pro is not installed. It sends nothing; its buttons open saddle.to.
+Every feature in this free plugin stays free. Saddle → Get Premium shows Saddle Cloud's plans and their prices, and only while Saddle Pro is not installed. It sends nothing; its buttons open saddle.to or Saddle Cloud.
 
 = Credits =
 
@@ -191,6 +191,7 @@ Saddle sends no tracking or usage data unless you choose to. It connects to anot
 8. Usage data (optional, off until you choose): Saddle's Overview asks once whether to share how your site runs Saddle with PlugPress. Nothing is sent until you click **Allow and continue**, and **Skip** sends nothing. Allowing sends your WordPress and PHP versions, language, timezone, the Saddle plugins you use and a random id for your site to `insight.plugpress.io`. It also sends your site address and title, and your plugins and theme with their versions, unless you untick those parts. Your name and email go only if you tick that part. After that, Saddle sends an update once a week while sharing is on, and only when something changed. Turn it off under **Saddle → Settings → Usage data and news**, and PlugPress forgets what identifies your site. Add `define( 'PLUGPRESS_INSIGHT', false );` to `wp-config.php` to remove the question entirely. See the [Privacy Policy](https://saddle.to/privacy/).
 9. Saddle news (optional): Only when you tick it on Overview or click **Subscribe** in Settings. Saddle sends the email address you typed to `insight.plugpress.io`, which passes it to PlugPress's newsletter on `plugpress.io`. You get an email to confirm first, and every newsletter has an unsubscribe link.
 10. Deactivation feedback (optional): When you deactivate Saddle or one of its add-ons on the Plugins screen, a short form asks why. **Skip and deactivate** sends nothing. **Send and deactivate** sends the reason you picked, anything you typed, the reply email if you added one, the plugin's version, and your WordPress and PHP versions and language to `insight.plugpress.io`. It never sends your site address.
+11. Saddle Cloud (optional, only if you connect it): Saddle's welcome and **Agent setup** offer a link to Saddle Cloud at `cloud.saddle.to`, with your site's address filled in. Saddle itself sends nothing to it. If you connect your site there, Saddle Cloud signs in like any AI agent: your site shows its own Allow screen, and you choose what Cloud may do. After that, the calls your AI agent makes through Saddle Cloud reach your site through that sign-in, and your site still decides each one. Saddle Cloud keeps what its [Privacy Policy](https://saddle.to/privacy/) lists. Disconnect it any time in **Agent setup**.
 
 The WordPress.org version never checks for its own updates. The version from plugpress.co checks at most once every six hours. It sends only the plugin name and version number.
 
@@ -219,7 +220,8 @@ The WordPress.org version never checks for its own updates. The version from plu
 * New: Saddle news. Tick it on Overview or subscribe in Settings to get about one email a month. You confirm by email first.
 * New: When you deactivate Saddle or one of its add-ons, a short form asks why. Skip and deactivate sends nothing.
 * New: `define( 'PLUGPRESS_INSIGHT', false );` in `wp-config.php` turns off the question, Saddle news and the form.
-* Changed: Get Pro shows one yearly price for each plan, with its sites included: Go $49 for 5 sites, Pro $99 for 20 and Reach $249 for 50. There is no sites picker.
+* Changed: Get Pro is now Get Premium and shows Saddle Cloud's four plans, each with unlimited sites and one yearly price: Free, Go $49, Pro $99 and Reach $299. Free's button opens Saddle Cloud with this site's address filled in.
+* New: Saddle's welcome ends with one question for owners of more than one site: Saddle Cloud, free for any number of sites. Its button opens Saddle Cloud with this site's address filled in, and Saddle sends nothing. Agent setup offers the same until Saddle Cloud is connected.
 * Changed: AI apps are now called AI agents everywhere in Saddle.
 
 = 1.6.2 =
