@@ -38,6 +38,7 @@ import Activity from './components/Activity';
 import AnalyticsOffer from './components/AnalyticsOffer';
 import Context from './components/Guidance';
 import ConnectApps, { SetupIntro } from './components/ConnectApps';
+import CloudOffer from './components/CloudOffer';
 import Apps from './components/ConnectedClients';
 import SettingsForm from './components/SettingsForm';
 import SettingsPage from './components/SettingsPage';
@@ -173,7 +174,8 @@ function ModuleScreen( { area, tab, sub, view, args, navigate, header } ) {
 /**
  * Agent setup (#369; AI apps until then), after Saddle Cloud's page: the
  * site's address, the connected apps with their access, then every app down
- * the side with the chosen one's steps beside it. Nothing opens in a drawer:
+ * the side with the chosen one's steps beside it, then Saddle Cloud for
+ * owners of more than one site (until it is connected). Nothing opens in a drawer:
  * the connected list's Setup guide and Rotate key show that app's steps.
  *
  * @param {Object}   props
@@ -216,6 +218,7 @@ function AppsTab( {
 				onConnected={ refreshClients }
 				focus={ setupFocus }
 			/>
+			<CloudOffer />
 			<Cards where="connections" navigate={ navigate } />
 		</div>
 	);

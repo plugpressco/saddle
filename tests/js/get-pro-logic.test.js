@@ -1,54 +1,88 @@
 /**
- * Get Pro's plans (#373; flat pricing 2026-10-27): the prices saddle.to
- * shows, each checkout link, and Reach's credits.
+ * Get Premium's plans (#373; Free to $299, 2026-11-02): the prices saddle.to
+ * shows, where each button goes, and when the Saddle Cloud offers stop.
  */
-import { planCards, price } from '../../admin/src/get-pro-logic';
+import {
+	cloudConnectUrl,
+	connectedToCloud,
+	planCards,
+	price,
+} from '../../admin/src/get-pro-logic';
 
 describe( 'plan cards', () => {
-	it( 'shows saddle.to’s yearly prices and the sites each includes', () => {
-		expect(
-			planCards().map( ( c ) => [ c.key, c.yearly, c.sites ] )
-		).toEqual( [
-			[ 'go', 49, 5 ],
-			[ 'pro', 99, 20 ],
-			[ 'reach', 249, 50 ],
+	it( 'shows saddle.to’s yearly prices, Free first', () => {
+		expect( planCards().map( ( c ) => [ c.key, c.yearly ] ) ).toEqual( [
+			[ 'free', 0 ],
+			[ 'go', 49 ],
+			[ 'pro', 99 ],
+			[ 'reach', 299 ],
 		] );
 	} );
 
-	it( 'opens each plan’s checkout on saddle.to', () => {
-		expect( planCards().map( ( c ) => c.href ) ).toEqual( [
-			'https://saddle.to/go/go-5/',
-			'https://saddle.to/go/pro-20/',
-			'https://saddle.to/go/reach-50/',
+	it( 'sends Free to Saddle Cloud with this site, the rest to their checkout', () => {
+		expect(
+			planCards( 'https://example.com/' ).map( ( c ) => [
+				c.href,
+				c.buy,
+			] )
+		).toEqual( [
+			[
+				'https://cloud.saddle.to/connect?site=https%3A%2F%2Fexample.com',
+				'Start free',
+			],
+			[ 'https://saddle.to/go/go-5/', 'Choose Go' ],
+			[ 'https://saddle.to/go/pro-20/', 'Choose Pro' ],
+			[ 'https://saddle.to/go/reach-50/', 'Choose Reach' ],
 		] );
 	} );
 
 	it( 'gives every plan the same two numbers, credits on Pro and Reach', () => {
-		const [ go, pro, reach ] = planCards();
+		const [ free, go, pro, reach ] = planCards();
+		expect( free.facts.map( ( f ) => f.text ) ).toEqual( [
+			'500 AI agent calls a month',
+			'No SEO credits',
+		] );
+		expect( go.facts[ 0 ].text ).toBe( '10,000 AI agent calls a month' );
 		expect( pro.facts.map( ( f ) => f.text ) ).toEqual( [
-			'1,000 AI agent calls a day',
+			'50,000 AI agent calls a month',
 			'200 SEO credits a month',
 		] );
 		expect( reach.facts.map( ( f ) => f.text ) ).toEqual( [
-			'4,000 AI agent calls a day',
-			'1,000 SEO credits a month',
-		] );
-		expect( go.facts.map( ( f ) => f.text ) ).toEqual( [
-			'150 AI agent calls a day',
-			'No SEO credits',
+			'250,000 AI agent calls a month',
+			'2,000 SEO credits a month',
 		] );
 		expect( go.facts[ 1 ].none ).toBe( true );
 		expect( reach.facts[ 1 ].none ).toBe( false );
 		// Four things each, so the cards line up.
 		expect(
-			[ go, pro, reach ].map( ( plan ) => plan.items.length )
-		).toEqual( [ 4, 4, 4 ] );
-		expect( [ go.pro, pro.pro, reach.pro ] ).toEqual( [
+			[ free, go, pro, reach ].map( ( plan ) => plan.items.length )
+		).toEqual( [ 4, 4, 4, 4 ] );
+		expect( planCards().map( ( plan ) => plan.pro ) ).toEqual( [
+			false,
 			false,
 			true,
 			false,
 		] );
 		expect( pro.icon ).toBe( 'crown' );
+	} );
+} );
+
+describe( 'Saddle Cloud', () => {
+	it( 'links to Connect a site with the address, or without one', () => {
+		expect( cloudConnectUrl( 'https://shop.example.com/blog/' ) ).toBe(
+			'https://cloud.saddle.to/connect?site=https%3A%2F%2Fshop.example.com%2Fblog'
+		);
+		expect( cloudConnectUrl( '' ) ).toBe(
+			'https://cloud.saddle.to/connect'
+		);
+	} );
+
+	it( 'stops offering itself once a connection is Saddle Cloud', () => {
+		expect( connectedToCloud( [ { app: 'claude' } ] ) ).toBe( false );
+		expect(
+			connectedToCloud( [ { app: 'claude' }, { app: 'saddle-cloud' } ] )
+		).toBe( true );
+		expect( connectedToCloud( undefined ) ).toBe( false );
 	} );
 } );
 

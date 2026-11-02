@@ -133,7 +133,10 @@ export default function GetPro() {
 
 			<p className="saddle-plans__refund">
 				<icons.ShieldCheck size={ 16 } />
-				{ __( '7-day money-back guarantee on every paid plan', 'saddle' ) }
+				{ __(
+					'7-day money-back guarantee on every paid plan',
+					'saddle'
+				) }
 			</p>
 
 			<section className="saddle-plans__faq">

@@ -31,6 +31,18 @@ export function cloudConnectUrl( home ) {
 }
 
 /**
+ * Whether Saddle Cloud is connected to this site already: a row from GET
+ * /connections that Saddle recognised as Cloud (Saddle_Connection_Apps). The
+ * offers stop then.
+ *
+ * @param {Object[]} rows `connections`.
+ * @return {boolean} Connected.
+ */
+export function connectedToCloud( rows ) {
+	return ( rows || [] ).some( ( row ) => 'saddle-cloud' === row.app );
+}
+
+/**
  * The plans, smallest first: each includes the one before it. `year` is the
  * price in US dollars, billed once a year; `calls` the AI agent calls a
  * month through Saddle Cloud; `credits` the SEO credits a month (Pro and
@@ -149,9 +161,7 @@ export function planCards( home = '' ) {
 			name: p.name,
 			job: p.job,
 			yearly: p.year,
-			href: free
-				? cloudConnectUrl( home )
-				: `${ STORE }/go/${ p.go }/`,
+			href: free ? cloudConnectUrl( home ) : `${ STORE }/go/${ p.go }/`,
 			buy: free
 				? __( 'Start free', 'saddle' )
 				: sprintf(

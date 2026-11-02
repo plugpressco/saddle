@@ -23,7 +23,8 @@ judging.
 
 Free Saddle **1.6.2** is the build live on WordPress.org (released 2026-10-23, tag `v1.6.2`; 1.6.1 and 1.6.0 the same day, 1.5.2 on 2026-10-13, 1.5.0 on 2026-10-04, 1.5.1 on 2026-10-05). 1.4.0 only ever reached staging, so it was skipped and its changelog folded into 1.5.0. (1.1.0 is skipped on purpose: a different 1.1.0 was published on GitHub on 2026-08-02 and withdrawn, and two builds must never share a number.) **Saddle Pro** is a
 separate plugin, sold commercially. Free never contains license code, and its
-one upsell is the Get Pro page (amended 2026-10-23, below).
+one upsell is the Get Premium page, plus one plain link to Saddle Cloud
+(amended 2026-10-23 and 2026-11-02, below).
 
 **The split (decided 2026-09-26, reversing "no builder code in free"):** free
 edits, Pro operates the site. Free carries Gutenberg *and* Divi 5 page editing —
@@ -81,9 +82,16 @@ and finding each fails at least one. Check every change against all three.
    - Cloud may store task history and, later, send content to the AI provider
      the user chose with their own key. The connect screen says both before the
      owner agrees.
-   - The connector lives in **Saddle Pro only**. Free — its code, its UI and
-     every WordPress.org build — contains no Cloud code and makes no outbound
-     request for Cloud.
+   - Free — its code, its UI and every WordPress.org build — contains no Cloud
+     code and makes no outbound request for Cloud. Cloud reaches a site as an
+     ordinary OAuth agent through the site's own Allow screen, recognised as
+     `saddle-cloud` (`Saddle_Connection_Apps`). **One amendment, Fahim
+     2026-11-02 ("finalize it", planning `PRICING-2026-11.md`):** free may
+     show one plain link to Saddle Cloud's Connect page with the site's
+     address filled in, at the end of the welcome (asked once), on Agent
+     setup, and as Get Premium's Free button. Each opens a new tab and sends
+     nothing; the welcome and Agent setup drop it once Cloud is connected; no
+     notice repeats it, and no agent is told about it.
    - Direct MCP keeps working unchanged (R5 in `../planning/ROADMAP-PRODUCT.md`).
 
    "Nothing leaves your site" describes the plugin. It is false the moment it is
@@ -555,14 +563,18 @@ change. `Tested up to:` moves only when Fahim has verified against a newer WP.
 - Don't wire up `Saddle_Ecosystem`.
 - Don't put licensing or upsell code in free, and never let a free tool mention
   Pro or leave a visible gap for a Pro tool (wp.org guidelines 5 and 11).
-  **One exception, Fahim 2026-10-23 (#373): Saddle → Get Pro**, the last menu
-  item, shows Saddle Cloud's Go, Pro and Reach plans with their prices
+  **Two exceptions, Fahim 2026-10-23 (#373) and 2026-11-02:** **Saddle →
+  Get Premium** (Get Pro until 2026-11-02), the last menu item, shows Saddle
+  Cloud's Free, Go, Pro and Reach plans with their prices
   (`admin/src/get-pro-logic.js`, kept equal to saddle-cloud's
-  `src/shared/plans.ts`) and buttons to saddle.to's checkouts. Nothing else:
-  no notices, no nags, nothing locked, no outbound request; the page is gone
-  once Saddle Pro is installed, active or not (`Saddle_Modules::offers_pro()`, the
-  `saddle_show_get_pro` filter), and no agent reads about it
-  (`Saddle_Modules_View::all()` and the context skip it). Builder
+  `src/shared/plans.ts`), buttons to saddle.to's checkouts, and Free's button
+  to Saddle Cloud. And the **one Saddle Cloud link** of non-negotiable #1's
+  amendment (the welcome's last question and Agent setup's card,
+  `components/CloudOffer.jsx`). Nothing else: no notices, no nags, nothing
+  locked, no outbound request; Get Premium is gone once Saddle Pro is
+  installed, active or not (`Saddle_Modules::offers_pro()`, the
+  `saddle_show_get_pro` filter), and no agent reads about either
+  (`Saddle_Modules_View::all()` and the context skip them). Builder
   code other than Gutenberg and Divi 5 still does not belong here (ROADMAP NO list).
 - Don't edit `includes/lib/wp-mcp/` — it is vendored. Fix upstream and re-vendor.
   **No zip ships the library:** the Gruntfile excludes `includes/lib/**` on

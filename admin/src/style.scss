@@ -1516,6 +1516,7 @@ body.saddle-admin-page {
 			padding-inline-start: 14px;
 			color: var( --s-fg-muted );
 		}
+
 	}
 
 	// The access choice: three answers, each with its one-line hint.
@@ -2766,6 +2767,57 @@ body.saddle-admin-page {
 	flex-wrap: wrap;
 	gap: 12px;
 	margin-top: 8px;
+}
+
+/* ---------- Saddle Cloud in the welcome and Agent setup (2026-11-02) ---------- */
+
+// The welcome's Saddle Cloud answer is a link; it looks like the answer
+// beside it, not like a blue link. The UI kit colors links through
+// --pp-accent-text with an id selector, so the chip sets the variable.
+.saddle-chat a.saddle-chat__chip {
+	--pp-accent-text: var( --s-fg );
+	--pp-accent-hover: var( --s-fg );
+	color: var( --s-fg );
+	text-decoration: none;
+}
+
+
+// One white card: the copy, and the link beside it (under it when narrow).
+.saddle-cloud-offer {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: var( --pp-space-4 );
+	padding: var( --pp-space-5 );
+	background: var( --s-bg );
+	border-radius: 16px;
+	box-shadow: var( --s-card-edge );
+
+	p {
+		margin: 0;
+		font-size: var( --s-text );
+		line-height: 1.5;
+		color: var( --s-fg );
+	}
+}
+
+.saddle-cloud-offer__copy {
+	display: grid;
+	flex: 1 1 360px;
+	gap: var( --pp-space-1 );
+	min-width: 0;
+}
+
+.saddle-cloud-offer__title {
+	margin: 0;
+	font-size: var( --s-text-title );
+	font-weight: 600;
+	color: var( --s-fg );
+}
+
+.saddle-cloud-offer .saddle-cloud-offer__note {
+	color: var( --s-fg-subtle );
 }
 
 /* ---------- Get Premium (#373) ---------- */

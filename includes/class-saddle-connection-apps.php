@@ -36,6 +36,9 @@ class Saddle_Connection_Apps {
 		'https://claude.ai/api/mcp/auth_callback'  => 'claude',
 		'https://claude.com/api/mcp/auth_callback' => 'claude',
 		'https://chatgpt.com/'                     => 'chatgpt',
+		// Saddle Cloud signs in with its client metadata document there; the
+		// welcome and Agent setup stop offering it once it has.
+		'https://cloud.saddle.to/'                 => 'saddle-cloud',
 	);
 
 	/**
