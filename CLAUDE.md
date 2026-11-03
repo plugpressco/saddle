@@ -93,7 +93,7 @@ and finding each fails at least one. Check every change against all three.
    go ahead"); since 2026-10-28 through the PlugPress Insight SDK
    (`includes/insight/`, a copy of `sdk/` in `plugpressco/plugpress-insight`;
    Fahim: "make simple tiny sdk", "one for all").* Free sends to PlugPress's
-   `insight.plugpress.io` only after one of these clicks, and nothing else
+   `console.plugpress.io` only after one of these clicks, and nothing else
    ever does:
 
    - **Allow** on the card (Overview and the Plugins screen, once per site):

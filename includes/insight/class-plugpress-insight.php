@@ -14,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  */
 class PlugPress_Insight {
 
-	const URL     = 'https://insight.plugpress.io/api/v1/';
+	const URL     = 'https://console.plugpress.io/api/v1/';
 	const OPTION  = 'plugpress_insight';
 	const SITE_ID = 'plugpress_insight_site_id';
 	const CRON    = 'plugpress_insight_weekly';
@@ -529,7 +529,7 @@ class PlugPress_Insight {
 	}
 
 	/**
-	 * One call to insight.plugpress.io: 5 seconds at most, never retried.
+	 * One call to console.plugpress.io: 5 seconds at most, never retried.
 	 *
 	 * @param string $route optin, update, deactivate, optout or news.
 	 * @param array  $body  The JSON body.
