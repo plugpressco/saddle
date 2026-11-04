@@ -134,7 +134,7 @@ class Saddle_Memory {
 
 		$post_arr = array(
 			'post_type'    => self::CPT,
-			'post_status'  => 'publish',
+			'post_status'  => Saddle_Records::STATUS,
 			'post_title'   => $key,
 			'post_content' => $text,
 		);
@@ -564,7 +564,7 @@ class Saddle_Memory {
 		return get_posts(
 			array(
 				'post_type'      => self::CPT,
-				'post_status'    => 'publish',
+				'post_status'    => Saddle_Records::statuses(),
 				'posts_per_page' => -1,
 				'orderby'        => 'ID',
 				'order'          => 'ASC',
@@ -578,8 +578,12 @@ class Saddle_Memory {
 	 * @return int
 	 */
 	private static function count() {
-		$counts = wp_count_posts( self::CPT );
-		return isset( $counts->publish ) ? (int) $counts->publish : 0;
+		$counts = (array) wp_count_posts( self::CPT );
+		$total  = 0;
+		foreach ( Saddle_Records::statuses() as $status ) {
+			$total += isset( $counts[ $status ] ) ? (int) $counts[ $status ] : 0;
+		}
+		return $total;
 	}
 
 	/**
@@ -596,7 +600,7 @@ class Saddle_Memory {
 		$posts = get_posts(
 			array(
 				'post_type'      => self::CPT,
-				'post_status'    => 'publish',
+				'post_status'    => Saddle_Records::statuses(),
 				'title'          => $key,
 				'posts_per_page' => 1,
 			)
