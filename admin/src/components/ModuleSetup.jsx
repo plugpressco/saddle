@@ -29,7 +29,7 @@ export function pendingTasks( tasks ) {
 /**
  * @param {Object}    props
  * @param {?Array}    props.tasks    Tasks from saddleData.setup.
- * @param {Function=} props.navigate The app's navigate, for in-app actions.
+ * @param {Function=} props.navigate The agent's navigate, for in-app actions.
  */
 export default function ModuleSetup( { tasks, navigate } ) {
 	const pending = pendingTasks( tasks );

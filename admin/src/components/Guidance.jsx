@@ -1,15 +1,15 @@
 /**
- * Context — what every connected app knows about this site (#274).
+ * Context — what every connected agent knows about this site (#274).
  *
  * Was Settings → Guidance. Laid out like a context sheet an owner reads and
  * corrects, top to bottom:
  *  - About your site: the owner's instructions as named rows showing their
  *    text; Edit opens one field at a time (see context-fields.js — stored as
  *    sections of the one instructions text every agent reads).
- *  - Skills — playbook files (.md) you install; every app sees the list and
+ *  - Skills — playbook files (.md) you install; every agent sees the list and
  *    reads one when a task matches.
- *  - Memory — what the apps noted as they worked, and what you pinned.
- *  - What apps see — what Saddle tells every app automatically, from the
+ *  - Memory — what the agents noted as they worked, and what you pinned.
+ *  - What agents see — what Saddle tells every agent automatically, from the
  *    site itself (collapsed).
  */
 import { useState, useEffect, useRef } from '@wordpress/element';
@@ -249,7 +249,7 @@ export default function Guidance() {
 				),
 				description: existing.builtin
 					? __(
-							'Apps will read this file instead of the built-in skill.',
+							'Agents will read this file instead of the built-in skill.',
 							'saddle'
 					  )
 					: __(
@@ -411,7 +411,7 @@ export default function Guidance() {
 				<SectionHeader
 					title={ __( 'Skills', 'saddle' ) }
 					help={ __(
-						'Playbook files (.md) that teach your AI a job on this site, such as “how we publish a post” or “our SEO checklist”. Every connected app sees the list and reads a skill when a task matches. Only you can add skills, and a skill never gives an app more access than you set.',
+						'Playbook files (.md) that teach your AI a job on this site, such as “how we publish a post” or “our SEO checklist”. Every connected agent sees the list and reads a skill when a task matches. Only you can add skills, and a skill never gives an agent more access than you set.',
 						'saddle'
 					) }
 					actions={
@@ -515,9 +515,9 @@ export default function Guidance() {
 			     reads this one. */ }
 			<section className="saddle-section">
 				<SectionHeader
-					title={ __( 'What apps see', 'saddle' ) }
+					title={ __( 'What agents see', 'saddle' ) }
 					help={ __(
-						'Saddle writes this from your site’s pages, design and plugins, and from what each app may do. It stays current on its own, and you can’t edit it here.',
+						'Saddle writes this from your site’s pages, design and plugins, and from what each agent may do. It stays current on its own, and you can’t edit it here.',
 						'saddle'
 					) }
 				/>

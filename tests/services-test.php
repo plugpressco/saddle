@@ -143,7 +143,7 @@ class Saddle_Services_Test extends WP_UnitTestCase {
 		return array_column( $data['result']['tools'], 'name' );
 	}
 
-	/** A connection that holds a key with this role, as a connected app does. */
+	/** A connection that holds a key with this role, as a connected agent does. */
 	/**
 	 * Found in the 1.5.0 release QA: at Read only, unsplash-search said only
 	 * "Unsplash is not set up", so the owner met the access level next.
@@ -407,7 +407,7 @@ class Saddle_Services_Test extends WP_UnitTestCase {
 		$this->assertFalse( Saddle_Capabilities::is_callable_now( 'saddle/unsplash-search' ) );
 		$refused = wp_get_ability( 'saddle/unsplash-search' )->execute( array( 'query' => 'mountains' ) );
 		$this->assertWPError( $refused );
-		$this->assertSame( 0, $hits, 'A read-only app must not spend the owner\'s Unsplash quota.' );
+		$this->assertSame( 0, $hits, 'A read-only agent must not spend the owner\'s Unsplash quota.' );
 
 		$this->sign_in_as_app( 'write' );
 		$this->assertTrue( Saddle_Capabilities::is_callable_now( 'saddle/unsplash-search' ) );

@@ -1,11 +1,11 @@
 /**
- * Client traffic — what connected apps actually sent, and what they got back.
+ * Client traffic — what connected agents actually sent, and what they got back.
  *
- * This exists because "my app connected but says it can't do anything" is
+ * This exists because "my agent connected but says it can't do anything" is
  * produced by two different failures that look identical from outside: a
  * request refused before it reaches the tools handler, and a request that
  * succeeds and returns nothing. The served tool count is what tells them
- * apart — and an app whose requests never arrive leaves no rows at all, which
+ * apart — and an agent whose requests never arrive leaves no rows at all, which
  * is the one thing no amount of server-side logging can otherwise show.
  *
  * Recording is off by default and stops on its own, because this is a
@@ -40,7 +40,7 @@ export default function McpDiagnostics() {
 	}, [] );
 
 	// While recording, the interesting rows arrive from another process
-	// entirely — the connected app — so the panel has to poll to show them.
+	// entirely — the connected agent — so the panel has to poll to show them.
 	useEffect( () => {
 		if ( ! state?.recording ) {
 			return undefined;
@@ -84,7 +84,7 @@ export default function McpDiagnostics() {
 			<CardHeader
 				title={ __( 'Client traffic', 'saddle' ) }
 				description={ __(
-					'If an app can’t see any tools, record its next attempt. You’ll see what it asked for and what Saddle sent back.',
+					'If an agent can’t see any tools, record its next attempt. You’ll see what it asked for and what Saddle sent back.',
 					'saddle'
 				) }
 			/>
@@ -92,13 +92,13 @@ export default function McpDiagnostics() {
 				<p className="saddle-mcp-diag__health">
 					{ health.registered === undefined
 						? __(
-								'No app has asked for the tool list yet. Requests are recorded below either way.',
+								'No agent has asked for the tool list yet. Requests are recorded below either way.',
 								'saddle'
 						  )
 						: sprintf(
 								/* translators: 1: number of tools that loaded, 2: number installed. */
 								__(
-									'%1$d of the %2$d installed tools loaded. The requests below show how many each app was offered, which depends on its access level.',
+									'%1$d of the %2$d installed tools loaded. The requests below show how many each agent was offered, which depends on its access level.',
 									'saddle'
 								),
 								health.registered,
@@ -112,7 +112,7 @@ export default function McpDiagnostics() {
 							? sprintf(
 									/* translators: %s: comma-separated tool names. */
 									__(
-										'These tools didn’t load, so apps can’t call them: %s. Reload this page; if they’re still missing, send the report below.',
+										'These tools didn’t load, so agents can’t call them: %s. Reload this page; if they’re still missing, send the report below.',
 										'saddle'
 									),
 									health.missing.join( ', ' )
@@ -166,7 +166,7 @@ export default function McpDiagnostics() {
 				{ state.recording && (
 					<p className="saddle-mcp-diag__hint">
 						{ __(
-							'Recording. Ask the app to refresh its actions or run any request, then come back here.',
+							'Recording. Ask the agent to refresh its actions or run any request, then come back here.',
 							'saddle'
 						) }
 					</p>
@@ -177,7 +177,7 @@ export default function McpDiagnostics() {
 						{ state.recording
 							? __( 'Nothing has arrived yet.', 'saddle' )
 							: __(
-									'Nothing recorded. If an app is misbehaving, start recording and then retry it from the app.',
+									'Nothing recorded. If an agent is misbehaving, start recording and then retry it from the agent.',
 									'saddle'
 							  ) }
 					</p>
@@ -189,7 +189,7 @@ export default function McpDiagnostics() {
 								<th>{ __( 'Asked for', 'saddle' ) }</th>
 								<th>{ __( 'Signed in with', 'saddle' ) }</th>
 								<th>{ __( 'Result', 'saddle' ) }</th>
-								<th>{ __( 'App', 'saddle' ) }</th>
+								<th>{ __( 'Agent', 'saddle' ) }</th>
 							</tr>
 						</thead>
 						<tbody>

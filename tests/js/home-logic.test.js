@@ -1,6 +1,6 @@
 /**
- * Home's pure helpers (#309): the week's numbers, each app's next step and
- * the plugins the apps can work inside.
+ * Home's pure helpers (#309): the week's numbers, each agent's next step and
+ * the plugins the agents can work inside.
  */
 import {
 	addonTone,
@@ -143,15 +143,15 @@ describe( 'selfCheckDue (P12)', () => {
 		).toBe( true );
 	} );
 
-	it( 'never runs with no app connected', () => {
+	it( 'never runs with no agent connected', () => {
 		expect(
 			selfCheckDue( false, { changes: 0, blocked: 0, waiting: 0 } )
 		).toBe( false );
 	} );
 } );
 
-describe( 'an app’s next step (#367)', () => {
-	it( 'asks to try an app that has not used Saddle yet', () => {
+describe( 'an agent’s next step (#367)', () => {
+	it( 'asks to try an agent that has not used Saddle yet', () => {
 		expect(
 			appNext( { app: 'claude', role: 'read', first_tool_at: 0 } )
 		).toBe( 'try' );
@@ -163,13 +163,13 @@ describe( 'an app’s next step (#367)', () => {
 		).toBe( 'access' );
 	} );
 
-	it( 'skips the try step for an app it cannot name', () => {
+	it( 'skips the try step for an agent it cannot name', () => {
 		expect( appNext( { app: '', role: 'read', first_tool_at: 0 } ) ).toBe(
 			'access'
 		);
 	} );
 
-	it( 'has nothing to say once the app can edit', () => {
+	it( 'has nothing to say once the agent can edit', () => {
 		expect(
 			appNext( { app: 'claude', role: 'write', first_tool_at: 9 } )
 		).toBe( '' );
@@ -178,7 +178,7 @@ describe( 'an app’s next step (#367)', () => {
 } );
 
 describe( 'tiles', () => {
-	it( 'gives known apps and add-ons their own tone, others a steady one', () => {
+	it( 'gives known agents and add-ons their own tone, others a steady one', () => {
 		expect( appTone( 'claude-code' ) ).toBe( 'peach' );
 		expect( addonTone( 'analytics' ) ).toBe( 'pink' );
 		expect( appTone( 'some-new-app' ) ).toBe( appTone( 'some-new-app' ) );

@@ -112,7 +112,7 @@ class Saddle_MCP {
 		// Record what the server actually came up with. The adapter skips any
 		// ability it fails to convert, one at a time, into error_log — so a
 		// short or empty tool list is otherwise invisible until a customer
-		// reports that their connected app has nothing to offer.
+		// reports that their connected agent has nothing to offer.
 		self::record_server_health( $adapter, $created, $names );
 
 		// Serve the full context in the initialize handshake, so a client that
@@ -596,7 +596,7 @@ class Saddle_MCP {
 		if ( 'bearer' === $scheme ) {
 			return new WP_Error(
 				'saddle_token_rejected',
-				__( 'The access token was rejected — it has expired, been revoked, or was issued for a different site. Refresh it, or reconnect the app to authorize a new one.', 'saddle' ),
+				__( 'The access token was rejected — it has expired, been revoked, or was issued for a different site. Refresh it, or reconnect the agent to authorize a new one.', 'saddle' ),
 				array(
 					'status' => 401,
 					'reason' => 'token_rejected',
@@ -607,7 +607,7 @@ class Saddle_MCP {
 		if ( 'basic' === $scheme ) {
 			return new WP_Error(
 				'saddle_credential_rejected',
-				__( 'Your sign-in key was rejected — it was most likely revoked or removed. Reconnect the app from Saddle to issue a fresh key.', 'saddle' ),
+				__( 'Your sign-in key was rejected — it was most likely revoked or removed. Reconnect the agent from Saddle to issue a fresh key.', 'saddle' ),
 				array(
 					'status' => 401,
 					'reason' => 'credential_rejected',
@@ -961,12 +961,12 @@ class Saddle_MCP {
 				return __( 'Saddle is paused on this site, so no tools will run. The site owner can resume it from the AI switch at the top of any Saddle page. Do not retry until they do.', 'saddle' );
 			}
 
-			// Some apps keep only the start of this text: Claude Code stops at
+			// Some agents keep only the start of this text: Claude Code stops at
 			// 2,048 characters, about a third of a fresh site's guide, and the
 			// owner's instructions come last (#333). So the first line says
 			// where the rest is. It lives here, not in system_context(),
 			// because get-instructions serves that and is the place it points.
-			$text = __( 'Some apps show only the start of this guide. If yours stops partway, call saddle/get-instructions once to read the rest, including the site owner\'s instructions.', 'saddle' ) . "\n\n";
+			$text = __( 'Some agents show only the start of this guide. If yours stops partway, call saddle/get-instructions once to read the rest, including the site owner\'s instructions.', 'saddle' ) . "\n\n";
 
 			// system_context() is already tier-aware, so what a session is told
 			// tracks what it is allowed to do.
@@ -1029,7 +1029,7 @@ class Saddle_MCP {
 		// The health record's only other writer is register_adapter_server(),
 		// so on every zip Saddle actually ships — none of which carry the
 		// vendored library — nothing wrote it at all, and the Client traffic
-		// card told the owner "no app has connected yet" no matter what had
+		// card told the owner "no agent has connected yet" no matter what had
 		// happened (#115). It is the first line of the one screen a support
 		// conversation points at.
 		//

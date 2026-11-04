@@ -41,12 +41,12 @@ class Saddle_Service_Sources {
 					array(
 						'host' => 'api.unsplash.com',
 						'what' => __( 'Your search words or a photo ID, and your key', 'saddle' ),
-						'when' => __( 'When an app searches or imports', 'saddle' ),
+						'when' => __( 'When an agent searches or imports', 'saddle' ),
 					),
 					array(
 						'host' => 'images.unsplash.com',
 						'what' => __( 'The photo file download', 'saddle' ),
-						'when' => __( 'When an app imports a photo', 'saddle' ),
+						'when' => __( 'When an agent imports a photo', 'saddle' ),
 					),
 				),
 				'terms_url'       => 'https://unsplash.com/api-terms',

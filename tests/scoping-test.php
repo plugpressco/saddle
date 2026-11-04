@@ -44,7 +44,7 @@ class Saddle_Scoping_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Create an app password and authenticate the "request" with it, the way
+	 * Create an application password and authenticate the "request" with it, the way
 	 * core does for a real REST call (sets the authenticated-app-password
 	 * global via the application_password_did_authenticate action).
 	 *
@@ -63,7 +63,7 @@ class Saddle_Scoping_Test extends WP_UnitTestCase {
 
 		$this->assertNotEmpty(
 			rest_get_authenticated_app_password(),
-			'Core must record the app password used for this request.'
+			'Core must record the application password used for this request.'
 		);
 	}
 
@@ -136,7 +136,7 @@ class Saddle_Scoping_Test extends WP_UnitTestCase {
 	}
 
 	public function test_cookie_sessions_are_untouched() {
-		wp_set_current_user( $this->admin ); // No app password in play.
+		wp_set_current_user( $this->admin ); // No application password in play.
 
 		$res = rest_do_request( new WP_REST_Request( 'GET', '/wp/v2/posts' ) );
 		$this->assertSame( 200, $res->get_status() );
@@ -239,7 +239,7 @@ class Saddle_Scoping_Test extends WP_UnitTestCase {
 		add_filter( 'saddle_is_xmlrpc_request', '__return_true' );
 		$other = WP_Application_Passwords::create_new_application_password(
 			$this->admin,
-			array( 'name' => 'Mobile App' )
+			array( 'name' => 'Mobile Agent' )
 		);
 		$ok = wp_authenticate_application_password( null, $this->login, $other[0] );
 		remove_filter( 'saddle_is_xmlrpc_request', '__return_true' );

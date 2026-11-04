@@ -34,7 +34,7 @@ class Saddle_Connection {
 	const HTACCESS_MARKER = 'Saddle Authorization Header';
 
 	/**
-	 * User-meta key recording the UUIDs of app passwords Saddle issued.
+	 * User-meta key recording the UUIDs of application passwords Saddle issued.
 	 *
 	 * The immutable identity credential scoping keys on: the display name
 	 * ("Saddle: …") is user-editable in wp-admin, and scoping that silently
@@ -477,7 +477,7 @@ class Saddle_Connection {
 
 		return new WP_Error(
 			'saddle_credential_rejected',
-			__( 'Your sign-in key was rejected — it was most likely revoked or removed. Reconnect the app from Saddle to issue a fresh key.', 'saddle' ),
+			__( 'Your sign-in key was rejected — it was most likely revoked or removed. Reconnect the agent from Saddle to issue a fresh key.', 'saddle' ),
 			array(
 				'status' => 401,
 				'reason' => 'credential_rejected',
@@ -637,7 +637,7 @@ class Saddle_Connection {
 			'auth_header'             => $auth_header, // One of: ok, stripped, unknown.
 			// The same question asked with a Bearer token, because the two
 			// schemes fail independently and Saddle has clients on each: pasted
-			// Application Passwords send Basic, and an app that signs in through
+			// Application Passwords send Basic, and an agent that signs in through
 			// Saddle's OAuth server — ChatGPT, which has no field for a custom
 			// header — can only ever send Bearer.
 			'bearer_header'           => $bearer_header, // One of: ok, stripped, unknown.
@@ -651,16 +651,16 @@ class Saddle_Connection {
 		);
 
 		// Most severe first. A stripped Authorization header breaks every external
-		// app outright; a stripped nonce only costs the dashboard a workaround it
+		// agent outright; a stripped nonce only costs the dashboard a workaround it
 		// already applies, so it must not mask the bigger problem.
 		if ( ! $report['app_passwords_available'] ) {
 			$report['status'] = 'app_passwords_off';
 		} elseif ( 'stripped' === $auth_header ) {
 			$report['status'] = 'auth_header_stripped';
 		} elseif ( 'stripped' === $bearer_header ) {
-			// Below auth_header_stripped, above the nonce: it breaks every app
+			// Below auth_header_stripped, above the nonce: it breaks every agent
 			// that signs in through Saddle rather than with a pasted key, while
-			// leaving the pasted-key apps working — which is the reason it can
+			// leaving the pasted-key agents working — which is the reason it can
 			// go unnoticed for weeks. "Claude works, so the header is fine" is
 			// the wrong inference, and this status exists to refuse it.
 			$report['status'] = 'bearer_header_stripped';

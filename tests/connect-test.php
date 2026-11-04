@@ -184,7 +184,7 @@ class Saddle_Connect_Test extends WP_UnitTestCase {
 
 	public function test_client_hint_is_last_four_captured_at_issuance() {
 		$req = new WP_REST_Request( 'POST', '/saddle/v1/clients' );
-		$req->set_param( 'name', 'Hinted App' );
+		$req->set_param( 'name', 'Hinted Agent' );
 
 		$data = Saddle_REST_Admin::create_client( $req )->get_data();
 		$expected = substr( str_replace( ' ', '', $data['password'] ), -4 );
@@ -201,10 +201,10 @@ class Saddle_Connect_Test extends WP_UnitTestCase {
 	}
 
 	public function test_client_hint_is_null_for_credentials_issued_outside_saddle() {
-		$this->issue_password( 'Saddle: Legacy App' );
+		$this->issue_password( 'Saddle: Legacy Agent' );
 
 		$clients = Saddle_REST_Admin::get_clients()->get_data()['clients'];
-		$row     = array_values( array_filter( $clients, fn( $c ) => 'Saddle: Legacy App' === $c['name'] ) )[0];
+		$row     = array_values( array_filter( $clients, fn( $c ) => 'Saddle: Legacy Agent' === $c['name'] ) )[0];
 		$this->assertNull( $row['hint'], 'Pre-existing credentials have no captured hint.' );
 	}
 

@@ -77,7 +77,7 @@ class Saddle_Log {
 		$post_id = wp_insert_post(
 			array(
 				'post_type'   => self::CPT,
-				'post_status' => 'publish',
+				'post_status' => Saddle_Records::STATUS,
 				'post_title'  => $summary,
 				'post_author' => get_current_user_id(),
 			),
@@ -92,7 +92,7 @@ class Saddle_Log {
 		update_post_meta( $post_id, '_saddle_target', $target );
 		update_post_meta( $post_id, '_saddle_type', $type );
 
-		// Which app it was, by the name the owner knows it by, so the activity
+		// Which agent it was, by the name the owner knows it by, so the activity
 		// log says "via Claude Code" rather than the WordPress user every
 		// connection shares. Stored, not looked up later, so the entry keeps
 		// the name after the key is revoked.
@@ -223,7 +223,7 @@ class Saddle_Log {
 	 *
 	 * @param string $type  'executed' | 'denied' | 'rehearsed' | '' (all).
 	 * @param int    $since Unix timestamp (UTC), 0 for no limit.
-	 * @param string $by    'app' for entries an app made, '' for all.
+	 * @param string $by    'agent' for entries an agent made, '' for all.
 	 * @return array WP_Query arguments.
 	 */
 	private static function filter_args( $type, $since, $by ) {
@@ -231,7 +231,7 @@ class Saddle_Log {
 
 		$args = array(
 			'post_type'   => self::CPT,
-			'post_status' => 'publish',
+			'post_status' => Saddle_Records::statuses(),
 			'orderby'     => 'date',
 			'order'       => 'DESC',
 		);
@@ -312,7 +312,7 @@ class Saddle_Log {
 		$q = new WP_Query(
 			array(
 				'post_type'      => self::CPT,
-				'post_status'    => 'publish',
+				'post_status'    => Saddle_Records::statuses(),
 				'posts_per_page' => $limit,
 				'orderby'        => 'date',
 				'order'          => 'DESC',
@@ -445,7 +445,7 @@ class Saddle_Log {
 		$q = new WP_Query(
 			array(
 				'post_type'      => self::CPT,
-				'post_status'    => 'publish',
+				'post_status'    => Saddle_Records::statuses(),
 				'posts_per_page' => 500, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page -- Bounded GC batch trimming a private log CPT to its cap.
 				'offset'         => $max,
 				'orderby'        => 'date',

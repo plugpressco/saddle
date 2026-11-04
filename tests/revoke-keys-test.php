@@ -4,7 +4,7 @@
  *
  * Found in the 1.5.0 release QA: while Saddle runs, scope_credentials()
  * confines the keys it issued to the MCP route. Once Saddle was deactivated
- * nothing did, and a Read only app's key read the admin's email, listed
+ * nothing did, and a Read only agent's key read the admin's email, listed
  * plugins and created a post through wp/v2. Deactivation and uninstall now
  * delete the keys Saddle issued and leave the owner's own keys alone.
  *
@@ -49,12 +49,12 @@ class Saddle_Revoke_Keys_Test extends WP_UnitTestCase {
 		$this->key( $this->admin, Saddle_Connections::KEY_PREFIX . 'Older key', false );
 		// The owner's own keys are not Saddle's.
 		$this->key( $this->admin, 'Deploy script', false );
-		$this->key( $editor, 'Mobile app', false );
+		$this->key( $editor, 'Mobile agent', false );
 
 		Saddle::deactivate();
 
 		$this->assertSame( array( 'Deploy script' ), array_values( $this->names( $this->admin ) ) );
-		$this->assertSame( array( 'Mobile app' ), array_values( $this->names( $editor ) ) );
+		$this->assertSame( array( 'Mobile agent' ), array_values( $this->names( $editor ) ) );
 		$this->assertSame( '', get_user_meta( $this->admin, Saddle_Connection::ISSUED_META, true ) );
 	}
 

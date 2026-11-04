@@ -107,7 +107,7 @@ class Saddle_Nav_Icons {
 	/**
 	 * An icon's markup, ready to sit before a label: sized and hidden from
 	 * assistive technology (the label carries the name). The menu uses it
-	 * for Get Pro's crown only (#373).
+	 * for Get Premium's crown only (#373).
 	 *
 	 * @param string $name Icon name.
 	 * @param int    $size Pixel size.

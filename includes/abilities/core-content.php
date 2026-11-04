@@ -84,7 +84,7 @@ function saddle_register_abilities() {
 		'saddle/self-check',
 		array(
 			'label'               => __( 'Check the connection', 'saddle' ),
-			'description'         => __( 'Diagnoses this connection and the site setup around it. Returns how this app signed in (application password or OAuth), the site\'s access level and the one in force for this app, how many tools are withheld and why, the MCP transport, and a "problems" list where each entry says what is wrong and how to fix it, in words you can pass to the user. For an account that can manage the site it also checks whether the web server strips sign-in headers, which breaks OAuth apps like ChatGPT while pasted-key apps keep working; that check sends a test request to the site itself and can take a few seconds. Read-only. Call it when tools you expect are missing, or when the user says another app cannot connect.', 'saddle' ),
+			'description'         => __( 'Diagnoses this connection and the site setup around it. Returns how this agent signed in (application password or OAuth), the site\'s access level and the one in force for this agent, how many tools are withheld and why, the MCP transport, and a "problems" list where each entry says what is wrong and how to fix it, in words you can pass to the user. For an account that can manage the site it also checks whether the web server strips sign-in headers, which breaks OAuth agents like ChatGPT while pasted-key agents keep working; that check sends a test request to the site itself and can take a few seconds. Read-only. Call it when tools you expect are missing, or when the user says another agent cannot connect.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -1133,7 +1133,7 @@ class Saddle_Abilities {
 				'tool'    => 'page' === $type ? 'update-page' : 'update-post',
 				'target'  => (string) $id,
 				'bind'    => $bind,
-				// Says what the app asks to do, so the owner's decision reads
+				// Says what the agent asks to do, so the owner's decision reads
 				// "You approved Claude Code's request: Publish post #18 …".
 				'summary' => 'future' === $status
 					? sprintf(
@@ -2267,7 +2267,7 @@ class Saddle_Abilities {
 		if ( '' !== (string) $post->post_password && ! current_user_can( 'edit_post', $post->ID ) ) {
 			return new WP_Error(
 				'saddle_password_protected',
-				__( 'This item is password-protected. Reading it needs edit access to it, which the WordPress account this app is connected as does not have. Do not retry; tell the user to reconnect Saddle as an account that can edit this item.', 'saddle' ),
+				__( 'This item is password-protected. Reading it needs edit access to it, which the WordPress account this agent is connected as does not have. Do not retry; tell the user to reconnect Saddle as an account that can edit this item.', 'saddle' ),
 				array( 'status' => 403 )
 			);
 		}
@@ -2944,8 +2944,8 @@ class Saddle_Abilities {
 			$out['note'] = sprintf(
 				/* translators: %d: number of items omitted from this page. */
 				_n(
-					'%d item on this page is not visible to the WordPress account this app is connected as, and was left out. "total" still counts it, so this page is shorter than the page size. This is not an error and retrying will not change it.',
-					'%d items on this page are not visible to the WordPress account this app is connected as, and were left out. "total" still counts them, so this page is shorter than the page size. This is not an error and retrying will not change it.',
+					'%d item on this page is not visible to the WordPress account this agent is connected as, and was left out. "total" still counts it, so this page is shorter than the page size. This is not an error and retrying will not change it.',
+					'%d items on this page are not visible to the WordPress account this agent is connected as, and were left out. "total" still counts them, so this page is shorter than the page size. This is not an error and retrying will not change it.',
 					$dropped,
 					'saddle'
 				),
@@ -3154,7 +3154,7 @@ class Saddle_Abilities {
 			'saddle_forbidden_status',
 			sprintf(
 				/* translators: %s: requested post status, e.g. "draft". */
-				__( 'The WordPress account this app is connected as cannot see "%s" content on this site — only published items are available to it. That is the account\'s role, not a Saddle setting. Do not retry this status; tell the user to reconnect Saddle as an account that can edit this content.', 'saddle' ),
+				__( 'The WordPress account this agent is connected as cannot see "%s" content on this site — only published items are available to it. That is the account\'s role, not a Saddle setting. Do not retry this status; tell the user to reconnect Saddle as an account that can edit this content.', 'saddle' ),
 				$status
 			),
 			array( 'status' => 403 )

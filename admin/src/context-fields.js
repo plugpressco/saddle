@@ -72,7 +72,7 @@ export const FIELDS = [
 		heading: 'Other instructions',
 		label: __( 'Other instructions', 'saddle' ),
 		hint: __(
-			'Anything else every connected app should follow.',
+			'Anything else every connected agent should follow.',
 			'saddle'
 		),
 		placeholder: '',

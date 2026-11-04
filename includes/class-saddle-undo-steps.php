@@ -236,11 +236,11 @@ class Saddle_Undo_Steps {
 	/**
 	 * Run an undo as the site owner in wp-admin.
 	 *
-	 * The access level is an app's. The owner's browser has no app, so
+	 * The access level is an agent's. The owner's browser has no agent, so
 	 * tier_allows() falls back to the old site-wide level (Read only by
 	 * default) and refused the owner's own undo of a setting, the theme or a
 	 * plugin. Only Saddle_REST_Admin::owner_undo() calls this, after it has
-	 * refused any app connection. WordPress capabilities still apply to every
+	 * refused any agent connection. WordPress capabilities still apply to every
 	 * step.
 	 *
 	 * @param callable $run What to run.

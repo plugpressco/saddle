@@ -292,7 +292,7 @@ class Saddle_Settings_Registry {
 		}
 
 		if ( $guard && Saddle_Settings_Guard::restore( $before ) ) {
-			return new WP_Error( 'saddle_protected_option', __( 'That change would alter what connected apps are allowed to do, so it was undone. Only the site owner can change that.', 'saddle' ), array( 'status' => 403 ) );
+			return new WP_Error( 'saddle_protected_option', __( 'That change would alter what connected agents are allowed to do, so it was undone. Only the site owner can change that.', 'saddle' ), array( 'status' => 403 ) );
 		}
 
 		return $result;

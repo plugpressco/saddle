@@ -2,7 +2,7 @@
  * Saddle admin: one app, mounted on each Saddle page (#274).
  *
  * Every page is a real wp-admin submenu page under the Saddle menu: Home,
- * the installed modules, AI apps, Services, Context and Settings. The server
+ * the installed modules, Agent setup, Services, Context and Settings. The server
  * says which page, tab and page inside the tab this is (`saddleData.area`,
  * `.tab`, `.sub`) and lists every page (`saddleData.areas`). Frame draws the
  * header, the AI on / Paused pill, a module's sidebar and its icon tab row;
@@ -177,7 +177,7 @@ export default function App() {
 	// rather than arriving without permission. Nothing on this screen can load,
 	// so it gets its own view instead of an error strip over an empty frame.
 	const [ authError, setAuthError ] = useState( false );
-	// The app Agent setup shows the steps for, when something asked for one.
+	// The agent Agent setup shows the steps for, when something asked for one.
 	const [ setupFocus, setSetupFocus ] = useState( setupAsk );
 
 	const setTab = useCallback(
@@ -417,7 +417,7 @@ export default function App() {
 	const connectBase =
 		areaUrl( AREAS, 'connections', 'apps' ) || window.location.href;
 
-	// An app's steps on Agent setup, from any page: there it shows them at
+	// An agent's steps on Agent setup, from any page: there it shows them at
 	// once, anywhere else it goes there.
 	const openConnect = ( appKey = null ) => {
 		const url = withArg( connectBase, 'add', appKey || '1' );
@@ -471,7 +471,7 @@ export default function App() {
 	};
 
 	// The owner expected the address change: the server records this address
-	// as the one the apps' access holds on, which clears the warning.
+	// as the one the agents' access holds on, which clears the warning.
 	const clearDomainWarning = () => {
 		api( 'preferences', {
 			method: 'POST',
@@ -508,7 +508,7 @@ export default function App() {
 						id: 'domain-drift',
 						severity: 'warning',
 						message: __(
-							'This site’s address changed after AI write access was turned on, which can mean a copy or migration carried over live credentials. If you didn’t expect that, review your AI apps and disconnect any you don’t recognise.',
+							'This site’s address changed after AI write access was turned on, which can mean a copy or migration carried over live credentials. If you didn’t expect that, review your AI agents and disconnect any you don’t recognise.',
 							'saddle'
 						),
 						action: {

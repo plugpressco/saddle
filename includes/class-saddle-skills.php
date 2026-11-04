@@ -98,7 +98,7 @@ class Saddle_Skills {
 
 		$post_arr = array(
 			'post_type'    => self::CPT,
-			'post_status'  => 'publish',
+			'post_status'  => Saddle_Records::STATUS,
 			'post_title'   => $parsed['name'],
 			'post_content' => $parsed['body'],
 		);
@@ -468,7 +468,7 @@ class Saddle_Skills {
 		return get_posts(
 			array(
 				'post_type'      => self::CPT,
-				'post_status'    => 'publish',
+				'post_status'    => Saddle_Records::statuses(),
 				'posts_per_page' => self::MAX_SKILLS,
 				'orderby'        => 'date',
 				'order'          => 'ASC',
@@ -490,7 +490,7 @@ class Saddle_Skills {
 		$posts = get_posts(
 			array(
 				'post_type'      => self::CPT,
-				'post_status'    => 'publish',
+				'post_status'    => Saddle_Records::statuses(),
 				'title'          => $slug,
 				'posts_per_page' => 1,
 			)

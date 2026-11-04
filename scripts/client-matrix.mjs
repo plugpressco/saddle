@@ -136,7 +136,7 @@ const TOOL_NAME = /^[a-zA-Z0-9_-]{1,64}$/;
 
 /* ------------------------------------------------------------ options */
 
-const HELP = `Saddle client matrix: replay each AI app's MCP handshake against a site.
+const HELP = `Saddle client matrix: replay each AI agent's MCP handshake against a site.
 
 Usage:
   node scripts/client-matrix.mjs --site <url> [--user <login> --key <application password>] [--token <bearer>]
@@ -461,7 +461,7 @@ async function discover( client, opts ) {
 			result(
 				'discover',
 				'skip',
-				'Sign-in for apps is off on this site (no Bearer challenge). Turn it on under Saddle → AI apps to test this path.'
+				'Sign-in for agents is off on this site (no Bearer challenge). Turn it on under Saddle → Agent setup to test this path.'
 			)
 		);
 		return steps;
@@ -527,7 +527,7 @@ async function discover( client, opts ) {
 	const problems = [];
 	if ( ! metadata.registration_endpoint ) {
 		problems.push(
-			'no registration_endpoint, so the app cannot register itself'
+			'no registration_endpoint, so the agent cannot register itself'
 		);
 	}
 	if (

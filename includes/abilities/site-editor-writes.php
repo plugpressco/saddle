@@ -418,7 +418,7 @@ class Saddle_Site_Editor_Writes {
 	/**
 	 * Call one of core's REST routes in-process, as the current user.
 	 *
-	 * Through Saddle_Connection::dispatch_internal(), so an app connected with
+	 * Through Saddle_Connection::dispatch_internal(), so an agent connected with
 	 * a key reaches the route this tool chose; a plain rest_do_request() is
 	 * refused for a Saddle key (found in the 1.5.0 release QA).
 	 *

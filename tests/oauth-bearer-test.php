@@ -325,7 +325,7 @@ class Saddle_OAuth_Bearer_Test extends WP_UnitTestCase {
 		$this->assertSame(
 			'admin',
 			Saddle_Capabilities::get_tier(),
-			'Access is per app: the grant holds what the owner gave it, whatever the legacy site tier says.'
+			'Access is per agent: the grant holds what the owner gave it, whatever the legacy site tier says.'
 		);
 	}
 
@@ -347,10 +347,10 @@ class Saddle_OAuth_Bearer_Test extends WP_UnitTestCase {
 	 * reads comes from a different route on this path: tier_ceiling() →
 	 * scope_to_tier() → the saddle_tier_ceiling filter. The clamp tests above
 	 * prove the tier is right; these prove the TOOL LIST that now depends on
-	 * it is right, which is the part a connected app actually sees.
+	 * it is right, which is the part a connected agent actually sees.
 	 *
 	 * Worth its own cover because an empty list here is indistinguishable, from
-	 * the user's side, from the bug this whole branch is about: an app that
+	 * the user's side, from the bug this whole branch is about: an agent that
 	 * signs in fine and then reports no callable actions.
 	 *
 	 * @param string $scope Granted scope.
@@ -482,7 +482,7 @@ class Saddle_OAuth_Bearer_Test extends WP_UnitTestCase {
 		);
 
 		// Claude Code, Cursor and VS Code users keep the legible "your key was
-		// rejected, reconnect the app" error instead of being sent into a
+		// rejected, reconnect the agent" error instead of being sent into a
 		// consent flow they never asked for.
 		$this->assertArrayNotHasKey( 'WWW-Authenticate', $response->get_headers() );
 	}

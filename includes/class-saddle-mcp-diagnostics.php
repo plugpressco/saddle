@@ -1,6 +1,6 @@
 <?php
 /**
- * What connected apps actually sent, and what they got back.
+ * What connected agents actually sent, and what they got back.
  *
  * @package Saddle
  */
@@ -495,7 +495,7 @@ class Saddle_MCP_Diagnostics {
 	 * Saddle_Connection and this class already know. The one request it can
 	 * make is the loopback "Connection check" the readme already lists, and
 	 * only for an account that can manage the site: it tells a connection
-	 * that works over Basic that apps signing in with OAuth (Bearer) are
+	 * that works over Basic that agents signing in with OAuth (Bearer) are
 	 * being stripped at the edge, which nothing on this side of the request
 	 * can see. Pause is not reported: a paused site refuses this call too,
 	 * and that refusal already says so.
@@ -512,14 +512,14 @@ class Saddle_MCP_Diagnostics {
 			$problems[] = array(
 				'code'    => 'site_address_changed',
 				'message' => __( 'The site\'s address changed since write access was granted, and the owner turned on domain enforcement, so every write tool is refused.', 'saddle' ),
-				'fix'     => __( 'The owner re-confirms this app\'s access in Saddle → Agent setup, or turns the domain check off in Saddle → Settings.', 'saddle' ),
+				'fix'     => __( 'The owner re-confirms this agent\'s access in Saddle → Agent setup, or turns the domain check off in Saddle → Settings.', 'saddle' ),
 			);
 		}
 
 		if ( '' === (string) get_option( 'permalink_structure' ) ) {
 			$problems[] = array(
 				'code'    => 'plain_permalinks',
-				'message' => __( 'The site uses plain permalinks. Apps that expect /wp-json/ addresses, and OAuth sign-in, do not work that way.', 'saddle' ),
+				'message' => __( 'The site uses plain permalinks. Agents that expect /wp-json/ addresses, and OAuth sign-in, do not work that way.', 'saddle' ),
 				'fix'     => __( 'Choose any setting other than "Plain" in Settings → Permalinks.', 'saddle' ),
 			);
 		}
@@ -528,7 +528,7 @@ class Saddle_MCP_Diagnostics {
 		if ( ! $app_passwords ) {
 			$problems[] = array(
 				'code'    => 'app_passwords_off',
-				'message' => __( 'Application Passwords are unavailable on this site, so apps that connect with a pasted key cannot sign in.', 'saddle' ),
+				'message' => __( 'Application Passwords are unavailable on this site, so agents that connect with a pasted key cannot sign in.', 'saddle' ),
 				'fix'     => __( 'Serve the site over HTTPS, or ask whoever turned Application Passwords off (a security plugin or the host) to allow them.', 'saddle' ),
 			);
 		}
@@ -546,8 +546,8 @@ class Saddle_MCP_Diagnostics {
 				$problems[] = array(
 					'code'    => 'stripped' === $probe['bearer_header'] && 'stripped' !== $probe['auth_header'] ? 'bearer_header_stripped' : 'auth_header_stripped',
 					'message' => 'stripped' === $probe['auth_header']
-						? __( 'The web server drops the Authorization header before WordPress sees it, so apps that connect with a key are refused.', 'saddle' )
-						: __( 'The web server drops Bearer sign-ins, so apps that connect through OAuth (such as ChatGPT) are refused even though pasted-key apps work.', 'saddle' ),
+						? __( 'The web server drops the Authorization header before WordPress sees it, so agents that connect with a key are refused.', 'saddle' )
+						: __( 'The web server drops Bearer sign-ins, so agents that connect through OAuth (such as ChatGPT) are refused even though pasted-key agents work.', 'saddle' ),
 					'fix'     => $probe['htaccess_fixable']
 						? __( 'Saddle → Settings → Connection check can add the fix to .htaccess in one click.', 'saddle' )
 						: __( 'Ask the host to forward the Authorization header to PHP. Saddle → Settings → Connection check shows the exact rule.', 'saddle' ),
