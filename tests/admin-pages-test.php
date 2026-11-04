@@ -2,7 +2,7 @@
 /**
  * The Saddle admin as WordPress pages (#274): one menu, a submenu per page,
  * modules between Home and the two configuration pages, the page and tab
- * handed to the app, and assets only on Saddle's own screens.
+ * handed to the agent, and assets only on Saddle's own screens.
  *
  * @package Saddle
  */
@@ -106,7 +106,7 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 	/**
 	 * The menu's order (Fahim, 2026-10-23): Overview, the add-ons (Analytics
 	 * always, Saddle's placeholder until Saddle Analytics is on), Context,
-	 * MCP, Settings, and Get Pro with its crown.
+	 * MCP, Settings, and Get Premium with its crown.
 	 */
 	public function test_the_menu_reads_overview_add_ons_context_agent_setup_logs_settings_get_pro() {
 		$this->build_menu();
@@ -121,12 +121,12 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		$this->assertSame( 'Agent setup', $items['saddle-connections'][0] );
 		$this->assertStringStartsWith( '<span class="saddle-get-pro-crown"', $items['saddle-plans'][0] );
 		$this->assertStringContainsString( '<svg class="saddle-nav-icon" width="16" height="16" aria-hidden="true"', $items['saddle-plans'][0] );
-		$this->assertStringEndsWith( '</span>Get Pro', $items['saddle-plans'][0] );
-		$this->assertSame( 'Get Pro ‹ Saddle', $items['saddle-plans'][3], 'The page title stays plain text.' );
+		$this->assertStringEndsWith( '</span>Get Premium', $items['saddle-plans'][0] );
+		$this->assertSame( 'Get Premium ‹ Saddle', $items['saddle-plans'][3], 'The page title stays plain text.' );
 	}
 
 	/**
-	 * Get Pro goes once Saddle Pro is installed, even switched off: its
+	 * Get Premium goes once Saddle Pro is installed, even switched off: its
 	 * plugin file is enough.
 	 */
 	public function test_get_pro_hides_once_saddle_pro_is_installed() {
@@ -175,14 +175,14 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Get Pro (#373) is the one place free Saddle names its paid plans: it
+	 * Get Premium (#373) is the one place free Saddle names its paid plans: it
 	 * goes while Saddle Pro is active (the filter stands in for its
 	 * constant here), and no agent ever reads about it.
 	 */
 	public function test_get_pro_hides_with_saddle_pro_and_from_agents() {
 		$this->assertContains( 'plans', Saddle_Modules::RESERVED );
 		$this->assertNotContains( 'plans', wp_list_pluck( Saddle_Modules_View::all(), 'key' ) );
-		$this->assertStringNotContainsString( 'Get Pro', Saddle_Context::system_context() );
+		$this->assertStringNotContainsString( 'Get Premium', Saddle_Context::system_context() );
 
 		add_filter( 'saddle_show_get_pro', '__return_false' );
 		$this->build_menu();
@@ -239,7 +239,7 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		);
 		foreach ( $this->saddle_items() as $slug => $item ) {
 			if ( 'saddle-plans' === $slug ) {
-				continue; // Get Pro's crown: test_the_menu_reads_overview_add_ons_context_mcp_settings_get_pro.
+				continue; // Get Premium's crown: test_the_menu_reads_overview_add_ons_context_mcp_settings_get_pro.
 			}
 			$this->assertSame( $labels[ $slug ], $item[0], 'No icon before the label (#369): ' . $slug );
 		}
@@ -459,8 +459,8 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		return array(
 			'Home'                       => array( 'saddle', null, 'home', 'overview' ),
 			'an old Activity tab link'   => array( 'saddle', 'activity', 'home', 'overview' ),
-			'AI apps'                    => array( 'saddle-connections', null, 'connections', 'apps' ),
-			'AI apps, an old Permissions link' => array( 'saddle-connections', 'permissions', 'connections', 'apps' ),
+			'AI agents'                    => array( 'saddle-connections', null, 'connections', 'apps' ),
+			'AI agents, an old Permissions link' => array( 'saddle-connections', 'permissions', 'connections', 'apps' ),
 			'Context'                    => array( 'saddle-context', null, 'context', 'overview' ),
 			'Settings'                   => array( 'saddle-settings', null, 'settings', 'general' ),
 			'an old Advanced link'       => array( 'saddle-settings', 'advanced', 'settings', 'general' ),

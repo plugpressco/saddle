@@ -1,32 +1,28 @@
 /**
- * Saddle → Get Pro (#373; clearer the same day): Saddle Cloud's Go, Pro and
- * Reach plans for 5, 20 or 50 sites, after saddle.to's pricing page.
+ * Saddle → Get Premium (#373, Get Pro until 2026-11-02; Free to $299 the
+ * same day): Saddle Cloud's Free, Go, Pro and Reach plans, one yearly price
+ * each with unlimited sites, after saddle.to's pricing page.
  *
- * Centred: a heading, one line, the sites picker. Then the plans as one
- * table of three cards whose rows line up (subgrid): the plan's icon (Pro
- * wears the crown) and what it is for, the price a month, what a year
- * costs, the button to that plan's checkout on saddle.to, the same three
- * numbers on every card (sites, AI-app calls a day, SEO credits a month),
- * then the four things it adds. Then four short answers and the money-back
- * line. Every button opens saddle.to in a new tab; the page sends nothing.
+ * Centred: a heading and one line. Then the plans as one table of four
+ * cards whose rows line up (subgrid): the plan's icon (Pro wears the crown)
+ * and what it is for, the price a year, "Unlimited sites", the button
+ * (Free's to Saddle Cloud with this site filled in, the others to their
+ * checkout on saddle.to), the same two numbers on every card (AI agent calls
+ * a month, SEO credits a month), then the four things it adds. Then four
+ * short answers and the money-back line. Every button opens a new tab; the
+ * page sends nothing.
  *
  * The one place free Saddle names its paid plans (non-negotiable #3,
- * amended 2026-10-23). Saddle shows it only while Saddle Pro is not installed
- * (`Saddle_Modules::offers_pro()`), and no agent is told about it.
+ * amended 2026-10-23 and 2026-11-02). Saddle shows it only while Saddle Pro
+ * is not installed (`Saddle_Modules::offers_pro()`), and no agent is told
+ * about it.
  */
-import { useState } from '@wordpress/element';
-import { Button, SegmentedControl, VisuallyHidden } from '@plugpress/ui';
-import { __, sprintf } from '@wordpress/i18n';
+import { Button, VisuallyHidden } from '@plugpress/ui';
+import { __ } from '@wordpress/i18n';
 import { icons } from '../icons/kit';
 import { NavIcon } from '../icons/iconoir';
-import {
-	FIRST_SIZE,
-	SIZES,
-	STORE,
-	planCards,
-	price,
-	questions,
-} from '../get-pro-logic';
+import { saddleData } from '../api';
+import { STORE, planCards, price, questions } from '../get-pro-logic';
 
 // Said once for every link that leaves the page.
 const NEW_TAB = __( '(opens in a new tab)', 'saddle' );
@@ -61,19 +57,15 @@ function Plan( { plan } ) {
 
 			<p className="saddle-plan__price">
 				<span className="saddle-plan__amount">
-					{ price( plan.monthly ) }
+					{ price( plan.yearly ) }
 				</span>
 				<span className="saddle-plan__per">
-					{ __( '/ month', 'saddle' ) }
+					{ __( '/ year', 'saddle' ) }
 				</span>
 			</p>
 
 			<p className="saddle-plan__billed">
-				{ sprintf(
-					/* translators: %s: the price for a year, such as $228. */
-					__( '%s billed yearly', 'saddle' ),
-					price( plan.yearly )
-				) }
+				{ __( 'Unlimited sites', 'saddle' ) }
 			</p>
 
 			<Button
@@ -83,11 +75,7 @@ function Plan( { plan } ) {
 				target="_blank"
 				rel="noopener noreferrer"
 			>
-				{ sprintf(
-					/* translators: %s: a plan's name, such as Pro. */
-					__( 'Choose %s', 'saddle' ),
-					plan.name
-				) }
+				{ plan.buy }
 				<VisuallyHidden>{ ` ${ NEW_TAB }` }</VisuallyHidden>
 			</Button>
 
@@ -118,35 +106,23 @@ function Plan( { plan } ) {
 }
 
 export default function GetPro() {
-	const [ size, setSize ] = useState( String( FIRST_SIZE ) );
-	const plans = planCards( Number( size ) );
+	const plans = planCards( saddleData.homeUrl );
 
 	return (
 		<div className="saddle-plans">
 			<div className="saddle-plans__intro">
 				<h2 className="saddle-plans__title">
-					{ __( 'One AI connection for all your sites', 'saddle' ) }
+					{ __(
+						'Build, rank and grow every site from one AI agent',
+						'saddle'
+					) }
 				</h2>
 				<p className="saddle-plans__lede">
 					{ __(
-						'Saddle is free and stays free. Pick a plan to work on every site from one AI app.',
+						'Saddle is free and stays free. Saddle Cloud connects one AI agent to all your sites, free to start.',
 						'saddle'
 					) }
 				</p>
-				<SegmentedControl
-					className="saddle-plans__sizes"
-					aria-label={ __( 'How many sites', 'saddle' ) }
-					options={ SIZES.map( ( s ) => ( {
-						value: String( s ),
-						label: sprintf(
-							/* translators: %d: a number of sites. */
-							__( '%d sites', 'saddle' ),
-							s
-						),
-					} ) ) }
-					value={ size }
-					onChange={ setSize }
-				/>
 			</div>
 
 			<div className="saddle-plans__table">
@@ -157,7 +133,10 @@ export default function GetPro() {
 
 			<p className="saddle-plans__refund">
 				<icons.ShieldCheck size={ 16 } />
-				{ __( '7-day money-back guarantee on every plan', 'saddle' ) }
+				{ __(
+					'7-day money-back guarantee on every paid plan',
+					'saddle'
+				) }
 			</p>
 
 			<section className="saddle-plans__faq">

@@ -1,7 +1,7 @@
 /**
  * Connection health — the server-side half of "Check it's working".
  *
- * The browser test above this can pass while external AI apps still get
+ * The browser test above this can pass while external AI agents still get
  * "unauthorized": the #1 cause is the web server stripping the Authorization
  * header before PHP sees it (the browser test authenticates with cookies, so
  * it never notices). Saddle probes for that server-side and, on Apache/
@@ -72,7 +72,7 @@ export default function ConnectionHealth() {
 			<p className="saddle-health saddle-health--ok">
 				{ fixOutcome === 'fixed'
 					? __(
-							'Fixed. Sign-in details now reach WordPress, so your AI apps can connect.',
+							'Fixed. Sign-in details now reach WordPress, so your AI agents can connect.',
 							'saddle'
 					  )
 					: __(
@@ -87,7 +87,7 @@ export default function ConnectionHealth() {
 		return (
 			<p className="saddle-health saddle-health--muted">
 				{ __(
-					'Saddle couldn’t check your server. If AI apps report “unauthorized” with the right password, ask your host to pass the Authorization header through to WordPress.',
+					'Saddle couldn’t check your server. If AI agents report “unauthorized” with the right password, ask your host to pass the Authorization header through to WordPress.',
 					'saddle'
 				) }
 			</p>
@@ -126,9 +126,9 @@ export default function ConnectionHealth() {
 	const snippets = report.fix_snippet || {};
 
 	// The partial case is the one that costs people weeks, so it gets its own
-	// words rather than the generic warning. Pasted-key apps keep working, so
+	// words rather than the generic warning. Pasted-key agents keep working, so
 	// every obvious test passes and the natural conclusion — "sign-in headers
-	// are fine here" — is wrong. Only apps that sign in through Saddle break,
+	// are fine here" — is wrong. Only agents that sign in through Saddle break,
 	// and ChatGPT is the one that can only connect that way.
 	const bearerOnly = report.status === 'bearer_header_stripped';
 
@@ -139,19 +139,19 @@ export default function ConnectionHealth() {
 			title={
 				bearerOnly
 					? __(
-							'Your server is blocking apps that sign in through Saddle',
+							'Your server is blocking agents that sign in through Saddle',
 							'saddle'
 					  )
-					: __( 'Your server is blocking app sign-ins', 'saddle' )
+					: __( 'Your server is blocking agent sign-ins', 'saddle' )
 			}
 			description={
 				bearerOnly
 					? __(
-							'Apps connected with a pasted key work. Apps that sign in through Saddle, such as ChatGPT, send a different header. Your web server removes it before WordPress sees it. Those apps finish signing in, then report that the site has no actions. The rule below lets that header through.',
+							'Agents connected with a pasted key work. Agents that sign in through Saddle, such as ChatGPT, send a different header. Your web server removes it before WordPress sees it. Those agents finish signing in, then report that the site has no actions. The rule below lets that header through.',
 							'saddle'
 					  )
 					: __(
-							'An AI app sends its password in a sign-in header. Your web server removes that header before WordPress sees it. Every connection then fails as “unauthorized”, even with the right password. The test above can still pass, because your browser signs in another way.',
+							'An AI agent sends its password in a sign-in header. Your web server removes that header before WordPress sees it. Every connection then fails as “unauthorized”, even with the right password. The test above can still pass, because your browser signs in another way.',
 							'saddle'
 					  )
 			}

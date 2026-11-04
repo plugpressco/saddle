@@ -1,6 +1,6 @@
 <?php
 /**
- * Which app a connection is, as far as the evidence says.
+ * Which agent a connection is, as far as the evidence says.
  *
  * @package Saddle
  */
@@ -9,7 +9,7 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Names the app behind a connection, so the admin can say "Claude" rather
- * than "Saddle: AI app" or a random OAuth client id.
+ * than "Saddle: AI agent" or a random OAuth client id.
  *
  * A display hint only, never a security decision: every piece of evidence
  * here is self-reported by the client. The keys match the connect wizard's
@@ -36,6 +36,9 @@ class Saddle_Connection_Apps {
 		'https://claude.ai/api/mcp/auth_callback'  => 'claude',
 		'https://claude.com/api/mcp/auth_callback' => 'claude',
 		'https://chatgpt.com/'                     => 'chatgpt',
+		// Saddle Cloud signs in with its client metadata document there; the
+		// welcome and Agent setup stop offering it once it has.
+		'https://cloud.saddle.to/'                 => 'saddle-cloud',
 	);
 
 	/**
@@ -57,7 +60,7 @@ class Saddle_Connection_Apps {
 	);
 
 	/**
-	 * App names as the wizard labels them, lowercased. Longer names first, so
+	 * Agent names as the wizard labels them, lowercased. Longer names first, so
 	 * "Claude Code" is not taken for "Claude".
 	 */
 	const LABELS = array(
@@ -102,7 +105,7 @@ class Saddle_Connection_Apps {
 	}
 
 	/**
-	 * The app a credential's own name refers to: "Claude Code", "Claude Code
+	 * The agent a credential's own name refers to: "Claude Code", "Claude Code
 	 * 2" (the wizard's counter for a second key), "Cursor (laptop)".
 	 *
 	 * @param string $name Credential name.

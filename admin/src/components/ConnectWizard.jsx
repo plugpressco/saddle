@@ -83,7 +83,7 @@ function WelcomeConnect( {
 } ) {
 	const [ step, setStep ] = useState( 0 ); // 0 getting ready, 1 setup, 3 connected
 	const [ app, setApp ] = useState( null );
-	// A picked app that already has a key: replace it or add another,
+	// A picked agent that already has a key: replace it or add another,
 	// instead of silently stacking "Claude Code 2".
 	const [ duplicateOf, setDuplicateOf ] = useState( null ); // { key, existing }
 	const { copied: configCopied, copy: copyConfig } = useCopy();
@@ -96,7 +96,7 @@ function WelcomeConnect( {
 	const [ oauthState, setOauthState ] = useState( null );
 	const [ enablingOauth, setEnablingOauth ] = useState( false );
 	const [ oauthError, setOauthError ] = useState( null );
-	// Whether the sign-in state has arrived (or failed): the app is set up
+	// Whether the sign-in state has arrived (or failed): the agent is set up
 	// only then, because the path it takes depends on it.
 	const [ oauthSettled, setOauthSettled ] = useState( false );
 
@@ -128,7 +128,7 @@ function WelcomeConnect( {
 		};
 	}, [] );
 
-	/* ----- the key, made the moment the app's key setup opens ----- */
+	/* ----- the key, made the moment the agent's key setup opens ----- */
 
 	const adopt = ( key ) => ( res ) => {
 		if ( res ) {
@@ -169,7 +169,7 @@ function WelcomeConnect( {
 
 	const pick = ( key ) => {
 		const chosen = APPS.find( ( a ) => a.key === key );
-		// The address path mints nothing: the app signs in through Saddle's
+		// The address path mints nothing: the agent signs in through Saddle's
 		// consent screen, and a key would only be an unused credential.
 		if ( 'address' === modeFor( chosen ) ) {
 			setApp( key );
@@ -180,7 +180,7 @@ function WelcomeConnect( {
 		pickByKey( key );
 	};
 
-	// Open the chosen app's setup once the sign-in state is known.
+	// Open the chosen agent's setup once the sign-in state is known.
 	const presetDone = useRef( false );
 	useEffect( () => {
 		if (
@@ -230,9 +230,9 @@ function WelcomeConnect( {
 
 	/* ----- switching paths ----- */
 
-	// "Use a key instead": make a key for the same app and show its setup.
+	// "Use a key instead": make a key for the same agent and show its setup.
 	// The getting-ready step waits while the key is made, and is where an
-	// older key for the app offers replace or add.
+	// older key for the agent offers replace or add.
 	const switchToKey = () => {
 		setPreferAddress( false );
 		setPatienceUp( false );
@@ -248,7 +248,7 @@ function WelcomeConnect( {
 	};
 
 	// Cancel on "already has a key": back to the address the owner came
-	// from, or to the app choice.
+	// from, or to the agent choice.
 	const cancelDuplicate = () => {
 		setDuplicateOf( null );
 		if ( app ) {
@@ -291,7 +291,7 @@ function WelcomeConnect( {
 		);
 	}
 
-	// The app's own name, as the drawer says it, not "Claude Code 2".
+	// The agent's own name, as the drawer says it, not "Claude Code 2".
 	const duplicateLabel = duplicateOf
 		? ( APPS.find( ( a ) => a.key === duplicateOf.key ) || {} ).label
 		: '';
@@ -304,19 +304,19 @@ function WelcomeConnect( {
 				</Notice>
 			) }
 
-			{ /* ---------- An older key, or an error: no app picker ---------- */ }
+			{ /* ---------- An older key, or an error: no agent picker ---------- */ }
 			{ 0 === step && (
 				<div className="saddle-wizard__step" key="ready">
 					{ duplicateOf && (
 						<p className="saddle-wizard__lead">
 							{ sprintf(
-								/* translators: %s: app name, such as Claude Code. */
+								/* translators: %s: agent name, such as Claude Code. */
 								__( '%s already has a key.', 'saddle' ),
 								duplicateLabel
 							) }{ ' ' }
 							{ duplicateOf.existing.last_used
 								? __(
-										'That connection has been used. Replacing its key stops the old one at once, then you paste the new setup into the app. Add a separate connection only for a second computer.',
+										'That connection has been used. Replacing its key stops the old one at once, then you paste the new setup into the agent. Add a separate connection only for a second computer.',
 										'saddle'
 								  )
 								: __(
@@ -377,12 +377,12 @@ function WelcomeConnect( {
 				</div>
 			) }
 
-			{ /* ---------- A web app can't reach this computer (P7) ---------- */ }
+			{ /* ---------- A web agent can't reach this computer (P7) ---------- */ }
 			{ 1 === step && activeApp && unreachable && ! activeApp.viaKey && (
 				<div className="saddle-wizard__step" key="unreachable">
 					<p className="saddle-wizard__lead">
 						{ sprintf(
-							/* translators: %s: app name, such as ChatGPT. */
+							/* translators: %s: agent name, such as ChatGPT. */
 							__(
 								'%s runs on its own servers, so it can’t reach a site on this computer. Try Claude Code, Cursor or Codex here, or connect once the site is online.',
 								'saddle'
@@ -407,7 +407,7 @@ function WelcomeConnect( {
 						{ unreachable && (
 							<p className="saddle-wizard__lead">
 								{ sprintf(
-									/* translators: %s: app name, such as Claude. */
+									/* translators: %s: agent name, such as Claude. */
 									__(
 										'%s runs on its own servers, so it can’t reach a site on this computer.',
 										'saddle'
@@ -415,7 +415,7 @@ function WelcomeConnect( {
 									activeApp.label
 								) }{ ' ' }
 								{ sprintf(
-									/* translators: %s: app name, such as Claude. */
+									/* translators: %s: agent name, such as Claude. */
 									__(
 										'The %s desktop app can reach it through a small bridge.',
 										'saddle'
@@ -439,13 +439,13 @@ function WelcomeConnect( {
 									className="saddle-wizard__oauth-gate"
 									tone="warning"
 									title={ __(
-										'One switch first: sign-in for apps',
+										'One switch first: sign-in for agents',
 										'saddle'
 									) }
 									description={ sprintf(
-										/* translators: %s: the app name. */
+										/* translators: %s: the agent name. */
 										__(
-											'%s signs in through your WordPress instead of a pasted key, and that sign-in is off. Turn it on, and the app gets no access until you approve it here.',
+											'%s signs in through your WordPress instead of a pasted key, and that sign-in is off. Turn it on, and the agent gets no access until you approve it here.',
 											'saddle'
 										),
 										activeApp.label
@@ -534,14 +534,14 @@ function WelcomeConnect( {
 							</Button>
 						</div>
 
-						{ /* One click instead of a paste, for apps that install a
+						{ /* One click instead of a paste, for agents that install a
 						     server from a link. Opening a link counts as copying:
 						     the setup has left this page either way. */ }
 						{ links.length > 0 && (
 							<div className="saddle-wizard__install">
 								<p className="saddle-wizard__hint">
 									{ sprintf(
-										/* translators: %s: the app name. */
+										/* translators: %s: the agent name. */
 										__(
 											'Or open %s with the server filled in, and confirm it there.',
 											'saddle'
@@ -583,7 +583,7 @@ function WelcomeConnect( {
 							'address' === modeFor( activeApp, true ) && (
 								<p className="saddle-wizard__hint">
 									{ __(
-										'This app can also connect with the address and a sign-in screen.',
+										'This agent can also connect with the address and a sign-in screen.',
 										'saddle'
 									) }{ ' ' }
 									<Button
@@ -601,7 +601,7 @@ function WelcomeConnect( {
 						{ IS_LOCAL && ! unreachable && (
 							<p className="saddle-wizard__hint">
 								{ __(
-									'This site runs on a local address, so the app must run on this same computer to reach it.',
+									'This site runs on a local address, so the agent must run on this same computer to reach it.',
 									'saddle'
 								) }
 							</p>

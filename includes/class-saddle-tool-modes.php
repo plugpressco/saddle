@@ -325,7 +325,7 @@ class Saddle_Tool_Modes {
 	}
 
 	/**
-	 * The context line that tells an app which of its tools ask the owner
+	 * The context line that tells an agent which of its tools ask the owner
 	 * first, or '' when none do. Names only tools it can call now, at most
 	 * ten, to stay inside the budget every session pays.
 	 *

@@ -253,7 +253,7 @@ export function canonicalSearch( search, resolved ) {
 		changed = true;
 	}
 	if ( params.has( 'sub' ) && params.get( 'sub' ) !== sub ) {
-		// The app reads a page the way sanitize_key does (routes.js), so
+		// The agent reads a page the way sanitize_key does (routes.js), so
 		// `&sub=Pages` is the page `pages`: write it as such.
 		const asked = String( params.get( 'sub' ) )
 			.replace( /[^a-z0-9_-]/gi, '' )

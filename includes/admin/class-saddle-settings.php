@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
  * onto them.
  *
  * Saddle is one top-level menu. Every page is a submenu under it: Home, the
- * installed modules, AI apps, Services, Context and Settings (see
+ * installed modules, Agent setup, Services, Context and Settings (see
  * Saddle_Modules). The submenu picks the page. Every page has a header whose
  * breadcrumb reads "Saddle / Page". A module's page adds a left sidebar of
  * its sections (`&tab=`) and, in a section with pages, an icon tab row
@@ -72,7 +72,7 @@ class Saddle_Settings {
 
 	/**
 	 * A page's label in the Saddle menu: its name, escaped (WordPress prints
-	 * a submenu title as HTML), and for Get Pro a gold crown before it. No
+	 * a submenu title as HTML), and for Get Premium a gold crown before it. No
 	 * other item has an icon (#369, #373).
 	 *
 	 * @param string $key  Area key.
@@ -94,8 +94,8 @@ class Saddle_Settings {
 
 	/**
 	 * The Saddle menu's order (Fahim, 2026-10-23): Overview, the modules
-	 * (Analytics first), then Context, Agent setup, Logs, Settings and Get Pro. A plain
-	 * list with no dividing line; only Get Pro carries an icon, its crown.
+	 * (Analytics first), then Context, Agent setup, Logs, Settings and Get Premium. A
+	 * plain list with no dividing line; only Get Premium carries an icon, its crown.
 	 *
 	 * A sibling that adds its own submenu (Saddle Rank does, at priority 20)
 	 * lands after whatever is already there, so the order is settled once

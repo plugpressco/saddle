@@ -188,7 +188,7 @@ function saddle_register_wc_abilities() {
 			),
 			'execute_callback'    => array( 'Saddle_WC_Abilities', 'list_orders' ),
 			// Customer personal data (#321): names and emails need Edit content,
-			// not the Read only level every new app starts at. Still read-only
+			// not the Read only level every new agent starts at. Still read-only
 			// in what it does, so the annotation stays readonly.
 			'permission_callback' => Saddle_Capabilities::permission( 'write', 'edit_shop_orders', 'wc-list-orders' ),
 			'meta'                => saddle_ability_meta( true, false, true, 'write' ),

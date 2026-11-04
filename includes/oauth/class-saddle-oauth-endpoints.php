@@ -127,7 +127,7 @@ class Saddle_OAuth_Endpoints {
 		// redirect_uri_matches().
 		if ( ! Saddle_OAuth_Clients::redirect_uri_matches( $redirect_uri, $registered ) ) {
 			return self::fatal(
-				__( 'That app asked to be sent back to an address it has not registered with this site. Nothing has been authorized.', 'saddle' )
+				__( 'That agent asked to be sent back to an address it has not registered with this site. Nothing has been authorized.', 'saddle' )
 			);
 		}
 
@@ -253,7 +253,7 @@ class Saddle_OAuth_Endpoints {
 
 		$client_id = isset( $params['client_id'] ) ? (string) $params['client_id'] : '';
 		if ( $client_id !== (string) $record['client_id'] ) {
-			return Saddle_OAuth::error_response( 'invalid_grant', __( 'That authorization code was issued to a different app.', 'saddle' ) );
+			return Saddle_OAuth::error_response( 'invalid_grant', __( 'That authorization code was issued to a different agent.', 'saddle' ) );
 		}
 
 		$redirect_uri = isset( $params['redirect_uri'] ) ? (string) $params['redirect_uri'] : '';
@@ -293,12 +293,12 @@ class Saddle_OAuth_Endpoints {
 
 		$grant = Saddle_OAuth_Store::get_grant( (string) $record['grant_id'] );
 		if ( ! $grant ) {
-			return Saddle_OAuth::error_response( 'invalid_grant', __( 'That connection has been revoked. The app needs to be authorized again.', 'saddle' ) );
+			return Saddle_OAuth::error_response( 'invalid_grant', __( 'That connection has been revoked. The agent needs to be authorized again.', 'saddle' ) );
 		}
 
 		$client_id = isset( $params['client_id'] ) ? (string) $params['client_id'] : '';
 		if ( '' !== $client_id && $client_id !== (string) $grant['client_id'] ) {
-			return Saddle_OAuth::error_response( 'invalid_grant', __( 'That refresh token was issued to a different app.', 'saddle' ) );
+			return Saddle_OAuth::error_response( 'invalid_grant', __( 'That refresh token was issued to a different agent.', 'saddle' ) );
 		}
 
 		$scope = (string) $grant['scope'];
@@ -571,7 +571,7 @@ class Saddle_OAuth_Endpoints {
 	private static function fatal( $message ) {
 		wp_die(
 			esc_html( $message ) . '<p>' . esc_html__( 'Nothing on your site has changed. You can close this window.', 'saddle' ) . '</p>',
-			esc_html__( 'Saddle did not authorize this app', 'saddle' ),
+			esc_html__( 'Saddle did not authorize this agent', 'saddle' ),
 			array( 'response' => 400 )
 		);
 	}

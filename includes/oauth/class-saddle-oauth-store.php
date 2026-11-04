@@ -127,14 +127,13 @@ class Saddle_OAuth_Store {
 	 * @return int|WP_Error Post id, or WP_Error on failure.
 	 */
 	private static function put( $kind, $secret, array $meta, $ttl ) {
+		// Saved under Saddle's own record status, never as a published post:
+		// plugins that act on published posts, such as IndexNow pings, must
+		// not see a token (#386). The record class explains the choice.
 		$post_id = wp_insert_post(
 			array(
 				'post_type'   => self::CPT,
-				// Stored as 'publish' for the same reason Saddle_Approval does:
-				// 'private' would make WP_Query apply read_private_posts filtering,
-				// so a record owned by a lower-privilege user would look missing.
-				// The CPT is non-public and non-queryable, so nothing is exposed.
-				'post_status' => 'publish',
+				'post_status' => Saddle_Records::STATUS,
 				'post_title'  => $kind,
 				'post_name'   => self::key( $kind, $secret ),
 			),
@@ -189,9 +188,11 @@ class Saddle_OAuth_Store {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Indexed single-row lookup on a private CPT that must work before init; see docblock.
 		$post_id = (int) $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT ID FROM {$wpdb->posts} WHERE post_type = %s AND post_name = %s AND post_status = 'publish' LIMIT 1",
+				"SELECT ID FROM {$wpdb->posts} WHERE post_type = %s AND post_name = %s AND post_status IN ( %s, %s ) LIMIT 1",
 				self::CPT,
-				self::key( $kind, $secret )
+				self::key( $kind, $secret ),
+				Saddle_Records::STATUS,
+				Saddle_Records::LEGACY_STATUS
 			)
 		);
 
@@ -327,7 +328,7 @@ class Saddle_OAuth_Store {
 		$query = new WP_Query(
 			array(
 				'post_type'              => self::CPT,
-				'post_status'            => 'publish',
+				'post_status'            => Saddle_Records::statuses(),
 				'title'                  => 'client',
 				'posts_per_page'         => self::MAX_CLIENTS,
 				'orderby'                => 'date',
@@ -356,7 +357,7 @@ class Saddle_OAuth_Store {
 		$query = new WP_Query(
 			array(
 				'post_type'              => self::CPT,
-				'post_status'            => 'publish',
+				'post_status'            => Saddle_Records::statuses(),
 				'title'                  => 'client',
 				'posts_per_page'         => 50,
 				'offset'                 => self::MAX_CLIENTS,
@@ -442,7 +443,7 @@ class Saddle_OAuth_Store {
 		$query = new WP_Query(
 			array(
 				'post_type'              => self::CPT,
-				'post_status'            => 'publish',
+				'post_status'            => Saddle_Records::statuses(),
 				'title'                  => 'grant',
 				'posts_per_page'         => 100,
 				'orderby'                => 'date',
@@ -525,7 +526,7 @@ class Saddle_OAuth_Store {
 		$query = new WP_Query(
 			array(
 				'post_type'              => self::CPT,
-				'post_status'            => 'publish',
+				'post_status'            => Saddle_Records::statuses(),
 				'posts_per_page'         => 500, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page -- Revocation must reach every token bound to the grant; leaving any behind would make Revoke a lie.
 				'fields'                 => 'ids',
 				'no_found_rows'          => true,
@@ -725,7 +726,7 @@ class Saddle_OAuth_Store {
 		$query = new WP_Query(
 			array(
 				'post_type'              => self::CPT,
-				'post_status'            => 'publish',
+				'post_status'            => Saddle_Records::statuses(),
 				'posts_per_page'         => 200, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page -- Fixed-size hourly sweep batch, not an unbounded query.
 				'fields'                 => 'ids',
 				'no_found_rows'          => true,
@@ -757,14 +758,14 @@ class Saddle_OAuth_Store {
 
 	/**
 	 * Remove every OAuth record. Used when the owner turns OAuth off, so
-	 * disabling the server actually disconnects the apps rather than leaving
+	 * disabling the server actually disconnects the agents rather than leaving
 	 * live tokens waiting for it to come back on.
 	 */
 	public static function purge() {
 		$query = new WP_Query(
 			array(
 				'post_type'              => self::CPT,
-				'post_status'            => 'publish',
+				'post_status'            => Saddle_Records::statuses(),
 				'posts_per_page'         => -1, // phpcs:ignore WordPress.WP.PostsPerPage.posts_per_page_posts_per_page, WordPress.WP.PostsPerPage.posts_per_page_posts_per_page_-1 -- Runs only when the owner switches OAuth off, and must leave nothing live behind.
 				'fields'                 => 'ids',
 				'no_found_rows'          => true,

@@ -1,6 +1,6 @@
 <?php
 /**
- * Services — one list of what this site's AI apps can reach beyond core
+ * Services — one list of what this site's AI agents can reach beyond core
  * content: an outside account (Unsplash), the plugins Saddle edits natively,
  * and the plugins that add tools.
  *

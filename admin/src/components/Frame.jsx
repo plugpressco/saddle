@@ -51,6 +51,8 @@ import SectionNav, { revealActive } from './SectionNav';
 const PAGE_WIDTH = 960;
 const ONE_PAGE_WIDTH = 1040;
 const MODULE_WIDTH = 920;
+// Get Premium's four plans side by side.
+const PLANS_WIDTH = 1200;
 
 // A page shows at most one tab row (Core's header row or a module
 // section's pages), and its tabs swap the one content column. So every tab
@@ -209,11 +211,11 @@ function AiSwitch( { paused, pausing, onToggle } ) {
 			<p className="saddle-ai__text">
 				{ paused
 					? __(
-							'No app can read or change this site until you resume.',
+							'No agent can read or change this site until you resume.',
 							'saddle'
 					  )
 					: __(
-							'Your apps can work on this site, each within the access you gave it.',
+							'Your agents can work on this site, each within the access you gave it.',
 							'saddle'
 					  ) }
 			</p>
@@ -229,7 +231,7 @@ function AiSwitch( { paused, pausing, onToggle } ) {
 			>
 				{ paused
 					? __( 'Resume', 'saddle' )
-					: __( 'Pause all apps', 'saddle' ) }
+					: __( 'Pause all agents', 'saddle' ) }
 			</Button>
 		</Popover>
 	);
@@ -497,8 +499,7 @@ export default function Frame( {
 				? ONE_PAGE_WIDTH
 				: MODULE_WIDTH;
 	} else if ( 'plans' === area.key ) {
-		// Get Pro's three plans side by side, as big as a one-page module.
-		width = ONE_PAGE_WIDTH;
+		width = PLANS_WIDTH;
 	}
 
 	const content = (
@@ -578,7 +579,7 @@ export default function Frame( {
 					<span>
 						<strong>{ __( 'AI is paused.', 'saddle' ) }</strong>{ ' ' }
 						{ __(
-							'No app can read or change this site until you resume.',
+							'No agent can read or change this site until you resume.',
 							'saddle'
 						) }
 					</span>

@@ -131,7 +131,7 @@ class Saddle_OAuth_Clients {
 
 		$record = Saddle_OAuth_Store::get_client( $client_id );
 		if ( ! $record ) {
-			return new WP_Error( 'invalid_client', __( 'That app is not registered with this site. It may need to register again.', 'saddle' ) );
+			return new WP_Error( 'invalid_client', __( 'That agent is not registered with this site. It may need to register again.', 'saddle' ) );
 		}
 
 		return $record;
@@ -149,7 +149,7 @@ class Saddle_OAuth_Clients {
 	 */
 	private static function resolve_metadata_document( $client_id ) {
 		if ( ! self::cimd_enabled() ) {
-			return new WP_Error( 'invalid_client', __( 'This site does not accept apps that identify themselves by URL.', 'saddle' ) );
+			return new WP_Error( 'invalid_client', __( 'This site does not accept agents that identify themselves by URL.', 'saddle' ) );
 		}
 
 		$cached = Saddle_OAuth_Store::get_client( $client_id );
@@ -160,12 +160,12 @@ class Saddle_OAuth_Clients {
 		// A fragment would make the identity ambiguous — two different strings
 		// fetching the same document and both claiming to be it.
 		if ( wp_parse_url( $client_id, PHP_URL_FRAGMENT ) ) {
-			return new WP_Error( 'invalid_client', __( 'An app identifier URL cannot contain a fragment.', 'saddle' ) );
+			return new WP_Error( 'invalid_client', __( 'An agent identifier URL cannot contain a fragment.', 'saddle' ) );
 		}
 
 		$path = (string) wp_parse_url( $client_id, PHP_URL_PATH );
 		if ( '' === $path || '/' === $path ) {
-			return new WP_Error( 'invalid_client', __( 'An app identifier URL must include a path.', 'saddle' ) );
+			return new WP_Error( 'invalid_client', __( 'An agent identifier URL must include a path.', 'saddle' ) );
 		}
 
 		$fetched = Saddle_HTTP::fetch_json( $client_id );
@@ -174,7 +174,7 @@ class Saddle_OAuth_Clients {
 				'invalid_client',
 				sprintf(
 					/* translators: %s: reason the document could not be read. */
-					__( 'Could not read that app’s identity document: %s', 'saddle' ),
+					__( 'Could not read that agent’s identity document: %s', 'saddle' ),
 					$fetched->get_error_message()
 				)
 			);
@@ -182,10 +182,10 @@ class Saddle_OAuth_Clients {
 
 		$document = $fetched['data'];
 
-		// The whole point. Anything else is an app claiming to be a document it
+		// The whole point. Anything else is an agent claiming to be a document it
 		// does not control.
 		if ( ! isset( $document['client_id'] ) || (string) $document['client_id'] !== $client_id ) {
-			return new WP_Error( 'invalid_client', __( 'That app’s identity document does not match the address it was fetched from.', 'saddle' ) );
+			return new WP_Error( 'invalid_client', __( 'That agent’s identity document does not match the address it was fetched from.', 'saddle' ) );
 		}
 
 		$metadata = self::sanitize_metadata( $document );
@@ -294,7 +294,7 @@ class Saddle_OAuth_Clients {
 		if ( empty( $redirect_uris ) ) {
 			return new WP_Error(
 				'invalid_redirect_uri',
-				__( 'An app must supply at least one redirect address, over HTTPS or to localhost.', 'saddle' )
+				__( 'An agent must supply at least one redirect address, over HTTPS or to localhost.', 'saddle' )
 			);
 		}
 
@@ -317,7 +317,7 @@ class Saddle_OAuth_Clients {
 	 *
 	 * Exact string comparison, with one exception that RFC 8252 §7.3 makes
 	 * mandatory: on a plain-HTTP loopback URI (127.0.0.1, [::1] or localhost)
-	 * the port may differ, because a native app such as Claude Code opens a
+	 * the port may differ, because a native agent such as Claude Code opens a
 	 * new listener on a new port each time. Nothing else may differ: not the
 	 * host (127.0.0.1 is not localhost), path, query, case or a single byte
 	 * after them. Prefix matching stays out; it is the most common way

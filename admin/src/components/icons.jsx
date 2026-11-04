@@ -1,5 +1,5 @@
 /**
- * The Saddle brand mark and the AI app logos from @lobehub/icons-static-svg
+ * The Saddle brand mark and the AI agent logos from @lobehub/icons-static-svg
  * (MIT). Logos are logos, not icons: they keep their own colours.
  *
  * Interface icons are Iconoir (MIT): `NavIcon` in icons/iconoir.js for the
@@ -37,12 +37,12 @@ export function BrandMark( props ) {
 	);
 }
 
-/* ---------- AI app brand logos ----------
+/* ---------- AI agent brand logos ----------
  *
  * From @lobehub/icons-static-svg (MIT, imported at the top of this file),
  * bundled at build time via @svgr. VS Code has no lobe icon (the set is
  * AI-focused) — its MCP setup runs Copilot agent mode, so it wears the
- * Copilot mark. "Another app" gets the MCP logo itself.
+ * Copilot mark. "Another agent" gets the MCP logo itself.
  */
 const APP_LOGOS = {
 	claude: ClaudeLogo,
@@ -61,7 +61,7 @@ const APP_LOGOS = {
 	antigravity: AntigravityLogo,
 };
 
-// Brand logo for a wizard app key; the MCP mark when unknown.
+// Brand logo for a wizard agent key; the MCP mark when unknown.
 //
 // The svg imports above resolve to data-URI strings in the wp-scripts build
 // (the default export is the asset URL, not a component), so these render as
@@ -80,7 +80,7 @@ export function AppLogo( { app, ...props } ) {
 	);
 }
 
-// Best-effort app key from a stored connection label ("Claude Code 2" →
+// Best-effort agent key from a stored connection label ("Claude Code 2" →
 // claude-code), for the connected-apps list where only the name survives.
 export function appKeyFromLabel( label ) {
 	const l = ( label || '' ).toLowerCase();

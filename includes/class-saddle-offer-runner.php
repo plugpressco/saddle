@@ -138,7 +138,7 @@ class Saddle_Offer_Runner {
 	}
 
 	/**
-	 * Whether the owner lets apps apply a major WordPress release: Saddle's
+	 * Whether the owner lets agents apply a major WordPress release: Saddle's
 	 * own setting, off by default. WordPress's "automatic updates for all new
 	 * versions" switch does not count. It is on by default for sites
 	 * installed since 5.6, and it decides only what WordPress does
@@ -155,7 +155,7 @@ class Saddle_Offer_Runner {
 	 * Safety switch on Saddle → Settings and the settings registry, whose
 	 * field no tool can write.
 	 *
-	 * @param bool $allowed Whether apps may apply a major release.
+	 * @param bool $allowed Whether agents may apply a major release.
 	 */
 	public static function set_core_majors( $allowed ) {
 		update_option( self::OPTION_CORE_MAJOR, $allowed ? 1 : 0 );

@@ -1,6 +1,6 @@
 # Control Your WordPress Site with AI Using Saddle
 
-Saddle connects AI apps to your WordPress site through MCP. Your AI can read and edit posts, pages and media. It starts read-only and asks before it deletes.
+Saddle connects AI agents to your WordPress site through MCP. Your AI can read and edit posts, pages and media. It starts read-only and asks before it deletes.
 
 - **Requires:** WordPress 6.9 or later, PHP 7.4 or later
 - **Website:** [saddle.to](https://saddle.to)
@@ -10,7 +10,7 @@ Saddle connects AI apps to your WordPress site through MCP. Your AI can read and
 
 ## Who it is for
 
-Saddle helps site owners, developers and agencies who already use an AI app. It runs on your own site. You need no account and no cloud service.
+Saddle helps site owners, developers and agencies who already use an AI agent. It runs on your own site. You need no account and no cloud service.
 
 It works with:
 
@@ -18,7 +18,7 @@ It works with:
 - ChatGPT
 - Cursor and VS Code
 - Codex and Gemini CLI
-- Any other app that supports [MCP](https://modelcontextprotocol.io)
+- Any other AI agent that supports [MCP](https://modelcontextprotocol.io)
 
 ## Features
 
@@ -77,17 +77,17 @@ A delete or overwrite takes two calls. The first call shows a preview and return
 ## Getting started
 
 1. Install and activate Saddle from **Plugins → Add New**.
-2. Go to **Saddle → Apps** and add an app.
-3. Copy the connection settings into your AI app.
+2. Go to **Saddle → Agent setup** and add an agent.
+3. Copy the connection settings into your AI agent.
 4. To allow changes, go to **Saddle → Permissions** and choose a higher level.
 
 The MCP endpoint is `POST /wp-json/saddle/v1/mcp`.
 
-### Connecting an app
+### Connecting an AI agent
 
 Saddle uses WordPress Application Passwords. Each key works only with Saddle. It cannot reach the rest of the REST API.
 
-ChatGPT cannot use a pasted key. Turn on OAuth sign-in under **Saddle → Settings** instead. An administrator must approve each app.
+ChatGPT cannot use a pasted key. Turn on OAuth sign-in under **Saddle → Settings** instead. An administrator must approve each agent.
 
 ## Writing a Skill
 
@@ -108,7 +108,7 @@ when_to_use: publishing or scheduling a post
 
 ## Privacy
 
-- Your AI app connects to your site directly. Nothing passes through our servers.
+- Your AI agent connects to your site directly. Nothing passes through our servers.
 - Saddle sends no tracking or usage data.
 - Saddle stores its settings, Skills, memory and activity log on your site.
 - Uninstalling removes all Saddle data.

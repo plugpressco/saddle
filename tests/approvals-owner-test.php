@@ -1,6 +1,6 @@
 <?php
 /**
- * "Needs your OK": previews bound to the asking app, pending approvals the
+ * "Needs your OK": previews bound to the asking agent, pending approvals the
  * owner decides on Home, and the gate honouring that decision.
  *
  * @package Saddle
@@ -91,7 +91,7 @@ class Saddle_Approvals_Owner_Test extends WP_UnitTestCase {
 		$this->assertSame( 0, $calls );
 		$this->assertCount( 1, $this->pending(), 'A refused foreign confirm leaves the request waiting.' );
 
-		// Not burned: the app that asked can still confirm, exactly once.
+		// Not burned: the agent that asked can still confirm, exactly once.
 		// Regression: B's refused attempt spent A's token.
 		$this->as_key( $a );
 		$own = Saddle_Approval::gate( $this->args( $calls, array( 'confirm_token' => $token ) ) );
@@ -298,8 +298,8 @@ class Saddle_Approvals_Owner_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * A request whose app has since lost the access level its tool needs is
-	 * left out of Needs your OK, and approving it is refused: the app's
+	 * A request whose agent has since lost the access level its tool needs is
+	 * left out of Needs your OK, and approving it is refused: the agent's
 	 * confirm would be refused before the gate anyway. Regression: it stayed
 	 * listed and could be approved to no effect.
 	 */

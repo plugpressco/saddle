@@ -104,7 +104,7 @@ export const api = ( path, options = {} ) => {
 // Its id carries a colon ("key:…", "oauth:…"), which is legal in a path and
 // stays as it is: some servers (WordPress Playground among them) do not
 // decode %3A before WordPress matches the route, so the encoded form was a
-// 404 and changing an app's access failed there.
+// 404 and changing an agent's access failed there.
 export const connectionPath = ( id, rest = '' ) =>
 	[ 'connections', encodeURIComponent( id ).replace( /%3A/gi, ':' ), rest ]
 		.filter( Boolean )

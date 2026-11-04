@@ -1,10 +1,10 @@
 /**
  * The connect screens, rendered (1.5.0 release QA; Agent setup since #369):
- * an app's steps make a key in place and read like the address path (S7),
- * point at what works on this computer (P7), tick only apps that connected
+ * an agent's steps make a key in place and read like the address path (S7),
+ * point at what works on this computer (P7), tick only agents that connected
  * (R10) and clean up a key a reload left (R1); Agent setup shows the steps
  * an address or the connected list asked for, a new key included; the
- * welcome never asks for the app again; Sign-in for apps says nothing it
+ * welcome never asks for the agent again; Sign-in for agents says nothing it
  * doesn't know while loading (R3) and draws no heading of its own (#293).
  */
 
@@ -84,7 +84,7 @@ function setup( data, routes ) {
 		connectionPath: ( id, rest = '' ) =>
 			[ 'connections', id, rest ].filter( Boolean ).join( '/' ),
 	} ) );
-	// The interface icons and the app logos are SVG imports, which Jest
+	// The interface icons and the agent logos are SVG imports, which Jest
 	// can't read. An icon keeps its label.
 	jest.doMock( '../../admin/src/icons/kit', () => ( {
 		icons: new Proxy(
@@ -193,7 +193,7 @@ describe( 'the steps’ key path (S7)', () => {
 		);
 
 		expect( el.textContent ).toContain(
-			'Sign-in for apps is off, so Claude Code connects with a key.'
+			'Sign-in for agents is off, so Claude Code connects with a key.'
 		);
 		await click( env, button( el, 'Make a key for Claude Code' ) );
 
@@ -209,7 +209,7 @@ describe( 'the steps’ key path (S7)', () => {
 		expect( el.textContent ).toContain(
 			'Waiting for Claude Code to connect…'
 		);
-		// None of the old wizard's chrome, and the app isn't asked again.
+		// None of the old wizard's chrome, and the agent isn't asked again.
 		expect( el.textContent ).not.toMatch(
 			/Choose app|Paste setup|Set up Claude Code|will be able to do|Which app are you connecting/
 		);
@@ -281,7 +281,7 @@ describe( 'the steps’ key path (S7)', () => {
 		);
 	} );
 
-	it( 'offers to replace an older key for the app instead of stacking one', async () => {
+	it( 'offers to replace an older key for the agent instead of stacking one', async () => {
 		const env = setup(
 			SITE,
 			routes( {
@@ -350,7 +350,7 @@ describe( 'the steps’ key path (S7)', () => {
 		);
 
 		expect( el.textContent ).toContain(
-			'ChatGPT connects only through sign-in for apps, which is off.'
+			'ChatGPT connects only through sign-in for agents, which is off.'
 		);
 		expect( el.textContent ).not.toContain( 'connects with a key' );
 		expect( button( el, 'Make a key for ChatGPT' ) ).toBeUndefined();
@@ -358,7 +358,7 @@ describe( 'the steps’ key path (S7)', () => {
 } );
 
 describe( 'the steps on a site on this computer (P7)', () => {
-	it( 'points at the apps that run here, then Claude’s desktop bridge', async () => {
+	it( 'points at the agents that run here, then Claude’s desktop bridge', async () => {
 		const env = setup( LOCAL, {
 			'GET connections': { connections: [] },
 		} );
@@ -413,7 +413,7 @@ describe( 'the steps on a site on this computer (P7)', () => {
 		expect( first.textContent ).toContain( 'mcp-remote' );
 	} );
 
-	it( 'opens an app it points at', async () => {
+	it( 'opens an agent it points at', async () => {
 		const env = setup( LOCAL, {
 			'GET connections': { connections: [] },
 		} );
@@ -433,7 +433,7 @@ describe( 'the steps on a site on this computer (P7)', () => {
 	} );
 } );
 
-describe( 'MCP’s list of apps (#369, R10)', () => {
+describe( 'MCP’s list of agents (#369, R10)', () => {
 	const appButton = ( el, name ) =>
 		[ ...el.querySelectorAll( '.saddle-setup__app' ) ].find(
 			( b ) =>
@@ -441,7 +441,7 @@ describe( 'MCP’s list of apps (#369, R10)', () => {
 				b.querySelector( '.saddle-setup__app-name' ).textContent
 		);
 
-	it( 'shows one app’s steps from the start, beside every app', async () => {
+	it( 'shows one agent’s steps from the start, beside every agent', async () => {
 		const env = setup( SITE, { 'GET connections': { connections: [] } } );
 		const { el } = await render(
 			env,
@@ -459,7 +459,7 @@ describe( 'MCP’s list of apps (#369, R10)', () => {
 		).toBe( 'Connect Claude' );
 	} );
 
-	it( 'ticks an app once it connected, not one whose key was never used', async () => {
+	it( 'ticks an agent once it connected, not one whose key was never used', async () => {
 		let answer;
 		const env = setup( SITE, {
 			'GET connections': () =>
@@ -542,7 +542,7 @@ describe( 'MCP’s list of apps (#369, R10)', () => {
 } );
 
 describe( 'a key a reload left behind (R1)', () => {
-	it( 'is removed when the next screen opens, unless an app used it', async () => {
+	it( 'is removed when the next screen opens, unless an agent used it', async () => {
 		window.sessionStorage.setItem( 'saddle-pending-key', 'left-1' );
 		const env = setup( SITE, {
 			'GET connections': { connections: [] },
@@ -561,7 +561,7 @@ describe( 'a key a reload left behind (R1)', () => {
 		);
 	} );
 
-	it( 'stays when an app used it after all', async () => {
+	it( 'stays when an agent used it after all', async () => {
 		window.sessionStorage.setItem( 'saddle-pending-key', 'left-1' );
 		const env = setup( SITE, {
 			'GET connections': { connections: [] },
@@ -601,7 +601,7 @@ describe( 'a key a reload left behind (R1)', () => {
 } );
 
 describe( 'the welcome’s connect step', () => {
-	it( 'asks about an older key without showing the app picker again', async () => {
+	it( 'asks about an older key without showing the agent picker again', async () => {
 		const env = setup( SITE, {
 			'GET oauth-settings': NO_SIGN_IN,
 		} );
@@ -675,7 +675,7 @@ describe( 'the welcome’s connect step', () => {
 		expect( button( el, 'Use the address instead' ) ).toBeUndefined();
 	} );
 
-	it( 'tells a local ChatGPT owner to pick an app on this computer', async () => {
+	it( 'tells a local ChatGPT owner to pick an agent on this computer', async () => {
 		const env = setup( LOCAL, {
 			'GET oauth-settings': SIGN_IN_ON,
 		} );
@@ -699,7 +699,7 @@ describe( 'the welcome’s connect step', () => {
 	} );
 } );
 
-describe( 'Sign-in for apps (R3, #293)', () => {
+describe( 'Sign-in for agents (R3, #293)', () => {
 	it( 'says nothing it doesn’t know while the setting loads', async () => {
 		const env = setup( SITE, {} );
 		const { el } = await render(
@@ -731,7 +731,7 @@ describe( 'Sign-in for apps (R3, #293)', () => {
 			</env.TooltipProvider>
 		);
 
-		expect( el.textContent ).toContain( 'On. You approve each app.' );
+		expect( el.textContent ).toContain( 'On. You approve each agent.' );
 		expect(
 			el.querySelector( '[role="switch"]' ).getAttribute( 'aria-checked' )
 		).toBe( 'true' );
@@ -753,6 +753,6 @@ describe( 'Sign-in for apps (R3, #293)', () => {
 		expect(
 			el.querySelector( 'h1, h2, h3, .saddle-section-head' )
 		).toBeNull();
-		expect( el.textContent ).toContain( 'Let apps sign in' );
+		expect( el.textContent ).toContain( 'Let agents sign in' );
 	} );
 } );
