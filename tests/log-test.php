@@ -34,7 +34,7 @@ class Saddle_Log_Test extends WP_UnitTestCase {
 	/**
 	 * Every connection shares the owner's WordPress user, so the activity log
 	 * said "via admin" for changes Claude Code made. The entry now names the
-	 * app, and keeps the name after the key is revoked.
+	 * agent, and keeps the name after the key is revoked.
 	 */
 	public function test_record_names_the_app_that_made_the_change() {
 		$admin = self::factory()->user->create( array( 'role' => 'administrator' ) );
@@ -170,7 +170,7 @@ class Saddle_Log_Test extends WP_UnitTestCase {
 		Saddle_Log::record(
 			array(
 				'action'  => 'update-post',
-				'summary' => 'An app changed a post',
+				'summary' => 'An agent changed a post',
 			)
 		);
 		$newest = get_posts(

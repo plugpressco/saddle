@@ -1,7 +1,7 @@
 /**
- * Sign-in for apps: the one control for OAuth on this site. It lives on
- * Settings → Advanced → Sign-in for apps. On or off, whether the site
- * can do it yet, whether apps can discover it, and the two registration
+ * Sign-in for agents: the one control for OAuth on this site. It lives on
+ * Settings → Advanced → Sign-in for agents. On or off, whether the site
+ * can do it yet, whether agents can discover it, and the two registration
  * switches all sit here; nothing else on the page flips them.
  *
  * It draws no heading of its own (#293): the disclosure it sits in names
@@ -74,7 +74,7 @@ export function useOauthSettings() {
  * What the discovery probe found, in the owner's language.
  *
  * 'slow' is called out separately because it fails identically to a missing
- * document from the app's side, but for the opposite reason — the document is
+ * document from the agent's side, but for the opposite reason — the document is
  * there and correct, the site just answers too late — so the subfolder and
  * blocked-path advice below would send the owner chasing the wrong thing.
  *
@@ -84,20 +84,20 @@ export function useOauthSettings() {
 const DISCOVERY_NOTE = ( state ) => {
 	if ( 'ok' === state ) {
 		return __(
-			'Apps can find this site’s sign-in details on their own.',
+			'Agents can find this site’s sign-in details on their own.',
 			'saddle'
 		);
 	}
 
 	if ( 'slow' === state ) {
 		return __(
-			'This site answers too slowly for some apps. The sign-in details are correct, but ChatGPT gives up after a few seconds and reports that the site doesn’t support sign-in. A page cache or a faster host usually fixes it.',
+			'This site answers too slowly for some agents. The sign-in details are correct, but ChatGPT gives up after a few seconds and reports that the site doesn’t support sign-in. A page cache or a faster host usually fixes it.',
 			'saddle'
 		);
 	}
 
 	return __(
-		'Apps may not be able to find the sign-in details automatically. This usually means WordPress lives in a subfolder, or your host blocks addresses starting with a dot. Most apps will still connect; ChatGPT may not.',
+		'Agents may not be able to find the sign-in details automatically. This usually means WordPress lives in a subfolder, or your host blocks addresses starting with a dot. Most agents will still connect; ChatGPT may not.',
 		'saddle'
 	);
 };
@@ -147,7 +147,7 @@ export default function SignInCard( { oauth, save } ) {
 					'saddle'
 			  );
 	} else if ( oauth.enabled ) {
-		state = __( 'On. You approve each app.', 'saddle' );
+		state = __( 'On. You approve each agent.', 'saddle' );
 	} else {
 		state = __( 'Off', 'saddle' );
 	}
@@ -159,11 +159,11 @@ export default function SignInCard( { oauth, save } ) {
 					title={
 						<Labelled
 							help={ __(
-								'With this on, an app needs only this site’s address. It opens your browser and you approve it here, like “Sign in with Google”. Claude, ChatGPT, Claude Code, Codex, Cursor, VS Code and Gemini CLI connect this way, and ChatGPT connects no other way. Pasted keys keep working.',
+								'With this on, an agent needs only this site’s address. It opens your browser and you approve it here, like “Sign in with Google”. Claude, ChatGPT, Claude Code, Codex, Cursor, VS Code and Gemini CLI connect this way, and ChatGPT connects no other way. Pasted keys keep working.',
 								'saddle'
 							) }
 						>
-							{ __( 'Let apps sign in', 'saddle' ) }
+							{ __( 'Let agents sign in', 'saddle' ) }
 						</Labelled>
 					}
 					description={ state }
@@ -178,7 +178,7 @@ export default function SignInCard( { oauth, save } ) {
 								}
 								// The visible label, so speech input can say it.
 								aria-label={ __(
-									'Let apps sign in',
+									'Let agents sign in',
 									'saddle'
 								) }
 							/>
@@ -219,12 +219,12 @@ export default function SignInCard( { oauth, save } ) {
 							title={
 								<Labelled
 									help={ __(
-										'Needed to connect by address. An app that registers still cannot do anything until you approve it on screen.',
+										'Needed to connect by address. An agent that registers still cannot do anything until you approve it on screen.',
 										'saddle'
 									) }
 								>
 									{ __(
-										'Let apps register themselves',
+										'Let agents register themselves',
 										'saddle'
 									) }
 								</Labelled>
@@ -236,7 +236,7 @@ export default function SignInCard( { oauth, save } ) {
 										save( { dcr: ! oauth.dcr } )
 									}
 									aria-label={ __(
-										'Let apps register themselves',
+										'Let agents register themselves',
 										'saddle'
 									) }
 								/>
@@ -246,11 +246,11 @@ export default function SignInCard( { oauth, save } ) {
 							title={
 								<Labelled
 									help={ __(
-										'When an app identifies itself by web address, Saddle fetches that address to confirm it vouches for the app. Turning this off means every app shows as unverified.',
+										'When an agent identifies itself by web address, Saddle fetches that address to confirm it vouches for the agent. Turning this off means every agent shows as unverified.',
 										'saddle'
 									) }
 								>
-									{ __( 'Check app identity', 'saddle' ) }
+									{ __( 'Check agent identity', 'saddle' ) }
 								</Labelled>
 							}
 							actions={
@@ -260,7 +260,7 @@ export default function SignInCard( { oauth, save } ) {
 										save( { cimd: ! oauth.cimd } )
 									}
 									aria-label={ __(
-										'Check app identity',
+										'Check agent identity',
 										'saddle'
 									) }
 								/>

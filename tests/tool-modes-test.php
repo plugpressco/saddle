@@ -44,7 +44,7 @@ class Saddle_Tool_Modes_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * A connected app: a Saddle key with a role, used for the calls after it.
+	 * A connected agent: a Saddle key with a role, used for the calls after it.
 	 */
 	private function app( $role = 'write', $label = 'Claude Code' ) {
 		list( , $item ) = WP_Application_Passwords::create_new_application_password( $this->admin, array( 'name' => Saddle_REST_Admin::CLIENT_PREFIX . $label ) );

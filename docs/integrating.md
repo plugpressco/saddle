@@ -1,6 +1,6 @@
 # Build a Saddle integration
 
-Saddle is a WordPress MCP server. An AI app connects to it and gets a set of
+Saddle is a WordPress MCP server. An AI agent connects to it and gets a set of
 tools for the site. Any plugin can add its own tools to that set. This page
 shows how.
 

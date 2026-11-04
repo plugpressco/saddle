@@ -46,7 +46,7 @@ export function sortApprovals( approvals ) {
 }
 
 /**
- * "Claude wants to publish “Spring sale”": the app, then the gate's one-line
+ * "Claude wants to publish “Spring sale”": the agent, then the gate's one-line
  * summary with its first letter lowered so it reads as a sentence.
  *
  * @param {Object} approval A row from GET /approvals.
@@ -54,10 +54,10 @@ export function sortApprovals( approvals ) {
  */
 export function requestTitle( approval ) {
 	const summary = String( approval.summary || '' ).trim();
-	const app = approval.app || __( 'An app', 'saddle' );
+	const app = approval.app || __( 'An agent', 'saddle' );
 	if ( ! summary ) {
 		return sprintf(
-			/* translators: %s: app name. */
+			/* translators: %s: agent name. */
 			__( '%s wants to make a change', 'saddle' ),
 			app
 		);
@@ -67,7 +67,7 @@ export function requestTitle( approval ) {
 		? summary.charAt( 0 ).toLowerCase() + summary.slice( 1 )
 		: summary;
 	return sprintf(
-		/* translators: 1: app name, 2: what it wants to do, e.g. "publish “Spring sale”". */
+		/* translators: 1: agent name, 2: what it wants to do, e.g. "publish “Spring sale”". */
 		__( '%1$s wants to %2$s', 'saddle' ),
 		app,
 		lowered
@@ -145,7 +145,7 @@ const fieldLabels = () => ( {
 /**
  * Fields that name the same thing as a friendlier field beside them: a
  * plugin's file ("hello.php") next to its name ("Hello Dolly"), a theme's
- * folder next to its name. The file is for the app (R4).
+ * folder next to its name. The file is for the agent (R4).
  */
 const SHOWN_BY = {
 	plugin: 'plugin_name',
@@ -153,7 +153,7 @@ const SHOWN_BY = {
 };
 
 /**
- * Fields that are for the app, not the owner: ids, tool names, block
+ * Fields that are for the agent, not the owner: ids, tool names, block
  * addresses, and a design spec as code. The title already names the item.
  */
 const HIDDEN = [ 'id', 'tool', 'address', 'spec', 'store' ];

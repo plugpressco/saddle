@@ -1,6 +1,6 @@
 /**
- * Pure helpers for Home (#309): the week's numbers and its days, each app's
- * next step and the plugins the apps can work inside. No React, no network.
+ * Pure helpers for Home (#309): the week's numbers and its days, each agent's
+ * next step and the plugins the agents can work inside. No React, no network.
  */
 import { __ } from '@wordpress/i18n';
 
@@ -78,7 +78,7 @@ export function weekTiles( week ) {
 }
 
 /**
- * The one next step for a connected app, shown on its row in Home's AI apps
+ * The one next step for a connected app, shown on its row in Home's AI agents
  * (#367; a line of its own before): try it while it has not used Saddle
  * yet, then give it more than Read only.
  *
@@ -89,7 +89,7 @@ export function appNext( c ) {
 	if ( ! c ) {
 		return '';
 	}
-	// The welcome's try step needs to know which app it is.
+	// The welcome's try step needs to know which agent it is.
 	if ( ! c.first_tool_at && c.app ) {
 		return 'try';
 	}
@@ -97,7 +97,7 @@ export function appNext( c ) {
 }
 
 /**
- * The plugins on this site the apps can work inside, for "Works with": the
+ * The plugins on this site the agents can work inside, for "Works with": the
  * Services page's plugin and add-on records that are on, with tools. An
  * add-on Home already lists under Add-ons is left out (#367), so no name
  * shows twice.
@@ -127,9 +127,9 @@ export function worksWith( records, listed = [] ) {
  * site back, so on a server that answers one request at a time it would hold
  * everything sent after it: it waits until the week's numbers are in, which
  * Home asks for together with Needs your OK and the feed. Its answer matters
- * only once an app is connected.
+ * only once an agent is connected.
  *
- * @param {boolean} connected Whether an app is connected.
+ * @param {boolean} connected Whether an agent is connected.
  * @param {?Object} week      The week's numbers, or null while they load.
  * @return {boolean} True to run it.
  */
@@ -140,7 +140,7 @@ export function selfCheckDue( connected, week ) {
 // The pastel tones Home's tiles and chips come in (#369), Cloud's set.
 const TONES = [ 'pink', 'lilac', 'sky', 'mint', 'butter', 'peach' ];
 
-// An app's tile, picked to sit well under its logo's own colours.
+// An agent's tile, picked to sit well under its logo's own colours.
 const APP_TONES = {
 	claude: 'peach',
 	'claude-code': 'peach',
@@ -178,9 +178,9 @@ function toneFor( key ) {
 }
 
 /**
- * The tile behind an app's logo on Home (#369).
+ * The tile behind an agent's logo on Home (#369).
  *
- * @param {string} app The app key (connect-apps.js), or ''.
+ * @param {string} agent The agent key (connect-apps.js), or ''.
  * @return {string} A tone.
  */
 export function appTone( app ) {

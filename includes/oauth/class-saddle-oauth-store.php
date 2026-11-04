@@ -758,7 +758,7 @@ class Saddle_OAuth_Store {
 
 	/**
 	 * Remove every OAuth record. Used when the owner turns OAuth off, so
-	 * disabling the server actually disconnects the apps rather than leaving
+	 * disabling the server actually disconnects the agents rather than leaving
 	 * live tokens waiting for it to come back on.
 	 */
 	public static function purge() {

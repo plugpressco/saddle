@@ -2,7 +2,7 @@
 /**
  * The OAuth 2.1 authorization flow, end to end.
  *
- * What this pins: an app can only get a token by going all the way through
+ * What this pins: an agent can only get a token by going all the way through
  * registration, an administrator's explicit approval, and a PKCE-verified code
  * exchange — and every shortcut around that is refused. These are the
  * properties that make it safe to expose unauthenticated OAuth endpoints on a
@@ -365,7 +365,7 @@ class Saddle_OAuth_Flow_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * The ceiling must be well clear of one person approving one app, or the
+	 * The ceiling must be well clear of one person approving one agent, or the
 	 * throttle would break the flow it protects.
 	 */
 	public function test_authorize_allows_a_normal_approval_flow() {

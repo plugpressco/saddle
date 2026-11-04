@@ -146,11 +146,11 @@ function Safety( { onRehearsalChanged } ) {
 					id: 'saddle-drafts-only-switch',
 					title: __( 'Publishing needs my OK', 'saddle' ),
 					help: __(
-						'New posts and pages an app asks to publish or schedule are saved as drafts. Publishing or scheduling an existing item needs your confirmation. Edits to content that is already live still go through.',
+						'New posts and pages an agent asks to publish or schedule are saved as drafts. Publishing or scheduling an existing item needs your confirmation. Edits to content that is already live still go through.',
 						'saddle'
 					),
 					meta: __(
-						'Apps save drafts; you approve what goes live.',
+						'Agents save drafts; you approve what goes live.',
 						'saddle'
 					),
 				} ) }
@@ -159,11 +159,11 @@ function Safety( { onRehearsalChanged } ) {
 					id: 'saddle-rehearsal-switch',
 					title: __( 'Practice mode', 'saddle' ),
 					help: __(
-						'Apps can try anything their access allows and nothing is saved. Each tool that would change the site says what it would have done, and the attempt shows in Activity as rehearsed. Reading works as usual.',
+						'Agents can try anything their access allows and nothing is saved. Each tool that would change the site says what it would have done, and the attempt shows in Activity as rehearsed. Reading works as usual.',
 						'saddle'
 					),
 					meta: __(
-						'Apps try changes but nothing is saved.',
+						'Agents try changes but nothing is saved.',
 						'saddle'
 					),
 				} ) }
@@ -172,7 +172,7 @@ function Safety( { onRehearsalChanged } ) {
 					id: 'saddle-domain-switch',
 					title: __( 'Stop writes if the site moves', 'saddle' ),
 					help: __(
-						'If the site address changes, for example after copying it to another domain, apps are refused writes until you confirm their access again.',
+						'If the site address changes, for example after copying it to another domain, agents are refused writes until you confirm their access again.',
 						'saddle'
 					),
 					meta: __(
@@ -182,16 +182,16 @@ function Safety( { onRehearsalChanged } ) {
 				} ) }
 				{ row( {
 					key: 'core_major_updates',
-					// The address an app gives the owner when it is refused
+					// The address an agent gives the owner when it is refused
 					// a major release (the settings registry's field id).
 					id: 'saddle-field-saddle-core_major_updates',
 					title: __( 'Major WordPress releases', 'saddle' ),
 					help: __(
-						'Lets an app update WordPress to a new major version, such as 7.1 to 7.2, after you approve its preview. A major release has no automatic rollback and upgrades the database. Minor and security releases never need this. WordPress’s own “automatic updates for all new versions” in Dashboard → Updates is a separate setting.',
+						'Lets an agent update WordPress to a new major version, such as 7.1 to 7.2, after you approve its preview. A major release has no automatic rollback and upgrades the database. Minor and security releases never need this. WordPress’s own “automatic updates for all new versions” in Dashboard → Updates is a separate setting.',
 						'saddle'
 					),
 					meta: __(
-						'Apps can update WordPress to a new major version.',
+						'Agents can update WordPress to a new major version.',
 						'saddle'
 					),
 				} ) }
@@ -308,7 +308,7 @@ function ToolModes( { caps, listed, onChanged, onApplied } ) {
 		<div className="saddle-tools">
 			<p className="saddle-tools__intro">
 				{ __(
-					'Ask first: the app shows you the change and it waits under Needs your OK on Overview. It runs only after you approve it there.',
+					'Ask first: the agent shows you the change and it waits under Needs your OK on Overview. It runs only after you approve it there.',
 					'saddle'
 				) }
 			</p>
@@ -410,7 +410,7 @@ function ToolModes( { caps, listed, onChanged, onApplied } ) {
 	);
 }
 
-// Sign-in for apps: the one control, drawn by SignInCard. The disclosure
+// Sign-in for agents: the one control, drawn by SignInCard. The disclosure
 // names it, so SignInCard draws no heading of its own (#293).
 function SignIn() {
 	const signIn = useOauthSettings();
@@ -455,8 +455,8 @@ export default function SettingsPage( {
 	const [ safetyKey, setSafetyKey ] = useState( 0 );
 	const tools = useMemo( () => runnableTools( caps ), [ caps ] );
 
-	// Bring Sign-in for apps, or Accounts, into view. Safety above loads its
-	// own data and grows, so the jump repeats as the page settles, as App
+	// Bring Sign-in for agents, or Accounts, into view. Safety above loads its
+	// own data and grows, so the jump repeats as the page settles, as Agent
 	// does for an anchor.
 	useEffect( () => {
 		if ( ! signInAsked && ! servicesAsked ) {
@@ -510,7 +510,7 @@ export default function SettingsPage( {
 						ref={ signInRef }
 						id="saddle-adv-signin"
 						defaultOpen={ signInAsked }
-						trigger={ __( 'Sign-in for apps', 'saddle' ) }
+						trigger={ __( 'Sign-in for agents', 'saddle' ) }
 					>
 						<div className="saddle-adv__signin">
 							<SignIn />

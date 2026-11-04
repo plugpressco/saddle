@@ -1516,6 +1516,7 @@ body.saddle-admin-page {
 			padding-inline-start: 14px;
 			color: var( --s-fg-muted );
 		}
+
 	}
 
 	// The access choice: three answers, each with its one-line hint.
@@ -2768,7 +2769,58 @@ body.saddle-admin-page {
 	margin-top: 8px;
 }
 
-/* ---------- Get Pro (#373) ---------- */
+/* ---------- Saddle Cloud in the welcome and Agent setup (2026-11-02) ---------- */
+
+// The welcome's Saddle Cloud answer is a link; it looks like the answer
+// beside it, not like a blue link. The UI kit colors links through
+// --pp-accent-text with an id selector, so the chip sets the variable.
+.saddle-chat a.saddle-chat__chip {
+	--pp-accent-text: var( --s-fg );
+	--pp-accent-hover: var( --s-fg );
+	color: var( --s-fg );
+	text-decoration: none;
+}
+
+
+// One white card: the copy, and the link beside it (under it when narrow).
+.saddle-cloud-offer {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: var( --pp-space-4 );
+	padding: var( --pp-space-5 );
+	background: var( --s-bg );
+	border-radius: 16px;
+	box-shadow: var( --s-card-edge );
+
+	p {
+		margin: 0;
+		font-size: var( --s-text );
+		line-height: 1.5;
+		color: var( --s-fg );
+	}
+}
+
+.saddle-cloud-offer__copy {
+	display: grid;
+	flex: 1 1 360px;
+	gap: var( --pp-space-1 );
+	min-width: 0;
+}
+
+.saddle-cloud-offer__title {
+	margin: 0;
+	font-size: var( --s-text-title );
+	font-weight: 600;
+	color: var( --s-fg );
+}
+
+.saddle-cloud-offer .saddle-cloud-offer__note {
+	color: var( --s-fg-subtle );
+}
+
+/* ---------- Get Premium (#373) ---------- */
 // Centred: a heading, one line and the sites picker; the plans as one table
 // of three cards whose rows line up (subgrid); four short answers. Pro wears
 // the crown, a soft pink wash and a lifted shadow.
@@ -2801,20 +2853,22 @@ body.saddle-admin-page {
 	color: var( --s-fg-subtle );
 }
 
-.saddle-plans__sizes {
-	margin-block-start: var( --pp-space-3 );
-}
-
-// Six rows per plan: head, price, billed, button, numbers, what it adds.
+// Six rows per plan: head, price, sites, button, numbers, what it adds.
+// Four plans: two by two on a mid screen, one row whose rows line up
+// (subgrid) on a wide one.
 .saddle-plans__table {
 	display: grid;
 	grid-template-columns: minmax( 0, 1fr );
 	gap: var( --pp-space-4 );
 
-	@media ( min-width: 900px ) {
-		grid-template-columns: repeat( 3, minmax( 0, 1fr ) );
+	@media ( min-width: 782px ) {
+		grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
+	}
+
+	@media ( min-width: 1280px ) {
+		grid-template-columns: repeat( 4, minmax( 0, 1fr ) );
 		grid-template-rows: repeat( 6, auto );
-		column-gap: var( --pp-space-5 );
+		column-gap: var( --pp-space-4 );
 		row-gap: 0;
 	}
 }
@@ -2828,7 +2882,7 @@ body.saddle-admin-page {
 	border-radius: 16px;
 	box-shadow: var( --s-card-edge );
 
-	@media ( min-width: 900px ) {
+	@media ( min-width: 1280px ) {
 		grid-row: span 6;
 		grid-template-rows: subgrid;
 		gap: 0;

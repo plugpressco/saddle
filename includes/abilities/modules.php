@@ -56,7 +56,7 @@ function saddle_register_module_abilities() {
 		'saddle/update-module-settings',
 		array(
 			'label'               => __( 'Change a module\'s settings', 'saddle' ),
-			'description'         => __( 'Changes settings of an installed Saddle module. Only settings whose "agent" is "write" in saddle/get-module-settings can be changed; every other setting, and all of Saddle\'s own (access level, pause, sign-in, keys), belongs to the owner and is refused with the admin_url to give them. Nothing you change here can alter what connected apps are allowed to do. Pass "module" and "values", an object of setting keys and new values, which are validated the same way the admin screen validates them. Because it overwrites settings, it previews first: the first call returns each setting from its current value to the new one, in plain words, and a confirm_token. Show the owner that and call again with the same "module", "values" and the token to apply it. The change is logged and can be reversed with saddle/undo-changes. A Saddle module is an add-on plugin with its own page in the Saddle menu, such as Analytics; it is not a Divi module or a block on a page, which the saddle-divi-* and block tools handle.', 'saddle' ),
+			'description'         => __( 'Changes settings of an installed Saddle module. Only settings whose "agent" is "write" in saddle/get-module-settings can be changed; every other setting, and all of Saddle\'s own (access level, pause, sign-in, keys), belongs to the owner and is refused with the admin_url to give them. Nothing you change here can alter what connected agents are allowed to do. Pass "module" and "values", an object of setting keys and new values, which are validated the same way the admin screen validates them. Because it overwrites settings, it previews first: the first call returns each setting from its current value to the new one, in plain words, and a confirm_token. Show the owner that and call again with the same "module", "values" and the token to apply it. The change is logged and can be reversed with saddle/undo-changes. A Saddle module is an add-on plugin with its own page in the Saddle menu, such as Analytics; it is not a Divi module or a block on a page, which the saddle-divi-* and block tools handle.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -164,7 +164,7 @@ class Saddle_Module_Abilities {
 					'saddle_setting_owner_only',
 					sprintf(
 						/* translators: 1: setting label, 2: admin URL. */
-						__( '"%1$s" can only be changed by the site owner, not by a connected app. Give them this link: %2$s', 'saddle' ),
+						__( '"%1$s" can only be changed by the site owner, not by a connected agent. Give them this link: %2$s', 'saddle' ),
 						$schema['fields'][ $key ]['label'],
 						$url
 					),

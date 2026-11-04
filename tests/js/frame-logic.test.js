@@ -591,7 +591,7 @@ describe( 'isPlainClick', () => {
 		...extra,
 	} );
 
-	it( 'keeps a plain left click in the app', () => {
+	it( 'keeps a plain left click in the agent', () => {
 		expect( isPlainClick( click() ) ).toBe( true );
 	} );
 
@@ -651,7 +651,7 @@ describe( 'canonicalSearch (P20)', () => {
 		],
 	};
 
-	// What App draws for an address: the same three calls it makes.
+	// What Agent draws for an address: the same three calls it makes.
 	const drawn = ( search ) => {
 		const here = readRoute( search );
 		const tab = resolveTab( area, here.tab );
@@ -685,7 +685,7 @@ describe( 'canonicalSearch (P20)', () => {
 		);
 	} );
 
-	it( 'writes a page the way the app read it', () => {
+	it( 'writes a page the way the agent read it', () => {
 		expect( fix( '?page=saddle-fieldnotes&tab=reports&sub=Pages' ) ).toBe(
 			'?page=saddle-fieldnotes&tab=reports&sub=pages'
 		);

@@ -1,9 +1,9 @@
 /**
- * What to look at when an app has not connected after two minutes in the
+ * What to look at when an agent has not connected after two minutes in the
  * welcome (#277).
  *
  * The likely causes, in reading order, for the path in use (R2): on the
- * address path HTTPS, permalinks, a local site (web apps only) and a ChatGPT
+ * address path HTTPS, permalinks, a local site (web agents only) and a ChatGPT
  * plan note; on both paths whether the Authorization header reaches PHP
  * (with the one-click fix) and a firewall. Then the two ways out: a key, or
  * skip for now.
@@ -65,7 +65,7 @@ export default function SelfCheck( {
 			tone="warning"
 			title={ __( 'Still waiting', 'saddle' ) }
 			description={ __(
-				'Nothing has reached this site from the app yet.',
+				'Nothing has reached this site from the agent yet.',
 				'saddle'
 			) }
 		>
@@ -84,7 +84,7 @@ export default function SelfCheck( {
 
 			<p className="saddle-wizard__hint">
 				{ __(
-					'The app connects only when you use it. Once you add Saddle, ask it something about your site.',
+					'The agent connects only when you use it. Once you add Saddle, ask it something about your site.',
 					'saddle'
 				) }
 			</p>

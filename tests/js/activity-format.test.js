@@ -88,10 +88,10 @@ describe( 'actionLabel', () => {
 	} );
 } );
 
-// QA 1.5.0 P2: the owner's own lines read "via admin", as if an app were
+// QA 1.5.0 P2: the owner's own lines read "via admin", as if an agent were
 // named after the WordPress login.
 describe( 'madeBy', () => {
-	it( 'names the app that made a change', () => {
+	it( 'names the agent that made a change', () => {
 		expect( madeBy( { app: 'Claude Code', user: 'admin' }, 'admin' ) ).toBe(
 			'via Claude Code'
 		);

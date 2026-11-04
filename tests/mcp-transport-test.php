@@ -495,7 +495,7 @@ class Saddle_MCP_Transport_Test extends WP_UnitTestCase {
 
 		$this->assertStringContainsString( 'not offered to you', $instructions );
 		$this->assertStringContainsString( 'Saddle → Agent setup', $instructions );
-		// The owner's word for the level, the one AI apps shows, not the tier key.
+		// The owner's word for the level, the one AI agents shows, not the tier key.
 		$this->assertStringContainsString( 'than the "Read only" one', $instructions );
 	}
 
@@ -715,7 +715,7 @@ class Saddle_MCP_Transport_Test extends WP_UnitTestCase {
 	/**
 	 * The health record had one writer, on the adapter path — so on every zip
 	 * Saddle ships, none of which carry the vendored library, it was never
-	 * written and the Client traffic card opened with "No app has connected
+	 * written and the Client traffic card opened with "No agent has connected
 	 * yet" whatever had actually happened (#115). That sentence is the first
 	 * thing a customer reads on the one screen support points them at.
 	 */

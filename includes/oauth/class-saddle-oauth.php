@@ -55,7 +55,7 @@ class Saddle_OAuth {
 	 * nothing about what a grant can do — it is NOT a tier and never reaches
 	 * {@see self::scope_to_tier()}. It exists because ChatGPT reads a provider's
 	 * discovery metadata for it before trusting refresh-token renewal (OpenAI,
-	 * "Developer mode and MCP apps in ChatGPT", 2026-08): a server that never
+	 * "Developer mode and MCP agents in ChatGPT", 2026-08): a server that never
 	 * advertises it may be treated as one that never renews, and the connector
 	 * dies at ACCESS_TTL with a reconnect as the only remedy. See #159.
 	 *
@@ -94,7 +94,7 @@ class Saddle_OAuth {
 
 		// Priority 9 — one ahead of Saddle_Connection::scope_credentials(), so a
 		// bearer token that strayed off the MCP endpoint gets the message about
-		// reconnecting the app rather than the one about rotating a key.
+		// reconnecting the agent rather than the one about rotating a key.
 		add_filter( 'rest_request_before_callbacks', array( 'Saddle_OAuth_Bearer', 'confine' ), 9, 3 );
 		add_filter( 'rest_post_dispatch', array( 'Saddle_OAuth_Bearer', 'challenge' ), 10, 3 );
 		add_filter( 'rest_exposed_cors_headers', array( 'Saddle_OAuth_Bearer', 'expose_cors_headers' ) );
@@ -449,7 +449,7 @@ class Saddle_OAuth {
 	 * The scope to advertise, and to propose when a client asks for none.
 	 *
 	 * Deliberately the legacy *site* tier, not {@see Saddle_Capabilities::get_tier()}:
-	 * it is a hint about what to ask for. Access is per app and chosen on the
+	 * it is a hint about what to ask for. Access is per agent and chosen on the
 	 * consent screen, where read is pre-selected, so this grants nothing.
 	 *
 	 * @return string Space-delimited scope string.

@@ -175,7 +175,7 @@ function KeyForm( { record, onSaved } ) {
 				record.name
 			),
 			description: __(
-				'Your apps lose this service’s tools until a new key is added. Anything already saved on your site is kept.',
+				'Your agents lose this service’s tools until a new key is added. Anything already saved on your site is kept.',
 				'saddle'
 			),
 			danger: true,
@@ -421,7 +421,7 @@ function AddonSwitch( { record, onChanged } ) {
 					onChange={ toggle }
 					aria-label={ sprintf(
 						/* translators: %s: plugin name. */
-						__( 'Let apps use %s', 'saddle' ),
+						__( 'Let agents use %s', 'saddle' ),
 						record.name
 					) }
 				/>

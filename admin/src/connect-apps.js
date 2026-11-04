@@ -3,14 +3,14 @@
  * connect wizard (live credential) and the per-connection setup guide
  * (placeholder mode, since a key is only ever shown once).
  *
- * Two ways to connect, and the catalog says which each app supports:
+ * Two ways to connect, and the catalog says which each agent supports:
  *
- * - **address** — the app gets the site's MCP address and nothing else. It
+ * - **address** — the agent gets the site's MCP address and nothing else. It
  *   registers itself with Saddle's sign-in server, opens the owner's browser,
  *   and the owner approves it on Saddle's consent screen. No key to paste, no
  *   header, no bridge. This is the recommended path once the owner has turned
  *   sign-in on (it is off by default, and the wizard offers the switch).
- * - **key** — the app gets a Basic-auth header carrying an Application
+ * - **key** — the agent gets a Basic-auth header carrying an Application
  *   Password. The fallback for CI, plain-HTTP or plain-permalink sites where
  *   sign-in can't be turned on, and older Claude Desktop builds.
  */
@@ -29,7 +29,7 @@ const WHITESPACE = /\s/g;
 const PLACEHOLDER_AUTH = 'PASTE-YOUR-KEY-HERE';
 
 /**
- * The example first message. Kept short so it fits one line in most apps.
+ * The example first message. Kept short so it fits one line in most agents.
  */
 export const HELLO_PROMPT = __(
 	'What can you see on my WordPress site?',
@@ -93,7 +93,7 @@ export const APPS = [
 		key: 'chatgpt',
 		label: __( 'ChatGPT', 'saddle' ),
 		// Chat and Work specifically: since the July 2026 merge the same desktop
-		// app also contains Codex, which connects a completely different way and
+		// agent also contains Codex, which connects a completely different way and
 		// has its own card below.
 		kind: __( 'Chat and Work', 'saddle' ),
 		// ChatGPT's connector form has no field for a header, so the address
@@ -227,7 +227,7 @@ export const APPS = [
 		next: __( 'Ask OpenClaw about your site.', 'saddle' ),
 	},
 	{
-		// Grok on the web and in its apps. Its connector form takes an address
+		// Grok on the web and in its agents. Its connector form takes an address
 		// and signs in with OAuth; there is no field for a header, so, like
 		// ChatGPT, it takes the address path only.
 		key: 'grok',
@@ -251,19 +251,19 @@ export const APPS = [
 		viaAddress: true,
 		viaKey: true,
 		howAddress: __(
-			'Find “Add MCP server” in your app’s settings and paste this. If it only takes a key, use the key instead.',
+			'Find “Add MCP server” in your agent’s settings and paste this. If it only takes a key, use the key instead.',
 			'saddle'
 		),
 		how: __(
-			'Most AI apps accept this standard setup. Find “Add MCP server” in your app’s settings and paste it there.',
+			'Most AI agents accept this standard setup. Find “Add MCP server” in your agent’s settings and paste it there.',
 			'saddle'
 		),
-		next: __( 'Open your app and ask it about your site.', 'saddle' ),
+		next: __( 'Open your agent and ask it about your site.', 'saddle' ),
 	},
 ];
 
 /**
- * Apps that connect from their own servers, not from the owner's computer,
+ * Agents that connect from their own servers, not from the owner's computer,
  * so they can't reach a site that runs on this computer. They also take the
  * address in a form (name, address, authentication) rather than a config
  * file or a command.
@@ -271,8 +271,8 @@ export const APPS = [
 export const WEB_APPS = [ 'claude', 'chatgpt', 'grok' ];
 
 /**
- * Apps that run on the owner's computer and connect to a local site, in the
- * order the connect drawer offers them when a web app can't.
+ * Agents that run on the owner's computer and connect to a local site, in the
+ * order the connect drawer offers them when a web agent can't.
  */
 export const LOCAL_APPS = [ 'claude-code', 'cursor', 'codex' ];
 
@@ -290,17 +290,17 @@ export function isLocalAddress( url ) {
 }
 
 /**
- * This site runs on this computer, so web apps can't reach it.
+ * This site runs on this computer, so web agents can't reach it.
  */
 export const IS_LOCAL = isLocalAddress( MCP_URL );
 
 /**
- * Whether an app can't reach this site at all: a web app, and a site on
+ * Whether an agent can't reach this site at all: a web app, and a site on
  * this computer.
  *
- * @param {Object|null} app   An APPS entry.
+ * @param {Object|null} agent   An APPS entry.
  * @param {boolean}     local The site runs on this computer.
- * @return {boolean} True when the app's own servers can't reach the site.
+ * @return {boolean} True when the agent's own servers can't reach the site.
  */
 export function unreachableHere( app, local = IS_LOCAL ) {
 	return !! app && !! local && WEB_APPS.includes( app.key );
@@ -369,7 +369,7 @@ export const APP_GROUPS = [
 ];
 
 /**
- * The Name / Address / Authentication lines for apps that connect from a
+ * The Name / Address / Authentication lines for agents that connect from a
  * form rather than a config file.
  *
  * @return {string} Three labelled lines.
@@ -440,7 +440,7 @@ function assemble( app, auth ) {
 				2
 			);
 
-		// Form-based apps: ChatGPT's connector screen, and Claude's custom
+		// Form-based agents: ChatGPT's connector screen, and Claude's custom
 		// connector. Neither has a field for a custom header, so the address
 		// path is the only shape shown for them here; Claude's key fallback is
 		// the mcp-remote bridge in the default branch below.
@@ -568,10 +568,10 @@ function credential( password ) {
 }
 
 /**
- * One-click install links for apps that register an MCP server from a URL.
+ * One-click install links for agents that register an MCP server from a URL.
  * Assembled here in the browser from the same values as the copy-paste
  * setup, so nothing is fetched and nothing leaves the site: the link goes
- * from this page to the app on the owner's own computer.
+ * from this page to the agent on the owner's own computer.
  *
  * Formats, checked against each vendor's docs on 2026-09-29:
  * - Claude: https://claude.ai/customize/connectors?modal=add-custom-connector
@@ -586,7 +586,7 @@ function credential( password ) {
  * Never built from a placeholder: a link that installs "PASTE-YOUR-KEY-HERE"
  * would add a server that can only fail, so the key path needs a real key.
  *
- * @param {string}      app      App key from APPS.
+ * @param {string}      agent      Agent key from APPS.
  * @param {string|null} password The raw application password on the key path.
  * @param {string}      mode     'address' or 'key'.
  * @return {Array<{key: string, label: string, href: string}>} Zero or more links.
@@ -666,7 +666,7 @@ export function installLinks( app, password, mode = 'key' ) {
  * for the per-connection guide, since a key is only ever shown once. The
  * address path has no credential, so it is the real thing.
  *
- * @param {string} app  App key from APPS.
+ * @param {string} agent  Agent key from APPS.
  * @param {string} mode 'address' or 'key'.
  * @return {string} Setup text, with a PASTE-YOUR-KEY-HERE marker on the key path.
  */
@@ -675,9 +675,9 @@ export function buildGuideConfig( app, mode = 'key' ) {
 }
 
 /**
- * The instruction for an app on a given path.
+ * The instruction for an agent on a given path.
  *
- * @param {Object}  app   An APPS entry.
+ * @param {Object}  agent   An APPS entry.
  * @param {string}  mode  'address' or 'key'.
  * @param {boolean} local The site runs on this computer.
  * @return {string} Where the setup goes.
@@ -693,13 +693,13 @@ export function howFor( app, mode, local = false ) {
 }
 
 /**
- * The newest key already made for an app, if any: making another one would
+ * The newest key already made for an agent, if any: making another one would
  * stack "Claude Code 2" on a key nobody remembers, so the owner is asked to
  * replace it or add one.
  *
  * @param {Object[]} connections Rows from GET /connections.
  * @param {string}   appKey      An APPS key.
- * @param {Function} appOf       Maps a key's name to an app key.
+ * @param {Function} appOf       Maps a key's name to an agent key.
  * @return {Object|null} The connection row, or null.
  */
 export function existingKey( connections, appKey, appOf = () => '' ) {

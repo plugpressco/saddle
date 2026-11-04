@@ -92,7 +92,7 @@ class Saddle_Log {
 		update_post_meta( $post_id, '_saddle_target', $target );
 		update_post_meta( $post_id, '_saddle_type', $type );
 
-		// Which app it was, by the name the owner knows it by, so the activity
+		// Which agent it was, by the name the owner knows it by, so the activity
 		// log says "via Claude Code" rather than the WordPress user every
 		// connection shares. Stored, not looked up later, so the entry keeps
 		// the name after the key is revoked.
@@ -223,7 +223,7 @@ class Saddle_Log {
 	 *
 	 * @param string $type  'executed' | 'denied' | 'rehearsed' | '' (all).
 	 * @param int    $since Unix timestamp (UTC), 0 for no limit.
-	 * @param string $by    'app' for entries an app made, '' for all.
+	 * @param string $by    'agent' for entries an agent made, '' for all.
 	 * @return array WP_Query arguments.
 	 */
 	private static function filter_args( $type, $since, $by ) {
