@@ -298,7 +298,7 @@ export const IS_LOCAL = isLocalAddress( MCP_URL );
  * Whether an agent can't reach this site at all: a web app, and a site on
  * this computer.
  *
- * @param {Object|null} agent   An APPS entry.
+ * @param {Object|null} app   An APPS entry.
  * @param {boolean}     local The site runs on this computer.
  * @return {boolean} True when the agent's own servers can't reach the site.
  */
@@ -586,7 +586,7 @@ function credential( password ) {
  * Never built from a placeholder: a link that installs "PASTE-YOUR-KEY-HERE"
  * would add a server that can only fail, so the key path needs a real key.
  *
- * @param {string}      agent      Agent key from APPS.
+ * @param {string}      app      Agent key from APPS.
  * @param {string|null} password The raw application password on the key path.
  * @param {string}      mode     'address' or 'key'.
  * @return {Array<{key: string, label: string, href: string}>} Zero or more links.
@@ -666,7 +666,7 @@ export function installLinks( app, password, mode = 'key' ) {
  * for the per-connection guide, since a key is only ever shown once. The
  * address path has no credential, so it is the real thing.
  *
- * @param {string} agent  Agent key from APPS.
+ * @param {string} app  Agent key from APPS.
  * @param {string} mode 'address' or 'key'.
  * @return {string} Setup text, with a PASTE-YOUR-KEY-HERE marker on the key path.
  */
@@ -677,7 +677,7 @@ export function buildGuideConfig( app, mode = 'key' ) {
 /**
  * The instruction for an agent on a given path.
  *
- * @param {Object}  agent   An APPS entry.
+ * @param {Object}  app   An APPS entry.
  * @param {string}  mode  'address' or 'key'.
  * @param {boolean} local The site runs on this computer.
  * @return {string} Where the setup goes.

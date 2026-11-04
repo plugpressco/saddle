@@ -578,9 +578,6 @@ class Saddle_Settings {
 					// Saddle Analytics: on, off or missing, and whether this
 					// owner may add it here (the welcome, Home's Add-ons).
 					'analytics'    => self::analytics_offer(),
-					// Opt-in usage data and Saddle news: the Overview card
-					// and Settings (Saddle_Insight).
-					'insight'      => Saddle_Insight::for_app(),
 				)
 			) . ';',
 			'before'

@@ -180,7 +180,7 @@ function toneFor( key ) {
 /**
  * The tile behind an agent's logo on Home (#369).
  *
- * @param {string} agent The agent key (connect-apps.js), or ''.
+ * @param {string} app The agent key (connect-apps.js), or ''.
  * @return {string} A tone.
  */
 export function appTone( app ) {
