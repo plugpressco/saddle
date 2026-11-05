@@ -1,7 +1,7 @@
 /**
  * PlugPress Insight: the news card, "Stop sharing" and quick feedback. The
  * markup comes from PHP; this only answers clicks. Every click posts to the
- * site's own admin-ajax.php, and the site's server does the sending.
+ * site's own AJAX endpoint, and the site's server does the sending.
  */
 ( function () {
 	const config = window.plugpressInsight;
