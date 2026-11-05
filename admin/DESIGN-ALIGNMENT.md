@@ -424,28 +424,46 @@ present", then "no drawer, make like saddle cloud". The page follows Cloud's
 Agent setup (`saddle-cloud/src/routes/_app/agent-setup.tsx`), on Home's soft
 cards, tiles and chips.
 
-- **The address card:** "Connect your AI agent" (15/600), one line ("Add this
-  site to your AI agent with the address below. You choose what each agent may
-  do."), four app logos on soft discs, overlapping, and "Your address": the
-  URL in a soft field with Copy at its end.
+- **The two ways to connect (2026-11-06; replaced the address card and the
+  Saddle Cloud card after the agents).** Fahim: "give offer connect saddle
+  cloud.. then ask to connect with saddle local mcp.. 2 type of mcp we have
+  right 1 mcp for all site also induvuaial site mcp.. make it cleaner to
+  present". One white card on top, "Connect your AI agent" (15/600) with four
+  agent logos on soft discs, overlapping, then two cards of the same size on
+  the soft grey, side by side (stacked when narrow), each its tile, name
+  (15/600), a line or two and one button at the foot so the buttons line up:
+  **All your sites** (a sky `cloud` tile, a "Saddle Cloud" chip; the primary
+  "Connect with Saddle Cloud", a plain link to Cloud's Connect page with the
+  site filled in, new tab) and **Just this site** (a mint `link` tile; the
+  secondary "Connect this site"). Cloud is first and holds the primary
+  button, so no "Recommended" badge. Once opened, the Cloud card says
+  "Saddle Cloud opened in a new tab, with this site's address filled in.
+  Approve it on this site when it asks." and its button steps down to
+  secondary; once Cloud is connected, a mint tick and "Connected to Saddle
+  Cloud" replace the button. "Connect this site" opens the apps and their
+  steps (below) right under the card and moves focus to the chosen app.
+  `components/ConnectWays.jsx`.
+- **The apps and their steps,** behind "Connect this site", right under the
+  two ways (open at once when `&add=<app>`, `&key=`, Setup guide or Rotate
+  key asks for one app; `&add=1` shows the two ways first): every app down
+  the side, in the old groups' order then "Any MCP app", each a button with
+  its logo, name and where it runs, a mint tick when it has connected; the
+  chosen one sits on a white ground with the card edge. Beside them, one
+  card: the app's tile and "Connect X", the one line of fact where one
+  applies, the numbered steps (Cloud's soft grey discs) and the waiting
+  line. It stays in view beside the long list on a wide screen. On a phone
+  the apps are one row that scrolls, the chosen one kept in view, and the
+  steps follow. Once open, one app's steps always show (Claude Code on a
+  site on this computer, Claude otherwise).
 - **Connected,** when any app is: one card, each row the app's logo on its
   tile, its name, at most one meta fact ("Last used …" or "Connected …", the
   more recent; never the role, which the dropdown beside it shows), the role
   dropdown and the ⋯ menu. No rules between rows. On a phone the dropdown
   sits under the name.
-- **The apps and their steps:** every app down the side, in the old groups'
-  order then "Any MCP app", each a button with its logo, name and where it
-  runs, a mint tick when it has connected; the chosen one sits on a white
-  ground with the card edge. Beside them, one card: the app's tile and
-  "Connect X", the one line of fact where one applies, the numbered steps
-  (Cloud's soft grey discs) and the waiting line. It stays in view beside
-  the long list on a wide screen. On a phone the apps are one row that
-  scrolls, the chosen one kept in view, and the steps follow. One app's
-  steps always show (Claude Code on a site on this computer, Claude
-  otherwise).
-- **No drawer.** Home's "Connect app", `&add=<app>` and `&key=<app>` (a key
-  at once), the list's Setup guide and Rotate key all show that app's steps
-  on this page and bring them into view.
+- **No drawer.** `&add=<app>` and `&key=<app>` (a key at once), the list's
+  Setup guide and Rotate key all show that app's steps on this page and
+  bring them into view. Home's "Connect app" (`&add=1`) lands on the two
+  ways.
 
 ## Accounts and plugins that add tools (Settings, #369; Services until then)
 
@@ -536,6 +554,16 @@ hints. It reads at **15px**, one step above the admin's 13, because the
 conversation is the page; it is the only place body text is 15. One sentence
 about the site replaces stat tiles and check rows (Fahim: the Pages / Posts /
 Media strip "not feel chat"; "onboarding should not like it setup").
+
+The connect step (2026-11-06) is the two ways to connect, the same cards as
+Agent setup's but without their heading (Saddle's line says "Let's connect
+your AI agent. There are two ways:"), each a white card with the card edge,
+indented under Saddle's lines where the quick replies go. "Connect this
+site" shows as the owner's answer ("Just this site"), then "Which AI do you
+use?" and the agent pills, and the conversation goes on as before. Opening
+Saddle Cloud keeps the cards and ends the welcome there (the visitor stats
+question, then Finish), since Cloud's access is chosen on this site's Allow
+screen. The separate Saddle Cloud question at the end is gone.
 
 After the access choice, one more question (#367) while Saddle Analytics is
 not on and the owner may add it: "Do you want visitor stats?" with two

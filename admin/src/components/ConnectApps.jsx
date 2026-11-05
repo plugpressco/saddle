@@ -1,10 +1,11 @@
 /**
  * Agent setup's agents (#369; the Connect an agent drawer since #285 until
- * then), after Saddle Cloud's page: every agent down the side, the chosen
- * one's short steps beside it, then a line that says the moment it
- * connects. It is the site's own way: the address is this site's, and the
- * agent is approved on this site's own screen. Nothing goes through anyone
- * else's server.
+ * then), after Saddle Cloud's page, behind "Connect this site" since
+ * 2026-11-06 (ConnectWays): every agent down the side, the chosen one's
+ * short steps beside it, then a line that says the moment it connects. It
+ * is the site's own way: the address is this site's, and the agent is
+ * approved on this site's own screen. Nothing goes through anyone else's
+ * server.
  *
  * Both ways to connect read the same (#312, 1.5.0 S7): a muted line of fact
  * where one applies, one line per step, and the waiting line.
@@ -317,59 +318,7 @@ const firstApp = () => ( IS_LOCAL ? 'claude-code' : 'claude' );
 // The side list, in the picker's groups, then any MCP app.
 const ORDER = [ ...APP_GROUPS.flatMap( ( g ) => g.apps ), 'other' ];
 
-// The logos in the intro, overlapping.
-const INTRO_LOGOS = [ 'claude', 'chatgpt', 'cursor', 'gemini-cli' ];
-
 const isApp = ( key ) => APPS.some( ( a ) => a.key === key );
-
-/**
- * Agent setup's first card (#369): what the page is for, a few agent logos,
- * and the site's address with Copy.
- */
-export function SetupIntro() {
-	return (
-		<section className="saddle-soft-card saddle-setup__intro">
-			<div className="saddle-setup__intro-head">
-				<div className="saddle-setup__intro-text">
-					<h2 className="saddle-soft-card__title">
-						{ __( 'Connect your AI agent', 'saddle' ) }
-					</h2>
-					<p className="saddle-setup__lede">
-						{ __(
-							'Add this site to your AI agent with the address below. You choose what each agent may do.',
-							'saddle'
-						) }
-					</p>
-				</div>
-				<span className="saddle-setup__logos" aria-hidden="true">
-					{ INTRO_LOGOS.map( ( key ) => (
-						<span className="saddle-setup__logo" key={ key }>
-							<AppLogo app={ key } />
-						</span>
-					) ) }
-				</span>
-			</div>
-			{ MCP_URL && (
-				<div className="saddle-setup__address">
-					<span className="saddle-setup__address-label">
-						{ __( 'Your address', 'saddle' ) }
-					</span>
-					<div className="saddle-copy-field">
-						<code>{ MCP_URL }</code>
-						<CopyButton
-							value={ MCP_URL }
-							variant="secondary"
-							size="sm"
-							copiedLabel={ __( 'Copied', 'saddle' ) }
-						>
-							{ __( 'Copy', 'saddle' ) }
-						</CopyButton>
-					</div>
-				</div>
-			) }
-		</section>
-	);
-}
 
 /**
  * The waiting line under the steps: a spinner and "Waiting for X to

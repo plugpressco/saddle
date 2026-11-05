@@ -6,6 +6,7 @@ import {
 	hasBeenUsed,
 	lastFact,
 	metaLine,
+	opensSiteSteps,
 	usedAppKeys,
 } from '../../admin/src/apps-logic';
 
@@ -121,5 +122,25 @@ describe( 'usedAppKeys', () => {
 		expect( hasBeenUsed( { last_seen_at: 1 } ) ).toBe( true );
 		expect( hasBeenUsed( { created_at: 1 } ) ).toBe( false );
 		expect( hasBeenUsed( null ) ).toBe( false );
+	} );
+} );
+
+describe( 'opensSiteSteps', () => {
+	it( 'waits behind Connect this site when nothing asked for an agent', () => {
+		expect( opensSiteSteps( null ) ).toBe( false );
+		// `&add=1`: Overview's "Connect an app" shows both ways first.
+		expect( opensSiteSteps( { app: null, key: false, n: 0 } ) ).toBe(
+			false
+		);
+	} );
+
+	it( 'opens for one agent, a key, or a key to replace', () => {
+		expect( opensSiteSteps( { app: 'claude', key: false, n: 0 } ) ).toBe(
+			true
+		);
+		expect( opensSiteSteps( { app: null, key: true, n: 0 } ) ).toBe( true );
+		expect( opensSiteSteps( { app: 'cursor', rotate: 'abc', n: 1 } ) ).toBe(
+			true
+		);
 	} );
 } );

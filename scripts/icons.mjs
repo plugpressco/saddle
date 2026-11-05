@@ -94,6 +94,8 @@ const NAV = [
 	'bell',
 	// Get Pro's plans (#373): Go is `flash`, Reach `graph-up`.
 	'crown',
+	// The two ways to connect (2026-11-06): Saddle Cloud's card.
+	'cloud',
 ];
 
 /**

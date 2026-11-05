@@ -882,34 +882,13 @@ body.saddle-admin-page {
 }
 
 /* ---------- Agent setup (#369, after Saddle Cloud's) ---------- */
-// The address on top, the connected apps, then every app down the side
-// with the chosen one's steps beside it. Nothing opens in a drawer.
+// The two ways to connect on top, every app down the side with the chosen
+// one's steps beside it once "Connect this site" opens them, then the
+// connected apps. Nothing opens in a drawer.
 .saddle-setup {
 	display: grid;
 	grid-template-columns: minmax( 0, 1fr );
 	gap: var( --pp-space-5 );
-}
-
-.saddle-setup__intro-head {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	justify-content: space-between;
-	gap: var( --pp-space-4 ) var( --pp-space-8 );
-}
-
-.saddle-setup__intro-text {
-	display: grid;
-	flex: 1 1 320px;
-	gap: var( --pp-space-1 );
-	min-width: 0;
-}
-
-.saddle-setup__lede {
-	margin: 0;
-	font-size: var( --s-text );
-	line-height: 1.55;
-	color: var( --s-fg-subtle );
 }
 
 // A few app logos on white discs, overlapping.
@@ -937,41 +916,13 @@ body.saddle-admin-page {
 	}
 }
 
-.saddle-setup__address {
-	display: grid;
-	gap: var( --pp-space-2 );
-}
-
-.saddle-setup__address-label {
-	font-size: var( --s-text );
-	font-weight: 600;
-	color: var( --s-fg );
-}
-
-// An address in a soft field with Copy at its end, Cloud's CopyField.
-.saddle-copy-field {
-	display: flex;
-	align-items: center;
-	gap: var( --pp-space-3 );
-	min-width: 0;
-	padding: var( --pp-space-2 ) var( --pp-space-2 ) var( --pp-space-2 )
-		var( --pp-space-3 );
-	border-radius: 10px;
-	background: var( --pp-n-50 );
-
-	code {
-		flex: 1 1 auto;
-		min-width: 0;
-		margin: 0;
-		padding: 0;
-		background: none;
-		font-size: var( --s-text );
-		overflow-wrap: anywhere;
-	}
-}
-
 // The apps down the side, the steps beside them; on a phone the apps scroll
 // in one row above the steps.
+// "Connect this site" scrolls here; the header band stays clear of it.
+.saddle-setup__site {
+	scroll-margin-block-start: 56px;
+}
+
 .saddle-setup__picker {
 	display: grid;
 	grid-template-columns: minmax( 0, 1fr );
@@ -2769,55 +2720,95 @@ body.saddle-admin-page {
 	margin-top: 8px;
 }
 
-/* ---------- Saddle Cloud in the welcome and Agent setup (2026-11-02) ---------- */
-
-// The welcome's Saddle Cloud answer is a link; it looks like the answer
-// beside it, not like a blue link. The UI kit colors links through
-// --pp-accent-text with an id selector, so the chip sets the variable.
-.saddle-chat a.saddle-chat__chip {
-	--pp-accent-text: var( --s-fg );
-	--pp-accent-hover: var( --s-fg );
-	color: var( --s-fg );
-	text-decoration: none;
-}
-
-
-// One white card: the copy, and the link beside it (under it when narrow).
-.saddle-cloud-offer {
+/* ---------- The two ways to connect (2026-11-06) ---------- */
+// Saddle Cloud for all your sites, or just this site: two cards of the same
+// size side by side, stacked when narrow, each with its one button at the
+// foot so the two line up. On Agent setup they sit flat on the soft grey
+// inside one white card, under its heading and a few agent logos; in the
+// welcome, where there is no card around them, each is a white card.
+.saddle-ways__head {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
 	justify-content: space-between;
-	gap: var( --pp-space-4 );
-	padding: var( --pp-space-5 );
-	background: var( --s-bg );
-	border-radius: 16px;
-	box-shadow: var( --s-card-edge );
+	gap: var( --pp-space-3 ) var( --pp-space-6 );
+}
 
-	p {
-		margin: 0;
-		font-size: var( --s-text );
-		line-height: 1.5;
-		color: var( --s-fg );
+.saddle-ways__cards {
+	display: grid;
+	grid-template-columns: repeat( auto-fit, minmax( 240px, 1fr ) );
+	gap: var( --pp-space-3 );
+}
+
+.saddle-way {
+	display: flex;
+	flex-direction: column;
+	gap: var( --pp-space-1 );
+	min-width: 0;
+	padding: var( --pp-space-5 );
+	border-radius: var( --s-radius-card );
+	background: var( --pp-n-50 );
+
+	@media ( max-width: 600px ) {
+		padding: var( --pp-space-4 );
 	}
 }
 
-.saddle-cloud-offer__copy {
-	display: grid;
-	flex: 1 1 360px;
-	gap: var( --pp-space-1 );
-	min-width: 0;
+.saddle-ways--bare .saddle-way {
+	background: var( --s-bg );
+	box-shadow: var( --s-card-edge );
 }
 
-.saddle-cloud-offer__title {
+.saddle-way__top {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var( --pp-space-2 );
+	margin-block-end: var( --pp-space-3 );
+}
+
+.saddle-way__name {
 	margin: 0;
 	font-size: var( --s-text-title );
 	font-weight: 600;
+	line-height: 1.4;
 	color: var( --s-fg );
 }
 
-.saddle-cloud-offer .saddle-cloud-offer__note {
+.saddle-way__text p {
+	margin: 0;
+	font-size: var( --s-text );
+	line-height: 1.55;
 	color: var( --s-fg-subtle );
+	text-wrap: pretty;
+}
+
+// The button, or "Connected to Saddle Cloud", at the foot. Its height is
+// kept while Saddle looks whether Cloud is connected, so nothing jumps.
+.saddle-way__action {
+	display: flex;
+	align-items: center;
+	min-block-size: 36px;
+	margin-block-start: auto;
+	padding-block-start: var( --pp-space-4 );
+}
+
+.saddle-way__done {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	margin: 0;
+	font-size: var( --s-text );
+	font-weight: 600;
+	color: var( --saddle-pop-mint-ink );
+}
+
+// In the welcome the cards are Saddle's answer choices, under its line,
+// where the quick replies go.
+.saddle-chat__ways {
+	margin-block: 12px 8px;
+	padding-inline-start: 40px;
+	animation: saddle-step-in 0.28s var( --s-ease ) both;
 }
 
 /* ---------- Get Premium (#373) ---------- */

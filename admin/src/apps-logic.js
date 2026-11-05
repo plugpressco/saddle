@@ -105,3 +105,18 @@ export function metaLine( c ) {
 				when
 		  );
 }
+
+/**
+ * Whether Agent setup opens "Just this site" at once (2026-11-06): it waits
+ * behind "Connect this site" unless something asked for one agent's steps
+ * (`&add=claude`, the connected list's Setup guide or Rotate key) or for a
+ * key (`&key=`). `&add=1`, Overview's "Connect an app", asks for neither,
+ * so the owner sees both ways first.
+ *
+ * @param {?Object} focus `{ app, key, rotate, n }` from the address or the
+ *                        connected list, or null.
+ * @return {boolean} Open the agents and their steps.
+ */
+export function opensSiteSteps( focus ) {
+	return !! focus && !! ( focus.app || focus.key || focus.rotate );
+}
