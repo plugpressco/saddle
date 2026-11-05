@@ -4,7 +4,7 @@ Tags: ai, seo, mcp, claude, chatgpt
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.6.3
+Stable tag: 1.7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -252,16 +252,16 @@ The WordPress.org version never checks for its own updates. The version from plu
 == Changelog ==
 
 = 1.7.0 =
-* New: Your AI agent can create a menu, and show it in a theme location such as the header or footer in the same step. Until now it could only change menus that already existed.
-* Changed: Saddle is now named "Saddle – Build, Rank & Grow Your Website with AI", here and on the Plugins screen: the free core of WP Saddle. Its menu, settings and address are unchanged.
-* New: A small card on Overview and the Plugins screen asks once whether to share your name, email and basic site info with PlugPress for better support, and offers Saddle news by email, which you confirm by email first. Nothing is sent until you click Allow or Subscribe.
-* New: When you deactivate Saddle, a short form asks why. Skip and deactivate sends nothing.
-* New: `define( 'PLUGPRESS_INSIGHT', false );` in `wp-config.php` turns off the card and the form.
-* Changed: Get Pro is now Get Premium and shows Saddle Cloud's four plans, each with unlimited sites and one yearly price: Free, Go $49, Pro $99 and Reach $299. Free's button opens Saddle Cloud with this site's address filled in.
 * New: Connecting your AI agent shows two ways, in the welcome and at the top of Agent setup: all your sites through Saddle Cloud, free up to 500 AI agent calls a month, or just this site through its own address. Saddle Cloud's button opens it with this site's address filled in, and Saddle sends nothing. Once Saddle Cloud is connected, its card says so.
-* Changed: AI apps are now called AI agents everywhere in Saddle.
 * New: Run without asking, on Saddle → Agent setup, for each agent set to Manage the site. With it on, that agent's changes and deletes run right away, with no preview and no OK from you. It is off for every agent until you turn it on, and Saddle asks you to confirm first. Tools you turned off stay off, deleted posts and pages go to the Trash, and every change is logged and can be undone in Logs.
 * Changed: Ask first is off by default. A tool asks first only when you set it to, alone or with the recommended set. A tool added by a later update, or by a plugin you activate later, is allowed like the others instead of asking first. Tools you set to Ask first keep asking.
+* New: Your AI agent can create a menu, and show it in a theme location such as the header or footer in the same step. Until now it could only change menus that already existed.
+* New: A small card on Overview and the Plugins screen asks once whether to share your name, email and basic site info with PlugPress for better support, and offers Saddle news by email, which you confirm by email first. Nothing is sent until you click Allow or Subscribe.
+* New: When you deactivate Saddle, a short form asks why. Skip sends nothing. The card and the form use WordPress's own buttons and your admin colour scheme.
+* New: `define( 'PLUGPRESS_INSIGHT', false );` in `wp-config.php` turns off the card and the form.
+* Changed: Get Pro is now Get Premium and shows Saddle Cloud's four plans, each with unlimited sites and one yearly price: Free, Go $49, Pro $99 and Reach $299. Free's button opens Saddle Cloud with this site's address filled in.
+* Changed: Saddle is now named "Saddle – Build, Rank & Grow Your Website with AI", here and on the Plugins screen: the free core of WP Saddle. Its menu, settings and address are unchanged.
+* Changed: AI apps are now called AI agents everywhere in Saddle.
 
 = 1.6.3 =
 * Fix: Saddle's own records (app connections, approvals, the log, skills and memory) are no longer saved as published posts. SEO plugins that tell search engines about new posts, such as AIOSEO's IndexNow, could send links like `?post_type=saddle_oauth&p=123` to Bing. The links never showed anything (they return 404), and now they stop. Existing records move over once, on the first page load after the update.
