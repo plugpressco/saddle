@@ -1,7 +1,7 @@
 /**
  * PlugPress Insight: the news card, "Stop sharing" and quick feedback. The
  * markup comes from PHP; this only answers clicks. Every click posts to the
- * site's own admin-ajax.php, and the site's server does the sending.
+ * site's own AJAX endpoint, and the site's server does the sending.
  */
 ( function () {
 	const config = window.plugpressInsight;
@@ -61,10 +61,26 @@
 		}
 		ready();
 
+		// What is shared: a popover under its link, so the card stays one row.
+		// A click outside, Escape or a scroll closes it.
 		const what = bar.querySelector( '.plugpress-insight-bar__what' );
-		if ( what ) {
+		const list = bar.querySelector( '.plugpress-insight-bar__list' );
+		if ( what && list && 'function' === typeof list.showPopover ) {
+			list.hidden = false;
+			list.addEventListener( 'beforetoggle', ( event ) => {
+				if ( 'open' === event.newState ) {
+					const at = what.getBoundingClientRect();
+					const width = Math.min( 360, window.innerWidth - 32 );
+					list.style.top = at.bottom + 8 + 'px';
+					list.style.left = Math.max( 16, Math.min( at.left, window.innerWidth - width - 16 ) ) + 'px';
+				}
+			} );
+			window.addEventListener( 'scroll', () => list.matches( ':popover-open' ) && list.hidePopover(), { passive: true } );
+		} else if ( what && list ) {
+			// No popovers in this browser: the list opens in place.
+			list.removeAttribute( 'popover' );
+			what.setAttribute( 'aria-expanded', 'false' );
 			what.addEventListener( 'click', () => {
-				const list = bar.querySelector( '.plugpress-insight-bar__list' );
 				list.hidden = ! list.hidden;
 				what.setAttribute( 'aria-expanded', String( ! list.hidden ) );
 			} );
@@ -101,7 +117,7 @@
 		} );
 	} );
 
-	// Quick feedback, from each registered plugin's Deactivate link.
+	// Feedback, from each registered plugin's Deactivate link.
 	const dialog = document.querySelector( '.plugpress-insight-dialog' );
 	if ( ! dialog ) {
 		return;
@@ -109,8 +125,11 @@
 	const form = dialog.querySelector( 'form' );
 	const title = dialog.querySelector( 'h2' );
 	const send = form.querySelector( '[type="submit"]' );
+	const more = form.querySelector( '.plugpress-insight-dialog__more' );
+	const boxes = form.querySelectorAll( '[data-for]' );
 	let plugin = null;
 	let href = '';
+	let byKey = false;
 	const leave = () => {
 		window.location.href = href;
 	};
@@ -123,7 +142,8 @@
 				plugin = config.plugins[ basename ];
 				href = link.href;
 				form.reset();
-				form.querySelectorAll( '[data-for]' ).forEach( ( box ) => ( box.hidden = true ) );
+				boxes.forEach( ( box ) => ( box.hidden = true ) );
+				more.hidden = true;
 				send.disabled = true;
 				title.textContent = title.dataset.title.replace( '%s', plugin[ 1 ] );
 				dialog.showModal();
@@ -131,18 +151,27 @@
 		}
 	} );
 
-	// The picked reason opens its own question.
+	// Arrow keys pick as they move, so a pick by key keeps focus in the
+	// reasons and Tab goes on to the question. A tap focuses the question.
+	form.addEventListener( 'keydown', () => ( byKey = true ) );
+	form.addEventListener( 'pointerdown', () => ( byKey = false ) );
+
+	// The picked reason shows its own question, and only that one, with the
+	// reply box.
 	form.addEventListener( 'change', ( event ) => {
 		if ( 'reason' !== event.target.name ) {
 			return;
 		}
 		send.disabled = false;
-		form.querySelectorAll( '[data-for]' ).forEach( ( box ) => {
+		let shown = null;
+		boxes.forEach( ( box ) => {
 			box.hidden = box.dataset.for !== event.target.value;
-			if ( ! box.hidden ) {
-				box.focus();
-			}
+			shown = box.hidden ? shown : box;
 		} );
+		more.hidden = ! shown;
+		if ( shown && ! byKey ) {
+			shown.querySelector( 'input' ).focus();
+		}
 	} );
 
 	dialog.querySelector( '.plugpress-insight-dialog__close' ).addEventListener( 'click', () => dialog.close() );
@@ -150,7 +179,7 @@
 	form.addEventListener( 'submit', ( event ) => {
 		event.preventDefault();
 		const reason = form.elements.reason.value;
-		const box = form.querySelector( '[data-for="' + reason + '"]' );
+		const box = form.querySelector( '[data-for="' + reason + '"] input' );
 		send.disabled = true;
 		// Deactivate once the answer is sent, or after 3 seconds at most.
 		setTimeout( leave, 3000 );
@@ -159,7 +188,8 @@
 			slug: plugin[ 0 ],
 			reason,
 			comment: box ? box.value : '',
-			email: form.elements.reply.checked ? form.elements.reply.value : '',
+			// The reply box shows only with a question.
+			email: ! more.hidden && form.elements.reply.checked ? form.elements.reply.value : '',
 		} ).finally( leave );
 	} );
 } )();

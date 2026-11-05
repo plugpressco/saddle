@@ -641,7 +641,6 @@ plugpress_insight(
 		'name'    => 'Saddle',
 		'version' => SADDLE_VERSION,
 		'page'    => 'saddle',
-		'color'   => '#d000c4',
 		// Overview's and the add-ons' first card; not on the welcome.
 		'slot'    => '.saddle-app .pp-content:has(> .saddle-tabpane)',
 	)
