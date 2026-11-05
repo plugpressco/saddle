@@ -147,38 +147,39 @@ class PlugPress_Insight {
 						<?php if ( $ask ) : ?>
 							<strong><?php /* translators: %s: brand name, such as Saddle. */ echo esc_html( sprintf( __( 'Get better support for %s', 'saddle' ), $brand ) ); ?></strong>
 							<span>
-								<?php esc_html_e( 'Allow to share your name, email and basic site info with PlugPress. No posts, no visitor data.', 'saddle' ); ?>
-								<button type="button" class="plugpress-insight-bar__what" aria-expanded="false"><?php esc_html_e( 'What is shared', 'saddle' ); ?></button>
-							</span>
-							<span class="plugpress-insight-bar__list" hidden>
-								<span><b><?php esc_html_e( 'Your profile', 'saddle' ); ?></b> <?php echo esc_html( $user->display_name . ', ' . $user->user_email ); ?></span>
-								<span><b><?php esc_html_e( 'Your site', 'saddle' ); ?></b> <?php esc_html_e( 'Address, title, language and timezone', 'saddle' ); ?></span>
-								<span><b><?php esc_html_e( 'Versions', 'saddle' ); ?></b> <?php esc_html_e( 'WordPress, PHP, your theme and plugins', 'saddle' ); ?></span>
-								<span><?php esc_html_e( 'Sent now, then once a week only when something changed. Stop any time under the plugin on the Plugins screen.', 'saddle' ); ?></span>
+								<?php esc_html_e( 'Share your name, email and basic site info with PlugPress.', 'saddle' ); ?>
+								<button type="button" class="plugpress-insight-bar__what" popovertarget="plugpress-insight-shared"><?php esc_html_e( 'What is shared', 'saddle' ); ?></button>
 							</span>
 						<?php else : ?>
 							<strong><?php /* translators: %s: brand name, such as Saddle. */ echo esc_html( sprintf( __( '%s news', 'saddle' ), $brand ) ); ?></strong>
 							<span><?php esc_html_e( 'Features, tips and fixes, now and then.', 'saddle' ); ?></span>
 						<?php endif; ?>
 					</div>
-					<?php if ( $ask ) : ?>
-						<button type="button" class="button plugpress-insight-bar__skip"><?php esc_html_e( 'No thanks', 'saddle' ); ?></button>
-						<button type="submit" class="button button-primary"><?php esc_html_e( 'Allow', 'saddle' ); ?></button>
-					<?php else : ?>
-						<input type="email" name="email" value="<?php echo esc_attr( $user->user_email ); ?>" aria-label="<?php esc_attr_e( 'Email', 'saddle' ); ?>">
-						<button type="submit" class="button button-primary"><?php esc_html_e( 'Subscribe', 'saddle' ); ?></button>
-						<button type="button" class="plugpress-insight-bar__skip plugpress-insight-bar__close" aria-label="<?php esc_attr_e( 'No thanks', 'saddle' ); ?>">
-							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
-						</button>
-					<?php endif; ?>
+					<div class="plugpress-insight-bar__actions">
+						<?php if ( $ask ) : ?>
+							<label class="plugpress-insight-bar__news">
+								<input type="checkbox" name="news">
+								<?php /* translators: %s: brand name, such as Saddle. */ echo esc_html( sprintf( __( '%s news', 'saddle' ), $brand ) ); ?>
+							</label>
+							<input type="email" name="email" value="<?php echo esc_attr( $user->user_email ); ?>" aria-label="<?php /* translators: %s: brand name, such as Saddle. */ echo esc_attr( sprintf( __( 'Email for %s news', 'saddle' ), $brand ) ); ?>">
+							<button type="button" class="button plugpress-insight-bar__skip"><?php esc_html_e( 'No thanks', 'saddle' ); ?></button>
+							<button type="submit" class="button button-primary"><?php esc_html_e( 'Allow', 'saddle' ); ?></button>
+						<?php else : ?>
+							<input type="email" name="email" value="<?php echo esc_attr( $user->user_email ); ?>" aria-label="<?php esc_attr_e( 'Email', 'saddle' ); ?>">
+							<button type="submit" class="button button-primary"><?php esc_html_e( 'Subscribe', 'saddle' ); ?></button>
+							<button type="button" class="plugpress-insight-bar__skip plugpress-insight-bar__close" aria-label="<?php esc_attr_e( 'No thanks', 'saddle' ); ?>">
+								<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+							</button>
+						<?php endif; ?>
+					</div>
 				</div>
 				<?php if ( $ask ) : ?>
-					<div class="plugpress-insight-bar__more">
-						<label>
-							<input type="checkbox" name="news">
-							<?php /* translators: %s: brand name, such as Saddle. */ echo esc_html( sprintf( __( 'Also email me %s news at', 'saddle' ), $brand ) ); ?>
-						</label>
-						<input type="email" name="email" value="<?php echo esc_attr( $user->user_email ); ?>" aria-label="<?php esc_attr_e( 'Email', 'saddle' ); ?>">
+					<?php // A popover, so the card stays one row; hidden until the script runs. ?>
+					<div id="plugpress-insight-shared" class="plugpress-insight-bar__list" popover hidden>
+						<span><b><?php esc_html_e( 'Your profile', 'saddle' ); ?></b> <?php echo esc_html( $user->display_name . ', ' . $user->user_email ); ?></span>
+						<span><b><?php esc_html_e( 'Your site', 'saddle' ); ?></b> <?php esc_html_e( 'Address, title, language and timezone', 'saddle' ); ?></span>
+						<span><b><?php esc_html_e( 'Versions', 'saddle' ); ?></b> <?php esc_html_e( 'WordPress, PHP, your theme and plugins', 'saddle' ); ?></span>
+						<span><?php esc_html_e( 'No posts, no visitor data. Sent now, then once a week only when something changed. Stop any time under the plugin on the Plugins screen.', 'saddle' ); ?></span>
 					</div>
 				<?php endif; ?>
 			</form>

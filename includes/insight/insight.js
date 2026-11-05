@@ -61,10 +61,26 @@
 		}
 		ready();
 
+		// What is shared: a popover under its link, so the card stays one row.
+		// A click outside, Escape or a scroll closes it.
 		const what = bar.querySelector( '.plugpress-insight-bar__what' );
-		if ( what ) {
+		const list = bar.querySelector( '.plugpress-insight-bar__list' );
+		if ( what && list && 'function' === typeof list.showPopover ) {
+			list.hidden = false;
+			list.addEventListener( 'beforetoggle', ( event ) => {
+				if ( 'open' === event.newState ) {
+					const at = what.getBoundingClientRect();
+					const width = Math.min( 360, window.innerWidth - 32 );
+					list.style.top = at.bottom + 8 + 'px';
+					list.style.left = Math.max( 16, Math.min( at.left, window.innerWidth - width - 16 ) ) + 'px';
+				}
+			} );
+			window.addEventListener( 'scroll', () => list.matches( ':popover-open' ) && list.hidePopover(), { passive: true } );
+		} else if ( what && list ) {
+			// No popovers in this browser: the list opens in place.
+			list.removeAttribute( 'popover' );
+			what.setAttribute( 'aria-expanded', 'false' );
 			what.addEventListener( 'click', () => {
-				const list = bar.querySelector( '.plugpress-insight-bar__list' );
 				list.hidden = ! list.hidden;
 				what.setAttribute( 'aria-expanded', String( ! list.hidden ) );
 			} );
