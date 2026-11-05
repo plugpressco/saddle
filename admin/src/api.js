@@ -154,7 +154,7 @@ export const LEVELS = [
 		icon: 'admin',
 		title: __( 'Manage the site', 'saddle' ),
 		one: __(
-			'Your AI can also manage plugins, themes, and settings. Overwrites and deletions always ask you first.',
+			'Your AI can also manage plugins, themes, and settings. Overwrites and deletions ask you first, unless you let it run without asking.',
 			'saddle'
 		),
 		short: __(

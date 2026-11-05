@@ -1131,6 +1131,9 @@ class Saddle_Abilities {
 			array(
 				'action'  => 'publish_' . $type,
 				'tool'    => 'page' === $type ? 'update-page' : 'update-post',
+				// Drafts only is the owner's rule, so an agent set to Run without
+				// asking still previews a publish.
+				'policy'  => true,
 				'target'  => (string) $id,
 				'bind'    => $bind,
 				// Says what the agent asks to do, so the owner's decision reads

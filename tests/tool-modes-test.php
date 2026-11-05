@@ -5,9 +5,10 @@
  * What must hold: a tool set to Ask first never runs its own code until the
  * owner approves the request in wp-admin, whether or not the tool previews by
  * itself; a yes in the chat is not enough; a reject stops it; the approved
- * call runs exactly once. A site updated in place can do exactly what it could
- * before, a tool that arrives later asks first, and the recommended set only
- * tightens.
+ * call runs exactly once. Ask first is off by default (2026-11-06): a tool
+ * asks only when the owner set it so, a tool that arrives later is Allow like
+ * the rest, an owner's own Ask first survives the update, and the recommended
+ * set only tightens.
  *
  * @package Saddle
  */
@@ -85,40 +86,46 @@ class Saddle_Tool_Modes_Test extends WP_UnitTestCase {
 		);
 	}
 
-	/* -------- R3: nothing changes for a site that is updated -------- */
+	/* -------- Ask first only where the owner set it (2026-11-06) -------- */
 
-	public function test_a_site_updated_in_place_can_do_exactly_what_it_could_before() {
+	public function test_an_update_keeps_every_ask_first_the_owner_chose_and_nothing_else_asks() {
+		// As a 1.6 site left it: the owner set delete-post to Ask first, and
+		// the list of tools known at its first run is missing create-post,
+		// which made create-post ask as a new tool until 1.7.0.
+		Saddle_Tool_Modes::set_mode( 'delete-post', Saddle_Tool_Modes::ASK );
 		Saddle_Tool_Modes::set_mode( 'delete-media', Saddle_Tool_Modes::OFF );
-		delete_option( Saddle_Tool_Modes::KNOWN_OPTION ); // As on the first request after the update.
+		update_option( 'saddle_known_abilities', array( 'delete-post', 'delete-media' ), false );
 
 		foreach ( array_keys( wp_get_abilities() ) as $name ) {
 			if ( 0 !== strpos( $name, 'saddle/' ) ) {
 				continue;
 			}
 			$short = substr( $name, 7 );
-			$this->assertFalse( Saddle_Tool_Modes::asks_first( $short ), $short . ' must not start asking after an update.' );
-			$this->assertSame(
-				Saddle_Capabilities::is_ability_enabled( $short ) ? Saddle_Tool_Modes::ALLOW : Saddle_Tool_Modes::OFF,
-				Saddle_Tool_Modes::mode( $short ),
-				$short . ' keeps its on or off.'
-			);
+			if ( 'delete-post' === $short ) {
+				continue;
+			}
+			$this->assertFalse( Saddle_Tool_Modes::asks_first( $short ), $short . ' asks only if the owner set it so.' );
 		}
 
-		$this->assertSame( Saddle_Tool_Modes::OFF, Saddle_Tool_Modes::mode( 'delete-media' ) );
-		$this->assertContains( 'create-post', get_option( Saddle_Tool_Modes::KNOWN_OPTION ), 'The first look records every changing tool as known.' );
-		$this->assertNotContains( 'get-post', get_option( Saddle_Tool_Modes::KNOWN_OPTION ), 'Read tools never ask, so they are not listed.' );
+		$this->assertSame( Saddle_Tool_Modes::ASK, Saddle_Tool_Modes::mode( 'delete-post' ), 'The owner’s Ask first is kept.' );
+		$this->assertSame( Saddle_Tool_Modes::OFF, Saddle_Tool_Modes::mode( 'delete-media' ), 'Off stays Off.' );
+		$this->assertSame( Saddle_Tool_Modes::ALLOW, Saddle_Tool_Modes::mode( 'create-post' ), 'Once only new, now Allow.' );
+
+		$this->app( 'write' );
+		$post = self::factory()->post->create( array( 'post_title' => 'Kept asking' ) );
+		$this->assertTrue( $this->call( 'delete-post', array( 'id' => $post ) )['needs_owner_approval'], 'An agent without Run without asking still waits for the owner.' );
+		$this->assertSame( 'publish', get_post_status( $post ) );
 	}
 
 	public function test_a_fresh_install_is_read_only_and_a_new_app_starts_read_only() {
 		$this->assertSame( 'read', get_option( Saddle_Capabilities::OPTION, Saddle_Capabilities::DEFAULT_TIER ) );
+		$this->assertSame( array(), Saddle_Tool_Modes::ask_list(), 'Nothing asks first until the owner says so.' );
 
 		list( , $item ) = WP_Application_Passwords::create_new_application_password( $this->admin, array( 'name' => Saddle_REST_Admin::CLIENT_PREFIX . 'Claude' ) );
 		$this->assertSame( 'read', Saddle_Access::role_for( 'key:' . $item['uuid'] ) );
 	}
 
-	public function test_a_tool_that_arrives_later_asks_first_until_the_owner_chooses() {
-		Saddle_Tool_Modes::remember_known();
-
+	public function test_a_tool_that_arrives_later_is_allowed_like_the_rest_until_the_owner_says_otherwise() {
 		// Core allows registering only inside wp_abilities_api_init.
 		global $wp_current_filter;
 		$wp_current_filter[] = 'wp_abilities_api_init';
@@ -141,12 +148,13 @@ class Saddle_Tool_Modes_Test extends WP_UnitTestCase {
 		);
 		array_pop( $wp_current_filter );
 
-		$this->assertTrue( Saddle_Tool_Modes::is_new( 'test-arrived-later' ) );
-		$this->assertSame( Saddle_Tool_Modes::ASK, Saddle_Tool_Modes::mode( 'test-arrived-later' ) );
-
-		Saddle_Tool_Modes::set_mode( 'test-arrived-later', Saddle_Tool_Modes::ALLOW );
-		$this->assertFalse( Saddle_Tool_Modes::is_new( 'test-arrived-later' ) );
 		$this->assertSame( Saddle_Tool_Modes::ALLOW, Saddle_Tool_Modes::mode( 'test-arrived-later' ) );
+		$this->app( 'write' );
+		$this->assertSame( array( 'ran' => true ), $this->call( 'test-arrived-later', array( 'title' => 'x' ) ) );
+
+		Saddle_Tool_Modes::set_mode( 'test-arrived-later', Saddle_Tool_Modes::ASK );
+		$this->assertSame( Saddle_Tool_Modes::ASK, Saddle_Tool_Modes::mode( 'test-arrived-later' ) );
+		$this->assertTrue( $this->call( 'test-arrived-later', array( 'title' => 'x' ) )['needs_owner_approval'] );
 	}
 
 	/* -------- Ask first on a tool with no preview of its own -------- */
@@ -435,7 +443,7 @@ class Saddle_Tool_Modes_Test extends WP_UnitTestCase {
 
 	public function test_no_tool_can_change_a_mode() {
 		$this->assertTrue( Saddle_Settings_Guard::is_protected_option( Saddle_Tool_Modes::ASK_OPTION ) );
-		$this->assertTrue( Saddle_Settings_Guard::is_protected_option( Saddle_Tool_Modes::KNOWN_OPTION ) );
+		$this->assertTrue( Saddle_Settings_Guard::is_protected_option( Saddle_Capabilities::DISABLED_OPTION ) );
 	}
 
 	public function test_the_rest_routes_set_a_mode_and_apply_the_set() {

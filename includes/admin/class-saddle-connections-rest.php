@@ -54,6 +54,22 @@ class Saddle_Connections_REST {
 
 		register_rest_route(
 			Saddle_REST_Admin::REST_NAMESPACE,
+			'/connections/(?P<id>(key|oauth):[A-Za-z0-9-]+)/run-without-asking',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( __CLASS__, 'set_run_without_asking' ),
+				'permission_callback' => array( 'Saddle_REST_Admin', 'can_manage' ),
+				'args'                => array(
+					'on' => array(
+						'type'     => 'boolean',
+						'required' => true,
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			Saddle_REST_Admin::REST_NAMESPACE,
 			'/connections/pulse',
 			array(
 				'methods'             => WP_REST_Server::READABLE,
@@ -177,8 +193,63 @@ class Saddle_Connections_REST {
 			)
 		);
 
-		$found['role']       = $role;
-		$found['role_label'] = Saddle_Access::labels()[ $role ];
+		$found['role']               = $role;
+		$found['role_label']         = Saddle_Access::labels()[ $role ];
+		$found['run_without_asking'] = 'admin' === $role && Saddle_Run_Without_Asking::is_on( $id );
+
+		return new WP_REST_Response( $found, 200 );
+	}
+
+	/**
+	 * POST /connections/{id}/run-without-asking `{ on }` — let one agent set
+	 * to Manage the site run Ask-first tools without waiting under Needs your
+	 * OK, or stop it (2026-11-06).
+	 *
+	 * Only the owner, signed in to wp-admin: a request made with any agent's
+	 * sign-in is refused, even an administrator's, so no agent can turn it on
+	 * for itself. 404 for a connection that does not exist, 409 for turning it
+	 * on for an agent below Manage the site. Returns the updated row.
+	 *
+	 * @param WP_REST_Request $request The request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function set_run_without_asking( WP_REST_Request $request ) {
+		if ( '' !== Saddle_Access::current_connection() ) {
+			return new WP_Error( 'saddle_owner_only', __( 'Only the site owner can change this, signed in to wp-admin.', 'saddle' ), array( 'status' => 403 ) );
+		}
+
+		$id = (string) $request->get_param( 'id' );
+		$on = rest_sanitize_boolean( $request->get_param( 'on' ) );
+
+		$found = null;
+		foreach ( self::get_connections()->get_data()['connections'] as $row ) {
+			if ( $row['id'] === $id ) {
+				$found = $row;
+			}
+		}
+		if ( ! $found ) {
+			return new WP_Error( 'saddle_unknown_connection', __( 'That connection no longer exists. It may already be disconnected.', 'saddle' ), array( 'status' => 404 ) );
+		}
+
+		$done = Saddle_Run_Without_Asking::set( $id, $on );
+		if ( is_wp_error( $done ) ) {
+			return $done;
+		}
+
+		$name = '' !== (string) $found['name'] ? $found['name'] : $id;
+		Saddle_Log::record(
+			array(
+				'action'  => 'access-changed',
+				'target'  => $id,
+				'summary' => $on
+					/* translators: %s: agent name. */
+					? sprintf( __( 'Let %s run changes without asking', 'saddle' ), $name )
+					/* translators: %s: agent name. */
+					: sprintf( __( 'Set %s to ask first again', 'saddle' ), $name ),
+			)
+		);
+
+		$found['run_without_asking'] = $on;
 
 		return new WP_REST_Response( $found, 200 );
 	}
@@ -299,24 +370,27 @@ class Saddle_Connections_REST {
 		$role = Saddle_Access::role_for( $id );
 
 		return array(
-			'id'            => $id,
-			'kind'          => $credential['kind'],
+			'id'                 => $id,
+			'kind'               => $credential['kind'],
 			// What this agent may do: read, write or admin, and its plain name.
-			'role'          => $role,
-			'role_label'    => Saddle_Access::labels()[ $role ],
-			'app'           => $app,
-			'name'          => $credential['name'],
+			'role'               => $role,
+			'role_label'         => Saddle_Access::labels()[ $role ],
+			// The owner's Run without asking switch, which only Manage the site
+			// can use.
+			'run_without_asking' => 'admin' === $role && Saddle_Run_Without_Asking::is_on( $id ),
+			'app'                => $app,
+			'name'               => $credential['name'],
 			// What the agent calls itself, e.g. "claude-ai 0.1.0". The admin shows
 			// it when no agent was detected.
-			'client'        => trim( $field( 'client_name' ) . ' ' . $field( 'client_version' ) ),
-			'user_login'    => $credential['user_login'],
-			'created_at'    => (int) $credential['created_at'],
-			'first_seen_at' => (int) $field( 'first_seen_at', 0 ),
-			'first_tool_at' => (int) $field( 'first_tool_at', 0 ),
-			'last_seen_at'  => (int) $field( 'last_seen_at', 0 ),
-			'last_tool_at'  => (int) $field( 'last_tool_at', 0 ),
-			'last_tool'     => (string) $field( 'last_tool' ),
-			'recent_tools'  => array_values( (array) $field( 'recent_tools', array() ) ),
+			'client'             => trim( $field( 'client_name' ) . ' ' . $field( 'client_version' ) ),
+			'user_login'         => $credential['user_login'],
+			'created_at'         => (int) $credential['created_at'],
+			'first_seen_at'      => (int) $field( 'first_seen_at', 0 ),
+			'first_tool_at'      => (int) $field( 'first_tool_at', 0 ),
+			'last_seen_at'       => (int) $field( 'last_seen_at', 0 ),
+			'last_tool_at'       => (int) $field( 'last_tool_at', 0 ),
+			'last_tool'          => (string) $field( 'last_tool' ),
+			'recent_tools'       => array_values( (array) $field( 'recent_tools', array() ) ),
 		) + $credential['extra'];
 	}
 

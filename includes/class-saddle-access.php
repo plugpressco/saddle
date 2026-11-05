@@ -184,6 +184,7 @@ class Saddle_Access {
 			$roles[ $ref ] = $role;
 			update_option( self::KEY_ROLES_OPTION, $roles, true );
 			self::confirm_domain( $role );
+			self::drop_run_without_asking( $connection_id, $role );
 
 			return true;
 		}
@@ -193,6 +194,7 @@ class Saddle_Access {
 				return new WP_Error( 'saddle_unknown_connection', __( 'That connection no longer exists.', 'saddle' ), array( 'status' => 404 ) );
 			}
 			self::confirm_domain( $role );
+			self::drop_run_without_asking( $connection_id, $role );
 
 			return true;
 		}
@@ -209,6 +211,19 @@ class Saddle_Access {
 	private static function confirm_domain( $role ) {
 		if ( 'read' !== $role ) {
 			Saddle_Capabilities::record_tier_domain();
+		}
+	}
+
+	/**
+	 * An agent moved below Manage the site loses Run without asking, so
+	 * raising it again later does not bring it back unasked.
+	 *
+	 * @param string $connection_id `key:…` or `oauth:…`.
+	 * @param string $role          The role just set.
+	 */
+	private static function drop_run_without_asking( $connection_id, $role ) {
+		if ( 'admin' !== $role && class_exists( 'Saddle_Run_Without_Asking' ) ) {
+			Saddle_Run_Without_Asking::forget( $connection_id );
 		}
 	}
 
