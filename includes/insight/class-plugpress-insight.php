@@ -45,7 +45,6 @@ class PlugPress_Insight {
 				'name'    => $plugin['slug'],
 				'version' => '0',
 				'page'    => '',
-				'color'   => '',
 				'slot'    => '',
 			);
 			$plugin  += array( 'brand' => $plugin['name'] );
@@ -126,7 +125,6 @@ class PlugPress_Insight {
 		$ask   = null === $state['usage'];
 		$brand = $plugin['brand'];
 		$user  = wp_get_current_user();
-		$color = sanitize_hex_color( $plugin['color'] );
 		$slot  = self::on_own_page( $plugin ) ? $plugin['slot'] : '';
 		?>
 		<div class="notice <?php echo $slot ? 'inline ' : ''; ?>plugpress-insight-bar<?php echo $ask ? '' : ' is-news'; ?>" data-product="<?php echo esc_attr( $plugin['product'] ); ?>"
@@ -135,8 +133,7 @@ class PlugPress_Insight {
 			<?php endif; ?>
 			data-done="<?php echo esc_attr( $ask ? __( 'Thanks for helping', 'saddle' ) : __( 'You are in', 'saddle' ) ); ?>"
 			data-confirm="<?php esc_attr_e( 'Check your inbox to confirm your email.', 'saddle' ); ?>"
-			data-stop="<?php esc_attr_e( 'Stop any time under the plugin on the Plugins screen.', 'saddle' ); ?>"
-			style="<?php echo esc_attr( $color ? '--plugpress-insight-accent:' . $color : '' ); ?>">
+			data-stop="<?php esc_attr_e( 'Stop any time under the plugin on the Plugins screen.', 'saddle' ); ?>">
 			<form>
 				<div class="plugpress-insight-bar__main">
 					<span class="plugpress-insight-bar__icon" aria-hidden="true">
@@ -165,11 +162,11 @@ class PlugPress_Insight {
 						<?php endif; ?>
 					</div>
 					<?php if ( $ask ) : ?>
-						<button type="button" class="plugpress-insight-bar__skip"><?php esc_html_e( 'No thanks', 'saddle' ); ?></button>
-						<button type="submit"><?php esc_html_e( 'Allow', 'saddle' ); ?></button>
+						<button type="button" class="button plugpress-insight-bar__skip"><?php esc_html_e( 'No thanks', 'saddle' ); ?></button>
+						<button type="submit" class="button button-primary"><?php esc_html_e( 'Allow', 'saddle' ); ?></button>
 					<?php else : ?>
 						<input type="email" name="email" value="<?php echo esc_attr( $user->user_email ); ?>" aria-label="<?php esc_attr_e( 'Email', 'saddle' ); ?>">
-						<button type="submit"><?php esc_html_e( 'Subscribe', 'saddle' ); ?></button>
+						<button type="submit" class="button button-primary"><?php esc_html_e( 'Subscribe', 'saddle' ); ?></button>
 						<button type="button" class="plugpress-insight-bar__skip plugpress-insight-bar__close" aria-label="<?php esc_attr_e( 'No thanks', 'saddle' ); ?>">
 							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
 						</button>
@@ -190,8 +187,9 @@ class PlugPress_Insight {
 	}
 
 	/**
-	 * Quick feedback, printed once on the Plugins screen, before the footer
-	 * scripts. The script opens it from a registered plugin's Deactivate link.
+	 * Feedback on Deactivate, printed once on the Plugins screen, before the
+	 * footer scripts. The script opens it from a registered plugin's
+	 * Deactivate link.
 	 */
 	public static function dialog() {
 		$screen = get_current_screen();
@@ -199,39 +197,47 @@ class PlugPress_Insight {
 			return;
 		}
 		$email = wp_get_current_user()->user_email;
-		// Reason => its label, and the question it opens ('' for none).
+		// Reason => its choice, and the question it asks ('' for none). The ids
+		// are the server's; the order is what people see. The server still
+		// takes short_time, which older copies show.
 		$reasons = array(
-			'short_time'        => array( __( 'I only needed it for a short time', 'saddle' ), '' ),
-			'broke_something'   => array( __( 'It broke something on my site', 'saddle' ), __( 'What broke? An error message helps a lot', 'saddle' ) ),
-			'hard_to_set_up'    => array( __( 'It was hard to set up', 'saddle' ), __( 'Where did you get stuck?', 'saddle' ) ),
-			'not_what_i_needed' => array( __( 'It didn\'t do what I needed', 'saddle' ), __( 'What were you hoping it would do?', 'saddle' ) ),
-			'found_another'     => array( __( 'I found a better plugin', 'saddle' ), __( 'Which one? We would love to learn from it', 'saddle' ) ),
-			'temporary'         => array( __( 'It\'s temporary, I\'m troubleshooting', 'saddle' ), '' ),
-			'other'             => array( __( 'Something else', 'saddle' ), __( 'Tell us a little more', 'saddle' ) ),
+			'broke_something'   => array( __( 'Something broke', 'saddle' ), __( 'What broke?', 'saddle' ) ),
+			'hard_to_set_up'    => array( __( 'Hard to use', 'saddle' ), __( 'Where did you get stuck?', 'saddle' ) ),
+			'not_what_i_needed' => array( __( 'Missing a feature', 'saddle' ), __( 'What did you need?', 'saddle' ) ),
+			'found_another'     => array( __( 'Found a better plugin', 'saddle' ), __( 'Which one?', 'saddle' ) ),
+			'temporary'         => array( __( 'Just for now', 'saddle' ), '' ),
+			'other'             => array( __( 'Something else', 'saddle' ), __( 'Tell us in a few words', 'saddle' ) ),
 		);
 		?>
 		<dialog class="plugpress-insight-dialog" aria-labelledby="plugpress-insight-title">
 			<form method="dialog">
-				<button type="button" class="plugpress-insight-dialog__close" aria-label="<?php esc_attr_e( 'Close, and keep the plugin on', 'saddle' ); ?>">&times;</button>
-				<p class="plugpress-insight-dialog__eyebrow"><?php esc_html_e( 'Quick feedback', 'saddle' ); ?></p>
+				<button type="button" class="plugpress-insight-dialog__close" aria-label="<?php esc_attr_e( 'Close, and keep the plugin on', 'saddle' ); ?>">
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+				</button>
 				<h2 id="plugpress-insight-title" data-title="<?php /* translators: %s: plugin name. */ esc_attr_e( 'Why are you turning off %s?', 'saddle' ); ?>"></h2>
 				<div class="plugpress-insight-dialog__reasons" role="radiogroup" aria-labelledby="plugpress-insight-title">
 					<?php foreach ( $reasons as $id => $reason ) : ?>
-						<label><input type="radio" name="reason" value="<?php echo esc_attr( $id ); ?>"> <?php echo esc_html( $reason[0] ); ?></label>
-						<?php if ( $reason[1] ) : ?>
-							<input type="text" data-for="<?php echo esc_attr( $id ); ?>" maxlength="500" placeholder="<?php echo esc_attr( $reason[1] ); ?>" aria-label="<?php echo esc_attr( $reason[1] ); ?>" hidden>
-						<?php endif; ?>
+						<label><input type="radio" name="reason" value="<?php echo esc_attr( $id ); ?>"><span><?php echo esc_html( $reason[0] ); ?></span></label>
 					<?php endforeach; ?>
 				</div>
-				<label class="plugpress-insight-dialog__reply">
-					<input type="checkbox" name="reply" value="<?php echo esc_attr( $email ); ?>">
-					<?php /* translators: %s: the admin's email address. */ echo esc_html( sprintf( __( 'Reply to me at %s', 'saddle' ), $email ) ); ?>
-				</label>
-				<div class="plugpress-insight-dialog__foot">
-					<button type="button" class="plugpress-insight-dialog__skip"><?php esc_html_e( 'Skip and deactivate', 'saddle' ); ?></button>
-					<button type="submit" class="button button-primary" disabled><?php esc_html_e( 'Send and deactivate', 'saddle' ); ?></button>
+				<div class="plugpress-insight-dialog__more" hidden>
+					<?php foreach ( $reasons as $id => $reason ) : ?>
+						<?php if ( $reason[1] ) : ?>
+							<label data-for="<?php echo esc_attr( $id ); ?>" hidden>
+								<span><?php echo esc_html( $reason[1] ); ?> <small><?php esc_html_e( '(optional)', 'saddle' ); ?></small></span>
+								<input type="text" maxlength="500">
+							</label>
+						<?php endif; ?>
+					<?php endforeach; ?>
+					<label class="plugpress-insight-dialog__reply">
+						<input type="checkbox" name="reply" value="<?php echo esc_attr( $email ); ?>">
+						<?php /* translators: %s: the admin's email address. */ echo esc_html( sprintf( __( 'Email me back at %s', 'saddle' ), $email ) ); ?>
+					</label>
 				</div>
-				<p class="plugpress-insight-dialog__note"><?php esc_html_e( 'Sends your answer, the plugin\'s version, and your WordPress and PHP versions.', 'saddle' ); ?></p>
+				<div class="plugpress-insight-dialog__foot">
+					<button type="button" class="button plugpress-insight-dialog__skip"><?php esc_html_e( 'Skip', 'saddle' ); ?></button>
+					<button type="submit" class="button button-primary plugpress-insight-dialog__send" disabled><?php esc_html_e( 'Send and deactivate', 'saddle' ); ?></button>
+				</div>
 			</form>
 		</dialog>
 		<?php

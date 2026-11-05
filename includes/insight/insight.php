@@ -35,7 +35,7 @@ if ( ! function_exists( 'plugpress_insight' ) ) {
 	/**
 	 * Add a plugin to Insight. Call it from the plugin's main file.
 	 *
-	 * @param array $plugin file, product, brand, name, version; optionally page, color and slot.
+	 * @param array $plugin file, product, brand, name, version; optionally page and slot.
 	 */
 	function plugpress_insight( array $plugin ) {
 		$GLOBALS['plugpress_insight_products'][] = $plugin;
