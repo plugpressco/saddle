@@ -121,18 +121,18 @@ and finding each fails at least one. Check every change against all three.
      WordPress and PHP versions, language, timezone, theme, plugins and a
      random site id, then a weekly update while it stays on, only when
      something changed. All Saddle plugins report as one brand, `saddle`.
-   - **Also email me Saddle news** ticked on that card, or **Subscribe** on
+   - **Saddle news** ticked on that card, or **Subscribe** on
      the news card (shown once site info has an answer): the address typed,
      passed to Mailpuff on plugpress.io with the Saddle news tag; Mailpuff
      asks the person to confirm. Insight keeps no address.
    - **Send and deactivate** in the Plugins screen's quick feedback: the
-     reason, the answer to its question, the admin's email only if "Reply to
-     me" is ticked, the version, and WordPress, PHP and the language. Never
+     reason, the answer to its question, the admin's email only if "Email
+     me back" is ticked, the version, and WordPress, PHP and the language. Never
      the address.
    - **Stop sharing site info** under Saddle on the Plugins screen: one
      opt-out that clears what identifies the site.
 
-   No thanks, the × and "Skip and deactivate" send nothing. A copy of the
+   No thanks, the × and "Skip" send nothing. A copy of the
    site at another address gets a new id and is asked again. No agent tool reads or
    changes the answer (`plugpress_insight` and `plugpress_insight_site_id`
    are protected options; both are shared by every PlugPress plugin, so
