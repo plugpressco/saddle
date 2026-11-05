@@ -254,7 +254,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 * New: When you deactivate Saddle, a short form asks why. Skip and deactivate sends nothing.
 * New: `define( 'PLUGPRESS_INSIGHT', false );` in `wp-config.php` turns off the card and the form.
 * Changed: Get Pro is now Get Premium and shows Saddle Cloud's four plans, each with unlimited sites and one yearly price: Free, Go $49, Pro $99 and Reach $299. Free's button opens Saddle Cloud with this site's address filled in.
-* New: Saddle's welcome ends with one question for owners of more than one site: Saddle Cloud, free for any number of sites. Its button opens Saddle Cloud with this site's address filled in, and Saddle sends nothing. Agent setup offers the same until Saddle Cloud is connected.
+* New: Connecting your AI agent shows two ways, in the welcome and at the top of Agent setup: all your sites through Saddle Cloud, free up to 500 AI agent calls a month, or just this site through its own address. Saddle Cloud's button opens it with this site's address filled in, and Saddle sends nothing. Once Saddle Cloud is connected, its card says so.
 * Changed: AI apps are now called AI agents everywhere in Saddle.
 
 = 1.6.3 =

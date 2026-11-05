@@ -24,7 +24,7 @@ judging.
 Free Saddle **1.6.3** is the build live on WordPress.org (released 2026-11-01, tag `v1.6.3`, a hotfix cut from `v1.6.2` on `release/1.6.x` so it ships without the unreleased Insight work; 1.6.2, 1.6.1 and 1.6.0 on 2026-10-23, 1.5.2 on 2026-10-13, 1.5.0 on 2026-10-04, 1.5.1 on 2026-10-05). 1.4.0 only ever reached staging, so it was skipped and its changelog folded into 1.5.0. (1.1.0 is skipped on purpose: a different 1.1.0 was published on GitHub on 2026-08-02 and withdrawn, and two builds must never share a number.) **Saddle Pro** is a
 separate plugin, sold commercially. Free never contains license code, and its
 one upsell is the Get Premium page, plus one plain link to Saddle Cloud
-(amended 2026-10-23 and 2026-11-02, below).
+(amended 2026-10-23, 2026-11-02 and 2026-11-06, below).
 
 **The split (decided 2026-09-26, reversing "no builder code in free"):** free
 edits, Pro operates the site. Free carries Gutenberg *and* Divi 5 page editing —
@@ -88,10 +88,21 @@ and finding each fails at least one. Check every change against all three.
      `saddle-cloud` (`Saddle_Connection_Apps`). **One amendment, Fahim
      2026-11-02 ("finalize it", planning `PRICING-2026-11.md`):** free may
      show one plain link to Saddle Cloud's Connect page with the site's
-     address filled in, at the end of the welcome (asked once), on Agent
-     setup, and as Get Premium's Free button. Each opens a new tab and sends
-     nothing; the welcome and Agent setup drop it once Cloud is connected; no
-     notice repeats it, and no agent is told about it.
+     address filled in, on Agent setup, in the welcome, and as Get
+     Premium's Free button. Each opens a new tab and sends nothing; no
+     notice repeats it, and no agent is told about it. **Where it sits,
+     Fahim 2026-11-06** ("why saddle not show that connect with clude: i
+     mean, show connect with ai but not show saddle cloud.. give offer
+     connect saddle cloud.. then ask to connect with saddle local mcp.. 2
+     type of mcp we have right 1 mcp for all site also induvuaial site
+     mcp.. make it cleaner to present", then "ok do it"): first, not last.
+     "Connect your AI agent" shows two cards of the same size, Saddle Cloud
+     ("All your sites", the link) first and "Just this site" (the site's
+     own address and the per-agent steps) beside it, at the top of Agent
+     setup and as the welcome's connect step
+     (`components/ConnectWays.jsx`). The welcome's separate Cloud question
+     at its end is gone. Once Cloud is connected, its card says "Connected
+     to Saddle Cloud" in place of the link.
    - Direct MCP keeps working unchanged (R5 in `../planning/ROADMAP-PRODUCT.md`).
 
    "Nothing leaves your site" describes the plugin. It is false the moment it is
@@ -576,8 +587,9 @@ change. `Tested up to:` moves only when Fahim has verified against a newer WP.
   (`admin/src/get-pro-logic.js`, kept equal to saddle-cloud's
   `src/shared/plans.ts`), buttons to saddle.to's checkouts, and Free's button
   to Saddle Cloud. And the **one Saddle Cloud link** of non-negotiable #1's
-  amendment (the welcome's last question and Agent setup's card,
-  `components/CloudOffer.jsx`). Nothing else: no notices, no nags, nothing
+  amendment: since 2026-11-06 the first of the two ways to connect, at the
+  top of Agent setup and as the welcome's connect step
+  (`components/ConnectWays.jsx`). Nothing else: no notices, no nags, nothing
   locked, no outbound request; Get Premium is gone once Saddle Pro is
   installed, active or not (`Saddle_Modules::offers_pro()`, the
   `saddle_show_get_pro` filter), and no agent reads about either

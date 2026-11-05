@@ -19,6 +19,7 @@ import { ReactComponent as Check } from '../../../assets/icons/check.svg';
 import { ReactComponent as CheckCircle } from '../../../assets/icons/check-circle.svg';
 import { ReactComponent as ClipboardCheck } from '../../../assets/icons/clipboard-check.svg';
 import { ReactComponent as Clock } from '../../../assets/icons/clock.svg';
+import { ReactComponent as Cloud } from '../../../assets/icons/cloud.svg';
 import { ReactComponent as Copy } from '../../../assets/icons/copy.svg';
 import { ReactComponent as Cpu } from '../../../assets/icons/cpu.svg';
 import { ReactComponent as Crown } from '../../../assets/icons/crown.svg';
@@ -105,6 +106,7 @@ export const byName = {
 	'check-circle': CheckCircle,
 	'clipboard-check': ClipboardCheck,
 	clock: Clock,
+	cloud: Cloud,
 	copy: Copy,
 	cpu: Cpu,
 	crown: Crown,

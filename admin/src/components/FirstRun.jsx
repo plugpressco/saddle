@@ -7,13 +7,22 @@
  * owner's AI, proves the connection with a read-only prompt, and only then
  * asks how much the agent may do.
  *
- * Steps: the site read (0), which AI (agent), connect, try it, and how much it
- * may do (choose). The step is stored with each change, so a reload rebuilds
- * the conversation up to where the owner was. "Skip for now" leaves the agent
- * at Read only: only the owner's pick on the last step ever raises it, and
- * only for the agent that was just connected (#285). After that pick, while
- * Saddle Analytics is not on and the owner may add it, one more question
- * offers it (#367); it is part of the last step, not a stored step.
+ * Steps: the site read (0), how to connect and which AI (agent), connect,
+ * try it, and how much it may do (choose). The step is stored with each
+ * change, so a reload rebuilds the conversation up to where the owner was.
+ * "Skip for now" leaves the agent at Read only: only the owner's pick on the
+ * last step ever raises it, and only for the agent that was just connected
+ * (#285). After that pick, while Saddle Analytics is not on and the owner may
+ * add it, one more question offers it (#367); it is part of the last step,
+ * not a stored step.
+ *
+ * The agent step starts with the two ways to connect (2026-11-06,
+ * ConnectWays): Saddle Cloud for all your sites, or just this site. Saddle
+ * Cloud is a plain link in a new tab; the welcome then ends there (the
+ * Analytics question, then Finish), since Cloud's own access is chosen on
+ * this site's Allow screen. "Connect this site" asks which AI, and the rest
+ * follows. Which way was picked is not stored: a reload on the agent step
+ * shows both ways again.
  */
 import { useState, useEffect, useRef } from '@wordpress/element';
 import {
@@ -21,14 +30,13 @@ import {
 	CalloutCard,
 	Notice,
 	Snippet,
-	VisuallyHidden,
 	useReducedMotion,
 } from '@plugpress/ui';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { api, connectionPath } from '../api';
 import { addAnalytics, addError, analyticsOffer } from '../analytics-addon';
 import ConnectWizard from './ConnectWizard';
-import { NEW_TAB, cloudHref, useCloudConnected } from './CloudOffer';
+import ConnectWays from './ConnectWays';
 import WaitingLine from './WaitingLine';
 import { APPS } from '../connect-apps';
 import { createPulse } from '../pulse';
@@ -561,10 +569,10 @@ function endLine( role, label ) {
 }
 
 /**
- * One more question after the access choice (#367): visitor stats. Yes adds
- * Saddle Analytics from WordPress.org and turns it on without leaving the
- * page (see analytics-addon.js). Whatever the answer, what comes next (the
- * Saddle Cloud question) follows it.
+ * One more question after the access choice, or after Saddle Cloud was
+ * opened (#367): visitor stats. Yes adds Saddle Analytics from WordPress.org
+ * and turns it on without leaving the page (see analytics-addon.js).
+ * Whatever the answer, what comes next (the Finish button) follows it.
  *
  * @param {Object} props
  * @param {*}      props.next What follows, drawn once answered.
@@ -712,129 +720,6 @@ function AnalyticsQuestion( { next } ) {
 	);
 }
 
-/**
- * The welcome's last question (planning PRICING-2026-11.md; non-negotiable
- * #3 as amended 2026-11-02): Saddle Cloud, for owners of more than one
- * site. Its answer is a plain link to Saddle Cloud with this site's address
- * filled in, opened in a new tab; Saddle sends nothing. The two answers look
- * the same. Asked once, as the welcome runs once, and not at all once Cloud
- * is connected. Whatever the answer, the Finish button follows it.
- *
- * @param {Object}  props
- * @param {boolean} props.last   A question came before it, so this is the last one.
- * @param {*}       props.finish The Finish button.
- */
-function CloudQuestion( { last, finish } ) {
-	const reduced = useReducedMotion();
-	const connected = useCloudConnected();
-	// '' until answered, then 'cloud' or 'site'.
-	const [ answer, setAnswer ] = useState( '' );
-	const end = useRef( null );
-
-	useEffect( () => {
-		if ( end.current ) {
-			end.current.scrollIntoView( {
-				behavior: reduced || document.hidden ? 'auto' : 'smooth',
-				block: 'nearest',
-			} );
-		}
-	}, [ answer, connected, reduced ] );
-
-	if ( undefined === connected ) {
-		return null;
-	}
-	if ( connected ) {
-		return <Say cont>{ finish }</Say>;
-	}
-
-	const cloudLabel = __( 'Connect with Saddle Cloud', 'saddle' );
-	const siteLabel = __( 'Just this site', 'saddle' );
-	return (
-		<>
-			<Say>
-				<p>
-					{ last
-						? __(
-								'Last one. Do you look after more than one WordPress site?',
-								'saddle'
-						  )
-						: __(
-								'One more question. Do you look after more than one WordPress site?',
-								'saddle'
-						  ) }
-				</p>
-				<p>
-					{ __(
-						'Saddle Cloud connects your AI agent to all of them with one address. It’s free for any number of sites, with 500 AI agent calls a month.',
-						'saddle'
-					) }
-				</p>
-				<p className="saddle-chat__muted">
-					{ __(
-						'Calls then pass through Saddle Cloud, and this site still approves each one. Nothing changes here unless you allow it on the next screen.',
-						'saddle'
-					) }
-				</p>
-			</Say>
-
-			{ ! answer && (
-				<div
-					className="saddle-chat__replies"
-					role="group"
-					aria-label={ __( 'Saddle Cloud', 'saddle' ) }
-				>
-					<a
-						className="saddle-chat__chip"
-						href={ cloudHref() }
-						target="_blank"
-						rel="noopener noreferrer"
-						onClick={ () => setAnswer( 'cloud' ) }
-					>
-						{ cloudLabel }
-						<VisuallyHidden>{ ` ${ NEW_TAB }` }</VisuallyHidden>
-					</a>
-					<button
-						type="button"
-						className="saddle-chat__chip"
-						onClick={ () => setAnswer( 'site' ) }
-					>
-						{ siteLabel }
-					</button>
-				</div>
-			) }
-
-			{ answer && (
-				<You>{ 'cloud' === answer ? cloudLabel : siteLabel }</You>
-			) }
-
-			{ 'cloud' === answer && (
-				<Say>
-					<p>
-						{ __(
-							'Saddle Cloud opened in a new tab, with this site’s address filled in. Come back here when you’re done.',
-							'saddle'
-						) }
-					</p>
-					{ finish }
-				</Say>
-			) }
-
-			{ 'site' === answer && (
-				<Say>
-					<p>
-						{ __(
-							'All set. If you add more sites later, Saddle Cloud is on Saddle → Agent setup.',
-							'saddle'
-						) }
-					</p>
-					{ finish }
-				</Say>
-			) }
-			<div ref={ end } />
-		</>
-	);
-}
-
 /* ------------------------------------------------------------------------ */
 /* The welcome                                                              */
 /* ------------------------------------------------------------------------ */
@@ -886,8 +771,18 @@ export default function FirstRun( {
 	const [ tried, setTried ] = useState( null );
 	// The owner's answer to the last question, once saved.
 	const [ chosen, setChosen ] = useState( '' );
-	// Whether the end offers Saddle Analytics, as the page first knew it.
-	const [ askAnalytics ] = useState( () => analyticsOffer().canAdd );
+	// How the owner connects: '' until a way is picked, then 'cloud' (Saddle
+	// Cloud opened in a new tab) or 'site'. A stored step past the agent
+	// step can only have come through 'site'.
+	const [ way, setWay ] = useState(
+		'read' === resumed.current || 'app' === resumed.current ? '' : 'site'
+	);
+	// Whether the end offers Saddle Analytics, as the page knew it when the
+	// owner picked a way to connect: added on one way's end, it is not
+	// offered again on the other's.
+	const [ askAnalytics, setAskAnalytics ] = useState(
+		() => analyticsOffer().canAdd
+	);
 	// The newest part of the conversation, kept in view the way a chat is.
 	const newest = useRef( null );
 	const pulseForConnect = useRef( null );
@@ -910,7 +805,7 @@ export default function FirstRun( {
 			'saddle'
 		),
 		...( look ? lookLines( look ) : [] ),
-		__( 'Which AI do you use?', 'saddle' ),
+		__( 'Let’s connect your AI agent. There are two ways:', 'saddle' ),
 	];
 	// The hello needs nothing; the rest waits for the site read.
 	const available = ready ? intro.length : 1;
@@ -948,7 +843,7 @@ export default function FirstRun( {
 				block: 'nearest',
 			} );
 		}
-	}, [ shown, step, chosen, reduced ] );
+	}, [ shown, step, chosen, way, reduced ] );
 
 	const goTo = ( next, extra = {} ) => {
 		setStep( next );
@@ -958,6 +853,13 @@ export default function FirstRun( {
 	const pick = ( key ) => {
 		setApp( key );
 		goTo( 'connect', { app: key } );
+	};
+
+	const pickWay = ( next ) => {
+		if ( next !== way ) {
+			setAskAnalytics( analyticsOffer().canAdd );
+			setWay( next );
+		}
 	};
 
 	const skip = () => {
@@ -980,6 +882,13 @@ export default function FirstRun( {
 				{ __( 'Finish', 'saddle' ) }
 			</Button>
 		</div>
+	);
+	// The welcome's end: the Analytics question while it may be offered,
+	// then Finish.
+	const ending = askAnalytics ? (
+		<AnalyticsQuestion next={ <Say cont>{ finishButton }</Say> } />
+	) : (
+		<Say cont>{ finishButton }</Say>
 	);
 
 	const renderWaiting = ( {
@@ -1069,7 +978,33 @@ export default function FirstRun( {
 				{ moreIntro && ! instant && <Say cont={ shown > 0 } typing /> }
 
 				<div ref={ 'read' === step ? undefined : newest } key={ step }>
-					{ 'app' === step && <AppChips onPick={ pick } /> }
+					{ 'app' === step && 'site' !== way && (
+						<>
+							<div className="saddle-chat__ways">
+								<ConnectWays
+									heading={ false }
+									onSite={ () => pickWay( 'site' ) }
+									onCloud={ () => pickWay( 'cloud' ) }
+								/>
+							</div>
+							{ 'cloud' === way && ending }
+						</>
+					) }
+
+					{ 'site' === way && ( 'app' === step || afterApp ) && (
+						<>
+							<You>{ __( 'Just this site', 'saddle' ) }</You>
+							<Say>
+								<p>
+									{ __( 'Which AI do you use?', 'saddle' ) }
+								</p>
+							</Say>
+						</>
+					) }
+
+					{ 'app' === step && 'site' === way && (
+						<AppChips onPick={ pick } />
+					) }
 
 					{ afterApp && label && (
 						<You>
@@ -1172,18 +1107,7 @@ export default function FirstRun( {
 							<Say>
 								<p>{ endLine( chosen, label ) }</p>
 							</Say>
-							{ askAnalytics ? (
-								<AnalyticsQuestion
-									next={
-										<CloudQuestion
-											last
-											finish={ finishButton }
-										/>
-									}
-								/>
-							) : (
-								<CloudQuestion finish={ finishButton } />
-							) }
+							{ ending }
 						</>
 					) }
 				</div>

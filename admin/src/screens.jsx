@@ -4,8 +4,9 @@
  * Four pages (#285; Services went to Settings in #369):
  *
  * - Home: what the apps did, what waits for the owner, and the apps (#309)
- * - Agent setup: the address, the connected apps with their access, and each
- *   app's steps
+ * - Agent setup: the two ways to connect (Saddle Cloud, or just this site),
+ *   each app's steps behind "Connect this site", and the connected apps with
+ *   their access
  * - Context: what every app knows — instructions as named fields, skills,
  *   memory, and what Saddle tells every app automatically
  * - Settings: one page, in sections, Accounts and the plugins that add tools
@@ -19,7 +20,7 @@
  * for the page inside it (`saddle.admin.screens`, most specific first), or
  * mounts its app into a slot (`saddle.admin.mount`).
  */
-import { useMemo, useEffect, useRef } from '@wordpress/element';
+import { useMemo, useEffect, useRef, useState } from '@wordpress/element';
 import { doAction } from '@wordpress/hooks';
 import {
 	Button,
@@ -32,13 +33,14 @@ import { __, sprintf } from '@wordpress/i18n';
 import { api, saddleData } from './api';
 import { findScreen } from './frame-logic';
 import { findArea, subtabsOf, withArg } from './routes';
+import { opensSiteSteps } from './apps-logic';
 import Home, { HomeSkeleton } from './components/Home';
 import GetPro from './components/GetPro';
 import Activity from './components/Activity';
 import AnalyticsOffer from './components/AnalyticsOffer';
 import Context from './components/Guidance';
-import ConnectApps, { SetupIntro } from './components/ConnectApps';
-import CloudOffer from './components/CloudOffer';
+import ConnectApps from './components/ConnectApps';
+import ConnectWays from './components/ConnectWays';
 import Apps from './components/ConnectedClients';
 import SettingsForm from './components/SettingsForm';
 import SettingsPage from './components/SettingsPage';
@@ -172,11 +174,12 @@ function ModuleScreen( { area, tab, sub, view, args, navigate, header } ) {
 }
 
 /**
- * Agent setup (#369; AI apps until then), after Saddle Cloud's page: the
- * site's address, the connected apps with their access, then every app down
- * the side with the chosen one's steps beside it, then Saddle Cloud for
- * owners of more than one site (until it is connected). Nothing opens in a drawer:
- * the connected list's Setup guide and Rotate key show that app's steps.
+ * Agent setup (#369; AI apps until then), after Saddle Cloud's page: the two
+ * ways to connect on top (2026-11-06; Saddle Cloud for all your sites, or
+ * just this site), the agents and their steps once "Connect this site" opens
+ * them, then the connected apps with their access. Nothing opens in a
+ * drawer: the connected list's Setup guide and Rotate key, and `&add=<app>`
+ * or `&key=`, open that agent's steps at once.
  *
  * @param {Object}   props
  * @param {?Object}  props.setupFocus     An app to show: `{ app, key, rotate, n }`.
@@ -197,10 +200,47 @@ function AppsTab( {
 	navigate,
 } ) {
 	const signIn = useOauthSettings();
+	// "Connect this site" was clicked: a time, so each click brings the
+	// agents into view again.
+	const [ siteAsked, setSiteAsked ] = useState( 0 );
+	const siteOpen = !! siteAsked || opensSiteSteps( setupFocus );
+	const site = useRef( null );
+
+	useEffect( () => {
+		const el = site.current;
+		if ( ! siteAsked || ! el ) {
+			return;
+		}
+		const reduced =
+			window.matchMedia &&
+			window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches;
+		el.scrollIntoView( {
+			behavior: reduced ? 'auto' : 'smooth',
+			block: 'start',
+		} );
+		// Keyboard and screen reader users land on the agent that is chosen.
+		const chosen = el.querySelector( '[aria-pressed="true"]' );
+		if ( chosen ) {
+			chosen.focus( { preventScroll: true } );
+		}
+	}, [ siteAsked ] );
 
 	return (
 		<div className="saddle-setup">
-			<SetupIntro />
+			<ConnectWays onSite={ () => setSiteAsked( Date.now() ) } />
+			{ siteOpen && (
+				<div
+					ref={ site }
+					className="saddle-setup__site"
+					id="saddle-site-connect"
+				>
+					<ConnectApps
+						oauth={ signIn.oauth }
+						onConnected={ refreshClients }
+						focus={ setupFocus }
+					/>
+				</div>
+			) }
 			<Apps
 				clients={ clients }
 				onClientsChanged={ refreshClients }
@@ -213,12 +253,6 @@ function AppsTab( {
 					onSetupFocus( { app, rotate: uuid, n: Date.now() } )
 				}
 			/>
-			<ConnectApps
-				oauth={ signIn.oauth }
-				onConnected={ refreshClients }
-				focus={ setupFocus }
-			/>
-			<CloudOffer />
 			<Cards where="connections" navigate={ navigate } />
 		</div>
 	);
