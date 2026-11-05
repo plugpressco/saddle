@@ -4,7 +4,7 @@ Tags: ai, seo, mcp, claude, chatgpt
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.6.3
+Stable tag: 1.7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -19,54 +19,38 @@ Saddle lets the AI agent you already use build, rank and grow your website. Ask 
 Saddle is the free core of WP Saddle. It works on its own, and each free add-on gives your AI agent more to work with.
 
 = Build =
-
 * **Pages that look like your site:** real block editor and Divi 5 pages in your theme's colors, fonts and patterns. A page check finds layout, contrast and accessibility problems, and a preview link shows the page before it goes live.
 * **Content written your way:** drafts of new posts, updates to old ones, images from a link or from Unsplash, and menus kept in order. Teach it your voice and rules once with Skills, and it remembers.
 * **A site that keeps running:** plugin, theme and WordPress updates through WordPress's own updater, with its backup and rollback, and Site Health in plain words.
 
 = Rank =
-
 * **SEO fixes:** your AI agent rewrites SEO titles and descriptions with Saddle Rank, Yoast SEO, Rank Math or All in One SEO.
 * **Ready for AI answers:** with Saddle Rank it also writes FAQ schema and page summaries, fixes broken links, redirects missing pages and keeps an llms.txt, so search engines and AI answers can read your pages.
 * **Where you rank:** with Saddle Cloud, Google Search Console and keyword tracking, and weekly Google checks that show whether Google's AI Overview cites you.
 
 = Grow =
-
-* **Know who visits:** with Saddle Analytics, ask "how many people did ChatGPT send us this week?" and get the numbers your dashboard shows.
+* **Know who visits:** with [Saddle Analytics](https://wordpress.org/plugins/saddle-analytics/), free and cookieless, ask "how many people did ChatGPT send us this week?" and get the numbers your dashboard shows.
 * **Find what to write next:** with Saddle Cloud, keyword research, competitors checked every week and article plans your AI agent writes as drafts.
 * **Every site from one chat:** with Saddle Cloud, one AI connection for all your sites, with uptime alerts.
 
 = Safe on a live site =
-
 * A new agent can only read. You choose Read only, Edit content or Manage the site for each one.
-* Deletes, installs and other big changes show a preview and wait for your OK, and any tool can be set to ask first. You can let an agent with Manage the site skip this; it is off until you turn it on.
-* Every change is logged, and most can be undone in one step.
-* Your AI agent connects straight to your site, so your content never passes through our servers. Saddle never runs code from the AI.
+* Deletes, installs and other big changes show a preview first, and any tool can be set to ask first. You can let a Manage the site agent skip this; it is off until you turn it on.
+* Every change is logged, and most can be undone. Saddle never runs code from the AI.
 
 Guides, examples and docs: [saddle.to](https://saddle.to)
 
-= Part of WP Saddle =
-
-Saddle Rank and Saddle Analytics are free plugins of their own; Saddle Cloud is the paid service for many sites. Your AI agent uses whichever you have.
-
-* **Saddle Rank (Rank):** SEO titles and descriptions, redirects, a 404 log, broken links, schema, a sitemap and llms.txt.
-* **Saddle Analytics (Grow):** cookieless visitor stats kept in your own database, including the visitors ChatGPT, Claude and Perplexity send you. [On WordPress.org](https://wordpress.org/plugins/saddle-analytics/)
-* **Saddle Cloud:** one AI connection for all your sites, with Google Search Console, keyword tracking, SEO research, updates and uptime alerts. [saddle.to](https://saddle.to)
-
 = Try it now =
-
-Click **Live Preview** at the top of this page. A test WordPress opens in your browser with Saddle installed, so you can explore every screen. The preview runs only in your browser, so AI agents cannot connect to it. To connect an agent, install Saddle on your own site.
+Click **Live Preview** at the top of this page to explore every screen in a test WordPress in your browser. AI agents cannot connect to the preview; install Saddle on your own site for that.
 
 = How it works =
-
-1. Install Saddle and choose what your AI may do.
-2. Add your AI agent under **Saddle → Agent setup**. Paste the address Saddle shows into the agent and approve the connection when your browser opens.
+1. Install Saddle.
+2. Connect your AI agent under **Saddle → Agent setup**: all your sites through Saddle Cloud, or just this site by pasting its address into the agent and approving it when your browser opens.
 3. Ask your AI to write, edit or check your content.
 
-Saddle works with Claude and Claude Code, ChatGPT, Cursor, VS Code, Codex, Gemini CLI and other agents that support MCP (Model Context Protocol). Step-by-step setup for each agent is at [saddle.to/docs](https://saddle.to/docs).
+Saddle works with Claude, Claude Code, ChatGPT, Cursor, VS Code, Codex, Gemini CLI and other agents that support MCP. Setup for each is at [saddle.to/docs](https://saddle.to/docs).
 
 = Content =
-
 * Posts and pages: Create, edit and delete posts and pages.
 * Custom content types: Work with the post types your plugins and theme add, such as products, events or docs.
 * Media: Upload images from a URL and edit their details.
@@ -76,16 +60,11 @@ Saddle works with Claude and Claude Code, ChatGPT, Cursor, VS Code, Codex, Gemin
 * Users: List users and read their profiles.
 
 = Block editor pages =
-
-* Block pages: Build pages with real blocks that stay editable in the block editor.
-* Block editing: Add, edit, move and remove single blocks.
-* Theme styles: Use your theme's colors, fonts, spacing and patterns.
-* Templates: Read your theme's templates, template parts and global styles.
-* Design system: Add a color palette, type scale and spacing to a block theme.
-* Templates and patterns: On a block theme, change a template or the header and footer, add a template part, and save a section as a pattern. Changes are saved in the database and the theme's files are never edited.
+* Block pages: Build pages with real blocks that stay editable in the block editor, and add, edit, move or remove single blocks.
+* Theme styles: Use your theme's colors, fonts, spacing and patterns, and add a palette, type scale and spacing to a block theme.
+* Templates and patterns: Read templates, template parts and global styles. On a block theme, change a template, the header or the footer, add a template part, or save a section as a pattern. Changes are saved in the database; theme files are never edited.
 
 = Divi 5 pages =
-
 These tools work on sites running Divi 5.
 
 * Divi pages: Build and edit pages with real Divi modules. Add, edit, move and remove modules, and change page settings.
@@ -96,76 +75,52 @@ These tools work on sites running Divi 5.
 Saddle edits Divi 5 pages only. It leaves Divi 4 shortcode pages untouched.
 
 = Check the result =
-
 * Page check: Find layout, contrast and accessibility problems on a block or Divi 5 page, with a score and a fix for each problem.
 * Node view: See the real styles and HTML of any part of a page.
 * Preview: Get a short-lived preview link to see the page before it goes live.
 
 = Integrations =
-
 The SEO and WooCommerce tools work when that plugin is active.
 
-* Yoast SEO: Read and edit the SEO title, meta description, robots and schema type of posts, pages and terms.
-* Rank Math: Read and edit the SEO title, meta description and robots of posts, pages and terms.
-* All in One SEO: Read and edit the SEO title, meta description, robots and social fields of posts and pages.
-* WooCommerce: List and read products and variations. Orders show customer names and emails, so listing them needs Edit content.
-* Unsplash: Find and import free stock photos. This needs your own Unsplash API key.
-* Other plugins: Any plugin can add its own tools to Saddle. Tools from other developers stay off until you switch them on under Saddle > Settings > Advanced.
+* Yoast SEO, Rank Math and All in One SEO: Read and edit the SEO title, meta description and robots of posts and pages, plus terms, schema type or social fields where the plugin has them.
+* WooCommerce: List and read products and variations. Listing orders needs Edit content, because orders show customer names and emails.
+* Unsplash: Find and import free stock photos with your own Unsplash API key.
+* Other plugins: Any plugin can add its own tools. Tools from other developers stay off until you switch them on in Saddle → Settings → Advanced.
 
 = Skills and memory =
-
 * Skills: Add short Markdown guides that tell your AI how you work.
 * Built-in Skills: Use the included guides to build a page and fix a page.
 * Memory: Let your AI save notes and use them in later sessions.
 * Recent changes: Let each new session see what changed on the site.
 
 = Site management =
-
 These tools stay off until you give an agent Manage the site.
 
 * Settings: Change the site title, permalinks and reading options.
-* Plugins and themes: Activate and deactivate plugins and switch the active theme, each after a preview.
-* Install from WordPress.org: Search the WordPress.org plugin directory, and install a plugin or theme from WordPress.org by name after a preview. A new plugin or theme arrives inactive, and turning it on is a separate step. Saddle never installs from a zip file or a link, and never deletes a plugin or theme.
-* Updates: See which plugin, theme and WordPress updates are waiting. Apply plugin, theme, WordPress and translation updates through WordPress's own updater, and turn automatic updates on or off per plugin. WordPress keeps a backup and restores a plugin that breaks the site. A major WordPress release is applied only if you turn on Major WordPress releases in Saddle → Settings. It is off by default, and no agent can turn it on.
-* Site Health: Read the results of WordPress's own Site Health checks.
-* Cache: Clear the site cache.
+* Plugins and themes: Activate, deactivate and switch them after a preview. Install by name from WordPress.org only; a new install arrives inactive. Saddle never installs from a zip or a link, and never deletes a plugin or theme.
+* Updates: Apply plugin, theme, WordPress and translation updates through WordPress's own updater, which keeps a backup. Major WordPress releases need Saddle's own switch in Settings, which is off by default.
+* Site Health and cache: Read Site Health results and clear the cache.
 
 = Safety =
-
-* Access for each agent: Choose Read only, Edit content or Manage the site for each connected agent. New agents start at Read only.
-* Confirmation: Review a preview before anything is deleted or overwritten, a plugin or theme is installed, a plugin is turned on or off, or the theme changes.
-* Run without asking: Let an agent set to Manage the site make changes and deletes right away, with no preview. It is off for every agent until you turn it on under Agent setup. Deleted posts and pages still go to the Trash, and every change is logged.
-* Drafts only: Save new posts as drafts until you publish them.
-* Rehearsal: Let an agent try anything its level allows while nothing is saved. Each change it would have made shows in the activity log as rehearsed.
-* Tool switches: Set each tool to Allow, Ask first or Off. A tool set to Ask first waits for your approval on the Dashboard, and a yes in the chat is not enough. A recommended set applies this to plugins, themes, updates, settings and deletes in one click. Nothing asks first until you set it.
-* Pause: Block all AI requests with one switch.
-* Activity log: See every change and every blocked request.
-* Undo: Ask your AI to undo a logged change, or click Undo on it in Home's Activity feed. It restores a page's earlier version, untrashes what was trashed, and puts settings back. A change that someone edited again since is left alone. Permanent deletes, plugin, WordPress and translation updates, and installs cannot be undone.
+* Access for each agent: Read only, Edit content or Manage the site. New agents start at Read only.
+* Confirmation: Deletes, overwrites, installs, plugin switches and theme changes show a preview first.
+* Run without asking: Let an agent set to Manage the site skip previews. It is off until you turn it on in Agent setup, and deleted posts and pages still go to the Trash.
+* Tool switches: Set each tool to Allow, Ask first or Off. Ask first waits for your OK in wp-admin.
+* Drafts only, Rehearsal and Pause: Keep new posts as drafts, let an agent practise while nothing is saved, or block all AI requests with one switch.
+* Logs and Undo: Every change and blocked request is logged. Undo restores earlier versions, untrashes and puts settings back. Updates, installs and permanent deletes cannot be undone.
 * Protected settings: The site URL, security keys, user roles and admin email cannot be changed.
 
-Saddle never runs code from the AI and has no shell access. Your AI agent cannot write or edit files on your server. WordPress itself still saves uploads, applies updates, installs plugins and themes from WordPress.org and saves permalink rules the way it always does. The one file Saddle changes is .htaccess, and only when you click Fix it for me in the connection check. That adds one marked block so your server passes sign-in headers to WordPress. Uninstalling Saddle removes it.
+Saddle never runs code from the AI, has no shell access and cannot write files. The one file it changes is .htaccess, only when you click Fix it for me in the connection check, to pass sign-in headers to WordPress. Uninstalling Saddle removes it.
 
 = Connecting an agent =
-
-Turn on sign-in for agents once, when the wizard offers it. After that every agent needs only your site's address: it opens your browser, and an administrator approves it on your own site. Nothing is installed and no key is copied. Sign-in needs HTTPS and pretty permalinks.
-
-Agents can also connect with a pasted key. Saddle uses WordPress Application Passwords for that. Each key works only with Saddle, not with the rest of the REST API. ChatGPT cannot use a pasted key.
+Turn on sign-in for agents once, when the wizard offers it. After that an agent needs only your site's address, and an administrator approves it on your site. Sign-in needs HTTPS and pretty permalinks. Otherwise, agents can connect with a pasted key (a WordPress Application Password that works only with Saddle). ChatGPT needs sign-in.
 
 = Saddle Pro =
+[Saddle Pro](https://saddle.to) is a paid add-on for Divi 5 sites, and it needs this free plugin. It adds Divi design system, Library and Theme Builder edits, building or cloning whole pages, site-wide image and preset changes with undo, a design brief, and WooCommerce bulk edits with undo.
 
-[Saddle Pro](https://saddle.to) is a paid add-on for Divi 5 sites. It needs this free plugin. Pro adds work that changes more than one page:
-
-* Divi design system: Create, edit and delete global colors, fonts, variables and presets.
-* Divi Library and Theme Builder: Save, update, apply and delete Library items, and assign Theme Builder templates.
-* Whole pages: Build a new Divi page in one step, or clone one.
-* Site-wide changes: Swap an image or apply a preset across many pages, with undo.
-* Design brief: Save a page's design plan and check the page against it.
-* WooCommerce: Update prices, stock, status and categories across many products, with undo.
-
-Every feature in this free plugin stays free. Saddle → Get Premium shows Saddle Cloud's plans and their prices, and only while Saddle Pro is not installed. It sends nothing; its buttons open saddle.to or Saddle Cloud.
+Every feature in this free plugin stays free. Saddle → Get Premium shows Saddle Cloud's plans and prices only while Saddle Pro is not installed. It sends nothing; its buttons open saddle.to or Saddle Cloud.
 
 = Credits =
-
 * Iconoir icons (MIT): [iconoir.com](https://iconoir.com)
 * AI agent logos from LobeHub Icons (MIT): [github.com/lobehub/lobe-icons](https://github.com/lobehub/lobe-icons). Each logo belongs to its owner.
 
@@ -252,16 +207,16 @@ The WordPress.org version never checks for its own updates. The version from plu
 == Changelog ==
 
 = 1.7.0 =
-* New: Your AI agent can create a menu, and show it in a theme location such as the header or footer in the same step. Until now it could only change menus that already existed.
-* Changed: Saddle is now named "Saddle – Build, Rank & Grow Your Website with AI", here and on the Plugins screen: the free core of WP Saddle. Its menu, settings and address are unchanged.
-* New: A small card on Overview and the Plugins screen asks once whether to share your name, email and basic site info with PlugPress for better support, and offers Saddle news by email, which you confirm by email first. Nothing is sent until you click Allow or Subscribe.
-* New: When you deactivate Saddle, a short form asks why. Skip and deactivate sends nothing.
-* New: `define( 'PLUGPRESS_INSIGHT', false );` in `wp-config.php` turns off the card and the form.
-* Changed: Get Pro is now Get Premium and shows Saddle Cloud's four plans, each with unlimited sites and one yearly price: Free, Go $49, Pro $99 and Reach $299. Free's button opens Saddle Cloud with this site's address filled in.
 * New: Connecting your AI agent shows two ways, in the welcome and at the top of Agent setup: all your sites through Saddle Cloud, free up to 500 AI agent calls a month, or just this site through its own address. Saddle Cloud's button opens it with this site's address filled in, and Saddle sends nothing. Once Saddle Cloud is connected, its card says so.
-* Changed: AI apps are now called AI agents everywhere in Saddle.
 * New: Run without asking, on Saddle → Agent setup, for each agent set to Manage the site. With it on, that agent's changes and deletes run right away, with no preview and no OK from you. It is off for every agent until you turn it on, and Saddle asks you to confirm first. Tools you turned off stay off, deleted posts and pages go to the Trash, and every change is logged and can be undone in Logs.
 * Changed: Ask first is off by default. A tool asks first only when you set it to, alone or with the recommended set. A tool added by a later update, or by a plugin you activate later, is allowed like the others instead of asking first. Tools you set to Ask first keep asking.
+* New: Your AI agent can create a menu, and show it in a theme location such as the header or footer in the same step. Until now it could only change menus that already existed.
+* New: A small card on Overview and the Plugins screen asks once whether to share your name, email and basic site info with PlugPress for better support, and offers Saddle news by email, which you confirm by email first. Nothing is sent until you click Allow or Subscribe.
+* New: When you deactivate Saddle, a short form asks why. Skip sends nothing. The card and the form use WordPress's own buttons and your admin colour scheme.
+* New: `define( 'PLUGPRESS_INSIGHT', false );` in `wp-config.php` turns off the card and the form.
+* Changed: Get Pro is now Get Premium and shows Saddle Cloud's four plans, each with unlimited sites and one yearly price: Free, Go $49, Pro $99 and Reach $299. Free's button opens Saddle Cloud with this site's address filled in.
+* Changed: Saddle is now named "Saddle – Build, Rank & Grow Your Website with AI", here and on the Plugins screen: the free core of WP Saddle. Its menu, settings and address are unchanged.
+* Changed: AI apps are now called AI agents everywhere in Saddle.
 
 = 1.6.3 =
 * Fix: Saddle's own records (app connections, approvals, the log, skills and memory) are no longer saved as published posts. SEO plugins that tell search engines about new posts, such as AIOSEO's IndexNow, could send links like `?post_type=saddle_oauth&p=123` to Bing. The links never showed anything (they return 404), and now they stop. Existing records move over once, on the first page load after the update.
