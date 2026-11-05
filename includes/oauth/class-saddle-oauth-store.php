@@ -479,6 +479,9 @@ class Saddle_OAuth_Store {
 		if ( class_exists( 'Saddle_Connections' ) ) {
 			Saddle_Connections::forget( 'oauth:' . $grant_id );
 		}
+		if ( class_exists( 'Saddle_Run_Without_Asking' ) ) {
+			Saddle_Run_Without_Asking::forget( 'oauth:' . $grant_id );
+		}
 
 		return $existed;
 	}

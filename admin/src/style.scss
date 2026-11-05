@@ -2312,6 +2312,34 @@ body.saddle-admin-page {
 	min-width: 148px;
 }
 
+// Run without asking, under a Manage-the-site agent's name: the switch and
+// its name on one line, what it does under them. Inside the row's
+// description, so every part is inline and set to display here.
+.saddle-apps__trust {
+	display: grid;
+	gap: 4px;
+	max-width: 560px;
+	margin-top: var( --pp-space-2 );
+}
+
+.saddle-apps__trust-row {
+	display: inline-flex;
+	align-items: center;
+	gap: var( --pp-space-2 );
+}
+
+.saddle-apps__trust-label {
+	font-size: var( --pp-text-sm );
+	font-weight: 500;
+	color: var( --pp-text );
+	cursor: pointer;
+}
+
+.saddle-apps__trust-help {
+	color: var( --s-fg-muted );
+	line-height: 1.5;
+}
+
 // The access list explains itself: each role's name, and under it one line
 // on what it adds. The closed box shows the name only. The list is portaled,
 // so these rules can't sit under `.saddle-apps`.

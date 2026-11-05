@@ -26,7 +26,6 @@ import {
 	useCallback,
 } from '@wordpress/element';
 import {
-	Badge,
 	Button,
 	Collapsible,
 	HelpTip,
@@ -305,7 +304,7 @@ function ToolModes( { caps, listed, onChanged, onApplied } ) {
 		<div className="saddle-tools">
 			<p className="saddle-tools__intro">
 				{ __(
-					'Ask first: the agent shows you the change and it waits under Needs your OK on Overview. It runs only after you approve it there.',
+					'Ask first: the agent shows you the change and it waits under Needs your OK on Overview. It runs only after you approve it there. An agent you set to Run without asking, on Agent setup, does not wait.',
 					'saddle'
 				) }
 			</p>
@@ -355,25 +354,6 @@ function ToolModes( { caps, listed, onChanged, onApplied } ) {
 								}
 								actions={
 									<>
-										{ tool.new &&
-											'ask' ===
-												modes.get( tool.short ) && (
-												<Tooltip
-													content={ __(
-														'Added since you last chose. It asks you first until you pick.',
-														'saddle'
-													) }
-												>
-													<span>
-														<Badge>
-															{ __(
-																'New',
-																'saddle'
-															) }
-														</Badge>
-													</span>
-												</Tooltip>
-											) }
 										<Select
 											className="saddle-tools__mode"
 											size="sm"

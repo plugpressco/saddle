@@ -107,6 +107,7 @@ require_once SADDLE_DIR . 'includes/preview/class-saddle-preview.php';
 require_once SADDLE_DIR . 'includes/verify/class-saddle-verify.php';
 require_once SADDLE_DIR . 'includes/class-saddle-capabilities.php';
 require_once SADDLE_DIR . 'includes/class-saddle-access.php';
+require_once SADDLE_DIR . 'includes/class-saddle-run-without-asking.php';
 require_once SADDLE_DIR . 'includes/class-saddle-approval.php';
 require_once SADDLE_DIR . 'includes/class-saddle-records.php';
 require_once SADDLE_DIR . 'includes/class-saddle-context.php';
@@ -315,6 +316,8 @@ final class Saddle {
 		Saddle_Connections::register();
 		// Per-app access roles: the migration and the key clean-up.
 		Saddle_Access::register();
+		// Run without asking, per agent: the clean-up for a deleted key.
+		Saddle_Run_Without_Asking::register();
 		add_action( 'rest_api_init', array( 'Saddle_Connections_REST', 'register_routes' ) );
 		add_action( 'rest_api_init', array( 'Saddle_Approvals_REST', 'register_routes' ) );
 		add_action( 'rest_api_init', array( 'Saddle_Tool_Modes_REST', 'register_routes' ) );

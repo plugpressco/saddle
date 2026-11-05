@@ -1130,11 +1130,9 @@ class Saddle_REST_Admin {
 				'category'    => self::category_for( $short, $name ),
 				'enabled'     => Saddle_Capabilities::is_ability_enabled( $short ),
 				// Allow, Ask first or Off (#364). Ask first is offered only for a
-				// tool that changes something; `new` marks one that arrived as
-				// Ask first because the owner has not chosen for it yet.
+				// tool that changes something.
 				'mode'        => Saddle_Tool_Modes::mode( $short ),
 				'askable'     => ! $readonly,
-				'new'         => Saddle_Tool_Modes::is_new( $short ),
 				'recommended' => in_array( $short, $recommended, true ),
 				// False when the tool cannot run on this site: its plugin is
 				// not active, or its service has no key. Such a tool is also

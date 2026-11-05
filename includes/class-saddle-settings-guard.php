@@ -22,6 +22,7 @@ class Saddle_Settings_Guard {
 	const PROTECTED_OPTIONS = array(
 		'saddle_access_tier',
 		'saddle_key_roles',
+		'saddle_run_without_asking',
 		'saddle_access_version',
 		'saddle_paused',
 		'saddle_rehearsal',
@@ -29,7 +30,6 @@ class Saddle_Settings_Guard {
 		'saddle_enabled_integrations',
 		'saddle_disabled_abilities',
 		'saddle_ask_abilities',
-		'saddle_known_abilities',
 		'saddle_tier_domain',
 		'saddle_enforce_tier_domain',
 		'saddle_core_major_updates',

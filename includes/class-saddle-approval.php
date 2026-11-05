@@ -150,14 +150,19 @@ class Saddle_Approval {
 
 	/**
 	 * Whether a request waits for the owner, not the chat: its tool is set to
-	 * Ask first and an agent (not the owner's own browser) made it.
+	 * Ask first, an agent (not the owner's own browser) made it, and the owner
+	 * did not set that agent to Run without asking.
 	 *
 	 * @param string $tool       Tool name without the namespace.
 	 * @param string $connection Connection id, '' for a browser session.
 	 * @return bool
 	 */
 	private static function waits_for_owner( $tool, $connection ) {
-		return '' !== (string) $connection && class_exists( 'Saddle_Tool_Modes' ) && Saddle_Tool_Modes::asks_first( (string) $tool );
+		if ( '' === (string) $connection || ! class_exists( 'Saddle_Tool_Modes' ) || ! Saddle_Tool_Modes::asks_first( (string) $tool ) ) {
+			return false;
+		}
+
+		return ! self::runs_without_asking( $connection );
 	}
 
 	/**
@@ -224,6 +229,10 @@ class Saddle_Approval {
 	 *     @type array    $input   The ability's input (read for `confirm_token`).
 	 *     @type bool     $log     Optional. False when the code being run logs
 	 *                             its own change. Default true.
+	 *     @type bool     $policy  Optional. True when the preview is an owner's
+	 *                             site-wide rule (Drafts only), not the tool's
+	 *                             own safety step. Run without asking does not
+	 *                             skip it. Default false.
 	 *     @type callable $execute Zero-arg callable that performs the mutation
 	 *                             and returns the result (or WP_Error).
 	 * }
@@ -260,7 +269,28 @@ class Saddle_Approval {
 			return self::run_confirmed( $args, $action, $target, $execute );
 		}
 
+		// The owner set this agent to Run without asking (Fahim, 2026-11-06:
+		// "bypass mode on ai agent exclitly add/update/delete anythig no
+		// approved needed"): its change runs on this call, as if it had come
+		// back with a valid token, and is logged the same way. Only an agent
+		// with Manage the site, only by the owner's choice, off by default. An
+		// owner's site-wide rule (`policy`) still previews.
+		if ( empty( $args['policy'] ) && self::runs_without_asking( self::current_connection() ) ) {
+			return self::run_confirmed( $args, $action, $target, $execute );
+		}
+
 		return self::preview( $args, $action, $target, $bind );
+	}
+
+	/**
+	 * Whether a connection's changes skip the preview and Needs your OK: the
+	 * owner set it to Run without asking and it holds Manage the site.
+	 *
+	 * @param string $connection Connection id, '' for a browser session.
+	 * @return bool
+	 */
+	private static function runs_without_asking( $connection ) {
+		return '' !== (string) $connection && class_exists( 'Saddle_Run_Without_Asking' ) && Saddle_Run_Without_Asking::applies( (string) $connection );
 	}
 
 	/**

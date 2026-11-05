@@ -66,9 +66,14 @@ class Saddle_Context {
 	 */
 	public static function system_context() {
 		$tier = Saddle_Capabilities::get_tier();
+		// The owner set this agent to Run without asking: nothing it does
+		// previews or waits, so it is not told that anything will.
+		$direct = 'admin' === $tier && class_exists( 'Saddle_Run_Without_Asking' ) && Saddle_Run_Without_Asking::applies( Saddle_Access::current_connection() );
 
 		if ( 'read' === $tier ) {
 			$allowed = __( 'You may READ content only. You cannot create, edit, or delete anything at the current access level.', 'saddle' );
+		} elseif ( $direct ) {
+			$allowed = __( 'You may read, create, edit and delete content. The site owner set you to run without asking: your changes and deletes run on the first call, with no preview and no confirmation token. Deleted posts and pages go to the Trash unless you pass "force". Change or delete only what the user asked for.', 'saddle' );
 		} else {
 			$allowed = __( 'You may read content and create or edit posts, pages, and media. Some changes, such as deleting, first return a preview and a single-use confirmation token. Show the user the preview, and call again with the token only after they agree. Nothing is ever deleted in one step.', 'saddle' );
 		}
@@ -135,7 +140,9 @@ class Saddle_Context {
 		}
 
 		if ( 'read' !== $tier ) {
-			$lines[] = '- ' . __( 'Every change you make is recorded. If one went wrong, saddle/recall-changes lists it with an id, and saddle/undo-changes puts back what it replaced (preview first, then confirm).', 'saddle' );
+			$lines[] = '- ' . ( $direct
+				? __( 'Every change you make is recorded. If one went wrong, saddle/recall-changes lists it with an id, and saddle/undo-changes puts back what it replaced.', 'saddle' )
+				: __( 'Every change you make is recorded. If one went wrong, saddle/recall-changes lists it with an id, and saddle/undo-changes puts back what it replaced (preview first, then confirm).', 'saddle' ) );
 
 			$asking = class_exists( 'Saddle_Tool_Modes' ) ? Saddle_Tool_Modes::context_line() : '';
 			if ( '' !== $asking ) {

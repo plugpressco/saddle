@@ -20,7 +20,7 @@ $saddle_options = array(
 	'saddle_user_context',      // Saddle_Context::USER_OPTION.
 	'saddle_disabled_abilities', // Saddle_Capabilities::DISABLED_OPTION.
 	'saddle_ask_abilities',      // Saddle_Tool_Modes::ASK_OPTION.
-	'saddle_known_abilities',    // Saddle_Tool_Modes::KNOWN_OPTION.
+	'saddle_known_abilities',    // Retired in 1.7.0 (new tools no longer ask first); older installs still have it.
 	'saddle_drafts_only',       // Saddle_Capabilities::DRAFTS_ONLY_OPTION.
 	'saddle_rehearsal',         // Saddle_Capabilities::REHEARSAL_OPTION.
 	'saddle_paused',            // Saddle_Capabilities::PAUSED_OPTION.
@@ -45,6 +45,7 @@ $saddle_options = array(
 	'saddle_dismissed_notices',       // Saddle_Notices::STORE (site-wide dismissals).
 	'saddle_onboarding',              // Saddle_Onboarding::OPTION.
 	'saddle_key_roles',               // Saddle_Access::KEY_ROLES_OPTION.
+	'saddle_run_without_asking',      // Saddle_Run_Without_Asking::OPTION.
 	'saddle_access_version',          // Saddle_Access::VERSION_OPTION.
 	'saddle_records_version',         // Saddle_Records::VERSION_OPTION.
 	'saddle_access_legacy_before',    // Saddle_Access::LEGACY_BEFORE_OPTION.

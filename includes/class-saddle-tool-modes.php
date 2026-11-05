@@ -28,9 +28,18 @@ defined( 'ABSPATH' ) || exit;
  * destructive ones) would otherwise run without asking on the calls where it
  * skips its own gate, such as removing a single block.
  *
- * New tools arrive as Ask first (R3): a changing tool that did not exist when
- * this shipped, or when the site first ran it, asks until the owner chooses a
- * mode for it. `KNOWN_OPTION` is that first list.
+ * Ask first is off by default (Fahim, 2026-11-06: "saddle approve mode off
+ * by default"): a tool asks first only when the owner set it so, one by one or
+ * through the recommended set. A tool that arrives later, with an update or a
+ * plugin activated later, is Allow like the rest. Until 1.7.0 it asked first
+ * (R3, retired); the list that tracked it, `saddle_known_abilities`, is no
+ * longer read, and uninstall removes it.
+ *
+ * One exception, per agent and only the owner's to make: an agent set to
+ * Manage the site that the owner set to Run without asking
+ * (`Saddle_Run_Without_Asking`) runs Ask-first tools as if they were Allow,
+ * and `Saddle_Approval::gate()` lets its changes skip their preview too. Off
+ * and the role still apply.
  */
 class Saddle_Tool_Modes {
 
@@ -43,13 +52,6 @@ class Saddle_Tool_Modes {
 	 * call, so autoloaded.
 	 */
 	const ASK_OPTION = 'saddle_ask_abilities';
-
-	/**
-	 * The changing tools the owner has had a say on: every one that existed
-	 * the first time this ran, plus each one they set a mode for since. A
-	 * changing tool missing from it is new, and asks first. Not autoloaded.
-	 */
-	const KNOWN_OPTION = 'saddle_known_abilities';
 
 	/**
 	 * The gate action an Ask-first request is stored under: `ask:<tool>`.
@@ -69,7 +71,6 @@ class Saddle_Tool_Modes {
 	 */
 	public static function init() {
 		add_filter( 'wp_register_ability_args', array( __CLASS__, 'wrap' ), 5, 2 );
-		add_action( 'admin_init', array( __CLASS__, 'remember_known' ) );
 	}
 
 	/**
@@ -92,7 +93,7 @@ class Saddle_Tool_Modes {
 
 		// The schema is built once per request, so it can follow the mode. The
 		// mode itself is read again on every call.
-		if ( self::asks_first_raw( $short ) && isset( $args['input_schema']['properties'] ) && is_array( $args['input_schema']['properties'] )
+		if ( in_array( $short, self::ask_list(), true ) && isset( $args['input_schema']['properties'] ) && is_array( $args['input_schema']['properties'] )
 			&& ! isset( $args['input_schema']['properties']['confirm_token'] ) ) {
 			$args['input_schema']['properties']['confirm_token'] = array(
 				'type'        => 'string',
@@ -117,12 +118,26 @@ class Saddle_Tool_Modes {
 	 */
 	public static function run( $short, $inner, array $call ) {
 		// The owner's own browser session is never asked.
-		if ( ! self::asks_first( $short ) || '' === Saddle_Approval::connection() ) {
+		$connection = Saddle_Approval::connection();
+		if ( ! self::asks_first( $short ) || '' === $connection ) {
 			return call_user_func_array( $inner, $call );
 		}
 
 		$input = ( $call && is_array( $call[0] ) ) ? $call[0] : array();
 		$token = ( isset( $input['confirm_token'] ) && is_string( $input['confirm_token'] ) ) ? trim( $input['confirm_token'] ) : '';
+
+		// The owner set this agent to Run without asking (2026-11-06): the
+		// tool runs as if it were Allow, and its own gate lets it through too
+		// (Saddle_Approval::gate()). A token from an Ask-first request made
+		// before the switch was turned on is not the tool's, so it is left out
+		// rather than refused by a gate that never issued it.
+		if ( class_exists( 'Saddle_Run_Without_Asking' ) && Saddle_Run_Without_Asking::applies( $connection ) ) {
+			if ( '' !== $token && 0 === strpos( Saddle_Approval::token_action( $token ), self::ACTION_PREFIX ) ) {
+				unset( $input['confirm_token'] );
+				$call[0] = $input;
+			}
+			return call_user_func_array( $inner, $call );
+		}
 
 		// A live token from this tool's own preview goes to the tool: its gate
 		// checks that the owner approved it before it runs anything. Any other
@@ -178,33 +193,13 @@ class Saddle_Tool_Modes {
 	}
 
 	/**
-	 * Whether a tool asks the owner first: the owner set it so, or it is new.
+	 * Whether a tool asks the owner first: only when the owner set it so.
 	 *
 	 * @param string $short Tool name without the namespace.
 	 * @return bool
 	 */
 	public static function asks_first( $short ) {
-		if ( ! self::is_askable( $short ) ) {
-			return false;
-		}
-		return in_array( $short, self::ask_list(), true ) || self::is_new( $short );
-	}
-
-	/**
-	 * Whether a changing tool arrived after the owner last had a say on the
-	 * list, so it asks first until they choose (R3).
-	 *
-	 * @param string $short Tool name without the namespace.
-	 * @return bool
-	 */
-	public static function is_new( $short ) {
-		$known = get_option( self::KNOWN_OPTION, false );
-		if ( ! is_array( $known ) ) {
-			// The first time: everything that exists now keeps what it does.
-			self::remember_known();
-			return false;
-		}
-		return self::is_askable( $short ) && ! in_array( $short, $known, true );
+		return in_array( $short, self::ask_list(), true ) && self::is_askable( $short );
 	}
 
 	/**
@@ -261,28 +256,7 @@ class Saddle_Tool_Modes {
 		$ask = self::ASK === $mode ? array_merge( $ask, array( $short ) ) : array_diff( $ask, array( $short ) );
 		update_option( self::ASK_OPTION, array_values( array_unique( $ask ) ), true );
 
-		if ( self::is_askable( $short ) ) {
-			self::remember_known( array( $short ) );
-		}
-
 		return self::mode( $short );
-	}
-
-	/**
-	 * Record the changing tools that exist now as known, the first time, and
-	 * add `$more` to the list after that.
-	 *
-	 * @param string[] $more Tools the owner just chose a mode for.
-	 */
-	public static function remember_known( $more = array() ) {
-		$known = get_option( self::KNOWN_OPTION, false );
-		if ( ! is_array( $known ) ) {
-			$known = array_keys( array_filter( self::changing_tools() ) );
-		}
-		$next = array_values( array_unique( array_merge( $known, is_array( $more ) ? $more : array() ) ) );
-		if ( false === get_option( self::KNOWN_OPTION, false ) || $next !== $known ) {
-			update_option( self::KNOWN_OPTION, $next, false );
-		}
 	}
 
 	/**
@@ -332,6 +306,11 @@ class Saddle_Tool_Modes {
 	 * @return string
 	 */
 	public static function context_line() {
+		// An agent the owner set to Run without asking waits for nobody.
+		if ( class_exists( 'Saddle_Run_Without_Asking' ) && Saddle_Run_Without_Asking::applies( Saddle_Approval::connection() ) ) {
+			return '';
+		}
+
 		$asking = array();
 		foreach ( array_keys( self::changing_tools() ) as $short ) {
 			if ( self::asks_first( $short ) && Saddle_Capabilities::is_callable_now( 'saddle/' . $short ) ) {
@@ -371,22 +350,6 @@ class Saddle_Tool_Modes {
 			}
 		}
 		return $tools;
-	}
-
-	/**
-	 * Whether a tool asks first, from the stored options alone. For the
-	 * registration filter, which runs while abilities are being registered
-	 * and so cannot look them up.
-	 *
-	 * @param string $short Tool name without the namespace.
-	 * @return bool
-	 */
-	private static function asks_first_raw( $short ) {
-		if ( in_array( $short, self::ask_list(), true ) ) {
-			return true;
-		}
-		$known = get_option( self::KNOWN_OPTION, false );
-		return is_array( $known ) && ! in_array( $short, $known, true );
 	}
 
 	/**

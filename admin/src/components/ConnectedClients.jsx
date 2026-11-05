@@ -6,7 +6,9 @@
  * content, Manage the site, changed on the spot (`POST
  * /connections/{id}/role`), one line under its name (when it was last used
  * or connected), and a ⋯ menu for the setup guide, a new key and
- * disconnecting. Keys and apps that signed in themselves are one list, from
+ * disconnecting. An agent set to Manage the site also gets Run without
+ * asking (2026-11-06, `POST /connections/{id}/run-without-asking`), off
+ * until the owner turns it on and confirms. Keys and apps that signed in themselves are one list, from
  * the connection registry. With nothing connected the card is not drawn:
  * the apps and their steps below it are the page. The setup guide and a new
  * key show in those steps, not in a drawer. The endpoint test and server
@@ -24,6 +26,7 @@ import {
 	Snippet,
 	HelpTip,
 	Select,
+	Switch,
 	DropdownMenu,
 	DropdownItem,
 	DropdownSeparator,
@@ -82,6 +85,48 @@ const ROLE_OPTIONS = ROLES.map( ( r ) => ( {
 
 const roleLabel = ( key ) =>
 	( ROLES.find( ( r ) => r.key === key ) || {} ).label || key;
+
+/**
+ * What Run without asking does, under the switch and in its confirm.
+ */
+const RUN_WITHOUT_ASKING_HELP = __(
+	'This agent’s changes and deletes run right away, with no preview and no OK from you. Deleted posts and pages go to the Trash. Every change is logged and can be undone in Logs.',
+	'saddle'
+);
+
+/**
+ * The Run without asking switch under a Manage-the-site agent's name. Plain
+ * inline elements: it sits inside the row's description line.
+ *
+ * @param {Object}   props
+ * @param {Object}   props.c        A row from GET /connections.
+ * @param {Function} props.onChange Called with the row and the new value.
+ */
+function RunWithoutAsking( { c, onChange } ) {
+	const id = `saddle-run-without-asking-${ c.id.replace(
+		/[^A-Za-z0-9-]/g,
+		'-'
+	) }`;
+	return (
+		<span className="saddle-apps__trust">
+			<span className="saddle-apps__trust-row">
+				<Switch
+					id={ id }
+					size="sm"
+					checked={ !! c.run_without_asking }
+					onChange={ ( next ) => onChange( c, next ) }
+					aria-describedby={ `${ id }-help` }
+				/>
+				<label htmlFor={ id } className="saddle-apps__trust-label">
+					{ __( 'Run without asking', 'saddle' ) }
+				</label>
+			</span>
+			<span id={ `${ id }-help` } className="saddle-apps__trust-help">
+				{ RUN_WITHOUT_ASKING_HELP }
+			</span>
+		</span>
+	);
+}
 
 /**
  * What an agent's role is. Until the server sends one (an older Core), a
@@ -157,9 +202,19 @@ export default function Apps( {
 		if ( role === roleOf( c, siteTier ) ) {
 			return;
 		}
-		// Optimistic, then reconcile.
+		// Optimistic, then reconcile. Below Manage the site, Run without
+		// asking goes too (the server clears it the same way).
 		setRows( ( list ) =>
-			list.map( ( x ) => ( x.id === c.id ? { ...x, role } : x ) )
+			list.map( ( x ) =>
+				x.id === c.id
+					? {
+							...x,
+							role,
+							run_without_asking:
+								'admin' === role && !! x.run_without_asking,
+					  }
+					: x
+			)
 		);
 		api( connectionPath( c.id, 'role' ), {
 			method: 'POST',
@@ -176,6 +231,58 @@ export default function Apps( {
 						nameOf( c ),
 						roleLabel( role )
 					)
+				);
+				refresh();
+			} )
+			.catch( ( e ) => {
+				toast.error( e.message );
+				refresh();
+			} );
+	};
+
+	// Turning it on asks once, with what it means; turning it off does not.
+	const changeRunWithoutAsking = async ( c, on ) => {
+		if ( on ) {
+			const ok = await confirm( {
+				title: sprintf(
+					/* translators: %s: the agent name. */
+					__( 'Let %s run without asking?', 'saddle' ),
+					nameOf( c )
+				),
+				description: RUN_WITHOUT_ASKING_HELP,
+				danger: true,
+				confirmLabel: __( 'Run without asking', 'saddle' ),
+				cancelLabel: __( 'Keep asking', 'saddle' ),
+			} );
+			if ( ! ok ) {
+				return;
+			}
+		}
+		setRows( ( list ) =>
+			list.map( ( x ) =>
+				x.id === c.id ? { ...x, run_without_asking: on } : x
+			)
+		);
+		api( connectionPath( c.id, 'run-without-asking' ), {
+			method: 'POST',
+			data: { on },
+		} )
+			.then( () => {
+				toast.success(
+					on
+						? sprintf(
+								/* translators: %s: the agent name. */
+								__(
+									'%s now runs changes without asking.',
+									'saddle'
+								),
+								nameOf( c )
+						  )
+						: sprintf(
+								/* translators: %s: the agent name. */
+								__( '%s asks first again.', 'saddle' ),
+								nameOf( c )
+						  )
 				);
 				refresh();
 			} )
@@ -288,7 +395,19 @@ export default function Apps( {
 							</span>
 						}
 						title={ nameOf( c ) }
-						description={ metaLine( c ) }
+						description={
+							'admin' === roleOf( c, siteTier ) ? (
+								<>
+									{ metaLine( c ) }
+									<RunWithoutAsking
+										c={ c }
+										onChange={ changeRunWithoutAsking }
+									/>
+								</>
+							) : (
+								metaLine( c )
+							)
+						}
 						actions={
 							<>
 								<Select
