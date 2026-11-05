@@ -150,14 +150,55 @@ and finding each fails at least one. Check every change against all three.
    *Built in #364 (2026-10-14):* a new app starts at Read only, which blocks
    every write; each tool then has a site-wide mode, Allow, Ask first or Off
    (`Saddle_Tool_Modes`), which can only narrow the app's role. The
-   recommended set is one click in Settings and only tightens. A changing
-   tool that did not exist on the site's first run (a later update, a plugin
-   activated later) arrives as Ask first (R3).
+   recommended set is one click in Settings and only tightens.
+   *Ask first is off by default, Fahim 2026-11-06* ("saddle approve mode off
+   by default, bypass mode on ai agent exclitly add/update/delete anythig no
+   approved needed"): a tool asks first only when the owner set it so, one by
+   one or through the recommended set. A tool that arrives later (an update,
+   a plugin activated later) is Allow like the rest; until 1.7.0 it arrived
+   as Ask first (R3, now retired; its `saddle_known_abilities` list is no
+   longer read, and uninstall removes it). An owner's own Ask first
+   (`saddle_ask_abilities`) is never dropped by an update. The read-only start
+   for every new app is unchanged.
+   *Run without asking, the same day*, per agent: on Agent setup an agent set
+   to Manage the site has a switch, off by default, that only the owner turns
+   on, in wp-admin. With it on, that agent's Ask-first tools run as if they
+   were Allow, and its previews are skipped too (non-negotiable #3's one
+   exception). It never touches Off, the role, the pause, rehearsal or drafts
+   only (`Saddle_Run_Without_Asking`).
 
 3. **No destructive action without a two-step confirm.** Any ability that mutates
    more than one row, or deletes/overwrites without recovery, goes through
    `Saddle_Approval::gate()` — dry-run preview, then a single-use, target-bound,
-   15-minute token. No exceptions.
+   15-minute token.
+
+   *One exception, and it is the owner's choice for one agent, Fahim
+   2026-11-06* ("after manage mode on, saddle every change need approved
+   mode.. so about add bypass mode also if it own no need approved manually
+   from admin?", then "bypass mode on ai agent exclitly add/update/delete
+   anythig no approved needed"): **Run without asking** on Agent setup. For
+   an agent set to Manage the site whose owner turned it on, `gate()` runs
+   the change on the first call, as if a valid token had come back, and logs
+   it the same way; `Saddle_Tool_Modes::run()` lets its Ask-first tools
+   through. The rules around it:
+
+   - Off by default for every agent, and only for Manage the site
+     (`Saddle_Run_Without_Asking::applies()`: the flag, the role and, on the
+     calling request, the tier after any ceiling). Moving the agent below
+     Manage the site clears it; disconnecting it (a deleted key, a revoked
+     grant) clears it.
+   - Only the owner turns it on, in wp-admin (`POST
+     /saddle/v1/connections/{id}/run-without-asking`, `manage_options`, and
+     refused for any request made with an agent's sign-in). The option
+     `saddle_run_without_asking` is in `Saddle_Settings_Guard`, so no tool
+     can change it, and the owner confirms once when turning it on.
+   - It never skips: a tool set to Off, the role, the pause, rehearsal,
+     drafts only (its publish preview passes `policy` to `gate()` and still
+     previews), the Trash (delete-post and delete-page without `force` still
+     trash), the log and undo. A token the agent does send is still checked.
+   - The agent's context says it runs directly with no confirmation token,
+     and nothing about Needs your OK; every other agent's context is
+     unchanged.
 
 ---
 
@@ -294,7 +335,9 @@ not just the target; and a refusal must name the gate that caused it, because
 `Saddle_Tool_Modes` (#364) adds Ask first: like rehearsal, it wraps every
 changing tool's execute callback at registration (priority 5, so rehearsal at
 10 wraps it), and until the owner approves under Needs your OK the tool's own
-code never runs. A tool's own preview step inside the approved run is
+code never runs. Ask first applies only to tools the owner set to it, and an
+agent the owner set to Run without asking skips it and every preview
+(`Saddle_Run_Without_Asking`, non-negotiable #3's one exception). A tool's own preview step inside the approved run is
 answered by that approval (`Saddle_Approval::run_approved()`), and
 `consume_token()` refuses a confirm for an Ask-first tool until the owner
 said yes, without spending the token. A token reaches a tool's code only if
@@ -413,7 +456,10 @@ Saddle at the site tier and recorded nothing per key, so any other key that
 existed before the move keeps that tier the first time it calls Saddle and has
 it stored as its role (`Saddle_Access::legacy_role()`, the moment in
 `saddle_access_legacy_before`). Keys made after the update start at `read`. Only the owner sets a role, in
-wp-admin; no tool can (`Saddle_Settings_Guard`).
+wp-admin; no tool can (`Saddle_Settings_Guard`). The same holds for Run
+without asking (2026-11-06), the owner's per-agent switch for Manage the
+site: kept in `saddle_run_without_asking`, cleared with the role or the
+connection.
 
 *Decided 2026-09-27 (#243): once the owner has turned sign-in on, the address
 path is the one the connect wizard leads with for every app*, and the
@@ -503,7 +549,10 @@ PHPUnit, SQLite-backed, running against a real WordPress — 68 test files in
 
 - [ ] Fresh install defaults to the `read` tier (check the DB row)
 - [ ] A destructive call without `confirm_token` returns a preview and mutates nothing
+      (from an agent without Run without asking)
 - [ ] A destructive call with a valid, unused token executes exactly once
+- [ ] Run without asking is off for every agent on a fresh install and after
+      the update, and appears only for Manage the site
 - [ ] `delete-post` / `delete-page` without `force` trashes, never permanently deletes
 - [ ] The **wporg** zip contains no `class-saddle-updater.php`, and makes no
       outbound request until the owner clicks Subscribe, Send or Stop sharing
@@ -560,7 +609,12 @@ change. `Tested up to:` moves only when Fahim has verified against a newer WP.
 
 - Don't add a "quick mode" that skips the approval gate for trusted users. A real
   safety mechanism defaulted-out under friction pressure is what broke trust in
-  all three competitors that were checked.
+  all three competitors that were checked. **The one exception is Run without
+  asking (Fahim, 2026-11-06, non-negotiable #3):** the owner's switch for one
+  agent set to Manage the site, off by default. Don't add a second one, don't
+  turn it on by default or for a role below Manage the site, don't let a tool
+  or an agent's sign-in turn it on, and don't let it skip Off, the role, the
+  pause, rehearsal, drafts only, the Trash or the log.
 - Don't add PHP execution, filesystem writes or shell WP-CLI as a power-user
   convenience. See the hard line.
 - Don't install a plugin or theme from a zip upload, a URL or a file path, and
@@ -575,9 +629,11 @@ change. `Tested up to:` moves only when Fahim has verified against a newer WP.
   only path that works while the OAuth toggle is off — which is the default.
 - Don't turn OAuth on by default, and don't start a new app above `read` or let a
   tool change a role. All three are load-bearing for non-negotiable #2.
-- Don't let a tool change a mode, don't let the recommended set loosen
-  anything, and don't let a new changing tool arrive at Allow. Ask first is
-  the owner's word in wp-admin; never accept a chat "yes" in its place.
+- Don't let a tool change a mode or Run without asking, and don't let the
+  recommended set loosen anything. Since 2026-11-06 ("saddle approve mode off
+  by default") a new changing tool arrives at Allow, but never let an update
+  drop a tool the owner set to Ask first. Ask first is the owner's word in
+  wp-admin; never accept a chat "yes" in its place.
 - Don't wire up `Saddle_Ecosystem`.
 - Don't put licensing or upsell code in free, and never let a free tool mention
   Pro or leave a visible gap for a Pro tool (wp.org guidelines 5 and 11).

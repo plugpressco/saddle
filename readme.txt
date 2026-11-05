@@ -39,7 +39,7 @@ Saddle is the free core of WP Saddle. It works on its own, and each free add-on 
 = Safe on a live site =
 
 * A new agent can only read. You choose Read only, Edit content or Manage the site for each one.
-* Deletes, installs and other big changes show a preview and wait for your OK, and any tool can be set to ask first.
+* Deletes, installs and other big changes show a preview and wait for your OK, and any tool can be set to ask first. You can let an agent with Manage the site skip this; it is off until you turn it on.
 * Every change is logged, and most can be undone in one step.
 * Your AI agent connects straight to your site, so your content never passes through our servers. Saddle never runs code from the AI.
 
@@ -134,9 +134,10 @@ These tools stay off until you give an agent Manage the site.
 
 * Access for each agent: Choose Read only, Edit content or Manage the site for each connected agent. New agents start at Read only.
 * Confirmation: Review a preview before anything is deleted or overwritten, a plugin or theme is installed, a plugin is turned on or off, or the theme changes.
+* Run without asking: Let an agent set to Manage the site make changes and deletes right away, with no preview. It is off for every agent until you turn it on under Agent setup. Deleted posts and pages still go to the Trash, and every change is logged.
 * Drafts only: Save new posts as drafts until you publish them.
 * Rehearsal: Let an agent try anything its level allows while nothing is saved. Each change it would have made shows in the activity log as rehearsed.
-* Tool switches: Set each tool to Allow, Ask first or Off. A tool set to Ask first waits for your approval on the Dashboard, and a yes in the chat is not enough. A recommended set applies this to plugins, themes, updates, settings and deletes in one click. A tool added by a later update asks first until you choose.
+* Tool switches: Set each tool to Allow, Ask first or Off. A tool set to Ask first waits for your approval on the Dashboard, and a yes in the chat is not enough. A recommended set applies this to plugins, themes, updates, settings and deletes in one click. Nothing asks first until you set it.
 * Pause: Block all AI requests with one switch.
 * Activity log: See every change and every blocked request.
 * Undo: Ask your AI to undo a logged change, or click Undo on it in Home's Activity feed. It restores a page's earlier version, untrashes what was trashed, and puts settings back. A change that someone edited again since is left alone. Permanent deletes, plugin, WordPress and translation updates, and installs cannot be undone.
@@ -192,6 +193,8 @@ Yes. Click Live Preview on this page. You can explore every screen. To connect a
 = Can the AI delete my content? =
 
 Only for an agent with Edit content or higher. Each delete shows a preview first. It runs only after a second confirmation. By default, deleted posts go to the trash.
+
+If you turn on Run without asking for an agent with Manage the site, that agent deletes without the preview. Deleted posts and pages still go to the trash, and you can undo the delete in Logs.
 
 = Can the AI run code on my server? =
 
@@ -256,6 +259,8 @@ The WordPress.org version never checks for its own updates. The version from plu
 * Changed: Get Pro is now Get Premium and shows Saddle Cloud's four plans, each with unlimited sites and one yearly price: Free, Go $49, Pro $99 and Reach $299. Free's button opens Saddle Cloud with this site's address filled in.
 * New: Connecting your AI agent shows two ways, in the welcome and at the top of Agent setup: all your sites through Saddle Cloud, free up to 500 AI agent calls a month, or just this site through its own address. Saddle Cloud's button opens it with this site's address filled in, and Saddle sends nothing. Once Saddle Cloud is connected, its card says so.
 * Changed: AI apps are now called AI agents everywhere in Saddle.
+* New: Run without asking, on Saddle → Agent setup, for each agent set to Manage the site. With it on, that agent's changes and deletes run right away, with no preview and no OK from you. It is off for every agent until you turn it on, and Saddle asks you to confirm first. Tools you turned off stay off, deleted posts and pages go to the Trash, and every change is logged and can be undone in Logs.
+* Changed: Ask first is off by default. A tool asks first only when you set it to, alone or with the recommended set. A tool added by a later update, or by a plugin you activate later, is allowed like the others instead of asking first. Tools you set to Ask first keep asking.
 
 = 1.6.3 =
 * Fix: Saddle's own records (app connections, approvals, the log, skills and memory) are no longer saved as published posts. SEO plugins that tell search engines about new posts, such as AIOSEO's IndexNow, could send links like `?post_type=saddle_oauth&p=123` to Bing. The links never showed anything (they return 404), and now they stop. Existing records move over once, on the first page load after the update.
