@@ -91,7 +91,7 @@ class Saddle_Insight_SDK_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'Your profile', $html, 'What is shared names the profile.' );
 		$this->assertStringContainsString( '>Allow<', $html );
 		$this->assertMatchesRegularExpression( '/<input type="checkbox" name="news">/', $html, 'The news box starts unticked.' );
-		$this->assertStringContainsString( '--plugpress-insight-accent:#d000c4', $html );
+		$this->assertStringNotContainsString( '#d000c4', $html, 'No brand colour: the card follows the WordPress admin colour scheme.' );
 		$this->assertStringContainsString( 'data-slot=".saddle-app .pp-content:has(&gt; .saddle-tabpane)"', $html, 'The card opens Overview\'s content, not the welcome.' );
 
 		$this->share( false );
@@ -142,7 +142,8 @@ class Saddle_Insight_SDK_Test extends WP_UnitTestCase {
 		set_current_screen( 'plugins' );
 		$html = $this->dialog();
 		$this->assertStringContainsString( 'class="plugpress-insight-dialog"', $html );
-		$this->assertSame( 7, substr_count( $html, 'name="reason"' ) );
+		$this->assertSame( 6, substr_count( $html, 'name="reason"' ), 'Six choices; short_time is still accepted but not shown.' );
+		$this->assertStringNotContainsString( 'value="short_time"', $html );
 		$this->assertStringNotContainsString( ' checked', $html, 'No reason and no reply box comes ticked.' );
 	}
 
