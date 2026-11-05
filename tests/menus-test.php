@@ -2,7 +2,8 @@
 /**
  * Navigation menu abilities (#244).
  *
- * What must hold: menus and locations list; a menu reads in display order
+ * What must hold: menus and locations list; a menu can be created, and placed
+ * in a location (#397); a menu reads in display order
  * with parent, position and depth; items add as custom links, posts or terms
  * at a position; an update changes only the fields passed; a move carries the
  * subtree and refuses a cycle; removing is gated and lifts the children one
@@ -204,6 +205,66 @@ class Saddle_Menus_Test extends WP_UnitTestCase {
 		);
 	}
 
+	public function test_create_menu_and_show_it_in_a_location() {
+		$result = $this->run_ability(
+			'create-menu',
+			array(
+				'name'     => 'Footer links',
+				'location' => 'primary',
+			)
+		);
+		$this->assertNotWPError( $result );
+		$this->assertSame( 'Footer links', $result['menu']['name'] );
+		$this->assertSame( array(), $result['menu']['items'] );
+		$this->assertSame( $result['created'], get_nav_menu_locations()['primary'] );
+		$this->assertSame( 0, $result['location']['previous'] );
+
+		// The new menu takes items like any other.
+		$added = $this->run_ability(
+			'add-menu-item',
+			array(
+				'menu'  => $result['created'],
+				'type'  => 'custom',
+				'url'   => 'https://example.com/contact',
+				'title' => 'Contact',
+			)
+		);
+		$this->assertNotWPError( $added );
+		$this->assertCount( 1, $added['menu']['items'] );
+
+		$names = wp_list_pluck( $this->run_ability( 'list-menus' )['menus'], 'name' );
+		$this->assertContains( 'Footer links', $names );
+	}
+
+	public function test_create_menu_without_a_location_assigns_nothing() {
+		$result = $this->run_ability( 'create-menu', array( 'name' => 'Spare' ) );
+		$this->assertNotWPError( $result );
+		$this->assertArrayNotHasKey( 'location', $result );
+		$this->assertNotContains( $result['created'], array_map( 'intval', get_nav_menu_locations() ) );
+	}
+
+	public function test_create_menu_refuses_a_taken_name_a_blank_name_and_an_unknown_location() {
+		$before = count( wp_get_nav_menus() );
+
+		$taken = $this->run_ability( 'create-menu', array( 'name' => 'Main' ) );
+		$this->assertWPError( $taken );
+		$this->assertSame( 'saddle_menu_exists', $taken->get_error_code() );
+
+		$this->assertWPError( $this->run_ability( 'create-menu', array( 'name' => '   ' ) ) );
+
+		$nowhere = $this->run_ability(
+			'create-menu',
+			array(
+				'name'     => 'Orphan',
+				'location' => 'nowhere',
+			)
+		);
+		$this->assertWPError( $nowhere );
+		$this->assertSame( 'saddle_bad_location', $nowhere->get_error_code() );
+
+		$this->assertSame( $before, count( wp_get_nav_menus() ), 'A refused call creates no menu.' );
+	}
+
 	public function test_reads_work_at_the_read_tier_and_writes_do_not() {
 		$this->add_custom( 'Home' );
 		Saddle_Capabilities::set_tier( 'read' );
@@ -220,6 +281,8 @@ class Saddle_Menus_Test extends WP_UnitTestCase {
 				)
 			)
 		);
+		$this->assertWPError( $this->run_ability( 'create-menu', array( 'name' => 'Nope' ) ) );
+		$this->assertFalse( wp_get_nav_menu_object( 'Nope' ), 'Read only creates no menu.' );
 	}
 
 	public function test_an_editor_without_theme_options_cannot_edit_menus() {
@@ -236,5 +299,6 @@ class Saddle_Menus_Test extends WP_UnitTestCase {
 		);
 
 		$this->assertWPError( $result );
+		$this->assertWPError( $this->run_ability( 'create-menu', array( 'name' => 'Nope' ) ) );
 	}
 }

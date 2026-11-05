@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-05T21:29:05+00:00\n"
+"POT-Creation-Date: 2026-11-05T22:19:50+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -999,7 +999,7 @@ msgid "Optional. A custom content type from saddle/list-post-types (e.g. \"produ
 msgstr ""
 
 #: includes/abilities/core-content.php:823
-#: includes/abilities/menus.php:186
+#: includes/abilities/menus.php:214
 #: includes/abilities/modules.php:76
 #: includes/abilities/site-editor-writes.php:41
 #: includes/abilities/undo.php:36
@@ -2533,191 +2533,222 @@ msgstr ""
 msgid "Deleted memory \"%s\"."
 msgstr ""
 
-#: includes/abilities/menus.php:21
+#: includes/abilities/menus.php:22
 msgid "The menu: its id, slug or name, from saddle/list-menus."
 msgstr ""
 
-#: includes/abilities/menus.php:26
+#: includes/abilities/menus.php:27
 msgid "The menu item id, from saddle/get-menu."
 msgstr ""
 
-#: includes/abilities/menus.php:31
+#: includes/abilities/menus.php:32
 msgid "Place among its siblings, 0 = first. Omit to add at the end."
 msgstr ""
 
-#: includes/abilities/menus.php:36
+#: includes/abilities/menus.php:37
 msgid "Parent menu item id, or 0 for the top level."
 msgstr ""
 
-#: includes/abilities/menus.php:42
+#: includes/abilities/menus.php:43
 msgid "List menus"
 msgstr ""
 
-#: includes/abilities/menus.php:43
+#: includes/abilities/menus.php:44
 msgid "Lists the site's navigation menus (id, name, slug, item count, the theme locations each is assigned to) and the theme's menu locations with the menu in each. Read-only. Classic themes show these menus in their header and footer; block themes use the navigation block instead."
 msgstr ""
 
-#: includes/abilities/menus.php:59
+#: includes/abilities/menus.php:60
 msgid "Get menu"
 msgstr ""
 
-#: includes/abilities/menus.php:60
+#: includes/abilities/menus.php:61
 msgid "Returns one menu's items in display order: id, title, url, what it links to (type: custom, post_type or taxonomy; the object and its id), parent, position among its siblings, depth, and link target. Pass \"menu\", or \"location\" for the menu in a theme location. Read-only."
 msgstr ""
 
-#: includes/abilities/menus.php:68
+#: includes/abilities/menus.php:69
 msgid "A theme location slug from saddle/list-menus, instead of \"menu\"."
 msgstr ""
 
-#: includes/abilities/menus.php:81
-msgid "Add menu item"
+#: includes/abilities/menus.php:82
+msgid "Create menu"
 msgstr ""
 
-#: includes/abilities/menus.php:82
-msgid "Adds an item to a menu. \"type\" is \"custom\" (give url and title), \"post\" (give object_id: a post, page or other content item; its title is used unless you give one) or \"term\" (give object_id: a category, tag or other term). Place it with parent and position. Returns the new item and the menu."
+#: includes/abilities/menus.php:83
+msgid "Creates a new, empty navigation menu with the name you give. Pass \"location\" to show it in a theme location right away (the header, the footer…), replacing the menu there. Then add items with saddle/add-menu-item. Returns the new menu. Classic themes show these menus; block themes use the navigation block instead."
+msgstr ""
+
+#: includes/abilities/menus.php:92
+msgid "The menu name, such as \"Main menu\". It must not match an existing menu."
 msgstr ""
 
 #: includes/abilities/menus.php:96
-msgid "The post or term id, for type \"post\" or \"term\"."
+msgid "Optional: a theme location slug from saddle/list-menus to show the new menu in."
 msgstr ""
 
-#: includes/abilities/menus.php:100
-msgid "The link, for type \"custom\"."
+#: includes/abilities/menus.php:109
+msgid "Add menu item"
 msgstr ""
 
-#: includes/abilities/menus.php:104
-msgid "The label. Required for \"custom\"; optional otherwise."
-msgstr ""
-
-#: includes/abilities/menus.php:111
-msgid "\"_blank\" opens the link in a new tab."
+#: includes/abilities/menus.php:110
+msgid "Adds an item to a menu. \"type\" is \"custom\" (give url and title), \"post\" (give object_id: a post, page or other content item; its title is used unless you give one) or \"term\" (give object_id: a category, tag or other term). Place it with parent and position. Returns the new item and the menu."
 msgstr ""
 
 #: includes/abilities/menus.php:124
+msgid "The post or term id, for type \"post\" or \"term\"."
+msgstr ""
+
+#: includes/abilities/menus.php:128
+msgid "The link, for type \"custom\"."
+msgstr ""
+
+#: includes/abilities/menus.php:132
+msgid "The label. Required for \"custom\"; optional otherwise."
+msgstr ""
+
+#: includes/abilities/menus.php:139
+msgid "\"_blank\" opens the link in a new tab."
+msgstr ""
+
+#: includes/abilities/menus.php:152
 msgid "Update menu item"
 msgstr ""
 
-#: includes/abilities/menus.php:125
+#: includes/abilities/menus.php:153
 msgid "Changes a menu item's label, link (custom items only), target, CSS classes, title attribute or description. Only the fields you pass change. To move it, use saddle/move-menu-item."
 msgstr ""
 
-#: includes/abilities/menus.php:140
+#: includes/abilities/menus.php:168
 msgid "Space-separated CSS classes."
 msgstr ""
 
-#: includes/abilities/menus.php:155
+#: includes/abilities/menus.php:183
 msgid "Move menu item"
 msgstr ""
 
-#: includes/abilities/menus.php:156
+#: includes/abilities/menus.php:184
 msgid "Moves a menu item, with the items nested under it, to a new parent and position within the same menu. An item can't move under itself or its own children."
 msgstr ""
 
-#: includes/abilities/menus.php:176
+#: includes/abilities/menus.php:204
 msgid "Remove menu item"
 msgstr ""
 
-#: includes/abilities/menus.php:177
+#: includes/abilities/menus.php:205
 msgid "Removes an item from a menu; items nested under it move up one level, as in wp-admin. The page or term it linked to is not touched. DESTRUCTIVE — two steps: the first call returns a preview and a confirm_token without changing anything; call again with confirm_token to remove."
 msgstr ""
 
-#: includes/abilities/menus.php:199
+#: includes/abilities/menus.php:227
 msgid "Set menu location"
 msgstr ""
 
-#: includes/abilities/menus.php:200
+#: includes/abilities/menus.php:228
 msgid "Shows a menu in one of the theme's menu locations (the header, the footer…), replacing whatever menu was there. Pass \"menu\": 0 to leave the location empty. The response names the menu that was there before."
 msgstr ""
 
-#: includes/abilities/menus.php:208
+#: includes/abilities/menus.php:236
 msgid "A theme location slug from saddle/list-menus."
 msgstr ""
 
-#: includes/abilities/menus.php:275
+#: includes/abilities/menus.php:303
 msgid "No menu is assigned to that location."
 msgstr ""
 
-#: includes/abilities/menus.php:305
+#: includes/abilities/menus.php:326
+msgid "Give the menu a name."
+msgstr ""
+
+#: includes/abilities/menus.php:329
+#: includes/abilities/menus.php:551
+msgid "The theme has no menu location by that name. saddle/list-menus lists them."
+msgstr ""
+
+#: includes/abilities/menus.php:335
+msgid "A menu with that name already exists. Pick another name, or add items to it with saddle/add-menu-item."
+msgstr ""
+
+#. translators: %s: menu name.
+#: includes/abilities/menus.php:344
+#, php-format
+msgid "Created the menu “%s”."
+msgstr ""
+
+#: includes/abilities/menus.php:385
 msgid "The parent must be an item of the same menu."
 msgstr ""
 
 #. translators: 1: menu item label, 2: menu name.
-#: includes/abilities/menus.php:320
+#: includes/abilities/menus.php:400
 #, php-format
 msgid "Added “%1$s” to the menu “%2$s”."
 msgstr ""
 
-#: includes/abilities/menus.php:370
+#: includes/abilities/menus.php:450
 msgid "Only a custom link has its own url; this item links to a post or term. Remove it and add a custom item instead."
 msgstr ""
 
 #. translators: 1: menu item label, 2: menu name.
-#: includes/abilities/menus.php:380
+#: includes/abilities/menus.php:460
 #, php-format
 msgid "Updated “%1$s” in the menu “%2$s”."
 msgstr ""
 
-#: includes/abilities/menus.php:399
+#: includes/abilities/menus.php:479
 msgid "The new parent must be another item of the same menu, not this item or one nested under it."
 msgstr ""
 
 #. translators: 1: menu item label, 2: menu name.
-#: includes/abilities/menus.php:404
+#: includes/abilities/menus.php:484
 #, php-format
 msgid "Moved “%1$s” in the menu “%2$s”."
 msgstr ""
 
 #. translators: 1: item label, 2: menu name.
-#: includes/abilities/menus.php:429
+#: includes/abilities/menus.php:509
 #, php-format
 msgid "Remove “%1$s” from the menu “%2$s”."
 msgstr ""
 
 #. translators: 1: item label, 2: menu name.
-#: includes/abilities/menus.php:435
+#: includes/abilities/menus.php:515
 #, php-format
 msgid "Removed “%1$s” from the menu “%2$s”."
 msgstr ""
 
-#: includes/abilities/menus.php:451
+#: includes/abilities/menus.php:531
 msgid "WordPress could not remove the item."
 msgstr ""
 
-#: includes/abilities/menus.php:471
-msgid "The theme has no menu location by that name. saddle/list-menus lists them."
-msgstr ""
-
 #. translators: 1: location label, 2: previous menu id, 3: new menu id.
-#: includes/abilities/menus.php:493
+#: includes/abilities/menus.php:573
 #, php-format
 msgid "Set the menu location “%1$s” from menu #%2$d to menu #%3$d."
 msgstr ""
 
-#: includes/abilities/menus.php:520
+#: includes/abilities/menus.php:600
 msgid "No menu by that id, slug or name. saddle/list-menus lists them."
 msgstr ""
 
-#: includes/abilities/menus.php:543
+#: includes/abilities/menus.php:623
 msgid "No menu item with that id. saddle/get-menu lists them."
 msgstr ""
 
-#: includes/abilities/menus.php:575
+#: includes/abilities/menus.php:655
 msgid "That link is not allowed in a menu. Use a web address such as https://example.com or a path such as /about."
 msgstr ""
 
-#: includes/abilities/menus.php:578
+#: includes/abilities/menus.php:658
 msgid "A custom item needs both \"url\" and \"title\"."
 msgstr ""
 
-#: includes/abilities/menus.php:589
+#: includes/abilities/menus.php:669
 msgid "No post, page or other content item with that object_id."
 msgstr ""
 
-#: includes/abilities/menus.php:601
+#: includes/abilities/menus.php:681
 msgid "No category, tag or other term with that object_id."
 msgstr ""
 
-#: includes/abilities/menus.php:610
+#: includes/abilities/menus.php:690
 msgid "\"type\" must be custom, post or term."
 msgstr ""
 

@@ -1,11 +1,12 @@
 <?php
 /**
- * Navigation menu abilities: read menus, edit their items, assign locations.
+ * Navigation menu abilities: read menus, create one, edit their items, assign
+ * locations.
  *
  * Classic themes have no navigation block, so these are the only way an agent
  * can change a menu on most Divi and classic sites (#244). Core's menu API
- * only: wp_get_nav_menus(), wp_get_nav_menu_items(), wp_update_nav_menu_item(),
- * and wp_delete_post() for an item.
+ * only: wp_get_nav_menus(), wp_create_nav_menu() (#397), wp_get_nav_menu_items(),
+ * wp_update_nav_menu_item(), and wp_delete_post() for an item.
  *
  * @package Saddle
  */
@@ -72,6 +73,33 @@ function saddle_register_menu_abilities() {
 			'execute_callback'    => array( 'Saddle_Menu_Abilities', 'get_menu' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'get-menu' ),
 			'meta'                => saddle_ability_meta( true, false, true, 'read' ),
+		)
+	);
+
+	wp_register_ability(
+		'saddle/create-menu',
+		array(
+			'label'               => __( 'Create menu', 'saddle' ),
+			'description'         => __( 'Creates a new, empty navigation menu with the name you give. Pass "location" to show it in a theme location right away (the header, the footer…), replacing the menu there. Then add items with saddle/add-menu-item. Returns the new menu. Classic themes show these menus; block themes use the navigation block instead.', 'saddle' ),
+			'category'            => 'saddle',
+			'input_schema'        => array(
+				'type'       => 'object',
+				'required'   => array( 'name' ),
+				'properties' => array(
+					'name'     => array(
+						'type'        => 'string',
+						'minLength'   => 1,
+						'description' => __( 'The menu name, such as "Main menu". It must not match an existing menu.', 'saddle' ),
+					),
+					'location' => array(
+						'type'        => 'string',
+						'description' => __( 'Optional: a theme location slug from saddle/list-menus to show the new menu in.', 'saddle' ),
+					),
+				),
+			),
+			'execute_callback'    => array( 'Saddle_Menu_Abilities', 'create_menu' ),
+			'permission_callback' => Saddle_Capabilities::permission( 'write', 'edit_theme_options', 'create-menu' ),
+			'meta'                => saddle_ability_meta( false, false, false, 'write' ),
 		)
 	);
 
@@ -281,6 +309,58 @@ class Saddle_Menu_Abilities {
 			return $menu;
 		}
 		return self::menu_detail( $menu );
+	}
+
+	/**
+	 * saddle/create-menu: a new, empty menu, optionally placed in a location.
+	 * The location is checked first, so a bad one creates nothing.
+	 *
+	 * @param mixed $input { name, location }.
+	 * @return array|WP_Error
+	 */
+	public static function create_menu( $input = null ) {
+		$input    = is_array( $input ) ? $input : array();
+		$name     = isset( $input['name'] ) ? trim( sanitize_text_field( (string) $input['name'] ) ) : '';
+		$location = isset( $input['location'] ) ? (string) $input['location'] : '';
+		if ( '' === $name ) {
+			return new WP_Error( 'saddle_bad_menu', __( 'Give the menu a name.', 'saddle' ), array( 'status' => 400 ) );
+		}
+		if ( '' !== $location && ! array_key_exists( $location, get_registered_nav_menus() ) ) {
+			return new WP_Error( 'saddle_bad_location', __( 'The theme has no menu location by that name. saddle/list-menus lists them.', 'saddle' ), array( 'status' => 400 ) );
+		}
+
+		$id = wp_create_nav_menu( $name );
+		if ( is_wp_error( $id ) ) {
+			if ( 'menu_exists' === $id->get_error_code() ) {
+				return new WP_Error( 'saddle_menu_exists', __( 'A menu with that name already exists. Pick another name, or add items to it with saddle/add-menu-item.', 'saddle' ), array( 'status' => 409 ) );
+			}
+			return $id;
+		}
+		$menu = wp_get_nav_menu_object( (int) $id );
+		Saddle_Log::record_action(
+			'create-menu',
+			(int) $id,
+			/* translators: %s: menu name. */
+			sprintf( __( 'Created the menu “%s”.', 'saddle' ), $menu->name )
+		);
+
+		$result = array(
+			'created' => (int) $id,
+			'menu'    => self::menu_detail( $menu ),
+		);
+		if ( '' !== $location ) {
+			$placed = self::set_menu_location(
+				array(
+					'location' => $location,
+					'menu'     => (int) $id,
+				)
+			);
+			if ( is_wp_error( $placed ) ) {
+				return $placed;
+			}
+			$result['location'] = $placed;
+		}
+		return $result;
 	}
 
 	/**

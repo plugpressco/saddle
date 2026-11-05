@@ -72,7 +72,7 @@ Saddle works with Claude and Claude Code, ChatGPT, Cursor, VS Code, Codex, Gemin
 * Media: Upload images from a URL and edit their details.
 * Categories and tags: Create and list categories and tags.
 * Search: Find any post, page or media item.
-* Menus: Add, rename, move and remove menu items, and choose which menu shows in each theme location.
+* Menus: Create a menu, add, rename, move and remove its items, and choose which menu shows in each theme location.
 * Users: List users and read their profiles.
 
 = Block editor pages =
@@ -252,6 +252,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 == Changelog ==
 
 = 1.7.0 =
+* New: Your AI agent can create a menu, and show it in a theme location such as the header or footer in the same step. Until now it could only change menus that already existed.
 * Changed: Saddle is now named "Saddle – Build, Rank & Grow Your Website with AI", here and on the Plugins screen: the free core of WP Saddle. Its menu, settings and address are unchanged.
 * New: A small card on Overview and the Plugins screen asks once whether to share your name, email and basic site info with PlugPress for better support, and offers Saddle news by email, which you confirm by email first. Nothing is sent until you click Allow or Subscribe.
 * New: When you deactivate Saddle, a short form asks why. Skip and deactivate sends nothing.
