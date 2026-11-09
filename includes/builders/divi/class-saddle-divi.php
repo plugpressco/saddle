@@ -11,10 +11,11 @@ defined( 'ABSPATH' ) || exit;
  * Answers one question reliably in every request context: is Divi 5 here, and
  * is a given post built with it?
  *
- * Detection is theme-based (template = Divi/Extra at version >= 5), not
- * class-based: Divi 5's server framework (`ET\Builder\...`) loads
- * conditionally per request type, so class_exists() checks are flaky outside
- * builder/REST screens. The theme header is always readable.
+ * Detection is theme-based (the template theme is Divi or Extra at version
+ * >= 5, whatever its folder is called), not class-based: Divi 5's server
+ * framework (`ET\Builder\...`) loads conditionally per request type, so
+ * class_exists() checks are flaky outside builder/REST screens. The theme
+ * header is always readable.
  */
 class Saddle_Divi {
 
@@ -22,6 +23,18 @@ class Saddle_Divi {
 	 * Divi 5 pages store modules as blocks in this namespace.
 	 */
 	const BLOCK_NS = 'divi/';
+
+	/**
+	 * The theme names Divi's builder ships under.
+	 */
+	const THEME_NAMES = array( 'Divi', 'Extra' );
+
+	/**
+	 * Whether each theme folder holds Divi or Extra, decided once a request.
+	 *
+	 * @var array<string,bool>
+	 */
+	private static $divi_folders = array();
 
 	/**
 	 * Whether a Divi theme at major version >= 5 is the active template.
@@ -47,13 +60,45 @@ class Saddle_Divi {
 	 * @return string|null
 	 */
 	public static function version() {
-		$template = get_template(); // Parent theme slug even under a child theme.
-		if ( ! in_array( $template, array( 'Divi', 'Extra' ), true ) ) {
+		$template = (string) get_template(); // Parent theme folder even under a child theme.
+		if ( ! self::is_divi_folder( $template ) ) {
 			return null;
 		}
 
 		$theme = wp_get_theme( $template );
 		return $theme->exists() ? (string) $theme->get( 'Version' ) : null;
+	}
+
+	/**
+	 * Whether a theme folder holds Divi or Extra.
+	 *
+	 * The folder's name alone is not enough: WordPress keeps the folder a zip
+	 * unpacks to, so a second download or a renamed zip leaves Divi in
+	 * "Divi-2" (reported 2026-11-09), and Saddle then hid every Divi tool.
+	 * The theme's own Name header still says Divi there, and a white label
+	 * that renames the theme keeps Divi 5's builder folder.
+	 *
+	 * @param string $template Theme folder name.
+	 * @return bool
+	 */
+	private static function is_divi_folder( $template ) {
+		if ( '' === $template ) {
+			return false;
+		}
+		if ( in_array( $template, self::THEME_NAMES, true ) ) {
+			return true;
+		}
+		if ( isset( self::$divi_folders[ $template ] ) ) {
+			return self::$divi_folders[ $template ];
+		}
+
+		$theme = wp_get_theme( $template );
+		if ( ! $theme->exists() ) {
+			return false;
+		}
+		self::$divi_folders[ $template ] = in_array( (string) $theme->get( 'Name' ), self::THEME_NAMES, true )
+			|| is_dir( $theme->get_template_directory() . '/includes/builder-5' );
+		return self::$divi_folders[ $template ];
 	}
 
 	/**
