@@ -29,8 +29,28 @@ class Saddle_Divi_Echo {
 
 	/**
 	 * Attr keys that are canonical plumbing, not module.json attributes.
+	 * modulePreset and groupPreset are the preset stacks Divi 5 keeps at the
+	 * attr root of any module (divi-apply-global-preset writes the first).
 	 */
-	const UNIVERSAL_KEYS = array( 'builderVersion' );
+	const UNIVERSAL_KEYS = array( 'builderVersion', 'modulePreset', 'groupPreset' );
+
+	/**
+	 * Layout settings Divi renders on the structural modules although their
+	 * module.json does not declare them as advanced groups: the section and
+	 * column `type`, the row's column structure (flexColumnStructure since
+	 * the flex layout, columnStructure before it, with tablet and phone
+	 * values), and the specialty-section pair. Divi's own code reads each
+	 * (ColumnModule, SectionModule, DynamicAssetsListBuilder). Writing them
+	 * is how a row gets real column widths, so they must never be called
+	 * ignored (#402).
+	 */
+	const LAYOUT_ADVANCED = array(
+		'divi/section'      => array( 'type', 'specialtyColumns' ),
+		'divi/row'          => array( 'columnStructure', 'flexColumnStructure' ),
+		'divi/row-inner'    => array( 'columnStructure', 'flexColumnStructure' ),
+		'divi/column'       => array( 'type', 'sectionColumnType' ),
+		'divi/column-inner' => array( 'type' ),
+	);
 
 	/**
 	 * The value states a breakpoint envelope carries.
@@ -256,7 +276,7 @@ class Saddle_Divi_Echo {
 		}
 
 		foreach ( $attrs as $key => $value ) {
-			$warnings = array_merge( $warnings, self::check_attr_path( (string) $key, $value, $contract, $location ) );
+			$warnings = array_merge( $warnings, self::check_attr_path( (string) $key, $value, $contract, $location, $type ) );
 		}
 
 		// Second pass, over the fully-expanded payload: judge the DEEP shape
@@ -466,9 +486,10 @@ class Saddle_Divi_Echo {
 	 * @param mixed  $value    Its value.
 	 * @param array  $contract Module contract (see contract()).
 	 * @param string $location Module + address for messages.
+	 * @param string $type     Module type, for the layout settings it renders.
 	 * @return string[]
 	 */
-	private static function check_attr_path( $key, $value, array $contract, $location ) {
+	private static function check_attr_path( $key, $value, array $contract, $location, $type = '' ) {
 		$segments  = explode( '.', $key );
 		$attr_name = $segments[0];
 
@@ -504,6 +525,11 @@ class Saddle_Divi_Echo {
 				// Undeclared but universal: ElementStyle renders it anyway
 				// (declaration is a VB-UI fact, not a render fact).
 				if ( 'decoration' === $kind && in_array( $group, self::ELEMENT_STYLE_GROUPS, true ) ) {
+					continue;
+				}
+				// Undeclared layout settings the structural modules render.
+				if ( 'advanced' === $kind && 'module' === $attr_name && isset( self::LAYOUT_ADVANCED[ $type ] )
+					&& in_array( $group, self::LAYOUT_ADVANCED[ $type ], true ) ) {
 					continue;
 				}
 				$warnings[] = sprintf(
@@ -556,13 +582,18 @@ class Saddle_Divi_Echo {
 	 */
 	private static function contract( $type ) {
 		static $memo = array();
-		if ( array_key_exists( $type, $memo ) ) {
-			return $memo[ $type ];
+		// Keyed by the module.json the index resolves, so a rebuilt index (a
+		// module pack switched on, a test fixture) is never answered from an
+		// older read.
+		$index = Saddle_Divi_Schema::index();
+		$key   = $type . '|' . ( isset( $index[ $type ] ) ? (string) $index[ $type ] : '' );
+		if ( array_key_exists( $key, $memo ) ) {
+			return $memo[ $key ];
 		}
 
 		$described = Saddle_Divi_Schema::describe( $type );
 		if ( is_wp_error( $described ) ) {
-			$memo[ $type ] = null;
+			$memo[ $key ] = null;
 			return null;
 		}
 
@@ -582,11 +613,11 @@ class Saddle_Divi_Echo {
 			}
 		}
 
-		$memo[ $type ] = array(
+		$memo[ $key ] = array(
 			'attributes'     => $attributes,
 			'content'        => $content,
 			'content_fields' => $content_fields,
 		);
-		return $memo[ $type ];
+		return $memo[ $key ];
 	}
 }

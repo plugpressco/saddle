@@ -750,4 +750,91 @@ class Saddle_Divi_Lint_Echo_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( '"bogus"', $result['warnings'][0] );
 		$this->assertStringContainsString( 'node 0.0.1.0.0', $result['warnings'][0], 'Subtree warnings carry full persisted addresses.' );
 	}
+
+
+	/* -------- #402: presets and column layout are rendered, not ignored -------- */
+
+	/**
+	 * Point the module index at section/row/column module.json files that
+	 * declare only what Divi 5.10's real ones declare as advanced groups.
+	 */
+	private function use_structural_fixtures() {
+		$dir      = get_temp_dir() . 'saddle-echo-structural-modules';
+		$declared = array(
+			'section' => array( 'divi/section', array( 'elements', 'html', 'loop', 'link' ) ),
+			'row'     => array( 'divi/row', array( 'elements', 'html', 'loop', 'link', 'gutter' ) ),
+			'column'  => array( 'divi/column', array( 'elements', 'html', 'loop', 'link' ) ),
+		);
+		foreach ( $declared as $folder => $module ) {
+			if ( ! is_dir( $dir . '/' . $folder ) ) {
+				mkdir( $dir . '/' . $folder, 0755, true );
+			}
+			file_put_contents(
+				$dir . '/' . $folder . '/module.json',
+				wp_json_encode(
+					array(
+						'name'       => $module[0],
+						'title'      => ucfirst( $folder ),
+						'category'   => 'structure',
+						'attributes' => array(
+							'module' => array(
+								'type'     => 'object',
+								'settings' => array( 'advanced' => array_fill_keys( $module[1], array() ) ),
+							),
+						),
+					)
+				)
+			);
+		}
+		add_filter(
+			'saddle_divi_module_json_dirs',
+			static function () use ( $dir ) {
+				return array( $dir );
+			},
+			20
+		);
+		delete_transient( Saddle_Divi_Schema::INDEX_TRANSIENT );
+		Saddle_Divi_Schema::index( true );
+	}
+
+	/**
+	 * Reported 2026-11-09: a page built in the Visual Builder with presets
+	 * and a 3/5 + 2/5 row scored 0 / F, every preset and column width called
+	 * "ignored", so an agent working the findings would strip them.
+	 */
+	public function test_echo_accepts_presets_and_column_layout_divi_renders() {
+		$this->use_structural_fixtures();
+
+		$warnings = array_merge(
+			Saddle_Divi_Echo::check( 'divi/section', array(), array( 'modulePreset' => array( 'site-section-hero' ), 'groupPreset' => array() ), '0.0' ),
+			Saddle_Divi_Echo::check(
+				'divi/row',
+				array(),
+				array(
+					'modulePreset' => array( 'site-row' ),
+					'module.advanced.flexColumnStructure' => array(
+						'desktop' => array( 'value' => '3_5,2_5' ),
+						'phone'   => array( 'value' => '4_4,4_4' ),
+					),
+					'module.advanced.gutter.desktop.value' => array( 'enable' => 'on' ),
+				),
+				'0.0.0'
+			),
+			Saddle_Divi_Echo::check( 'divi/column', array(), array( 'module.advanced.type.desktop.value' => '3_5' ), '0.0.0.0' ),
+			Saddle_Divi_Echo::check( 'divi/section', array(), array( 'module' => array( 'advanced' => array( 'type' => array( 'desktop' => array( 'value' => 'regular' ) ) ) ) ), '0.1' )
+		);
+
+		$this->assertSame( array(), $warnings );
+	}
+
+	public function test_echo_still_flags_a_mistyped_layout_setting() {
+		$this->use_structural_fixtures();
+
+		$row    = Saddle_Divi_Echo::check( 'divi/row', array(), array( 'module.advanced.flexColumnStructur.desktop.value' => '1_2,1_2' ), '0.0.0' );
+		$column = Saddle_Divi_Echo::check( 'divi/column', array(), array( 'module.advanced.flexColumnStructure.desktop.value' => '1_2' ), '0.0.0.0' );
+
+		$this->assertCount( 1, $row );
+		$this->assertStringContainsString( '"flexColumnStructur"', $row[0] );
+		$this->assertCount( 1, $column, 'A row setting written on a column is still not rendered there.' );
+	}
 }
