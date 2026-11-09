@@ -112,6 +112,55 @@ class Saddle_Builder_Guard_Test extends WP_UnitTestCase {
 		$this->assertNotWPError( $result, 'Native Gutenberg content must never trip the builder guard.' );
 	}
 
+	/* -------- the hint names only tools the agent can call -------- */
+
+	public function test_divi_page_hint_names_the_divi_tools_when_divi_is_detected() {
+		add_filter( 'saddle_divi_active', '__return_true' );
+		$result = $this->update( $this->divi5_page(), array( 'content' => '<p>x</p>' ) );
+		remove_filter( 'saddle_divi_active', '__return_true' );
+
+		$this->assertStringContainsString( 'divi-set-page', $result->get_error_message() );
+	}
+
+	/**
+	 * Reported 2026-11-09: Divi in a "Divi-2" folder was not detected, so the
+	 * Divi tools were hidden, yet update-page told the agent to use
+	 * divi-set-page. The agent could only report that the tool "isn't exposed".
+	 */
+	public function test_divi_page_hint_never_names_a_hidden_divi_tool() {
+		add_filter( 'saddle_divi_active', '__return_false' );
+		$content = $this->update( $this->divi5_page(), array( 'content' => '<p>x</p>' ) );
+		$blocks  = wp_get_ability( 'saddle/set-blocks' )->execute(
+			array(
+				'post_id' => $this->divi5_page(),
+				'nodes'   => array(
+					array(
+						'type'    => 'core/paragraph',
+						'content' => 'x',
+					),
+				),
+			)
+		);
+		remove_filter( 'saddle_divi_active', '__return_false' );
+
+		foreach ( array( $content, $blocks ) as $result ) {
+			$this->assertSame( 'saddle_builder_content', $result->get_error_code() );
+			$this->assertStringNotContainsString( 'divi-', $result->get_error_message() );
+			$this->assertStringContainsString( 'does not detect Divi 5', $result->get_error_message() );
+		}
+	}
+
+	public function test_divi_page_hint_skips_a_divi_tool_the_owner_turned_off() {
+		add_filter( 'saddle_divi_active', '__return_true' );
+		Saddle_Capabilities::set_disabled_abilities( array( 'divi-set-page' ) );
+		$result = $this->update( $this->divi5_page(), array( 'content' => '<p>x</p>' ) );
+		Saddle_Capabilities::set_disabled_abilities( array() );
+		remove_filter( 'saddle_divi_active', '__return_true' );
+
+		$this->assertStringNotContainsString( 'divi-set-page', $result->get_error_message() );
+		$this->assertStringContainsString( 'tell the site owner', $result->get_error_message() );
+	}
+
 	public function test_kill_switch_filter_disables_the_guard() {
 		$id = $this->divi5_page();
 		add_filter( 'saddle_protect_builder_content', '__return_false' );

@@ -1390,9 +1390,16 @@ class Saddle_Blocks_Abilities {
 			return true;
 		}
 
-		$divi5_tools = 'Divi 5' === $builder
-			&& function_exists( 'wp_get_abilities' )
-			&& isset( wp_get_abilities()['saddle/divi-get-page'] );
+		// Same rule as the content guard: name the Divi tools only when this
+		// agent can call them, and say why when Divi isn't detected.
+		$hint = __( 'Its layout is edited with the builder\'s own editor — tell the site owner instead of forcing the edit.', 'saddle' );
+		if ( 'Divi 5' === $builder ) {
+			if ( Saddle_Capabilities::is_callable_now( 'saddle/divi-get-page' ) ) {
+				$hint = __( 'Use the saddle/divi-* tools for this page instead.', 'saddle' );
+			} elseif ( ! Saddle_Divi::is_active() ) {
+				$hint = Saddle_Divi::not_detected_hint();
+			}
+		}
 
 		return new WP_Error(
 			'saddle_builder_content',
@@ -1401,9 +1408,7 @@ class Saddle_Blocks_Abilities {
 				__( 'Post #%1$d is built with %2$s, so the native block tools do not apply to it. ', 'saddle' ),
 				$post->ID,
 				$builder
-			) . ( $divi5_tools
-				? __( 'Use the saddle/divi-* tools for this page instead.', 'saddle' )
-				: __( 'Its layout is edited with the builder\'s own editor — tell the site owner instead of forcing the edit.', 'saddle' ) ),
+			) . $hint,
 			array( 'status' => 409 )
 		);
 	}
