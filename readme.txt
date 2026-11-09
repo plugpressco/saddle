@@ -207,6 +207,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 == Changelog ==
 
 = 1.7.2 =
+* Changed: Get Premium shows Saddle Cloud's plans by sites, as saddle.to does: Free for one site, Go $49 a year for one site, Pro $99 for up to 3 and Ultimate $199 for up to 10. Every paid plan includes Saddle Pro and every SEO tool, with more SEO credits and AI agent calls on the bigger plans.
 * Fixed: Saddle Pro, Saddle Analytics and Saddle Rank now activate when Saddle sits in a folder with another name, such as `saddle-2` after a second upload. Before, WordPress said a required plugin was missing, even with Saddle active.
 
 = 1.7.1 =
