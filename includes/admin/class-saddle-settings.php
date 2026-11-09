@@ -381,6 +381,27 @@ class Saddle_Settings {
 	 * whether it is on, installed but off, or missing, and whether this owner
 	 * may add it from Saddle's pages.
 	 *
+	 * @return array See addon_offer().
+	 */
+	private static function analytics_offer() {
+		return self::addon_offer( 'saddle-analytics' );
+	}
+
+	/**
+	 * Saddle Rank, offered the same way as Saddle Analytics (#409).
+	 *
+	 * @return array See addon_offer().
+	 */
+	private static function rank_offer() {
+		return self::addon_offer( 'saddle-rank' );
+	}
+
+	/**
+	 * One first-party add-on, for the welcome's question and Home's Add-ons:
+	 * whether it is on, installed but off, or missing, and whether this owner
+	 * may add it from Saddle's pages. Only Saddle's own add-ons are offered,
+	 * each by its fixed slug.
+	 *
 	 * The page adds it through WordPress's own plugins REST endpoint
 	 * (`POST /wp/v2/plugins`), signed in as the owner, exactly as the block
 	 * directory installs a block: WordPress downloads the package
@@ -388,10 +409,11 @@ class Saddle_Settings {
 	 * reach that route. Never offered on a network, where installing is the
 	 * network admin's.
 	 *
+	 * @param string $slug The add-on's folder and main file, such as `saddle-rank`.
 	 * @return array { state: active|inactive|missing, canAdd: bool, url: string, manualUrl: string }
 	 */
-	private static function analytics_offer() {
-		$file = 'saddle-analytics/saddle-analytics.php';
+	private static function addon_offer( $slug ) {
+		$file = $slug . '/' . $slug . '.php';
 		if ( ! function_exists( 'is_plugin_active' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}
@@ -409,11 +431,11 @@ class Saddle_Settings {
 		return array(
 			'state'     => $state,
 			'canAdd'    => 'active' !== $state && $allowed,
-			'url'       => esc_url_raw( admin_url( 'admin.php?page=saddle-analytics' ) ),
+			'url'       => esc_url_raw( admin_url( 'admin.php?page=' . $slug ) ),
 			// Where the owner can do it by hand when the page can't.
 			'manualUrl' => esc_url_raw(
 				'missing' === $state
-					? admin_url( 'plugin-install.php?s=saddle-analytics&tab=search&type=term' )
+					? admin_url( 'plugin-install.php?s=' . $slug . '&tab=search&type=term' )
 					: admin_url( 'plugins.php' )
 			),
 		);
@@ -578,6 +600,7 @@ class Saddle_Settings {
 					// Saddle Analytics: on, off or missing, and whether this
 					// owner may add it here (the welcome, Home's Add-ons).
 					'analytics'    => self::analytics_offer(),
+					'rank'         => self::rank_offer(),
 				)
 			) . ';',
 			'before'

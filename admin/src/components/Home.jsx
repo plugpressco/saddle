@@ -24,11 +24,13 @@ import { Button, Skeleton, VisuallyHidden } from '@plugpress/ui';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { api, saddleData } from '../api';
 import { analyticsOffer } from '../analytics-addon';
+import { rankOffer } from '../rank-addon';
 import { metaLine } from '../apps-logic';
 import { APPS } from '../connect-apps';
 import { parseModules } from '../onboarding-logic';
 import { findArea, withArg } from '../routes';
 import AnalyticsTile from './AnalyticsTile';
+import RankTile from './RankTile';
 import NeedsYourOk from './NeedsYourOk';
 import { ROLES } from './ConnectedClients';
 import {
@@ -302,6 +304,8 @@ export default function Home( { clients, onNavigate, onConnect, homeUrl } ) {
 	// Whether Add-ons offers Saddle Analytics, as the page first knew it: its
 	// tile stays after the add, to say it is on.
 	const [ offerAnalytics ] = useState( () => analyticsOffer().canAdd );
+	// The same for Saddle Rank (#409).
+	const [ offerRank ] = useState( () => rankOffer().canAdd );
 
 	const known = Array.isArray( connections );
 	const apps =
@@ -583,7 +587,7 @@ export default function Home( { clients, onNavigate, onConnect, homeUrl } ) {
 				</ul>
 			</section>
 
-			{ ( modules.length > 0 || offerAnalytics ) && (
+			{ ( modules.length > 0 || offerAnalytics || offerRank ) && (
 				<section className="saddle-soft-card">
 					<CardHead title={ __( 'Add-ons', 'saddle' ) } />
 					<ul className="saddle-home__addons">
@@ -639,6 +643,7 @@ export default function Home( { clients, onNavigate, onConnect, homeUrl } ) {
 							);
 						} ) }
 						{ offerAnalytics && <AnalyticsTile /> }
+						{ offerRank && <RankTile /> }
 					</ul>
 				</section>
 			) }

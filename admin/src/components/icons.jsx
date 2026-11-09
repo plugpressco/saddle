@@ -20,6 +20,7 @@ import OpenClawLogo from '@lobehub/icons-static-svg/icons/openclaw-color.svg';
 import GrokLogo from '@lobehub/icons-static-svg/icons/grok.svg';
 import { ReactComponent as Mark } from '../../../assets/brand/mark.svg';
 import AnalyticsIcon from '../../../assets/addons/saddle-analytics.svg';
+import RankIcon from '../../../assets/addons/saddle-rank.svg';
 
 // The Saddle brand mark (a saddle draped over the horse's back, knocked out
 // of a filled disc — the PlugPress portfolio motif), single-sourced from
@@ -133,6 +134,7 @@ export function appKeyFromLabel( label ) {
  */
 const ADDON_ICONS = {
 	analytics: AnalyticsIcon,
+	rank: RankIcon,
 };
 
 /**
