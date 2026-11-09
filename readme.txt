@@ -4,7 +4,7 @@ Tags: ai, seo, mcp, claude, chatgpt
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.7.0
+Stable tag: 1.7.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -209,6 +209,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 = 1.7.1 =
 * Fixed: Saddle now finds Divi 5 and Extra in any theme folder, such as `Divi-2` after a second upload. Before, it found them only in a folder named `Divi` or `Extra`, so it reported the site as classic and offered your AI agent no Divi tools.
 * Fixed: When your AI agent can't use the Divi tools on a Divi page, Saddle's message now says why. Before, it named a Divi tool the agent couldn't see.
+* Fixed: verify-page no longer calls Divi 5 presets and column widths "ignored". A page built with presets in the Visual Builder scored F, and an AI agent fixing the findings would remove the presets.
 
 = 1.7.0 =
 * New: Connecting your AI agent shows two ways, in the welcome and at the top of Agent setup: all your sites through Saddle Cloud, free up to 500 AI agent calls a month, or just this site through its own address. Saddle Cloud's button opens it with this site's address filled in, and Saddle sends nothing. Once Saddle Cloud is connected, its card says so.

@@ -2,14 +2,14 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Saddle – Build, Rank & Grow Your Website with AI 1.7.0\n"
+"Project-Id-Version: Saddle – Build, Rank & Grow Your Website with AI 1.7.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/saddle\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-09T02:11:40+00:00\n"
+"POT-Creation-Date: 2026-11-09T02:32:20+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -4376,66 +4376,66 @@ msgid "creating, rebuilding, or editing any page built with Divi"
 msgstr ""
 
 #. translators: 1: module type, 2: module + address.
-#: includes/builders/divi/class-saddle-divi-echo.php:207
+#: includes/builders/divi/class-saddle-divi-echo.php:227
 #, php-format
 msgid "No module.json exists for \"%1$s\" on this site, so Saddle cannot verify its fields or style paths (%2$s). If the type is misspelled the module renders nothing — confirm the exact type with divi-list-modules. If it is a runtime-registered third-party module that renders fine, ignore this."
 msgstr ""
 
 #. translators: 1: sub-key, 2: field, 3: module + address, 4: valid sub-keys.
-#: includes/builders/divi/class-saddle-divi-echo.php:229
+#: includes/builders/divi/class-saddle-divi-echo.php:249
 #, php-format
 msgid "\"%1$s\" is not a sub-field of \"%2$s\" on %3$s — it will be stored but never rendered. Write fields.%2$s = { %4$s }."
 msgstr ""
 
 #. translators: 1: field key, 2: module + address.
-#: includes/builders/divi/class-saddle-divi-echo.php:243
+#: includes/builders/divi/class-saddle-divi-echo.php:263
 #, php-format
 msgid "\"%1$s\" on %2$s is a module attribute but NOT a content field — written via \"fields\" it will not render. Set it through \"attrs\" using the paths from divi-get-style-schema."
 msgstr ""
 
 #. translators: 1: field key, 2: module + address, 3: content field list.
-#: includes/builders/divi/class-saddle-divi-echo.php:250
+#: includes/builders/divi/class-saddle-divi-echo.php:270
 #, php-format
 msgid "Content field \"%1$s\" on %2$s does not exist — it will be stored but never rendered. This module's content fields: %3$s."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-echo.php:253
-#: includes/builders/divi/class-saddle-divi-echo.php:516
+#: includes/builders/divi/class-saddle-divi-echo.php:273
+#: includes/builders/divi/class-saddle-divi-echo.php:542
 msgid "(none)"
 msgstr ""
 
 #. translators: 1: group, 2: module + address, 3: canonical path, 4: missing segment.
-#: includes/builders/divi/class-saddle-divi-echo.php:339
+#: includes/builders/divi/class-saddle-divi-echo.php:359
 #, php-format
 msgid "The \"%1$s\" group on %2$s nests its value deeper than written — Divi reads %3$s (note the extra \"%4$s\" level), so this write will silently not render. Rewrite on that exact path."
 msgstr ""
 
 #. translators: 1: written key, 2: group, 3: module + address, 4: valid breakpoints.
-#: includes/builders/divi/class-saddle-divi-echo.php:391
+#: includes/builders/divi/class-saddle-divi-echo.php:411
 #, php-format
 msgid "\"%1$s\" is not a Divi breakpoint on the \"%2$s\" group of %3$s — the styling will silently not render. Valid breakpoints: %4$s."
 msgstr ""
 
 #. translators: 1: written key, 2: group, 3: module + address, 4: valid states.
-#: includes/builders/divi/class-saddle-divi-echo.php:408
+#: includes/builders/divi/class-saddle-divi-echo.php:428
 #, php-format
 msgid "\"%1$s\" is not a value state on the \"%2$s\" group of %3$s — the styling will silently not render. Expected one of: %4$s."
 msgstr ""
 
 #. translators: 1: written field, 2: group, 3: module + address, 4: valid fields.
-#: includes/builders/divi/class-saddle-divi-echo.php:424
+#: includes/builders/divi/class-saddle-divi-echo.php:444
 #, php-format
 msgid "\"%1$s\" is not a settable field of the \"%2$s\" group on %3$s — the styling will silently not render. Fields: %4$s."
 msgstr ""
 
 #. translators: 1: attr name, 2: module + address, 3: attribute list.
-#: includes/builders/divi/class-saddle-divi-echo.php:483
+#: includes/builders/divi/class-saddle-divi-echo.php:504
 #, php-format
 msgid "Attribute \"%1$s\" on %2$s is not part of this module — Divi will store and ignore it. Module attributes: %3$s."
 msgstr ""
 
 #. translators: 1: group kind, 2: group, 3: attr name, 4: module + address, 5: valid groups.
-#: includes/builders/divi/class-saddle-divi-echo.php:511
+#: includes/builders/divi/class-saddle-divi-echo.php:537
 #, php-format
 msgid "No \"%2$s\" %1$s group exists on \"%3$s\" of %4$s — the styling will silently not render. Valid %1$s groups: %5$s."
 msgstr ""
