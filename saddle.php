@@ -3,7 +3,7 @@
  * Plugin Name:       Saddle – Build, Rank & Grow Your Website with AI
  * Plugin URI:        https://saddle.to
  * Description:       Let Claude, ChatGPT and Cursor work on your site through MCP. Each agent starts read-only, and every delete asks you first.
- * Version:           1.7.1
+ * Version:           1.7.2
  * Requires at least: 6.9
  * Requires PHP:      7.4
  * Author:            PlugPress
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SADDLE_VERSION', '1.7.1' );
+define( 'SADDLE_VERSION', '1.7.2' );
 define( 'SADDLE_FILE', __FILE__ );
 define( 'SADDLE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SADDLE_URL', plugin_dir_url( __FILE__ ) );
