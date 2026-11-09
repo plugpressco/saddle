@@ -206,6 +206,9 @@ The WordPress.org version never checks for its own updates. The version from plu
 
 == Changelog ==
 
+= 1.7.1 =
+* Fixed: verify-page no longer calls Divi 5 presets and column widths "ignored". A page built with presets in the Visual Builder scored F, and an AI agent fixing the findings would remove the presets.
+
 = 1.7.0 =
 * New: Connecting your AI agent shows two ways, in the welcome and at the top of Agent setup: all your sites through Saddle Cloud, free up to 500 AI agent calls a month, or just this site through its own address. Saddle Cloud's button opens it with this site's address filled in, and Saddle sends nothing. Once Saddle Cloud is connected, its card says so.
 * New: Run without asking, on Saddle → Agent setup, for each agent set to Manage the site. With it on, that agent's changes and deletes run right away, with no preview and no OK from you. It is off for every agent until you turn it on, and Saddle asks you to confirm first. Tools you turned off stay off, deleted posts and pages go to the Trash, and every change is logged and can be undone in Logs.
