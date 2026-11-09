@@ -206,6 +206,9 @@ The WordPress.org version never checks for its own updates. The version from plu
 
 == Changelog ==
 
+= 1.7.2 =
+* Fixed: Saddle Pro, Saddle Analytics and Saddle Rank now activate when Saddle sits in a folder with another name, such as `saddle-2` after a second upload. Before, WordPress said a required plugin was missing, even with Saddle active.
+
 = 1.7.1 =
 * Fixed: Saddle now finds Divi 5 and Extra in any theme folder, such as `Divi-2` after a second upload. Before, it found them only in a folder named `Divi` or `Extra`, so it reported the site as classic and offered your AI agent no Divi tools.
 * Fixed: When your AI agent can't use the Divi tools on a Divi page, Saddle's message now says why. Before, it named a Divi tool the agent couldn't see.

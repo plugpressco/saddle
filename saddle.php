@@ -151,6 +151,7 @@ require_once SADDLE_DIR . 'includes/class-saddle-mcp.php';
 require_once SADDLE_DIR . 'includes/class-saddle-mcp-diagnostics.php';
 require_once SADDLE_DIR . 'includes/class-saddle-connections.php';
 require_once SADDLE_DIR . 'includes/class-saddle-connection-apps.php';
+require_once SADDLE_DIR . 'includes/class-saddle-plugin-folder.php';
 
 // Adapter-only. class-saddle-bundled-adapter.php is absent from every zip along
 // with the library itself, so file_exists() makes it a no-op there, exactly as
@@ -213,6 +214,10 @@ final class Saddle {
 	 * Boot the plugin.
 	 */
 	public static function init() {
+		// Saddle Pro, Analytics and Rank require the slug `saddle`; a renamed
+		// folder (`saddle-2`) must still satisfy it while Saddle is active.
+		Saddle_Plugin_Folder::register();
+
 		// Recover a stripped Basic Authorization header for REST/API requests so
 		// core's Application Password auth still works on hosts that mangle it.
 		// Must run before REST authentication; priority 1 on plugins_loaded.
