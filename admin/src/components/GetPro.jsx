@@ -1,14 +1,14 @@
 /**
- * Saddle → Get Premium (#373, Get Pro until 2026-11-02; Free to $299 the
- * same day): Saddle Cloud's Free, Go, Pro and Reach plans, one yearly price
- * each with unlimited sites, after saddle.to's pricing page.
+ * Saddle → Get Premium (#373, Get Pro until 2026-11-02): Saddle Cloud's
+ * Free, Go, Pro and Ultimate plans, one yearly price each, sold by sites
+ * since 2026-11-09, after saddle.to's pricing page.
  *
  * Centred: a heading and one line. Then the plans as one table of four
  * cards whose rows line up (subgrid): the plan's icon (Pro wears the crown)
- * and what it is for, the price a year, "Unlimited sites", the button
+ * and what it is for, the price a year, the sites it covers, the button
  * (Free's to Saddle Cloud with this site filled in, the others to their
  * checkout on saddle.to), the same two numbers on every card (AI agent calls
- * a month, SEO credits a month), then the four things it adds. Then four
+ * an hour or a month, SEO credits a month), then what it adds. Then four
  * short answers and the money-back line. Every button opens a new tab; the
  * page sends nothing.
  *
@@ -64,9 +64,7 @@ function Plan( { plan } ) {
 				</span>
 			</p>
 
-			<p className="saddle-plan__billed">
-				{ __( 'Unlimited sites', 'saddle' ) }
-			</p>
+			<p className="saddle-plan__billed">{ plan.sites }</p>
 
 			<Button
 				className="saddle-plan__buy"

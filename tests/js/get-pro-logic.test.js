@@ -1,6 +1,7 @@
 /**
- * Get Premium's plans (#373; Free to $299, 2026-11-02): the prices saddle.to
- * shows, where each button goes, and when the Saddle Cloud offers stop.
+ * Get Premium's plans (#373; by sites since 2026-11-09): the prices and
+ * sites saddle.to shows, where each button goes, and when the Saddle Cloud
+ * offers stop. Keep equal to saddle-cloud's src/shared/plans.ts.
  */
 import {
 	cloudConnectUrl,
@@ -10,12 +11,14 @@ import {
 } from '../../admin/src/get-pro-logic';
 
 describe( 'plan cards', () => {
-	it( 'shows saddle.to’s yearly prices, Free first', () => {
-		expect( planCards().map( ( c ) => [ c.key, c.yearly ] ) ).toEqual( [
-			[ 'free', 0 ],
-			[ 'go', 49 ],
-			[ 'pro', 99 ],
-			[ 'reach', 299 ],
+	it( 'shows saddle.to’s yearly prices and sites, Free first', () => {
+		expect(
+			planCards().map( ( c ) => [ c.key, c.name, c.yearly, c.sites ] )
+		).toEqual( [
+			[ 'free', 'Free', 0, '1 site' ],
+			[ 'go', 'Go', 49, '1 site' ],
+			[ 'pro', 'Pro', 99, 'Up to 3 sites' ],
+			[ 'reach', 'Ultimate', 199, 'Up to 10 sites' ],
 		] );
 	} );
 
@@ -32,38 +35,37 @@ describe( 'plan cards', () => {
 			],
 			[ 'https://saddle.to/go/go-5/', 'Choose Go' ],
 			[ 'https://saddle.to/go/pro-20/', 'Choose Pro' ],
-			[ 'https://saddle.to/go/reach-50/', 'Choose Reach' ],
+			[ 'https://saddle.to/go/reach-50/', 'Choose Ultimate' ],
 		] );
 	} );
 
-	it( 'gives every plan the same two numbers, credits on Pro and Reach', () => {
-		const [ free, go, pro, reach ] = planCards();
-		expect( free.facts.map( ( f ) => f.text ) ).toEqual( [
-			'500 AI agent calls a month',
-			'No SEO credits',
-		] );
-		expect( go.facts[ 0 ].text ).toBe( '10,000 AI agent calls a month' );
-		expect( pro.facts.map( ( f ) => f.text ) ).toEqual( [
-			'50,000 AI agent calls a month',
-			'200 SEO credits a month',
-		] );
-		expect( reach.facts.map( ( f ) => f.text ) ).toEqual( [
-			'250,000 AI agent calls a month',
-			'2,000 SEO credits a month',
-		] );
-		expect( go.facts[ 1 ].none ).toBe( true );
-		expect( reach.facts[ 1 ].none ).toBe( false );
-		// Four things each, so the cards line up.
+	it( 'gives every plan the same two numbers: calls, and credits on paid plans', () => {
 		expect(
-			[ free, go, pro, reach ].map( ( plan ) => plan.items.length )
-		).toEqual( [ 4, 4, 4, 4 ] );
+			planCards().map( ( plan ) => plan.facts.map( ( f ) => f.text ) )
+		).toEqual( [
+			[ '500 AI agent calls a month', 'No SEO credits' ],
+			[ '100 AI agent calls an hour', '500 SEO credits a month' ],
+			[ '200 AI agent calls an hour', '1,000 SEO credits a month' ],
+			[ '500 AI agent calls an hour', '2,500 SEO credits a month' ],
+		] );
+		expect( planCards().map( ( plan ) => plan.facts[ 1 ].none ) ).toEqual( [
+			true,
+			false,
+			false,
+			false,
+		] );
 		expect( planCards().map( ( plan ) => plan.pro ) ).toEqual( [
 			false,
 			false,
 			true,
 			false,
 		] );
-		expect( pro.icon ).toBe( 'crown' );
+		expect( planCards()[ 2 ].icon ).toBe( 'crown' );
+	} );
+
+	it( 'never offers unlimited sites or a support level saddle.to does not sell', () => {
+		const words = JSON.stringify( planCards() );
+		expect( words ).not.toMatch( /Unlimited sites|Priority support|Reach/ );
 	} );
 } );
 
