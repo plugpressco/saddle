@@ -2420,9 +2420,17 @@ class Saddle_Abilities {
 			return true;
 		}
 
-		$divi5_tools = 'Divi 5' === $builder
-			&& function_exists( 'wp_get_abilities' )
-			&& isset( wp_get_abilities()['saddle/divi-set-page'] );
+		// Name the Divi tools only when this agent can call them. A registered
+		// tool can still be hidden from tools/list (Divi not detected, the tool
+		// turned off), and pointing at it sends the agent to a dead end.
+		$hint = __( 'Layout changes need the builder’s own editor — tell the site owner instead of forcing the edit.', 'saddle' );
+		if ( 'Divi 5' === $builder ) {
+			if ( Saddle_Capabilities::is_callable_now( 'saddle/divi-set-page' ) ) {
+				$hint = __( 'To change the layout itself, use the saddle/divi-* tools (divi-get-page, divi-edit-module, divi-set-page).', 'saddle' );
+			} elseif ( ! Saddle_Divi::is_active() ) {
+				$hint = Saddle_Divi::not_detected_hint();
+			}
+		}
 
 		return new WP_Error(
 			'saddle_builder_content',
@@ -2431,9 +2439,7 @@ class Saddle_Abilities {
 				__( 'Post #%1$d is built with %2$s — overwriting its content field would destroy the layout, so Saddle refuses. You can still edit its title, status, excerpt, taxonomy, and meta. ', 'saddle' ),
 				$post->ID,
 				$builder
-			) . ( $divi5_tools
-				? __( 'To change the layout itself, use the saddle/divi-* tools (divi-get-page, divi-edit-module, divi-set-page).', 'saddle' )
-				: __( 'Layout changes need the builder’s own editor — tell the site owner instead of forcing the edit.', 'saddle' ) ),
+			) . $hint,
 			array( 'status' => 409 )
 		);
 	}

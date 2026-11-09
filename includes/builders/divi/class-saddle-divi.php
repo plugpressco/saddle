@@ -102,6 +102,18 @@ class Saddle_Divi {
 	}
 
 	/**
+	 * What an agent should hear when a page holds Divi 5 modules but Saddle
+	 * does not see Divi 5 as the active theme, so the Divi tools are hidden.
+	 * Without it the agent is pointed at tools it cannot see, and reports
+	 * that instead of the cause (reported 2026-11-09).
+	 *
+	 * @return string
+	 */
+	public static function not_detected_hint() {
+		return __( 'Saddle does not detect Divi 5 as this site’s active theme, so its Divi tools are off here. Tell the site owner, and do not force the edit.', 'saddle' );
+	}
+
+	/**
 	 * The CSS custom-property reference for a Global Data id.
 	 *
 	 * Divi's built-in font variables carry ids that ALREADY start with

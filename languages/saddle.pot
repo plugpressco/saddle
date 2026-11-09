@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-05T23:07:11+00:00\n"
+"POT-Creation-Date: 2026-11-09T02:11:40+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -503,7 +503,7 @@ msgstr ""
 #: includes/abilities/blocks.php:1098
 #: includes/abilities/blocks.php:1113
 #: includes/abilities/blocks.php:1206
-#: includes/abilities/blocks.php:1450
+#: includes/abilities/blocks.php:1455
 #, php-format
 msgid "No block at address %s."
 msgstr ""
@@ -583,33 +583,33 @@ msgstr[1] ""
 msgid "Inserted pattern \"%1$s\" into post #%2$d at %3$s."
 msgstr ""
 
+#: includes/abilities/blocks.php:1395
+msgid "Its layout is edited with the builder's own editor — tell the site owner instead of forcing the edit."
+msgstr ""
+
+#: includes/abilities/blocks.php:1398
+msgid "Use the saddle/divi-* tools for this page instead."
+msgstr ""
+
 #. translators: 1: post ID, 2: builder name.
-#: includes/abilities/blocks.php:1401
+#: includes/abilities/blocks.php:1408
 #, php-format
 msgid "Post #%1$d is built with %2$s, so the native block tools do not apply to it. "
 msgstr ""
 
-#: includes/abilities/blocks.php:1405
-msgid "Use the saddle/divi-* tools for this page instead."
-msgstr ""
-
-#: includes/abilities/blocks.php:1406
-msgid "Its layout is edited with the builder's own editor — tell the site owner instead of forcing the edit."
-msgstr ""
-
-#: includes/abilities/blocks.php:1421
+#: includes/abilities/blocks.php:1426
 #: includes/abilities/core-content.php:2303
 #: includes/abilities/divi.php:1339
 #: includes/abilities/divi.php:1440
 #: includes/abilities/render.php:160
-#: includes/builders/divi/class-saddle-divi.php:114
+#: includes/builders/divi/class-saddle-divi.php:171
 msgid "No post or page with that ID."
 msgstr ""
 
-#: includes/abilities/blocks.php:1424
+#: includes/abilities/blocks.php:1429
 #: includes/abilities/divi.php:1342
 #: includes/abilities/divi.php:1443
-#: includes/builders/divi/class-saddle-divi.php:117
+#: includes/builders/divi/class-saddle-divi.php:174
 msgid "You cannot edit this post."
 msgstr ""
 
@@ -1136,7 +1136,7 @@ msgstr ""
 
 #. translators: 1: the type's name, such as post, page or Event, 2: id, 3: title.
 #: includes/abilities/core-content.php:1212
-#: includes/abilities/core-content.php:2528
+#: includes/abilities/core-content.php:2534
 #, php-format
 msgid "Updated %1$s #%2$d \"%3$s\""
 msgstr ""
@@ -1302,69 +1302,69 @@ msgstr ""
 msgid "ID %1$d belongs to the type %2$s (\"%3$s\"). %4$s"
 msgstr ""
 
+#: includes/abilities/core-content.php:2426
+msgid "Layout changes need the builder’s own editor — tell the site owner instead of forcing the edit."
+msgstr ""
+
+#: includes/abilities/core-content.php:2429
+msgid "To change the layout itself, use the saddle/divi-* tools (divi-get-page, divi-edit-module, divi-set-page)."
+msgstr ""
+
 #. translators: 1: post ID, 2: builder name.
-#: includes/abilities/core-content.php:2431
+#: includes/abilities/core-content.php:2439
 #, php-format
 msgid "Post #%1$d is built with %2$s — overwriting its content field would destroy the layout, so Saddle refuses. You can still edit its title, status, excerpt, taxonomy, and meta. "
 msgstr ""
 
-#: includes/abilities/core-content.php:2435
-msgid "To change the layout itself, use the saddle/divi-* tools (divi-get-page, divi-edit-module, divi-set-page)."
-msgstr ""
-
-#: includes/abilities/core-content.php:2436
-msgid "Layout changes need the builder’s own editor — tell the site owner instead of forcing the edit."
-msgstr ""
-
 #. translators: %s: the type's name, such as post, page or Event.
-#: includes/abilities/core-content.php:2457
-#: includes/abilities/core-content.php:2563
+#: includes/abilities/core-content.php:2463
+#: includes/abilities/core-content.php:2569
 #, php-format
 msgid "No %s with that ID."
 msgstr ""
 
 #. translators: 1: the type's name, such as post, page or Event, 2: id, 3: title.
-#: includes/abilities/core-content.php:2590
+#: includes/abilities/core-content.php:2596
 #, php-format
 msgid "Already in the trash: %1$s #%2$d \"%3$s\". Nothing changed. To delete it for good, call again with \"force\" set to true."
 msgstr ""
 
 #. translators: 1: the type's name, such as post, page or Event, 2: id, 3: title.
-#: includes/abilities/core-content.php:2604
+#: includes/abilities/core-content.php:2610
 #, php-format
 msgid "Permanently delete %1$s #%2$d \"%3$s\". This cannot be undone."
 msgstr ""
 
 #. translators: 1: the type's name, such as post, page or Event, 2: id, 3: title.
-#: includes/abilities/core-content.php:2611
+#: includes/abilities/core-content.php:2617
 #, php-format
 msgid "Move %1$s #%2$d \"%3$s\" to the trash. It can be restored from Trash."
 msgstr ""
 
 #. translators: 1: the type's name, such as post, page or Event, 2: id, 3: title.
-#: includes/abilities/core-content.php:2620
+#: includes/abilities/core-content.php:2626
 #, php-format
 msgid "Permanently deleted %1$s #%2$d \"%3$s\"."
 msgstr ""
 
 #. translators: 1: the type's name, such as post, page or Event, 2: id, 3: title.
-#: includes/abilities/core-content.php:2627
+#: includes/abilities/core-content.php:2633
 #, php-format
 msgid "Moved %1$s #%2$d \"%3$s\" to the trash."
 msgstr ""
 
 #. translators: 1: the type's name, such as post, page or Event, 2: id, 3: title.
-#: includes/abilities/core-content.php:2645
+#: includes/abilities/core-content.php:2651
 #, php-format
 msgid "Nothing changed: %1$s #%2$d \"%3$s\" was already in the trash."
 msgstr ""
 
-#: includes/abilities/core-content.php:2675
+#: includes/abilities/core-content.php:2681
 msgid "WordPress could not delete the item."
 msgstr ""
 
 #. translators: %d: number of items omitted from this page.
-#: includes/abilities/core-content.php:2949
+#: includes/abilities/core-content.php:2955
 #, php-format
 msgid "%d item on this page is not visible to the WordPress account this agent is connected as, and was left out. \"total\" still counts it, so this page is shorter than the page size. This is not an error and retrying will not change it."
 msgid_plural "%d items on this page are not visible to the WordPress account this agent is connected as, and were left out. \"total\" still counts them, so this page is shorter than the page size. This is not an error and retrying will not change it."
@@ -1372,7 +1372,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: requested post status, e.g. "draft".
-#: includes/abilities/core-content.php:3160
+#: includes/abilities/core-content.php:3166
 #, php-format
 msgid "The WordPress account this agent is connected as cannot see \"%s\" content on this site — only published items are available to it. That is the account's role, not a Saddle setting. Do not retry this status; tell the user to reconnect Saddle as an account that can edit this content."
 msgstr ""
@@ -1509,7 +1509,7 @@ msgid "Returns this site's whole Divi working memory in ONE call: the full modul
 msgstr ""
 
 #: includes/abilities/divi-bundle.php:48
-#: includes/builders/divi/class-saddle-divi.php:110
+#: includes/builders/divi/class-saddle-divi.php:167
 msgid "Divi 5 is not active on this site."
 msgstr ""
 
@@ -4621,7 +4621,11 @@ msgstr ""
 msgid "This persisted attribute does nothing — rewrite it on a path from divi-get-style-schema, or remove it."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi.php:120
+#: includes/builders/divi/class-saddle-divi.php:113
+msgid "Saddle does not detect Divi 5 as this site’s active theme, so its Divi tools are off here. Tell the site owner, and do not force the edit."
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi.php:177
 msgid "This post is not a Divi 5 page. Use divi-set-page to build an empty post, or the regular content tools for non-Divi content."
 msgstr ""
 
