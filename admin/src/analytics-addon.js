@@ -9,31 +9,17 @@
  * the block directory does; `POST /wp/v2/plugins/<plugin>` turns on a copy
  * that is already installed. Saddle writes no file.
  */
-import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
-import { plainError, saddleData } from './api';
+import { createAddon } from './addon';
 
-const SLUG = 'saddle-analytics';
-const PLUGIN = 'saddle-analytics/saddle-analytics';
-
-// Where it stands for the rest of this page's life. A successful add moves it
-// to `active`, so the welcome and Home never offer it twice.
-let current = {
-	state: 'active',
-	canAdd: false,
-	url: '',
-	manualUrl: '',
-	...( saddleData.analytics || {} ),
-};
+const analytics = createAddon( 'analytics', 'saddle-analytics' );
 
 /**
  * Saddle Analytics as this page knows it.
  *
  * @return {{state:string,canAdd:boolean,url:string,manualUrl:string}} State.
  */
-export function analyticsOffer() {
-	return current;
-}
+export const analyticsOffer = analytics.offer;
 
 /**
  * Installs Saddle Analytics from WordPress.org when it is missing, and turns
@@ -41,39 +27,7 @@ export function analyticsOffer() {
  *
  * @return {Promise<Object>} WordPress's plugin record; rejects with its error.
  */
-export function addAnalytics() {
-	const activate = () =>
-		apiFetch( {
-			path: `/wp/v2/plugins/${ PLUGIN }`,
-			method: 'POST',
-			data: { status: 'active' },
-		} );
-	const run =
-		'inactive' === current.state
-			? activate()
-			: apiFetch( {
-					path: '/wp/v2/plugins',
-					method: 'POST',
-					data: { slug: SLUG, status: 'active' },
-			  } ).catch( ( error ) => {
-					// Installed since the page loaded (another tab, or by
-					// hand): turn that copy on.
-					if ( error && 'folder_exists' === error.code ) {
-						return activate();
-					}
-					throw error;
-			  } );
-
-	return run.then(
-		( plugin ) => {
-			current = { ...current, state: 'active', canAdd: false };
-			return plugin;
-		},
-		( error ) => {
-			throw plainError( error );
-		}
-	);
-}
+export const addAnalytics = analytics.add;
 
 /**
  * What to say when adding it failed: WordPress's own reason, else a

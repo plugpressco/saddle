@@ -279,6 +279,13 @@ dry-run, no diff and no revert.
   offered only when the owner has `install_plugins` (or `activate_plugins`
   for an installed copy), never on a network. No ability, no Saddle route
   and no Saddle key reaches it, so it is the owner installing, not Saddle.
+  **Saddle Rank joined it (#409, 2026-11-10, Fahim: "add a card install auto
+  saddle rank also in onboarding add that like saddle analytics").** The same
+  Add-ons tile and welcome question, for the one slug `saddle-rank`, with Rank's
+  own WordPress.org icon copied into `assets/addons/` (the add-on's
+  `.wordpress.org/icon.svg`). The server offers each add-on by a fixed slug
+  (`Saddle_Settings::addon_offer()`); the page's `admin/src/addon.js` is the
+  one install path. No third slug without a written reason here.
 
 If a feature seems to need any of these, that is a signal to redesign the
 feature. Two reasons, both load-bearing: WordPress.org will not accept arbitrary

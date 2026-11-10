@@ -35,6 +35,7 @@ import {
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { api, connectionPath } from '../api';
 import { addAnalytics, addError, analyticsOffer } from '../analytics-addon';
+import { addRank, addRankError, rankOffer } from '../rank-addon';
 import ConnectWizard from './ConnectWizard';
 import ConnectWays from './ConnectWays';
 import WaitingLine from './WaitingLine';
@@ -570,16 +571,22 @@ function endLine( role, label ) {
 
 /**
  * One more question after the access choice, or after Saddle Cloud was
- * opened (#367): visitor stats. Yes adds Saddle Analytics from WordPress.org
- * and turns it on without leaving the page (see analytics-addon.js).
- * Whatever the answer, what comes next (the Finish button) follows it.
+ * opened: whether to add one of Saddle's own add-ons (visitor stats, #367;
+ * SEO, #409). Yes adds it from WordPress.org and turns it on without leaving
+ * the page (see addon.js). Whatever the answer, what comes next follows it.
  *
- * @param {Object} props
- * @param {*}      props.next What follows, drawn once answered.
+ * @param {Object}   props
+ * @param {Object}   props.copy     The words: `groupLabel`, `askInstalled`,
+ *                                  `askMissing`, `adding`, `installing`,
+ *                                  `on`, `onLine`, `laterOn`, `laterAdd`.
+ * @param {Function} props.getOffer Where the add-on stands (see addon.js).
+ * @param {Function} props.add      Adds it; a promise.
+ * @param {Function} props.failText Says why adding failed.
+ * @param {*}        props.next     What follows, drawn once answered.
  */
-function AnalyticsQuestion( { next } ) {
+function AddonQuestion( { copy, getOffer, add, failText, next } ) {
 	const reduced = useReducedMotion();
-	const [ offer ] = useState( analyticsOffer );
+	const [ offer ] = useState( getOffer );
 	// '' until answered, then 'yes' or 'no'.
 	const [ answer, setAnswer ] = useState( '' );
 	// After a yes: 'adding', then 'added' or 'failed'.
@@ -604,10 +611,10 @@ function AnalyticsQuestion( { next } ) {
 	const yes = () => {
 		setAnswer( 'yes' );
 		setPhase( 'adding' );
-		addAnalytics().then(
+		add().then(
 			() => setPhase( 'added' ),
 			( e ) => {
-				setError( addError( e ) );
+				setError( failText( e ) );
 				setPhase( 'failed' );
 			}
 		);
@@ -616,24 +623,14 @@ function AnalyticsQuestion( { next } ) {
 	return (
 		<>
 			<Say cont>
-				<p>
-					{ installed
-						? __(
-								'One more question. Saddle Analytics is installed but off. It counts visits without cookies, and your AI can read the numbers. Turn it on?',
-								'saddle'
-						  )
-						: __(
-								'One more question. Do you want visitor stats? Saddle Analytics counts visits without cookies, and your AI can read the numbers.',
-								'saddle'
-						  ) }
-				</p>
+				<p>{ installed ? copy.askInstalled : copy.askMissing }</p>
 			</Say>
 
 			{ ! answer && (
 				<div
 					className="saddle-chat__replies"
 					role="group"
-					aria-label={ __( 'Visitor stats', 'saddle' ) }
+					aria-label={ copy.groupLabel }
 				>
 					<button
 						type="button"
@@ -661,25 +658,15 @@ function AnalyticsQuestion( { next } ) {
 			{ 'adding' === phase && (
 				<Say>
 					<p className="saddle-chat__muted">
-						{ installed
-							? __( 'Turning on Saddle Analytics…', 'saddle' )
-							: __(
-									'Installing Saddle Analytics from WordPress.org…',
-									'saddle'
-							  ) }
+						{ installed ? copy.adding : copy.installing }
 					</p>
 				</Say>
 			) }
 
 			{ 'added' === phase && (
 				<Say>
-					<Done>{ __( 'Saddle Analytics is on.', 'saddle' ) }</Done>
-					<p>
-						{ __(
-							'It counts visits from now on, and has its own page in the Saddle menu.',
-							'saddle'
-						) }
-					</p>
+					<Done>{ copy.on }</Done>
+					<p>{ copy.onLine }</p>
 				</Say>
 			) }
 
@@ -700,23 +687,99 @@ function AnalyticsQuestion( { next } ) {
 
 			{ 'no' === answer && (
 				<Say>
-					<p>
-						{ installed
-							? __(
-									'You can turn it on any time from Home.',
-									'saddle'
-							  )
-							: __(
-									'You can add it any time from Home.',
-									'saddle'
-							  ) }
-					</p>
+					<p>{ installed ? copy.laterOn : copy.laterAdd }</p>
 				</Say>
 			) }
 			{ ( 'added' === phase || 'failed' === phase || 'no' === answer ) &&
 				next }
 			<div ref={ end } />
 		</>
+	);
+}
+
+/**
+ * The Saddle Analytics question (#367).
+ *
+ * @param {Object} props
+ * @param {*}      props.next What follows, drawn once answered.
+ */
+function AnalyticsQuestion( { next } ) {
+	return (
+		<AddonQuestion
+			getOffer={ analyticsOffer }
+			add={ addAnalytics }
+			failText={ addError }
+			next={ next }
+			copy={ {
+				groupLabel: __( 'Visitor stats', 'saddle' ),
+				askInstalled: __(
+					'One more question. Saddle Analytics is installed but off. It counts visits without cookies, and your AI can read the numbers. Turn it on?',
+					'saddle'
+				),
+				askMissing: __(
+					'One more question. Do you want visitor stats? Saddle Analytics counts visits without cookies, and your AI can read the numbers.',
+					'saddle'
+				),
+				adding: __( 'Turning on Saddle Analytics…', 'saddle' ),
+				installing: __(
+					'Installing Saddle Analytics from WordPress.org…',
+					'saddle'
+				),
+				on: __( 'Saddle Analytics is on.', 'saddle' ),
+				onLine: __(
+					'It counts visits from now on, and has its own page in the Saddle menu.',
+					'saddle'
+				),
+				laterOn: __(
+					'You can turn it on any time from Home.',
+					'saddle'
+				),
+				laterAdd: __( 'You can add it any time from Home.', 'saddle' ),
+			} }
+		/>
+	);
+}
+
+/**
+ * The Saddle Rank question (#409).
+ *
+ * @param {Object} props
+ * @param {*}      props.next What follows, drawn once answered.
+ */
+function RankQuestion( { next } ) {
+	return (
+		<AddonQuestion
+			getOffer={ rankOffer }
+			add={ addRank }
+			failText={ addRankError }
+			next={ next }
+			copy={ {
+				groupLabel: __( 'SEO', 'saddle' ),
+				askInstalled: __(
+					'Last question. Saddle Rank is installed but off. It sets up your SEO and helps AI answers find and cite your site. Turn it on?',
+					'saddle'
+				),
+				askMissing: __(
+					'Last question. Do you want help ranking? Saddle Rank sets up your SEO and helps AI answers find and cite your site.',
+					'saddle'
+				),
+				adding: __( 'Turning on Saddle Rank…', 'saddle' ),
+				installing: __(
+					'Installing Saddle Rank from WordPress.org…',
+					'saddle'
+				),
+				on: __( 'Saddle Rank is on.', 'saddle' ),
+				onLine: __(
+					'It has its own page in the Saddle menu, with what to fix first.',
+					'saddle'
+				),
+				laterOn: __(
+					'You can turn it on any time from Home.',
+					'saddle'
+				),
+				laterAdd: __( 'You can add it any time from Home.', 'saddle' ),
+			} }
+		/>
 	);
 }
 
@@ -783,6 +846,8 @@ export default function FirstRun( {
 	const [ askAnalytics, setAskAnalytics ] = useState(
 		() => analyticsOffer().canAdd
 	);
+	// The same for Saddle Rank, asked after it (#409).
+	const [ askRank, setAskRank ] = useState( () => rankOffer().canAdd );
 	// The newest part of the conversation, kept in view the way a chat is.
 	const newest = useRef( null );
 	const pulseForConnect = useRef( null );
@@ -858,6 +923,7 @@ export default function FirstRun( {
 	const pickWay = ( next ) => {
 		if ( next !== way ) {
 			setAskAnalytics( analyticsOffer().canAdd );
+			setAskRank( rankOffer().canAdd );
 			setWay( next );
 		}
 	};
@@ -883,12 +949,17 @@ export default function FirstRun( {
 			</Button>
 		</div>
 	);
-	// The welcome's end: the Analytics question while it may be offered,
-	// then Finish.
-	const ending = askAnalytics ? (
-		<AnalyticsQuestion next={ <Say cont>{ finishButton }</Say> } />
+	// The welcome's end: the Analytics question, then the Rank question, each
+	// only while it may be offered, then Finish.
+	const afterRank = askRank ? (
+		<RankQuestion next={ <Say cont>{ finishButton }</Say> } />
 	) : (
 		<Say cont>{ finishButton }</Say>
+	);
+	const ending = askAnalytics ? (
+		<AnalyticsQuestion next={ afterRank } />
+	) : (
+		afterRank
 	);
 
 	const renderWaiting = ( {
