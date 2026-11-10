@@ -4,7 +4,7 @@ Tags: ai, seo, mcp, claude, chatgpt
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.7.2
+Stable tag: 1.7.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -205,6 +205,9 @@ The WordPress.org version never checks for its own updates. The version from plu
 6. Welcome: Saddle looks around your site and helps you connect your first AI agent.
 
 == Changelog ==
+
+= 1.7.3 =
+* New: Saddle Rank, the free SEO and AI search plugin, is offered like Saddle Analytics: a tile in Home's Add-ons and a last question in the welcome. One click installs it from WordPress.org and turns it on, or turns on a copy you already have. Nothing is installed without your click, and only you can do it.
 
 = 1.7.2 =
 * Changed: Get Premium shows Saddle Cloud's plans by sites, as saddle.to does: Free for one site, Go $49 a year for one site, Pro $99 for up to 3 and Ultimate $199 for up to 10. Every paid plan includes Saddle Pro and every SEO tool, with more SEO credits and AI agent calls on the bigger plans.
