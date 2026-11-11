@@ -573,13 +573,13 @@ class Saddle_Settings {
 					// one cause is simply an expired session, and signing in again
 					// is the whole fix. Returns to this screen afterwards.
 					'loginUrl'     => esc_url_raw( wp_login_url( Saddle_Modules::url( $area, $tab, $sub ) ) ),
-					// Header chrome: plugin version + outbound links. Both point at
-					// the plugin's WordPress.org listing rather than a vendor site:
-					// that is where a free .org-hosted plugin's docs and reviews
-					// actually live, and it keeps the review CTA on .org. Filterable
-					// so first-party docs can be repointed without a rebuild.
+					// Header chrome: plugin version + outbound links. Docs opens the
+					// guides on saddle.to, the plugin's own site (its Plugin URI);
+					// until they were written it opened the WordPress.org listing.
+					// The review link stays on WordPress.org, where reviews live.
+					// Both are filterable.
 					'version'      => SADDLE_VERSION,
-					'docsUrl'      => esc_url_raw( apply_filters( 'saddle_docs_url', 'https://wordpress.org/plugins/saddle/' ) ),
+					'docsUrl'      => esc_url_raw( apply_filters( 'saddle_docs_url', 'https://saddle.to/docs/' ) ),
 					'rateUrl'      => esc_url_raw( apply_filters( 'saddle_rate_url', 'https://wordpress.org/support/plugin/saddle/reviews/' ) ),
 					// The admin app's extension-contract version — addon bundles
 					// gate on it before registering (admin/src/extensions.js).
