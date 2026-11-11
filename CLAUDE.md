@@ -228,7 +228,8 @@ dry-run, no diff and no revert.
   file write is a signal to redesign, not a second exception.
   WordPress's own file work is not Saddle writing files, and the readme says
   so in one line: media uploads go through core's sideload and upload
-  handlers, updates through core's updater (below), and a permalink change
+  handlers (an upload link, below under Auth model, hands its file to the same
+  attachment controller), updates through core's updater (below), and a permalink change
   through `update-option` (admin tier, gated) runs `flush_rewrite_rules()`,
   which lets WordPress rewrite its own `.htaccess` block exactly as Settings →
   Permalinks does. A soft flush would leave Apache without rules after a move
@@ -492,6 +493,30 @@ each time. The host, path and query must still match byte for byte, and
 nothing else is relaxed. It lives in one place,
 `Saddle_OAuth_Clients::redirect_uri_matches()`. The token endpoint still
 compares against the exact URI used at authorize time.
+
+**An upload link is not a third sign-in (#412, decided 2026-11-12 on Fahim's
+"ok do it").** The written reason: `upload-media` takes a public URL or base64
+text inside the tool call, and an agent cannot write a file of normal size out
+as text. `saddle/create-upload-link` (write tier, `upload_files`, its own
+Allow / Ask first / Off) answers with `saddle/v1/upload/<token>`, which takes
+one raw file by `PUT`. Nobody signs in on that route; the token is the
+permission, as a preview link's is. It stays narrow because:
+
+- The link is bound to the user, the connection, one filename and one exact
+  size. Only the token's hash is stored. It works once (claimed before anything
+  else runs) and for ten minutes.
+- When the file arrives, `Saddle_Upload_Link::still_allowed()` asks the gate's
+  questions again for the stored connection: paused, tool Off, domain, the
+  connection still there and still at write, the user still holding
+  `upload_files`. A link made before any of those changed uploads nothing.
+- The bytes go to core's attachment controller as that user
+  (`Saddle_Abilities::upload_bytes_to_library()`, shared with `upload-media`).
+  The route reads nothing and reaches nothing else, and every token that is not
+  open gets the same refusal.
+
+Do not widen it: no second file per link, no longer life, no reads, and no
+other route that takes a token in place of a sign-in without its own written
+reason here.
 
 ---
 

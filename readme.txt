@@ -53,7 +53,7 @@ Saddle works with Claude, Claude Code, ChatGPT, Cursor, VS Code, Codex, Gemini C
 = Content =
 * Posts and pages: Create, edit and delete posts and pages.
 * Custom content types: Work with the post types your plugins and theme add, such as products, events or docs.
-* Media: Upload images from a URL and edit their details.
+* Media: Upload images and files from a URL or from your computer, and edit their details.
 * Categories and tags: Create and list categories and tags.
 * Search: Find any post, page or media item.
 * Menus: Create a menu, add, rename, move and remove its items, and choose which menu shows in each theme location.
