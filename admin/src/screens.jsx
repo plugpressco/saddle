@@ -288,6 +288,7 @@ function SettingsScreen( { extTabs, caps, loadCaps, onRehearsalChanged } ) {
 						) }
 						<card.Component
 							ui={ ui }
+							kit={ kit }
 							shellVersion={ SHELL_VERSION }
 						/>
 					</section>
