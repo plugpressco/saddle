@@ -338,6 +338,18 @@ class Saddle_Unsplash_Abilities {
 			wp_set_object_terms( $attachment_id, $terms, Saddle_Unsplash::TAXONOMY, true );
 		}
 
+		/**
+		 * Fires after a new Unsplash photo was saved to the media library,
+		 * with its title, credit, tags and source in place.
+		 *
+		 * It does not fire when the photo was already in the library and
+		 * nothing was downloaded.
+		 *
+		 * @param int   $attachment_id The new media item.
+		 * @param array $photo         The photo as Unsplash's API returned it.
+		 */
+		do_action( 'saddle_unsplash_imported', (int) $attachment_id, $photo );
+
 		Saddle_Log::record_action(
 			'unsplash-import',
 			$attachment_id,

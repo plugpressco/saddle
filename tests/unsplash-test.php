@@ -381,6 +381,40 @@ class Saddle_Unsplash_Test extends WP_UnitTestCase {
 		$this->assertCount( 0, $this->requests, 'A dedupe hit must download nothing and call nothing.' );
 	}
 
+	public function test_import_fires_the_imported_action_once_for_a_new_photo_only() {
+		Saddle_Capabilities::set_tier( 'write' );
+		Saddle_Unsplash::set_key( self::KEY );
+		$this->mock_http( $this->import_fixtures() );
+
+		$heard = array();
+		$spy   = static function ( $attachment_id, $photo ) use ( &$heard ) {
+			$heard[] = array(
+				'id'       => $attachment_id,
+				'photo'    => $photo,
+				// What a listener can rely on already being saved.
+				'meta'     => get_post_meta( $attachment_id, Saddle_Unsplash::META_ID, true ),
+				'has_tags' => ! empty( wp_get_object_terms( $attachment_id, Saddle_Unsplash::TAXONOMY ) ),
+			);
+		};
+		add_action( 'saddle_unsplash_imported', $spy, 10, 2 );
+
+		$first = $this->ability( 'saddle/unsplash-import' )->execute( array( 'photo_id' => 'PHOTO123' ) );
+		$this->assertNotWPError( $first );
+
+		$this->assertCount( 1, $heard, 'A new photo fires the action exactly once.' );
+		$this->assertSame( (int) $first['id'], $heard[0]['id'] );
+		$this->assertSame( 'PHOTO123', $heard[0]['photo']['id'] );
+		$this->assertSame( 'PHOTO123', $heard[0]['meta'], 'The source is saved before the action fires.' );
+		$this->assertTrue( $heard[0]['has_tags'], 'The tags are saved before the action fires.' );
+
+		// Already in the library: nothing downloaded, nothing fired.
+		$again = $this->ability( 'saddle/unsplash-import' )->execute( array( 'photo_id' => 'PHOTO123' ) );
+		$this->assertNotWPError( $again );
+		$this->assertCount( 1, $heard, 'A photo already in the library does not fire the action.' );
+
+		remove_action( 'saddle_unsplash_imported', $spy, 10 );
+	}
+
 	public function test_import_with_force_downloads_a_fresh_copy() {
 		Saddle_Capabilities::set_tier( 'write' );
 		Saddle_Unsplash::set_key( self::KEY );
