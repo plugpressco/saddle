@@ -34,11 +34,12 @@ class Saddle_Integrations {
 	 * `mailpuff` is Mailpuff, PlugPress's newsletter plugin (mailpuff/*); it
 	 * was Saddle CRM, enrolled as `crm`, until it left the Saddle family on
 	 * 2026-10-08, then Stirrup for a while. No released install enrols as
-	 * `crm` or `stirrup`.
+	 * `crm` or `stirrup`. `media` is Saddle Media, the media library add-on
+	 * (saddle-media/*).
 	 *
 	 * @var string[]
 	 */
-	const FIRST_PARTY = array( 'waggle', 'mailyard', 'analytics', 'rank', 'bridle', 'bridle-kb', 'mailpuff' );
+	const FIRST_PARTY = array( 'waggle', 'mailyard', 'analytics', 'rank', 'bridle', 'bridle-kb', 'mailpuff', 'media' );
 
 	/**
 	 * Option holding the third-party slugs the owner has switched on.
