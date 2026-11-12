@@ -29,11 +29,127 @@ class Saddle_HTTP {
 	const OWN_PAGE_REDIRECTS = 3;
 
 	/**
+	 * Address ranges that never lead to a public website.
+	 *
+	 * PHP's FILTER_FLAG_NO_PRIV_RANGE and FILTER_FLAG_NO_RES_RANGE leave several
+	 * of these out (shared address space, benchmarking, protocol assignments,
+	 * documentation, multicast), and FILTER_FLAG_GLOBAL_RANGE only exists from
+	 * PHP 8.2. So the list is written out, the same on every PHP version.
+	 */
+	const NON_PUBLIC_RANGES = array(
+		// IPv4.
+		'0.0.0.0/8',        // "This network".
+		'10.0.0.0/8',       // Private.
+		'100.64.0.0/10',    // Shared address space (carrier NAT, some cloud metadata).
+		'127.0.0.0/8',      // Loopback.
+		'169.254.0.0/16',   // Link-local, where cloud metadata services live.
+		'172.16.0.0/12',    // Private.
+		'192.0.0.0/24',     // IETF protocol assignments.
+		'192.0.2.0/24',     // Documentation.
+		'192.88.99.0/24',   // 6to4 relay anycast, retired.
+		'192.168.0.0/16',   // Private.
+		'198.18.0.0/15',    // Benchmarking.
+		'198.51.100.0/24',  // Documentation.
+		'203.0.113.0/24',   // Documentation.
+		'224.0.0.0/4',      // Multicast.
+		'240.0.0.0/4',      // Reserved, and the broadcast address.
+		// IPv6.
+		'::/96',            // Unspecified, and IPv4-compatible (retired).
+		'::1/128',          // Loopback.
+		'64:ff9b:1::/48',   // Local-use NAT64.
+		'100::/64',         // Discard-only.
+		'2001::/23',        // IETF protocol assignments (Teredo and others).
+		'2001:db8::/32',    // Documentation.
+		'2002::/16',        // 6to4, which carries an IPv4 address.
+		'fc00::/7',         // Unique local.
+		'fe80::/10',        // Link-local.
+		'ff00::/8',         // Multicast.
+	);
+
+	/**
+	 * IPv6 ranges whose last four bytes are an IPv4 address. An address in one
+	 * of them is judged by that IPv4 address.
+	 */
+	const IPV4_INSIDE_IPV6 = array(
+		'::ffff:0:0/96', // IPv4-mapped.
+		'64:ff9b::/96',  // NAT64.
+	);
+
+	/**
+	 * Whether one IP address is a public one.
+	 *
+	 * Public so an add-on that fetches for the owner can use the same list.
+	 *
+	 * @param string $ip An IPv4 or IPv6 address, with or without IPv6 brackets.
+	 * @return bool False for anything that is not a valid public address.
+	 */
+	public static function ip_is_public( $ip ) {
+		$ip = trim( (string) $ip, '[]' );
+		if ( ! filter_var( $ip, FILTER_VALIDATE_IP ) ) {
+			return false;
+		}
+		// PHP's own two lists first; ours adds what they leave out.
+		if ( ! filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) ) {
+			return false;
+		}
+
+		$packed = inet_pton( $ip );
+		if ( false === $packed ) {
+			return false;
+		}
+
+		foreach ( self::NON_PUBLIC_RANGES as $range ) {
+			if ( self::in_range( $packed, $range ) ) {
+				return false;
+			}
+		}
+
+		if ( 16 === strlen( $packed ) ) {
+			foreach ( self::IPV4_INSIDE_IPV6 as $range ) {
+				if ( self::in_range( $packed, $range ) ) {
+					return self::ip_is_public( (string) inet_ntop( substr( $packed, 12 ) ) );
+				}
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Whether a packed address falls inside a range written as base/bits.
+	 *
+	 * @param string $packed An address from inet_pton(): 4 or 16 bytes.
+	 * @param string $range  A range such as 10.0.0.0/8 or fc00::/7.
+	 * @return bool
+	 */
+	private static function in_range( $packed, $range ) {
+		list( $base, $bits ) = explode( '/', $range );
+		$base                = inet_pton( $base );
+		$bits                = (int) $bits;
+		if ( false === $base || strlen( $base ) !== strlen( $packed ) ) {
+			return false;
+		}
+
+		$whole = intdiv( $bits, 8 );
+		if ( $whole > 0 && substr( $packed, 0, $whole ) !== substr( $base, 0, $whole ) ) {
+			return false;
+		}
+
+		$rest = $bits % 8;
+		if ( 0 === $rest ) {
+			return true;
+		}
+		$mask = 0xFF & ( 0xFF << ( 8 - $rest ) );
+
+		return ( ord( $packed[ $whole ] ) & $mask ) === ( ord( $base[ $whole ] ) & $mask );
+	}
+
+	/**
 	 * Whether a URL resolves somewhere it is safe to fetch from.
 	 *
-	 * Resolves the host and refuses if any resulting address is private or
-	 * reserved — link-local (169.254.0.0/16, where cloud metadata services live),
-	 * loopback, and the RFC 1918 ranges.
+	 * Resolves the host and refuses if any resulting address is not public:
+	 * loopback, link-local (169.254.0.0/16, where cloud metadata services live),
+	 * the private ranges and the rest of {@see self::NON_PUBLIC_RANGES}.
 	 *
 	 * Fails CLOSED when the host resolves to nothing. Some locked-down hosts
 	 * disable `dns_get_record()`/`gethostbyname()` while still allowing HTTP, and
@@ -56,7 +172,7 @@ class Saddle_HTTP {
 		$ips  = self::resolve( $host );
 		$safe = ! empty( $ips );
 		foreach ( $ips as $ip ) {
-			if ( ! filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) ) {
+			if ( ! self::ip_is_public( $ip ) ) {
 				$safe = false;
 				break;
 			}
