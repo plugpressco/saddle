@@ -11,7 +11,7 @@
  *       { id: 'my-card', order: 10, requiresShell: 1, Component: MyCard },
  *   ] );
  *
- * Each Component renders as `<Component ui={ ui } shellVersion={ n } />`
+ * Each Component renders as `<Component ui={ ui } kit={ kit } shellVersion={ n } />`
  * inside the Settings page. The `ui` context hands across the design-system
  * primitives listed below so addon bundles ship zero @plugpress/ui of their
  * own — both bundles share the one externalized React, so component
@@ -84,6 +84,9 @@
  * - `kit.SettingsForm` (feature `settings-form`): `<SettingsForm scope="key" />`
  *   draws a module's settings from its schema. Core mounts it on a module's
  *   Settings tab on its own; a module only needs it inside its own screen.
+ *   A settings card gets `kit` too (feature `settings-card-kit`, #418), so an
+ *   add-on can draw its fields as a section of Saddle → Settings:
+ *   `( { kit } ) => <kit.SettingsForm scope="key" />`.
  * - The `saddle.admin.mount` ACTION, for a module that mounts its own app
  *   (`content => 'mount'` in its descriptor). It fires with an element React
  *   never touches, and `{ module, tab }`.
@@ -266,6 +269,7 @@ const FEATURES = [
 	'drill-in',
 	'subtabs',
 	'page-layout',
+	'settings-card-kit',
 ];
 
 // What this shell supports, for addons that feature-detect. Set when the
@@ -303,6 +307,7 @@ export function collectSettingsCards() {
 	const cards = applyFilters( 'saddle.admin.settingsCards', [], {
 		shellVersion: SHELL_VERSION,
 		ui,
+		kit,
 	} );
 
 	return ( Array.isArray( cards ) ? cards : [] )
