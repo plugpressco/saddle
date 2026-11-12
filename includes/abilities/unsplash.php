@@ -240,8 +240,10 @@ class Saddle_Unsplash_Abilities {
 			$media = Saddle_Abilities::get_media( array( 'id' => $existing ) );
 			if ( ! is_wp_error( $media ) ) {
 				// Keep the "pass your search words" contract honest even on a
-				// dedupe hit: one cheap DB write, still zero HTTP.
-				if ( ! empty( $agent_tags ) ) {
+				// dedupe hit: one cheap DB write, still zero HTTP. Only for a
+				// caller who may edit that file: the tool's own gate covers
+				// uploading a new one, not changing someone else's (#422).
+				if ( ! empty( $agent_tags ) && current_user_can( 'edit_post', $existing ) ) {
 					wp_set_object_terms( $existing, $agent_tags, Saddle_Unsplash::TAXONOMY, true );
 				}
 				$media['already_in_library'] = true;
