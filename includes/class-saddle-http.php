@@ -88,27 +88,29 @@ class Saddle_HTTP {
 		if ( ! filter_var( $ip, FILTER_VALIDATE_IP ) ) {
 			return false;
 		}
-		// PHP's own two lists first; ours adds what they leave out.
-		if ( ! filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) ) {
+		$packed = inet_pton( $ip );
+		if ( false === $packed ) {
 			return false;
 		}
 
-		$packed = inet_pton( $ip );
-		if ( false === $packed ) {
+		// An IPv4 address inside an IPv6 one is judged as that IPv4 address,
+		// before PHP's flags see it: PHP versions disagree about these ranges.
+		if ( 16 === strlen( $packed ) ) {
+			foreach ( self::IPV4_INSIDE_IPV6 as $range ) {
+				if ( self::in_range( $packed, $range ) ) {
+					return self::ip_is_public( (string) inet_ntop( substr( $packed, 12 ) ) );
+				}
+			}
+		}
+
+		// PHP's own two lists, then ours, which adds what they leave out.
+		if ( ! filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE ) ) {
 			return false;
 		}
 
 		foreach ( self::NON_PUBLIC_RANGES as $range ) {
 			if ( self::in_range( $packed, $range ) ) {
 				return false;
-			}
-		}
-
-		if ( 16 === strlen( $packed ) ) {
-			foreach ( self::IPV4_INSIDE_IPV6 as $range ) {
-				if ( self::in_range( $packed, $range ) ) {
-					return self::ip_is_public( (string) inet_ntop( substr( $packed, 12 ) ) );
-				}
 			}
 		}
 
