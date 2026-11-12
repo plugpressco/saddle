@@ -579,6 +579,37 @@ class Saddle_Unsplash_Test extends WP_UnitTestCase {
 		$this->assertContains( 'mountain', $names, 'Original import tags must survive the append.' );
 	}
 
+	public function test_dedupe_import_does_not_tag_a_file_the_caller_may_not_edit() {
+		Saddle_Capabilities::set_tier( 'write' );
+		Saddle_Unsplash::set_key( self::KEY );
+		$this->mock_http( $this->import_fixtures() );
+
+		// The administrator imports the photo.
+		$first = $this->ability( 'saddle/unsplash-import' )->execute( array( 'photo_id' => 'PHOTO123' ) );
+		$this->assertNotWPError( $first );
+
+		// An author may upload, but may not edit the administrator's file.
+		$author = self::factory()->user->create( array( 'role' => 'author' ) );
+		wp_set_current_user( $author );
+		$this->assertFalse( current_user_can( 'edit_post', (int) $first['id'] ) );
+
+		$this->requests = array();
+		$again          = $this->ability( 'saddle/unsplash-import' )->execute(
+			array(
+				'photo_id' => 'PHOTO123',
+				'tags'     => array( 'not mine to add' ),
+			)
+		);
+
+		$this->assertNotWPError( $again );
+		$this->assertTrue( $again['already_in_library'], 'The author is still told the photo is in the library.' );
+		$this->assertCount( 0, $this->requests );
+
+		$names = wp_get_object_terms( (int) $first['id'], Saddle_Unsplash::TAXONOMY, array( 'fields' => 'names' ) );
+		$this->assertNotContains( 'not mine to add', $names, 'A file the caller may not edit keeps its tags as they were.' );
+		$this->assertContains( 'mountain', $names );
+	}
+
 	public function test_attachment_details_show_escaped_unsplash_provenance() {
 		$att = self::factory()->attachment->create_object( 'prov.jpg', 0, array( 'post_mime_type' => 'image/jpeg' ) );
 		update_post_meta( $att, Saddle_Unsplash::META_ID, 'PHOTOZ' );
