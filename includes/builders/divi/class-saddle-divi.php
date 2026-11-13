@@ -110,7 +110,7 @@ class Saddle_Divi {
 	 * @return string
 	 */
 	public static function not_detected_hint() {
-		return __( 'Saddle does not detect Divi 5 as this site’s active theme, so its Divi tools are off here. Tell the site owner, and do not force the edit.', 'saddle' );
+		return __( 'SaddleWP does not detect Divi 5 as this site’s active theme, so its Divi tools are off here. Tell the site owner, and do not force the edit.', 'saddle' );
 	}
 
 	/**

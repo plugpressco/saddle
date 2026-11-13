@@ -189,7 +189,7 @@ class Saddle_Connection {
 
 		return new WP_Error(
 			'saddle_credential_scope',
-			__( 'This sign-in key was issued by Saddle and works only with Saddle’s endpoint — the rest of the WordPress REST API is off limits to it by design. Use the Saddle tools instead.', 'saddle' ),
+			__( 'This sign-in key was issued by SaddleWP and works only with SaddleWP’s endpoint — the rest of the WordPress REST API is off limits to it by design. Use the SaddleWP tools instead.', 'saddle' ),
 			array( 'status' => 403 )
 		);
 	}
@@ -225,7 +225,7 @@ class Saddle_Connection {
 		if ( $is_saddle ) {
 			$error->add(
 				'saddle_credential_scope',
-				__( 'Saddle sign-in keys cannot be used over XML-RPC.', 'saddle' )
+				__( 'SaddleWP sign-in keys cannot be used over XML-RPC.', 'saddle' )
 			);
 		}
 	}
@@ -477,7 +477,7 @@ class Saddle_Connection {
 
 		return new WP_Error(
 			'saddle_credential_rejected',
-			__( 'Your sign-in key was rejected — it was most likely revoked or removed. Reconnect the agent from Saddle to issue a fresh key.', 'saddle' ),
+			__( 'Your sign-in key was rejected — it was most likely revoked or removed. Reconnect the agent from SaddleWP to issue a fresh key.', 'saddle' ),
 			array(
 				'status' => 401,
 				'reason' => 'credential_rejected',
@@ -833,7 +833,7 @@ class Saddle_Connection {
 		if ( ! self::htaccess_fixable() ) {
 			return new WP_Error(
 				'saddle_htaccess_not_fixable',
-				__( 'Saddle can’t edit this server’s configuration automatically. Add the rule shown below by hand or send it to your host.', 'saddle' ),
+				__( 'SaddleWP can’t edit this server’s configuration automatically. Add the rule shown below by hand or send it to your host.', 'saddle' ),
 				array( 'status' => 409 )
 			);
 		}
@@ -853,7 +853,7 @@ class Saddle_Connection {
 		if ( ! insert_with_markers( $path, self::HTACCESS_MARKER, $rules ) ) {
 			return new WP_Error(
 				'saddle_htaccess_write_failed',
-				__( 'Saddle could not write to .htaccess. Check file permissions, or add the rule by hand.', 'saddle' ),
+				__( 'SaddleWP could not write to .htaccess. Check file permissions, or add the rule by hand.', 'saddle' ),
 				array( 'status' => 500 )
 			);
 		}

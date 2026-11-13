@@ -317,7 +317,7 @@ class Saddle_Divi_Schema {
 			'children'   => isset( $json['childrenName'] ) ? (array) $json['childrenName'] : array(),
 			'child'      => isset( $json['category'] ) && 'child-module' === $json['category'],
 			'attributes' => $attributes,
-			'usage'      => __( 'Set content via "fields" as shown per attribute (Saddle wraps values in the correct envelope). Styling via raw "attrs" uses canonical paths like <attr>.decoration.<option> with {"desktop":{"value":…}} breakpoints — omit styling to inherit the site’s design.', 'saddle' ),
+			'usage'      => __( 'Set content via "fields" as shown per attribute (SaddleWP wraps values in the correct envelope). Styling via raw "attrs" uses canonical paths like <attr>.decoration.<option> with {"desktop":{"value":…}} breakpoints — omit styling to inherit the site’s design.', 'saddle' ),
 		);
 	}
 
@@ -511,7 +511,7 @@ class Saddle_Divi_Schema {
 						'group'  => $group,
 						'path'   => $sg['path'],
 						'fields' => $sg['fields'],
-						'note'   => sprintf( 'Set with divi-edit-module by passing this dotted path as an attrs KEY: attrs = { "%s.<field>": <value> } (e.g. { "%s.color": "#ffffff" }). Saddle expands the dotted key into the nested object Divi reads. Omit to inherit the site design. "example" shows a correct value SHAPE — some fields take objects, not scalars.', $sg['path'], $sg['path'] ),
+						'note'   => sprintf( 'Set with divi-edit-module by passing this dotted path as an attrs KEY: attrs = { "%s.<field>": <value> } (e.g. { "%s.color": "#ffffff" }). SaddleWP expands the dotted key into the nested object Divi reads. Omit to inherit the site design. "example" shows a correct value SHAPE — some fields take objects, not scalars.', $sg['path'], $sg['path'] ),
 					);
 					if ( isset( $sg['example'] ) ) {
 						$out['example'] = $sg['example'];

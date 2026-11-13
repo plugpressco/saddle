@@ -574,7 +574,7 @@ class Saddle_Integrations_Test extends WP_UnitTestCase {
 	public function test_the_integration_block_is_a_real_heading_in_the_context() {
 		$context = Saddle_Context::system_context();
 
-		$this->assertStringContainsString( '# Plugins connected to Saddle', $context );
+		$this->assertStringContainsString( '# Plugins connected to SaddleWP', $context );
 		$this->assertStringNotContainsString( 'First-party integrations:', $context );
 	}
 

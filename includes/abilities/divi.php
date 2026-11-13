@@ -117,7 +117,7 @@ function saddle_register_divi_abilities() {
 					),
 					'nodes'   => array(
 						'type'        => 'array',
-						'description' => __( 'Top-level sections (each {"type","fields","attrs","children"}). Saddle wraps them in Divi\'s root container automatically.', 'saddle' ),
+						'description' => __( 'Top-level sections (each {"type","fields","attrs","children"}). SaddleWP wraps them in Divi\'s root container automatically.', 'saddle' ),
 						'items'       => array(
 							'type'                 => 'object',
 							'additionalProperties' => true,
@@ -689,7 +689,7 @@ class Saddle_Divi_Abilities {
 					$out['post']['tree_violations'] = $valid->get_error_data()['violations'];
 				}
 			} elseif ( 'divi4' === $builder ) {
-				$out['note'] = __( 'This post uses legacy Divi 4 shortcodes. Saddle edits Divi 5 pages only — do not modify this post\'s content.', 'saddle' );
+				$out['note'] = __( 'This post uses legacy Divi 4 shortcodes. SaddleWP edits Divi 5 pages only — do not modify this post\'s content.', 'saddle' );
 			}
 		}
 
@@ -1346,7 +1346,7 @@ class Saddle_Divi_Abilities {
 		// and these settings mean nothing on a page another builder owns.
 		$builder = Saddle_Divi::post_builder( $post );
 		if ( 'divi4' === $builder ) {
-			return new WP_Error( 'saddle_not_divi5', __( 'This post is built with legacy Divi 4 shortcodes, which Saddle does not edit.', 'saddle' ) );
+			return new WP_Error( 'saddle_not_divi5', __( 'This post is built with legacy Divi 4 shortcodes, which SaddleWP does not edit.', 'saddle' ) );
 		}
 		if ( 'other' === $builder && '' !== trim( (string) $post->post_content ) ) {
 			return new WP_Error( 'saddle_has_content', __( 'This post is not a Divi page, so Divi page settings would not apply to it.', 'saddle' ) );
@@ -1447,7 +1447,7 @@ class Saddle_Divi_Abilities {
 		// overwrite Divi 4 shortcodes or existing non-Divi content.
 		$builder = Saddle_Divi::post_builder( $post );
 		if ( 'divi4' === $builder ) {
-			return new WP_Error( 'saddle_not_divi5', __( 'This post is built with legacy Divi 4 shortcodes, which Saddle does not edit. Leave its content untouched.', 'saddle' ) );
+			return new WP_Error( 'saddle_not_divi5', __( 'This post is built with legacy Divi 4 shortcodes, which SaddleWP does not edit. Leave its content untouched.', 'saddle' ) );
 		}
 		if ( 'other' === $builder && '' !== trim( (string) $post->post_content ) ) {
 			return new WP_Error( 'saddle_has_content', __( 'This post already has non-Divi content. Building a Divi layout would overwrite it — edit it with update-post/update-page instead, or use an empty page.', 'saddle' ) );
@@ -1533,7 +1533,7 @@ class Saddle_Divi_Abilities {
 			return new WP_Error(
 				'saddle_not_divi5',
 				'divi4' === $builder
-					? __( 'This post is built with legacy Divi 4 shortcodes, which Saddle does not edit. Leave its content untouched.', 'saddle' )
+					? __( 'This post is built with legacy Divi 4 shortcodes, which SaddleWP does not edit. Leave its content untouched.', 'saddle' )
 					: __( 'This post is not built with Divi. Use the regular content tools instead.', 'saddle' )
 			);
 		}
@@ -1925,7 +1925,7 @@ class Saddle_Divi_Abilities {
 			if ( ! in_array( (string) $settings['key'], $allowlist, true ) ) {
 				return new WP_Error(
 					'saddle_protected_meta',
-					__( 'The bound meta key is protected (starts with "_") — its value would become publicly visible on the page, so Saddle refuses it. A site owner can allow a specific key via the "saddle_dynamic_meta_allowlist" filter.', 'saddle' ),
+					__( 'The bound meta key is protected (starts with "_") — its value would become publicly visible on the page, so SaddleWP refuses it. A site owner can allow a specific key via the "saddle_dynamic_meta_allowlist" filter.', 'saddle' ),
 					array( 'status' => 400 )
 				);
 			}

@@ -37,7 +37,7 @@ class Saddle_Core_Settings {
 	 */
 	public static function schema() {
 		return array(
-			'title'  => __( 'Saddle', 'saddle' ),
+			'title'  => __( 'SaddleWP', 'saddle' ),
 			'store'  => array(
 				'get' => array( __CLASS__, 'get' ),
 				'set' => array( __CLASS__, 'set' ),
@@ -88,7 +88,7 @@ class Saddle_Core_Settings {
 			'paused'                  => array(
 				'type'    => 'boolean',
 				'default' => false,
-				'label'   => __( 'Pause Saddle', 'saddle' ),
+				'label'   => __( 'Pause SaddleWP', 'saddle' ),
 				'help'    => __( 'Every agent is refused until you turn this off. Nothing else changes.', 'saddle' ),
 				'screen'  => $home,
 				'control' => 'custom',

@@ -33,7 +33,7 @@ function saddle_register_block_abilities() {
 		'saddle/list-block-types',
 		array(
 			'label'               => __( 'List block types', 'saddle' ),
-			'description'         => __( 'Returns the catalog of editor block types registered on this site, each with its title, category, one-line purpose, and how it is authored: "content" (Saddle composes valid markup from your content/attrs), "attrs-only" (dynamic block, attributes only), or "raw-html" (you must supply exact markup — prefer the other kinds). Read-only. Supports search and category filters. Build pages from real blocks — never approximate a layout by dumping everything into one core/html block.', 'saddle' ),
+			'description'         => __( 'Returns the catalog of editor block types registered on this site, each with its title, category, one-line purpose, and how it is authored: "content" (SaddleWP composes valid markup from your content/attrs), "attrs-only" (dynamic block, attributes only), or "raw-html" (you must supply exact markup — prefer the other kinds). Read-only. Supports search and category filters. Build pages from real blocks — never approximate a layout by dumping everything into one core/html block.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -128,7 +128,7 @@ function saddle_register_block_abilities() {
 		'saddle/list-section-recipes',
 		array(
 			'label'               => __( 'List section recipes', 'saddle' ),
-			'description'         => __( 'Lists Saddle\'s built-in section recipes — ready-to-insert blueprints for common page sections (hero, features, pricing, testimonials, call-to-action, FAQ) — as {name, title, description}. Read-only. Get one with get-section-recipe, then insert it and swap in real copy and design tokens. Building from a recipe beats composing a section from scratch.', 'saddle' ),
+			'description'         => __( 'Lists SaddleWP\'s built-in section recipes — ready-to-insert blueprints for common page sections (hero, features, pricing, testimonials, call-to-action, FAQ) — as {name, title, description}. Read-only. Get one with get-section-recipe, then insert it and swap in real copy and design tokens. Building from a recipe beats composing a section from scratch.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -145,7 +145,7 @@ function saddle_register_block_abilities() {
 		'saddle/get-section-recipe',
 		array(
 			'label'               => __( 'Get a section recipe', 'saddle' ),
-			'description'         => __( 'Returns one section recipe as a ready-to-insert node tree in Saddle\'s authoring format ({type, content, attrs, children}), matched to the site\'s builder — core blocks on a block theme, the builder\'s modules when a page builder is active. Read-only. Pass it (with real copy substituted) to set-blocks / add-block, or to the builder\'s set-page. After inserting, apply colors and sizes from get-design-system.', 'saddle' ),
+			'description'         => __( 'Returns one section recipe as a ready-to-insert node tree in SaddleWP\'s authoring format ({type, content, attrs, children}), matched to the site\'s builder — core blocks on a block theme, the builder\'s modules when a page builder is active. Read-only. Pass it (with real copy substituted) to set-blocks / add-block, or to the builder\'s set-page. After inserting, apply colors and sizes from get-design-system.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -237,7 +237,7 @@ function saddle_register_block_abilities() {
 		'saddle/set-blocks',
 		array(
 			'label'               => __( 'Build page blocks', 'saddle' ),
-			'description'         => __( 'Replaces a post or page\'s entire content with a new block tree — the bulk-build tool for "design this page". Each node is {"type","content","attrs","children"}: "content" carries the text/media payload and Saddle composes editor-valid markup (see saddle/get-block-schema per type); "attrs" are block attributes — use preset slugs from saddle/get-design-system for colors and sizes. The tree is validated against each block\'s placement rules and rejected with per-node errors if invalid — nothing partial is saved. If the response carries "warnings", those attributes will silently not render (unknown attribute, preset slug, or style group) — fix and re-edit. The previous content is kept as a WordPress revision. Refuses page-builder-built posts.', 'saddle' ),
+			'description'         => __( 'Replaces a post or page\'s entire content with a new block tree — the bulk-build tool for "design this page". Each node is {"type","content","attrs","children"}: "content" carries the text/media payload and SaddleWP composes editor-valid markup (see saddle/get-block-schema per type); "attrs" are block attributes — use preset slugs from saddle/get-design-system for colors and sizes. The tree is validated against each block\'s placement rules and rejected with per-node errors if invalid — nothing partial is saved. If the response carries "warnings", those attributes will silently not render (unknown attribute, preset slug, or style group) — fix and re-edit. The previous content is kept as a WordPress revision. Refuses page-builder-built posts.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -613,7 +613,7 @@ class Saddle_Blocks_Abilities {
 		if ( null === $store ) {
 			return new WP_Error(
 				'saddle_no_design_store',
-				__( 'This site has nowhere to put a design system: it is not a block theme, and no page builder Saddle understands is active. On a classic theme the palette lives in the theme\'s own options or CSS, which Saddle does not edit.', 'saddle' ),
+				__( 'This site has nowhere to put a design system: it is not a block theme, and no page builder SaddleWP understands is active. On a classic theme the palette lives in the theme\'s own options or CSS, which SaddleWP does not edit.', 'saddle' ),
 				array( 'status' => 409 )
 			);
 		}

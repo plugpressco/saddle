@@ -175,7 +175,7 @@ class Saddle_Integration_Engine {
 					__METHOD__,
 					sprintf(
 						/* translators: 1: integration slug, 2: its tool-name prefix. */
-						esc_html__( 'Integration "%1$s" (prefix "%2$s") was skipped. The slug must be lowercase letters, digits and hyphens, the prefix one namespace ending in a slash, and neither may be one Saddle reserves.', 'saddle' ),
+						esc_html__( 'Integration "%1$s" (prefix "%2$s") was skipped. The slug must be lowercase letters, digits and hyphens, the prefix one namespace ending in a slash, and neither may be one SaddleWP reserves.', 'saddle' ),
 						esc_html( $slug ),
 						esc_html( $prefix )
 					),
@@ -332,7 +332,7 @@ class Saddle_Integration_Engine {
 				'label'               => $ability->get_label(),
 				'description'         => trim( (string) $ability->get_description() ) . ' ' . sprintf(
 					/* translators: %s: partner plugin name. */
-					__( '(Provided by the %s plugin through Saddle.)', 'saddle' ),
+					__( '(Provided by the %s plugin through SaddleWP.)', 'saddle' ),
 					$title
 				) . ( $destructive ? ' ' . __( 'Destructive: the first call returns a preview and confirm_token; repeat the call with the token to execute.', 'saddle' ) : '' ),
 				'category'            => 'saddle',

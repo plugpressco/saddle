@@ -136,7 +136,7 @@ class Saddle_Updater {
 		}
 
 		return (object) array(
-			'name'          => isset( $remote['name'] ) ? $remote['name'] : 'Saddle',
+			'name'          => isset( $remote['name'] ) ? $remote['name'] : 'SaddleWP',
 			'slug'          => self::SLUG,
 			'version'       => $remote['version'],
 			'author'        => isset( $remote['author'] ) ? $remote['author'] : 'PlugPress',

@@ -1244,7 +1244,7 @@ class Saddle_REST_Admin {
 			'rank-math' => array( __( 'Rank Math', 'saddle' ), __( 'Reads and edits Rank Math’s own SEO fields.', 'saddle' ), array( 'Saddle_Rank_Math', 'is_active' ) ),
 			'aioseo'    => array( __( 'AIOSEO', 'saddle' ), __( 'Reads and edits AIOSEO’s own SEO fields.', 'saddle' ), array( 'Saddle_Aioseo', 'is_active' ) ),
 			'wc'        => array( __( 'WooCommerce', 'saddle' ), __( 'Products and orders.', 'saddle' ), array( 'Saddle_WC', 'is_active' ) ),
-			'unsplash'  => array( __( 'Unsplash', 'saddle' ), __( 'Stock-photo search and import, built into Saddle. Needs an Access Key under Saddle → Settings.', 'saddle' ), null ),
+			'unsplash'  => array( __( 'Unsplash', 'saddle' ), __( 'Stock-photo search and import, built into SaddleWP. Needs an Access Key under SaddleWP → Settings.', 'saddle' ), null ),
 		);
 		foreach ( $natives as $slug => $native ) {
 			list( $title, $description, $probe ) = $native;
@@ -1451,7 +1451,7 @@ class Saddle_REST_Admin {
 		// still be revoked here.
 		$item = WP_Application_Passwords::get_user_application_password( $user_id, $uuid );
 		if ( ! $item || ! Saddle_Connection::is_saddle_issued( $user_id, $uuid ) ) {
-			return new WP_Error( 'saddle_client_not_found', __( 'No Saddle client with that ID.', 'saddle' ), array( 'status' => 404 ) );
+			return new WP_Error( 'saddle_client_not_found', __( 'No SaddleWP client with that ID.', 'saddle' ), array( 'status' => 404 ) );
 		}
 
 		$result = WP_Application_Passwords::delete_application_password( $user_id, $uuid );
@@ -1503,7 +1503,7 @@ class Saddle_REST_Admin {
 		// Same guard as revoke_client: only Saddle-issued credentials.
 		$item = WP_Application_Passwords::get_user_application_password( $user->ID, $uuid );
 		if ( ! $item || ! Saddle_Connection::is_saddle_issued( $user->ID, $uuid ) ) {
-			return new WP_Error( 'saddle_client_not_found', __( 'No Saddle client with that ID.', 'saddle' ), array( 'status' => 404 ) );
+			return new WP_Error( 'saddle_client_not_found', __( 'No SaddleWP client with that ID.', 'saddle' ), array( 'status' => 404 ) );
 		}
 
 		$app_name = (string) $item['name'];

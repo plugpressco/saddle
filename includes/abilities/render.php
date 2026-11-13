@@ -65,7 +65,7 @@ function saddle_register_render_abilities() {
 		'saddle/get-preview-url',
 		array(
 			'label'               => __( 'Get a preview URL', 'saddle' ),
-			'description'         => __( 'Returns a short-lived, signed URL that renders the post\'s CURRENT saved layout on the site\'s own front end — drafts included, no login needed, expires in about 5 minutes. This is how you SEE real pixels: open the URL in your own browser and screenshot it (Saddle never renders or sends anything anywhere). The page is noindex and the link opens only this one post; treat it as ephemeral and do not share it.', 'saddle' ),
+			'description'         => __( 'Returns a short-lived, signed URL that renders the post\'s CURRENT saved layout on the site\'s own front end — drafts included, no login needed, expires in about 5 minutes. This is how you SEE real pixels: open the URL in your own browser and screenshot it (SaddleWP never renders or sends anything anywhere). The page is noindex and the link opens only this one post; treat it as ephemeral and do not share it.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',

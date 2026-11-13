@@ -82,7 +82,7 @@ class Saddle_Records {
 		register_post_status(
 			self::STATUS,
 			array(
-				'label'                     => 'Saddle record',
+				'label'                     => 'SaddleWP record',
 				'public'                    => false,
 				'internal'                  => true,
 				'protected'                 => false,

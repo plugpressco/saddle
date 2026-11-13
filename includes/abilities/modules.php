@@ -16,8 +16,8 @@ function saddle_register_module_abilities() {
 	wp_register_ability(
 		'saddle/list-modules',
 		array(
-			'label'               => __( 'List Saddle pages and modules', 'saddle' ),
-			'description'         => __( 'Lists every page of the owner\'s Saddle admin (Overview, Context, Agent setup, Logs, Settings) and every installed Saddle module (for example Analytics), in menu order: Overview, the modules, Context, Agent setup, Logs, Settings. Each entry has a one-sentence "summary" you can repeat to the owner, its "state" and status "line" where a module reports one, setup progress with each unfinished task, the "admin_url" of the page, of each tab and of each page inside a tab ("subtabs"), how many tools it owns and how many of those you can call now, and which of its settings you may change ("agent_writable"). Use it first when the owner asks what is installed, what is left to set up, or where something lives. When you point the owner somewhere, give them the "admin_url" instead of describing clicks. Read-only. A Saddle module is an add-on plugin with its own page in the Saddle menu, such as Analytics; it is not a Divi module or a block on a page, which the saddle-divi-* and block tools handle.', 'saddle' ),
+			'label'               => __( 'List SaddleWP pages and modules', 'saddle' ),
+			'description'         => __( 'Lists every page of the owner\'s SaddleWP admin (Overview, Context, Agent setup, Logs, Settings) and every installed SaddleWP module (for example Analytics), in menu order: Overview, the modules, Context, Agent setup, Logs, Settings. Each entry has a one-sentence "summary" you can repeat to the owner, its "state" and status "line" where a module reports one, setup progress with each unfinished task, the "admin_url" of the page, of each tab and of each page inside a tab ("subtabs"), how many tools it owns and how many of those you can call now, and which of its settings you may change ("agent_writable"). Use it first when the owner asks what is installed, what is left to set up, or where something lives. When you point the owner somewhere, give them the "admin_url" instead of describing clicks. Read-only. A SaddleWP module is an add-on plugin with its own page in the SaddleWP menu, such as Analytics; it is not a Divi module or a block on a page, which the saddle-divi-* and block tools handle.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -34,7 +34,7 @@ function saddle_register_module_abilities() {
 		'saddle/get-module-settings',
 		array(
 			'label'               => __( 'Get a module\'s settings', 'saddle' ),
-			'description'         => __( 'Returns the settings of one Saddle module, or of Saddle itself, with what each one means and its current value. Pass "module": "saddle" for Saddle\'s own settings (access level, sign-in, memory limits), or a module key from saddle/list-modules, such as "analytics". Each field has a label, a one-line "help", its "type" and allowed values, its "default", its current "value", and "admin_url": the exact page and field where the owner changes it. "agent" says who may change it: "write" means you can, through saddle/update-module-settings; "read" means only the owner can, so give them the admin_url. A secret such as an API key is never returned, only whether one is set and its last characters. Use this to explain a setting or to send the owner to it. Read-only. A Saddle module is an add-on plugin with its own page in the Saddle menu, such as Analytics; it is not a Divi module or a block on a page, which the saddle-divi-* and block tools handle.', 'saddle' ),
+			'description'         => __( 'Returns the settings of one SaddleWP module, or of SaddleWP itself, with what each one means and its current value. Pass "module": "saddle" for SaddleWP\'s own settings (access level, sign-in, memory limits), or a module key from saddle/list-modules, such as "analytics". Each field has a label, a one-line "help", its "type" and allowed values, its "default", its current "value", and "admin_url": the exact page and field where the owner changes it. "agent" says who may change it: "write" means you can, through saddle/update-module-settings; "read" means only the owner can, so give them the admin_url. A secret such as an API key is never returned, only whether one is set and its last characters. Use this to explain a setting or to send the owner to it. Read-only. A SaddleWP module is an add-on plugin with its own page in the SaddleWP menu, such as Analytics; it is not a Divi module or a block on a page, which the saddle-divi-* and block tools handle.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -42,7 +42,7 @@ function saddle_register_module_abilities() {
 				'properties' => array(
 					'module' => array(
 						'type'        => 'string',
-						'description' => __( '"saddle" for Saddle\'s own settings, or a module key from saddle/list-modules.', 'saddle' ),
+						'description' => __( '"saddle" for SaddleWP\'s own settings, or a module key from saddle/list-modules.', 'saddle' ),
 					),
 				),
 			),
@@ -56,7 +56,7 @@ function saddle_register_module_abilities() {
 		'saddle/update-module-settings',
 		array(
 			'label'               => __( 'Change a module\'s settings', 'saddle' ),
-			'description'         => __( 'Changes settings of an installed Saddle module. Only settings whose "agent" is "write" in saddle/get-module-settings can be changed; every other setting, and all of Saddle\'s own (access level, pause, sign-in, keys), belongs to the owner and is refused with the admin_url to give them. Nothing you change here can alter what connected agents are allowed to do. Pass "module" and "values", an object of setting keys and new values, which are validated the same way the admin screen validates them. Because it overwrites settings, it previews first: the first call returns each setting from its current value to the new one, in plain words, and a confirm_token. Show the owner that and call again with the same "module", "values" and the token to apply it. The change is logged and can be reversed with saddle/undo-changes. A Saddle module is an add-on plugin with its own page in the Saddle menu, such as Analytics; it is not a Divi module or a block on a page, which the saddle-divi-* and block tools handle.', 'saddle' ),
+			'description'         => __( 'Changes settings of an installed SaddleWP module. Only settings whose "agent" is "write" in saddle/get-module-settings can be changed; every other setting, and all of SaddleWP\'s own (access level, pause, sign-in, keys), belongs to the owner and is refused with the admin_url to give them. Nothing you change here can alter what connected agents are allowed to do. Pass "module" and "values", an object of setting keys and new values, which are validated the same way the admin screen validates them. Because it overwrites settings, it previews first: the first call returns each setting from its current value to the new one, in plain words, and a confirm_token. Show the owner that and call again with the same "module", "values" and the token to apply it. The change is logged and can be reversed with saddle/undo-changes. A SaddleWP module is an add-on plugin with its own page in the SaddleWP menu, such as Analytics; it is not a Divi module or a block on a page, which the saddle-divi-* and block tools handle.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -296,8 +296,8 @@ class Saddle_Module_Abilities {
 			'title'    => __( 'The owner\'s admin', 'saddle' ),
 			'lines'    => array(
 				sprintf(
-					/* translators: %s: the owner's Saddle pages, comma separated. */
-					__( 'Owner\'s admin: Saddle → %s.', 'saddle' ),
+					/* translators: %s: the owner's SaddleWP pages, comma separated. */
+					__( 'Owner\'s admin: SaddleWP → %s.', 'saddle' ),
 					implode( ', ', $pages )
 				),
 				__( 'To explain or change a setting, call saddle-get-module-settings and give the owner the admin_url instead of describing clicks.', 'saddle' ),

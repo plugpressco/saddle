@@ -587,7 +587,7 @@ final class Saddle {
 		echo '<div class="notice notice-error"><p>';
 		printf(
 			/* translators: %s: minimum WordPress version. */
-			esc_html__( 'Saddle requires WordPress %s or later (the core Abilities API). The MCP server is disabled until you upgrade.', 'saddle' ),
+			esc_html__( 'SaddleWP requires WordPress %s or later (the core Abilities API). The MCP server is disabled until you upgrade.', 'saddle' ),
 			esc_html( SADDLE_MIN_WP )
 		);
 		echo '</p></div>';
@@ -645,8 +645,8 @@ plugpress_insight(
 	array(
 		'file'    => __FILE__,
 		'product' => 'saddle',
-		'brand'   => 'Saddle',
-		'name'    => 'Saddle',
+		'brand'   => 'SaddleWP',
+		'name'    => 'SaddleWP',
 		'version' => SADDLE_VERSION,
 		'page'    => 'saddle',
 		// Overview's and the add-ons' first card; not on the welcome.

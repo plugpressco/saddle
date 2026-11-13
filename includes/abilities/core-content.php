@@ -47,8 +47,8 @@ function saddle_register_ability_category() {
 	wp_register_ability_category(
 		'saddle',
 		array(
-			'label'       => __( 'Saddle', 'saddle' ),
-			'description' => __( 'Approval-gated content operations exposed to AI agents by Saddle.', 'saddle' ),
+			'label'       => __( 'SaddleWP', 'saddle' ),
+			'description' => __( 'Approval-gated content operations exposed to AI agents by SaddleWP.', 'saddle' ),
 		)
 	);
 }
@@ -67,7 +67,7 @@ function saddle_register_abilities() {
 		'saddle/get-site-info',
 		array(
 			'label'               => __( 'Get site info', 'saddle' ),
-			'description'         => __( 'Returns orientation data about this WordPress site: name, tagline, URL, WordPress version, language, content counts (posts, pages, media), the current Saddle access tier, and the connected user. Read-only. Call this first to understand what the site contains before other operations.', 'saddle' ),
+			'description'         => __( 'Returns orientation data about this WordPress site: name, tagline, URL, WordPress version, language, content counts (posts, pages, media), the current SaddleWP access tier, and the connected user. Read-only. Call this first to understand what the site contains before other operations.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -122,7 +122,7 @@ function saddle_register_abilities() {
 		'saddle/search-content',
 		array(
 			'label'               => __( 'Search content', 'saddle' ),
-			'description'         => __( 'Full-text search across posts, pages and the custom content types Saddle manages, by keyword. Returns matching items as summaries (id, type, title, slug, status, link, excerpt; pages also carry parent and menu order). Read-only. Use post_type to restrict to "post", "page", a type from saddle/list-post-types, or "any".', 'saddle' ),
+			'description'         => __( 'Full-text search across posts, pages and the custom content types SaddleWP manages, by keyword. Returns matching items as summaries (id, type, title, slug, status, link, excerpt; pages also carry parent and menu order). Read-only. Use post_type to restrict to "post", "page", a type from saddle/list-post-types, or "any".', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -152,7 +152,7 @@ function saddle_register_abilities() {
 		'saddle/list-post-types',
 		array(
 			'label'               => __( 'List content types', 'saddle' ),
-			'description'         => __( 'Lists the content types Saddle can read and write on this site: posts, pages, and custom types such as products, events or docs. For each: its name, labels, whether it is hierarchical and uses the block editor, what it supports, its taxonomies, how many are published, and which tools reach it. Custom types are handled by the post tools with a post_type argument. Read-only.', 'saddle' ),
+			'description'         => __( 'Lists the content types SaddleWP can read and write on this site: posts, pages, and custom types such as products, events or docs. For each: its name, labels, whether it is hierarchical and uses the block editor, what it supports, its taxonomies, how many are published, and which tools reach it. Custom types are handled by the post tools with a post_type argument. Read-only.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -2270,7 +2270,7 @@ class Saddle_Abilities {
 		if ( '' !== (string) $post->post_password && ! current_user_can( 'edit_post', $post->ID ) ) {
 			return new WP_Error(
 				'saddle_password_protected',
-				__( 'This item is password-protected. Reading it needs edit access to it, which the WordPress account this agent is connected as does not have. Do not retry; tell the user to reconnect Saddle as an account that can edit this item.', 'saddle' ),
+				__( 'This item is password-protected. Reading it needs edit access to it, which the WordPress account this agent is connected as does not have. Do not retry; tell the user to reconnect SaddleWP as an account that can edit this item.', 'saddle' ),
 				array( 'status' => 403 )
 			);
 		}
@@ -2436,7 +2436,7 @@ class Saddle_Abilities {
 			'saddle_builder_content',
 			sprintf(
 				/* translators: 1: post ID, 2: builder name. */
-				__( 'Post #%1$d is built with %2$s — overwriting its content field would destroy the layout, so Saddle refuses. You can still edit its title, status, excerpt, taxonomy, and meta. ', 'saddle' ),
+				__( 'Post #%1$d is built with %2$s — overwriting its content field would destroy the layout, so SaddleWP refuses. You can still edit its title, status, excerpt, taxonomy, and meta. ', 'saddle' ),
 				$post->ID,
 				$builder
 			) . $hint,
@@ -3163,7 +3163,7 @@ class Saddle_Abilities {
 			'saddle_forbidden_status',
 			sprintf(
 				/* translators: %s: requested post status, e.g. "draft". */
-				__( 'The WordPress account this agent is connected as cannot see "%s" content on this site — only published items are available to it. That is the account\'s role, not a Saddle setting. Do not retry this status; tell the user to reconnect Saddle as an account that can edit this content.', 'saddle' ),
+				__( 'The WordPress account this agent is connected as cannot see "%s" content on this site — only published items are available to it. That is the account\'s role, not a SaddleWP setting. Do not retry this status; tell the user to reconnect SaddleWP as an account that can edit this content.', 'saddle' ),
 				$status
 			),
 			array( 'status' => 403 )

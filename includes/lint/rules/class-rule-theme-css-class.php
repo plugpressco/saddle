@@ -50,7 +50,7 @@ class Saddle_Lint_Rule_Theme_Css_Class extends Saddle_Lint_Rule {
 				self::SEVERITY_WARN,
 				sprintf(
 					/* translators: 1: module type, 2: CSS class list. */
-					__( '%1$s delegates styling to the CSS class(es) "%2$s" — Saddle cannot see theme stylesheets, so nothing server-side can verify what these classes render.', 'saddle' ),
+					__( '%1$s delegates styling to the CSS class(es) "%2$s" — SaddleWP cannot see theme stylesheets, so nothing server-side can verify what these classes render.', 'saddle' ),
 					(string) $node['type'],
 					$class
 				),

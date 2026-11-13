@@ -111,11 +111,11 @@ class Saddle_OAuth_Consent {
 		if ( $verified ) {
 			printf(
 				/* translators: %s: URL the agent's identity document was fetched from. */
-				esc_html__( 'This agent identified itself at %s, and Saddle confirmed that address vouches for it.', 'saddle' ),
+				esc_html__( 'This agent identified itself at %s, and SaddleWP confirmed that address vouches for it.', 'saddle' ),
 				'<code>' . esc_html( (string) $pending['client_id'] ) . '</code>'
 			);
 		} else {
-			esc_html_e( 'This agent registered itself with your site, and Saddle could not verify who it is. Connect it only if you started this yourself just now.', 'saddle' );
+			esc_html_e( 'This agent registered itself with your site, and SaddleWP could not verify who it is. Connect it only if you started this yourself just now.', 'saddle' );
 		}
 		echo '</p>';
 
@@ -132,7 +132,7 @@ class Saddle_OAuth_Consent {
 		// some — ChatGPT among them — ask for nothing at all. Either way this
 		// screen decides, and read is the pre-selected answer.
 		echo '<h2>' . esc_html__( 'What it will be able to do', 'saddle' ) . '</h2>';
-		echo '<p>' . esc_html__( 'This is the most this agent can do. You can change it later on Saddle → Agent setup.', 'saddle' ) . '</p>';
+		echo '<p>' . esc_html__( 'This is the most this agent can do. You can change it later on SaddleWP → Agent setup.', 'saddle' ) . '</p>';
 
 		echo '<ul style="list-style:none;margin:0 0 1.5em">';
 		foreach ( self::level_choices() as $tier => $choice ) {
@@ -154,7 +154,7 @@ class Saddle_OAuth_Consent {
 			)
 		) . '</p>';
 
-		echo '<p>' . esc_html__( 'Deletions and overwrites will still show you a preview and ask for confirmation every time. You can disconnect this agent at any point from Saddle → Agent setup.', 'saddle' ) . '</p>';
+		echo '<p>' . esc_html__( 'Deletions and overwrites will still show you a preview and ask for confirmation every time. You can disconnect this agent at any point from SaddleWP → Agent setup.', 'saddle' ) . '</p>';
 
 		echo '<p>' . esc_html(
 			sprintf(

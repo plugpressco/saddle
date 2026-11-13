@@ -224,7 +224,7 @@ class Saddle_Divi_Echo {
 			return array(
 				sprintf(
 					/* translators: 1: module type, 2: module + address. */
-					__( 'No module.json exists for "%1$s" on this site, so Saddle cannot verify its fields or style paths (%2$s). If the type is misspelled the module renders nothing — confirm the exact type with divi-list-modules. If it is a runtime-registered third-party module that renders fine, ignore this.', 'saddle' ),
+					__( 'No module.json exists for "%1$s" on this site, so SaddleWP cannot verify its fields or style paths (%2$s). If the type is misspelled the module renders nothing — confirm the exact type with divi-list-modules. If it is a runtime-registered third-party module that renders fine, ignore this.', 'saddle' ),
 					$type,
 					$location
 				),
