@@ -16,7 +16,7 @@ Build, rank and grow your website with Claude, ChatGPT or Cursor: pages, SEO and
 
 Saddle lets the AI agent you already use build, rank and grow your website. Ask Claude, ChatGPT or Cursor in plain words, and it does the work on your site with real WordPress tools. You decide what it may change.
 
-Saddle is the free core of WP Saddle. It works on its own, and each free add-on gives your AI agent more to work with.
+Saddle is the free core of SaddleWP. It works on its own, and each free add-on gives your AI agent more to work with.
 
 = Build =
 * **Pages that look like your site:** real block editor and Divi 5 pages in your theme's colors, fonts and patterns. A page check finds layout, contrast and accessibility problems, and a preview link shows the page before it goes live.
@@ -227,7 +227,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 * New: When you deactivate Saddle, a short form asks why. Skip sends nothing. The card and the form use WordPress's own buttons and your admin colour scheme.
 * New: `define( 'PLUGPRESS_INSIGHT', false );` in `wp-config.php` turns off the card and the form.
 * Changed: Get Pro is now Get Premium and shows Saddle Cloud's four plans, each with unlimited sites and one yearly price: Free, Go $49, Pro $99 and Reach $299. Free's button opens Saddle Cloud with this site's address filled in.
-* Changed: Saddle is now named "Saddle – Build, Rank & Grow Your Website with AI", here and on the Plugins screen: the free core of WP Saddle. Its menu, settings and address are unchanged.
+* Changed: Saddle is now named "Saddle – Build, Rank & Grow Your Website with AI", here and on the Plugins screen: the free core of SaddleWP. Its menu, settings and address are unchanged.
 * Changed: AI apps are now called AI agents everywhere in Saddle.
 
 = 1.6.3 =
