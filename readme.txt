@@ -38,12 +38,12 @@ Add the same address to Cursor, VS Code, Codex or Gemini CLI. Guides for each ag
 = Rank =
 * **SEO fixes:** your AI agent rewrites SEO titles and descriptions with Saddle Rank, Yoast SEO, Rank Math or All in One SEO.
 * **Ready for AI answers:** with Saddle Rank it also writes FAQ schema and page summaries, fixes broken links, redirects missing pages and keeps an llms.txt, so search engines and AI answers can read your pages.
-* **Where you rank:** with Saddle Cloud, Google Search Console and keyword tracking, and weekly Google checks that show whether Google's AI Overview cites you.
+* **Where you rank:** with your SaddleWP account, Google Search Console and keyword tracking, and weekly Google checks that show whether Google's AI Overview cites you.
 
 = Grow =
 * **Know who visits:** with [Saddle Analytics](https://wordpress.org/plugins/saddle-analytics/), free and cookieless, ask "how many people did ChatGPT send us this week?" and get the numbers your dashboard shows.
-* **Find what to write next:** with Saddle Cloud, keyword research, competitors checked every week and article plans your AI agent writes as drafts.
-* **Every site from one chat:** with Saddle Cloud, one AI connection for all your sites, with uptime alerts.
+* **Find what to write next:** with your account, keyword research, competitors checked every week and article plans your AI agent writes as drafts.
+* **Every site from one chat:** with your account, one AI connection for all your sites, with uptime alerts.
 
 = Safe on a live site =
 * A new agent can only read. You choose Read only, Edit content or Manage the site for each one.
@@ -120,7 +120,7 @@ SaddleWP never runs code from the AI, has no shell access and cannot write files
 = Saddle Pro =
 [Saddle Pro](https://saddle.to) is a paid add-on for Divi 5 sites, and it needs this free plugin. It adds Divi design system, Library and Theme Builder edits, building or cloning whole pages, site-wide image and preset changes with undo, a design brief, and WooCommerce bulk edits with undo.
 
-Every feature in this free plugin stays free. Saddle → Get Premium shows Saddle Cloud's plans and prices only while Saddle Pro is not installed. It sends nothing; its buttons open saddle.to or Saddle Cloud.
+Every feature in this free plugin stays free. Saddle → Get Premium shows SaddleWP's plans and prices only while Saddle Pro is not installed. It sends nothing; its buttons open saddle.to or `cloud.saddle.to`.
 
 = Credits =
 * Iconoir icons (MIT): [iconoir.com](https://iconoir.com)
@@ -184,7 +184,7 @@ SaddleWP sends no tracking or usage data unless you choose to. It connects to an
 8. Usage data (optional): A small card on SaddleWP's Overview and the Plugins screen asks once whether to share your name, email and basic site info with PlugPress, for better support. Nothing is sent until you click **Allow**, and **No thanks** sends nothing. Allow sends the name and email of the account that clicked it, your site address and title, WordPress and PHP versions, language, timezone, theme, your plugins with their versions, and a random id for your site to `console.plugpress.io`, then once a week while sharing is on, only when something changed. Turn it off with **Stop sharing site info** under SaddleWP on the Plugins screen, and PlugPress forgets what identifies your site. A copy of your site at another address is asked again. Add `define( 'PLUGPRESS_INSIGHT', false );` to `wp-config.php` to remove the card and the form entirely. See the [Privacy Policy](https://saddle.to/privacy/).
 9. SaddleWP news (optional): Only if you tick **Also email me SaddleWP news** on that card, or click **Subscribe** on the news card, the email address you typed goes to `console.plugpress.io`, which passes it to PlugPress's newsletter on `plugpress.io` without keeping it. You get an email to confirm first, and every newsletter has an unsubscribe link.
 10. Deactivation feedback (optional): When you deactivate SaddleWP on the Plugins screen, a short form asks why. **Skip and deactivate** sends nothing. **Send and deactivate** sends the reason you picked, what you typed, your email only if you tick **Reply to me**, SaddleWP's version, and your WordPress and PHP versions and language to `console.plugpress.io`. It never sends your site address.
-11. Saddle Cloud (optional, only if you connect it): SaddleWP's welcome and **Agent setup** offer a link to Saddle Cloud at `cloud.saddle.to`, with your site's address filled in. SaddleWP itself sends nothing to it. If you connect your site there, Saddle Cloud signs in like any AI agent: your site shows its own Allow screen, and you choose what Cloud may do. After that, the calls your AI agent makes through Saddle Cloud reach your site through that sign-in, and your site still decides each one. Saddle Cloud keeps what its [Privacy Policy](https://saddle.to/privacy/) lists. Disconnect it any time in **Agent setup**.
+11. Your SaddleWP account (optional, only if you connect it): the welcome and **Agent setup** offer a link to our hosted service at `cloud.saddle.to`, with your site's address filled in. The plugin sends nothing to it. If you connect your site there, the service signs in like any AI agent: your site shows its own Allow screen, and you choose what it may do. After that, calls your AI agent makes through your account reach your site through that sign-in, and your site still decides each one. The service keeps what its [Privacy Policy](https://saddle.to/privacy/) lists. Disconnect any time in **Agent setup**.
 
 The WordPress.org version never checks for its own updates. The version from plugpress.co checks at most once every six hours. It sends only the plugin name and version number.
 
