@@ -150,6 +150,7 @@ require_once SADDLE_DIR . 'includes/integrations/class-saddle-seo-skills.php';
 require_once SADDLE_DIR . 'includes/class-saddle-mcp.php';
 require_once SADDLE_DIR . 'includes/class-saddle-mcp-diagnostics.php';
 require_once SADDLE_DIR . 'includes/class-saddle-connections.php';
+require_once SADDLE_DIR . 'includes/class-saddle-upload-link.php';
 require_once SADDLE_DIR . 'includes/class-saddle-connection-apps.php';
 require_once SADDLE_DIR . 'includes/class-saddle-plugin-folder.php';
 
@@ -275,6 +276,8 @@ final class Saddle {
 		Saddle_Notices_Admin::register();
 		add_action( 'rest_api_init', array( 'Saddle_Connection', 'register_routes' ) );
 		add_action( 'rest_api_init', array( 'Saddle_MCP_Diagnostics', 'register_routes' ) );
+		// The address a single-use upload link points at (#412).
+		Saddle_Upload_Link::register();
 		add_action( 'init', array( 'Saddle_Unsplash', 'register_taxonomy' ) );
 		Saddle_Unsplash::register_admin_hooks();
 		// Unsplash in Settings → Connectors, where core has the registry.
