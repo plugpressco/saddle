@@ -328,7 +328,7 @@ function ForeignNotices( { extra = [], onDismiss } ) {
 			{ extra.length > 0 && (
 				<div className="saddle-foreign__saddle">
 					<div className="saddle-foreign__head">
-						{ __( 'From Saddle', 'saddle' ) }
+						{ __( 'From SaddleWP', 'saddle' ) }
 					</div>
 					{ extra.map( ( notice ) => (
 						<NoticeItem
@@ -363,7 +363,7 @@ function Footer( { area } ) {
 	const parts = [
 		sprintf(
 			/* translators: %s: plugin version. */
-			__( 'Saddle %s', 'saddle' ),
+			__( 'SaddleWP %s', 'saddle' ),
 			saddleData.version || ''
 		).trim(),
 	];
@@ -386,7 +386,7 @@ function Footer( { area } ) {
 			) }
 			{ saddleData.rateUrl && (
 				<a href={ saddleData.rateUrl } target="_blank" rel="noreferrer">
-					{ __( 'Rate Saddle', 'saddle' ) }
+					{ __( 'Rate SaddleWP', 'saddle' ) }
 				</a>
 			) }
 		</footer>
@@ -443,7 +443,7 @@ export default function Frame( {
 		view,
 		drill,
 		crumb,
-		home: { label: __( 'Saddle', 'saddle' ), url: home ? home.url : '' },
+		home: { label: __( 'SaddleWP', 'saddle' ), url: home ? home.url : '' },
 	} );
 	const tabs = showTabs && head.showTabs ? area.tabs : null;
 	const current = ( area.tabs || [] ).find( ( t ) => t.key === tab );

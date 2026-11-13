@@ -321,7 +321,7 @@ const PHRASES = {
 		sprintf( __( '%s read a setting', 'saddle' ), app ),
 	'list-modules': ( app ) =>
 		/* translators: %s: agent name. */
-		sprintf( __( '%s listed your Saddle modules', 'saddle' ), app ),
+		sprintf( __( '%s listed your SaddleWP modules', 'saddle' ), app ),
 };
 
 /**
@@ -384,7 +384,7 @@ export function tryStatus( { rows, app, appLabel } ) {
 			items: [],
 			text: sprintf(
 				/* translators: %s: agent name. */
-				__( 'Waiting for %s to use Saddle…', 'saddle' ),
+				__( 'Waiting for %s to use SaddleWP…', 'saddle' ),
 				appLabel
 			),
 		};
@@ -411,34 +411,34 @@ export function timeoutTip( app, appLabel ) {
 	switch ( app ) {
 		case 'claude':
 			return __(
-				'In Claude, make sure Saddle is switched on in the chat’s tools menu, then send the message again.',
+				'In Claude, make sure SaddleWP is switched on in the chat’s tools menu, then send the message again.',
 				'saddle'
 			);
 		case 'chatgpt':
 			return __(
-				'In ChatGPT, pick the Saddle app in the + menu before you send the message.',
+				'In ChatGPT, pick the SaddleWP app in the + menu before you send the message.',
 				'saddle'
 			);
 		case 'claude-code':
 			return __(
-				'In Claude Code, run /mcp and check the Saddle server says connected, then ask again.',
+				'In Claude Code, run /mcp and check the SaddleWP server says connected, then ask again.',
 				'saddle'
 			);
 		case 'cursor':
 			return __(
-				'In Cursor, open Settings → MCP and check the Saddle server has a green dot, then ask in a new chat.',
+				'In Cursor, open Settings → MCP and check the SaddleWP server has a green dot, then ask in a new chat.',
 				'saddle'
 			);
 		case 'codex':
 			return __(
-				'In Codex, start a new thread after the login so it loads the Saddle tools, then ask again.',
+				'In Codex, start a new thread after the login so it loads the SaddleWP tools, then ask again.',
 				'saddle'
 			);
 		default:
 			return sprintf(
 				/* translators: %s: agent name. */
 				__(
-					'Check that Saddle is switched on in %s, then send the message again in a new chat.',
+					'Check that SaddleWP is switched on in %s, then send the message again in a new chat.',
 					'saddle'
 				),
 				appLabel

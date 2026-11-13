@@ -140,7 +140,7 @@ function ModuleScreen( { area, tab, sub, view, args, navigate, header } ) {
 		return (
 			<Notice tone="warning">
 				{ sprintf(
-					/* translators: %s: module name, such as Saddle Analytics. */
+					/* translators: %s: module name, such as SaddleWP Analytics. */
 					__(
 						'%s did not add this screen. Updating it may add it.',
 						'saddle'

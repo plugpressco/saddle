@@ -84,7 +84,7 @@ export default function McpDiagnostics() {
 			<CardHeader
 				title={ __( 'Client traffic', 'saddle' ) }
 				description={ __(
-					'If an agent can’t see any tools, record its next attempt. You’ll see what it asked for and what Saddle sent back.',
+					'If an agent can’t see any tools, record its next attempt. You’ll see what it asked for and what SaddleWP sent back.',
 					'saddle'
 				) }
 			/>
@@ -227,7 +227,7 @@ export default function McpDiagnostics() {
 											<Badge tone="success">
 												{ entry.tools !== undefined
 													? sprintf(
-															/* translators: %d: how many tools Saddle sent the app. */
+															/* translators: %d: how many tools SaddleWP sent the app. */
 															_n(
 																'%d tool sent',
 																'%d tools sent',

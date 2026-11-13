@@ -517,7 +517,7 @@ export default function Guidance() {
 				<SectionHeader
 					title={ __( 'What agents see', 'saddle' ) }
 					help={ __(
-						'Saddle writes this from your site’s pages, design and plugins, and from what each agent may do. It stays current on its own, and you can’t edit it here.',
+						'SaddleWP writes this from your site’s pages, design and plugins, and from what each agent may do. It stays current on its own, and you can’t edit it here.',
 						'saddle'
 					) }
 				/>

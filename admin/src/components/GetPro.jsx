@@ -117,7 +117,7 @@ export default function GetPro() {
 				</h2>
 				<p className="saddle-plans__lede">
 					{ __(
-						'Saddle is free and stays free. Saddle Cloud connects one AI agent to all your sites, free to start.',
+						'SaddleWP is free and stays free. Your SaddleWP account connects one AI agent to all your sites, free to start.',
 						'saddle'
 					) }
 				</p>

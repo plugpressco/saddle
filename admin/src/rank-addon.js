@@ -32,6 +32,6 @@ export const addRank = rank.add;
 export function addRankError( error ) {
 	return (
 		( error && error.message ) ||
-		__( 'Saddle Rank could not be added.', 'saddle' )
+		__( 'SaddleWP Rank could not be added.', 'saddle' )
 	);
 }

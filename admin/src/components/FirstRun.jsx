@@ -217,7 +217,7 @@ function Say( { cont = false, typing = false, children } ) {
 					<span
 						className="saddle-chat__typing"
 						role="img"
-						aria-label={ __( 'Saddle is typing', 'saddle' ) }
+						aria-label={ __( 'SaddleWP is typing', 'saddle' ) }
 					>
 						<i />
 						<i />
@@ -561,7 +561,7 @@ function endLine( role, label ) {
 			return sprintf(
 				/* translators: %s: the agent name. */
 				__(
-					'Done. %s can look around, and you can give it more on Saddle → Agent setup any time.',
+					'Done. %s can look around, and you can give it more on SaddleWP → Agent setup any time.',
 					'saddle'
 				),
 				label
@@ -713,21 +713,21 @@ function AnalyticsQuestion( { next } ) {
 			copy={ {
 				groupLabel: __( 'Visitor stats', 'saddle' ),
 				askInstalled: __(
-					'One more question. Saddle Analytics is installed but off. It counts visits without cookies, and your AI can read the numbers. Turn it on?',
+					'One more question. SaddleWP Analytics is installed but off. It counts visits without cookies, and your AI can read the numbers. Turn it on?',
 					'saddle'
 				),
 				askMissing: __(
-					'One more question. Do you want visitor stats? Saddle Analytics counts visits without cookies, and your AI can read the numbers.',
+					'One more question. Do you want visitor stats? SaddleWP Analytics counts visits without cookies, and your AI can read the numbers.',
 					'saddle'
 				),
-				adding: __( 'Turning on Saddle Analytics…', 'saddle' ),
+				adding: __( 'Turning on SaddleWP Analytics…', 'saddle' ),
 				installing: __(
-					'Installing Saddle Analytics from WordPress.org…',
+					'Installing SaddleWP Analytics from WordPress.org…',
 					'saddle'
 				),
-				on: __( 'Saddle Analytics is on.', 'saddle' ),
+				on: __( 'SaddleWP Analytics is on.', 'saddle' ),
 				onLine: __(
-					'It counts visits from now on, and has its own page in the Saddle menu.',
+					'It counts visits from now on, and has its own page in the SaddleWP menu.',
 					'saddle'
 				),
 				laterOn: __(
@@ -756,21 +756,21 @@ function RankQuestion( { next } ) {
 			copy={ {
 				groupLabel: __( 'SEO', 'saddle' ),
 				askInstalled: __(
-					'Last question. Saddle Rank is installed but off. It sets up your SEO and helps AI answers find and cite your site. Turn it on?',
+					'Last question. SaddleWP Rank is installed but off. It sets up your SEO and helps AI answers find and cite your site. Turn it on?',
 					'saddle'
 				),
 				askMissing: __(
-					'Last question. Do you want help ranking? Saddle Rank sets up your SEO and helps AI answers find and cite your site.',
+					'Last question. Do you want help ranking? SaddleWP Rank sets up your SEO and helps AI answers find and cite your site.',
 					'saddle'
 				),
-				adding: __( 'Turning on Saddle Rank…', 'saddle' ),
+				adding: __( 'Turning on SaddleWP Rank…', 'saddle' ),
 				installing: __(
-					'Installing Saddle Rank from WordPress.org…',
+					'Installing SaddleWP Rank from WordPress.org…',
 					'saddle'
 				),
-				on: __( 'Saddle Rank is on.', 'saddle' ),
+				on: __( 'SaddleWP Rank is on.', 'saddle' ),
 				onLine: __(
-					'It has its own page in the Saddle menu, with what to fix first.',
+					'It has its own page in the SaddleWP menu, with what to fix first.',
 					'saddle'
 				),
 				laterOn: __(
@@ -866,7 +866,7 @@ export default function FirstRun( {
 	const ready = !! look || lookFailed;
 	const intro = [
 		__(
-			'Hi, I’m Saddle. I let your AI work on this site, and I ask you before anything risky.',
+			'Hi, I’m SaddleWP. I let your AI work on this site, and I ask you before anything risky.',
 			'saddle'
 		),
 		...( look ? lookLines( look ) : [] ),
@@ -1100,7 +1100,7 @@ export default function FirstRun( {
 										'saddle'
 									) }
 									description={ __(
-										'So no AI agent can connect to it. To connect one, install Saddle on your own site.',
+										'So no AI agent can connect to it. To connect one, install SaddleWP on your own site.',
 										'saddle'
 									) }
 								>
