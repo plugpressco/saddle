@@ -2,21 +2,21 @@
 # This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Saddle – Build, Rank & Grow Your Website with AI 1.7.3\n"
+"Project-Id-Version: SaddleWP – MCP Server to Build, Rank & Grow Your Site with Claude, ChatGPT & Cursor 1.7.3\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/saddle\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-10T00:41:25+00:00\n"
+"POT-Creation-Date: 2026-11-13T15:34:55+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
 
 #. Plugin Name of the plugin
 #: saddle.php
-msgid "Saddle – Build, Rank & Grow Your Website with AI"
+msgid "SaddleWP – MCP Server to Build, Rank & Grow Your Site with Claude, ChatGPT & Cursor"
 msgstr ""
 
 #. Plugin URI of the plugin
@@ -3643,22 +3643,22 @@ msgstr ""
 msgid "A valid \"photo_id\" from unsplash-search is required."
 msgstr ""
 
-#: includes/abilities/unsplash.php:248
+#: includes/abilities/unsplash.php:250
 msgid "This Unsplash photo is already in the media library — nothing was downloaded. Reuse this media item, or pass force=true only if the user explicitly wants a duplicate copy."
 msgstr ""
 
-#: includes/abilities/unsplash.php:272
+#: includes/abilities/unsplash.php:274
 msgid "Unsplash did not return a downloadable file URL for that photo."
 msgstr ""
 
 #. translators: %s: Unsplash photo id.
-#: includes/abilities/unsplash.php:289
+#: includes/abilities/unsplash.php:291
 #, php-format
 msgid "Unsplash photo %s"
 msgstr ""
 
 #. translators: 1: Unsplash photo id, 2: attachment id.
-#: includes/abilities/unsplash.php:346
+#: includes/abilities/unsplash.php:360
 #, php-format
 msgid "Imported Unsplash photo %1$s as media #%2$d"
 msgstr ""
@@ -4312,7 +4312,7 @@ msgstr ""
 
 #: includes/admin/class-saddle-settings.php:196
 #: includes/class-saddle-modules.php:104
-#: includes/class-saddle-modules.php:204
+#: includes/class-saddle-modules.php:214
 msgid "Settings"
 msgstr ""
 
@@ -5636,48 +5636,48 @@ msgid "A directory slug has only lowercase letters, digits and hyphens, as in wo
 msgstr ""
 
 #. translators: %s: a host name, such as claude.ai.
-#: includes/class-saddle-http.php:139
+#: includes/class-saddle-http.php:257
 #, php-format
 msgid "This server could not look up %s, so Saddle could not check where it points. Some hosts, such as WordPress Playground and Studio, cannot look up outside addresses. Use a key there instead."
 msgstr ""
 
-#: includes/class-saddle-http.php:145
+#: includes/class-saddle-http.php:263
 msgid "That address resolves to a private or unreachable network."
 msgstr ""
 
-#: includes/class-saddle-http.php:168
+#: includes/class-saddle-http.php:286
 msgid "Only HTTPS URLs can be fetched."
 msgstr ""
 
 #. translators: %d: HTTP status code.
-#: includes/class-saddle-http.php:196
+#: includes/class-saddle-http.php:314
 #, php-format
 msgid "That address answered with HTTP %d."
 msgstr ""
 
-#: includes/class-saddle-http.php:204
+#: includes/class-saddle-http.php:322
 msgid "That address did not return JSON."
 msgstr ""
 
-#: includes/class-saddle-http.php:209
+#: includes/class-saddle-http.php:327
 msgid "That document is too large to read."
 msgstr ""
 
-#: includes/class-saddle-http.php:214
+#: includes/class-saddle-http.php:332
 msgid "That document is not valid JSON."
 msgstr ""
 
-#: includes/class-saddle-http.php:247
+#: includes/class-saddle-http.php:365
 msgid "Only this site's own pages can be fetched this way."
 msgstr ""
 
 #. translators: %s: the other site's host name.
-#: includes/class-saddle-http.php:285
+#: includes/class-saddle-http.php:403
 #, php-format
 msgid "The public page redirects to another site (%s), so Saddle did not follow it."
 msgstr ""
 
-#: includes/class-saddle-http.php:295
+#: includes/class-saddle-http.php:413
 msgid "The public page redirected more than three times, so Saddle stopped."
 msgstr ""
 
@@ -5808,24 +5808,24 @@ msgstr ""
 msgid "%1$s (via the %2$s integration)."
 msgstr ""
 
-#: includes/class-saddle-integrations.php:87
+#: includes/class-saddle-integrations.php:88
 msgid "SEO and AEO tools from the Waggle plugin."
 msgstr ""
 
-#: includes/class-saddle-integrations.php:168
+#: includes/class-saddle-integrations.php:169
 msgid "PlugPress integrations are always on. Turn individual tools off under Saddle → Settings → Advanced."
 msgstr ""
 
-#: includes/class-saddle-integrations.php:180
+#: includes/class-saddle-integrations.php:181
 msgid "No installed plugin offers that integration."
 msgstr ""
 
-#: includes/class-saddle-integrations.php:292
+#: includes/class-saddle-integrations.php:293
 msgid "Plugins not on this site"
 msgstr ""
 
 #. translators: %s: a list of plugin names, such as "Divi 5, Yoast SEO and WooCommerce".
-#: includes/class-saddle-integrations.php:296
+#: includes/class-saddle-integrations.php:297
 #, php-format
 msgid "Saddle has tools for %s, but that plugin is not active here, so its tools are not offered. If a request needs it, say it is not active on this site."
 msgid_plural "Saddle has tools for %s, but those plugins are not active here, so their tools are not offered. If a request needs one, say that plugin is not active on this site."
@@ -5833,18 +5833,18 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: 1: plugin name, 2: tool-name prefix, 3: number of tools.
-#: includes/class-saddle-integrations.php:351
+#: includes/class-saddle-integrations.php:352
 #, php-format
 msgid "- %1$s is installed: use the saddle/%2$s-* tools (%3$d available) for its features instead of improvising with generic tools."
 msgstr ""
 
 #. translators: %s: plugin name.
-#: includes/class-saddle-integrations.php:364
+#: includes/class-saddle-integrations.php:365
 #, php-format
 msgid "- %s is installed, but the site owner has not switched on its tools. If they are needed, tell the user they can turn it on under Saddle → Settings."
 msgstr ""
 
-#: includes/class-saddle-integrations.php:372
+#: includes/class-saddle-integrations.php:373
 msgid "Plugins connected to Saddle"
 msgstr ""
 
@@ -6024,7 +6024,7 @@ msgstr ""
 
 #: includes/class-saddle-modules.php:58
 #: includes/class-saddle-modules.php:61
-#: includes/class-saddle-modules.php:191
+#: includes/class-saddle-modules.php:198
 #: admin/src/App.jsx:60
 #: admin/src/App.jsx:62
 msgid "Overview"
@@ -6055,8 +6055,8 @@ msgstr ""
 msgid "General"
 msgstr ""
 
-#: includes/class-saddle-modules.php:287
-#: includes/class-saddle-modules.php:290
+#: includes/class-saddle-modules.php:297
+#: includes/class-saddle-modules.php:300
 msgid "Analytics"
 msgstr ""
 
@@ -8503,7 +8503,7 @@ msgstr ""
 
 #: admin/src/components/ConnectApps.jsx:665
 #: admin/src/components/SignInCard.jsx:186
-#: admin/src/screens.jsx:331
+#: admin/src/screens.jsx:332
 msgid "Loading"
 msgstr ""
 
@@ -10895,7 +10895,7 @@ msgstr ""
 msgid "%s did not add this screen. Updating it may add it."
 msgstr ""
 
-#: admin/src/screens.jsx:309
+#: admin/src/screens.jsx:310
 msgid "Run setup again"
 msgstr ""
 

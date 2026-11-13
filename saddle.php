@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:       Saddle – Build, Rank & Grow Your Website with AI
+ * Plugin Name:       SaddleWP – MCP Server to Build, Rank & Grow Your Site with Claude, ChatGPT & Cursor
  * Plugin URI:        https://saddle.to
  * Description:       Let Claude, ChatGPT and Cursor work on your site through MCP. Each agent starts read-only, and every delete asks you first.
  * Version:           1.7.3
