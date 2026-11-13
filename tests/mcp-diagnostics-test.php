@@ -366,7 +366,7 @@ class Saddle_MCP_Diagnostics_Test extends WP_UnitTestCase {
 	public function test_the_report_identifies_the_install() {
 		$report = Saddle_MCP_Diagnostics::report();
 
-		$this->assertStringContainsString( 'Saddle MCP diagnostics', $report );
+		$this->assertStringContainsString( 'SaddleWP MCP diagnostics', $report );
 		$this->assertStringContainsString( home_url( '/' ), $report );
 		$this->assertStringContainsString( '/saddle/v1/mcp', $report );
 	}

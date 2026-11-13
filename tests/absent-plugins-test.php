@@ -260,7 +260,7 @@ class Saddle_Absent_Plugins_Test extends WP_UnitTestCase {
 
 		$this->plugins_active( true );
 		$this->plugins_active( false, array( 'saddle_wc_active' ) );
-		$this->assertStringContainsString( 'Saddle has tools for WooCommerce, but that plugin is not active here', Saddle_Context::system_context() );
+		$this->assertStringContainsString( 'SaddleWP has tools for WooCommerce, but that plugin is not active here', Saddle_Context::system_context() );
 
 		$this->plugins_active( true );
 		$this->assertStringNotContainsString( 'Plugins not on this site', Saddle_Context::system_context(), 'Nothing is hidden, so nothing is said.' );

@@ -62,7 +62,7 @@ function plans() {
 			icon: 'globe',
 			tone: 'lilac',
 			name: __( 'Free', 'saddle' ),
-			job: __( 'Try Saddle Cloud on one site', 'saddle' ),
+			job: __( 'Try a SaddleWP account on one site', 'saddle' ),
 			year: 0,
 			sites: 1,
 			calls: 500,
@@ -87,7 +87,7 @@ function plans() {
 			go: 'go-5',
 			lead: __( 'Everything in Free, plus', 'saddle' ),
 			items: [
-				__( 'Saddle Pro plugin', 'saddle' ),
+				__( 'SaddleWP Pro plugin', 'saddle' ),
 				__( 'Updates in one click', 'saddle' ),
 				__( 'Uptime alerts', 'saddle' ),
 				__( 'Every SEO tool', 'saddle' ),
@@ -218,14 +218,14 @@ export function questions() {
 		{
 			q: __( 'Do I need a plan?', 'saddle' ),
 			a: __(
-				'No. Saddle is free on every site, and Saddle Cloud’s Free plan is free on one. Paid plans add what runs for you: updates, uptime, SEO and Saddle Pro.',
+				'No. SaddleWP is free on every site, and your SaddleWP account’s Free plan is free on one. Paid plans add what runs for you: updates, uptime, SEO and SaddleWP Pro.',
 				'saddle'
 			),
 		},
 		{
 			q: __( 'What is an AI agent call?', 'saddle' ),
 			a: __(
-				'One step your AI agent takes on a site through Saddle Cloud. A site you connect to your AI agent directly is never counted.',
+				'One step your AI agent takes on a site through your SaddleWP account. A site you connect to your AI agent directly is never counted.',
 				'saddle'
 			),
 		},
@@ -239,7 +239,7 @@ export function questions() {
 		{
 			q: __( 'Can I change or cancel?', 'saddle' ),
 			a: __(
-				'Yes, from your Saddle Cloud account. Moving up, you pay the difference. Every paid plan has a 7-day money-back guarantee.',
+				'Yes, from your SaddleWP account. Moving up, you pay the difference. Every paid plan has a 7-day money-back guarantee.',
 				'saddle'
 			),
 		},

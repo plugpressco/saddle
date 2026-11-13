@@ -257,7 +257,7 @@ class Saddle_Core_Updates_Test extends WP_UnitTestCase {
 		$result = $this->call();
 
 		$this->assert_refused( $result, 'saddle_major_core_update' );
-		$this->assertStringContainsString( 'Saddle → Settings', $result->get_error_message() );
+		$this->assertStringContainsString( 'SaddleWP → Settings', $result->get_error_message() );
 		$this->assertStringContainsString( 'Dashboard → Updates', $result->get_error_message() );
 	}
 
@@ -458,7 +458,7 @@ class Saddle_Core_Updates_Test extends WP_UnitTestCase {
 
 		$item = Saddle_Update_Runner::get_run( $done['run_id'] )['items'][0];
 		$this->assertSame( 'skipped', $item['status'] );
-		$this->assertStringContainsString( 'Saddle → Settings', $item['message'] );
+		$this->assertStringContainsString( 'SaddleWP → Settings', $item['message'] );
 		$this->assertSame( 0, $this->upgrader_calls, 'Core was never asked.' );
 		$this->assertSame( $this->version, wp_get_wp_version() );
 	}

@@ -66,7 +66,7 @@ class Saddle_Memory {
 		register_post_type(
 			self::CPT,
 			array(
-				'label'               => 'Saddle Memory',
+				'label'               => 'SaddleWP Memory',
 				'public'              => false,
 				'publicly_queryable'  => false,
 				'show_ui'             => false,

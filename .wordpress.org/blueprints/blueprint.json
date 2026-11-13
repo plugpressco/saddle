@@ -1,8 +1,8 @@
 {
 	"$schema": "https://playground.wordpress.net/blueprint-schema.json",
 	"meta": {
-		"title": "Saddle live preview",
-		"description": "Saddle installed on a fresh WordPress, logged in, on the Saddle screen.",
+		"title": "SaddleWP live preview",
+		"description": "SaddleWP installed on a fresh WordPress, logged in, on the SaddleWP screen.",
 		"author": "badhonrocks",
 		"categories": [ "AI", "MCP" ]
 	},

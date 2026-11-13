@@ -363,7 +363,7 @@ class Saddle_Services_Test extends WP_UnitTestCase {
 
 		$reason = Saddle_Capabilities::denial_reason( 'saddle/unsplash-search' );
 		$this->assertSame( 'saddle_service_not_set_up', $reason['code'] );
-		$this->assertStringStartsWith( 'Unsplash is not set up. Ask the owner to add a key under Saddle → Settings.', $reason['message'] );
+		$this->assertStringStartsWith( 'Unsplash is not set up. Ask the owner to add a key under SaddleWP → Settings.', $reason['message'] );
 
 		$counts = Saddle_Capabilities::hidden_tool_counts();
 
@@ -527,7 +527,7 @@ class Saddle_Services_Test extends WP_UnitTestCase {
 		$section = Saddle_Services::context_section( array() )[0];
 		$this->assertSame( 'Services on this site', $section['title'] );
 		$text = implode( "\n", $section['lines'] );
-		$this->assertStringContainsString( '- Unsplash: not set up; ask the owner to add a key under Saddle → Settings.', $text );
+		$this->assertStringContainsString( '- Unsplash: not set up; ask the owner to add a key under SaddleWP → Settings.', $text );
 		$this->assertStringNotContainsString( 'Acme Forms', $text, 'An add-on that is off is named once, under Plugins connected to Saddle.' );
 		$this->assertStringContainsString( '- Yoast SEO: detected; use the saddle-yoast-* tools.', $text );
 
@@ -598,7 +598,7 @@ class Saddle_Services_Test extends WP_UnitTestCase {
 			}
 		}
 		$this->assertGreaterThan( 1, $checked );
-		$this->assertStringContainsString( 'Saddle → Settings', $external );
+		$this->assertStringContainsString( 'SaddleWP → Settings', $external );
 	}
 
 	/* ------------------------------------------------------------ connectors */

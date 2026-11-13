@@ -55,7 +55,7 @@ class Saddle_Notices {
 				'id'       => self::INSTALLED_ID,
 				'module'   => 'saddle',
 				'severity' => 'info',
-				'message'  => __( 'Saddle is installed. Connect your AI (2 minutes).', 'saddle' ),
+				'message'  => __( 'SaddleWP is installed. Connect your AI (2 minutes).', 'saddle' ),
 				'action'   => array(
 					'label' => __( 'Get started', 'saddle' ),
 					'url'   => Saddle_Modules::url( 'home' ),

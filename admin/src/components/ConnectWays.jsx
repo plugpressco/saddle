@@ -140,7 +140,7 @@ export default function ConnectWays( { heading = true, onSite, onCloud } ) {
 		cloudAction = (
 			<p className="saddle-way__done">
 				<icons.CheckCircle size={ 16 } />
-				{ __( 'Connected to Saddle Cloud', 'saddle' ) }
+				{ __( 'Connected to your SaddleWP account', 'saddle' ) }
 			</p>
 		);
 	} else if ( false === connected ) {
@@ -159,7 +159,7 @@ export default function ConnectWays( { heading = true, onSite, onCloud } ) {
 					}
 				} }
 			>
-				{ __( 'Connect with Saddle Cloud', 'saddle' ) }
+				{ __( 'Connect with your SaddleWP account', 'saddle' ) }
 				<VisuallyHidden>{ ` ${ NEW_TAB }` }</VisuallyHidden>
 			</Button>
 		);
@@ -173,7 +173,7 @@ export default function ConnectWays( { heading = true, onSite, onCloud } ) {
 				name={ __( 'All your sites', 'saddle' ) }
 				tag={
 					<span className="saddle-chip saddle-chip--sky">
-						{ __( 'Saddle Cloud', 'saddle' ) }
+						{ __( 'SaddleWP account', 'saddle' ) }
 					</span>
 				}
 				action={ cloudAction }
@@ -181,7 +181,7 @@ export default function ConnectWays( { heading = true, onSite, onCloud } ) {
 				<p>
 					{ opened && true !== connected
 						? __(
-								'Saddle Cloud opened in a new tab, with this site’s address filled in. Approve it on this site when it asks.',
+								'Your SaddleWP account opened in a new tab, with this site’s address filled in. Approve it on this site when it asks.',
 								'saddle'
 						  )
 						: __(

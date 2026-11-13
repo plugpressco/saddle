@@ -90,7 +90,7 @@ The SEO and WooCommerce tools work when that plugin is active.
 * Yoast SEO, Rank Math and All in One SEO: Read and edit the SEO title, meta description and robots of posts and pages, plus terms, schema type or social fields where the plugin has them.
 * WooCommerce: List and read products and variations. Listing orders needs Edit content, because orders show customer names and emails.
 * Unsplash: Find and import free stock photos with your own Unsplash API key.
-* Other plugins: Any plugin can add its own tools. Tools from other developers stay off until you switch them on in Saddle → Settings → Advanced.
+* Other plugins: Any plugin can add its own tools. Tools from other developers stay off until you switch them on in SaddleWP → Settings → Advanced.
 
 = Skills and memory =
 * Skills: Add short Markdown guides that tell your AI how you work.
@@ -120,7 +120,7 @@ SaddleWP never runs code from the AI, has no shell access and cannot write files
 = SaddleWP Pro =
 [SaddleWP Pro](https://saddle.to) is a paid add-on for Divi 5 sites, and it needs this free plugin. It adds Divi design system, Library and Theme Builder edits, building or cloning whole pages, site-wide image and preset changes with undo, a design brief, and WooCommerce bulk edits with undo.
 
-Every feature in this free plugin stays free. Saddle → Get Premium shows SaddleWP's plans and prices only while SaddleWP Pro is not installed. It sends nothing; its buttons open saddle.to or `cloud.saddle.to`.
+Every feature in this free plugin stays free. SaddleWP → Get Premium shows SaddleWP's plans and prices only while SaddleWP Pro is not installed. It sends nothing; its buttons open saddle.to or `cloud.saddle.to`.
 
 = Credits =
 * Iconoir icons (MIT): [iconoir.com](https://iconoir.com)
@@ -129,9 +129,9 @@ Every feature in this free plugin stays free. Saddle → Get Premium shows Saddl
 == Installation ==
 
 1. Install and activate SaddleWP from **Plugins → Add New**.
-2. Go to **Saddle → Agent setup** and pick your agent.
+2. Go to **SaddleWP → Agent setup** and pick your agent.
 3. Paste the address into your AI agent and approve the connection when your browser opens.
-4. To allow changes, choose Edit content or Manage the site next to the agent on **Saddle → Agent setup**.
+4. To allow changes, choose Edit content or Manage the site next to the agent on **SaddleWP → Agent setup**.
 
 == Frequently Asked Questions ==
 
@@ -159,7 +159,7 @@ No. Every action uses standard WordPress functions.
 
 = Does it work with ChatGPT? =
 
-Yes. Go to **Saddle → Agent setup**, pick ChatGPT, and turn on sign-in when SaddleWP offers it. Then add your site as a connector in ChatGPT and approve it when ChatGPT sends you to your site.
+Yes. Go to **SaddleWP → Agent setup**, pick ChatGPT, and turn on sign-in when SaddleWP offers it. Then add your site as a connector in ChatGPT and approve it when ChatGPT sends you to your site.
 
 = Does it work with page builders? =
 
@@ -176,7 +176,7 @@ SaddleWP sends no tracking or usage data unless you choose to. It connects to an
 1. Upload from URL: WordPress downloads the one file you asked for.
 2. Connection check: SaddleWP sends a test request to your own site.
 3. Live page check (optional): This runs only when your AI agent asks for it after editing a published page. SaddleWP loads that page from your own site, as a visitor would, to confirm the change is live.
-4. Unsplash (optional): This runs only after you add your own API key under **Saddle → Settings**. SaddleWP sends your search words or a photo ID to `api.unsplash.com`. It downloads photos from `images.unsplash.com`. Each imported photo gets a caption that credits the photographer, as Unsplash requires. You can edit or remove it. See the [API Guidelines](https://help.unsplash.com/en/articles/2511245-unsplash-api-guidelines), [API Terms](https://unsplash.com/api-terms) and [Privacy Policy](https://unsplash.com/privacy).
+4. Unsplash (optional): This runs only after you add your own API key under **SaddleWP → Settings**. SaddleWP sends your search words or a photo ID to `api.unsplash.com`. It downloads photos from `images.unsplash.com`. Each imported photo gets a caption that credits the photographer, as Unsplash requires. You can edit or remove it. See the [API Guidelines](https://help.unsplash.com/en/articles/2511245-unsplash-api-guidelines), [API Terms](https://unsplash.com/api-terms) and [Privacy Policy](https://unsplash.com/privacy).
 5. OAuth agent check (optional): This runs only when OAuth sign-in is on. SaddleWP reads a public web address the agent provides to confirm who the agent is. It sends nothing about your site.
 6. Updates and Site Health (optional): When your AI agent lists or applies updates, or reads Site Health, WordPress runs its own checks with WordPress.org and downloads the update packages it already offers, from WordPress.org or a plugin's own update server, exactly as the Updates screen does. After updating an active plugin, WordPress loads your own home page once to check for a fatal error.
 7. Plugin and theme directory (optional): When your AI agent searches for a plugin, or installs a plugin or theme, WordPress sends the search words or the slug to `api.wordpress.org`, as the **Add New** screens do. The same happens when you choose to add SaddleWP Analytics in SaddleWP's welcome or on Home. Like every WordPress.org request WordPress makes, it includes your WordPress version, language and site address. SaddleWP keeps search results on your site for an hour. An install downloads the package from `downloads.wordpress.org`. SaddleWP refuses a package from anywhere else.

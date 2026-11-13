@@ -436,9 +436,9 @@ class Saddle_MCP_Diagnostics {
 		$health = self::health();
 
 		$lines = array(
-			'Saddle MCP diagnostics',
+			'SaddleWP MCP diagnostics',
 			'Site: ' . home_url( '/' ),
-			'Saddle: ' . ( defined( 'SADDLE_VERSION' ) ? SADDLE_VERSION : '?' ) . ' | WP: ' . get_bloginfo( 'version' ) . ' | PHP: ' . PHP_VERSION,
+			'SaddleWP: ' . ( defined( 'SADDLE_VERSION' ) ? SADDLE_VERSION : '?' ) . ' | WP: ' . get_bloginfo( 'version' ) . ' | PHP: ' . PHP_VERSION,
 			'Transport: ' . self::transport_description(),
 			'Endpoint: ' . rest_url( ltrim( Saddle_MCP::REST_NAMESPACE . Saddle_MCP::ROUTE, '/' ) ),
 		);
@@ -512,7 +512,7 @@ class Saddle_MCP_Diagnostics {
 			$problems[] = array(
 				'code'    => 'site_address_changed',
 				'message' => __( 'The site\'s address changed since write access was granted, and the owner turned on domain enforcement, so every write tool is refused.', 'saddle' ),
-				'fix'     => __( 'The owner re-confirms this agent\'s access in Saddle → Agent setup, or turns the domain check off in Saddle → Settings.', 'saddle' ),
+				'fix'     => __( 'The owner re-confirms this agent\'s access in SaddleWP → Agent setup, or turns the domain check off in SaddleWP → Settings.', 'saddle' ),
 			);
 		}
 
@@ -549,8 +549,8 @@ class Saddle_MCP_Diagnostics {
 						? __( 'The web server drops the Authorization header before WordPress sees it, so agents that connect with a key are refused.', 'saddle' )
 						: __( 'The web server drops Bearer sign-ins, so agents that connect through OAuth (such as ChatGPT) are refused even though pasted-key agents work.', 'saddle' ),
 					'fix'     => $probe['htaccess_fixable']
-						? __( 'Saddle → Settings → Connection check can add the fix to .htaccess in one click.', 'saddle' )
-						: __( 'Ask the host to forward the Authorization header to PHP. Saddle → Settings → Connection check shows the exact rule.', 'saddle' ),
+						? __( 'SaddleWP → Settings → Connection check can add the fix to .htaccess in one click.', 'saddle' )
+						: __( 'Ask the host to forward the Authorization header to PHP. SaddleWP → Settings → Connection check shows the exact rule.', 'saddle' ),
 				);
 			}
 		} else {
@@ -597,7 +597,7 @@ class Saddle_MCP_Diagnostics {
 	 */
 	private static function transport_description() {
 		if ( ! class_exists( '\\WP\\MCP\\Core\\McpAdapter' ) ) {
-			return 'Saddle built-in JSON-RPC';
+			return 'SaddleWP built-in JSON-RPC';
 		}
 
 		$version = defined( '\\WP\\MCP\\Core\\McpAdapter::VERSION' ) ? \WP\MCP\Core\McpAdapter::VERSION : '?';
@@ -615,14 +615,14 @@ class Saddle_MCP_Diagnostics {
 		// Too old to be handed the route at all (Saddle::adapter_is_current()),
 		// such as the 0.1.0 copy WooCommerce 11 bundles.
 		if ( ! Saddle::adapter_is_current() ) {
-			return sprintf( 'Saddle built-in JSON-RPC (MCP Adapter %s from %s is loaded but too old to serve Saddle)', $version, $source );
+			return sprintf( 'SaddleWP built-in JSON-RPC (MCP Adapter %s from %s is loaded but too old to serve SaddleWP)', $version, $source );
 		}
 
 		// Present is not serving: when the adapter never put our server on the
 		// route, the built-in transport took it (Saddle_MCP::ensure_route()),
 		// and a support reply needs to know which one answered.
 		if ( Saddle_MCP::fell_back() ) {
-			return sprintf( 'Saddle built-in JSON-RPC (MCP Adapter %s from %s is loaded but did not serve the route)', $version, $source );
+			return sprintf( 'SaddleWP built-in JSON-RPC (MCP Adapter %s from %s is loaded but did not serve the route)', $version, $source );
 		}
 
 		return sprintf( 'MCP Adapter %s (%s)', $version, $source );

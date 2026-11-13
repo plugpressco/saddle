@@ -254,7 +254,7 @@ class Saddle_HTTP {
 				'saddle_http_unresolved',
 				sprintf(
 					/* translators: %s: a host name, such as claude.ai. */
-					__( 'This server could not look up %s, so Saddle could not check where it points. Some hosts, such as WordPress Playground and Studio, cannot look up outside addresses. Use a key there instead.', 'saddle' ),
+					__( 'This server could not look up %s, so SaddleWP could not check where it points. Some hosts, such as WordPress Playground and Studio, cannot look up outside addresses. Use a key there instead.', 'saddle' ),
 					$host
 				)
 			);
@@ -400,7 +400,7 @@ class Saddle_HTTP {
 					'saddle_http_offsite_redirect',
 					sprintf(
 						/* translators: %s: the other site's host name. */
-						__( 'The public page redirects to another site (%s), so Saddle did not follow it.', 'saddle' ),
+						__( 'The public page redirects to another site (%s), so SaddleWP did not follow it.', 'saddle' ),
 						'' !== $host ? $host : $next
 					)
 				);
@@ -410,7 +410,7 @@ class Saddle_HTTP {
 
 		return new WP_Error(
 			'saddle_http_too_many_redirects',
-			__( 'The public page redirected more than three times, so Saddle stopped.', 'saddle' )
+			__( 'The public page redirected more than three times, so SaddleWP stopped.', 'saddle' )
 		);
 	}
 

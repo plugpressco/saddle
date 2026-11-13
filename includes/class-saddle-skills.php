@@ -49,7 +49,7 @@ class Saddle_Skills {
 		register_post_type(
 			self::CPT,
 			array(
-				'label'               => 'Saddle Skills',
+				'label'               => 'SaddleWP Skills',
 				'public'              => false,
 				'publicly_queryable'  => false,
 				'show_ui'             => false,

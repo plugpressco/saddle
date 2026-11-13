@@ -289,7 +289,7 @@ const usable = ( kind, requiredKeys ) => ( entry ) => {
 	if ( ( entry.requiresShell ?? 1 ) > SHELL_VERSION ) {
 		// eslint-disable-next-line no-console
 		console.warn(
-			`[saddle] ${ kind } "${ entry.id }" needs shell v${ entry.requiresShell }, this is v${ SHELL_VERSION } — skipped. Update Saddle.`
+			`[saddle] ${ kind } "${ entry.id }" needs shell v${ entry.requiresShell }, this is v${ SHELL_VERSION } — skipped. Update SaddleWP.`
 		);
 		return false;
 	}

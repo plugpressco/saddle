@@ -246,7 +246,7 @@ export default function SignInCard( { oauth, save } ) {
 							title={
 								<Labelled
 									help={ __(
-										'When an agent identifies itself by web address, Saddle fetches that address to confirm it vouches for the agent. Turning this off means every agent shows as unverified.',
+										'When an agent identifies itself by web address, SaddleWP fetches that address to confirm it vouches for the agent. Turning this off means every agent shows as unverified.',
 										'saddle'
 									) }
 								>

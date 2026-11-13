@@ -135,7 +135,7 @@ class Saddle_Install_Runner {
 			);
 		}
 		if ( ! Saddle_Directory::is_wporg_package( isset( $api->download_link ) ? $api->download_link : '', $type ) ) {
-			return $fail( 'saddle_not_from_wporg', __( 'The directory answer on this site names a package outside downloads.wordpress.org, so another plugin is probably changing it. Saddle installs only packages WordPress.org itself offers. Install this one in wp-admin if you trust its source.', 'saddle' ) );
+			return $fail( 'saddle_not_from_wporg', __( 'The directory answer on this site names a package outside downloads.wordpress.org, so another plugin is probably changing it. SaddleWP installs only packages WordPress.org itself offers. Install this one in wp-admin if you trust its source.', 'saddle' ) );
 		}
 		return null;
 	}
@@ -204,7 +204,7 @@ class Saddle_Install_Runner {
 		$guard = static function ( $result, $action, $args ) use ( $slug ) {
 			$asked = is_object( $args ) && isset( $args->slug ) ? $args->slug : '';
 			return ( 'theme_information' === $action && $asked !== $slug )
-				? new WP_Error( 'saddle_unconfirmed_theme', __( 'Saddle installs only the theme that was confirmed.', 'saddle' ) )
+				? new WP_Error( 'saddle_unconfirmed_theme', __( 'SaddleWP installs only the theme that was confirmed.', 'saddle' ) )
 				: $result;
 		};
 		add_filter( 'themes_api', $guard, PHP_INT_MAX, 3 );

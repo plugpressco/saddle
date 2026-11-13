@@ -15,7 +15,7 @@ import {
 } from '../../admin/src/frame-logic';
 import { readRoute, resolveSub, resolveTab } from '../../admin/src/routes';
 
-const HOME = { label: 'Saddle', url: 'admin.php?page=saddle' };
+const HOME = { label: 'SaddleWP', url: 'admin.php?page=saddle' };
 
 const crm = {
 	key: 'crm',
@@ -82,27 +82,27 @@ const home = {
 const labels = ( head ) => head.crumbs.map( ( c ) => c.label );
 
 describe( 'frameHeader: the breadcrumb', () => {
-	it( 'reads just Saddle on Home, as the current page', () => {
+	it( 'reads just SaddleWP on Home, as the current page', () => {
 		const head = frameHeader( { area: home, tab: 'overview', home: HOME } );
 		expect( head.crumbs ).toEqual( [
-			{ key: 'home', label: 'Saddle', url: '' },
+			{ key: 'home', label: 'SaddleWP', url: '' },
 		] );
-		expect( head.title ).toBe( 'Saddle' );
+		expect( head.title ).toBe( 'SaddleWP' );
 	} );
 
-	it( 'reads Saddle / Page on a Core page, Saddle a link to Home', () => {
+	it( 'reads SaddleWP / Page on a Core page, SaddleWP a link to Home', () => {
 		const head = frameHeader( {
 			area: context,
 			tab: 'overview',
 			home: HOME,
 		} );
 		expect( head.crumbs ).toEqual( [
-			{ key: 'home', label: 'Saddle', url: 'admin.php?page=saddle' },
+			{ key: 'home', label: 'SaddleWP', url: 'admin.php?page=saddle' },
 			{ key: 'current', label: 'Context', url: '' },
 		] );
 	} );
 
-	it( 'reads Saddle / Module on a module page, whatever the section', () => {
+	it( 'reads SaddleWP / Module on a module page, whatever the section', () => {
 		expect(
 			labels(
 				frameHeader( {
@@ -112,7 +112,7 @@ describe( 'frameHeader: the breadcrumb', () => {
 					home: HOME,
 				} )
 			)
-		).toEqual( [ 'Saddle', 'CRM' ] );
+		).toEqual( [ 'SaddleWP', 'CRM' ] );
 	} );
 
 	it( 'names first run as Welcome', () => {
@@ -122,12 +122,12 @@ describe( 'frameHeader: the breadcrumb', () => {
 			crumb: 'Welcome',
 			home: HOME,
 		} );
-		expect( labels( head ) ).toEqual( [ 'Saddle', 'Welcome' ] );
+		expect( labels( head ) ).toEqual( [ 'SaddleWP', 'Welcome' ] );
 		expect( head.crumbs[ 0 ].url ).toBe( 'admin.php?page=saddle' );
 		expect( head.showSidebar ).toBe( false );
 	} );
 
-	it( 'drills in: Saddle / Module / Section / title, all but the last links', () => {
+	it( 'drills in: SaddleWP / Module / Section / title, all but the last links', () => {
 		const head = frameHeader( {
 			area: crm,
 			tab: 'campaigns',
@@ -141,7 +141,7 @@ describe( 'frameHeader: the breadcrumb', () => {
 			home: HOME,
 		} );
 		expect( head.crumbs ).toEqual( [
-			{ key: 'home', label: 'Saddle', url: 'admin.php?page=saddle' },
+			{ key: 'home', label: 'SaddleWP', url: 'admin.php?page=saddle' },
 			{ key: 'module', label: 'CRM', url: 'admin.php?page=saddle-crm' },
 			{
 				key: 'section',
@@ -183,7 +183,7 @@ describe( 'frameHeader: the breadcrumb', () => {
 			drill: { title: 'Spring sale', tab: 'campaigns', view: 'setup' },
 			home: HOME,
 		} );
-		expect( labels( head ) ).toEqual( [ 'Saddle', 'CRM' ] );
+		expect( labels( head ) ).toEqual( [ 'SaddleWP', 'CRM' ] );
 		expect( head.drilled ).toBe( false );
 	} );
 
@@ -339,10 +339,10 @@ describe( 'frameHeader: a one-page module', () => {
 		expect( head.showSidebar ).toBe( false );
 		expect( head.showTabs ).toBe( false );
 		expect( head.showSubtabs ).toBe( false );
-		expect( labels( head ) ).toEqual( [ 'Saddle', 'Analytics' ] );
+		expect( labels( head ) ).toEqual( [ 'SaddleWP', 'Analytics' ] );
 	} );
 
-	it( 'reads Settings as Saddle / Module / Settings, the module crumb linked', () => {
+	it( 'reads Settings as SaddleWP / Module / Settings, the module crumb linked', () => {
 		const head = frameHeader( {
 			area: analytics,
 			tab: 'settings',
@@ -350,7 +350,7 @@ describe( 'frameHeader: a one-page module', () => {
 		} );
 		expect( head.showSidebar ).toBe( false );
 		expect( labels( head ) ).toEqual( [
-			'Saddle',
+			'SaddleWP',
 			'Analytics',
 			'Settings',
 		] );
@@ -377,7 +377,7 @@ describe( 'frameHeader: a one-page module', () => {
 		} );
 		expect( head.drilled ).toBe( true );
 		expect( labels( head ) ).toEqual( [
-			'Saddle',
+			'SaddleWP',
 			'Analytics',
 			'Country',
 		] );
@@ -394,7 +394,7 @@ describe( 'frameHeader: a one-page module', () => {
 		expect( head.layout ).toBe( 'sections' );
 		expect( head.showSidebar ).toBe( true );
 		expect( head.showSubtabs ).toBe( true );
-		expect( labels( head ) ).toEqual( [ 'Saddle', 'CRM' ] );
+		expect( labels( head ) ).toEqual( [ 'SaddleWP', 'CRM' ] );
 	} );
 
 	it( 'treats a module without a layout as sections (older payloads)', () => {
@@ -410,7 +410,7 @@ describe( 'frameHeader: a one-page module', () => {
 			home: HOME,
 		} );
 		expect( head.layout ).toBe( 'sections' );
-		expect( labels( head ) ).toEqual( [ 'Saddle', 'Context' ] );
+		expect( labels( head ) ).toEqual( [ 'SaddleWP', 'Context' ] );
 	} );
 } );
 

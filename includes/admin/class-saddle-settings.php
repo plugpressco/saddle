@@ -32,8 +32,8 @@ class Saddle_Settings {
 	 */
 	public static function register_menu() {
 		add_menu_page(
-			__( 'Saddle', 'saddle' ),
-			__( 'Saddle', 'saddle' ),
+			__( 'SaddleWP', 'saddle' ),
+			__( 'SaddleWP', 'saddle' ),
 			'manage_options',
 			self::PAGE_SLUG,
 			array( __CLASS__, 'render_page' ),
@@ -55,7 +55,7 @@ class Saddle_Settings {
 			$hook = add_submenu_page(
 				self::PAGE_SLUG,
 				/* translators: %s: page name, such as Overview or MCP. */
-				sprintf( __( '%s ‹ Saddle', 'saddle' ), $area['title'] ),
+				sprintf( __( '%s ‹ SaddleWP', 'saddle' ), $area['title'] ),
 				self::menu_title( $key, $area ),
 				$area['capability'],
 				$area['slug'],
@@ -481,7 +481,7 @@ class Saddle_Settings {
 				function () {
 					if ( get_current_screen() && false !== strpos( get_current_screen()->id, self::PAGE_SLUG ) ) {
 						echo '<div class="notice notice-warning"><p>';
-						echo esc_html__( 'Saddle: the admin UI has not been built yet. Run "npm install && npm run build" in the plugin folder.', 'saddle' );
+						echo esc_html__( 'SaddleWP: the admin UI has not been built yet. Run "npm install && npm run build" in the plugin folder.', 'saddle' );
 						echo '</p></div>';
 					}
 				},
