@@ -1,5 +1,19 @@
 # Saddle — agent guide
 
+## Agent instructions
+
+- Start every response with "Fahim".
+- Read AGENTS.md and relevant project documentation before making changes.
+- After context compaction, re-read the project instructions.
+- Never guess about previous decisions or project requirements.
+- If important context is missing, tell me before continuing.
+
+## Task context
+
+- `docs/CURRENT_TASK.md` holds the task in progress: objective, done, remaining, decisions, blockers, files being changed, next steps. It is local and not committed.
+- Update it at real milestones (new task, a decision, a blocker, before a long step or when context is filling up), not after every small action. Keep it under 60 lines: replace old notes, do not append.
+- A session-start hook (`.claude/hooks/restore-context.sh`) prints it with the git state after a new session, a resume and a compaction. Check what it says against the code before continuing.
+
 > **Where this sits in the Saddle family.** Saddle (`saddle/`, free) is the
 > core: the self-hosted MCP server every other piece plugs into. Saddle Pro
 > (`saddle-pro/`) adds Divi site operations inside that server. Saddle
