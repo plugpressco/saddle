@@ -685,7 +685,9 @@ change. `Tested up to:` moves only when Fahim has verified against a newer WP.
   Get Premium** (Get Pro until 2026-11-02), the last menu item, shows Saddle
   Cloud's Free, Go, Pro and Reach plans with their prices
   (`admin/src/get-pro-logic.js`, kept equal to saddle-cloud's
-  `src/shared/plans.ts`), buttons to saddle.to's checkouts, and Free's button
+  `src/shared/plans.ts`), buttons to each plan's checkout through the
+  account's `cloud.saddle.to/start?plan=` (#434; saddle.to's checkouts until
+  then), and Free's button
   to Saddle Cloud. And the **one Saddle Cloud link** of non-negotiable #1's
   amendment: since Saddle 2.0 (#432) the one way in, at the top of Agent
   setup and as the welcome's connect step (`components/ConnectWays.jsx`).
