@@ -174,12 +174,12 @@ function ModuleScreen( { area, tab, sub, view, args, navigate, header } ) {
 }
 
 /**
- * Agent setup (#369; AI apps until then), after Saddle Cloud's page: the two
- * ways to connect on top (2026-11-06; Saddle Cloud for all your sites, or
- * just this site), the agents and their steps once "Connect this site" opens
- * them, then the connected apps with their access. Nothing opens in a
- * drawer: the connected list's Setup guide and Rotate key, and `&add=<app>`
- * or `&key=`, open that agent's steps at once.
+ * Agent setup (#369; AI apps until then), after Saddle Cloud's page: the
+ * SaddleWP account on top (#432; two equal ways from 2026-11-06), then the
+ * closed "Connect directly" row, the agents and their steps once it opens,
+ * then the connected apps with their access. Nothing opens in a drawer: the
+ * connected list's Setup guide and Rotate key, and `&add=<app>` or `&key=`,
+ * open that agent's steps at once.
  *
  * @param {Object}   props
  * @param {?Object}  props.setupFocus     An app to show: `{ app, key, rotate, n }`.
@@ -200,10 +200,15 @@ function AppsTab( {
 	navigate,
 } ) {
 	const signIn = useOauthSettings();
-	// "Connect this site" was clicked: a time, so each click brings the
-	// agents into view again.
+	// "Connect directly" was opened, or closed: a time each, so the newest
+	// of a click and an ask for an agent's steps (setupFocus) wins, and each
+	// opening brings the agents into view again.
 	const [ siteAsked, setSiteAsked ] = useState( 0 );
-	const siteOpen = !! siteAsked || opensSiteSteps( setupFocus );
+	const [ siteClosed, setSiteClosed ] = useState( 0 );
+	const focusAt = opensSiteSteps( setupFocus ) ? setupFocus.n || 1 : 0;
+	const siteOpen = Math.max( siteAsked, focusAt ) > siteClosed;
+	const toggleSite = () =>
+		siteOpen ? setSiteClosed( Date.now() ) : setSiteAsked( Date.now() );
 	const site = useRef( null );
 
 	useEffect( () => {
@@ -227,7 +232,13 @@ function AppsTab( {
 
 	return (
 		<div className="saddle-setup">
-			<ConnectWays onSite={ () => setSiteAsked( Date.now() ) } />
+			<ConnectWays
+				oauth={ signIn.oauth }
+				onOauth={ signIn.set }
+				onReload={ signIn.reload }
+				onSite={ toggleSite }
+				siteOpen={ siteOpen }
+			/>
 			{ siteOpen && (
 				<div
 					ref={ site }

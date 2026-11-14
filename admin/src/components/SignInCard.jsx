@@ -26,18 +26,24 @@ import { api } from '../api';
  * The state behind the card, shared with the Apps tab so the hint above the
  * app picker follows the switch.
  *
- * @return {Object} `{ oauth, saving, error, save }`.
+ * `set` takes settings another control already saved (Connect this site
+ * turns sign-in on, #432); `reload` reads them again, as after the owner
+ * comes back from Settings → Permalinks.
+ *
+ * @return {Object} `{ oauth, saving, error, save, set, reload }`.
  */
 export function useOauthSettings() {
 	const [ oauth, setOauth ] = useState( null );
 	const [ saving, setSaving ] = useState( false );
 	const [ error, setError ] = useState( '' );
 
-	useEffect( () => {
+	const reload = useCallback( () => {
 		api( 'oauth-settings' )
 			.then( setOauth )
 			.catch( () => setOauth( { enabled: false, ready: false } ) );
 	}, [] );
+
+	useEffect( reload, [ reload ] );
 
 	const latest = useRef( null );
 	latest.current = oauth;
@@ -67,7 +73,7 @@ export function useOauthSettings() {
 			.finally( () => setSaving( false ) );
 	}, [] );
 
-	return { oauth, saving, error, save };
+	return { oauth, saving, error, save, set: setOauth, reload };
 }
 
 /**

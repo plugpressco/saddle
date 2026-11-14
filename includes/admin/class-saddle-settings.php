@@ -544,63 +544,66 @@ class Saddle_Settings {
 			'saddle-admin',
 			'window.saddleData = ' . wp_json_encode(
 				array(
-					'root'         => esc_url_raw( rest_url() ),
+					'root'          => esc_url_raw( rest_url() ),
 					// Base for the ?rest_route= fallback when a host WAF blocks a
 					// pretty REST path before WordPress runs (20i StackProtect
 					// blocks */settings) — see admin/src/api.js.
-					'homeUrl'      => esc_url_raw( trailingslashit( home_url() ) ),
-					'nonce'        => wp_create_nonce( 'wp_rest' ),
-					'ns'           => Saddle_REST_Admin::REST_NAMESPACE,
-					'mcpUrl'       => esc_url_raw( rest_url( Saddle_MCP::REST_NAMESPACE . Saddle_MCP::ROUTE ) ),
-					'user'         => $current_user ? $current_user->user_login : '',
+					'homeUrl'       => esc_url_raw( trailingslashit( home_url() ) ),
+					'nonce'         => wp_create_nonce( 'wp_rest' ),
+					'ns'            => Saddle_REST_Admin::REST_NAMESPACE,
+					'mcpUrl'        => esc_url_raw( rest_url( Saddle_MCP::REST_NAMESPACE . Saddle_MCP::ROUTE ) ),
+					'user'          => $current_user ? $current_user->user_login : '',
 					// Per-site MCP server slug ("saddle-plugpress") so someone
 					// connecting several Saddle sites gets distinct entries in
 					// their client, not five servers all named "saddle".
-					'serverSlug'   => Saddle_MCP::server_slug(),
-					'adapter'      => Saddle::adapter_available(),
+					'serverSlug'    => Saddle_MCP::server_slug(),
+					'adapter'       => Saddle::adapter_available(),
 					// Whether ChatGPT can connect at all. ChatGPT's connector
 					// screen has no field for a custom HTTP header, so it needs
 					// the OAuth path — the wizard uses this to show the right
 					// instructions instead of one that cannot be followed.
-					'oauth'        => Saddle_OAuth::is_enabled(),
+					'oauth'         => Saddle_OAuth::is_enabled(),
 					// Environment facts so the UI can warn before a connect fails.
-					'appPasswords' => function_exists( 'wp_is_application_passwords_available' ) ? (bool) wp_is_application_passwords_available() : true,
-					'ssl'          => is_ssl(),
+					'appPasswords'  => function_exists( 'wp_is_application_passwords_available' ) ? (bool) wp_is_application_passwords_available() : true,
+					'ssl'           => is_ssl(),
 					// Where WordPress itself lists these credentials — linked
 					// from the Connect tab for transparency.
-					'profileUrl'   => esc_url_raw( admin_url( 'profile.php#application-passwords-section' ) ),
+					'profileUrl'    => esc_url_raw( admin_url( 'profile.php#application-passwords-section' ) ),
+					// Settings → Permalinks: a SaddleWP account needs pretty
+					// permalinks, and the welcome links straight there (#432).
+					'permalinksUrl' => esc_url_raw( admin_url( 'options-permalink.php' ) ),
 					// Offered when the dashboard's own REST calls come back 401 —
 					// one cause is simply an expired session, and signing in again
 					// is the whole fix. Returns to this screen afterwards.
-					'loginUrl'     => esc_url_raw( wp_login_url( Saddle_Modules::url( $area, $tab, $sub ) ) ),
+					'loginUrl'      => esc_url_raw( wp_login_url( Saddle_Modules::url( $area, $tab, $sub ) ) ),
 					// Header chrome: plugin version + outbound links. Both point at
 					// the plugin's WordPress.org listing rather than a vendor site:
 					// that is where a free .org-hosted plugin's docs and reviews
 					// actually live, and it keeps the review CTA on .org. Filterable
 					// so first-party docs can be repointed without a rebuild.
-					'version'      => SADDLE_VERSION,
-					'docsUrl'      => esc_url_raw( apply_filters( 'saddle_docs_url', 'https://wordpress.org/plugins/saddle/' ) ),
-					'rateUrl'      => esc_url_raw( apply_filters( 'saddle_rate_url', 'https://wordpress.org/support/plugin/saddle/reviews/' ) ),
+					'version'       => SADDLE_VERSION,
+					'docsUrl'       => esc_url_raw( apply_filters( 'saddle_docs_url', 'https://wordpress.org/plugins/saddle/' ) ),
+					'rateUrl'       => esc_url_raw( apply_filters( 'saddle_rate_url', 'https://wordpress.org/support/plugin/saddle/reviews/' ) ),
 					// The admin app's extension-contract version — addon bundles
 					// gate on it before registering (admin/src/extensions.js).
-					'shellVersion' => SADDLE_SHELL_VERSION,
+					'shellVersion'  => SADDLE_SHELL_VERSION,
 					// Which page this is, and every page the menu has. The
 					// frame draws its header and tabs from these, so the menu
 					// and the page can never disagree.
-					'area'         => $area,
-					'tab'          => $tab,
-					'sub'          => $sub,
-					'view'         => $view,
+					'area'          => $area,
+					'tab'           => $tab,
+					'sub'           => $sub,
+					'view'          => $view,
 					// A module's setup tasks, cleaned; Core draws the
 					// unfinished ones above the module's first tab.
-					'setup'        => $setup ? $setup : array(),
-					'areas'        => self::areas_for_app(),
+					'setup'         => $setup ? $setup : array(),
+					'areas'         => self::areas_for_app(),
 					// The notices for this page and tab, most severe first.
-					'notices'      => Saddle_Notices::for_screen( 'saddle', $area . '/' . $tab ),
+					'notices'       => Saddle_Notices::for_screen( 'saddle', $area . '/' . $tab ),
 					// Saddle Analytics: on, off or missing, and whether this
 					// owner may add it here (the welcome, Home's Add-ons).
-					'analytics'    => self::analytics_offer(),
-					'rank'         => self::rank_offer(),
+					'analytics'     => self::analytics_offer(),
+					'rank'          => self::rank_offer(),
 				)
 			) . ';',
 			'before'
