@@ -209,6 +209,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 == Changelog ==
 
 = 2.0.0 =
+* Changed: Get Premium's buttons open your SaddleWP account first. You sign up or log in, then pay for the plan you picked, so the plan lands on your account. Connect this site goes through the same sign-up.
 * Changed: The welcome and Agent setup lead with one way in: your SaddleWP account. The Connect this site button turns on sign-in for agents on this site, then opens your account in a new tab with the site's address filled in. Before, the account could not finish connecting until you found that switch under Settings. SaddleWP sends nothing to the account; the button is a link.
 * Changed: Connecting your AI agent straight to this site stays one click away: "Connect directly instead" in the welcome, and the Connect directly row on Agent setup.
 * New: When a SaddleWP account can't reach the site, the welcome says why and offers what helps. A site on your computer connects directly, Plain permalinks link to Settings → Permalinks, and a site without HTTPS is told to ask its host.

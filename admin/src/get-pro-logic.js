@@ -9,16 +9,17 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 
-/** Where every paid plan is bought, and compared. */
+/** Where the plans are compared. */
 export const STORE = 'https://saddle.to';
 
-/** Saddle Cloud, where Free starts. */
+/** The SaddleWP account, where every plan starts. */
 export const CLOUD = 'https://cloud.saddle.to';
 
 /**
- * Saddle Cloud's Connect a site page with this site's address filled in. A
- * plain link: the person signs up or signs in there, then this site shows
- * its own Allow screen. Saddle sends nothing to Cloud.
+ * The account's one door (#434; Cloud's `/start`, its spec 0036) with this
+ * site's address filled in: the person signs up or logs in, then lands on
+ * Connect a site, and this site shows its own Allow screen. A plain link;
+ * Saddle sends nothing to the account.
  *
  * @param {string} home This site's address.
  * @return {string} The link.
@@ -26,8 +27,19 @@ export const CLOUD = 'https://cloud.saddle.to';
 export function cloudConnectUrl( home ) {
 	const site = String( home || '' ).replace( /\/+$/, '' );
 	return site
-		? `${ CLOUD }/connect?site=${ encodeURIComponent( site ) }`
-		: `${ CLOUD }/connect`;
+		? `${ CLOUD }/start?site=${ encodeURIComponent( site ) }`
+		: `${ CLOUD }/start`;
+}
+
+/**
+ * The same door for a paid plan: sign up or log in, then that plan's
+ * checkout, so the plan lands on an account that already exists.
+ *
+ * @param {string} name The plan's name on saddle.to: go, pro or ultimate.
+ * @return {string} The link.
+ */
+export function cloudPlanUrl( name ) {
+	return `${ CLOUD }/start?plan=${ encodeURIComponent( name ) }`;
 }
 
 /**
@@ -47,11 +59,11 @@ export function connectedToCloud( rows ) {
  * price in US dollars, billed once a year; `sites` how many sites it covers;
  * `calls` Free's AI agent calls a month through Saddle Cloud, `hour` a paid
  * plan's AI agent calls an hour (no monthly cap); `credits` the SEO credits a
- * month; `go` the plan's checkout route on saddle.to (the routes keep their
- * old names). Each plan lists what it adds in two to four words (Fahim,
+ * month; `start` the plan's name in the account's `/start?plan=` link
+ * (#434). Each plan lists what it adds in two to four words (Fahim,
  * 2026-10-28: "not use sentce in table"). Its icon (Pro wears the crown)
  * sits on a tile of its tone. Reach is shown as Ultimate, as on saddle.to;
- * its key and route keep the old word.
+ * its key keeps the old word.
  *
  * @return {Array<Object>} Plans.
  */
@@ -84,7 +96,7 @@ function plans() {
 			sites: 1,
 			hour: 100,
 			credits: 500,
-			go: 'go-5',
+			start: 'go',
 			lead: __( 'Everything in Free, plus', 'saddle' ),
 			items: [
 				__( 'SaddleWP Pro plugin', 'saddle' ),
@@ -103,7 +115,7 @@ function plans() {
 			sites: 3,
 			hour: 200,
 			credits: 1000,
-			go: 'pro-20',
+			start: 'pro',
 			lead: __( 'Everything in Go, plus', 'saddle' ),
 			items: [
 				__( 'Up to 3 sites', 'saddle' ),
@@ -121,7 +133,7 @@ function plans() {
 			sites: 10,
 			hour: 500,
 			credits: 2500,
-			go: 'reach-50',
+			start: 'ultimate',
 			lead: __( 'Everything in Pro, plus', 'saddle' ),
 			items: [
 				__( 'Up to 10 sites', 'saddle' ),
@@ -136,9 +148,9 @@ function plans() {
 const count = ( n ) => n.toLocaleString( 'en-US' );
 
 /**
- * The plan cards: the price a year, the sites it covers, the button (Free's
- * to Saddle Cloud with this site filled in, the others to their checkout on
- * saddle.to), the same two numbers on every card (AI agent calls, SEO credits
+ * The plan cards: the price a year, the sites it covers, the button (each
+ * through the SaddleWP account's `/start`: Free's with this site filled in,
+ * the others to their checkout), the same two numbers on every card (AI agent calls, SEO credits
  * a month, with `none` set where a plan has no credits), and what it adds.
  *
  * @param {string} home This site's address, for Free's link.
@@ -164,7 +176,7 @@ export function planCards( home = '' ) {
 							__( 'Up to %d sites', 'saddle' ),
 							p.sites
 					  ),
-			href: free ? cloudConnectUrl( home ) : `${ STORE }/go/${ p.go }/`,
+			href: free ? cloudConnectUrl( home ) : cloudPlanUrl( p.start ),
 			buy: free
 				? __( 'Start free', 'saddle' )
 				: sprintf(
