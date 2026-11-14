@@ -83,10 +83,15 @@ class Saddle_Divi_Loop_Dynamic_Test extends WP_UnitTestCase {
 		$loop = $this->module_attrs( $id )['module']['advanced']['loop']['desktop']['value'];
 		$this->assertSame( 'on', $loop['enable'] );
 		$this->assertSame( 'post_types', $loop['queryType'] );
-		$this->assertSame( array( 'post' ), $loop['subTypes'] );
+		// This used to pin array( 'post' ). Divi 5's loop reader keeps only
+		// {value, label} items and drops plain strings, so that loop queried
+		// every post type. And it sorts newest first only for "descending":
+		// the "desc" pinned here sorted oldest first.
+		$this->assertSame( 'post', $loop['subTypes'][0]['value'] );
 		$this->assertSame( 'date', $loop['orderBy'] );
-		$this->assertSame( 'desc', $loop['order'] );
+		$this->assertSame( 'descending', $loop['order'] );
 		$this->assertSame( 6, $loop['postPerPage'] );
+		$this->assertSame( $loop['loopId'], $result['loop_id'] );
 
 		// Attr writes carry version + the changed node like the structural
 		// writes do — they used to return neither, forcing a re-read.
@@ -114,8 +119,9 @@ class Saddle_Divi_Loop_Dynamic_Test extends WP_UnitTestCase {
 
 		$loop = $this->module_attrs( $id )['module']['advanced']['loop']['desktop']['value'];
 		$this->assertSame( 3, $loop['postPerPage'], 'Edit must apply the passed parameter.' );
-		$this->assertSame( 'terms', $loop['queryType'], 'Edit must preserve parameters it was not given.' );
-		$this->assertSame( array( 'category' ), $loop['subTypes'] );
+		// "terms" is stored as "post_taxonomies", the name Divi's builder writes.
+		$this->assertSame( 'post_taxonomies', $loop['queryType'], 'Edit must preserve parameters it was not given.' );
+		$this->assertSame( 'category', $loop['subTypes'][0]['value'] );
 	}
 
 	public function test_disable_loop_keeps_config_and_requires_a_loop() {
@@ -135,7 +141,8 @@ class Saddle_Divi_Loop_Dynamic_Test extends WP_UnitTestCase {
 
 		$loop = $this->module_attrs( $id )['module']['advanced']['loop']['desktop']['value'];
 		$this->assertSame( 'off', $loop['enable'] );
-		$this->assertSame( 'users', $loop['queryType'], 'Disable must keep the query config for re-enabling.' );
+		// "users" is stored as "user_roles": Divi prints nothing per item for "users".
+		$this->assertSame( 'user_roles', $loop['queryType'], 'Disable must keep the query config for re-enabling.' );
 	}
 
 	public function test_enable_loop_rejects_unknown_query_type_and_clamps_per_page() {
@@ -165,7 +172,7 @@ class Saddle_Divi_Loop_Dynamic_Test extends WP_UnitTestCase {
 		$this->assertContains( 'menus', wp_list_pluck( $types['query_types'], 'type' ) );
 
 		$sources = $this->ability( 'saddle/divi-list-dynamic-sources' )->execute( array() );
-		$this->assertContains( 'post_title', $sources['post'] );
+		$this->assertContains( 'post_title', wp_list_pluck( $sources['page']['post'], 'name' ) );
 	}
 
 	/* -------- dynamic content -------- */

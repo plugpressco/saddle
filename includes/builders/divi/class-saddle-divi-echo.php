@@ -20,6 +20,8 @@ defined( 'ABSPATH' ) || exit;
  *  1. `fields` keys must be content attributes of the module.
  *  2. `attrs` top-level keys (dotted or nested) must be module attributes.
  *  3. A path's decoration/advanced group must be one the attribute declares.
+ *  4. The values written there must be ones Divi reads (Saddle_Divi_Echo_Traps
+ *     per decoration group, Saddle_Divi_Echo_Attrs across the node).
  *
  * Modules without a discoverable module.json (runtime-registered third-party
  * packs) are skipped — the echo warns only on what the site can prove, and
@@ -31,8 +33,52 @@ class Saddle_Divi_Echo {
 	 * Attr keys that are canonical plumbing, not module.json attributes.
 	 * modulePreset and groupPreset are the preset stacks Divi 5 keeps at the
 	 * attr root of any module (divi-apply-global-preset writes the first).
+	 * `css` is the custom CSS every module reads at the attr root (each
+	 * module's CssStyle call); Saddle_Divi_Echo_Attrs judges its fields.
 	 */
-	const UNIVERSAL_KEYS = array( 'builderVersion', 'modulePreset', 'groupPreset' );
+	const UNIVERSAL_KEYS = array( 'builderVersion', 'modulePreset', 'groupPreset', 'css' );
+
+	/**
+	 * Advanced groups Divi reads although no module.json declares them.
+	 * Every module renders its CSS id and class from
+	 * module.advanced.htmlAttributes (Module.php, IdClassesClassnames); every
+	 * form field reads its focus and placeholder styling from these
+	 * (FormFieldPresetAttrsMap).
+	 */
+	const MODULE_ADVANCED = array( 'htmlAttributes' );
+	const FIELD_ADVANCED  = array( 'focus', 'focusUseBorder', 'placeholder' );
+
+	/**
+	 * Decoration groups whose settings always sit straight inside the
+	 * breakpoint (Divi's default render attributes nest only the typography
+	 * groups). A breakpoint found under another key in these is a misplaced
+	 * write: scroll.verticalMotion.desktop instead of scroll.desktop.value.verticalMotion.
+	 */
+	const FLAT_GROUPS = array(
+		'animation',
+		'attributes',
+		'background',
+		'border',
+		'boxShadow',
+		'button',
+		'conditions',
+		'disabledOn',
+		'filters',
+		'fit',
+		'icon',
+		'interactions',
+		'layout',
+		'order',
+		'overflow',
+		'position',
+		'scroll',
+		'sizing',
+		'spacing',
+		'sticky',
+		'transform',
+		'transition',
+		'zIndex',
+	);
 
 	/**
 	 * Layout settings Divi renders on the structural modules although their
@@ -53,9 +99,10 @@ class Saddle_Divi_Echo {
 	);
 
 	/**
-	 * The value states a breakpoint envelope carries.
+	 * The value states a breakpoint envelope carries
+	 * (ModuleUtils::states() in Divi 5.10.1).
 	 */
-	const STATES = array( 'value', 'hover', 'sticky' );
+	const STATES = array( 'value', 'hover', 'focus', 'checked', 'active', 'sticky' );
 
 	/**
 	 * Divi's universal ElementStyle decoration vocabulary. module.json
@@ -64,7 +111,9 @@ class Saddle_Divi_Echo {
 	 * declaration — proven live: a pack button element declaring only
 	 * button/border/boxShadow still renders background/font/spacing
 	 * written on it. Groups in this set are therefore never "unknown";
-	 * only genuinely foreign group names (htmlAttributes, typos) warn.
+	 * only genuinely foreign group names (typos) warn. `fit` is read by
+	 * ElementStyle too; interactionTrigger and interactionTarget are the
+	 * plain ids Module.php turns into the interaction data attributes.
 	 */
 	const ELEMENT_STYLE_GROUPS = array(
 		'animation',
@@ -77,11 +126,14 @@ class Saddle_Divi_Echo {
 		'conditions',
 		'disabledOn',
 		'filters',
+		'fit',
 		'font',
 		'headingFont',
 		'icon',
 		'image',
 		'interactions',
+		'interactionTarget',
+		'interactionTrigger',
 		'layout',
 		'order',
 		'overflow',
@@ -98,11 +150,12 @@ class Saddle_Divi_Echo {
 	/**
 	 * Divi 5's breakpoint vocabulary (from Divi's own portability layer).
 	 * Filterable via `saddle_divi_breakpoints` should a Divi release
-	 * extend it.
+	 * extend it. A name here is a real breakpoint; whether this site turned
+	 * it on is Saddle_Divi_Echo_Traps::enabled_breakpoints().
 	 *
 	 * @return string[]
 	 */
-	private static function breakpoints() {
+	public static function breakpoints() {
 		return (array) apply_filters(
 			'saddle_divi_breakpoints',
 			array( 'desktop', 'tablet', 'phone', 'tabletWide', 'phoneWide', 'widescreen', 'ultraWide' )
@@ -201,6 +254,10 @@ class Saddle_Divi_Echo {
 	 *                        no module.json — write responses want it; the
 	 *                        verify pass sets false because its unknown-module
 	 *                        LINT rule owns that signal with real severity.
+	 *                        'advisory' (default true) adds the findings for
+	 *                        values that render but rarely as meant (a centred
+	 *                        relative origin, a font written as var()); the
+	 *                        verify pass sets false and scores only certain ones.
 	 * @return string[] Warnings.
 	 */
 	public static function check( $type, array $fields, array $attrs, $address, array $options = array() ) {
@@ -286,6 +343,11 @@ class Saddle_Divi_Echo {
 		// wrong-path writes that used to save, validate, and silently render
 		// nothing.
 		$expanded = Saddle_Divi_Author::expand_dotted_keys( $attrs );
+		$context  = array(
+			'advisory'   => ! isset( $options['advisory'] ) || false !== $options['advisory'],
+			// A preset can carry what the node leaves out (a box shadow style).
+			'has_preset' => ! empty( $expanded['modulePreset'] ) || ! empty( $expanded['groupPreset'] ),
+		);
 		foreach ( $expanded as $attr_name => $attr_payload ) {
 			$attr_name = (string) $attr_name;
 			if ( ! isset( $contract['attributes'][ $attr_name ] ) || ! is_array( $attr_payload ) ) {
@@ -304,12 +366,13 @@ class Saddle_Divi_Echo {
 				}
 				$warnings = array_merge(
 					$warnings,
-					self::check_group_payload( $type, $attr_name, $group, $group_payload, $location )
+					self::check_group_payload( $type, $attr_name, $group, $group_payload, $location ),
+					Saddle_Divi_Echo_Traps::group( $attr_name, $group, $group_payload, $location, $context )
 				);
 			}
 		}
 
-		return $warnings;
+		return array_merge( $warnings, Saddle_Divi_Echo_Attrs::check( $type, $expanded, $contract, $location ) );
 	}
 
 	/**
@@ -374,7 +437,12 @@ class Saddle_Divi_Echo {
 			? Saddle_Divi_Schema::STYLE_FIELDS[ $group ]
 			: array();
 
-		return array_merge( $warnings, self::check_envelope( $node, $group, $location, $closed ) );
+		$base = implode( '.', array_merge( array( $attr_name, 'decoration', $group ), $required ) );
+		// Only Divi's own modules provably keep FLAT_GROUPS flat: a module
+		// pack may store and render its own shape (one ships
+		// border.radius.desktop.value as its default).
+		$flat = in_array( $group, self::FLAT_GROUPS, true ) && 0 === strpos( (string) $type, 'divi/' );
+		return array_merge( $warnings, self::check_envelope( $node, $group, $location, $closed, $base, $flat ) );
 	}
 
 	/**
@@ -392,16 +460,47 @@ class Saddle_Divi_Echo {
 	 * @param string $group    Decoration group (messages).
 	 * @param string $location Module + address (messages).
 	 * @param array  $closed   Leaf fields when the group's set is closed.
+	 * @param string $base     Dotted path down to this envelope (messages).
+	 * @param bool   $flat     Whether the group provably keeps its settings
+	 *                         straight inside the breakpoint.
 	 * @return string[]
 	 */
-	private static function check_envelope( array $node, $group, $location, array $closed ) {
-		$warnings = array();
+	private static function check_envelope( array $node, $group, $location, array $closed, $base, $flat = false ) {
+		$warnings   = array();
+		$vocabulary = self::breakpoints();
+		$enabled    = Saddle_Divi_Echo_Traps::enabled_breakpoints();
+		if ( 'disabledOn' === $group ) {
+			$vocabulary = array_merge( $vocabulary, Saddle_Divi_Echo_Traps::DISABLED_ON_BREAKPOINTS );
+			$enabled    = array_merge( $enabled, Saddle_Divi_Echo_Traps::DISABLED_ON_BREAKPOINTS );
+		}
 		foreach ( $node as $bp => $bp_payload ) {
 			$bp = (string) $bp;
-			if ( ! in_array( $bp, self::breakpoints(), true ) ) {
+			if ( ! in_array( $bp, $vocabulary, true ) ) {
 				if ( is_array( $bp_payload ) && self::contains_breakpoint( $bp_payload ) ) {
+					if ( $flat ) {
+						$warnings[] = sprintf(
+							/* translators: 1: group, 2: module + address, 3: group path, 4: written key. */
+							__( 'The "%1$s" group on %2$s keeps every setting inside the breakpoint, so this write will not render. Write %3$s.desktop.value.%4$s, not %3$s.%4$s.desktop.value.', 'saddle' ),
+							$group,
+							$location,
+							$base,
+							$bp
+						);
+						continue;
+					}
 					// Extra nesting the flat fallback didn't know — judge inside.
-					$warnings = array_merge( $warnings, self::check_envelope( $bp_payload, $group, $location, $closed ) );
+					$warnings = array_merge( $warnings, self::check_envelope( $bp_payload, $group, $location, $closed, $base . '.' . $bp ) );
+					continue;
+				}
+				if ( in_array( $bp, self::STATES, true ) ) {
+					$warnings[] = sprintf(
+						/* translators: 1: written state, 2: group, 3: module + address, 4: group path. */
+						__( '"%1$s" is a state, not a breakpoint, on the "%2$s" group of %3$s, so the styling will not render. A state sits inside a breakpoint, beside "value": write %4$s.desktop.%1$s with the settings straight under it.', 'saddle' ),
+						$bp,
+						$group,
+						$location,
+						$base
+					);
 					continue;
 				}
 				if ( is_array( $bp_payload ) && array_intersect( array_keys( $bp_payload ), self::STATES ) ) {
@@ -412,10 +511,21 @@ class Saddle_Divi_Echo {
 						$bp,
 						$group,
 						$location,
-						implode( ', ', self::breakpoints() )
+						implode( ', ', $vocabulary )
 					);
 				}
 				continue; // Anything else is structure this site can't judge.
+			}
+			if ( ! in_array( $bp, $enabled, true ) ) {
+				$warnings[] = sprintf(
+					/* translators: 1: breakpoint, 2: group, 3: module + address, 4: breakpoints turned on. */
+					__( 'Breakpoint "%1$s" is not turned on for this site, so Divi writes no CSS for the "%2$s" group of %3$s. Breakpoints on: %4$s. For phones write "phone".', 'saddle' ),
+					$bp,
+					$group,
+					$location,
+					implode( ', ', $enabled )
+				);
+				continue;
 			}
 			if ( ! is_array( $bp_payload ) ) {
 				continue;
@@ -430,6 +540,19 @@ class Saddle_Divi_Echo {
 						$group,
 						$location,
 						implode( ', ', self::STATES )
+					);
+					continue;
+				}
+				// hover, sticky and the other states hold the same bare
+				// settings as value, never a second value wrapper.
+				if ( 'value' !== $state && is_array( $state_payload ) && array( 'value' ) === array_map( 'strval', array_keys( $state_payload ) ) ) {
+					$warnings[] = sprintf(
+						/* translators: 1: state, 2: group, 3: module + address, 4: path to the breakpoint. */
+						__( 'The "%1$s" state on the "%2$s" group of %3$s wraps its settings in "value", so Divi will not use them. Write them straight under the state: %4$s.%1$s.<field>, not %4$s.%1$s.value.<field>.', 'saddle' ),
+						$state,
+						$group,
+						$location,
+						$base . '.' . $bp
 					);
 					continue;
 				}
@@ -515,11 +638,22 @@ class Saddle_Divi_Echo {
 		$warnings = array();
 		foreach ( array( 'decoration', 'advanced' ) as $kind ) {
 			$declared = $contract['attributes'][ $attr_name ][ $kind ];
-			if ( null === $declared ) {
-				continue; // The attribute declares none — not judgeable.
+			if ( null === $declared || ( 'advanced' === $kind && array() === $declared ) ) {
+				// None declared, or an empty advanced object: Divi's form
+				// fields declare `"advanced": {}` and still read focus
+				// styling there, so an empty list proves nothing.
+				continue;
 			}
 			foreach ( self::addressed_groups( $segments, $value, $kind ) as $group ) {
 				if ( in_array( $group, $declared, true ) ) {
+					continue;
+				}
+				// Undeclared advanced groups Divi reads on every module or field.
+				if ( 'advanced' === $kind && 'module' === $attr_name && in_array( $group, self::MODULE_ADVANCED, true ) ) {
+					continue;
+				}
+				if ( 'advanced' === $kind && in_array( $group, self::FIELD_ADVANCED, true )
+					&& ( 'field' === $attr_name || 'field' === $contract['attributes'][ $attr_name ]['element_type'] ) ) {
 					continue;
 				}
 				// Undeclared but universal: ElementStyle renders it anyway
@@ -602,8 +736,9 @@ class Saddle_Divi_Echo {
 		$content_fields = array();
 		foreach ( $described['attributes'] as $entry ) {
 			$attributes[ $entry['name'] ] = array(
-				'decoration' => isset( $entry['decorations'] ) ? array_map( 'strval', $entry['decorations'] ) : null,
-				'advanced'   => isset( $entry['advanced_options'] ) ? array_map( 'strval', $entry['advanced_options'] ) : null,
+				'decoration'   => isset( $entry['decorations'] ) ? array_map( 'strval', $entry['decorations'] ) : null,
+				'advanced'     => isset( $entry['advanced_options'] ) ? array_map( 'strval', $entry['advanced_options'] ) : null,
+				'element_type' => isset( $entry['elementType'] ) ? (string) $entry['elementType'] : '',
 			);
 			if ( ! empty( $entry['content'] ) ) {
 				$content[] = (string) $entry['name'];

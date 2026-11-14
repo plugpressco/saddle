@@ -81,6 +81,44 @@ class Saddle_Divi_Context_Bundle_Test extends WP_UnitTestCase {
 		$this->assertArrayHasKey( 'note', $result );
 	}
 
+	/**
+	 * The bundle rides every session, so its catalog is the compact one: a
+	 * group and a container's child types, no purpose line (that is in
+	 * divi-list-modules). On Divi 5.10.1's 85 modules the catalog was 6,900
+	 * bytes before groups and child types came in, and is 6,458 after.
+	 */
+	public function test_the_bundle_catalog_is_compact() {
+		$result = wp_get_ability( 'saddle/divi-context-bundle' )->execute( array() );
+		$this->assertSame(
+			array(
+				'type'  => 'saddletest/plain-box',
+				'title' => 'Plain Box',
+				'group' => 'pack: saddletest',
+			),
+			$result['modules'][0]
+		);
+
+		$dir = getenv( 'SADDLE_TEST_DIVI_COMPONENTS' ) ?: '/Users/fahim/Workspace/wp/divi-dev/wp-content/themes/Divi/includes/builder-5/visual-builder/packages/module-library/src/components';
+		if ( ! is_dir( $dir ) ) {
+			$this->markTestSkipped( 'Divi 5 module.json files are not on this machine.' );
+		}
+		remove_all_filters( 'saddle_divi_module_json_dirs' );
+		add_filter(
+			'saddle_divi_module_json_dirs',
+			static function () use ( $dir ) {
+				return array( $dir );
+			}
+		);
+		Saddle_Divi_Schema::index( true );
+		Saddle_Divi_Bundle::flush();
+
+		$modules = Saddle_Divi_Bundle::get()['modules'];
+		$by_type = array_column( $modules, null, 'type' );
+		$this->assertSame( array( 'divi/row' ), $by_type['divi/section']['children'] );
+		$this->assertArrayNotHasKey( 'purpose', $by_type['divi/section'] );
+		$this->assertLessThanOrEqual( 6900, strlen( (string) wp_json_encode( $modules ) ), 'No bigger than the catalog it replaced.' );
+	}
+
 	public function test_bundle_is_cached_and_signature_self_corrects_on_plugin_churn() {
 		$first = Saddle_Divi_Bundle::get();
 		$again = Saddle_Divi_Bundle::get();

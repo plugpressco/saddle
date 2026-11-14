@@ -8,8 +8,9 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * A module wearing CSS classes (module.advanced.html…class) delegates its
- * look to theme stylesheets Saddle cannot read — the server-side score
+ * A module wearing CSS classes (module.advanced.htmlAttributes.desktop.value
+ * .class, the one place Divi 5 reads them) delegates its look to theme
+ * stylesheets Saddle cannot read — the server-side score
  * cannot cover what those classes do, and an agent that applies classes it
  * found somewhere is styling blind (observed live: "mesh sky" utility
  * classes produced a garish gradient the agent never saw). One advisory per
@@ -50,11 +51,11 @@ class Saddle_Lint_Rule_Theme_Css_Class extends Saddle_Lint_Rule {
 				self::SEVERITY_WARN,
 				sprintf(
 					/* translators: 1: module type, 2: CSS class list. */
-					__( '%1$s delegates styling to the CSS class(es) "%2$s" — SaddleWP cannot see theme stylesheets, so nothing server-side can verify what these classes render.', 'saddle' ),
+					__( '%1$s delegates styling to the CSS class(es) "%2$s". SaddleWP cannot see theme stylesheets, so nothing server-side can verify what these classes render.', 'saddle' ),
 					(string) $node['type'],
 					$class
 				),
-				__( 'Unless the user named this exact class, remove it and style through attrs, tokens (var(--gcid-…)), or presets — then check real pixels with get-preview-url.', 'saddle' )
+				__( 'Unless the user named this exact class, remove it and style through attrs, tokens (var(--gcid-…)), or presets. Then check real pixels with get-preview-url.', 'saddle' )
 			);
 		}
 		return $violations;

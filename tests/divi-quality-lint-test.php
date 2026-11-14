@@ -293,11 +293,15 @@ class Saddle_Divi_Quality_Lint_Test extends WP_UnitTestCase {
 	/* -------- theme-css-class -------- */
 
 	public function test_theme_css_class_fires_on_delegated_styling() {
+		// Divi renders a module's class only from
+		// module.advanced.htmlAttributes.desktop.value.class. This test used
+		// to write the class under module.advanced.html, where Divi 5 never
+		// reads one, so it pinned a class that would not render.
 		$id = $this->divi_page(
 			array(
 				$this->module_markup(
 					'divi/text',
-					array( 'module' => array( 'advanced' => array( 'html' => array( 'desktop' => array( 'value' => array( 'class' => 'mesh sky dt-mp-demo' ) ) ) ) ) ),
+					array( 'module' => array( 'advanced' => array( 'htmlAttributes' => array( 'desktop' => array( 'value' => array( 'class' => 'mesh sky dt-mp-demo' ) ) ) ) ) ),
 					'<p>Copy.</p>'
 				),
 			)
@@ -307,6 +311,22 @@ class Saddle_Divi_Quality_Lint_Test extends WP_UnitTestCase {
 		$this->assertCount( 1, $findings );
 		$this->assertStringContainsString( 'mesh sky dt-mp-demo', $findings[0]['message'] );
 		$this->assertStringContainsString( 'Unless the user named', $findings[0]['fix_hint'] );
+	}
+
+	public function test_theme_css_class_ignores_a_class_divi_never_renders() {
+		// A class under module.advanced.html renders nothing, so it styles
+		// nothing either; the echo tells the agent where it belongs.
+		$id = $this->divi_page(
+			array(
+				$this->module_markup(
+					'divi/text',
+					array( 'module' => array( 'advanced' => array( 'html' => array( 'desktop' => array( 'value' => array( 'class' => 'mesh sky' ) ) ) ) ) ),
+					'<p>Copy.</p>'
+				),
+			)
+		);
+
+		$this->assertSame( array(), $this->by_rule( $this->lint( $id )['violations'], 'theme-css-class' ) );
 	}
 
 	public function test_theme_css_class_silent_without_classes() {

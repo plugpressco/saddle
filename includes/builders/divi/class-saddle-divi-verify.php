@@ -59,7 +59,7 @@ class Saddle_Divi_Verify {
 					isset( $violation['type'] ) ? (string) $violation['type'] : __( '(unknown module)', 'saddle' ),
 					isset( $violation['problem'] ) ? (string) $violation['problem'] : __( 'breaks the Divi containment contract.', 'saddle' )
 				),
-				'fix_hint' => __( 'Restore the section > row > column > module skeleton at this address — the Visual Builder cannot edit a broken tree.', 'saddle' ),
+				'fix_hint' => __( 'Restore the section > row > column > module skeleton at this address. The Visual Builder cannot edit a broken tree.', 'saddle' ),
 			);
 		}
 		return $findings;
@@ -82,13 +82,20 @@ class Saddle_Divi_Verify {
 			// unknown_module=false: the unknown-module LINT rule owns that
 			// signal in verify, with its own severity and fix hint — the
 			// echo pass here judges only proven-ignored attr paths.
-			foreach ( Saddle_Divi_Echo::check( $node['type'], array(), $attrs, $node['address'], array( 'unknown_module' => false ) ) as $warning ) {
+			// advisory=false: only what Divi provably drops or misreads is
+			// scored as an error; a value that renders differently than
+			// meant stays a write-time note.
+			$options = array(
+				'unknown_module' => false,
+				'advisory'       => false,
+			);
+			foreach ( Saddle_Divi_Echo::check( $node['type'], array(), $attrs, $node['address'], $options ) as $warning ) {
 				$findings[] = array(
 					'address'  => $node['address'],
 					'source'   => 'echo',
 					'severity' => 'error',
 					'message'  => (string) $warning,
-					'fix_hint' => __( 'This persisted attribute does nothing — rewrite it on a path from divi-get-style-schema, or remove it.', 'saddle' ),
+					'fix_hint' => __( 'Divi ignores this saved attribute or value. Rewrite it the way the message says, using the paths from divi-get-style-schema, or remove it.', 'saddle' ),
 				);
 			}
 		}

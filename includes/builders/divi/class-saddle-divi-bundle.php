@@ -118,7 +118,10 @@ class Saddle_Divi_Bundle {
 	private static function assemble( $signature ) {
 		$bundle = array(
 			'divi_version' => (string) Saddle_Divi::version(),
-			'modules'      => Saddle_Divi_Schema::catalog(),
+			// Every session pays for this list, so it is the compact
+			// catalog: type, title, group, and what a container holds.
+			// divi-list-modules adds each module's purpose and a search.
+			'modules'      => Saddle_Divi_Catalog::compact(),
 			'packs'        => Saddle_Divi_Schema::module_packs(),
 			'brand'        => array(
 				'site_name' => get_bloginfo( 'name' ),

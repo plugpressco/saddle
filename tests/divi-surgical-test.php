@@ -48,6 +48,7 @@ class Saddle_Divi_Surgical_Test extends WP_UnitTestCase {
 									'font'   => array(),
 									'border' => array(),
 									'sticky' => array(),
+									'glow'   => array(),
 								),
 							),
 						),
@@ -75,6 +76,7 @@ class Saddle_Divi_Surgical_Test extends WP_UnitTestCase {
 							'font'   => array( 'font' => array( 'desktop' => array( 'value' => array( 'headingLevel' => 'h1' ) ) ) ),
 							'border' => array( 'desktop' => array( 'value' => (object) array() ) ),
 							'sticky' => array( 'desktop' => array( 'value' => array( 'position' => 'none' ) ) ),
+							'glow'   => array( 'desktop' => array( 'value' => array( 'radius' => '12px' ) ) ),
 						),
 					),
 				)
@@ -197,7 +199,7 @@ class Saddle_Divi_Surgical_Test extends WP_UnitTestCase {
 			)
 		);
 		$by_name = array_column( $verbose['attributes'], null, 'name' );
-		$this->assertEqualSets( array( 'font', 'border', 'sticky' ), $by_name['button']['decorations'] );
+		$this->assertEqualSets( array( 'font', 'border', 'sticky', 'glow' ), $by_name['button']['decorations'] );
 	}
 
 	public function test_schema_unknown_type_errors_helpfully() {
@@ -257,11 +259,18 @@ class Saddle_Divi_Surgical_Test extends WP_UnitTestCase {
 		$this->assertArrayHasKey( 'size', $font['example'] );
 
 		// A group with no curated entry mines the module's own render default
-		// (the fixture's sticky group ships one), and a group with neither
+		// (a module pack's own group, here "glow"), and a group with neither
 		// simply carries no example.
+		$glow = $this->run_ability( 'divi-get-style-schema', array( 'type' => 'saddletest/fancy-button', 'group' => 'glow' ) );
+		$this->assertNotWPError( $glow );
+		$this->assertSame( array( 'radius' => '12px' ), $glow['example'], 'Non-curated groups mine the module\'s own render default.' );
+
+		// Sticky used to be one of those, and its mined default
+		// ({"position":"none"}) taught an agent the value that switches
+		// sticky OFF. It now has a written example that turns it on.
 		$sticky = $this->run_ability( 'divi-get-style-schema', array( 'type' => 'saddletest/fancy-button', 'group' => 'sticky' ) );
-		$this->assertNotWPError( $sticky );
-		$this->assertSame( array( 'position' => 'none' ), $sticky['example'], 'Non-curated groups mine the module\'s own render default.' );
+		$this->assertSame( 'top', $sticky['example']['position'] );
+		$this->assertArrayHasKey( 'offset', $sticky['example'] );
 	}
 
 	public function test_style_schema_unknown_group_errors() {

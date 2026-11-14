@@ -47,12 +47,17 @@ function saddle_register_divi_abilities() {
 		'saddle/divi-list-modules',
 		array(
 			'label'               => __( 'List Divi modules', 'saddle' ),
-			'description'         => __( 'Returns the catalog of Divi 5 module types available for building pages, each with a one-line purpose and whether it is a structural container (section/row/column) or a content module. Read-only. Use real modules from this catalog — never approximate a layout by dumping HTML into a code module.', 'saddle' ),
+			'description'         => __( 'Returns the Divi 5 module types on this site: Divi\'s own and those of every active module pack. Each has a one-line purpose, a group (layout, text, media, forms, posts, navigation, shop, or "pack: <plugin>"), whether it is a child module, and, for a container, the child types it holds in "children" ("*" means any content module). Pass "search" (e.g. "pricing", "slider") to get only the matching modules instead of the whole list. Read-only. Then call divi-get-module-schema for one type. Use real modules; never approximate a layout by dumping HTML into a code module.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
 				'default'    => (object) array(),
-				'properties' => array(),
+				'properties' => array(
+					'search' => array(
+						'type'        => 'string',
+						'description' => __( 'Optional words that must all appear in the module\'s type, title, purpose or group, e.g. "pricing" or "post grid".', 'saddle' ),
+					),
+				),
 			),
 			'execute_callback'    => array( 'Saddle_Divi_Abilities', 'list_modules' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'divi-list-modules' ),
@@ -170,7 +175,7 @@ function saddle_register_divi_abilities() {
 		'saddle/divi-get-module-schema',
 		array(
 			'label'               => __( 'Get Divi module schema', 'saddle' ),
-			'description'         => __( 'Returns one Divi module type\'s distilled schema: its content attributes with the exact "fields" syntax to write them (string vs object with named fields), and whether it is a container and which children it accepts. That is everything needed to COMPOSE the module; pass verbose=true to also list each element\'s design (decoration) option groups, or use divi-get-style-schema for styling paths. Covers core and third-party modules discovered on this site.', 'saddle' ),
+			'description'         => __( 'Returns one Divi module type\'s schema, for Divi\'s own modules and every module pack on this site. "attributes": its content, with the exact "fields" syntax (a string, or an object with named fields). "settings": every other option (post count, which menu, autoplay, arrows, prices), each with its path, control (toggle, select, text, number, range, color, icon, upload, list, link, other), choices and default; toggles take the strings "on" and "off". "notes": known traps for this module. "children": what a container holds. Pass detail="full" for each setting\'s label, description and whether it can differ by screen size, on hover or when sticky. For styling paths use divi-get-style-schema.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -179,6 +184,12 @@ function saddle_register_divi_abilities() {
 					'type'    => array(
 						'type'        => 'string',
 						'description' => __( 'The module type, e.g. "divi/button".', 'saddle' ),
+					),
+					'detail'  => array(
+						'type'        => 'string',
+						'enum'        => array( 'compact', 'full' ),
+						'default'     => 'compact',
+						'description' => __( 'compact (default): settings as path, control, short choices and default. full: also labels, descriptions, every choice with its label, and the screen-size, hover, sticky and dynamic-content flags.', 'saddle' ),
 					),
 					'verbose' => array(
 						'type'        => 'boolean',
@@ -197,7 +208,7 @@ function saddle_register_divi_abilities() {
 		'saddle/divi-get-style-schema',
 		array(
 			'label'               => __( 'Get Divi style schema', 'saddle' ),
-			'description'         => __( 'Returns a module\'s STYLING vocabulary — the universal decoration groups (background, spacing, border, sizing, fonts, filters, transform, …) and advanced options it supports, each with the exact attribute path to set it. This is separate from divi-get-module-schema (which covers content); read it before styling a module. Call without "group" for the list, then with a "group" for that group\'s settable fields. Style paths are per-module — never reuse one module\'s path on another.', 'saddle' ),
+			'description'         => __( 'Returns a module\'s STYLING vocabulary: each decoration group it supports (background, spacing, border, sizing, fonts, filters, transform, position, animation, sticky, scroll, interactions, …) with the exact attribute path to set it; the advanced options that style it (HTML id and class, wrapper element, link, text colour, section dividers, row gutter); its custom CSS fields; the breakpoints switched on for this site; and how hover, sticky and screen-size values are written. Separate from divi-get-module-schema (content and settings); read it before styling a module. Call without "group" for the list, then with a "group" for that group\'s fields, sub-fields and one correct example. Style paths are per-module: never reuse one module\'s path on another.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -209,7 +220,7 @@ function saddle_register_divi_abilities() {
 					),
 					'group' => array(
 						'type'        => 'string',
-						'description' => __( 'Optional decoration group to expand, e.g. "spacing".', 'saddle' ),
+						'description' => __( 'Optional decoration group to expand, e.g. "spacing", or "title.font" for the group on one element when several elements have it.', 'saddle' ),
 					),
 				),
 			),
@@ -254,7 +265,7 @@ function saddle_register_divi_abilities() {
 		'saddle/divi-edit-module',
 		array(
 			'label'               => __( 'Edit Divi module', 'saddle' ),
-			'description'         => __( 'Patches one addressed module on a Divi 5 page. "fields" replaces content values (same syntax as divi-set-page); "attrs" deep-merges raw canonical attributes over the existing ones (styling). Children are untouched. The result is validated before saving, and the previous state is kept as a revision. Response "warnings" flag fields or style paths this module will silently ignore.', 'saddle' ),
+			'description'         => __( 'Patches one addressed module on a Divi 5 page. "fields" sets content values (same syntax as divi-set-page). "attrs" merges raw canonical attributes into the stored ones (styling), with dotted paths allowed as keys: an object merges key by key, a list (gradient stops, custom attributes, interactions, a font style list) REPLACES the stored list, and a null value is ignored. "unset" removes attributes by dotted path, for example ["module.decoration.background.desktop.value.gradient"]; a number in the path names one list item. Unset runs before the merge, so one call can remove a group and write a new one. To empty a list, unset it. Children are untouched. The result is validated before saving, and the previous state is kept as a revision. Response "warnings" flag fields or style paths this module will silently ignore; "removed" and "not_found" list what unset did.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -272,6 +283,12 @@ function saddle_register_divi_abilities() {
 					'attrs'   => array(
 						'type'                 => 'object',
 						'additionalProperties' => true,
+					),
+					'unset'   => array(
+						'type'        => 'array',
+						'items'       => array( 'type' => 'string' ),
+						'maxItems'    => 50,
+						'description' => __( 'Dotted attribute paths to remove, e.g. "module.decoration.background.desktop.value.gradient". Parents left empty are removed too.', 'saddle' ),
 					),
 				),
 			),
@@ -339,11 +356,109 @@ function saddle_register_divi_abilities() {
 	 * ---------------------------------------------------------------------
 	 */
 
+	$loop_properties = array(
+		'post_id'              => array(
+			'type'        => 'integer',
+			'description' => __( 'The Divi page.', 'saddle' ),
+		),
+		'address'              => array(
+			'type'        => 'string',
+			'description' => __( 'Address of the module that repeats, from divi-get-page. Usually the column or group that holds one card.', 'saddle' ),
+		),
+		'query_type'           => array(
+			'type'        => 'string',
+			'enum'        => array( 'post_types', 'post_taxonomies', 'user_roles', 'menus', 'current_page', 'acf_repeater', 'terms', 'users' ),
+			'description' => __( 'What the loop repeats over: post_types (posts of the types in sub_types), post_taxonomies (terms of the taxonomies in sub_types), user_roles (users, of the roles in sub_types or all), menus (items of the menu in sub_types), current_page (the posts the page itself lists: blog, archive or search results), acf_repeater (the rows of the ACF repeater named in repeater_field). "terms" and "users" are older names for post_taxonomies and user_roles.', 'saddle' ),
+		),
+		'sub_types'            => array(
+			'type'        => 'array',
+			'items'       => array( 'type' => 'string' ),
+			'description' => __( 'Post type slugs ("post", "product"), taxonomy slugs ("category"), role slugs ("author"), or a menu id or slug. A post_types loop defaults to ["post"], a post_taxonomies loop to ["category"]. divi-list-loop-query-types lists this site\'s values.', 'saddle' ),
+		),
+		'repeater_field'       => array(
+			'type'        => 'string',
+			'description' => __( 'For query_type acf_repeater: the field name of the ACF repeater.', 'saddle' ),
+		),
+		'order_by'             => array(
+			'type'        => 'string',
+			'description' => __( 'Sort field. Posts: date, modified, title, name, ID, author, parent, type, menu_order, comment_count, rand, none (and price, popularity, rating for products); a current_page loop also takes relevance. Terms: name, slug, term_id, count, description, parent, term_order, none. Users: display_name, name, login, nicename, email, url, registered, post_count, ID. Menus: menu_order, title, id. Defaults to the first of each list.', 'saddle' ),
+		),
+		'order'                => array(
+			'type'        => 'string',
+			'enum'        => array( 'desc', 'asc', 'descending', 'ascending' ),
+			'description' => __( '"desc" (newest first, Z to A; the default) or "asc". Stored as "descending" or "ascending", the values Divi reads.', 'saddle' ),
+		),
+		'per_page'             => array(
+			'type'        => 'integer',
+			'minimum'     => 1,
+			'maximum'     => 100,
+			'description' => __( 'Items per page (default 10).', 'saddle' ),
+		),
+		'offset'               => array(
+			'type'        => 'integer',
+			'minimum'     => 0,
+			'description' => __( 'Items to skip (default 0).', 'saddle' ),
+		),
+		'loop_id'              => array(
+			'type'        => 'string',
+			'description' => __( 'Optional id for the loop: "loop-" then letters, digits, "-" or "_". Leave it out and SaddleWP makes one; enable and edit keep the id a loop already has.', 'saddle' ),
+		),
+		'exclude_current_post' => array(
+			'type'        => 'boolean',
+			'description' => __( 'Leave out the post being viewed, e.g. "related posts" on a post template (post loops).', 'saddle' ),
+		),
+		'ignore_sticky_posts'  => array(
+			'type'        => 'boolean',
+			'description' => __( 'Leave sticky posts out of the loop (post loops).', 'saddle' ),
+		),
+		'include_posts'        => array(
+			'type'        => 'array',
+			'items'       => array( 'type' => 'integer' ),
+			'description' => __( 'Only these post ids (user ids on a user loop). An empty list clears it.', 'saddle' ),
+		),
+		'exclude_posts'        => array(
+			'type'        => 'array',
+			'items'       => array( 'type' => 'integer' ),
+			'description' => __( 'Leave out these post ids (user ids on a user loop). Exclusions win over inclusions.', 'saddle' ),
+		),
+		'include_terms'        => array(
+			'type'                 => 'object',
+			'additionalProperties' => array(
+				'type'  => 'array',
+				'items' => array( 'type' => array( 'integer', 'string' ) ),
+			),
+			'description'          => __( 'Only posts in these terms: {"category": [12, "news"]}, a taxonomy then term ids or slugs. With several taxonomies a post in any of them matches. {} clears it.', 'saddle' ),
+		),
+		'exclude_terms'        => array(
+			'type'                 => 'object',
+			'additionalProperties' => array(
+				'type'  => 'array',
+				'items' => array( 'type' => array( 'integer', 'string' ) ),
+			),
+			'description'          => __( 'Leave out posts in these terms, same shape as include_terms. Exclusions win.', 'saddle' ),
+		),
+		// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- An ability parameter name, not a query argument.
+		'meta_query'           => array(
+			'type'        => 'array',
+			'maxItems'    => 10,
+			'items'       => array(
+				'type'       => 'object',
+				'properties' => array(
+					'key'     => array( 'type' => 'string' ),
+					'value'   => array( 'type' => array( 'string', 'number' ) ),
+					'compare' => array( 'type' => 'string' ),
+					'type'    => array( 'type' => 'string' ),
+				),
+			),
+			'description' => __( 'Custom field conditions: [{"key":"price","value":"10","compare":">=","type":"NUMERIC"}]. compare: = != > >= < <= LIKE, NOT LIKE, IN, NOT IN, BETWEEN, NOT BETWEEN, EXISTS, NOT EXISTS, REGEXP, NOT REGEXP, RLIKE (default =); IN and BETWEEN take a comma list as value. type: NUMERIC, BINARY, CHAR, DATE, DATETIME, DECIMAL, SIGNED, TIME, UNSIGNED. With several conditions Divi keeps items that match any one of them. An empty list clears it.', 'saddle' ),
+		),
+	);
+
 	saddle_register_ability_once(
 		'saddle/divi-list-loop-query-types',
 		array(
 			'label'               => __( 'List Divi loop query types', 'saddle' ),
-			'description'         => __( 'Reference for Divi 5 query loops: the valid query_type values (post_types, post_taxonomies, terms, users, user_roles, menus), what sub_types means for each, and the ordering options. Read-only. Call before enable-loop.', 'saddle' ),
+			'description'         => __( 'Reference for Divi 5 query loops on this site: each query_type (post_types, post_taxonomies, user_roles, menus, current_page, acf_repeater) with what it repeats over, this site\'s sub_types values, the order_by values Divi offers for it and the loop_ sources that print each item; the order values; the filters (include and exclude posts or terms, custom field conditions, exclude current post, sticky posts); and how a loop id ties pagination to a loop. Read-only. Call before divi-enable-loop.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -360,52 +475,12 @@ function saddle_register_divi_abilities() {
 		'saddle/divi-enable-loop',
 		array(
 			'label'               => __( 'Enable Divi loop', 'saddle' ),
-			'description'         => __( 'Turns a module at an address into a query loop that repeats once per result (e.g. latest posts). Replaces any existing loop config on the module. Inside the loop, bind per-item values with apply-dynamic-content using loop_* sources. Reversible with disable-loop.', 'saddle' ),
+			'description'         => __( 'Turns the module at an address into a query loop: Divi repeats it once per result, for example a card per latest post. Put the loop on the module that should repeat, usually the column or group holding one card. Writes a fresh loop config and keeps the loop id the module already has. A module that offers no loop in Divi\'s builder (blog, portfolio, gallery, post slider and others with their own query, and pack modules that do not declare one) is refused, and the error names the containers around it that can loop; a module SaddleWP has no module.json for is allowed with a warning. Inside the loop, bind each item\'s values with divi-apply-dynamic-content and the loop_ sources (loop_post_title, loop_post_featured_image, loop_post_link ...): a plain post_title shows the page\'s own title on every item. The response carries "loop_id": a Pagination module (divi/post-nav) or a Post Filter (divi/post-filter) follows this loop when its attrs set "module.advanced.targetLoop.desktop.value" to that id. Reversible with divi-disable-loop.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
 				'required'   => array( 'post_id', 'address' ),
-				'properties' => array(
-					'post_id'    => array(
-						'type'        => 'integer',
-						'description' => __( 'The Divi page.', 'saddle' ),
-					),
-					'address'    => array(
-						'type'        => 'string',
-						'description' => __( 'Module address from divi-get-page.', 'saddle' ),
-					),
-					'query_type' => array(
-						'type'        => 'string',
-						'enum'        => array( 'post_types', 'post_taxonomies', 'terms', 'users', 'user_roles', 'menus' ),
-						'default'     => 'post_types',
-						'description' => __( 'What the loop iterates over.', 'saddle' ),
-					),
-					'sub_types'  => array(
-						'type'        => 'array',
-						'items'       => array( 'type' => 'string' ),
-						'description' => __( 'Scope within the query type: post types ("post", "page"), taxonomies, or roles.', 'saddle' ),
-					),
-					'order_by'   => array(
-						'type'        => 'string',
-						'description' => __( 'Sort field, e.g. "date", "title".', 'saddle' ),
-					),
-					'order'      => array(
-						'type'    => 'string',
-						'enum'    => array( 'asc', 'desc' ),
-						'default' => 'desc',
-					),
-					'per_page'   => array(
-						'type'    => 'integer',
-						'minimum' => 1,
-						'maximum' => 100,
-						'default' => 10,
-					),
-					'offset'     => array(
-						'type'    => 'integer',
-						'minimum' => 0,
-						'default' => 0,
-					),
-				),
+				'properties' => $loop_properties,
 			),
 			'execute_callback'    => array( 'Saddle_Divi_Abilities', 'enable_loop' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'write', 'edit_posts', 'divi-enable-loop' ),
@@ -417,37 +492,12 @@ function saddle_register_divi_abilities() {
 		'saddle/divi-edit-loop',
 		array(
 			'label'               => __( 'Edit Divi loop', 'saddle' ),
-			'description'         => __( 'Changes some of a live loop\'s query settings (per_page, order, sub_types, …) without replacing the whole config. Only the parameters you pass change. Fails if the module has no loop — use enable-loop first.', 'saddle' ),
+			'description'         => __( 'Changes some of a loop\'s settings without replacing its config: only the parameters you pass change, the loop id is kept, and a loop that was switched off is turned back on. Takes the same parameters as divi-enable-loop. A list parameter (sub_types, include_posts, include_terms, meta_query ...) replaces the stored list; an empty list clears it. Changing query_type resets sub_types, order_by and the term filters to that type\'s defaults unless you pass them. Also rewrites a loop saved in an older format into the one Divi reads. Fails if the module has no loop: use divi-enable-loop first. Returns "loop_id".', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
 				'required'   => array( 'post_id', 'address' ),
-				'properties' => array(
-					'post_id'    => array( 'type' => 'integer' ),
-					'address'    => array( 'type' => 'string' ),
-					'query_type' => array(
-						'type' => 'string',
-						'enum' => array( 'post_types', 'post_taxonomies', 'terms', 'users', 'user_roles', 'menus' ),
-					),
-					'sub_types'  => array(
-						'type'  => 'array',
-						'items' => array( 'type' => 'string' ),
-					),
-					'order_by'   => array( 'type' => 'string' ),
-					'order'      => array(
-						'type' => 'string',
-						'enum' => array( 'asc', 'desc' ),
-					),
-					'per_page'   => array(
-						'type'    => 'integer',
-						'minimum' => 1,
-						'maximum' => 100,
-					),
-					'offset'     => array(
-						'type'    => 'integer',
-						'minimum' => 0,
-					),
-				),
+				'properties' => $loop_properties,
 			),
 			'execute_callback'    => array( 'Saddle_Divi_Abilities', 'edit_loop' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'write', 'edit_posts', 'divi-edit-loop' ),
@@ -459,7 +509,7 @@ function saddle_register_divi_abilities() {
 		'saddle/divi-disable-loop',
 		array(
 			'label'               => __( 'Disable Divi loop', 'saddle' ),
-			'description'         => __( 'Switches a module\'s loop off while keeping its query config, so enable-loop can restore it later. The module renders once again.', 'saddle' ),
+			'description'         => __( 'Switches a module\'s loop off and keeps its config and loop id: the module renders once again. divi-edit-loop turns it back on with the same config. Returns "loop_id".', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -485,7 +535,7 @@ function saddle_register_divi_abilities() {
 		'saddle/divi-list-dynamic-sources',
 		array(
 			'label'               => __( 'List Divi dynamic sources', 'saddle' ),
-			'description'         => __( 'Reference of dynamic-content sources a module field can bind to: current-post values (post_title, post_excerpt, post_featured_image, …), site values (home_url, current_date), and per-item loop_* sources for loop-enabled modules. Read-only. Call before apply-dynamic-content.', 'saddle' ),
+			'description'         => __( 'Lists the dynamic content sources a module field can bind to on this site, read from what Divi registers here when it can (a built-in list otherwise), each with its value type (text, url, image) and the settings it takes. "page" sources (post, author, site, term, product when WooCommerce is active, custom fields) show the values of the page being viewed, or of the post a Theme Builder template shows. "loop" sources (loop_post_*, loop_product_*, loop_term_*, loop_user_*, loop_menu_*) change per item and resolve only inside a loop: inside a loop use them, because a plain post_title repeats the page\'s own title on every item. Each loop family says which loop query types it prints. Read-only. Call before divi-apply-dynamic-content.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -498,11 +548,18 @@ function saddle_register_divi_abilities() {
 		)
 	);
 
+	$dynamic_breakpoint = array(
+		'type'        => 'string',
+		'enum'        => array( 'desktop', 'tablet', 'phone', 'phoneWide', 'tabletWide', 'widescreen', 'ultraWide' ),
+		'default'     => 'desktop',
+		'description' => __( 'Screen size the binding applies to (default desktop). Ignored when "field" already names one.', 'saddle' ),
+	);
+
 	saddle_register_ability_once(
 		'saddle/divi-apply-dynamic-content',
 		array(
 			'label'               => __( 'Apply Divi dynamic content', 'saddle' ),
-			'description'         => __( 'Binds a module field to a dynamic source (e.g. a heading inside a loop to loop_post_title), replacing the field\'s static value with a live binding. Provide the field\'s attribute path from divi-get-module-schema, e.g. "title.innerContent". Reversible with clear-dynamic-content.', 'saddle' ),
+			'description'         => __( 'Binds a module field to a dynamic source, replacing that value with a live binding. "field" is the attribute path from divi-get-module-schema: "title.innerContent" for a text field. For a field that holds an object, bind one part and the other parts stay: "image.innerContent.src" (the image), "button.innerContent.text" or "button.innerContent.linkUrl". A full path with a breakpoint also works, e.g. "module.advanced.link.desktop.value.url". "source" is a name from divi-list-dynamic-sources; inside a loop use the loop_ sources. "settings" holds the source\'s settings, e.g. {"before":"By ","date_format":"M j, Y"}; numbers and true/false are stored as the strings Divi reads. For a custom field use source post_meta_key with settings.meta_key, or inside a loop loop_post_meta_key_manual_custom_field with settings.loop_meta_key; settings.key is accepted as the older name. Custom fields whose names start with "_" are refused. The response "warnings" say when the source will not resolve where the module sits (a page source inside a loop, a loop_ source outside one). Reversible with divi-clear-dynamic-content.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -512,20 +569,17 @@ function saddle_register_divi_abilities() {
 					'address'    => array( 'type' => 'string' ),
 					'field'      => array(
 						'type'        => 'string',
-						'description' => __( 'Attribute path of the field, e.g. "title.innerContent".', 'saddle' ),
+						'description' => __( 'Attribute path of the field: "title.innerContent", or one part of an object field such as "image.innerContent.src".', 'saddle' ),
 					),
 					'source'     => array(
 						'type'        => 'string',
-						'description' => __( 'Dynamic source name from list-dynamic-sources.', 'saddle' ),
+						'description' => __( 'Dynamic source name from divi-list-dynamic-sources.', 'saddle' ),
 					),
 					'settings'   => array(
 						'type'        => 'object',
-						'description' => __( 'Optional source settings (e.g. before/after text, date_format, meta key).', 'saddle' ),
+						'description' => __( 'Optional source settings: before, after, date_format, meta_key, loop_position and the others the source lists.', 'saddle' ),
 					),
-					'breakpoint' => array(
-						'type'    => 'string',
-						'default' => 'desktop',
-					),
+					'breakpoint' => $dynamic_breakpoint,
 				),
 			),
 			'execute_callback'    => array( 'Saddle_Divi_Abilities', 'apply_dynamic_content' ),
@@ -538,7 +592,7 @@ function saddle_register_divi_abilities() {
 		'saddle/divi-clear-dynamic-content',
 		array(
 			'label'               => __( 'Clear Divi dynamic content', 'saddle' ),
-			'description'         => __( 'Removes a dynamic binding from a module field, leaving any literal text around it, or replaces the field with an explicit static "value" you provide.', 'saddle' ),
+			'description'         => __( 'Removes a dynamic binding from a module field and keeps any literal text around it, or replaces the bound value with a static "value" you give. "field" takes the same paths as divi-apply-dynamic-content, so "image.innerContent.src" clears only the image. Naming a whole object field ("button.innerContent") removes every binding inside it and keeps the rest; a static "value" needs one part.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -546,15 +600,15 @@ function saddle_register_divi_abilities() {
 				'properties' => array(
 					'post_id'    => array( 'type' => 'integer' ),
 					'address'    => array( 'type' => 'string' ),
-					'field'      => array( 'type' => 'string' ),
+					'field'      => array(
+						'type'        => 'string',
+						'description' => __( 'Attribute path of the bound field, as given to divi-apply-dynamic-content.', 'saddle' ),
+					),
 					'value'      => array(
 						'type'        => 'string',
 						'description' => __( 'Optional static replacement value.', 'saddle' ),
 					),
-					'breakpoint' => array(
-						'type'    => 'string',
-						'default' => 'desktop',
-					),
+					'breakpoint' => $dynamic_breakpoint,
 				),
 			),
 			'execute_callback'    => array( 'Saddle_Divi_Abilities', 'clear_dynamic_content' ),
@@ -699,115 +753,34 @@ class Saddle_Divi_Abilities {
 	/**
 	 * saddle/divi-list-modules.
 	 *
-	 * A curated v0.1 catalog. Divi 5 doesn't register its modules as
-	 * server-side block types in every request context, so a hand-maintained
-	 * list (filterable for later dynamic discovery) is the honest baseline.
+	 * The catalog from every module.json on this site (Saddle_Divi_Catalog),
+	 * optionally narrowed by a search. When nothing is discoverable, the few
+	 * core modules every Divi 5 site has, so an agent is never left with
+	 * an empty list.
 	 *
+	 * @param array $input Ability input (optional "search").
 	 * @return array
 	 */
-	public static function list_modules() {
-		$modules = array(
-			array(
-				'type'      => 'divi/section',
-				'container' => true,
-				'purpose'   => __( 'Top-level page band. Pages are a stack of sections.', 'saddle' ),
-			),
-			array(
-				'type'      => 'divi/row',
-				'container' => true,
-				'purpose'   => __( 'Horizontal layout inside a section; holds columns.', 'saddle' ),
-			),
-			array(
-				'type'      => 'divi/column',
-				'container' => true,
-				'purpose'   => __( 'Vertical slot inside a row; holds content modules.', 'saddle' ),
-			),
-			array(
-				'type'      => 'divi/heading',
-				'container' => false,
-				'purpose'   => __( 'A heading (h1–h6).', 'saddle' ),
-			),
-			array(
-				'type'      => 'divi/text',
-				'container' => false,
-				'purpose'   => __( 'Rich text content.', 'saddle' ),
-			),
-			array(
-				'type'      => 'divi/image',
-				'container' => false,
-				'purpose'   => __( 'A single image.', 'saddle' ),
-			),
-			array(
-				'type'      => 'divi/button',
-				'container' => false,
-				'purpose'   => __( 'A call-to-action button.', 'saddle' ),
-			),
-			array(
-				'type'      => 'divi/blurb',
-				'container' => false,
-				'purpose'   => __( 'Icon/image + title + short text, the classic feature card.', 'saddle' ),
-			),
-			array(
-				'type'      => 'divi/cta',
-				'container' => false,
-				'purpose'   => __( 'Call-to-action band with title, text, and button.', 'saddle' ),
-			),
-			array(
-				'type'      => 'divi/divider',
-				'container' => false,
-				'purpose'   => __( 'Horizontal separator/spacer.', 'saddle' ),
-			),
-			array(
-				'type'      => 'divi/testimonial',
-				'container' => false,
-				'purpose'   => __( 'Quote with author attribution.', 'saddle' ),
-			),
-			array(
-				'type'      => 'divi/toggle',
-				'container' => false,
-				'purpose'   => __( 'Collapsible content panel.', 'saddle' ),
-			),
-			array(
-				'type'      => 'divi/accordion',
-				'container' => false,
-				'purpose'   => __( 'Stack of toggles.', 'saddle' ),
-			),
-			array(
-				'type'      => 'divi/gallery',
-				'container' => false,
-				'purpose'   => __( 'Image gallery grid or slider.', 'saddle' ),
-			),
-			array(
-				'type'      => 'divi/video',
-				'container' => false,
-				'purpose'   => __( 'Embedded video.', 'saddle' ),
-			),
-		);
-
-		// Prefer live discovery from module.json files (Divi core + every
-		// ecosystem plugin's modules-json dir); the curated list above then
-		// only contributes its one-line purposes for the common modules —
-		// and remains the fallback when nothing is discoverable.
-		$discovered = class_exists( 'Saddle_Divi_Schema' ) ? Saddle_Divi_Schema::catalog() : array();
-		if ( $discovered ) {
-			$purposes = wp_list_pluck( $modules, 'purpose', 'type' );
-			$modules  = array_map(
-				static function ( $m ) use ( $purposes ) {
-					if ( isset( $purposes[ $m['type'] ] ) ) {
-						$m['purpose'] = $purposes[ $m['type'] ];
-					}
-					return $m;
-				},
-				$discovered
-			);
+	public static function list_modules( $input = array() ) {
+		$search  = is_array( $input ) && isset( $input['search'] ) ? sanitize_text_field( (string) $input['search'] ) : '';
+		$modules = class_exists( 'Saddle_Divi_Catalog' ) ? Saddle_Divi_Catalog::modules( $search ) : array();
+		if ( ! $modules && '' === $search && ! Saddle_Divi_Schema::index() ) {
+			$modules = array();
+			foreach ( array( 'divi/section', 'divi/row', 'divi/column', 'divi/heading', 'divi/text', 'divi/image', 'divi/button', 'divi/blurb', 'divi/cta' ) as $type ) {
+				$modules[] = array(
+					'type'      => $type,
+					'container' => in_array( $type, array( 'divi/section', 'divi/row', 'divi/column' ), true ),
+				);
+			}
 		}
 
 		/**
 		 * Filter the Divi module catalog exposed to agents.
 		 *
-		 * @param array $modules Module descriptors (type, container, purpose).
+		 * @param array  $modules Module descriptors (type, title, purpose, group, container, child, children).
+		 * @param string $search  The search, or ''.
 		 */
-		$modules = (array) apply_filters( 'saddle_divi_modules', $modules );
+		$modules = (array) apply_filters( 'saddle_divi_modules', $modules, $search );
 
 		return array(
 			'modules' => array_values( $modules ),
@@ -918,17 +891,31 @@ class Saddle_Divi_Abilities {
 			return new WP_Error( 'saddle_missing_type', __( 'Provide a module "type", e.g. "divi/button".', 'saddle' ) );
 		}
 		$schema = Saddle_Divi_Schema::describe( $type );
-		if ( is_wp_error( $schema ) || ! empty( $input['verbose'] ) ) {
+		if ( is_wp_error( $schema ) ) {
 			return $schema;
 		}
 
 		// Context discipline: composing needs content fields, not the style
 		// option inventory — that detail stays behind verbose=true (or
 		// divi-get-style-schema, which also carries the paths to WRITE them).
-		foreach ( $schema['attributes'] as &$attribute ) {
-			unset( $attribute['decorations'], $attribute['advanced_options'] );
+		if ( empty( $input['verbose'] ) ) {
+			foreach ( $schema['attributes'] as &$attribute ) {
+				unset( $attribute['decorations'], $attribute['advanced_options'] );
+			}
+			unset( $attribute );
 		}
-		unset( $attribute );
+
+		$full     = isset( $input['detail'] ) && 'full' === $input['detail'];
+		$settings = Saddle_Divi_Setting_Values::rows( Saddle_Divi_Settings::for_module( $type ), $full );
+		if ( $settings ) {
+			$schema['settings']          = $settings;
+			$schema['settings_write_as'] = Saddle_Divi_Setting_Values::write_as();
+			$schema['settings_note']     = Saddle_Divi_Setting_Values::note();
+		}
+		$notes = Saddle_Divi_Module_Notes::for_module( $type );
+		if ( $notes ) {
+			$schema['notes'] = $notes;
+		}
 
 		return $schema;
 	}
@@ -1038,23 +1025,35 @@ class Saddle_Divi_Abilities {
 
 		$fields = isset( $input['fields'] ) && is_array( $input['fields'] ) ? $input['fields'] : array();
 		$attrs  = isset( $input['attrs'] ) && is_array( $input['attrs'] ) ? $input['attrs'] : array();
-		if ( ! $fields && ! $attrs ) {
-			return new WP_Error( 'saddle_empty', __( 'Provide "fields" and/or "attrs" to change.', 'saddle' ) );
+		$unset  = isset( $input['unset'] ) && is_array( $input['unset'] ) ? array_values( $input['unset'] ) : array();
+		if ( ! $fields && ! $attrs && ! $unset ) {
+			return new WP_Error( 'saddle_empty', __( 'Provide "fields", "attrs" and/or "unset" to change.', 'saddle' ) );
 		}
 
-		$patch = array();
-		foreach ( $fields as $attr_name => $value ) {
-			$patch[ $attr_name ]['innerContent'] = array( 'desktop' => array( 'value' => $value ) );
+		$stored  = is_array( $node['attrs'] ) ? $node['attrs'] : array();
+		$removed = array();
+		$missing = array();
+		foreach ( $unset as $path ) {
+			$path = is_string( $path ) ? trim( $path ) : '';
+			if ( ! preg_match( '/^[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)*$/', $path ) ) {
+				return new WP_Error( 'saddle_bad_unset', __( 'Each "unset" entry is a dotted attribute path, e.g. "module.decoration.background.desktop.value.gradient".', 'saddle' ) );
+			}
+			$found  = false;
+			$stored = self::unset_attr_path( $stored, explode( '.', $path ), $found );
+			if ( $found ) {
+				$removed[] = $path;
+			} else {
+				$missing[] = $path;
+			}
 		}
-		// Expand dotted style paths ("module.decoration.background.desktop.value.
-		// color") into the nested object Divi reads — the same as the author, so
-		// a documented path written verbatim actually renders instead of being
-		// stored as an inert flat key.
-		$node['attrs'] = array_replace_recursive(
-			is_array( $node['attrs'] ) ? $node['attrs'] : array(),
-			$patch,
-			Saddle_Divi_Author::expand_dotted_keys( $attrs )
-		);
+
+		// Fields fill content slots; attrs may use dotted paths ("module.
+		// decoration.background.desktop.value.color"), applied at that path,
+		// so a documented path written verbatim renders.
+		foreach ( $fields as $attr_name => $value ) {
+			$stored = self::merge_attrs( $stored, array( $attr_name => array( 'innerContent' => array( 'desktop' => array( 'value' => $value ) ) ) ) );
+		}
+		$node['attrs'] = self::merge_attrs( $stored, $attrs );
 
 		$next = Saddle_Divi_Tree::replace( $tree, $address, $node );
 		if ( is_wp_error( $next ) ) {
@@ -1078,17 +1077,139 @@ class Saddle_Divi_Abilities {
 			)
 		);
 
+		$result = array(
+			'id'      => $post->ID,
+			'edited'  => $address,
+			'modules' => $modules,
+		);
+		if ( $unset ) {
+			$result['removed']   = $removed;
+			$result['not_found'] = $missing;
+		}
+
 		return self::with_warnings(
-			array_merge(
-				array(
-					'id'      => $post->ID,
-					'edited'  => $address,
-					'modules' => $modules,
-				),
-				self::view_extras( $post->ID, $next, array( $address ) )
-			),
+			array_merge( $result, self::view_extras( $post->ID, $next, array( $address ) ) ),
 			Saddle_Divi_Echo::check( (string) $node['blockName'], $fields, $attrs, $address )
 		);
+	}
+
+	/**
+	 * Merge an edit-module patch into stored attrs. An object merges key by
+	 * key; a list replaces the stored list (a shorter gradient or attributes
+	 * list must shrink); null changes nothing; an empty array leaves a
+	 * stored value as it is. A dotted key ("a.b.c") is applied at that path,
+	 * so "…stops.1.color" still edits one list item.
+	 *
+	 * @param array $stored Stored attrs (or a sub-object).
+	 * @param array $patch  Patch at the same level.
+	 * @return array
+	 */
+	private static function merge_attrs( array $stored, array $patch ) {
+		foreach ( $patch as $key => $value ) {
+			$path = is_string( $key ) && false !== strpos( $key, '.' ) ? explode( '.', $key ) : array( $key );
+			$head = array_shift( $path );
+			if ( $path ) {
+				$value = array( implode( '.', $path ) => $value );
+			}
+			$current         = array_key_exists( $head, $stored ) ? $stored[ $head ] : null;
+			$merged          = self::merge_attr_value( $current, $value, array_key_exists( $head, $stored ) );
+			$stored[ $head ] = $merged;
+			if ( null === $merged ) {
+				unset( $stored[ $head ] );
+			}
+		}
+		return $stored;
+	}
+
+	/**
+	 * One patch value against the stored one (see merge_attrs()).
+	 *
+	 * @param mixed $current Stored value (null when absent).
+	 * @param mixed $value   Patch value.
+	 * @param bool  $exists  Whether a stored value exists.
+	 * @return mixed The value to store; null to store nothing.
+	 */
+	private static function merge_attr_value( $current, $value, $exists ) {
+		if ( null === $value ) {
+			return $exists ? $current : null;
+		}
+		if ( ! is_array( $value ) ) {
+			return $value;
+		}
+		if ( array() === $value ) {
+			return $exists ? $current : array();
+		}
+		if ( array_is_list( $value ) ) {
+			return self::without_nulls( Saddle_Divi_Author::expand_dotted_keys( $value ) );
+		}
+		$base = is_array( $current ) ? $current : array();
+		if ( $base && array_is_list( $base ) && ! self::indexes_items( $value ) ) {
+			$base = array(); // An object replaces a stored list.
+		}
+		return self::merge_attrs( $base, $value );
+	}
+
+	/**
+	 * Whether every key of a patch names a list item ("1" or "1.color").
+	 *
+	 * @param array $value Patch.
+	 * @return bool
+	 */
+	private static function indexes_items( array $value ) {
+		foreach ( array_keys( $value ) as $key ) {
+			$head = explode( '.', (string) $key );
+			if ( ! ctype_digit( $head[0] ) ) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Drop nulls at every level of a value being written.
+	 *
+	 * @param array $value Value.
+	 * @return array
+	 */
+	private static function without_nulls( array $value ) {
+		$list = array_is_list( $value );
+		foreach ( $value as $key => $item ) {
+			if ( null === $item ) {
+				unset( $value[ $key ] );
+			} elseif ( is_array( $item ) ) {
+				$value[ $key ] = self::without_nulls( $item );
+			}
+		}
+		return $list ? array_values( $value ) : $value;
+	}
+
+	/**
+	 * Remove one attr path; parents left empty go with it. A number names a
+	 * list item, and the list is reindexed.
+	 *
+	 * @param array    $attrs Attrs.
+	 * @param string[] $path  Key path.
+	 * @param bool     $found Set to true when the path existed.
+	 * @return array
+	 */
+	private static function unset_attr_path( array $attrs, array $path, &$found ) {
+		$key = array_shift( $path );
+		if ( ! array_key_exists( $key, $attrs ) ) {
+			return $attrs;
+		}
+		$list = array_is_list( $attrs );
+		if ( $path ) {
+			if ( ! is_array( $attrs[ $key ] ) ) {
+				return $attrs;
+			}
+			$attrs[ $key ] = self::unset_attr_path( $attrs[ $key ], $path, $found );
+			if ( ! $found || array() !== $attrs[ $key ] ) {
+				return $attrs;
+			}
+		}
+		$found = true;
+		unset( $attrs[ $key ] );
+		return $list ? array_values( $attrs ) : $attrs;
 	}
 
 	/**
@@ -1577,9 +1698,8 @@ class Saddle_Divi_Abilities {
 	---------------------------------------------------------------------
 	 * Loops
 	 *
-	 * A Divi 5 loop lives at attrs.module.advanced.loop.desktop.value —
-	 * {enable, queryType, subTypes, orderBy, order, postPerPage, postOffset}
-	 * (shape verified against Divi 5.8's own LoopUtils reader).
+	 * A Divi 5 loop lives at attrs.module.advanced.loop.desktop.value. The
+	 * value Divi reads is built by Saddle_Divi_Loop.
 	 * -------------------------------------------------------------------
 	 */
 
@@ -1589,35 +1709,83 @@ class Saddle_Divi_Abilities {
 	 * @return array
 	 */
 	public static function list_loop_query_types() {
-		return array(
-			'query_types' => array(
-				array(
-					'type'     => 'post_types',
-					'iterates' => __( 'Posts of the post types named in sub_types (e.g. ["post"], ["page", "product"]).', 'saddle' ),
-				),
-				array(
-					'type'     => 'post_taxonomies',
-					'iterates' => __( 'Terms attached to the current post, from the taxonomies in sub_types.', 'saddle' ),
-				),
-				array(
-					'type'     => 'terms',
-					'iterates' => __( 'All terms of the taxonomies in sub_types (e.g. ["category"]).', 'saddle' ),
-				),
-				array(
-					'type'     => 'users',
-					'iterates' => __( 'Site users.', 'saddle' ),
-				),
-				array(
-					'type'     => 'user_roles',
-					'iterates' => __( 'Users holding the roles in sub_types (e.g. ["author"]).', 'saddle' ),
-				),
-				array(
-					'type'     => 'menus',
-					'iterates' => __( 'Items of the navigation menus in sub_types.', 'saddle' ),
-				),
+		$post_types = array();
+		foreach ( get_post_types( array( 'public' => true ), 'names' ) as $name ) {
+			if ( 'attachment' !== $name ) {
+				$post_types[] = $name;
+			}
+		}
+		$taxonomies = array_values( get_taxonomies( array( 'public' => true ), 'names' ) );
+		$menus      = array();
+		foreach ( wp_get_nav_menus() as $menu ) {
+			$menus[] = $menu->slug;
+		}
+
+		$types = array(
+			array(
+				'type'      => 'post_types',
+				'iterates'  => __( 'Posts of the post types in sub_types (default ["post"]).', 'saddle' ),
+				'sub_types' => $post_types,
+				'sources'   => 'loop_post_*',
 			),
-			'order'       => array( 'asc', 'desc' ),
-			'note'        => __( 'Inside a loop-enabled module, bind per-item values with apply-dynamic-content and loop_* sources (see divi-list-dynamic-sources).', 'saddle' ),
+			array(
+				'type'      => 'post_taxonomies',
+				'iterates'  => __( 'Terms of the taxonomies in sub_types (default ["category"]), e.g. a card per category.', 'saddle' ),
+				'sub_types' => $taxonomies,
+				'sources'   => 'loop_term_*',
+			),
+			array(
+				'type'      => 'user_roles',
+				'iterates'  => __( 'Users with the roles in sub_types, or every user when it is empty.', 'saddle' ),
+				'sub_types' => array_keys( wp_roles()->roles ),
+				'sources'   => 'loop_user_*',
+			),
+			array(
+				'type'      => 'menus',
+				'iterates'  => __( 'Items of the menu named in sub_types (an id or slug; required).', 'saddle' ),
+				'sub_types' => $menus,
+				'sources'   => 'loop_menu_*',
+			),
+			array(
+				'type'      => 'current_page',
+				'iterates'  => __( 'The posts the page itself lists: the blog page, an archive, a search. For Theme Builder archive and search templates. Takes no sub_types.', 'saddle' ),
+				'sub_types' => array(),
+				'sources'   => 'loop_post_*',
+			),
+			array(
+				'type'      => 'acf_repeater',
+				'iterates'  => __( 'The rows of an ACF repeater field, named in repeater_field. Needs Advanced Custom Fields with repeaters.', 'saddle' ),
+				'sub_types' => array(),
+				'sources'   => __( 'loop_acf_<repeater>|||<sub field>, listed by divi-list-dynamic-sources on a site with repeaters', 'saddle' ),
+			),
+		);
+		foreach ( $types as $i => $type ) {
+			$base                    = 'acf_repeater' === $type['type'] ? 'repeater' : $type['type'];
+			$types[ $i ]['order_by'] = isset( Saddle_Divi_Loop::ORDER_BY[ $base ] ) ? Saddle_Divi_Loop::ORDER_BY[ $base ] : array();
+		}
+
+		return array(
+			'query_types' => $types,
+			'older_names' => array(
+				'terms' => 'post_taxonomies',
+				'users' => 'user_roles',
+			),
+			'order'       => array(
+				'desc' => __( 'Newest first, or Z to A (the default). Stored as "descending".', 'saddle' ),
+				'asc'  => __( 'Oldest first, or A to Z. Stored as "ascending".', 'saddle' ),
+			),
+			'filters'     => array(
+				'include_posts'        => __( 'Only these post ids (user ids on a user loop).', 'saddle' ),
+				'exclude_posts'        => __( 'Leave out these ids. Exclusions win.', 'saddle' ),
+				'include_terms'        => __( 'Only posts in these terms: {"category": [12, "news"]}.', 'saddle' ),
+				'exclude_terms'        => __( 'Leave out posts in these terms, same shape.', 'saddle' ),
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- An ability parameter name, not a query argument.
+				'meta_query'           => __( 'Custom field conditions: [{"key","value","compare","type"}]; an item matching any one condition is kept.', 'saddle' ),
+				'exclude_current_post' => __( 'Leave out the post being viewed.', 'saddle' ),
+				'ignore_sticky_posts'  => __( 'Leave sticky posts out.', 'saddle' ),
+			),
+			'loop_id'     => __( 'Every loop has an id ("loop-…"), made when the loop is turned on and kept by later edits. A Pagination module (divi/post-nav) or a Post Filter (divi/post-filter) follows a loop when its attrs set "module.advanced.targetLoop.desktop.value" to that id.', 'saddle' ),
+			'note'        => __( 'Put the loop on the module that should repeat, usually the column or group holding one card. Inside it, bind values with divi-apply-dynamic-content and the loop_ sources for its type: a plain post_title shows the page\'s own title on every item.', 'saddle' ),
 		);
 	}
 
@@ -1655,53 +1823,31 @@ class Saddle_Divi_Abilities {
 		}
 		list( $post, $tree, $address, $node ) = $located;
 
-		$current = self::loop_value( $node );
+		$current = Saddle_Divi_Loop::value( $node );
 		if ( ! $replace && empty( $current ) ) {
 			return new WP_Error( 'saddle_no_loop', __( 'This module has no loop to edit. Use divi-enable-loop first.', 'saddle' ) );
 		}
 
-		$value = $replace
-			? array(
-				'enable'      => 'on',
-				'queryType'   => 'post_types',
-				'order'       => 'desc',
-				'postPerPage' => 10,
-				'postOffset'  => 0,
-			)
-			: $current;
-
-		$map = array(
-			'query_type' => 'queryType',
-			'order_by'   => 'orderBy',
-			'per_page'   => 'postPerPage',
-			'offset'     => 'postOffset',
-		);
-		foreach ( $map as $in => $attr ) {
-			if ( isset( $input[ $in ] ) ) {
-				$value[ $attr ] = 'per_page' === $in
-					? max( 1, min( 100, (int) $input[ $in ] ) )
-					: ( 'offset' === $in ? max( 0, (int) $input[ $in ] ) : sanitize_key( (string) $input[ $in ] ) );
+		$warnings = array();
+		if ( $replace ) {
+			$warnings = Saddle_Divi_Loop::check_support( $tree, $address, (string) $node['blockName'] );
+			if ( is_wp_error( $warnings ) ) {
+				return $warnings;
 			}
 		}
-		if ( isset( $input['order'] ) ) {
-			$value['order'] = 'asc' === strtolower( (string) $input['order'] ) ? 'asc' : 'desc';
-		}
-		if ( isset( $input['sub_types'] ) && is_array( $input['sub_types'] ) ) {
-			$value['subTypes'] = array_values( array_filter( array_map( 'sanitize_key', $input['sub_types'] ) ) );
-		}
 
-		$valid_types = array( 'post_types', 'post_taxonomies', 'terms', 'users', 'user_roles', 'menus' );
-		if ( isset( $value['queryType'] ) && ! in_array( $value['queryType'], $valid_types, true ) ) {
-			return new WP_Error( 'saddle_bad_query_type', __( 'Unknown loop query_type. Call divi-list-loop-query-types for the valid values.', 'saddle' ) );
+		$built = Saddle_Divi_Loop::build( $current, (array) $input, $replace, $tree, $address );
+		if ( is_wp_error( $built ) ) {
+			return $built;
 		}
-		$value['enable'] = 'on';
+		list( $value, $more ) = $built;
 
-		return self::save_module_attr(
+		$result = self::save_module_attr(
 			$post,
 			$tree,
 			$address,
 			$node,
-			array( 'module', 'advanced', 'loop', 'desktop', 'value' ),
+			Saddle_Divi_Loop::PATH,
 			$value,
 			$replace ? 'divi-enable-loop' : 'divi-edit-loop',
 			sprintf(
@@ -1710,12 +1856,17 @@ class Saddle_Divi_Abilities {
 				$address,
 				$post->ID
 			),
-			array( 'loop' => $value )
+			array(
+				'loop'    => $value,
+				'loop_id' => $value['loopId'],
+				'note'    => Saddle_Divi_Loop::wiring_note( $value['loopId'] ),
+			)
 		);
+		return is_wp_error( $result ) ? $result : self::with_warnings( $result, array_merge( $warnings, $more ) );
 	}
 
 	/**
-	 * saddle/divi-disable-loop — enable:'off', config kept for re-enabling.
+	 * saddle/divi-disable-loop — enable:'off', config and loop id kept.
 	 *
 	 * @param array $input Ability input.
 	 * @return array|WP_Error
@@ -1727,18 +1878,20 @@ class Saddle_Divi_Abilities {
 		}
 		list( $post, $tree, $address, $node ) = $located;
 
-		$value = self::loop_value( $node );
+		$value = Saddle_Divi_Loop::value( $node );
 		if ( empty( $value ) ) {
 			return new WP_Error( 'saddle_no_loop', __( 'This module has no loop to disable.', 'saddle' ) );
 		}
+		$value           = Saddle_Divi_Loop::normalize( $value );
 		$value['enable'] = 'off';
+		$loop_id         = isset( $value['loopId'] ) && is_string( $value['loopId'] ) ? $value['loopId'] : '';
 
 		return self::save_module_attr(
 			$post,
 			$tree,
 			$address,
 			$node,
-			array( 'module', 'advanced', 'loop', 'desktop', 'value' ),
+			Saddle_Divi_Loop::PATH,
 			$value,
 			'divi-disable-loop',
 			sprintf(
@@ -1747,7 +1900,11 @@ class Saddle_Divi_Abilities {
 				$address,
 				$post->ID
 			),
-			array( 'loop' => $value )
+			array(
+				'loop'    => $value,
+				'loop_id' => $loop_id,
+				'note'    => '' !== $loop_id ? Saddle_Divi_Loop::wiring_note( $loop_id ) : __( 'This loop has no id yet; divi-edit-loop gives it one when it turns the loop back on.', 'saddle' ),
+			)
 		);
 	}
 
@@ -1757,30 +1914,19 @@ class Saddle_Divi_Abilities {
 	 *
 	 * A binding is the literal token
 	 *   $variable({"type":"content","value":{"name":"<source>","settings":{…}}})$
-	 * stored at <field>.<breakpoint>.value (format verified against Divi
-	 * 5.8's DynamicContent option classes).
+	 * stored at a field path, or at one part of an object value. Paths,
+	 * settings and the source list are built by Saddle_Divi_Dynamic and
+	 * Saddle_Divi_Dynamic_Sources.
 	 * -------------------------------------------------------------------
 	 */
 
 	/**
 	 * saddle/divi-list-dynamic-sources.
 	 *
-	 * A curated reference of the everyday sources (names verified against the
-	 * Divi 5.8 DynamicContentOption classes). Not exhaustive — plugin-provided
-	 * sources (ACF, Woo) exist beyond this list on sites that run them.
-	 *
 	 * @return array
 	 */
 	public static function list_dynamic_sources() {
-		return array(
-			'post'  => array( 'post_title', 'post_excerpt', 'post_date', 'post_modified_date', 'post_author', 'post_categories', 'post_tags', 'post_featured_image', 'post_link_url', 'post_comment_count', 'post_meta_key' ),
-			'site'  => array( 'home_url', 'current_date' ),
-			'loop'  => array(
-				'note'    => __( 'Inside a loop-enabled module, the post_* sources resolve per loop item; menu loops use the loop_menu_* sources.', 'saddle' ),
-				'sources' => array( 'loop_menu_text', 'loop_menu_link', 'loop_menu_description', 'loop_manual_custom_field' ),
-			),
-			'usage' => __( 'Bind with apply-dynamic-content: field = the attribute path from divi-get-module-schema (e.g. "title.innerContent"), source = a name above. post_meta_key needs settings.key.', 'saddle' ),
-		);
+		return Saddle_Divi_Dynamic_Sources::listing();
 	}
 
 	/**
@@ -1875,77 +2021,33 @@ class Saddle_Divi_Abilities {
 		}
 		list( $post, $tree, $address, $node ) = $located;
 
-		$field  = self::field_path( $input );
-		$source = isset( $input['source'] ) ? sanitize_key( (string) $input['source'] ) : '';
+		$field = Saddle_Divi_Dynamic::field_path( isset( $input['field'] ) ? $input['field'] : '', isset( $input['breakpoint'] ) ? $input['breakpoint'] : '' );
 		if ( is_wp_error( $field ) ) {
 			return $field;
 		}
-		if ( '' === $source ) {
-			return new WP_Error( 'saddle_empty', __( 'Provide the dynamic "source" name. Call divi-list-dynamic-sources for options.', 'saddle' ) );
+		$source = Saddle_Divi_Dynamic::source_name( isset( $input['source'] ) ? $input['source'] : '' );
+		if ( is_wp_error( $source ) ) {
+			return $source;
 		}
 
-		// A provably-wrong field binds nothing yet used to return success.
-		// When the module's schema is discoverable, the path's first segment
-		// must be one of its attributes (Saddle rejects, never repairs); an
-		// unjudgeable module still passes.
-		$described = Saddle_Divi_Schema::describe( (string) $node['blockName'] );
-		if ( ! is_wp_error( $described ) ) {
-			$attr_names = array_column( $described['attributes'], 'name' );
-			$first      = (string) $field[0]; // field_path() returns segments.
-			if ( ! in_array( $first, $attr_names, true ) ) {
-				return new WP_Error(
-					'saddle_bad_field',
-					sprintf(
-						/* translators: 1: written segment, 2: module type, 3: attribute list. */
-						__( '"%1$s" is not an attribute of %2$s, so this binding would never render. Module attributes: %3$s — use the path from divi-get-module-schema (e.g. "title.innerContent").', 'saddle' ),
-						(string) $first,
-						(string) $node['blockName'],
-						implode( ', ', $attr_names )
-					)
-				);
-			}
+		// A provably wrong field binds nothing yet used to return success:
+		// Saddle rejects, never repairs. An unjudgeable module still passes.
+		$checked = Saddle_Divi_Dynamic::check_field( (string) $node['blockName'], $field );
+		if ( is_wp_error( $checked ) ) {
+			return $checked;
 		}
 
+		// Sanitize first, then map the older names and guard every meta key
+		// form on the values that will be stored.
 		$settings = isset( $input['settings'] ) && is_array( $input['settings'] ) ? $input['settings'] : array();
-
-		// Refuse binding a protected ("_"-prefixed) meta key: its value would
-		// render on the public page, and protected meta is exactly where other
-		// plugins keep internal or semi-sensitive data — core treats it as
-		// not-user-editable for that reason. A site owner can opt specific
-		// public-by-design keys back in via the filter.
-		if ( isset( $settings['key'] ) && 0 === strpos( (string) $settings['key'], '_' ) ) {
-			/**
-			 * Meta keys that may be bound to public dynamic content despite the
-			 * protected "_" prefix. Empty by default — add only keys you know are
-			 * safe to expose publicly.
-			 *
-			 * @param string[] $allowlist Allowed protected meta keys.
-			 */
-			$allowlist = (array) apply_filters( 'saddle_dynamic_meta_allowlist', array() );
-			if ( ! in_array( (string) $settings['key'], $allowlist, true ) ) {
-				return new WP_Error(
-					'saddle_protected_meta',
-					__( 'The bound meta key is protected (starts with "_") — its value would become publicly visible on the page, so SaddleWP refuses it. A site owner can allow a specific key via the "saddle_dynamic_meta_allowlist" filter.', 'saddle' ),
-					array( 'status' => 400 )
-				);
-			}
-		}
-
 		$settings = self::sanitize_settings_map( $settings, __( 'dynamic content', 'saddle' ) );
 		if ( is_wp_error( $settings ) ) {
 			return $settings;
 		}
-
-		$token = '$variable(' . wp_json_encode(
-			array(
-				'type'  => 'content',
-				'value' => array(
-					'name'     => $source,
-					'settings' => $settings ? $settings : (object) array(),
-				),
-			),
-			JSON_UNESCAPED_UNICODE
-		) . ')$';
+		$settings = Saddle_Divi_Dynamic::prepare_settings( $source, $settings );
+		if ( is_wp_error( $settings ) ) {
+			return $settings;
+		}
 
 		$result = self::save_module_attr(
 			$post,
@@ -1953,7 +2055,7 @@ class Saddle_Divi_Abilities {
 			$address,
 			$node,
 			$field,
-			$token,
+			Saddle_Divi_Dynamic::token( $source, Saddle_Divi_Dynamic::stringify( $settings ) ),
 			'divi-apply-dynamic-content',
 			sprintf(
 				/* translators: 1: source, 2: address, 3: post ID. */
@@ -1962,10 +2064,13 @@ class Saddle_Divi_Abilities {
 				$address,
 				$post->ID
 			),
-			array( 'bound' => $source )
+			array(
+				'bound' => $source,
+				'field' => implode( '.', $field ),
+			)
 		);
 
-		return $result;
+		return is_wp_error( $result ) ? $result : self::with_warnings( $result, Saddle_Divi_Dynamic::context_warnings( $source, $tree, $address ) );
 	}
 
 	/**
@@ -1981,18 +2086,25 @@ class Saddle_Divi_Abilities {
 		}
 		list( $post, $tree, $address, $node ) = $located;
 
-		$field = self::field_path( $input );
+		$field = Saddle_Divi_Dynamic::field_path( isset( $input['field'] ) ? $input['field'] : '', isset( $input['breakpoint'] ) ? $input['breakpoint'] : '' );
 		if ( is_wp_error( $field ) ) {
 			return $field;
 		}
+		$checked = Saddle_Divi_Dynamic::check_field( (string) $node['blockName'], $field, true );
+		if ( is_wp_error( $checked ) ) {
+			return $checked;
+		}
 
+		$current = self::attr_path_get( is_array( $node['attrs'] ) ? $node['attrs'] : array(), $field );
 		if ( isset( $input['value'] ) && is_string( $input['value'] ) ) {
+			if ( is_array( $current ) ) {
+				return new WP_Error( 'saddle_bad_field', __( 'This field holds several parts, so a static "value" needs one part, e.g. "button.innerContent.text".', 'saddle' ) );
+			}
 			$value = $input['value'];
 		} else {
-			// Strip only the $variable(...)$ tokens, preserving literal text
-			// the owner may have around the binding.
-			$current = self::attr_path_get( $node['attrs'], $field );
-			$value   = is_string( $current ) ? trim( preg_replace( '/\$variable\(.*?\)\$/s', '', $current ) ) : '';
+			// Strip only the $variable(...)$ tokens, keeping literal text the
+			// owner may have around the binding, in every part of an object.
+			$value = null === $current ? '' : Saddle_Divi_Dynamic::strip( $current );
 		}
 
 		return self::save_module_attr(
@@ -2009,7 +2121,10 @@ class Saddle_Divi_Abilities {
 				$address,
 				$post->ID
 			),
-			array( 'value' => $value )
+			array(
+				'value' => $value,
+				'field' => implode( '.', $field ),
+			)
 		);
 	}
 
@@ -2039,37 +2154,6 @@ class Saddle_Divi_Abilities {
 		}
 
 		return array( $post, $tree, $address, $node );
-	}
-
-	/**
-	 * Validate a "field" input into an attr path array with the breakpoint
-	 * envelope appended: "title.innerContent" → [title, innerContent, desktop, value].
-	 *
-	 * @param array $input Ability input.
-	 * @return string[]|WP_Error
-	 */
-	private static function field_path( $input ) {
-		$field = isset( $input['field'] ) ? trim( (string) $input['field'] ) : '';
-		if ( '' === $field || ! preg_match( '/^[A-Za-z0-9_.]+$/', $field ) ) {
-			return new WP_Error( 'saddle_bad_field', __( 'Provide the field\'s attribute path from divi-get-module-schema, e.g. "title.innerContent".', 'saddle' ) );
-		}
-
-		$breakpoint = isset( $input['breakpoint'] ) ? sanitize_key( (string) $input['breakpoint'] ) : 'desktop';
-		$path       = explode( '.', $field );
-		$path[]     = '' !== $breakpoint ? $breakpoint : 'desktop';
-		$path[]     = 'value';
-		return $path;
-	}
-
-	/**
-	 * The module's loop config value, or array() when none.
-	 *
-	 * @param array $node Block node.
-	 * @return array
-	 */
-	private static function loop_value( $node ) {
-		$value = self::attr_path_get( is_array( $node['attrs'] ) ? $node['attrs'] : array(), array( 'module', 'advanced', 'loop', 'desktop', 'value' ) );
-		return is_array( $value ) ? $value : array();
 	}
 
 	/**

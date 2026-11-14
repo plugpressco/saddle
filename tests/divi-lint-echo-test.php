@@ -363,13 +363,28 @@ class Saddle_Divi_Lint_Echo_Test extends WP_UnitTestCase {
 		// An undeclared-but-UNIVERSAL group stays silent: ElementStyle
 		// renders any standard decoration group present in the attrs, so
 		// declaration is a VB-UI fact, not a render fact (proven live on a
-		// pack button element).
+		// pack button element). The payload carries a "style": a box shadow
+		// without one draws nothing (BoxShadow::value()), which the echo now
+		// reports; the old payload here had none.
 		$this->assertSame(
 			array(),
 			Saddle_Divi_Echo::check(
 				'saddletest/fancy-button',
 				array(),
-				array( 'button' => array( 'decoration' => array( 'boxShadow' => array( 'desktop' => array( 'value' => array( 'blur' => '8px' ) ) ) ) ) ),
+				array(
+					'button' => array(
+						'decoration' => array(
+							'boxShadow' => array(
+								'desktop' => array(
+									'value' => array(
+										'style' => 'preset1',
+										'blur'  => '8px',
+									),
+								),
+							),
+						),
+					),
+				),
 				'0'
 			)
 		);

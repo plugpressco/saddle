@@ -144,6 +144,7 @@ class Saddle_Lint {
 			$rules[] = new Saddle_Lint_Rule_Pinned_Max_Width();
 			$rules[] = new Saddle_Lint_Rule_Theme_Css_Class();
 			$rules[] = new Saddle_Lint_Rule_Unknown_Module();
+			$rules[] = new Saddle_Divi_Lint_Rule_Hover_Contrast();
 		}
 
 		return $rules;

@@ -25,9 +25,12 @@ defined( 'ABSPATH' ) || exit;
  *   padding      <attr>.decoration.spacing.desktop.value.padding
  *   title        title.innerContent.desktop.value
  *
- * Global-color references (var(--gcid-…)) resolve through Divi's GlobalData
- * palette when the Divi runtime is present; otherwise the raw var() string
- * is returned — rules compare it for equality and skip contrast math.
+ * Global-color references (var(--gcid-…) and the Visual Builder's
+ * $variable({"type":"color",…})$ token) resolve through Divi's GlobalData
+ * palette when the Divi runtime is present; otherwise the raw string is
+ * returned — rules compare it for equality and skip contrast math. The
+ * *_at() readers add tablet, phone and the states, inherited the way Divi
+ * inherits them.
  *
  * Also implements the companion Saddle_Lint_Style_Accessor (free ≥ 0.9) for
  * the deeper quality rules. The additional canonical shapes, verified
@@ -79,13 +82,7 @@ class Saddle_Divi_Lint_Accessor implements Saddle_Lint_Accessor, Saddle_Lint_Sty
 	 * @return string|null
 	 */
 	public function background_color( array $node ) {
-		foreach ( $this->attrs( $node ) as $attr ) {
-			$color = $this->path( $attr, array( 'decoration', 'background', 'desktop', 'value', 'color' ) );
-			if ( is_string( $color ) && '' !== $color ) {
-				return $this->resolve_global_color( $color );
-			}
-		}
-		return null;
+		return $this->background_color_at( $node );
 	}
 
 	/**
@@ -96,13 +93,48 @@ class Saddle_Divi_Lint_Accessor implements Saddle_Lint_Accessor, Saddle_Lint_Sty
 	 * @return string|null
 	 */
 	public function text_color( array $node ) {
-		foreach ( $this->attrs( $node ) as $attr ) {
-			$color = $this->path( $attr, array( 'decoration', 'font', 'font', 'desktop', 'value', 'color' ) );
-			if ( is_string( $color ) && '' !== $color ) {
-				return $this->resolve_global_color( $color );
-			}
-		}
-		return null;
+		return $this->text_color_at( $node );
+	}
+
+	/**
+	 * The background color at a breakpoint and state, inherited the way
+	 * Divi inherits (a hover with no color of its own shows the value's).
+	 *
+	 * @param array  $node       Raw block array.
+	 * @param string $breakpoint desktop, tablet or phone.
+	 * @param string $state      value, hover, sticky, ….
+	 * @return string|null
+	 */
+	public function background_color_at( array $node, $breakpoint = 'desktop', $state = 'value' ) {
+		$color = $this->value_at( $node, array( 'decoration', 'background' ), array( 'color' ), $breakpoint, $state );
+		return is_string( $color ) ? $this->resolve_global_color( $color ) : null;
+	}
+
+	/**
+	 * The text color at a breakpoint and state, inherited the way Divi
+	 * inherits.
+	 *
+	 * @param array  $node       Raw block array.
+	 * @param string $breakpoint desktop, tablet or phone.
+	 * @param string $state      value, hover, sticky, ….
+	 * @return string|null
+	 */
+	public function text_color_at( array $node, $breakpoint = 'desktop', $state = 'value' ) {
+		$color = $this->value_at( $node, array( 'decoration', 'font', 'font' ), array( 'color' ), $breakpoint, $state );
+		return is_string( $color ) ? $this->resolve_global_color( $color ) : null;
+	}
+
+	/**
+	 * Whether the node itself sets a text or background color for a state
+	 * at desktop (hover is a desktop pointer state).
+	 *
+	 * @param array  $node  Raw block array.
+	 * @param string $state hover, sticky, ….
+	 * @return bool
+	 */
+	public function sets_state_color( array $node, $state ) {
+		return $this->sets_at( $node, array( 'decoration', 'background' ), array( 'color' ), 'desktop', $state )
+			|| $this->sets_at( $node, array( 'decoration', 'font', 'font' ), array( 'color' ), 'desktop', $state );
 	}
 
 	/**
@@ -200,20 +232,21 @@ class Saddle_Divi_Lint_Accessor implements Saddle_Lint_Accessor, Saddle_Lint_Sty
 	}
 
 	/**
-	 * The CSS class(es) the node delegates to theme stylesheets via the
-	 * advanced html group, or null when none.
+	 * The CSS class(es) the node renders and so delegates to theme
+	 * stylesheets, or null when none. Divi reads them only from
+	 * module.advanced.htmlAttributes.desktop.value.class
+	 * (IdClassesClassnames::get_html_attributes(), Module.php in 5.10.1). No
+	 * Divi 5 code reads a class under advanced.html, which holds the element
+	 * type and the HTML before and after: a class there never renders, and
+	 * the echo says so instead.
 	 *
 	 * @param array $node Raw block array.
 	 * @return string|null
 	 */
 	public function css_class( array $node ) {
-		foreach ( $this->attrs( $node ) as $attr ) {
-			$class = $this->path( $attr, array( 'advanced', 'html', 'desktop', 'value', 'class' ) );
-			if ( is_string( $class ) && '' !== trim( $class ) ) {
-				return trim( $class );
-			}
-		}
-		return null;
+		$attrs = $this->attrs( $node );
+		$class = isset( $attrs['module'] ) ? $this->path( $attrs['module'], array( 'advanced', 'htmlAttributes', 'desktop', 'value', 'class' ) ) : null;
+		return is_string( $class ) && '' !== trim( $class ) ? trim( $class ) : null;
 	}
 
 	/**

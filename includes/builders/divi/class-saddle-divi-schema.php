@@ -161,32 +161,56 @@ class Saddle_Divi_Schema {
 	}
 
 	/**
-	 * The light catalog for divi-list-modules: every discovered module with
-	 * its title and structural role.
+	 * The catalog for divi-list-modules: every discovered module with its
+	 * title, purpose, group and what it may hold (Saddle_Divi_Catalog).
 	 *
 	 * @return array[]
 	 */
 	public static function catalog() {
-		$catalog = array();
-		foreach ( self::index() as $type => $file ) {
-			$json = json_decode( self::read_json_file( $file ), true );
-			if ( ! is_array( $json ) ) {
-				continue;
-			}
-			$catalog[] = array(
-				'type'      => $type,
-				'title'     => isset( $json['title'] ) ? (string) $json['title'] : $type,
-				'container' => ! empty( $json['childrenName'] ),
-				'child'     => isset( $json['category'] ) && 'child-module' === $json['category'],
-			);
+		return Saddle_Divi_Catalog::modules();
+	}
+
+	/**
+	 * A module's parsed module.json, or null when it has none on this site.
+	 * Memoized per file for the request.
+	 *
+	 * @param string $type Module type.
+	 * @return array|null
+	 */
+	public static function module_json( $type ) {
+		static $memo = array();
+		$index       = self::index();
+		if ( ! isset( $index[ $type ] ) ) {
+			return null;
 		}
-		usort(
-			$catalog,
-			static function ( $a, $b ) {
-				return strcmp( $a['type'], $b['type'] );
-			}
-		);
-		return $catalog;
+		$file = (string) $index[ $type ];
+		if ( ! array_key_exists( $file, $memo ) ) {
+			$json          = json_decode( self::read_json_file( $file ), true );
+			$memo[ $file ] = is_array( $json ) ? $json : null;
+		}
+		return $memo[ $file ];
+	}
+
+	/**
+	 * Divi's default render attributes for a module (the
+	 * module-default-render-attributes.json beside its module.json), or an
+	 * empty array. Module packs usually ship none.
+	 *
+	 * @param string $type Module type.
+	 * @return array
+	 */
+	public static function render_defaults( $type ) {
+		static $memo = array();
+		$index       = self::index();
+		if ( ! isset( $index[ $type ] ) ) {
+			return array();
+		}
+		$file = dirname( (string) $index[ $type ] ) . '/module-default-render-attributes.json';
+		if ( ! array_key_exists( $file, $memo ) ) {
+			$json          = file_exists( $file ) ? json_decode( self::read_json_file( $file ), true ) : null;
+			$memo[ $file ] = is_array( $json ) ? $json : array();
+		}
+		return $memo[ $file ];
 	}
 
 	/**
@@ -249,10 +273,11 @@ class Saddle_Divi_Schema {
 			);
 		}
 
-		$json = json_decode( self::read_json_file( $index[ $type ] ), true );
+		$json = self::module_json( $type );
 		if ( ! is_array( $json ) ) {
 			return new WP_Error( 'saddle_bad_module_json', sprintf( 'The module.json for "%s" could not be parsed.', $type ) );
 		}
+		$render = self::render_defaults( $type );
 
 		$attributes = array();
 		foreach ( ( isset( $json['attributes'] ) && is_array( $json['attributes'] ) ? $json['attributes'] : array() ) as $name => $attr ) {
@@ -262,6 +287,14 @@ class Saddle_Divi_Schema {
 
 			$settings       = isset( $attr['settings'] ) && is_array( $attr['settings'] ) ? $attr['settings'] : array();
 			$content_fields = isset( $settings['innerContent'] ) ? self::collect_subnames( $settings['innerContent'] ) : null;
+
+			// No sub-names, yet Divi stores an object: an icon is
+			// {unicode, type, weight}, a map {address, zoom, lat, lng}.
+			// Calling those strings had agents write values Divi ignores.
+			if ( array() === $content_fields ) {
+				$default        = isset( $render[ $name ]['innerContent']['desktop']['value'] ) ? $render[ $name ]['innerContent']['desktop']['value'] : null;
+				$content_fields = self::object_content_fields( $settings['innerContent'], $default );
+			}
 
 			// Some compound VB controls (e.g. the button link group) don't
 			// declare plain subNames; fill in the known value shape from the
@@ -301,7 +334,10 @@ class Saddle_Divi_Schema {
 			}
 
 			if ( isset( $settings['decoration'] ) && is_array( $settings['decoration'] ) ) {
-				$entry['decorations'] = array_keys( $settings['decoration'] );
+				// A group the element hides (the standalone button's spacing
+				// and box shadow) is not offered, so the echo warns on it.
+				$hidden               = Saddle_Divi_Style_Schema::hidden_groups( $settings['decoration'] );
+				$entry['decorations'] = array_values( array_diff( array_map( 'strval', array_keys( $settings['decoration'] ) ), $hidden ) );
 			}
 			if ( isset( $settings['advanced'] ) && is_array( $settings['advanced'] ) ) {
 				$entry['advanced_options'] = array_keys( $settings['advanced'] );
@@ -310,316 +346,42 @@ class Saddle_Divi_Schema {
 			$attributes[] = $entry;
 		}
 
+		$children = Saddle_Divi_Catalog::children( $type, $json );
 		return array(
 			'type'       => $type,
 			'title'      => isset( $json['title'] ) ? (string) $json['title'] : $type,
-			'container'  => ! empty( $json['childrenName'] ),
-			'children'   => isset( $json['childrenName'] ) ? (array) $json['childrenName'] : array(),
+			'container'  => (bool) $children,
+			'children'   => $children,
 			'child'      => isset( $json['category'] ) && 'child-module' === $json['category'],
 			'attributes' => $attributes,
-			'usage'      => __( 'Set content via "fields" as shown per attribute (SaddleWP wraps values in the correct envelope). Styling via raw "attrs" uses canonical paths like <attr>.decoration.<option> with {"desktop":{"value":…}} breakpoints — omit styling to inherit the site’s design.', 'saddle' ),
+			'usage'      => __( 'Set content via "fields" as shown per attribute (SaddleWP wraps values in the correct envelope). "fields" writes the desktop value; different content on a tablet or phone goes in raw "attrs", e.g. { "<attr>.innerContent.phone.value": … }. Styling via raw "attrs" uses canonical paths like <attr>.decoration.<option> with {"desktop":{"value":…}} breakpoints — omit styling to inherit the site’s design.', 'saddle' ),
 		);
 	}
 
 	/**
-	 * Common settable value fields per Divi 5 decoration group. module.json
-	 * names the groups a module supports but not the value sub-fields inside
-	 * each (those live in Divi's decoration components), so this curated map
-	 * gives agents the field names and the path to set them — the exact thing
-	 * that makes "style this module" workable without guessing.
+	 * Top-level value keys per decoration group (Saddle_Divi_Style::FIELDS).
+	 * Kept under this name for the echo.
 	 */
-	const STYLE_FIELDS = array(
-		'background'  => array( 'color', 'enableColor', 'gradient', 'image', 'mask', 'pattern' ),
-		'border'      => array( 'radius', 'styles' ),
-		'spacing'     => array( 'margin', 'padding' ),
-		'sizing'      => array( 'width', 'maxWidth', 'height', 'minHeight', 'maxHeight', 'alignment', 'flexType' ),
-		'boxShadow'   => array( 'style', 'horizontal', 'vertical', 'blur', 'spread', 'color' ),
-		'filters'     => array( 'hueRotate', 'saturate', 'brightness', 'contrast', 'invert', 'sepia', 'opacity', 'blur' ),
-		'transform'   => array( 'scale', 'translate', 'rotate', 'skew', 'origin' ),
-		'font'        => array( 'family', 'weight', 'style', 'lineColor', 'color', 'size', 'letterSpacing', 'lineHeight', 'textAlign', 'headingLevel' ),
-		'headingFont' => array( 'family', 'weight', 'style', 'color', 'size', 'letterSpacing', 'lineHeight', 'textAlign' ),
-		'bodyFont'    => array( 'family', 'weight', 'style', 'color', 'size', 'letterSpacing', 'lineHeight' ),
-		'position'    => array( 'mode', 'origin', 'offset' ),
-		'overflow'    => array( 'x', 'y' ),
-		'zIndex'      => array( 'value' ),
-		'animation'   => array( 'style', 'direction', 'duration', 'delay', 'intensity' ),
-		'transition'  => array( 'duration', 'delay', 'speedCurve' ),
-		'layout'      => array( 'display', 'flexDirection', 'justifyContent', 'alignItems', 'gap', 'rowGap', 'columnGap', 'gridColumnCount', 'gridColumnWidths' ),
-		// The fill toggle Divi renders ghost buttons without (live-verified);
-		// icon fields mined from Divi's own default render-attributes.
-		'button'      => array( 'enable', 'alignment', 'icon' ),
-		'icon'        => array( 'color', 'unicode', 'type', 'weight', 'size', 'useSize', 'show' ),
-	);
+	const STYLE_FIELDS = Saddle_Divi_Style::FIELDS;
 
 	/**
-	 * Groups whose field list above is provably CLOSED (mined union across
-	 * every Divi 5.9 render default equals the curated set). Only these are
-	 * safe for the echo to validate leaf fields against — everywhere else
-	 * the curated list documents, it doesn't judge.
+	 * Groups whose field list is closed (Saddle_Divi_Style::CLOSED_GROUPS).
+	 * Kept under this name for the echo.
 	 */
-	const CLOSED_FIELD_GROUPS = array( 'spacing' );
+	const CLOSED_FIELD_GROUPS = Saddle_Divi_Style::CLOSED_GROUPS;
 
 	/**
-	 * Example VALUE SHAPES per decoration group — what a correct write looks
-	 * like, not just which fields exist. This is what stops the two classic
-	 * silent no-ops: guessing a scalar where Divi wants an object (border
-	 * radius is {sync, topLeft, …}, spacing takes {top, bottom, …} objects)
-	 * and omitting the button enable toggle. Curated deliberately — Divi's
-	 * own render defaults are sparse and full of internal $variable(…)$
-	 * tokens that would mis-teach agents; a real mined default is only the
-	 * fallback for groups not listed here.
-	 */
-	const STYLE_EXAMPLES = array(
-		'background'  => array( 'color' => '#0f172a' ),
-		'spacing'     => array(
-			'padding' => array(
-				'top'    => '96px',
-				'bottom' => '96px',
-			),
-		),
-		'border'      => array(
-			'radius' => array(
-				'sync'        => 'on',
-				'topLeft'     => '8px',
-				'topRight'    => '8px',
-				'bottomLeft'  => '8px',
-				'bottomRight' => '8px',
-			),
-		),
-		'sizing'      => array(
-			'maxWidth'  => '640px',
-			'alignment' => 'center',
-		),
-		'font'        => array(
-			'color'     => '#ffffff',
-			'size'      => '48px',
-			'weight'    => '700',
-			'textAlign' => 'center',
-		),
-		'headingFont' => array(
-			'color'  => '#111111',
-			'size'   => '32px',
-			'weight' => '700',
-		),
-		'bodyFont'    => array(
-			'color'      => '#333333',
-			'size'       => '16px',
-			'lineHeight' => '1.7em',
-		),
-		'boxShadow'   => array(
-			'style' => 'preset1',
-			'blur'  => '24px',
-			'color' => 'rgba(0,0,0,0.12)',
-		),
-		'button'      => array( 'enable' => 'on' ),
-		'layout'      => array(
-			'display'       => 'flex',
-			'flexDirection' => 'row',
-			'gap'           => '16px',
-		),
-		'zIndex'      => array( 'value' => '10' ),
-		'icon'        => array(
-			'color'   => '#ffffff',
-			'useSize' => 'on',
-			'size'    => '24px',
-		),
-	);
-
-	/**
-	 * The styling schema for one module — the universal decoration groups and
-	 * advanced options it supports, separate from its content schema (see
-	 * describe()). Divi's universal styles are identical across ~100 modules,
-	 * so keeping them out of every module's content schema and expanding them
-	 * on demand here keeps both responses small.
+	 * The styling schema for one module (Saddle_Divi_Style_Schema): the
+	 * decoration groups and advanced options it supports, each with the
+	 * exact path to set it. Kept apart from describe() so both stay small.
 	 *
 	 * @param string $type  Module type, e.g. 'divi/text'.
-	 * @param string $group Optional decoration group to expand (e.g. 'spacing').
+	 * @param string $group Optional group to expand: "spacing", or
+	 *                      "title.font" for one attribute's group.
 	 * @return array|WP_Error
 	 */
 	public static function style( $type, $group = '' ) {
-		$index = self::index();
-		if ( ! isset( $index[ $type ] ) ) {
-			return new WP_Error(
-				'saddle_unknown_module',
-				sprintf( 'No module.json found for "%s". Use divi-list-modules to see what exists on this site.', $type )
-			);
-		}
-
-		$json = json_decode( self::read_json_file( $index[ $type ] ), true );
-		if ( ! is_array( $json ) ) {
-			return new WP_Error( 'saddle_bad_module_json', sprintf( 'The module.json for "%s" could not be parsed.', $type ) );
-		}
-
-		// Divi's own default render-attributes encode the ACTUAL nesting where a
-		// value lives — critically, the typography (font) groups nest their
-		// value under an extra key (a heading's title colour/size/align sit at
-		// title.decoration.font.font.desktop.value, not …font.desktop.value).
-		// Distilling the real path from this file, rather than assuming a flat
-		// <group>.desktop.value, is what stops a "correct-looking" style write
-		// from silently doing nothing.
-		$render_file = dirname( $index[ $type ] ) . '/module-default-render-attributes.json';
-		$render      = file_exists( $render_file ) ? json_decode( self::read_json_file( $render_file ), true ) : array();
-		$render      = is_array( $render ) ? $render : array();
-
-		// Collect, per attribute, the decoration groups and advanced options,
-		// with the canonical path an agent uses to set each.
-		$style_groups = array();
-		$advanced     = array();
-		foreach ( ( isset( $json['attributes'] ) && is_array( $json['attributes'] ) ? $json['attributes'] : array() ) as $attr_name => $attr ) {
-			if ( ! is_array( $attr ) ) {
-				continue;
-			}
-			$settings = isset( $attr['settings'] ) && is_array( $attr['settings'] ) ? $attr['settings'] : array();
-
-			if ( isset( $settings['decoration'] ) && is_array( $settings['decoration'] ) ) {
-				foreach ( $settings['decoration'] as $g => $group_settings ) {
-					$base      = $attr_name . '.decoration.' . $g;
-					$path      = self::distill_value_path( $render, array( $attr_name, 'decoration', $g ), $base );
-					$subgroups = self::subgroups( $group_settings );
-					if ( $base . '.desktop.value' === $path ) {
-						$path = self::font_group_path( $g, $subgroups, $base );
-					}
-					$entry = array(
-						'group'  => $g,
-						'attr'   => $attr_name,
-						'path'   => $path,
-						'fields' => isset( self::STYLE_FIELDS[ $g ] ) ? self::STYLE_FIELDS[ $g ] : array(),
-					);
-					if ( $subgroups ) {
-						$entry['subgroups'] = $subgroups;
-					}
-					$example = self::group_example( $render, $attr_name, $g );
-					if ( null !== $example ) {
-						$entry['example'] = $example;
-					}
-					$style_groups[] = $entry;
-				}
-			}
-			if ( isset( $settings['advanced'] ) && is_array( $settings['advanced'] ) ) {
-				foreach ( array_keys( $settings['advanced'] ) as $a ) {
-					$advanced[ $a ] = self::distill_value_path( $render, array( $attr_name, 'advanced', $a ), $attr_name . '.advanced.' . $a );
-				}
-			}
-		}
-
-		// A specific group requested: return just its fields + path.
-		if ( '' !== $group ) {
-			foreach ( $style_groups as $sg ) {
-				if ( $sg['group'] === $group ) {
-					$out = array(
-						'type'   => $type,
-						'group'  => $group,
-						'path'   => $sg['path'],
-						'fields' => $sg['fields'],
-						'note'   => sprintf( 'Set with divi-edit-module by passing this dotted path as an attrs KEY: attrs = { "%s.<field>": <value> } (e.g. { "%s.color": "#ffffff" }). SaddleWP expands the dotted key into the nested object Divi reads. Omit to inherit the site design. "example" shows a correct value SHAPE — some fields take objects, not scalars.', $sg['path'], $sg['path'] ),
-					);
-					if ( isset( $sg['example'] ) ) {
-						$out['example'] = $sg['example'];
-					}
-					return $out;
-				}
-			}
-			return new WP_Error(
-				'saddle_unknown_style_group',
-				sprintf( 'Module "%s" has no "%s" style group. Call divi-get-style-schema without a group for the list.', $type, $group )
-			);
-		}
-
-		return array(
-			'type'         => $type,
-			'style_groups' => $style_groups,
-			'advanced'     => $advanced,
-			'note'         => __( 'Universal styling. Call again with "group" for a group\'s fields. Style via divi-edit-module raw "attrs" at <path>.<field> with {"desktop":{"value":…}} breakpoints. A module\'s own paths never transfer to another module.', 'saddle' ),
-		);
-	}
-
-	/**
-	 * The sub-groups a decoration group's settings declare, e.g. body, link,
-	 * ul, ol, quote for a body font, or h1–h6 for a heading font.
-	 *
-	 * @param mixed $group_settings The group's entry in module.json settings.
-	 * @return string[]
-	 */
-	private static function subgroups( $group_settings ) {
-		$groups = is_array( $group_settings ) && isset( $group_settings['item']['component']['props']['groups'] ) ? $group_settings['item']['component']['props']['groups'] : array();
-
-		return is_array( $groups ) ? array_map( 'strval', array_keys( $groups ) ) : array();
-	}
-
-	/**
-	 * The path for a body or heading font group that has no default render
-	 * value to read it from. Divi nests these one key deeper than other
-	 * typography: content.decoration.bodyFont.body.font.desktop.value, and
-	 * headingFont.h1.font… through h6. The flat fallback
-	 * (bodyFont.desktop.value) saved, validated, and rendered nothing, on the
-	 * text module and 46 other attributes.
-	 *
-	 * @param string   $group     Decoration group.
-	 * @param string[] $subgroups Declared sub-groups.
-	 * @param string   $base      Dotted path to the group.
-	 * @return string
-	 */
-	private static function font_group_path( $group, array $subgroups, $base ) {
-		$first = array(
-			'bodyFont'    => 'body',
-			'headingFont' => 'h1',
-		);
-		if ( ! isset( $first[ $group ] ) ) {
-			return $base . '.desktop.value';
-		}
-		$sub = $subgroups ? $subgroups[0] : $first[ $group ];
-
-		return $base . '.' . $sub . '.font.desktop.value';
-	}
-
-	/**
-	 * The real settable path for a decoration/advanced group, distilled from
-	 * Divi's default render-attributes. Divi nests some groups' values under
-	 * extra keys (typography under `.font`, a text body under `.body.font`);
-	 * this walks the render-attributes subtree at $keys to the first `desktop`
-	 * node and returns the path to its `.value`. Falls back to the flat
-	 * `$base.desktop.value` when the group has no default (correct for the
-	 * groups Divi does NOT nest — spacing, border, background, …).
-	 *
-	 * @param array    $render Full default render-attributes.
-	 * @param string[] $keys   Path into it, e.g. [title, decoration, font].
-	 * @param string   $base   Dotted base path for the fallback.
-	 * @return string
-	 */
-	private static function distill_value_path( $render, $keys, $base ) {
-		$node = $render;
-		foreach ( $keys as $k ) {
-			if ( ! is_array( $node ) || ! isset( $node[ $k ] ) ) {
-				return $base . '.desktop.value';
-			}
-			$node = $node[ $k ];
-		}
-		$found = self::find_desktop_path( $node, $base );
-		return $found ? $found . '.value' : $base . '.desktop.value';
-	}
-
-	/**
-	 * Depth-first search for the first `desktop` breakpoint key, returning the
-	 * dotted path up to and including it.
-	 *
-	 * @param mixed  $node Subtree.
-	 * @param string $path Path so far.
-	 * @return string|null
-	 */
-	private static function find_desktop_path( $node, $path ) {
-		if ( ! is_array( $node ) ) {
-			return null;
-		}
-		if ( isset( $node['desktop'] ) ) {
-			return $path . '.desktop';
-		}
-		foreach ( $node as $k => $v ) {
-			$r = self::find_desktop_path( $v, $path . '.' . $k );
-			if ( $r ) {
-				return $r;
-			}
-		}
-		return null;
+		return Saddle_Divi_Style_Schema::build( (string) $type, (string) $group );
 	}
 
 	/**
@@ -634,8 +396,10 @@ class Saddle_Divi_Schema {
 	 */
 	public static function group_paths( $type ) {
 		static $memo = array();
-		if ( isset( $memo[ $type ] ) ) {
-			return $memo[ $type ];
+		$index       = self::index();
+		$key         = $type . '|' . ( isset( $index[ $type ] ) ? (string) $index[ $type ] : '' );
+		if ( isset( $memo[ $key ] ) ) {
+			return $memo[ $key ];
 		}
 
 		$map   = array();
@@ -646,44 +410,49 @@ class Saddle_Divi_Schema {
 			}
 		}
 
-		$memo[ $type ] = $map;
+		$memo[ $key ] = $map;
 		return $map;
 	}
 
 	/**
-	 * An example VALUE for a decoration group: the curated shape from
-	 * STYLE_EXAMPLES, else the module's own default render value when one
-	 * exists. Null when neither offers anything.
+	 * The object keys of a content value that module.json does not spell
+	 * out with sub-names: the keys of Divi's own default value, plus what
+	 * the content control itself stores (an icon picker {unicode, type,
+	 * weight}, a map {address, zoom, lat, lng}, a link group {url, target}).
+	 * Empty when the value is a plain string.
 	 *
-	 * @param array  $render    Full default render-attributes.
-	 * @param string $attr_name Attribute the group sits on.
-	 * @param string $group     Decoration group.
-	 * @return mixed|null
+	 * @param mixed $node          settings.innerContent subtree.
+	 * @param mixed $default_value The default render value of that content.
+	 * @return string[]
 	 */
-	private static function group_example( array $render, $attr_name, $group ) {
-		if ( isset( self::STYLE_EXAMPLES[ $group ] ) ) {
-			return self::STYLE_EXAMPLES[ $group ];
-		}
-
-		$node = $render;
-		foreach ( array( $attr_name, 'decoration', $group ) as $k ) {
-			if ( ! is_array( $node ) || ! isset( $node[ $k ] ) ) {
-				return null;
+	private static function object_content_fields( $node, $default_value ) {
+		$fields = is_array( $default_value ) && $default_value && ! array_is_list( $default_value ) ? array_map( 'strval', array_keys( $default_value ) ) : array();
+		$shapes = array(
+			'divi/icon-picker' => array( 'unicode', 'type', 'weight' ),
+			'divi/map'         => array( 'address', 'zoom', 'lat', 'lng' ),
+		);
+		$walk   = static function ( $n ) use ( &$walk, &$fields, $shapes ) {
+			if ( ! is_array( $n ) ) {
+				return;
 			}
-			$node = $node[ $k ];
-		}
-		// The first desktop default under the group, if it carries a value.
-		while ( is_array( $node ) && ! isset( $node['desktop'] ) ) {
-			$first = reset( $node );
-			if ( false === $first ) {
-				return null;
+			$name = isset( $n['component']['name'] ) && is_string( $n['component']['name'] ) ? $n['component']['name'] : '';
+			if ( isset( $shapes[ $name ] ) ) {
+				$fields = array_merge( $fields, $shapes[ $name ] );
+			} elseif ( 'divi/link' === $name && isset( $n['component']['type'] ) && 'group' === $n['component']['type'] ) {
+				$link   = isset( $n['component']['props']['fields'] ) && is_array( $n['component']['props']['fields'] ) ? array_keys( $n['component']['props']['fields'] ) : array( 'url', 'target' );
+				$fields = array_merge( $fields, array_map( 'strval', $link ) );
 			}
-			$node = $first;
-		}
-		if ( is_array( $node ) && isset( $node['desktop']['value'] ) && ! in_array( $node['desktop']['value'], array( null, '', array() ), true ) ) {
-			return $node['desktop']['value'];
-		}
-		return null;
+			if ( isset( $n['item'] ) ) {
+				$walk( $n['item'] );
+			}
+			foreach ( array( 'items', 'groups' ) as $key ) {
+				foreach ( isset( $n[ $key ] ) && is_array( $n[ $key ] ) ? $n[ $key ] : array() as $child ) {
+					$walk( $child );
+				}
+			}
+		};
+		$walk( $node );
+		return array_values( array_unique( $fields ) );
 	}
 
 	/**
