@@ -109,16 +109,42 @@ class Saddle_Divi_Schema {
 	/**
 	 * Map of module type (e.g. 'divi/text') → module.json path.
 	 *
-	 * Cached in a transient keyed by the Divi version AND the active plugin
-	 * set — scan_dirs() only walks active plugins, so activating or
-	 * deactivating a module pack must bust the cache too (a version-only key
-	 * served stale catalogs until the TTL). A static cache serves repeat
-	 * calls within a request.
+	 * Cached in a transient keyed by the Divi version, the active plugin set
+	 * and SaddleWP's own version — scan_dirs() only walks active plugins, so
+	 * activating or deactivating a module pack must bust the cache too (a
+	 * version-only key served stale catalogs until the TTL). A static cache
+	 * serves repeat calls within a request.
 	 *
 	 * @param bool $rebuild Force a rescan.
 	 * @return array<string,string>
 	 */
 	public static function index( $rebuild = false ) {
+		$loaded = self::load( $rebuild );
+		return $loaded['map'];
+	}
+
+	/**
+	 * The few module.json facts the catalog and the loop check need, per
+	 * module type: title, description, category, childrenName,
+	 * childModuleName, and whether it offers a loop. Built in the same pass
+	 * and cached with the index, so listing modules decodes no module.json.
+	 *
+	 * @param string $type Module type.
+	 * @return array|null Null when the module has no module.json here.
+	 */
+	public static function summary( $type ) {
+		$loaded = self::load();
+		return isset( $loaded['sum'][ $type ] ) ? $loaded['sum'][ $type ] : null;
+	}
+
+	/**
+	 * The index and the summaries, from the static memo, the transient, or
+	 * a fresh scan. Each module.json is decoded once and dropped.
+	 *
+	 * @param bool $rebuild Force a rescan.
+	 * @return array{map: array<string,string>, sum: array<string,array>}
+	 */
+	private static function load( $rebuild = false ) {
 		static $memo = null;
 		if ( null !== $memo && ! $rebuild ) {
 			return $memo;
@@ -126,24 +152,32 @@ class Saddle_Divi_Schema {
 
 		$version = (string) Saddle_Divi::version();
 		$plugins = md5( implode( ',', (array) get_option( 'active_plugins', array() ) ) );
+		$saddle  = defined( 'SADDLE_VERSION' ) ? (string) SADDLE_VERSION : '';
 		$cached  = $rebuild ? false : get_transient( self::INDEX_TRANSIENT );
 		if ( is_array( $cached )
-			&& isset( $cached['v'], $cached['p'] )
+			&& isset( $cached['v'], $cached['p'], $cached['s'], $cached['sum'] )
 			&& $cached['v'] === $version
 			&& $cached['p'] === $plugins
+			&& $cached['s'] === $saddle
 			&& ! empty( $cached['map'] ) ) {
-			$memo = $cached['map'];
+			$memo = array(
+				'map' => $cached['map'],
+				'sum' => $cached['sum'],
+			);
 			return $memo;
 		}
 
 		$map = array();
+		$sum = array();
 		foreach ( self::scan_dirs() as $dir ) {
 			$files = glob( rtrim( $dir, '/' ) . '/*/module.json' );
 			foreach ( is_array( $files ) ? $files : array() as $file ) {
 				$json = json_decode( self::read_json_file( $file ), true );
 				if ( is_array( $json ) && ! empty( $json['name'] ) && is_string( $json['name'] ) ) {
 					$map[ $json['name'] ] = $file;
+					$sum[ $json['name'] ] = self::summarize( $json );
 				}
+				unset( $json );
 			}
 		}
 
@@ -152,12 +186,44 @@ class Saddle_Divi_Schema {
 			array(
 				'v'   => $version,
 				'p'   => $plugins,
+				's'   => $saddle,
 				'map' => $map,
+				'sum' => $sum,
 			),
 			12 * HOUR_IN_SECONDS
 		);
-		$memo = $map;
+		$memo = array(
+			'map' => $map,
+			'sum' => $sum,
+		);
 		return $memo;
+	}
+
+	/**
+	 * The catalog facts of one decoded module.json.
+	 *
+	 * @param array $json Decoded module.json.
+	 * @return array
+	 */
+	private static function summarize( array $json ) {
+		$advanced = isset( $json['attributes']['module']['settings']['advanced'] ) ? $json['attributes']['module']['settings']['advanced'] : null;
+		$summary  = array(
+			'title' => isset( $json['title'] ) && is_string( $json['title'] ) ? $json['title'] : '',
+			'loop'  => is_array( $advanced ) && array_key_exists( 'loop', $advanced ),
+		);
+		if ( isset( $json['description'] ) && is_string( $json['description'] ) && '' !== trim( $json['description'] ) ) {
+			$summary['description'] = mb_substr( wp_strip_all_tags( $json['description'] ), 0, 400 );
+		}
+		if ( isset( $json['category'] ) && is_string( $json['category'] ) ) {
+			$summary['category'] = $json['category'];
+		}
+		if ( ! empty( $json['childrenName'] ) && is_array( $json['childrenName'] ) ) {
+			$summary['childrenName'] = array_values( array_map( 'strval', $json['childrenName'] ) );
+		}
+		if ( ! empty( $json['childModuleName'] ) && is_string( $json['childModuleName'] ) ) {
+			$summary['childModuleName'] = $json['childModuleName'];
+		}
+		return $summary;
 	}
 
 	/**
@@ -354,7 +420,7 @@ class Saddle_Divi_Schema {
 			'children'   => $children,
 			'child'      => isset( $json['category'] ) && 'child-module' === $json['category'],
 			'attributes' => $attributes,
-			'usage'      => __( 'Set content via "fields" as shown per attribute (SaddleWP wraps values in the correct envelope). "fields" writes the desktop value; different content on a tablet or phone goes in raw "attrs", e.g. { "<attr>.innerContent.phone.value": … }. Styling via raw "attrs" uses canonical paths like <attr>.decoration.<option> with {"desktop":{"value":…}} breakpoints — omit styling to inherit the site’s design.', 'saddle' ),
+			'usage'      => __( 'Set content via "fields" as shown per attribute (SaddleWP wraps values in the correct envelope). "fields" writes the desktop value; for a tablet or phone add the suffix: { "title@phone": "Short title" }. Module options go in "settings" by their id (see "settings" below). Styling goes in "attrs" at a style group path from divi-get-style-schema without its ".desktop.value" ending, e.g. { "module.decoration.spacing": {…} }, with "@phone" or ":hover" on the key for another screen size or state. Omit styling to inherit the site’s design.', 'saddle' ),
 		);
 	}
 

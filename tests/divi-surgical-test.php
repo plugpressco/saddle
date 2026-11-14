@@ -316,7 +316,9 @@ class Saddle_Divi_Surgical_Test extends WP_UnitTestCase {
 			array(
 				'post_id'        => $page,
 				'parent_address' => '0.0.0.0', // a column…
-				'node'           => array( 'type' => 'divi/row' ), // …can't hold a row.
+				// …can't hold a column. (This used to be a row, which Divi 5
+				// allows in a column: a nested row. The old rule was wrong.)
+				'node'           => array( 'type' => 'divi/column' ),
 			)
 		);
 

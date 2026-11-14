@@ -250,7 +250,7 @@ class Saddle_Divi_Setting_Values {
 	 * @return string
 	 */
 	public static function write_as() {
-		return __( 'Write a setting in a node\'s "attrs" (divi-set-page, divi-add-module, divi-edit-module): its path, then .desktop.value, then .<sub> when it has one, e.g. attrs { "post.advanced.number.desktop.value": "6" } or { "divider.advanced.line.desktop.value.show": "on" }.', 'saddle' );
+		return __( 'Write settings in a node\'s "settings" (divi-set-page, divi-add-module, divi-edit-module) by "path", or "path.sub" when a setting has a sub, with a plain value: "settings": { "post.advanced.number": 6, "module.advanced.auto": true, "divider.advanced.line.show": "on" }. SaddleWP checks the value and stores it where Divi reads it. Add "@tablet" or "@phone" to the id for another screen size, ":hover" or ":sticky" for a state: { "module.advanced.slidesToShow@phone": 1 }. The raw form in "attrs" still works but is not checked: { "post.advanced.number.desktop.value": "6" }.', 'saddle' );
 	}
 
 	/**
@@ -259,7 +259,7 @@ class Saddle_Divi_Setting_Values {
 	 * @return string
 	 */
 	public static function note() {
-		return __( 'Toggles take the strings "on" and "off". A list control takes a JSON list. Write numbers as strings unless the default is a number. "options_from" means WordPress supplies the choices (menus, post_types, categories, cf7_forms, widget_areas); "loops" means the id of a loop on the same page. For another screen size write .tablet or .phone in place of .desktop, only where detail="full" says responsive.', 'saddle' );
+		return __( 'A toggle takes true, false, "on" or "off". A select takes one of its listed choices; anything else is refused with the valid ones. A number or range takes a number or a string with a unit ("24px"). A list control takes a JSON list. "options_from" means WordPress supplies the choices (menus, post_types, categories, cf7_forms, widget_areas); "loops" means the id of a loop on the same page. A screen-size suffix works only where detail="full" says responsive, and only for the breakpoints divi-check-setup lists.', 'saddle' );
 	}
 
 	/**

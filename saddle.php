@@ -87,6 +87,15 @@ require_once SADDLE_DIR . 'includes/builders/class-saddle-builder-registry.php';
 require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi.php';
 require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-tree.php';
 require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-author.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-envelope.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-attr-keys.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-key-order.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-setting-input.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-node-attrs.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-columns.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-row-layout.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-nesting.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-components.php';
 require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-schema.php';
 require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-style.php';
 require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-style-advanced.php';
@@ -101,6 +110,8 @@ require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-echo-traps.p
 require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-echo-attrs.php';
 require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-hover-contrast.php';
 require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-loop.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-loop-repair.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-loop-filters.php';
 require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-dynamic.php';
 require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-dynamic-sources.php';
 require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-driver.php';
@@ -109,6 +120,10 @@ require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-view.php';
 require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-bundle.php';
 require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-recipes.php';
 require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-lint-accessor.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-lint-facts.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-text-facts.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-interactions.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-rendered-page.php';
 require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-render-accessor.php';
 require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-verify.php';
 require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-context.php';
@@ -117,6 +132,16 @@ require_once SADDLE_DIR . 'includes/lint/rules/class-rule-preset-coupling.php';
 require_once SADDLE_DIR . 'includes/lint/rules/class-rule-pinned-max-width.php';
 require_once SADDLE_DIR . 'includes/lint/rules/class-rule-theme-css-class.php';
 require_once SADDLE_DIR . 'includes/lint/rules/class-rule-unknown-module.php';
+require_once SADDLE_DIR . 'includes/lint/rules/class-rule-one-main-action.php';
+require_once SADDLE_DIR . 'includes/lint/rules/class-rule-font-families.php';
+require_once SADDLE_DIR . 'includes/lint/rules/class-rule-button-hover.php';
+require_once SADDLE_DIR . 'includes/lint/rules/class-rule-vanishing-fill.php';
+require_once SADDLE_DIR . 'includes/lint/rules/class-rule-emoji-icon.php';
+require_once SADDLE_DIR . 'includes/lint/rules/class-rule-code-layout.php';
+require_once SADDLE_DIR . 'includes/lint/rules/class-rule-nested-card.php';
+require_once SADDLE_DIR . 'includes/lint/rules/class-rule-grid-phone-columns.php';
+require_once SADDLE_DIR . 'includes/lint/rules/class-rule-collapsed-column.php';
+require_once SADDLE_DIR . 'includes/lint/rules/class-rule-repeated-row-layout.php';
 require_once SADDLE_DIR . 'includes/preview/class-saddle-preview.php';
 require_once SADDLE_DIR . 'includes/verify/class-saddle-verify.php';
 require_once SADDLE_DIR . 'includes/class-saddle-capabilities.php';
@@ -388,6 +413,7 @@ final class Saddle {
 			require_once SADDLE_DIR . 'includes/abilities/divi-design.php';
 			require_once SADDLE_DIR . 'includes/abilities/divi-templates.php';
 			require_once SADDLE_DIR . 'includes/abilities/divi-bundle.php';
+			require_once SADDLE_DIR . 'includes/abilities/divi-extras.php';
 			add_action( 'wp_abilities_api_categories_init', 'saddle_register_ability_category' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_block_abilities' );
@@ -419,6 +445,7 @@ final class Saddle {
 			add_action( 'wp_abilities_api_init', 'saddle_register_divi_design_abilities', 30 );
 			add_action( 'wp_abilities_api_init', 'saddle_register_divi_template_abilities', 30 );
 			add_action( 'wp_abilities_api_init', 'saddle_register_divi_bundle_abilities', 30 );
+			add_action( 'wp_abilities_api_init', 'saddle_register_divi_extra_abilities', 30 );
 			// First-party integration wrappers run late (30) so the partner
 			// plugins' own abilities exist to discover.
 			add_action( 'wp_abilities_api_init', array( 'Saddle_Integrations', 'register_wrappers' ), 30 );
@@ -426,6 +453,7 @@ final class Saddle {
 			add_filter( 'saddle_context_sections', array( 'Saddle_Services', 'context_section' ) );
 			Saddle_Seo_Skills::register();
 			Saddle_Divi_Context::register();
+			Saddle_Divi_Loop_Repair::register();
 
 			// Wire the MCP transport after all plugins have loaded. This MUST be
 			// deferred (see setup_mcp_transport) so the bundled adapter can't

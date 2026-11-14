@@ -18,7 +18,7 @@ class Saddle_Lint_Rule_Link_Text extends Saddle_Lint_Rule {
 	/**
 	 * Link texts that say nothing about the destination.
 	 */
-	const VAGUE = array( 'click here', 'here', 'read more', 'more', 'learn more', 'this', 'link', 'click', 'go', 'details' );
+	const VAGUE = array( 'click here', 'here', 'read more', 'more', 'learn more', 'this', 'link', 'click', 'go', 'details', 'submit', 'send', 'click me', 'more info', 'see more', 'view more', 'find out more', 'button' );
 
 	/**
 	 * Rule id.

@@ -184,14 +184,23 @@ class Saddle_Divi_Dynamic {
 
 	/**
 	 * Map the documented older settings to what Divi reads, then refuse any
-	 * protected custom field. Guards every meta key form.
+	 * protected custom field. Guards every custom field name form: the name
+	 * is worked out exactly as Divi works it out, and the raw settings are
+	 * checked too.
 	 *
 	 * @param string $source   Source name (canonical).
 	 * @param array  $settings Raw settings.
 	 * @return array|WP_Error Settings with the names Divi reads.
 	 */
 	public static function prepare_settings( $source, array $settings ) {
-		// A user loop prints this once per listed user, on the public page.
+		// A user loop prints these once per listed user, on the page.
+		if ( in_array( $source, array( 'loop_user_username', 'loop_user_email' ), true ) && ! current_user_can( 'list_users' ) ) {
+			return new WP_Error(
+				'saddle_protected_source',
+				__( 'This source shows each listed user\'s sign-in name or email address on the page, so it needs an account that can list users.', 'saddle' ),
+				array( 'status' => 400 )
+			);
+		}
 		if ( 'loop_user_email' === $source && ! current_user_can( 'manage_options' ) ) {
 			return new WP_Error(
 				'saddle_protected_source',
@@ -231,15 +240,16 @@ class Saddle_Divi_Dynamic {
 				$keys[] = (string) $settings[ $name ];
 			}
 		}
-		$embedded = array(
-			array( $source, '/^custom_meta_(.+)$/' ),
-			array( $source, '/^loop_(?:post|term|user)_meta_key_(.+)$/' ),
-			array( isset( $settings['select_meta_key'] ) ? (string) $settings['select_meta_key'] : '', '/^custom_meta_(.+)$/' ),
-			array( isset( $settings['select_loop_meta_key'] ) ? (string) $settings['select_loop_meta_key'] : '', '/^loop_(?:post|term|user)_meta_key_(.+)$/' ),
-		);
-		foreach ( $embedded as $pair ) {
-			if ( preg_match( $pair[1], $pair[0], $m ) && 0 !== strpos( $m[1], 'manual_custom_field' ) ) {
-				$keys[] = $m[1];
+		$read = self::read_meta_key( $source, $settings );
+		if ( null !== $read ) {
+			$keys[] = $read;
+		}
+		if ( '' !== $loop_type ) {
+			// Divi takes a loop custom field from the settings, never from the
+			// source name; a name that carries one is guarded all the same.
+			$named = str_replace( 'loop_' . $loop_type . '_meta_key_', '', $source );
+			if ( 0 !== strpos( $named, 'manual_custom_field' ) ) {
+				$keys[] = $named;
 			}
 		}
 
@@ -254,29 +264,87 @@ class Saddle_Divi_Dynamic {
 	}
 
 	/**
-	 * Refuse a custom field whose value must not reach a public page.
+	 * The custom field name Divi 5.10.1 reads for a source and its settings,
+	 * worked out the way Divi works it out; null when the source reads none.
+	 *
+	 * - custom_meta_<name>: str_replace() of every "custom_meta_", except
+	 *   custom_meta_manual_custom_field_value, which reads settings.meta_key
+	 *   (DynamicContentOptionPostMetaKey::render_callback()).
+	 * - post_meta_key: settings.select_meta_key the same way when it is not
+	 *   empty, else settings.meta_key.
+	 * - loop_<post|term|user>_meta_key_*: settings.loop_meta_key when
+	 *   select_loop_meta_key ends in "_manual_custom_field_value" (or, on a
+	 *   user field, is empty), else str_replace() of the loop prefix that
+	 *   select_loop_meta_key starts with
+	 *   (DynamicContentOptionLoopPostMetaKey::get_meta_key_from_name()).
+	 *
+	 * @param string $source   Source name.
+	 * @param array  $settings Settings as stored.
+	 * @return string|null
+	 */
+	public static function read_meta_key( $source, array $settings ) {
+		$loop_type = self::loop_meta_type( $source );
+		if ( '' !== $loop_type ) {
+			$select = isset( $settings['select_loop_meta_key'] ) ? (string) $settings['select_loop_meta_key'] : '';
+			if ( str_ends_with( $select, '_manual_custom_field_value' ) || ( 'user' === $loop_type && '' === $select ) ) {
+				return isset( $settings['loop_meta_key'] ) ? (string) $settings['loop_meta_key'] : '';
+			}
+			foreach ( array( 'post', 'user', 'term' ) as $type ) {
+				if ( str_starts_with( $select, 'loop_' . $type . '_meta_key_' ) ) {
+					return str_replace( 'loop_' . $type . '_meta_key_', '', $select );
+				}
+			}
+			return '';
+		}
+
+		$meta_key = isset( $settings['meta_key'] ) ? (string) $settings['meta_key'] : '';
+		if ( str_starts_with( $source, 'custom_meta_' ) ) {
+			return 'custom_meta_manual_custom_field_value' === $source ? $meta_key : str_replace( 'custom_meta_', '', $source );
+		}
+		if ( 'post_meta_key' !== $source ) {
+			return null;
+		}
+		$select = isset( $settings['select_meta_key'] ) ? (string) $settings['select_meta_key'] : '';
+		if ( ! empty( $select ) ) {
+			if ( 'custom_meta_manual_custom_field_value' === $select ) {
+				return $meta_key;
+			}
+			return str_starts_with( $select, 'custom_meta_' ) ? str_replace( 'custom_meta_', '', $select ) : null;
+		}
+		return ! empty( $meta_key ) ? $meta_key : null;
+	}
+
+	/**
+	 * Refuse a custom field whose value must not reach a public page, and a
+	 * name that still holds a Divi prefix.
 	 *
 	 * @param string $key       Meta key.
 	 * @param string $meta_type post, term or user.
 	 * @return WP_Error|null
 	 */
 	private static function refuse_meta_key( $key, $meta_type ) {
-		/**
-		 * Meta keys that may be bound to public dynamic content despite the
-		 * protected "_" prefix. Empty by default: add only keys you know are
-		 * safe to show publicly.
-		 *
-		 * @param string[] $allowlist Allowed protected meta keys.
-		 */
-		$allowlist = (array) apply_filters( 'saddle_dynamic_meta_allowlist', array() );
-		if ( is_protected_meta( $key, $meta_type ) && ! in_array( $key, $allowlist, true ) ) {
+		foreach ( array( 'custom_meta_', 'loop_post_meta_key_', 'loop_term_meta_key_', 'loop_user_meta_key_' ) as $prefix ) {
+			if ( false !== strpos( (string) $key, $prefix ) ) {
+				return new WP_Error(
+					'saddle_bad_meta_key',
+					sprintf(
+						/* translators: %s: the name prefix found. */
+						__( 'A custom field name cannot contain "%s". Write the field\'s own name.', 'saddle' ),
+						$prefix
+					),
+					array( 'status' => 400 )
+				);
+			}
+		}
+		$rule = self::meta_key_rule( $key, $meta_type );
+		if ( 'protected' === $rule ) {
 			return new WP_Error(
 				'saddle_protected_meta',
 				__( 'The bound meta key is protected (starts with "_"): its value would become publicly visible on the page, so SaddleWP refuses it. A site owner can allow a specific key with the "saddle_dynamic_meta_allowlist" filter.', 'saddle' ),
 				array( 'status' => 400 )
 			);
 		}
-		if ( 'user' === $meta_type && ( ! current_user_can( 'manage_options' ) || 'session_tokens' === $key || preg_match( '/(capabilities|user_level)$/', $key ) ) ) {
+		if ( 'user' === $rule ) {
 			return new WP_Error(
 				'saddle_protected_meta',
 				__( 'This user custom field is not bound: a user loop shows each user\'s value on the public page. Divi offers user custom fields only to administrators, and SaddleWP never binds sign-in or role data.', 'saddle' ),
@@ -284,6 +352,64 @@ class Saddle_Divi_Dynamic {
 			);
 		}
 		return null;
+	}
+
+	/**
+	 * The custom field rule shared by bindings and loop conditions: ''
+	 * when a key may be used, "protected" for a protected name that is not
+	 * allowed, "user" for a user field this account may not use.
+	 *
+	 * @param string $key       Meta key.
+	 * @param string $meta_type post, term or user.
+	 * @return string
+	 */
+	public static function meta_key_rule( $key, $meta_type ) {
+		$key = (string) $key;
+		if ( is_protected_meta( $key, $meta_type ) && ! in_array( $key, self::meta_allowlist(), true ) ) {
+			return 'protected';
+		}
+		if ( 'user' === $meta_type && ( ! current_user_can( 'manage_options' ) || ! current_user_can( 'list_users' ) || 'session_tokens' === $key || preg_match( '/(capabilities|user_level)$/', $key ) ) ) {
+			return 'user';
+		}
+		return '';
+	}
+
+	/**
+	 * Protected custom fields that may still be shown or filtered on.
+	 *
+	 * @return string[]
+	 */
+	public static function meta_allowlist() {
+		$public = class_exists( 'Saddle_WC' ) && Saddle_WC::is_active() ? array( '_price', '_regular_price', '_sale_price', '_stock_status', '_sku' ) : array();
+
+		/**
+		 * Meta keys that may be bound to public dynamic content, or used in a
+		 * loop's custom field conditions, despite the protected "_" prefix.
+		 * While WooCommerce is active it holds the product fields every
+		 * product page shows (price, regular and sale price, stock status,
+		 * SKU); empty otherwise. Add only keys you know are safe to show.
+		 *
+		 * @param string[] $allowlist Allowed protected meta keys.
+		 */
+		return array_map( 'strval', (array) apply_filters( 'saddle_dynamic_meta_allowlist', $public ) );
+	}
+
+	/**
+	 * Drop enable_html unless the account may post unfiltered HTML, the
+	 * same rule Divi's builder follows when it offers the setting.
+	 *
+	 * @param array $settings Settings.
+	 * @return array array( settings, warnings ).
+	 */
+	public static function limit_raw_html( array $settings ) {
+		if ( ! array_key_exists( 'enable_html', $settings ) || current_user_can( 'unfiltered_html' ) ) {
+			return array( $settings, array() );
+		}
+		unset( $settings['enable_html'] );
+		return array(
+			$settings,
+			array( __( 'enable_html was left out: only an account that may post unfiltered HTML can show a value as raw HTML, so Divi escapes it.', 'saddle' ) ),
+		);
 	}
 
 	/**
@@ -401,12 +527,12 @@ class Saddle_Divi_Dynamic {
 		if ( isset( $needs[ $family ] ) && ! in_array( $base, $needs[ $family ], true ) ) {
 			return array(
 				sprintf(
-					/* translators: 1: source, 2: loop address, 3: the loop's query type, 4: query types the source needs. */
-					__( '%1$s prints items of a %4$s loop, but the loop at %2$s is a %3$s loop, so it prints nothing here.', 'saddle' ),
+					/* translators: 1: source, 2: loop address, 3: the loop's query type, 4: list of query types the source needs. */
+					__( '%1$s prints the items of a loop of one of these types: %4$s. The loop at %2$s is a %3$s loop, so it prints nothing here.', 'saddle' ),
 					$source,
 					$loop_at,
 					$base,
-					implode( ' or ', $needs[ $family ] )
+					implode( ', ', $needs[ $family ] )
 				),
 			);
 		}

@@ -49,9 +49,12 @@ class Saddle_Divi_Dynamic_Sources {
 	 * @return array
 	 */
 	public static function listing() {
+		// The site's own sources (custom field and ACF names, other plugins'
+		// sources, post types) go only to accounts that can edit posts.
+		$site    = current_user_can( 'edit_posts' );
 		$from    = 'builtin';
 		$entries = array();
-		if ( class_exists( self::REGISTRY ) && is_callable( array( self::REGISTRY, 'get_options' ) ) ) {
+		if ( $site && class_exists( self::REGISTRY ) && is_callable( array( self::REGISTRY, 'get_options' ) ) ) {
 			try {
 				$entries = self::from_options( (array) call_user_func( array( self::REGISTRY, 'get_options' ), 0, 'edit' ) );
 			} catch ( Throwable $e ) {
@@ -59,7 +62,7 @@ class Saddle_Divi_Dynamic_Sources {
 			}
 			$from = $entries ? 'site' : 'builtin';
 		}
-		foreach ( self::builtin() as $name => $entry ) {
+		foreach ( self::builtin( $site ) as $name => $entry ) {
 			if ( ! isset( $entries[ $name ] ) ) {
 				$entries[ $name ] = $entry;
 			}
@@ -83,7 +86,7 @@ class Saddle_Divi_Dynamic_Sources {
 			}
 		}
 
-		return array(
+		$out = array(
 			'from'     => $from,
 			'note'     => __( 'Inside a loop, use the loop_ sources: only they change per item. Page sources (post_title, post_meta_key and the rest) show the values of the page being viewed, or of the post a Theme Builder template shows, so inside a loop they repeat the same value on every item. A loop_ source outside a loop prints only its before and after text.', 'saddle' ),
 			'page'     => $page,
@@ -98,8 +101,12 @@ class Saddle_Divi_Dynamic_Sources {
 				'loop_meta_key' => __( 'loop_post_meta_key_manual_custom_field (and the term and user versions): the custom field name to show for each item.', 'saddle' ),
 				'values'        => __( 'Every setting is a string; true and false are stored as "on" and "off".', 'saddle' ),
 			),
-			'usage'    => __( 'Bind with divi-apply-dynamic-content: field = the attribute path from divi-get-module-schema ("title.innerContent", or one part of an object field such as "image.innerContent.src" or "button.innerContent.linkUrl"), source = a name above. An image source needs a source of type image or url. Custom fields whose names start with "_" are refused.', 'saddle' ),
+			'usage'    => __( 'Bind with divi-apply-dynamic-content: field = the attribute path from divi-get-module-schema ("title.innerContent", or one part of an object field such as "image.innerContent.src" or "button.innerContent.linkUrl"), source = a name above. An image source needs a source of type image or url. Custom fields whose names start with "_" are refused unless the site allows them.', 'saddle' ),
 		);
+		if ( ! $site ) {
+			$out['limited'] = __( 'This account cannot edit posts, so the list holds Divi\'s standard sources only, without this site\'s own.', 'saddle' );
+		}
+		return $out;
 	}
 
 	/**
@@ -129,13 +136,20 @@ class Saddle_Divi_Dynamic_Sources {
 	/**
 	 * The hand-kept list: name => type and settings.
 	 *
+	 * @param bool $site Include what depends on this site (post types,
+	 *                   WooCommerce sources).
 	 * @return array<string,array>
 	 */
-	private static function builtin() {
+	private static function builtin( $site = true ) {
 		$text  = array( 'before', 'after' );
 		$terms = array( 'before', 'after', 'link_to_term_page', 'separator', 'category_type' );
-		$field = array( 'before', 'after', 'meta_key', 'select_meta_key', 'date_format', 'custom_date_format', 'enable_html' );
-		$loopf = array( 'before', 'after', 'loop_meta_key', 'select_loop_meta_key', 'date_format', 'custom_date_format', 'loop_position', 'enable_html' );
+		$field = array( 'before', 'after', 'meta_key', 'select_meta_key', 'date_format', 'custom_date_format' );
+		$loopf = array( 'before', 'after', 'loop_meta_key', 'select_loop_meta_key', 'date_format', 'custom_date_format', 'loop_position' );
+		// Divi offers raw HTML only to accounts that may post unfiltered HTML.
+		if ( current_user_can( 'unfiltered_html' ) ) {
+			$field[] = 'enable_html';
+			$loopf[] = 'enable_html';
+		}
 
 		$rows = array(
 			'post_title'                             => array( 'text', $text ),
@@ -201,13 +215,13 @@ class Saddle_Divi_Dynamic_Sources {
 			'loop_menu_xfn'                          => array( 'text', self::LOOP ),
 		);
 
-		foreach ( get_post_types( array( 'public' => true ), 'names' ) as $post_type ) {
+		foreach ( $site ? get_post_types( array( 'public' => true ), 'names' ) : array() as $post_type ) {
 			if ( 'attachment' !== $post_type ) {
 				$rows[ 'post_link_url_' . $post_type ] = array( 'url', array( 'post_id' ) );
 			}
 		}
 
-		if ( class_exists( 'Saddle_WC' ) && Saddle_WC::is_active() ) {
+		if ( $site && class_exists( 'Saddle_WC' ) && Saddle_WC::is_active() ) {
 			$titled = array( 'before', 'after', 'enable_title' );
 			$rows   = array_merge(
 				$rows,

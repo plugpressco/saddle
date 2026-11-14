@@ -290,6 +290,85 @@ class Saddle_Divi_Quality_Lint_Test extends WP_UnitTestCase {
 		$this->assertSame( array(), $this->by_rule( $this->lint( $uncapped )['violations'], 'pinned-max-width' ) );
 	}
 
+	public function test_pinned_max_width_silent_on_a_left_aligned_lede() {
+		// Recorded live on 2026-11-09: a capped lede directly under a
+		// left-aligned heading, in a column nothing centers, is the design.
+		$heading = $this->module_markup( 'divi/heading', array( 'title' => array( 'innerContent' => array( 'desktop' => array( 'value' => 'Built for small teams' ) ) ) ) );
+		$lede    = $this->sized_text( array( 'maxWidth' => '560px' ) );
+		$this->assertSame( array(), $this->by_rule( $this->lint( $this->divi_page( array( $heading, $lede ) ) )['violations'], 'pinned-max-width' ) );
+
+		// A centered heading above it: the lede is pinned off the axis.
+		$centered = $this->module_markup(
+			'divi/heading',
+			array( 'title' => array( 'decoration' => array( 'font' => array( 'font' => array( 'desktop' => array( 'value' => array( 'textAlign' => 'center' ) ) ) ) ) ) )
+		);
+		$this->assertCount( 1, $this->by_rule( $this->lint( $this->divi_page( array( $centered, $lede ) ) )['violations'], 'pinned-max-width' ) );
+
+		// Not directly under the heading.
+		$this->assertCount( 1, $this->by_rule( $this->lint( $this->divi_page( array( $heading, $this->text_module( '#ffffff' ), $lede ) ) )['violations'], 'pinned-max-width' ) );
+
+		// A column that centers its items.
+		$id = self::factory()->post->create(
+			array(
+				'post_type'    => 'page',
+				'post_content' => '<!-- wp:divi/section --><!-- wp:divi/row -->'
+					. $this->module_markup( 'divi/column', array( 'module' => array( 'decoration' => array( 'layout' => array( 'desktop' => array( 'value' => array( 'alignItems' => 'center' ) ) ) ) ) ), $heading . $lede )
+					. '<!-- /wp:divi/row --><!-- /wp:divi/section -->',
+			)
+		);
+		$this->assertCount( 1, $this->by_rule( $this->lint( $id )['violations'], 'pinned-max-width' ) );
+	}
+
+	public function test_text_contrast_reads_the_card_not_the_dark_section_behind_it() {
+		$dark  = array( 'module' => array( 'decoration' => array( 'background' => array( 'desktop' => array( 'value' => array( 'color' => '#0f172a' ) ) ) ) ) );
+		$text  = $this->module_markup(
+			'divi/heading',
+			array(
+				'title' => array(
+					'innerContent' => array( 'desktop' => array( 'value' => 'Dark title on a light card' ) ),
+					'decoration'   => array( 'font' => array( 'font' => array( 'desktop' => array( 'value' => array( 'color' => '#1f2937' ) ) ) ) ),
+				),
+			)
+		);
+		$page  = function ( array $column ) use ( $dark, $text ) {
+			return self::factory()->post->create(
+				array(
+					'post_type'    => 'page',
+					'post_content' => $this->module_markup( 'divi/section', $dark, '<!-- wp:divi/row -->' . $this->module_markup( 'divi/column', $column, $text ) . '<!-- /wp:divi/row -->' ),
+				)
+			);
+		};
+		$white = array( 'module' => array( 'decoration' => array( 'background' => array( 'desktop' => array( 'value' => array( 'color' => '#ffffff' ) ) ) ) ) );
+
+		// The card's fill comes from a preset this lint cannot read: the card
+		// is still the surface, so the text is not judged against the section.
+		$this->assertSame( array(), $this->by_rule( $this->lint( $page( array( 'modulePreset' => array( 'card-preset' ) ) ) )['violations'], 'text-contrast' ) );
+
+		// A gradient card is an unknown surface too.
+		$gradient = array( 'module' => array( 'decoration' => array( 'background' => array( 'desktop' => array( 'value' => array( 'gradient' => array( 'enabled' => 'on', 'stops' => array( array( 'position' => 0, 'color' => '#ffffff' ), array( 'position' => 100, 'color' => '#f1f5f9' ) ) ) ) ) ) ) ) );
+		$this->assertSame( array(), $this->by_rule( $this->lint( $page( $gradient ) )['violations'], 'text-contrast' ) );
+
+		// A white card: judged against the card, and it passes.
+		$this->assertSame( array(), $this->by_rule( $this->lint( $page( $white ) )['violations'], 'text-contrast' ) );
+
+		// No card at all: dark on dark is still an error.
+		$this->assertCount( 1, $this->by_rule( $this->lint( $page( array( 'module' => array( 'meta' => array( 'adminLabel' => array( 'desktop' => array( 'value' => 'Plain' ) ) ) ) ) ) )['violations'], 'text-contrast' ) );
+	}
+
+	public function test_text_contrast_uses_the_module_surface_not_a_child_element() {
+		// A blurb card: white module fill, a dark icon circle, dark title.
+		// The icon circle's fill is not what the title sits on.
+		$blurb = $this->module_markup(
+			'divi/blurb',
+			array(
+				'imageIcon' => array( 'decoration' => array( 'background' => array( 'desktop' => array( 'value' => array( 'color' => '#0f172a' ) ) ) ) ),
+				'module'    => array( 'decoration' => array( 'background' => array( 'desktop' => array( 'value' => array( 'color' => '#ffffff' ) ) ) ) ),
+				'title'     => array( 'decoration' => array( 'font' => array( 'font' => array( 'desktop' => array( 'value' => array( 'color' => '#111827' ) ) ) ) ) ),
+			)
+		);
+		$this->assertSame( array(), $this->by_rule( $this->lint( $this->divi_page( array( $blurb ) ) )['violations'], 'text-contrast' ) );
+	}
+
 	/* -------- theme-css-class -------- */
 
 	public function test_theme_css_class_fires_on_delegated_styling() {

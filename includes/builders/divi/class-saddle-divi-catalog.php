@@ -39,20 +39,22 @@ class Saddle_Divi_Catalog {
 		$parents  = array();
 		$entries  = array();
 		$purposes = self::purposes();
+		// The cached summaries carry the few module.json facts used here, so
+		// listing every module keeps no decoded module.json in memory.
 		foreach ( Saddle_Divi_Schema::index() as $type => $file ) {
-			$json = Saddle_Divi_Schema::module_json( $type );
-			if ( ! is_array( $json ) ) {
+			$summary = Saddle_Divi_Schema::summary( $type );
+			if ( ! is_array( $summary ) ) {
 				continue;
 			}
-			$children = self::children( $type, $json );
+			$children = self::children( $type, $summary );
 			foreach ( $children as $child ) {
 				$parents[ $child ] = $type;
 			}
-			$title = isset( $json['title'] ) && is_string( $json['title'] ) ? $json['title'] : $type;
+			$title = isset( $summary['title'] ) && '' !== $summary['title'] ? $summary['title'] : $type;
 			if ( isset( $purposes[ $type ] ) ) {
 				$purpose = $purposes[ $type ];
-			} elseif ( isset( $json['description'] ) && is_string( $json['description'] ) && '' !== trim( $json['description'] ) ) {
-				$purpose = wp_strip_all_tags( $json['description'] );
+			} elseif ( isset( $summary['description'] ) ) {
+				$purpose = $summary['description'];
 			} else {
 				$purpose = $title;
 			}
@@ -62,7 +64,7 @@ class Saddle_Divi_Catalog {
 				'purpose'   => $purpose,
 				'group'     => self::group( $type, (string) $file ),
 				'container' => (bool) $children,
-				'child'     => isset( $json['category'] ) && 'child-module' === $json['category'],
+				'child'     => isset( $summary['category'] ) && 'child-module' === $summary['category'],
 			);
 			if ( $children ) {
 				$entry['children'] = $children;
@@ -114,7 +116,7 @@ class Saddle_Divi_Catalog {
 	 * take any content module. Empty for a module that holds nothing.
 	 *
 	 * @param string $type Module type.
-	 * @param array  $json Its module.json.
+	 * @param array  $json Its module.json, or its Saddle_Divi_Schema::summary().
 	 * @return string[]
 	 */
 	public static function children( $type, array $json ) {

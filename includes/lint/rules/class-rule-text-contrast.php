@@ -113,6 +113,16 @@ class Saddle_Lint_Rule_Text_Contrast extends Saddle_Lint_Rule {
 	 * @return string|null
 	 */
 	private function effective_background( array $node, array $by_address, Saddle_Lint_Accessor $accessor ) {
+		// Divi: the nearest node that paints anything wins, read from its
+		// module background (not a child element's, such as a blurb's icon
+		// circle). A card whose fill comes from a gradient, an image or a
+		// container preset is a surface too, just an unknown one, so the
+		// walk stops there instead of judging the text against the section
+		// behind the card (a false positive recorded live on 2026-11-09).
+		if ( $accessor instanceof Saddle_Divi_Lint_Accessor ) {
+			return ( new Saddle_Divi_Lint_Facts() )->surface_under( $node, $by_address, true );
+		}
+
 		$current = $node;
 		while ( $current ) {
 			$background = $accessor->background_color( $current['block'] );

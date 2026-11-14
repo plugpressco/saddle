@@ -12,15 +12,10 @@ defined( 'ABSPATH' ) || exit;
  *
  * Every key and value shape here is read from Divi 5.10.1's own loop reader
  * (LoopUtils::get_query_args_from_attrs() and the helpers it calls) and from
- * what the Visual Builder writes. It was not render-tested:
- *
- * - subTypes is a list of {value, label} items. A plain list of strings is
- *   dropped by Divi's normalizer, and the query then runs on every post type.
- * - order is "descending" or "ascending". Divi sorts newest first only for
- *   "descending" or an empty value; anything else sorts ascending.
- * - "terms" and "users" are older Saddle names. Divi's builder writes
- *   "post_taxonomies" and "user_roles", and its per-item reader prints
- *   nothing for a loop stored as "users".
+ * what the Visual Builder writes. It was not render-tested. The shape rules
+ * (sub type items, order words, older type names) live in
+ * Saddle_Divi_Loop_Repair; the include, exclude and custom field filters in
+ * Saddle_Divi_Loop_Filters.
  */
 class Saddle_Divi_Loop {
 
@@ -35,14 +30,6 @@ class Saddle_Divi_Loop {
 	const QUERY_TYPES = array( 'post_types', 'post_taxonomies', 'user_roles', 'menus', 'current_page', 'acf_repeater', 'terms', 'users' );
 
 	/**
-	 * Older names, stored as the query type Divi's builder writes.
-	 */
-	const ALIASES = array(
-		'terms' => 'post_taxonomies',
-		'users' => 'user_roles',
-	);
-
-	/**
 	 * Divi's order-by values per query type (QueryOrderByController). Some
 	 * appear only for some post types (menu_order, parent, price ...).
 	 */
@@ -55,10 +42,16 @@ class Saddle_Divi_Loop {
 	);
 
 	/**
-	 * Custom field comparisons and types Divi's meta query accepts.
+	 * Stored loop keys that belong to one loop family, and the input that
+	 * sets each. Changing the family clears them.
 	 */
-	const META_COMPARE = array( '=', '!=', '>', '>=', '<', '<=', 'LIKE', 'NOT LIKE', 'IN', 'NOT IN', 'BETWEEN', 'NOT BETWEEN', 'EXISTS', 'NOT EXISTS', 'REGEXP', 'NOT REGEXP', 'RLIKE' );
-	const META_TYPES   = array( 'NUMERIC', 'BINARY', 'CHAR', 'DATE', 'DATETIME', 'DECIMAL', 'SIGNED', 'TIME', 'UNSIGNED' );
+	const FAMILY_KEYS = array(
+		'includeSpecificPosts' => 'include_posts',
+		'excludeSpecificPosts' => 'exclude_posts',
+		'metaQuery'            => 'meta_query',
+		'excludeCurrentPost'   => 'exclude_current_post',
+		'ignoreStickysPost'    => 'ignore_sticky_posts',
+	);
 
 	/**
 	 * The module's stored loop value, or array() when it has none.
@@ -78,61 +71,13 @@ class Saddle_Divi_Loop {
 	}
 
 	/**
-	 * Rewrite a stored loop into the shape Divi reads, whatever form an older
-	 * write left: string sub types, "asc"/"desc", the two older type names.
+	 * Rewrite a stored loop into the shape Divi reads (Saddle_Divi_Loop_Repair).
 	 *
 	 * @param array $value Stored loop value.
 	 * @return array
 	 */
 	public static function normalize( array $value ) {
-		if ( isset( $value['queryType'] ) && isset( self::ALIASES[ $value['queryType'] ] ) ) {
-			$value['queryType'] = self::ALIASES[ $value['queryType'] ];
-		}
-		if ( array_key_exists( 'subTypes', $value ) ) {
-			$value['subTypes'] = self::sub_type_items( $value['subTypes'] );
-		}
-		if ( isset( $value['order'] ) ) {
-			$value['order'] = self::order( $value['order'] );
-		}
-		return $value;
-	}
-
-	/**
-	 * Any stored sub type form as {value, label} items.
-	 *
-	 * @param mixed $raw Strings, items, or a comma-separated string.
-	 * @return array[]
-	 */
-	public static function sub_type_items( $raw ) {
-		if ( is_string( $raw ) ) {
-			$raw = array_filter( array_map( 'trim', explode( ',', $raw ) ) );
-		}
-		$items = array();
-		foreach ( is_array( $raw ) ? $raw : array() as $entry ) {
-			if ( is_array( $entry ) && isset( $entry['value'] ) && is_scalar( $entry['value'] ) ) {
-				$items[] = array(
-					'value' => (string) $entry['value'],
-					'label' => isset( $entry['label'] ) && is_string( $entry['label'] ) ? $entry['label'] : (string) $entry['value'],
-				);
-			} elseif ( is_scalar( $entry ) && '' !== (string) $entry ) {
-				$items[] = array(
-					'value' => (string) $entry,
-					'label' => (string) $entry,
-				);
-			}
-		}
-		return $items;
-	}
-
-	/**
-	 * Map any accepted order word to the value Divi reads.
-	 *
-	 * @param mixed $order Input or stored order.
-	 * @return string "ascending" or "descending".
-	 */
-	public static function order( $order ) {
-		$order = strtolower( trim( (string) $order ) );
-		return in_array( $order, array( 'asc', 'ascending' ), true ) ? 'ascending' : 'descending';
+		return Saddle_Divi_Loop_Repair::normalize( $value );
 	}
 
 	/**
@@ -146,25 +91,49 @@ class Saddle_Divi_Loop {
 	 * @return array|WP_Error array( value, warnings ).
 	 */
 	public static function build( array $current, array $input, $replace, array $tree, $address ) {
-		$current = self::normalize( $current );
+		$current      = self::normalize( $current );
+		$current_type = isset( $current['queryType'] ) && is_string( $current['queryType'] ) ? $current['queryType'] : 'post_types';
 
-		$type = $replace ? 'post_types' : ( isset( $current['queryType'] ) ? (string) $current['queryType'] : 'post_types' );
+		$type = $replace ? 'post_types' : $current_type;
 		if ( isset( $input['query_type'] ) ) {
 			$type = self::query_type( $input );
 			if ( is_wp_error( $type ) ) {
 				return $type;
 			}
 		}
-		$type_changed = ! $replace && isset( $current['queryType'] ) && $current['queryType'] !== $type;
-		$base         = self::base_type( $type );
+		$base = self::base_type( $type );
 
-		$value = $current;
-		if ( $replace || $type_changed ) {
-			// A fresh config, or a new query type: the old sub types, sort
-			// and term filters belong to the old type, so they start over,
-			// as Divi's builder does when the query type changes.
-			$value = $replace ? array() : $current;
-			unset( $value['subTypes'], $value['orderBy'], $value['includePostWithSpecificTerms'], $value['excludePostWithSpecificTerms'] );
+		// A user loop lists the site's users on the page.
+		if ( 'user_roles' === $base && ! current_user_can( 'list_users' ) ) {
+			return new WP_Error(
+				'saddle_loop_needs_list_users',
+				__( 'A user loop shows the site\'s users on the page, so it needs an account that can list users. Ask an administrator to set it up.', 'saddle' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		$warnings = array();
+		$value    = $replace ? array() : $current;
+		if ( $replace || $current_type !== $type ) {
+			// A fresh config, or a new query type: what belonged to the old
+			// type starts over, as Divi's builder does when the type changes,
+			// and the filters of another loop family go with it.
+			$cleared = array(
+				'includePostWithSpecificTerms' => 'include_terms',
+				'excludePostWithSpecificTerms' => 'exclude_terms',
+			);
+			if ( self::family( $current_type ) !== self::family( $type ) ) {
+				$cleared = array_merge( $cleared, self::FAMILY_KEYS );
+			}
+			$reset = array();
+			foreach ( $cleared as $key => $param ) {
+				if ( ! empty( $value[ $key ] ) && 'off' !== $value[ $key ] && ! isset( $input[ $param ] ) ) {
+					$reset[] = $param;
+				}
+				unset( $value[ $key ] );
+			}
+			unset( $value['subTypes'], $value['orderBy'] );
+
 			$value['queryType'] = $type;
 			if ( isset( self::ORDER_BY[ $base ] ) ) {
 				$value['orderBy'] = self::ORDER_BY[ $base ][0];
@@ -174,13 +143,17 @@ class Saddle_Divi_Loop {
 				$value['postPerPage'] = 10;
 				$value['postOffset']  = 0;
 			}
-			$default = array(
-				'post_types'      => 'post',
-				'post_taxonomies' => 'category',
-			);
-			$items   = isset( $default[ $base ] ) && ! isset( $input['sub_types'] ) ? self::validate_sub_types( $base, array( $default[ $base ] ) ) : null;
-			if ( is_array( $items ) ) {
-				$value['subTypes'] = $items;
+			if ( isset( Saddle_Divi_Loop_Repair::DEFAULT_SUB_TYPES[ $base ] ) && ! isset( $input['sub_types'] ) ) {
+				$value['subTypes'] = array( Saddle_Divi_Loop_Repair::default_item( $base ) );
+			}
+			if ( $reset ) {
+				$warnings[] = sprintf(
+					/* translators: 1: old query type, 2: new query type, 3: list of parameter names. */
+					__( 'The loop changed from %1$s to %2$s, so these settings no longer apply and were cleared: %3$s. Pass them again if you still need them.', 'saddle' ),
+					$current_type,
+					$type,
+					implode( ', ', $reset )
+				);
 			}
 		}
 
@@ -194,19 +167,20 @@ class Saddle_Divi_Loop {
 		if ( is_wp_error( $applied ) ) {
 			return $applied;
 		}
-		list( $value, $warnings ) = $applied;
+		list( $value, $more ) = $applied;
 
 		if ( 'menus' === $base && empty( $value['subTypes'] ) ) {
 			return new WP_Error( 'saddle_loop_needs_menu', __( 'A menus loop needs the menu to repeat: pass its id or slug in sub_types.', 'saddle' ) );
 		}
 
 		$value['enable'] = 'on';
-		return array( $value, $warnings );
+		return array( $value, array_merge( $warnings, $more ) );
 	}
 
 	/**
 	 * Apply every passed parameter to the loop value. A list parameter
-	 * replaces the stored list; an empty list clears it.
+	 * replaces the stored list; an empty list clears it, except sub_types on
+	 * a post or taxonomy loop, which keeps its default.
 	 *
 	 * @param array  $value Loop value so far.
 	 * @param array  $input Ability input.
@@ -222,10 +196,19 @@ class Saddle_Divi_Loop {
 			if ( is_wp_error( $items ) ) {
 				return $items;
 			}
+			if ( ! $items && isset( Saddle_Divi_Loop_Repair::DEFAULT_SUB_TYPES[ $base ] ) ) {
+				$items      = array( Saddle_Divi_Loop_Repair::default_item( $base ) );
+				$warnings[] = sprintf(
+					/* translators: 1: default sub type, 2: list of valid values. */
+					__( 'A loop of this type needs at least one sub type: with none, Divi would list every one of them. SaddleWP used "%1$s". Values on this site: %2$s.', 'saddle' ),
+					$items[0]['value'],
+					implode( ', ', self::sub_type_choices( $base ) )
+				);
+			}
 			$value['subTypes'] = $items;
 		}
 		if ( isset( $input['order'] ) ) {
-			$value['order'] = self::order( $input['order'] );
+			$value['order'] = Saddle_Divi_Loop_Repair::order( $input['order'] );
 		}
 		if ( isset( $input['order_by'] ) && '' !== trim( (string) $input['order_by'] ) ) {
 			$known = isset( self::ORDER_BY[ $base ] ) ? self::ORDER_BY[ $base ] : array();
@@ -268,7 +251,7 @@ class Saddle_Divi_Loop {
 			'exclude_posts' => 'excludeSpecificPosts',
 		) as $in => $key ) {
 			if ( isset( $input[ $in ] ) && is_array( $input[ $in ] ) ) {
-				$items = self::id_items( $input[ $in ], 'user_roles' === $base );
+				$items = Saddle_Divi_Loop_Filters::id_items( $input[ $in ], 'user_roles' === $base );
 				if ( is_wp_error( $items ) ) {
 					return $items;
 				}
@@ -281,7 +264,7 @@ class Saddle_Divi_Loop {
 			'exclude_terms' => 'excludePostWithSpecificTerms',
 		) as $in => $key ) {
 			if ( isset( $input[ $in ] ) && is_array( $input[ $in ] ) ) {
-				$groups = self::term_groups( $input[ $in ] );
+				$groups = Saddle_Divi_Loop_Filters::term_groups( $input[ $in ] );
 				if ( is_wp_error( $groups ) ) {
 					return $groups;
 				}
@@ -290,7 +273,7 @@ class Saddle_Divi_Loop {
 		}
 
 		if ( isset( $input['meta_query'] ) && is_array( $input['meta_query'] ) ) {
-			$meta = self::meta_items( $input['meta_query'] );
+			$meta = Saddle_Divi_Loop_Filters::meta_items( $input['meta_query'], self::meta_type( $base ) );
 			if ( is_wp_error( $meta ) ) {
 				return $meta;
 			}
@@ -320,127 +303,6 @@ class Saddle_Divi_Loop {
 	}
 
 	/**
-	 * Post (or user) ids as Divi's {value, label} items.
-	 *
-	 * @param array $ids   Ids.
-	 * @param bool  $users True on a user loop.
-	 * @return array[]|WP_Error
-	 */
-	private static function id_items( array $ids, $users ) {
-		$items = array();
-		foreach ( $ids as $id ) {
-			$id    = (int) $id;
-			$label = null;
-			if ( $users ) {
-				$user  = $id > 0 && current_user_can( 'list_users' ) ? get_userdata( $id ) : false;
-				$label = $user ? $user->display_name : null;
-			} elseif ( $id > 0 && get_post( $id ) && current_user_can( 'read_post', $id ) ) {
-				$label = get_the_title( $id );
-			}
-			if ( null === $label ) {
-				return new WP_Error(
-					'saddle_bad_loop_post',
-					sprintf(
-						/* translators: %d: id. */
-						__( 'Item %d does not exist or you cannot read it. include_posts and exclude_posts take post ids (user ids on a user loop).', 'saddle' ),
-						$id
-					)
-				);
-			}
-			$items[] = array(
-				'value' => (string) $id,
-				'label' => wp_strip_all_tags( (string) $label ),
-			);
-		}
-		return $items;
-	}
-
-	/**
-	 * A {taxonomy: [term ids or slugs]} map as Divi's term filter groups.
-	 *
-	 * @param array $map Taxonomy => terms.
-	 * @return array[]|WP_Error
-	 */
-	private static function term_groups( array $map ) {
-		$groups = array();
-		foreach ( $map as $taxonomy => $terms ) {
-			$taxonomy = (string) $taxonomy;
-			if ( ! taxonomy_exists( $taxonomy ) || ! is_array( $terms ) ) {
-				return new WP_Error(
-					'saddle_bad_loop_term',
-					sprintf(
-						/* translators: %s: taxonomy. */
-						__( '"%s" is not a taxonomy on this site. include_terms and exclude_terms look like {"category": [12, "news"]}: a taxonomy, then term ids or slugs.', 'saddle' ),
-						$taxonomy
-					)
-				);
-			}
-			$options = array();
-			foreach ( $terms as $term ) {
-				$found = is_numeric( $term ) ? get_term( (int) $term, $taxonomy ) : get_term_by( 'slug', (string) $term, $taxonomy );
-				if ( ! $found || is_wp_error( $found ) ) {
-					return new WP_Error(
-						'saddle_bad_loop_term',
-						sprintf(
-							/* translators: 1: term id or slug, 2: taxonomy. */
-							__( 'No term "%1$s" in %2$s.', 'saddle' ),
-							(string) $term,
-							$taxonomy
-						)
-					);
-				}
-				$options[] = array(
-					'value' => (string) $found->term_id,
-					'label' => $found->name,
-				);
-			}
-			if ( $options ) {
-				$groups[] = array(
-					'categoryId'      => $taxonomy,
-					'categoryName'    => get_taxonomy( $taxonomy )->label,
-					'selectedOptions' => $options,
-				);
-			}
-		}
-		return $groups;
-	}
-
-	/**
-	 * Custom field conditions as Divi's meta query items.
-	 *
-	 * @param array $items List of {key, value, compare, type}.
-	 * @return array[]|WP_Error
-	 */
-	private static function meta_items( array $items ) {
-		$out = array();
-		foreach ( array_slice( array_values( $items ), 0, 10 ) as $item ) {
-			$key     = is_array( $item ) && isset( $item['key'] ) ? sanitize_text_field( (string) $item['key'] ) : '';
-			$compare = is_array( $item ) && isset( $item['compare'] ) ? strtoupper( trim( (string) $item['compare'] ) ) : '=';
-			$type    = is_array( $item ) && ! empty( $item['type'] ) ? strtoupper( trim( (string) $item['type'] ) ) : '';
-			$val     = is_array( $item ) && isset( $item['value'] ) && is_scalar( $item['value'] ) ? (string) $item['value'] : '';
-			$exists  = in_array( $compare, array( 'EXISTS', 'NOT EXISTS' ), true );
-			if ( '' === $key || ! in_array( $compare, self::META_COMPARE, true ) || ( '' !== $type && ! in_array( $type, self::META_TYPES, true ) ) || ( '' === $val && ! $exists ) ) {
-				return new WP_Error(
-					'saddle_bad_meta_query',
-					sprintf(
-						/* translators: 1: comparisons, 2: types. */
-						__( 'Each meta_query item needs a "key", a "value" (not needed for EXISTS and NOT EXISTS), and may set "compare" (%1$s) and "type" (%2$s).', 'saddle' ),
-						implode( ' ', self::META_COMPARE ),
-						implode( ' ', self::META_TYPES )
-					)
-				);
-			}
-			$out[] = array(
-				'metaKey'   => $key,
-				'metaValue' => sanitize_text_field( $val ),
-				'compare'   => $compare,
-				'type'      => $type,
-			);
-		}
-		return $out;
-	}
-
-	/**
 	 * The stored query type for the input's query_type.
 	 *
 	 * @param array $input Ability input.
@@ -452,7 +314,7 @@ class Saddle_Divi_Loop {
 			return new WP_Error( 'saddle_bad_query_type', __( 'Unknown loop query_type. Call divi-list-loop-query-types for the valid values.', 'saddle' ) );
 		}
 		if ( 'acf_repeater' !== $type ) {
-			return isset( self::ALIASES[ $type ] ) ? self::ALIASES[ $type ] : $type;
+			return isset( Saddle_Divi_Loop_Repair::ALIASES[ $type ] ) ? Saddle_Divi_Loop_Repair::ALIASES[ $type ] : $type;
 		}
 		$field = isset( $input['repeater_field'] ) ? (string) $input['repeater_field'] : '';
 		if ( ! preg_match( '/^[A-Za-z0-9_-]{1,64}$/', $field ) ) {
@@ -461,7 +323,10 @@ class Saddle_Divi_Loop {
 		if ( ! function_exists( 'acf_get_field_groups' ) ) {
 			return new WP_Error( 'saddle_no_acf', __( 'An acf_repeater loop needs Advanced Custom Fields with repeater fields, and it is not active on this site.', 'saddle' ) );
 		}
-		return 'repeater_' . $field;
+		// Divi lowercases the query type when it reads it (sanitize_key) and
+		// then finds the repeater by name without regard to case
+		// (DynamicContentACFUtils::_find_repeater_field_in_fields()).
+		return 'repeater_' . strtolower( $field );
 	}
 
 	/**
@@ -475,7 +340,64 @@ class Saddle_Divi_Loop {
 	}
 
 	/**
-	 * Validate sub types for a query family and return Divi's items.
+	 * What a loop type lists: posts, post_taxonomies, user_roles, menus or
+	 * repeater. post_types and current_page both list posts.
+	 *
+	 * @param string $type Stored query type.
+	 * @return string
+	 */
+	private static function family( $type ) {
+		$base = self::base_type( $type );
+		return in_array( $base, array( 'post_types', 'current_page' ), true ) ? 'posts' : $base;
+	}
+
+	/**
+	 * The object type a loop's custom field conditions read.
+	 *
+	 * @param string $base Query family.
+	 * @return string post, term or user.
+	 */
+	private static function meta_type( $base ) {
+		if ( 'post_taxonomies' === $base ) {
+			return 'term';
+		}
+		return 'user_roles' === $base ? 'user' : 'post';
+	}
+
+	/**
+	 * The sub types a loop of this type may name on this site: viewable post
+	 * types (not attachments), viewable taxonomies, roles, menu slugs.
+	 *
+	 * @param string $base Query family.
+	 * @return string[]
+	 */
+	public static function sub_type_choices( $base ) {
+		$out = array();
+		if ( 'post_types' === $base ) {
+			foreach ( get_post_types() as $name ) {
+				if ( 'attachment' !== $name && is_post_type_viewable( $name ) ) {
+					$out[] = $name;
+				}
+			}
+		} elseif ( 'post_taxonomies' === $base ) {
+			foreach ( get_taxonomies() as $name ) {
+				if ( is_taxonomy_viewable( $name ) ) {
+					$out[] = $name;
+				}
+			}
+		} elseif ( 'user_roles' === $base ) {
+			$out = array_keys( wp_roles()->roles );
+		} elseif ( 'menus' === $base ) {
+			foreach ( wp_get_nav_menus() as $menu ) {
+				$out[] = $menu->slug;
+			}
+		}
+		return array_values( array_map( 'strval', $out ) );
+	}
+
+	/**
+	 * Validate sub types for a query family and return Divi's items. Only
+	 * viewable post types and taxonomies can be looped.
 	 *
 	 * @param string   $base  Query family.
 	 * @param string[] $names Post types, taxonomies, roles, or menu ids/slugs.
@@ -489,9 +411,9 @@ class Saddle_Divi_Loop {
 		foreach ( $names as $name ) {
 			$name  = trim( (string) $name );
 			$label = null;
-			if ( 'post_types' === $base && post_type_exists( $name ) ) {
+			if ( 'post_types' === $base && 'attachment' !== $name && post_type_exists( $name ) && is_post_type_viewable( $name ) ) {
 				$label = get_post_type_object( $name )->labels->name;
-			} elseif ( 'post_taxonomies' === $base && taxonomy_exists( $name ) ) {
+			} elseif ( 'post_taxonomies' === $base && taxonomy_exists( $name ) && is_taxonomy_viewable( $name ) ) {
 				$label = get_taxonomy( $name )->label;
 			} elseif ( 'user_roles' === $base && wp_roles()->is_role( $name ) ) {
 				$label = translate_user_role( wp_roles()->roles[ $name ]['name'] );
@@ -506,10 +428,11 @@ class Saddle_Divi_Loop {
 				return new WP_Error(
 					'saddle_bad_sub_type',
 					sprintf(
-						/* translators: 1: the value given, 2: the query type. */
-						__( '"%1$s" is not a valid sub type for a %2$s loop on this site. Call divi-list-loop-query-types for the valid values.', 'saddle' ),
+						/* translators: 1: the value given, 2: the query type, 3: list of valid values. */
+						__( '"%1$s" is not a sub type a %2$s loop can use on this site. Valid values: %3$s.', 'saddle' ),
 						$name,
-						$base
+						$base,
+						implode( ', ', self::sub_type_choices( $base ) )
 					)
 				);
 			}
@@ -576,20 +499,8 @@ class Saddle_Divi_Loop {
 	 * @return bool|null True or false from its module.json; null when there is none.
 	 */
 	public static function supports_loop( $type ) {
-		static $memo = array();
-		$index       = Saddle_Divi_Schema::index();
-		if ( ! isset( $index[ $type ] ) ) {
-			return null;
-		}
-		$file = $index[ $type ];
-		if ( ! array_key_exists( $file, $memo ) ) {
-			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents, WordPress.PHP.NoSilencedErrors.Discouraged -- A module.json bundled with the theme or an active plugin, read-only, the same file Saddle_Divi_Schema reads.
-			$json     = json_decode( (string) @file_get_contents( $file ), true );
-			$advanced = isset( $json['attributes']['module']['settings']['advanced'] ) ? $json['attributes']['module']['settings']['advanced'] : null;
-
-			$memo[ $file ] = is_array( $json ) ? ( is_array( $advanced ) && array_key_exists( 'loop', $advanced ) ) : null;
-		}
-		return $memo[ $file ];
+		$summary = Saddle_Divi_Schema::summary( $type );
+		return null === $summary ? null : ! empty( $summary['loop'] );
 	}
 
 	/**
@@ -626,13 +537,23 @@ class Saddle_Divi_Loop {
 			}
 		}
 
+		if ( ! $around ) {
+			return new WP_Error(
+				'saddle_loop_not_supported',
+				sprintf(
+					/* translators: %s: module type. */
+					__( '%s does not offer a loop: its module.json has no loop setting, so Divi\'s builder could not show or turn off a loop on it. If it runs its own query, use its own settings (divi-get-module-schema). To repeat it, add a group or column around it and put the loop there.', 'saddle' ),
+					$type
+				)
+			);
+		}
 		return new WP_Error(
 			'saddle_loop_not_supported',
 			sprintf(
 				/* translators: 1: module type, 2: list of "address (type)" entries. */
 				__( '%1$s does not offer a loop: its module.json has no loop setting, so Divi\'s builder could not show or turn off a loop on it. If it runs its own query, use its own settings (divi-get-module-schema). To repeat it, put the loop on a container around it that can loop: %2$s.', 'saddle' ),
 				$type,
-				$around ? implode( ', ', $around ) : __( 'none found on this page; add a group or column around it', 'saddle' )
+				implode( ', ', $around )
 			)
 		);
 	}

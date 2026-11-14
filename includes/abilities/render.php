@@ -26,7 +26,7 @@ function saddle_register_render_abilities() {
 		'saddle/render-node',
 		array(
 			'label'               => __( 'Render a node', 'saddle' ),
-			'description'         => __( 'Shows what a page node actually looks like from its SAVED state: effective styles (colors, padding, font size, radius — presets and global tokens resolved to real values) and its rendered HTML. Read-only. Call with an "address" from get-blocks/divi-get-page to inspect one node after building or editing it; call without an address for a whole-page section outline (address, type, first text, key styles per section) and then drill into sections by address. Use it as your eyes: build, render, judge, fix.', 'saddle' ),
+			'description'         => __( 'Shows what a page node actually looks like from its SAVED state: effective styles (colors, padding, font size, radius, with presets and global tokens resolved to real values) and its rendered HTML. On Divi pages the styles also carry "tablet", "phone" and "hover" keys, each listing only what differs from desktop on that screen or state, inherited the way Divi inherits. Read-only. Call with an "address" from get-blocks/divi-get-page to inspect one node after building or editing it; call without an address for a whole-page section outline (address, type, first text, key styles per section) and then drill into sections by address. Use it as your eyes: build, render, judge, fix. It is not a browser render: for real pixels open saddle/get-preview-url in your own browser.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',

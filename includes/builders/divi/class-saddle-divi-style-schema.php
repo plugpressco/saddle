@@ -80,7 +80,7 @@ class Saddle_Divi_Style_Schema {
 			'css'          => Saddle_Divi_Style_Advanced::custom_css( $json ),
 			'breakpoints'  => Saddle_Divi_Style::breakpoints(),
 			'states'       => Saddle_Divi_Style::states_note(),
-			'note'         => __( 'Universal styling. Call again with "group" (e.g. "font", or "title.font" for one element) for its fields and a correct example. Write with divi-edit-module raw "attrs" at <path>.<field>. A module\'s own paths never transfer to another module. Non-style options of a module are in divi-get-module-schema settings.', 'saddle' ),
+			'note'         => __( 'Universal styling. Call again with "group" (e.g. "font", or "title.font" for one element) for its fields and a correct example. Write in a node\'s "attrs" (divi-set-page, divi-add-module, divi-edit-module) at the path without its ".desktop.value" ending: { "module.decoration.spacing": {"padding": {"top": "64px"}} } is the desktop value; end the key in "@tablet" or "@phone" and/or ":hover" or ":sticky" for another screen size or state. A module\'s own paths never transfer to another module. Non-style options of a module are in divi-get-module-schema settings.', 'saddle' ),
 		);
 	}
 
@@ -185,18 +185,29 @@ class Saddle_Divi_Style_Schema {
 		if ( 'conditions' === $group ) {
 			return Saddle_Divi_Style::note( 'conditions' );
 		}
+		$base = (string) preg_replace( '/\.desktop\.value$/', '', (string) $path );
 		if ( in_array( $group, Saddle_Divi_Style::SCALAR_GROUPS, true ) || ( null !== $example && ! is_array( $example ) ) ) {
-			$sample = sprintf( '{ "%s": %s }', $path, wp_json_encode( null === $example ? 'on' : $example ) );
+			$value  = wp_json_encode( null === $example ? 'on' : $example );
+			$sample = sprintf( '{ "%s": %s }', $base, $value );
+			$phone  = sprintf( '{ "%s@phone": %s }', $base, $value );
+			$full   = sprintf( '{ "%s": %s }', $path, $value );
 		} elseif ( is_array( $example ) && $example ) {
 			$field  = (string) key( $example );
-			$sample = sprintf( '{ "%s.%s": %s }', $path, $field, wp_json_encode( reset( $example ) ) );
+			$value  = wp_json_encode( reset( $example ) );
+			$sample = sprintf( '{ "%s": { "%s": %s } }', $base, $field, $value );
+			$phone  = sprintf( '{ "%s@phone": { "%s": %s } }', $base, $field, $value );
+			$full   = sprintf( '{ "%s.%s": %s }', $path, $field, $value );
 		} else {
-			$sample = sprintf( '{ "%s.<field>": <value> }', $path );
+			$sample = sprintf( '{ "%s": { "<field>": <value> } }', $base );
+			$phone  = sprintf( '{ "%s@phone": { "<field>": <value> } }', $base );
+			$full   = sprintf( '{ "%s.<field>": <value> }', $path );
 		}
 		return sprintf(
-			/* translators: %s: an example attrs object. */
-			__( 'Set with divi-edit-module by passing the dotted path as an attrs KEY, e.g. attrs = %s. SaddleWP expands the dotted key into the nested object Divi reads. Omit to inherit the site design. "example" shows a correct value SHAPE: some fields take objects, not single values.', 'saddle' ),
-			$sample
+			/* translators: 1: an example attrs object, 2: the same for phones, 3: the same with the full path. */
+			__( 'Write it in a node\'s "attrs" (divi-set-page, divi-add-module, divi-edit-module) with the path as the key and the value\'s fields: attrs = %1$s is the desktop value. For another screen size or state end the key in "@tablet" or "@phone" and/or ":hover" or ":sticky": %2$s. The full dotted path still works: %3$s. Omit to inherit the site design. "example" shows a correct value SHAPE: some fields take objects, not single values.', 'saddle' ),
+			$sample,
+			$phone,
+			$full
 		);
 	}
 

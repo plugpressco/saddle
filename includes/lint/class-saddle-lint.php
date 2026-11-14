@@ -27,11 +27,18 @@ class Saddle_Lint {
 	const TITLE_MAX = 60;
 
 	/**
+	 * The lowest severity: design advice a page may follow or not (one main
+	 * action per section, two font families). It shows in lint-page and
+	 * verify-page but is meant to cost no score points.
+	 */
+	const SEVERITY_NOTE = 'note';
+
+	/**
 	 * Lint a block tree.
 	 *
 	 * @param array[]              $tree     Parsed block tree (Saddle_Tree::parse()).
 	 * @param Saddle_Lint_Accessor $accessor Builder accessor.
-	 * @return array[] Violations: { address, rule, severity(error|warn),
+	 * @return array[] Violations: { address, rule, severity(error|warn|note),
 	 *                 message, fix_hint }, in document order.
 	 */
 	public static function run( array $tree, Saddle_Lint_Accessor $accessor ) {
@@ -54,11 +61,12 @@ class Saddle_Lint {
 				continue;
 			}
 			foreach ( (array) $rule->check( $nodes, $accessor ) as $violation ) {
+				$severity     = isset( $violation['severity'] ) ? (string) $violation['severity'] : '';
 				$violations[] = array(
 					'address'  => isset( $violation['address'] ) ? (string) $violation['address'] : '',
 					'rule'     => $rule->id(),
-					'severity' => isset( $violation['severity'] ) && Saddle_Lint_Rule::SEVERITY_ERROR === $violation['severity']
-						? Saddle_Lint_Rule::SEVERITY_ERROR
+					'severity' => in_array( $severity, array( Saddle_Lint_Rule::SEVERITY_ERROR, self::SEVERITY_NOTE ), true )
+						? $severity
 						: Saddle_Lint_Rule::SEVERITY_WARN,
 					'message'  => isset( $violation['message'] ) ? (string) $violation['message'] : '',
 					'fix_hint' => isset( $violation['fix_hint'] ) ? (string) $violation['fix_hint'] : '',
@@ -145,6 +153,16 @@ class Saddle_Lint {
 			$rules[] = new Saddle_Lint_Rule_Theme_Css_Class();
 			$rules[] = new Saddle_Lint_Rule_Unknown_Module();
 			$rules[] = new Saddle_Divi_Lint_Rule_Hover_Contrast();
+			$rules[] = new Saddle_Lint_Rule_One_Main_Action();
+			$rules[] = new Saddle_Lint_Rule_Font_Families();
+			$rules[] = new Saddle_Lint_Rule_Button_Hover();
+			$rules[] = new Saddle_Lint_Rule_Vanishing_Fill();
+			$rules[] = new Saddle_Lint_Rule_Emoji_Icon();
+			$rules[] = new Saddle_Lint_Rule_Code_Layout();
+			$rules[] = new Saddle_Lint_Rule_Nested_Card();
+			$rules[] = new Saddle_Lint_Rule_Grid_Phone_Columns();
+			$rules[] = new Saddle_Lint_Rule_Collapsed_Column();
+			$rules[] = new Saddle_Lint_Rule_Repeated_Row_Layout();
 		}
 
 		return $rules;

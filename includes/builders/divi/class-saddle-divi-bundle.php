@@ -209,8 +209,9 @@ class Saddle_Divi_Bundle {
 	}
 
 	/**
-	 * Everything that could stale the bundle, hashed: Divi's version, the
-	 * active plugin set, and the design-system content itself.
+	 * Everything that could stale the bundle, hashed: Divi's version,
+	 * SaddleWP's own version (it decides the bundle's shape), the active
+	 * plugin set, and the design-system content itself.
 	 *
 	 * @return string
 	 */

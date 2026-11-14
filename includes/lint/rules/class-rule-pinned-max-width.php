@@ -66,6 +66,9 @@ class Saddle_Lint_Rule_Pinned_Max_Width extends Saddle_Lint_Rule {
 				&& 'auto' === strtolower( trim( (string) $margin['right'] ) ) ) {
 				continue;
 			}
+			if ( $this->under_left_heading( $node, $nodes, $accessor ) ) {
+				continue;
+			}
 
 			$violations[] = $this->violation(
 				$node['address'],
@@ -80,5 +83,53 @@ class Saddle_Lint_Rule_Pinned_Max_Width extends Saddle_Lint_Rule {
 			);
 		}
 		return $violations;
+	}
+
+	/**
+	 * A left-aligned lede: the capped module sits directly under a heading,
+	 * and nothing in the heading, the module or the column centers. Its left
+	 * edge then lines up with the heading's, which is the design, not a
+	 * dead right half. (A false positive recorded live on 2026-11-09.)
+	 *
+	 * @param array                     $node     Flat node entry.
+	 * @param array[]                   $nodes    Flat node list.
+	 * @param Saddle_Divi_Lint_Accessor $accessor Divi accessor.
+	 * @return bool
+	 */
+	private function under_left_heading( array $node, array $nodes, Saddle_Divi_Lint_Accessor $accessor ) {
+		$siblings = $this->children( $nodes, $node['parent'] );
+		$previous = null;
+		foreach ( $siblings as $sibling ) {
+			if ( $sibling['address'] === $node['address'] ) {
+				break;
+			}
+			$previous = $sibling;
+		}
+		if ( ! $previous || null === $accessor->heading_level( $previous['block'] ) ) {
+			return false;
+		}
+
+		$text = new Saddle_Divi_Text_Facts();
+		foreach ( array( $previous['block'], $node['block'] ) as $block ) {
+			if ( in_array( $text->text_align( $block ), array( 'center', 'right' ), true ) ) {
+				return false;
+			}
+		}
+		$heading_align = $accessor->alignment( $previous['block'] );
+		if ( null !== $heading_align && 'left' !== $heading_align ) {
+			return false;
+		}
+
+		foreach ( $nodes as $parent ) {
+			if ( $parent['address'] !== $node['parent'] ) {
+				continue;
+			}
+			$facts = new Saddle_Divi_Lint_Facts();
+			$items = $facts->value_of( $parent['block'], array( 'module', 'decoration', 'layout' ), 'alignItems' );
+			if ( in_array( $items, array( 'center', 'flex-end', 'end' ), true ) || in_array( $text->text_align( $parent['block'] ), array( 'center', 'right' ), true ) ) {
+				return false;
+			}
+		}
+		return true;
 	}
 }

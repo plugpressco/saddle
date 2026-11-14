@@ -17,13 +17,13 @@ defined( 'ABSPATH' ) || exit;
  *
  *   [divi/placeholder >] divi/section > divi/row > divi/column > modules
  *
- * observed on real Divi 5.8 pages. Content modules may nest child modules
- * (Divi's own slider/accordion and third-party parent/child pairs like
- * divitorque/accordion > accordion-item); what they may never contain is
- * structural chrome or a foreign (raw editor) block. Invalid structure is
- * REJECTED, never repaired — the page must stay Visual-Builder-editable at
- * every point in time, and an agent that produced bad structure needs the
- * error, not a silent fix.
+ * plus what Divi 5 also allows: a row or a group inside a column, a group
+ * inside a group, groups in a group carousel, modules inside a module that
+ * takes them, specialty and full-width sections, and Components placed as
+ * the block they stand for (Saddle_Divi_Nesting holds Divi's own rule).
+ * Invalid structure is REJECTED, never repaired — the page must stay
+ * Visual-Builder-editable at every point in time, and an agent that
+ * produced bad structure needs the error, not a silent fix.
  */
 class Saddle_Divi_Tree extends Saddle_Tree {
 
@@ -33,18 +33,18 @@ class Saddle_Divi_Tree extends Saddle_Tree {
 	 * count. The one place add-module / move-module / apply-library-item share
 	 * their "where does the new node go" logic.
 	 *
-	 * @param array      $tree     Block tree to insert into.
-	 * @param string     $parent   Parent address ('' = the root list).
-	 * @param int|string $position Requested position; negative appends.
+	 * @param array      $tree           Block tree to insert into.
+	 * @param string     $parent_address Parent address ('' = the root list).
+	 * @param int|string $position       Requested position; negative appends.
 	 * @return int|WP_Error Clamped insert index, or WP_Error if the parent address doesn't exist.
 	 */
-	public static function resolve_insert_position( array $tree, $parent, $position ) {
-		if ( '' === $parent ) {
+	public static function resolve_insert_position( array $tree, $parent_address, $position ) {
+		if ( '' === $parent_address ) {
 			$count = count( $tree );
 		} else {
-			$node = self::get( $tree, $parent );
+			$node = self::get( $tree, $parent_address );
 			if ( ! $node ) {
-				return new WP_Error( 'saddle_bad_address', sprintf( /* translators: %s: node address. */ __( 'No module at address %s.', 'saddle' ), $parent ) );
+				return new WP_Error( 'saddle_bad_address', sprintf( /* translators: %s: node address. */ __( 'No module at address %s.', 'saddle' ), $parent_address ) );
 			}
 			$count = count( $node['innerBlocks'] );
 		}
@@ -70,15 +70,19 @@ class Saddle_Divi_Tree extends Saddle_Tree {
 
 	/**
 	 * Structural containment rules: container type => allowed child types,
-	 * with '*' meaning "any non-structural module".
+	 * with '*' meaning "any module that is not page structure (section, row,
+	 * column), not a group and not a child module (an accordion item, a
+	 * slide)". Other modules follow their module.json (Saddle_Divi_Nesting).
 	 *
 	 * @return array<string, string[]>
 	 */
 	public static function structure() {
 		/**
-		 * Filter the Divi containment rules (v0.1: [placeholder >] section >
-		 * row > column > leaf — the placeholder wrapper observed on real
-		 * Divi 5.8 pages).
+		 * Filter the Divi containment rules: [placeholder >] section > row >
+		 * column > module, a nested row or a group in a column or group,
+		 * groups in a group carousel (Divi 5.10.1's Visual Builder rule).
+		 * A section's own type (full width, specialty) and a specialty
+		 * column are judged in code, after this map.
 		 *
 		 * @param array $rules Map of container block type => allowed child types.
 		 */
@@ -89,7 +93,12 @@ class Saddle_Divi_Tree extends Saddle_Tree {
 				'divi/section'           => array( 'divi/row' ),
 				'divi/fullwidth-section' => array( '*' ),
 				'divi/row'               => array( 'divi/column' ),
-				'divi/column'            => array( '*' ),
+				'divi/row-inner'         => array( 'divi/column-inner' ),
+				'divi/column'            => array( 'divi/row', 'divi/group', '*' ),
+				'divi/column-inner'      => array( 'divi/group', '*' ),
+				'divi/group'             => array( 'divi/row', 'divi/group', '*' ),
+				'divi/group-carousel'    => array( 'divi/group' ),
+				'divi/global-slot'       => array( 'divi/row', 'divi/group', '*' ),
 			)
 		);
 	}
@@ -123,7 +132,8 @@ class Saddle_Divi_Tree extends Saddle_Tree {
 		$roots      = self::root_types();
 
 		foreach ( $tree as $i => $block ) {
-			if ( ! in_array( (string) $block['blockName'], $roots, true ) ) {
+			$type = Saddle_Divi_Nesting::effective_type( $block );
+			if ( null !== $type && ! in_array( $type, $roots, true ) ) {
 				$violations[] = array(
 					'address' => (string) $i,
 					'type'    => (string) $block['blockName'],
@@ -145,22 +155,20 @@ class Saddle_Divi_Tree extends Saddle_Tree {
 	}
 
 	/**
-	 * Recursively validate a block's children.
-	 *
-	 * Two regimes: STRUCTURAL blocks (placeholder/section/row/column) follow
-	 * the containment map exactly. Everything else is a content module, and
-	 * modules MAY nest child modules — what a module may never contain is
-	 * structural chrome or a foreign (raw editor) block.
+	 * Recursively validate a block's children against Divi's nesting rule
+	 * (Saddle_Divi_Nesting). A Component's own children are not judged:
+	 * Divi renders the Library copy, and the Visual Builder stores a copy
+	 * of the Component's tree inside it.
 	 *
 	 * @param array  $block      Parent block.
 	 * @param string $address    Its address.
 	 * @param array  $violations Accumulator (by reference).
 	 */
 	private static function validate_children( array $block, $address, array &$violations ) {
-		$rules      = self::structure();
-		$name       = (string) $block['blockName'];
-		$allowed    = isset( $rules[ $name ] ) ? $rules[ $name ] : null;
-		$structural = array_unique( array_merge( array_keys( $rules ), self::root_types() ) );
+		$name = (string) $block['blockName'];
+		if ( 'divi/global-layout' === $name ) {
+			return;
+		}
 
 		foreach ( $block['innerBlocks'] as $i => $child ) {
 			$child_name    = (string) $child['blockName'];
@@ -176,30 +184,20 @@ class Saddle_Divi_Tree extends Saddle_Tree {
 				continue;
 			}
 
-			if ( null === $allowed ) {
-				// $name is a content module: child modules are fine, the
-				// structural chrome is not.
-				if ( in_array( $child_name, $structural, true ) ) {
-					$violations[] = array(
-						'address' => $child_address,
-						'type'    => $child_name,
-						'problem' => sprintf( '%1$s cannot be placed inside the module %2$s.', $child_name, $name ),
-					);
-					continue;
-				}
-			} else {
-				$is_structural = in_array( $child_name, $structural, true );
-				$fits          = in_array( $child_name, $allowed, true )
-					|| ( in_array( '*', $allowed, true ) && ! $is_structural );
-
-				if ( ! $fits ) {
-					$violations[] = array(
-						'address' => $child_address,
-						'type'    => $child_name,
-						'problem' => sprintf( '%1$s cannot be placed inside %2$s.', $child_name, $name ),
-					);
-					continue;
-				}
+			$verdict = Saddle_Divi_Nesting::accepts( $block, $child );
+			if ( true !== $verdict ) {
+				$violations[] = array(
+					'address' => $child_address,
+					'type'    => $child_name,
+					'problem' => sprintf(
+						/* translators: 1: child module type, 2: parent module type, 3: what the parent holds. */
+						__( '%1$s cannot be placed inside %2$s. %2$s holds: %3$s.', 'saddle' ),
+						$child_name,
+						$name,
+						$verdict
+					),
+				);
+				continue;
 			}
 
 			self::validate_children( $child, $child_address, $violations );
