@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-13T19:53:01+00:00\n"
+"POT-Creation-Date: 2026-11-14T01:42:31+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -5497,8 +5497,8 @@ msgid "Agents connect from the site address and you approve them on a consent sc
 msgstr ""
 
 #: includes/class-saddle-core-settings.php:107
-#: admin/src/components/SignInCard.jsx:226
-#: admin/src/components/SignInCard.jsx:238
+#: admin/src/components/SignInCard.jsx:232
+#: admin/src/components/SignInCard.jsx:244
 msgid "Let agents register themselves"
 msgstr ""
 
@@ -7956,7 +7956,7 @@ msgid "Mark as expected"
 msgstr ""
 
 #: admin/src/App.jsx:579
-#: admin/src/components/FirstRun.jsx:1037
+#: admin/src/components/FirstRun.jsx:1160
 msgid "Welcome"
 msgstr ""
 
@@ -8116,7 +8116,7 @@ msgid "Media"
 msgstr ""
 
 #: admin/src/approvals-logic.js:260
-#: admin/src/components/SignInCard.jsx:107
+#: admin/src/components/SignInCard.jsx:113
 msgid "Yes"
 msgstr ""
 
@@ -8273,7 +8273,7 @@ msgstr ""
 
 #: admin/src/components/AddonTile.jsx:82
 #: admin/src/components/AnalyticsOffer.jsx:126
-#: admin/src/components/FirstRun.jsx:682
+#: admin/src/components/FirstRun.jsx:780
 msgid "Open Plugins"
 msgstr ""
 
@@ -8294,7 +8294,7 @@ msgid "Your AI agent can read the numbers"
 msgstr ""
 
 #: admin/src/components/AnalyticsOffer.jsx:48
-#: admin/src/components/FirstRun.jsx:728
+#: admin/src/components/FirstRun.jsx:826
 msgid "SaddleWP Analytics is on."
 msgstr ""
 
@@ -8319,7 +8319,7 @@ msgid "See it on WordPress.org"
 msgstr ""
 
 #: admin/src/components/AnalyticsOffer.jsx:83
-#: admin/src/components/ConnectWays.jsx:83
+#: admin/src/components/ConnectWays.jsx:92
 #: admin/src/components/GetPro.jsx:28
 #: admin/src/components/Services.jsx:245
 msgid "(opens in a new tab)"
@@ -8502,8 +8502,8 @@ msgid "Connect %s"
 msgstr ""
 
 #: admin/src/components/ConnectApps.jsx:665
-#: admin/src/components/SignInCard.jsx:186
-#: admin/src/screens.jsx:332
+#: admin/src/components/SignInCard.jsx:192
+#: admin/src/screens.jsx:343
 msgid "Loading"
 msgstr ""
 
@@ -8691,7 +8691,7 @@ msgstr ""
 
 #. translators: %s: the agent name.
 #: admin/src/components/ConnectedClients.jsx:420
-#: admin/src/components/FirstRun.jsx:506
+#: admin/src/components/FirstRun.jsx:604
 #, js-format
 msgid "What %s can do"
 msgstr ""
@@ -8820,45 +8820,106 @@ msgstr ""
 msgid "nginx: add to the PHP location block"
 msgstr ""
 
-#: admin/src/components/ConnectWays.jsx:143
-msgid "Connected to your SaddleWP account"
+#: admin/src/components/ConnectWays.jsx:209
+msgid "No account?"
 msgstr ""
 
-#: admin/src/components/ConnectWays.jsx:162
-msgid "Connect with your SaddleWP account"
+#: admin/src/components/ConnectWays.jsx:211
+#: admin/src/components/FirstRun.jsx:347
+msgid "Connect directly instead"
 msgstr ""
 
-#: admin/src/components/ConnectWays.jsx:173
-msgid "All your sites"
-msgstr ""
-
-#: admin/src/components/ConnectWays.jsx:176
-msgid "SaddleWP account"
-msgstr ""
-
-#: admin/src/components/ConnectWays.jsx:183
-msgid "Your SaddleWP account opened in a new tab, with this site’s address filled in. Approve it on this site when it asks."
-msgstr ""
-
-#: admin/src/components/ConnectWays.jsx:187
-msgid "One address connects Claude, ChatGPT or Cursor to every site you run. Updates in one click and uptime alerts too. Free up to 500 AI agent calls a month."
-msgstr ""
-
-#: admin/src/components/ConnectWays.jsx:196
-#: admin/src/components/FirstRun.jsx:1067
+#: admin/src/components/ConnectWays.jsx:233
 msgid "Just this site"
 msgstr ""
 
-#: admin/src/components/ConnectWays.jsx:199
+#: admin/src/components/ConnectWays.jsx:236
+msgid "This site runs on your computer, so a SaddleWP account can’t reach it. Connect your AI agent straight to its own address. Free, never counted."
+msgstr ""
+
+#: admin/src/components/ConnectWays.jsx:256
+#: admin/src/components/ConnectWays.jsx:483
+#: admin/src/components/FirstRun.jsx:1202
+msgid "Connect directly"
+msgstr ""
+
+#: admin/src/components/ConnectWays.jsx:268
+msgid "One setting first"
+msgstr ""
+
+#: admin/src/components/ConnectWays.jsx:271
+msgid "AI agents need pretty permalinks to sign in. Choose Post name in Settings → Permalinks, then come back."
+msgstr ""
+
+#: admin/src/components/ConnectWays.jsx:285
+msgid "Open Permalinks"
+msgstr ""
+
+#: admin/src/components/ConnectWays.jsx:300
+msgid "HTTPS first"
+msgstr ""
+
+#: admin/src/components/ConnectWays.jsx:303
+msgid "This site has no HTTPS yet, so AI agents can’t sign in to it safely. Ask your host to turn on HTTPS, then come back."
+msgstr ""
+
+#: admin/src/components/ConnectWays.jsx:335
+#: admin/src/components/FirstRun.jsx:1049
+msgid "Could not turn on sign-in for agents."
+msgstr ""
+
+#: admin/src/components/ConnectWays.jsx:345
+msgid "Connected to your SaddleWP account"
+msgstr ""
+
+#: admin/src/components/ConnectWays.jsx:357
+#: admin/src/components/FirstRun.jsx:344
+msgid "Open my SaddleWP account again"
+msgstr ""
+
+#: admin/src/components/ConnectWays.jsx:358
+#: admin/src/components/ConnectWays.jsx:442
+#: admin/src/components/FirstRun.jsx:283
 msgid "Connect this site"
 msgstr ""
 
-#: admin/src/components/ConnectWays.jsx:204
-msgid "Connect your AI agent straight to this site’s own address. Free, never counted."
+#: admin/src/components/ConnectWays.jsx:363
+#: admin/src/components/ConnectWays.jsx:446
+msgid "Opens your SaddleWP account in a new tab."
 msgstr ""
 
-#: admin/src/components/ConnectWays.jsx:217
-#: admin/src/components/ConnectWays.jsx:231
+#: admin/src/components/ConnectWays.jsx:367
+#: admin/src/components/ConnectWays.jsx:450
+msgid "This turns on sign-in for agents here, then opens your SaddleWP account in a new tab."
+msgstr ""
+
+#: admin/src/components/ConnectWays.jsx:381
+#: admin/src/components/ConnectWays.jsx:425
+msgid "Your SaddleWP account"
+msgstr ""
+
+#: admin/src/components/ConnectWays.jsx:384
+#: admin/src/components/ConnectWays.jsx:428
+#: admin/src/get-pro-logic.js:64
+msgid "Free"
+msgstr ""
+
+#: admin/src/components/ConnectWays.jsx:390
+#: admin/src/components/FirstRun.jsx:295
+msgid "Your SaddleWP account opened in a new tab. Sign up or log in there, then approve this site when it asks."
+msgstr ""
+
+#: admin/src/components/ConnectWays.jsx:394
+#: admin/src/components/ConnectWays.jsx:433
+msgid "One address for Claude, ChatGPT, Cursor and other AI agents. Free for one site, up to 500 AI agent calls a month."
+msgstr ""
+
+#: admin/src/components/ConnectWays.jsx:486
+msgid "Your AI agent talks to this site’s own address. No account, never counted."
+msgstr ""
+
+#: admin/src/components/ConnectWays.jsx:551
+#: admin/src/components/ConnectWays.jsx:573
 msgid "Connect your AI agent"
 msgstr ""
 
@@ -8949,44 +9010,44 @@ msgstr ""
 msgid "This site runs on a local address, so the agent must run on this same computer to reach it."
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:82
+#: admin/src/components/FirstRun.jsx:85
 msgid "Pages are built with Divi 5, and your AI can edit them module by module."
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:87
+#: admin/src/components/FirstRun.jsx:90
 msgid "It’s a block theme, so your AI can edit pages, templates and patterns."
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:92
+#: admin/src/components/FirstRun.jsx:95
 msgid "Your AI can edit your pages and posts."
 msgstr ""
 
 #. translators: %s: site name.
-#: admin/src/components/FirstRun.jsx:98
+#: admin/src/components/FirstRun.jsx:101
 #, js-format
 msgid "I had a quick look around %s."
 msgstr ""
 
 #. translators: %s: SEO plugin name.
-#: admin/src/components/FirstRun.jsx:107
+#: admin/src/components/FirstRun.jsx:110
 #, js-format
 msgid "%s is active, so your AI can write titles and descriptions too."
 msgstr ""
 
 #. translators: %d: number of updates.
-#: admin/src/components/FirstRun.jsx:120
+#: admin/src/components/FirstRun.jsx:123
 #, js-format
 msgid "%d update is waiting."
 msgid_plural "%d updates are waiting."
 msgstr[0] ""
 msgstr[1] ""
 
-#: admin/src/components/FirstRun.jsx:128
+#: admin/src/components/FirstRun.jsx:131
 msgid "Everything is up to date."
 msgstr ""
 
 #. translators: %d: number of images.
-#: admin/src/components/FirstRun.jsx:136
+#: admin/src/components/FirstRun.jsx:139
 #, js-format
 msgid "%d image has no alt text."
 msgid_plural "%d images have no alt text."
@@ -8994,7 +9055,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of pages and posts.
-#: admin/src/components/FirstRun.jsx:150
+#: admin/src/components/FirstRun.jsx:153
 #, js-format
 msgid "%d page or post has no search description of its own."
 msgid_plural "%d pages and posts have no search description of their own."
@@ -9002,215 +9063,231 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: one or two sentences, e.g. "12 images have no alt text."
-#: admin/src/components/FirstRun.jsx:166
+#: admin/src/components/FirstRun.jsx:169
 #, js-format
 msgid "Something your AI could start with: %s"
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:190
+#: admin/src/components/FirstRun.jsx:193
 msgid "A security layer at your host answered instead of WordPress. Reload, and if it keeps happening, ask your host to allow the WordPress REST API for signed-in administrators."
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:220
+#: admin/src/components/FirstRun.jsx:223
 msgid "SaddleWP is typing"
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:279
-#: admin/src/components/FirstRun.jsx:1070
+#: admin/src/components/FirstRun.jsx:288
+msgid "Sign-in for agents is on."
+msgstr ""
+
+#: admin/src/components/FirstRun.jsx:306
+msgid "Connected to your SaddleWP account."
+msgstr ""
+
+#: admin/src/components/FirstRun.jsx:312
+msgid "Your account shows how to add SaddleWP to ChatGPT, Claude or another AI agent. Do that in its tab when you’re ready."
+msgstr ""
+
+#: admin/src/components/FirstRun.jsx:332
+msgid "I’ll know the moment your account connects…"
+msgstr ""
+
+#: admin/src/components/FirstRun.jsx:377
+#: admin/src/components/FirstRun.jsx:1205
 msgid "Which AI do you use?"
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:300
+#: admin/src/components/FirstRun.jsx:398
 msgid "More…"
 msgstr ""
 
 #. translators: %s: the agent name.
-#: admin/src/components/FirstRun.jsx:334
+#: admin/src/components/FirstRun.jsx:432
 #, js-format
 msgid "Let’s try it. Paste this into %s:"
 msgstr ""
 
 #. translators: %s: the agent name.
-#: admin/src/components/FirstRun.jsx:355
+#: admin/src/components/FirstRun.jsx:453
 #, js-format
 msgid "Waiting for %s to ask me something…"
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:366
+#: admin/src/components/FirstRun.jsx:464
 msgid "Nothing has arrived yet"
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:372
+#: admin/src/components/FirstRun.jsx:470
 msgid "Skip this step"
-msgstr ""
-
-#. translators: %s: the agent name.
-#: admin/src/components/FirstRun.jsx:465
-#, js-format
-msgid "Checking what %s may do…"
-msgstr ""
-
-#. translators: %s: the agent name.
-#: admin/src/components/FirstRun.jsx:480
-#, js-format
-msgid "Right now %s can only look. How much should it do?"
-msgstr ""
-
-#. translators: %s: the agent name.
-#: admin/src/components/FirstRun.jsx:488
-#, js-format
-msgid "%s can already do more than look. Keep it that way, or change it:"
-msgstr ""
-
-#: admin/src/components/FirstRun.jsx:524
-msgid "Now"
-msgstr ""
-
-#. translators: %s: the agent name.
-#: admin/src/components/FirstRun.jsx:545
-#, js-format
-msgid "Done. %s can now draft and edit your content. Anything big still waits for your OK, and every change shows up on Overview."
-msgstr ""
-
-#. translators: %s: the agent name.
-#: admin/src/components/FirstRun.jsx:554
-#, js-format
-msgid "Done. %s can now help run the site. Anything big still waits for your OK, and every change shows up on Overview."
 msgstr ""
 
 #. translators: %s: the agent name.
 #: admin/src/components/FirstRun.jsx:563
 #, js-format
+msgid "Checking what %s may do…"
+msgstr ""
+
+#. translators: %s: the agent name.
+#: admin/src/components/FirstRun.jsx:578
+#, js-format
+msgid "Right now %s can only look. How much should it do?"
+msgstr ""
+
+#. translators: %s: the agent name.
+#: admin/src/components/FirstRun.jsx:586
+#, js-format
+msgid "%s can already do more than look. Keep it that way, or change it:"
+msgstr ""
+
+#: admin/src/components/FirstRun.jsx:622
+msgid "Now"
+msgstr ""
+
+#. translators: %s: the agent name.
+#: admin/src/components/FirstRun.jsx:643
+#, js-format
+msgid "Done. %s can now draft and edit your content. Anything big still waits for your OK, and every change shows up on Overview."
+msgstr ""
+
+#. translators: %s: the agent name.
+#: admin/src/components/FirstRun.jsx:652
+#, js-format
+msgid "Done. %s can now help run the site. Anything big still waits for your OK, and every change shows up on Overview."
+msgstr ""
+
+#. translators: %s: the agent name.
+#: admin/src/components/FirstRun.jsx:661
+#, js-format
 msgid "Done. %s can look around, and you can give it more on SaddleWP → Agent setup any time."
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:599
+#: admin/src/components/FirstRun.jsx:697
 msgid "Yes, turn it on"
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:600
+#: admin/src/components/FirstRun.jsx:698
 msgid "Yes, add it"
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:647
-#: admin/src/components/FirstRun.jsx:654
+#: admin/src/components/FirstRun.jsx:745
+#: admin/src/components/FirstRun.jsx:752
 msgid "Not now"
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:677
+#: admin/src/components/FirstRun.jsx:775
 msgid "You can add it from the Plugins screen instead."
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:714
+#: admin/src/components/FirstRun.jsx:812
 msgid "Visitor stats"
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:715
+#: admin/src/components/FirstRun.jsx:813
 msgid "One more question. SaddleWP Analytics is installed but off. It counts visits without cookies, and your AI can read the numbers. Turn it on?"
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:719
+#: admin/src/components/FirstRun.jsx:817
 msgid "One more question. Do you want visitor stats? SaddleWP Analytics counts visits without cookies, and your AI can read the numbers."
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:723
+#: admin/src/components/FirstRun.jsx:821
 msgid "Turning on SaddleWP Analytics…"
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:724
+#: admin/src/components/FirstRun.jsx:822
 msgid "Installing SaddleWP Analytics from WordPress.org…"
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:729
+#: admin/src/components/FirstRun.jsx:827
 msgid "It counts visits from now on, and has its own page in the SaddleWP menu."
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:733
-#: admin/src/components/FirstRun.jsx:776
+#: admin/src/components/FirstRun.jsx:831
+#: admin/src/components/FirstRun.jsx:874
 msgid "You can turn it on any time from Home."
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:737
-#: admin/src/components/FirstRun.jsx:780
+#: admin/src/components/FirstRun.jsx:835
+#: admin/src/components/FirstRun.jsx:878
 msgid "You can add it any time from Home."
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:757
+#: admin/src/components/FirstRun.jsx:855
 msgid "SEO"
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:758
+#: admin/src/components/FirstRun.jsx:856
 msgid "Last question. SaddleWP Rank is installed but off. It sets up your SEO and helps AI answers find and cite your site. Turn it on?"
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:762
+#: admin/src/components/FirstRun.jsx:860
 msgid "Last question. Do you want help ranking? SaddleWP Rank sets up your SEO and helps AI answers find and cite your site."
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:766
+#: admin/src/components/FirstRun.jsx:864
 msgid "Turning on SaddleWP Rank…"
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:767
+#: admin/src/components/FirstRun.jsx:865
 msgid "Installing SaddleWP Rank from WordPress.org…"
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:771
+#: admin/src/components/FirstRun.jsx:869
 msgid "SaddleWP Rank is on."
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:772
+#: admin/src/components/FirstRun.jsx:870
 msgid "It has its own page in the SaddleWP menu, with what to fix first."
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:868
+#: admin/src/components/FirstRun.jsx:973
 msgid "Hi, I’m SaddleWP. I let your AI work on this site, and I ask you before anything risky."
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:873
-msgid "Let’s connect your AI agent. There are two ways:"
+#: admin/src/components/FirstRun.jsx:978
+msgid "Let’s connect your AI agent."
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:948
+#: admin/src/components/FirstRun.jsx:1071
 msgid "Finish"
 msgstr ""
 
 #. translators: %s: the agent name.
-#: admin/src/components/FirstRun.jsx:1012
+#: admin/src/components/FirstRun.jsx:1135
 #, js-format
 msgid "I’ll know the moment %s connects…"
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:1029
+#: admin/src/components/FirstRun.jsx:1152
 #: admin/src/components/SelfCheck.jsx:99
 msgid "Skip for now"
 msgstr ""
 
 #. translators: %s: the agent name.
-#: admin/src/components/FirstRun.jsx:1092
+#: admin/src/components/FirstRun.jsx:1227
 #, js-format
 msgid "Let’s connect %s."
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:1098
+#: admin/src/components/FirstRun.jsx:1233
 msgid "This preview runs in your browser"
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:1102
+#: admin/src/components/FirstRun.jsx:1237
 msgid "So no AI agent can connect to it. To connect one, install SaddleWP on your own site."
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:1108
+#: admin/src/components/FirstRun.jsx:1243
 msgid "Skip and look around"
 msgstr ""
 
 #. translators: %s: the agent name.
-#: admin/src/components/FirstRun.jsx:1134
+#: admin/src/components/FirstRun.jsx:1269
 #, js-format
 msgid "%s is connected."
 msgstr ""
 
-#: admin/src/components/FirstRun.jsx:1154
+#: admin/src/components/FirstRun.jsx:1289
 #: admin/src/onboarding-logic.js:397
 msgid "It works."
 msgstr ""
@@ -9365,7 +9442,7 @@ msgstr ""
 #: admin/src/components/SettingsForm.jsx:348
 #: admin/src/components/SettingsPage.jsx:99
 #: admin/src/components/SettingsPage.jsx:255
-#: admin/src/components/SignInCard.jsx:57
+#: admin/src/components/SignInCard.jsx:63
 msgid "Saved."
 msgstr ""
 
@@ -9467,7 +9544,7 @@ msgstr ""
 
 #: admin/src/components/Home.jsx:72
 #: admin/src/components/SettingsPage.jsx:203
-#: admin/src/components/SignInCard.jsx:152
+#: admin/src/components/SignInCard.jsx:158
 #: admin/src/services-logic.js:25
 msgid "Off"
 msgstr ""
@@ -9919,7 +9996,7 @@ msgstr ""
 
 #: admin/src/components/SettingsForm.jsx:354
 #: admin/src/components/SettingsPage.jsx:107
-#: admin/src/components/SignInCard.jsx:62
+#: admin/src/components/SignInCard.jsx:68
 msgid "Could not save that setting."
 msgstr ""
 
@@ -10071,65 +10148,65 @@ msgstr ""
 msgid "Connection check"
 msgstr ""
 
-#: admin/src/components/SignInCard.jsx:86
+#: admin/src/components/SignInCard.jsx:92
 msgid "Agents can find this site’s sign-in details on their own."
 msgstr ""
 
-#: admin/src/components/SignInCard.jsx:93
+#: admin/src/components/SignInCard.jsx:99
 msgid "This site answers too slowly for some agents. The sign-in details are correct, but ChatGPT gives up after a few seconds and reports that the site doesn’t support sign-in. A page cache or a faster host usually fixes it."
 msgstr ""
 
-#: admin/src/components/SignInCard.jsx:99
+#: admin/src/components/SignInCard.jsx:105
 msgid "Agents may not be able to find the sign-in details automatically. This usually means WordPress lives in a subfolder, or your host blocks addresses starting with a dot. Most agents will still connect; ChatGPT may not."
 msgstr ""
 
-#: admin/src/components/SignInCard.jsx:111
+#: admin/src/components/SignInCard.jsx:117
 msgid "Too slow"
 msgstr ""
 
-#: admin/src/components/SignInCard.jsx:114
+#: admin/src/components/SignInCard.jsx:120
 msgid "Maybe not"
 msgstr ""
 
-#: admin/src/components/SignInCard.jsx:144
+#: admin/src/components/SignInCard.jsx:150
 msgid "Needs HTTPS first."
 msgstr ""
 
-#: admin/src/components/SignInCard.jsx:145
+#: admin/src/components/SignInCard.jsx:151
 msgid "Needs pretty permalinks: Settings → Permalinks, anything but Plain."
 msgstr ""
 
-#: admin/src/components/SignInCard.jsx:150
+#: admin/src/components/SignInCard.jsx:156
 msgid "On. You approve each agent."
 msgstr ""
 
-#: admin/src/components/SignInCard.jsx:161
+#: admin/src/components/SignInCard.jsx:167
 msgid "With this on, an agent needs only this site’s address. It opens your browser and you approve it here, like “Sign in with Google”. Claude, ChatGPT, Claude Code, Codex, Cursor, VS Code and Gemini CLI connect this way, and ChatGPT connects no other way. Pasted keys keep working."
 msgstr ""
 
-#: admin/src/components/SignInCard.jsx:166
-#: admin/src/components/SignInCard.jsx:180
+#: admin/src/components/SignInCard.jsx:172
+#: admin/src/components/SignInCard.jsx:186
 msgid "Let agents sign in"
 msgstr ""
 
-#: admin/src/components/SignInCard.jsx:195
+#: admin/src/components/SignInCard.jsx:201
 msgid "Advanced sign-in options"
 msgstr ""
 
-#: admin/src/components/SignInCard.jsx:203
+#: admin/src/components/SignInCard.jsx:209
 msgid "Discoverable"
 msgstr ""
 
-#: admin/src/components/SignInCard.jsx:221
+#: admin/src/components/SignInCard.jsx:227
 msgid "Needed to connect by address. An agent that registers still cannot do anything until you approve it on screen."
 msgstr ""
 
-#: admin/src/components/SignInCard.jsx:248
+#: admin/src/components/SignInCard.jsx:254
 msgid "When an agent identifies itself by web address, SaddleWP fetches that address to confirm it vouches for the agent. Turning this off means every agent shows as unverified."
 msgstr ""
 
-#: admin/src/components/SignInCard.jsx:253
-#: admin/src/components/SignInCard.jsx:262
+#: admin/src/components/SignInCard.jsx:259
+#: admin/src/components/SignInCard.jsx:268
 msgid "Check agent identity"
 msgstr ""
 
@@ -10459,10 +10536,6 @@ msgstr ""
 
 #: admin/src/context-fields.js:74
 msgid "Anything else every connected agent should follow."
-msgstr ""
-
-#: admin/src/get-pro-logic.js:64
-msgid "Free"
 msgstr ""
 
 #: admin/src/get-pro-logic.js:65
@@ -10895,7 +10968,7 @@ msgstr ""
 msgid "%s did not add this screen. Updating it may add it."
 msgstr ""
 
-#: admin/src/screens.jsx:310
+#: admin/src/screens.jsx:321
 msgid "Run setup again"
 msgstr ""
 

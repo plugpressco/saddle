@@ -208,6 +208,11 @@ The WordPress.org version never checks for its own updates. The version from plu
 
 == Changelog ==
 
+= 2.0.0 =
+* Changed: The welcome and Agent setup lead with one way in: your SaddleWP account. The Connect this site button turns on sign-in for agents on this site, then opens your account in a new tab with the site's address filled in. Before, the account could not finish connecting until you found that switch under Settings. SaddleWP sends nothing to the account; the button is a link.
+* Changed: Connecting your AI agent straight to this site stays one click away: "Connect directly instead" in the welcome, and the Connect directly row on Agent setup.
+* New: When a SaddleWP account can't reach the site, the welcome says why and offers what helps. A site on your computer connects directly, Plain permalinks link to Settings → Permalinks, and a site without HTTPS is told to ask its host.
+
 = 1.7.3 =
 * New: Saddle Rank, the free SEO and AI search plugin, is offered like Saddle Analytics: a tile in Home's Add-ons and a last question in the welcome. One click installs it from WordPress.org and turns it on, or turns on a copy you already have. Nothing is installed without your click, and only you can do it.
 
