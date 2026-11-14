@@ -410,7 +410,8 @@ class Saddle_Divi_Loop {
 		$out = array();
 		if ( 'post_types' === $base ) {
 			foreach ( get_post_types() as $name ) {
-				if ( 'attachment' !== $name && is_post_type_viewable( $name ) ) {
+				// A name that starts with "_" is another plugin's internal type.
+				if ( 'attachment' !== $name && '_' !== substr( (string) $name, 0, 1 ) && is_post_type_viewable( $name ) ) {
 					$out[] = $name;
 				}
 			}

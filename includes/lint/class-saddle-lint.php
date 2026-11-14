@@ -301,6 +301,9 @@ class Saddle_Lint {
 				return $va < $vb ? -1 : 1;
 			}
 		}
-		return strcmp( $a['rule'], $b['rule'] );
+		// Findings merged in from other checks carry a source, not a rule.
+		$ra = isset( $a['rule'] ) ? (string) $a['rule'] : ( isset( $a['source'] ) ? (string) $a['source'] : '' );
+		$rb = isset( $b['rule'] ) ? (string) $b['rule'] : ( isset( $b['source'] ) ? (string) $b['source'] : '' );
+		return strcmp( $ra, $rb );
 	}
 }
