@@ -145,15 +145,95 @@ function saddle_register_block_abilities() {
 		'saddle/get-section-recipe',
 		array(
 			'label'               => __( 'Get a section recipe', 'saddle' ),
-			'description'         => __( 'Returns one section recipe as a ready-to-insert node tree in SaddleWP\'s authoring format ({type, content, attrs, children}), matched to the site\'s builder — core blocks on a block theme, the builder\'s modules when a page builder is active. Read-only. Pass it (with real copy substituted) to set-blocks / add-block, or to the builder\'s set-page. After inserting, apply colors and sizes from get-design-system.', 'saddle' ),
+			'description'         => __( 'Returns one section recipe as a ready-to-insert node tree in SaddleWP\'s authoring format, matched to the site\'s builder: core blocks on a block theme, the builder\'s modules when a page builder is active. Read-only. Optional content (heading, text, buttons, items, plans, quotes, questions) is put in place of the placeholders, word for word, on a Divi 5 site; "content_applied" says whether the builder used it, and where it is false swap the copy in yourself. Pass the nodes to set-blocks / add-block, or to the builder\'s set-page / add-module. After inserting, apply colors and sizes from get-design-system.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
 				'required'   => array( 'name' ),
 				'properties' => array(
-					'name' => array(
+					'name'      => array(
 						'type'        => 'string',
 						'description' => __( 'Recipe name from list-section-recipes (e.g. "hero", "features", "pricing", "testimonials", "cta", "faq").', 'saddle' ),
+					),
+					'heading'   => array(
+						'type'        => 'string',
+						'description' => __( 'Optional: the section heading.', 'saddle' ),
+					),
+					'text'      => array(
+						'type'        => 'string',
+						'description' => __( 'Optional: the line under the heading (hero, cta, and an intro line elsewhere).', 'saddle' ),
+					),
+					'buttons'   => array(
+						'type'        => 'array',
+						'description' => __( 'Optional, hero and cta: up to 2 buttons, the main action first.', 'saddle' ),
+						'items'       => array(
+							'type'       => 'object',
+							'properties' => array(
+								'text' => array( 'type' => 'string' ),
+								'url'  => array( 'type' => 'string' ),
+							),
+						),
+					),
+					'items'     => array(
+						'type'        => 'array',
+						'description' => __( 'Optional, features: up to 12 cards. "icon" is the builder\'s icon value (on Divi the {unicode, type, weight} object divi-get-module-schema shows for a blurb).', 'saddle' ),
+						'items'       => array(
+							'type'       => 'object',
+							'properties' => array(
+								'title' => array( 'type' => 'string' ),
+								'text'  => array( 'type' => 'string' ),
+								'icon'  => array( 'type' => array( 'string', 'object' ) ),
+							),
+						),
+					),
+					'plans'     => array(
+						'type'        => 'array',
+						'description' => __( 'Optional, pricing: up to 4 plans. "price" is the number ("29"; "$29" also works), "currency" the symbol, "period" e.g. "month". Mark one "featured", else the middle plan is.', 'saddle' ),
+						'items'       => array(
+							'type'       => 'object',
+							'properties' => array(
+								'name'     => array( 'type' => 'string' ),
+								'price'    => array( 'type' => array( 'string', 'number' ) ),
+								'currency' => array( 'type' => 'string' ),
+								'period'   => array( 'type' => 'string' ),
+								'features' => array(
+									'type'  => 'array',
+									'items' => array( 'type' => 'string' ),
+								),
+								'button'   => array(
+									'type'       => 'object',
+									'properties' => array(
+										'text' => array( 'type' => 'string' ),
+										'url'  => array( 'type' => 'string' ),
+									),
+								),
+								'featured' => array( 'type' => 'boolean' ),
+							),
+						),
+					),
+					'quotes'    => array(
+						'type'        => 'array',
+						'description' => __( 'Optional, testimonials: up to 6 quotes.', 'saddle' ),
+						'items'       => array(
+							'type'       => 'object',
+							'properties' => array(
+								'text'    => array( 'type' => 'string' ),
+								'name'    => array( 'type' => 'string' ),
+								'role'    => array( 'type' => 'string' ),
+								'company' => array( 'type' => 'string' ),
+							),
+						),
+					),
+					'questions' => array(
+						'type'        => 'array',
+						'description' => __( 'Optional, faq: up to 20 questions with their answers.', 'saddle' ),
+						'items'       => array(
+							'type'       => 'object',
+							'properties' => array(
+								'question' => array( 'type' => 'string' ),
+								'answer'   => array( 'type' => 'string' ),
+							),
+						),
 					),
 				),
 			),
@@ -513,29 +593,47 @@ class Saddle_Blocks_Abilities {
 
 		$nodes   = Saddle_Recipes::gutenberg( $name );
 		$builder = 'block-theme';
+		$content = Saddle_Recipe_Content::clean( is_array( $input ) ? $input : array() );
+		$applied = false;
 
 		/**
 		 * Let a page-builder addon supply its own node tree for a recipe name,
 		 * so the recipe vocabulary is shared across builders. Return
-		 * array( 'builder' => '<slug>', 'nodes' => array(...) ) to override.
+		 * array( 'builder' => '<slug>', 'nodes' => array(...) ) to override,
+		 * plus 'content_applied' => true when the nodes carry $content.
 		 *
 		 * @param array|null $override Builder-specific recipe, or null.
 		 * @param string     $name     Recipe name.
-		 * @param array      $nodes    The default (Gutenberg) node tree.
+		 * @param array|null $nodes    The default (Gutenberg) node tree.
+		 * @param array      $content  The cleaned optional content (heading,
+		 *                             text, buttons, items, plans, quotes,
+		 *                             questions); empty when none was passed.
 		 */
-		$override = apply_filters( 'saddle_section_recipe', null, $name, $nodes );
+		$override = apply_filters( 'saddle_section_recipe', null, $name, $nodes, $content );
 		if ( is_array( $override ) && ! empty( $override['nodes'] ) ) {
 			$nodes   = $override['nodes'];
 			$builder = isset( $override['builder'] ) ? (string) $override['builder'] : 'custom';
+			$applied = ! empty( $override['content_applied'] );
+		}
+		if ( empty( $nodes ) ) {
+			return new WP_Error(
+				'saddle_unknown_recipe',
+				__( 'This recipe is not available for the builder this site runs. Pick another from list-section-recipes.', 'saddle' ),
+				array( 'status' => 400 )
+			);
 		}
 
-		return array(
+		$out = array(
 			'name'    => $name,
 			'title'   => $catalog[ $name ]['title'],
 			'builder' => $builder,
 			'nodes'   => $nodes,
-			'usage'   => __( 'Insert these nodes (with real copy) via set-blocks/add-block on a block theme, or the builder\'s set-page/add-module. The recipe is intentionally token-free — apply colors and sizes from get-design-system after inserting.', 'saddle' ),
+			'usage'   => __( 'Insert these nodes via set-blocks/add-block on a block theme, or the builder\'s set-page/add-module. Replace any placeholder copy that is left, then apply colors and sizes from get-design-system.', 'saddle' ),
 		);
+		if ( $content ) {
+			$out['content_applied'] = $applied;
+		}
+		return $out;
 	}
 
 	/**

@@ -88,6 +88,10 @@ class Saddle_Divi_Driver implements Saddle_Builder_Driver {
 	 * @return int|WP_Error Total module count on success.
 	 */
 	public function persist( WP_Post $post, array $tree ) {
+		// Every SaddleWP write to a page also saves its loops in the shape
+		// Divi reads, whatever an older write left there.
+		list( $tree ) = Saddle_Divi_Loop::repair_tree( $tree );
+
 		$valid = Saddle_Divi_Tree::validate( $tree );
 		if ( is_wp_error( $valid ) ) {
 			return $valid;

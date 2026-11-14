@@ -207,7 +207,7 @@ class Saddle_Divi_Extra_Abilities {
 			return new WP_Error( 'saddle_no_divi', __( 'Divi 5 is not active on this site.', 'saddle' ) );
 		}
 		$post = get_post( isset( $input['post_id'] ) ? (int) $input['post_id'] : 0 );
-		if ( ! $post || ! in_array( $post->post_type, Saddle_Post_Types::content_types(), true ) ) {
+		if ( ! $post || ! in_array( $post->post_type, Saddle_Verify::page_types( $post->ID ), true ) ) {
 			return new WP_Error( 'saddle_not_found', __( 'No post or page with that ID.', 'saddle' ), array( 'status' => 404 ) );
 		}
 		// The site reads its own preview, which shows drafts: the same bar as

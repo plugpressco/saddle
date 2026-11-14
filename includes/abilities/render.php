@@ -97,7 +97,7 @@ class Saddle_Render_Abilities {
 	 */
 	public static function render_node( $input = null ) {
 		$input = is_array( $input ) ? $input : array();
-		$post  = Saddle_Abilities::require_readable_post( $input );
+		$post  = Saddle_Abilities::require_readable_post( $input, 'post_id', Saddle_Verify::page_types( isset( $input['post_id'] ) ? (int) $input['post_id'] : 0 ) );
 		if ( is_wp_error( $post ) ) {
 			return $post;
 		}
@@ -156,7 +156,7 @@ class Saddle_Render_Abilities {
 	public static function get_preview_url( $input = null ) {
 		$input = is_array( $input ) ? $input : array();
 		$post  = get_post( isset( $input['post_id'] ) ? (int) $input['post_id'] : 0 );
-		if ( ! $post || ! in_array( $post->post_type, Saddle_Post_Types::content_types(), true ) ) {
+		if ( ! $post || ! in_array( $post->post_type, Saddle_Verify::page_types( $post->ID ), true ) ) {
 			return new WP_Error( 'saddle_not_found', __( 'No post or page with that ID.', 'saddle' ), array( 'status' => 404 ) );
 		}
 

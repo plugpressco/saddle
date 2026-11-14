@@ -257,8 +257,9 @@ class Saddle_Divi_Loop_Repair {
 				++$count;
 			}
 			if ( ! empty( $node['innerBlocks'] ) && is_array( $node['innerBlocks'] ) ) {
-				list( $tree[ $i ]['innerBlocks'], $inner ) = self::repair_tree( $node['innerBlocks'] );
-				$count += $inner;
+				$inner                     = self::repair_tree( $node['innerBlocks'] );
+				$tree[ $i ]['innerBlocks'] = $inner[0];
+				$count                    += $inner[1];
 			}
 		}
 		return array( $tree, $count );

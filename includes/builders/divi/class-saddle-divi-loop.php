@@ -81,6 +81,27 @@ class Saddle_Divi_Loop {
 	}
 
 	/**
+	 * A parsed tree with every loop in an older shape rewritten, and how
+	 * many changed (Saddle_Divi_Loop_Repair::repair_tree()). No database.
+	 *
+	 * @param array[] $tree Parsed blocks.
+	 * @return array array( tree, count ).
+	 */
+	public static function repair_tree( array $tree ) {
+		return Saddle_Divi_Loop_Repair::repair_tree( $tree );
+	}
+
+	/**
+	 * Whether raw post content may hold a loop in an older shape.
+	 *
+	 * @param string $content Post content.
+	 * @return bool
+	 */
+	public static function needs_repair( $content ) {
+		return Saddle_Divi_Loop_Repair::needs_repair( $content );
+	}
+
+	/**
 	 * Build the loop value an enable or edit call writes.
 	 *
 	 * @param array  $current Stored loop value (array() when none).
@@ -122,7 +143,7 @@ class Saddle_Divi_Loop {
 				'includePostWithSpecificTerms' => 'include_terms',
 				'excludePostWithSpecificTerms' => 'exclude_terms',
 			);
-			if ( self::family( $current_type ) !== self::family( $type ) ) {
+			if ( self::loop_family( $current_type ) !== self::loop_family( $type ) ) {
 				$cleared = array_merge( $cleared, self::FAMILY_KEYS );
 			}
 			$reset = array();
@@ -346,7 +367,7 @@ class Saddle_Divi_Loop {
 	 * @param string $type Stored query type.
 	 * @return string
 	 */
-	private static function family( $type ) {
+	private static function loop_family( $type ) {
 		$base = self::base_type( $type );
 		return in_array( $base, array( 'post_types', 'current_page' ), true ) ? 'posts' : $base;
 	}

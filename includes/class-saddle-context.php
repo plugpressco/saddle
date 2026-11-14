@@ -156,14 +156,29 @@ class Saddle_Context {
 
 		$lines[] = '';
 
-		$lines[] = __( '# Designing pages with blocks', 'saddle' );
-		$lines[] = '';
-		$lines[] = '- ' . __( 'ORIENT FIRST: call saddle/context-bundle once per session. One call returns the design system, the block types worth using, this theme\'s patterns, the site\'s templates and the section recipes together — do not spend four or five separate calls collecting the same thing.', 'saddle' );
-		$lines[] = '- ' . __( 'For page layouts, use the structured block tools (get-blocks, set-blocks, add/edit/move/remove-block) instead of writing a raw "content" string — they compose real editor blocks that stay editable in the block editor, and every change is validated before it is saved.', 'saddle' );
-		$lines[] = '- ' . __( 'Match the site\'s design, don\'t invent one: use the color/size slugs from the bundle\'s design system rather than raw hex or pixel values, so a page you build follows the site if the owner changes their palette. For common sections (hero, features, CTA), a theme pattern arrives already styled for this site — inserting one beats hand-composing.', 'saddle' );
-		$lines[] = '- ' . __( 'Before composing a block type you haven\'t used, read get-block-schema for its exact authoring syntax. Never fake a layout by dumping raw HTML into a single block.', 'saddle' );
-		$lines[] = '- ' . __( 'A write call returning success is not evidence the page is right: run saddle/verify-page, fix what it reports, then open saddle/get-preview-url and look. The score is server-side only.', 'saddle' );
-		$lines[] = '';
+		$design = array(
+			__( '# Designing pages with blocks', 'saddle' ),
+			'',
+			'- ' . __( 'ORIENT FIRST: call saddle/context-bundle once per session. One call returns the design system, the block types worth using, this theme\'s patterns, the site\'s templates and the section recipes together — do not spend four or five separate calls collecting the same thing.', 'saddle' ),
+			'- ' . __( 'For page layouts, use the structured block tools (get-blocks, set-blocks, add/edit/move/remove-block) instead of writing a raw "content" string — they compose real editor blocks that stay editable in the block editor, and every change is validated before it is saved.', 'saddle' ),
+			'- ' . __( 'Match the site\'s design, don\'t invent one: use the color/size slugs from the bundle\'s design system rather than raw hex or pixel values, so a page you build follows the site if the owner changes their palette. For common sections (hero, features, CTA), a theme pattern arrives already styled for this site — inserting one beats hand-composing.', 'saddle' ),
+			'- ' . __( 'Before composing a block type you haven\'t used, read get-block-schema for its exact authoring syntax. Never fake a layout by dumping raw HTML into a single block.', 'saddle' ),
+			'- ' . __( 'A write call returning success is not evidence the page is right: run saddle/verify-page, fix what it reports, then open saddle/get-preview-url and look. The score is server-side only.', 'saddle' ),
+			'',
+		);
+
+		/**
+		 * Filter the "how to design pages" section near the top of the
+		 * context. A builder whose pages SaddleWP edits natively (Divi 5)
+		 * puts its own guidance here, ahead of the block guidance, because
+		 * some agents read only the start of the context.
+		 *
+		 * @param string[] $design Section lines, heading first.
+		 * @param string   $tier   The current access tier.
+		 */
+		foreach ( (array) apply_filters( 'saddle_context_design_section', $design, $tier ) as $line ) {
+			$lines[] = (string) $line;
+		}
 
 		foreach ( self::design_numbers() as $line ) {
 			$lines[] = $line;

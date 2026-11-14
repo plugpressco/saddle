@@ -175,7 +175,7 @@ function saddle_register_divi_abilities() {
 		'saddle/divi-get-module-schema',
 		array(
 			'label'               => __( 'Get Divi module schema', 'saddle' ),
-			'description'         => __( 'Returns one Divi module type\'s schema, for Divi\'s own modules and every module pack on this site. "attributes": its content, with the exact "fields" syntax (a string, or an object with named fields). "settings": every other option (post count, which menu, autoplay, arrows, prices), each with its path, control (toggle, select, text, number, range, color, icon, upload, list, link, other), choices and default; toggles take the strings "on" and "off". "notes": known traps for this module. "children": what a container holds. Pass detail="full" for each setting\'s label, description and whether it can differ by screen size, on hover or when sticky. For styling paths use divi-get-style-schema.', 'saddle' ),
+			'description'         => __( 'Returns one Divi module type\'s schema, for Divi\'s own modules and every module pack on this site. "attributes": its content, with the exact "fields" syntax (a string, or an object with named fields). "settings": every other option (post count, which menu, autoplay, arrows, prices), each with its path, control (toggle, select, text, number, range, color, icon, upload, list, link, other), choices and default; toggles take the strings "on" and "off". "notes": known traps for this module. "children": what a container holds. Pass detail="full" for each setting\'s label, description and whether it can differ by screen size, on hover or when sticky, plus "option_groups" ({option group id: group name}), the groups an option group preset can style on this module. For styling paths use divi-get-style-schema.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -636,7 +636,7 @@ function saddle_register_divi_abilities() {
 		'saddle/divi-apply-global-preset',
 		array(
 			'label'               => __( 'Apply Divi global preset', 'saddle' ),
-			'description'         => __( 'Applies an existing global style preset to the module at an address, so it inherits that preset\'s styling. Provide the preset_id from divi-list-global-presets (its module type must match the target module). Prefer presets over repeating the same edit-module styling.', 'saddle' ),
+			'description'         => __( 'Applies an existing module preset to the module at an address, so it takes that preset\'s styling. Provide a preset_id from divi-list-global-presets with "kind": "module" and the same module type as the target. mode "replace" (the default) makes it the module\'s only preset; "append" adds it on top of the presets the module has, and where two presets set the same value the last one wins. Prefer presets over repeating the same edit-module styling.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -647,6 +647,12 @@ function saddle_register_divi_abilities() {
 					'preset_id' => array(
 						'type'        => 'string',
 						'description' => __( 'Preset id from divi-list-global-presets.', 'saddle' ),
+					),
+					'mode'      => array(
+						'type'        => 'string',
+						'enum'        => array( 'replace', 'append' ),
+						'default'     => 'replace',
+						'description' => __( '"replace" (default): this preset only. "append": stack it after the module\'s current presets.', 'saddle' ),
 					),
 				),
 			),
@@ -929,6 +935,12 @@ class Saddle_Divi_Abilities {
 		$notes = Saddle_Divi_Module_Notes::for_module( $type );
 		if ( $notes ) {
 			$schema['notes'] = $notes;
+		}
+		if ( $full ) {
+			$groups = Saddle_Divi_Option_Groups::of_module( $type );
+			if ( $groups ) {
+				$schema['option_groups'] = $groups;
+			}
 		}
 
 		return $schema;
@@ -2371,7 +2383,8 @@ class Saddle_Divi_Abilities {
 	 */
 
 	/**
-	 * saddle/divi-apply-global-preset — set attrs.modulePreset = [preset_id].
+	 * saddle/divi-apply-global-preset — set attrs.modulePreset to [preset_id],
+	 * or add preset_id to the end of the stack (mode "append").
 	 *
 	 * @param array $input Ability input.
 	 * @return array|WP_Error
@@ -2388,14 +2401,29 @@ class Saddle_Divi_Abilities {
 			return new WP_Error( 'saddle_empty', __( 'Provide the "preset_id" from divi-list-global-presets.', 'saddle' ) );
 		}
 
-		// modulePreset is a stack (array of ids) at the attr root.
+		// modulePreset is a stack (array of ids) at the attr root; Divi
+		// applies them in order, so the last one wins (GlobalPreset
+		// normalize_preset_stack()). "append" keeps the stack and puts this
+		// id last; an id already in it moves to the end.
+		$stack = array( $preset_id );
+		if ( isset( $input['mode'] ) && 'append' === $input['mode'] ) {
+			$stored = isset( $node['attrs']['modulePreset'] ) ? $node['attrs']['modulePreset'] : array();
+			$stored = is_array( $stored ) ? $stored : ( '' === (string) $stored ? array() : array( (string) $stored ) );
+			$stack  = array_values(
+				array_merge(
+					array_diff( array_map( 'strval', $stored ), array( $preset_id, '' ) ),
+					array( $preset_id )
+				)
+			);
+		}
+
 		return self::save_module_attr(
 			$post,
 			$tree,
 			$address,
 			$node,
 			array( 'modulePreset' ),
-			array( $preset_id ),
+			$stack,
 			'divi-apply-global-preset',
 			sprintf(
 				/* translators: 1: preset id, 2: address, 3: post ID. */
@@ -2404,7 +2432,10 @@ class Saddle_Divi_Abilities {
 				$address,
 				$post->ID
 			),
-			array( 'preset' => $preset_id )
+			array(
+				'preset'  => $preset_id,
+				'presets' => $stack,
+			)
 		);
 	}
 

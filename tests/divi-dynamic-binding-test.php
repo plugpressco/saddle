@@ -292,6 +292,96 @@ class Saddle_Divi_Dynamic_Binding_Test extends WP_UnitTestCase {
 		$this->assertNotWPError( $plain, 'An administrator may bind a plain user field.' );
 	}
 
+	/**
+	 * The custom field name, worked out for every form the way Divi 5.10.1
+	 * works it out (DynamicContentOptionPostMetaKey::render_callback(),
+	 * DynamicContentOptionLoopPostMetaKey::get_meta_key_from_name()).
+	 */
+	public function test_reads_the_custom_field_name_divi_reads_for_every_form() {
+		$cases = array(
+			array( 'custom_meta_price', array(), 'price' ),
+			array( 'custom_meta_custom_meta__secret', array(), '_secret' ),
+			array( 'custom_meta_manual_custom_field_value', array( 'meta_key' => 'price' ), 'price' ),
+			array( 'post_meta_key', array( 'meta_key' => 'price' ), 'price' ),
+			array( 'post_meta_key', array( 'select_meta_key' => 'custom_meta_manual_custom_field_value', 'meta_key' => 'price' ), 'price' ),
+			array( 'post_meta_key', array( 'select_meta_key' => 'custom_meta_custom_meta__secret' ), '_secret' ),
+			array( 'post_meta_key', array( 'select_meta_key' => 'something_else', 'meta_key' => 'price' ), null ),
+			array( 'post_meta_key', array(), null ),
+			array( 'loop_post_meta_key_manual_custom_field', array( 'select_loop_meta_key' => 'loop_post_meta_key_manual_custom_field_value', 'loop_meta_key' => 'price' ), 'price' ),
+			array( 'loop_post_meta_key_manual_custom_field', array( 'select_loop_meta_key' => 'loop_post_meta_key_loop_post_meta_key__purchase_note' ), '_purchase_note' ),
+			array( 'loop_post_meta_key_manual_custom_field', array( 'select_loop_meta_key' => 'loop_user_meta_key_nickname' ), 'nickname' ),
+			array( 'loop_post_meta_key_manual_custom_field', array( 'loop_meta_key' => 'price' ), '' ),
+			array( 'loop_user_meta_key_manual_custom_field', array( 'loop_meta_key' => 'nickname' ), 'nickname' ),
+			array( 'loop_term_meta_key_manual_custom_field', array( 'select_loop_meta_key' => 'loop_term_meta_key_loop_term_meta_key__x' ), '_x' ),
+			array( 'post_title', array( 'meta_key' => '_secret' ), null ),
+		);
+		foreach ( $cases as $case ) {
+			$this->assertSame( $case[2], Saddle_Divi_Dynamic::read_meta_key( $case[0], $case[1] ), wp_json_encode( $case ) );
+		}
+	}
+
+	public function test_guards_every_custom_field_name_form_with_a_repeated_prefix() {
+		$id    = $this->page();
+		$forms = array(
+			array( 'custom_meta_custom_meta__secret', array() ),
+			array( 'post_meta_key', array( 'select_meta_key' => 'custom_meta_custom_meta__secret' ) ),
+			array( 'loop_post_meta_key_manual_custom_field', array( 'select_loop_meta_key' => 'loop_post_meta_key_loop_post_meta_key__purchase_note' ) ),
+			array( 'loop_term_meta_key_manual_custom_field', array( 'select_loop_meta_key' => 'loop_term_meta_key_loop_term_meta_key__secret' ) ),
+			array( 'loop_post_meta_key_manual_custom_field', array( 'select_loop_meta_key' => 'loop_user_meta_key__secret' ) ),
+		);
+		foreach ( $forms as $form ) {
+			$result = $this->bind( array( 'post_id' => $id, 'address' => '0.0.0.2', 'field' => 'title.innerContent', 'source' => $form[0], 'settings' => $form[1] ) );
+			$this->assertWPError( $result, wp_json_encode( $form ) );
+			$this->assertSame( 'saddle_protected_meta', $result->get_error_code(), wp_json_encode( $form ) );
+		}
+
+		// Removal can leave a prefix behind (custom_ + custom_meta_ + meta_):
+		// such a name is refused outright.
+		foreach ( array(
+			array( 'custom_meta_custom_custom_meta_meta__secret', array() ),
+			array( 'post_meta_key', array( 'select_meta_key' => 'custom_meta_custom_custom_meta_meta__secret' ) ),
+			array( 'loop_post_meta_key_manual_custom_field', array( 'select_loop_meta_key' => 'loop_post_meta_key_loop_post_loop_post_meta_key_meta_key__x' ) ),
+		) as $form ) {
+			$result = $this->bind( array( 'post_id' => $id, 'address' => '0.0.0.2', 'field' => 'title.innerContent', 'source' => $form[0], 'settings' => $form[1] ) );
+			$this->assertWPError( $result, wp_json_encode( $form ) );
+			$this->assertSame( 'saddle_bad_meta_key', $result->get_error_code(), wp_json_encode( $form ) );
+		}
+		$this->assertArrayNotHasKey( 'title', $this->attrs( $id, '0.0.0.2' ), 'A refused binding writes nothing.' );
+	}
+
+	public function test_user_sign_in_names_need_an_account_that_can_list_users() {
+		$this->assertIsArray( Saddle_Divi_Dynamic::prepare_settings( 'loop_user_username', array() ) );
+
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'editor' ) ) );
+		foreach ( array( 'loop_user_username', 'loop_user_email' ) as $source ) {
+			$refused = Saddle_Divi_Dynamic::prepare_settings( $source, array() );
+			$this->assertWPError( $refused, $source );
+			$this->assertSame( 'saddle_protected_source', $refused->get_error_code() );
+		}
+		$this->assertIsArray( Saddle_Divi_Dynamic::prepare_settings( 'loop_user_name', array() ), 'A display name is not a sign-in name.' );
+
+		wp_get_current_user()->add_cap( 'list_users' );
+		$this->assertIsArray( Saddle_Divi_Dynamic::prepare_settings( 'loop_user_username', array() ) );
+		$this->assertWPError( Saddle_Divi_Dynamic::prepare_settings( 'loop_user_email', array() ), 'Email stays an administrator\'s call.' );
+		$this->assertWPError( Saddle_Divi_Dynamic::prepare_settings( 'loop_user_meta_key_manual_custom_field', array( 'loop_meta_key' => 'nickname' ) ), 'So do user custom fields.' );
+	}
+
+	public function test_raw_html_is_kept_only_for_an_account_that_may_post_unfiltered_html() {
+		$id = $this->page();
+		$this->bind( array( 'post_id' => $id, 'address' => '0.0.0.2', 'field' => 'title.innerContent', 'source' => 'loop_post_meta_key_manual_custom_field', 'settings' => array( 'loop_meta_key' => 'bio', 'enable_html' => true ) ) );
+		$this->assertSame( 'on', $this->token( $this->attrs( $id, '0.0.0.2' )['title']['innerContent']['desktop']['value'] )['settings']['enable_html'] );
+
+		$editor = self::factory()->user->create( array( 'role' => 'editor' ) );
+		wp_set_current_user( $editor );
+		wp_get_current_user()->add_cap( 'unfiltered_html', false );
+		$this->assertFalse( current_user_can( 'unfiltered_html' ) );
+
+		$result = $this->bind( array( 'post_id' => $id, 'address' => '0.0.0.2', 'field' => 'title.innerContent', 'source' => 'loop_post_meta_key_manual_custom_field', 'settings' => array( 'loop_meta_key' => 'bio', 'enable_html' => true ) ) );
+		$this->assertNotWPError( $result );
+		$this->assertArrayNotHasKey( 'enable_html', $this->token( $this->attrs( $id, '0.0.0.2' )['title']['innerContent']['desktop']['value'] )['settings'] );
+		$this->assertStringContainsString( 'enable_html', implode( ' ', $result['warnings'] ) );
+	}
+
 	public function test_user_custom_fields_need_an_administrator() {
 		$editor = self::factory()->user->create( array( 'role' => 'editor' ) );
 		$id     = $this->page();
@@ -353,5 +443,6 @@ class Saddle_Divi_Dynamic_Binding_Test extends WP_UnitTestCase {
 
 		$result = $this->bind( array( 'post_id' => $id, 'address' => '0.0.0.2', 'field' => 'title.innerContent', 'source' => 'loop_term_name' ) );
 		$this->assertStringContainsString( 'post_taxonomies', $result['warnings'][0] );
+		$this->assertStringContainsString( 'one of these types: post_taxonomies, terms.', $result['warnings'][0], 'A whole translatable sentence, the types as a plain list.' );
 	}
 }

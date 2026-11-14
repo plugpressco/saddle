@@ -9,6 +9,8 @@
  * @package Saddle
  */
 
+require_once __DIR__ . '/divi-test-paths.php';
+
 class Saddle_Divi_Echo_Traps_Test extends WP_UnitTestCase {
 
 	private static $fixture_dir;
@@ -400,6 +402,40 @@ class Saddle_Divi_Echo_Traps_Test extends WP_UnitTestCase {
 		);
 	}
 
+	/**
+	 * Divi converts text case in "style" when it renders a module saved
+	 * before 5.8.1, unless any module on the page was saved by 5.8.1 or
+	 * later (FontCapitalizationMigration, MigrationUtils::content_needs_migration()).
+	 */
+	public function test_verify_judges_text_case_on_an_older_node_as_divi_renders_it() {
+		$text_case = static function ( array $versions ) {
+			$nodes = '';
+			foreach ( $versions as $version ) {
+				$attrs = array( 'title' => array( 'decoration' => array( 'font' => array( 'font' => array( 'desktop' => array( 'value' => array( 'style' => array( 'uppercase' ) ) ) ) ) ) ) );
+				if ( null !== $version ) {
+					$attrs['builderVersion'] = $version;
+				}
+				$nodes .= sprintf( '<!-- wp:saddletest/trap-text %s --><!-- /wp:saddletest/trap-text -->', wp_json_encode( $attrs ) );
+			}
+			$tree     = Saddle_Tree::parse( '<!-- wp:divi/section --><!-- wp:divi/row --><!-- wp:divi/column -->' . $nodes . '<!-- /wp:divi/column --><!-- /wp:divi/row --><!-- /wp:divi/section -->' );
+			$findings = array();
+			foreach ( Saddle_Divi_Verify::findings( $tree ) as $finding ) {
+				if ( false !== strpos( $finding['message'], '"capitalization"' ) ) {
+					$findings[] = $finding['address'];
+				}
+			}
+			return $findings;
+		};
+
+		$this->assertSame( array(), $text_case( array( '5.6.0' ) ), 'Divi converts it at render.' );
+		$this->assertSame( array(), $text_case( array( null, '5.2.0' ) ), 'No version counts as an older one.' );
+		$this->assertSame( array( '0.0.0.0' ), $text_case( array( '5.10.1' ) ), 'A node saved by 5.8.1 or later keeps the error.' );
+		$this->assertSame( array( '0.0.0.0', '0.0.0.1' ), $text_case( array( '5.6.0', '5.10.1' ) ), 'One newer module and Divi converts nothing on the page.' );
+
+		$moved = Saddle_Divi_Echo_Traps::text_case_as_rendered( array( 'title' => array( 'decoration' => array( 'font' => array( 'font' => array( 'desktop' => array( 'value' => array( 'style' => array( 'italic', 'capitalize' ) ) ) ) ) ) ) ) );
+		$this->assertSame( array( 'style' => array( 'italic' ), 'capitalization' => 'smallCaps' ), $moved['title']['decoration']['font']['font']['desktop']['value'] );
+	}
+
 	public function test_layout_gap_and_object_z_index_warn() {
 		$this->assert_one( $this->echo_text( array( 'module.decoration.layout.desktop.value' => array( 'display' => 'flex', 'gap' => '16px' ) ) ), '"columnGap"' );
 		$this->assertSame( array(), $this->echo_text( array( 'module.decoration.layout.desktop.value' => array( 'display' => 'flex', 'columnGap' => '16px', 'rowGap' => '16px' ) ) ) );
@@ -639,17 +675,11 @@ class Saddle_Divi_Echo_Traps_Test extends WP_UnitTestCase {
 	/**
 	 * Divi's own default attributes for every core module, the shapes the
 	 * Visual Builder starts from, must trip none of the checks added here.
-	 * Read from a local Divi 5 theme when one is there (SADDLE_DIVI_THEME_DIR,
-	 * else the workspace's divi-dev site); skipped otherwise.
+	 * Read from a local Divi 5 theme when one is there (Saddle_Test_Divi_Paths);
+	 * skipped otherwise.
 	 */
 	public function test_divis_own_default_attributes_trip_no_new_check() {
-		$theme = getenv( 'SADDLE_DIVI_THEME_DIR' );
-		$theme = $theme ? $theme : dirname( __DIR__, 3 ) . '/wp/divi-dev/wp-content/themes/Divi';
-
-		$components = rtrim( $theme, '/' ) . '/includes/builder-5/visual-builder/packages/module-library/src/components';
-		if ( ! is_dir( $components ) ) {
-			$this->markTestSkipped( 'No Divi 5 source on this machine.' );
-		}
+		$components = Saddle_Test_Divi_Paths::components_or_skip();
 		remove_all_filters( 'saddle_divi_module_json_dirs' );
 		add_filter(
 			'saddle_divi_module_json_dirs',
@@ -677,11 +707,9 @@ class Saddle_Divi_Echo_Traps_Test extends WP_UnitTestCase {
 		$this->assertGreaterThan( 100, $checked );
 
 		// A module pack's own defaults (module.json "default" per attribute),
-		// when a pack is on this machine (SADDLE_DIVI_PACK_DIR, else the
-		// divi-dev site's divi-torque-pro).
-		$pack = getenv( 'SADDLE_DIVI_PACK_DIR' );
-		$pack = $pack ? $pack : dirname( rtrim( $theme, '/' ), 2 ) . '/plugins/divi-torque-pro/modules-json';
-		if ( ! is_dir( $pack ) ) {
+		// when a pack is on this machine (Saddle_Test_Divi_Paths::pack()).
+		$pack = Saddle_Test_Divi_Paths::pack();
+		if ( '' === $pack ) {
 			return;
 		}
 		add_filter(

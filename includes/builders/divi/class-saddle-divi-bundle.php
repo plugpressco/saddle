@@ -86,7 +86,7 @@ class Saddle_Divi_Bundle {
 			$facts[] = 'the global palette is ' . implode( ', ', $swatches );
 		}
 		if ( ! empty( $design['variables'] ) ) {
-			$facts[] = sprintf( '%d design variables exist (reference as var(--gvid-…))', count( $design['variables'] ) );
+			$facts[] = sprintf( '%d design variables exist (write each by its "reference": a font variable is a $variable token, never var())', count( $design['variables'] ) );
 		}
 		if ( ! empty( $design['fonts'] ) ) {
 			$facts[] = 'global fonts: ' . implode( '/', array_filter( array_map( 'strval', (array) $design['fonts'] ) ) );
@@ -137,7 +137,8 @@ class Saddle_Divi_Bundle {
 					'saddle_divi_bundle_conventions',
 					array(
 						__( 'Structure: section > row > column > modules; trees are validated on every write, invalid ones rejected.', 'saddle' ),
-						__( 'Prefer global colors/variables (var(--gcid-…)/var(--gvid-…)) over ad-hoc hex — a token change updates everywhere.', 'saddle' ),
+						__( 'Presets first, then tokens, then hand styling: a global color as var(--gcid-…), a variable by its "reference" (a font variable as its $variable token, never var()). A token change updates every page.', 'saddle' ),
+						__( 'A CSS id or class goes at module.advanced.htmlAttributes (desktop only). Screen sizes are the breakpoints divi-check-setup lists ("phone", not "phoneWide").', 'saddle' ),
 						__( 'A styled button needs the enable switch on ( <attr>.decoration.button.desktop.value.enable = "on" ) or it renders ghost.', 'saddle' ),
 						__( 'After building, run verify-page and fix by address until the score is acceptable.', 'saddle' ),
 					)
@@ -174,7 +175,7 @@ class Saddle_Divi_Bundle {
 		}
 
 		$variables = Saddle_Divi_Design::list_variables();
-		$presets   = Saddle_Divi_Design::list_global_presets( array() );
+		$presets   = Saddle_Divi_Design::list_global_presets( array( 'kind' => 'all' ) );
 		$fonts     = Saddle_Divi_Design::get_global_fonts();
 
 		return array(
@@ -238,7 +239,7 @@ class Saddle_Divi_Bundle {
 		}
 
 		return substr(
-			md5( (string) Saddle_Divi::version() . '|' . md5( implode( ',', $plugins ) ) . '|' . $design ),
+			md5( (string) Saddle_Divi::version() . '|' . ( defined( 'SADDLE_VERSION' ) ? SADDLE_VERSION : '' ) . '|' . md5( implode( ',', $plugins ) ) . '|' . $design ),
 			0,
 			12
 		);

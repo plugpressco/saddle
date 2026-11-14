@@ -11,6 +11,8 @@
  * @package Saddle
  */
 
+require_once __DIR__ . '/divi-test-paths.php';
+
 class Saddle_Divi_Context_Bundle_Test extends WP_UnitTestCase {
 
 	private $admin;
@@ -64,6 +66,62 @@ class Saddle_Divi_Context_Bundle_Test extends WP_UnitTestCase {
 		parent::tear_down();
 	}
 
+	/* -------- caches follow SaddleWP's own version -------- */
+
+	public function test_a_bundle_cached_under_a_key_without_saddlewps_version_is_rebuilt() {
+		// The key before SaddleWP's version joined it: Divi's version, the
+		// active plugins, the design system (empty here, Divi is not loaded).
+		$plugins = (array) get_option( 'active_plugins', array() );
+		$old_key = substr( md5( (string) Saddle_Divi::version() . '|' . md5( implode( ',', $plugins ) ) . '|' ), 0, 12 );
+		set_transient(
+			Saddle_Divi_Bundle::TRANSIENT,
+			array(
+				'version' => $old_key,
+				'modules' => array( array( 'type' => 'stale/module' ) ),
+			)
+		);
+
+		$bundle = Saddle_Divi_Bundle::get();
+		$this->assertNotSame( $old_key, $bundle['version'] );
+		$this->assertSame( 'saddletest/plain-box', $bundle['modules'][0]['type'], 'An update of SaddleWP rebuilds the bundle.' );
+	}
+
+	public function test_the_module_index_cache_carries_saddlewps_version_and_the_catalog_facts() {
+		$cached = get_transient( Saddle_Divi_Schema::INDEX_TRANSIENT );
+		$this->assertSame( SADDLE_VERSION, $cached['s'] );
+		$this->assertSame( 'Plain Box', $cached['sum']['saddletest/plain-box']['title'] );
+		$this->assertSame( $cached['sum']['saddletest/plain-box'], Saddle_Divi_Schema::summary( 'saddletest/plain-box' ) );
+		$this->assertNull( Saddle_Divi_Schema::summary( 'saddletest/none' ) );
+	}
+
+	/**
+	 * Listing every module keeps only the catalog facts in memory, not each
+	 * decoded module.json. On Divi 5.10.1's core modules plus ~200 pack
+	 * modules the listing held about 41 MB before.
+	 */
+	public function test_listing_modules_keeps_no_decoded_module_json_in_memory() {
+		$dirs = array( Saddle_Test_Divi_Paths::components_or_skip() );
+		$pack = Saddle_Test_Divi_Paths::pack();
+		if ( '' !== $pack ) {
+			$dirs[] = $pack;
+		}
+		remove_all_filters( 'saddle_divi_module_json_dirs' );
+		add_filter(
+			'saddle_divi_module_json_dirs',
+			static function () use ( $dirs ) {
+				return $dirs;
+			}
+		);
+		Saddle_Divi_Schema::index( true );
+
+		$before  = memory_get_usage();
+		$modules = Saddle_Divi_Catalog::modules();
+		$held    = memory_get_usage() - $before;
+
+		$this->assertGreaterThan( 80, count( $modules ) );
+		$this->assertLessThan( 3 * MB_IN_BYTES, $held, 'The catalog rows only.' );
+	}
+
 	/* -------- the one-call bundle -------- */
 
 	public function test_bundle_ability_returns_catalog_conventions_and_version() {
@@ -98,10 +156,7 @@ class Saddle_Divi_Context_Bundle_Test extends WP_UnitTestCase {
 			$result['modules'][0]
 		);
 
-		$dir = getenv( 'SADDLE_TEST_DIVI_COMPONENTS' ) ?: '/Users/fahim/Workspace/wp/divi-dev/wp-content/themes/Divi/includes/builder-5/visual-builder/packages/module-library/src/components';
-		if ( ! is_dir( $dir ) ) {
-			$this->markTestSkipped( 'Divi 5 module.json files are not on this machine.' );
-		}
+		$dir = Saddle_Test_Divi_Paths::components_or_skip();
 		remove_all_filters( 'saddle_divi_module_json_dirs' );
 		add_filter(
 			'saddle_divi_module_json_dirs',

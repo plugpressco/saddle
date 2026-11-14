@@ -138,6 +138,8 @@ class Saddle_Divi_Render_Verify_Test extends WP_UnitTestCase {
 
 	public function tear_down() {
 		remove_all_filters( 'saddle_divi_module_json_dirs' );
+		remove_all_filters( 'saddle_divi_editable_post_types' );
+		unregister_post_type( 'saddletest_course' );
 		remove_filter( 'saddle_divi_active', '__return_true' );
 		delete_transient( Saddle_Divi_Schema::INDEX_TRANSIENT );
 		Saddle_Divi_Schema::index( true );
@@ -346,5 +348,170 @@ class Saddle_Divi_Render_Verify_Test extends WP_UnitTestCase {
 		$this->assertSame( 'structural', $result['findings'][0]['source'] );
 		$this->assertSame( '1', $result['findings'][0]['address'] );
 		$this->assertLessThanOrEqual( 75, $result['score'] );
+	}
+
+	/* -------- lint notes are advice -------- */
+
+	/**
+	 * Lint severity "note" (round 2) cost 3 points like a warning, so a page
+	 * could drop a grade on taste alone. A note now costs nothing, is
+	 * counted and returned apart, and never caps the grade.
+	 */
+	public function test_a_note_costs_no_points_and_is_returned_apart() {
+		// The real advice rules need content this fixture cannot carry (an
+		// emoji is stored as an entity on this test database), so a rule
+		// that gives one note drives the real lint and verify engines.
+		$id   = $this->divi_page( array( $this->clean_button() ) );
+		$note = new Saddle_Test_Note_Rule();
+		add_filter(
+			'saddle_lint_rules',
+			static function ( $rules ) use ( $note ) {
+				$rules[] = $note;
+				return $rules;
+			}
+		);
+
+		$lint = $this->run_ability( 'lint-page', array( 'post_id' => $id ) );
+		$this->assertSame( array( 'test-note' ), wp_list_pluck( $lint['violations'], 'rule' ) );
+		$this->assertSame( 1, $lint['notes'] );
+		$this->assertSame( 0, $lint['errors'] );
+
+		$result = $this->run_ability( 'verify-page', array( 'post_id' => $id ) );
+		$this->assertSame( 100, $result['score'] );
+		$this->assertSame( 'A', $result['grade'] );
+		$this->assertSame( array(), $result['findings'] );
+		$this->assertSame( 1, $result['counts']['notes'] );
+		$this->assertSame( 0, $result['counts']['warnings'] );
+		remove_all_filters( 'saddle_lint_rules' );
+		$this->assertSame( 'test-note', $result['notes'][0]['rule'] );
+		$this->assertSame( 'note', $result['notes'][0]['severity'] );
+		$this->assertStringContainsString( '"notes"', $result['note'] );
+		$this->assertStringContainsString( 'costs no points', wp_get_ability( 'saddle/verify-page' )->get_description() );
+		$this->assertStringContainsString( 'Severity "note"', wp_get_ability( 'saddle/lint-page' )->get_description() );
+	}
+
+	/* -------- Divi pages of other post types -------- */
+
+	/**
+	 * lint-page, verify-page, render-node, get-preview-url and
+	 * divi-get-rendered-page checked Saddle_Post_Types::content_types(), so a
+	 * Divi 5 page of a type the Divi tools edit but the content tools do not
+	 * list (a builder-only type) was "not found" in the very tools that check
+	 * the build.
+	 */
+	public function test_the_check_tools_open_a_divi_page_of_another_post_type() {
+		$id = $this->builder_only_page( '<!-- wp:divi/section --><!-- wp:divi/row --><!-- wp:divi/column -->' . $this->clean_button() . '<!-- /wp:divi/column --><!-- /wp:divi/row --><!-- /wp:divi/section -->' );
+		$this->assertNotContains( 'saddletest_course', Saddle_Post_Types::content_types(), 'The fixture type is outside the content tools.' );
+
+		$this->assertNotWPError( $this->run_ability( 'lint-page', array( 'post_id' => $id ) ) );
+		$verify = $this->run_ability( 'verify-page', array( 'post_id' => $id ) );
+		$this->assertNotWPError( $verify );
+		$this->assertSame( 100, $verify['score'], wp_json_encode( $verify['findings'] ) );
+		$this->assertNotWPError( $this->run_ability( 'render-node', array( 'post_id' => $id ) ) );
+		$preview = $this->run_ability( 'get-preview-url', array( 'post_id' => $id ) );
+		$this->assertNotWPError( $preview );
+		$this->assertStringContainsString( 'p=' . $id, $preview['url'] );
+
+		add_filter( 'pre_http_request', array( $this, 'answer_with_a_page' ), 10, 3 );
+		$rendered = $this->run_ability( 'divi-get-rendered-page', array( 'post_id' => $id ) );
+		remove_filter( 'pre_http_request', array( $this, 'answer_with_a_page' ), 10 );
+		$this->assertNotWPError( $rendered );
+		$this->assertStringContainsString( 'Course outline', $rendered['html'] );
+	}
+
+	public function test_the_same_access_checks_still_apply() {
+		$id = $this->builder_only_page( '<!-- wp:divi/section --><!-- /wp:divi/section -->' );
+
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'subscriber' ) ) );
+		foreach ( array( 'lint-page', 'verify-page', 'render-node', 'get-preview-url', 'divi-get-rendered-page' ) as $tool ) {
+			$result = $this->run_ability( $tool, array( 'post_id' => $id ) );
+			$this->assertWPError( $result, $tool );
+			$this->assertSame( 'saddle_forbidden', $result->get_error_code(), "{$tool}: the draft stays closed to an account that cannot edit it." );
+		}
+	}
+
+	public function test_only_a_divi_5_page_of_that_type_is_opened() {
+		$plain = $this->builder_only_page( '<p>Not a Divi page.</p>' );
+		$this->assertSame( 'saddle_not_found', $this->run_ability( 'verify-page', array( 'post_id' => $plain ) )->get_error_code() );
+
+		// Without Divi, the tools accept exactly the content types, as before.
+		$divi = $this->builder_only_page( '<!-- wp:divi/section --><!-- /wp:divi/section -->' );
+		remove_filter( 'saddle_divi_active', '__return_true' );
+		add_filter( 'saddle_divi_active', '__return_false' );
+		$this->assertSame( Saddle_Post_Types::content_types(), Saddle_Verify::page_types( $divi ) );
+		$this->assertSame( 'saddle_not_found', $this->run_ability( 'lint-page', array( 'post_id' => $divi ) )->get_error_code() );
+		remove_filter( 'saddle_divi_active', '__return_false' );
+		add_filter( 'saddle_divi_active', '__return_true' );
+	}
+
+	/**
+	 * The module the clean page above scores 100 with.
+	 */
+	private function clean_button() {
+		return $this->module_markup(
+			'saddletest/fancy-button',
+			array(
+				'button' => array(
+					'innerContent' => array( 'desktop' => array( 'value' => array( 'text' => 'Go' ) ) ),
+					'decoration'   => array( 'font' => array( 'font' => array( 'desktop' => array( 'value' => array( 'color' => '#ffffff' ) ) ) ) ),
+				),
+			)
+		);
+	}
+
+	/**
+	 * A draft of a type Divi's builder edits but WordPress lists nowhere
+	 * (no admin screen, not public), added through the Divi tools' filter.
+	 */
+	private function builder_only_page( $content ) {
+		register_post_type(
+			'saddletest_course',
+			array(
+				'public'  => false,
+				'show_ui' => false,
+			)
+		);
+		add_filter(
+			'saddle_divi_editable_post_types',
+			static function ( $types ) {
+				$types[] = 'saddletest_course';
+				return $types;
+			}
+		);
+		return self::factory()->post->create(
+			array(
+				'post_type'    => 'saddletest_course',
+				'post_status'  => 'draft',
+				'post_author'  => $this->admin,
+				'post_content' => $content,
+			)
+		);
+	}
+
+	public function answer_with_a_page() {
+		return array(
+			'headers'  => array(),
+			'body'     => '<html><body><div class="et-l et-l--post"><div class="et_pb_text"><p>Course outline</p></div></div></body></html>',
+			'response' => array(
+				'code'    => 200,
+				'message' => 'OK',
+			),
+			'cookies'  => array(),
+			'filename' => null,
+		);
+	}
+}
+
+/**
+ * A lint rule that gives one note, at the first node.
+ */
+class Saddle_Test_Note_Rule extends Saddle_Lint_Rule {
+
+	public function id() {
+		return 'test-note';
+	}
+
+	public function check( array $nodes, Saddle_Lint_Accessor $accessor ) {
+		return $nodes ? array( $this->violation( $nodes[0]['address'], Saddle_Lint::SEVERITY_NOTE, 'Advice.', 'Weigh it.' ) ) : array();
 	}
 }

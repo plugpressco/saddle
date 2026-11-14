@@ -119,6 +119,31 @@ class Saddle_Divi_Dynamic_Sources_Test extends WP_UnitTestCase {
 		$this->assertStringNotContainsString( '_edit_lock', wp_json_encode( $entries ), 'The site\'s meta keys are not listed.' );
 	}
 
+	public function test_site_sources_go_only_to_accounts_that_can_edit_posts() {
+		add_filter( 'saddle_wc_active', '__return_true' );
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'subscriber' ) ) );
+		$out = $this->listing();
+
+		$this->assertSame( 'builtin', $out['from'] );
+		$this->assertArrayHasKey( 'limited', $out );
+		$this->assertNotContains( 'post_link_url_page', self::names( $out['page']['post'] ), 'Post types are site data.' );
+		$this->assertArrayNotHasKey( 'product', $out['page'] );
+		$this->assertContains( 'post_title', self::names( $out['page']['post'] ), 'Divi\'s standard sources stay.' );
+		$this->assertContains( 'loop_post_title', self::names( $out['loop']['post']['sources'] ) );
+	}
+
+	public function test_raw_html_is_listed_only_for_accounts_that_may_post_unfiltered_html() {
+		$settings = static function ( array $out ) {
+			$rows = array_column( $out['loop']['post']['sources'], 'settings', 'name' );
+			return $rows['loop_post_meta_key_manual_custom_field'];
+		};
+		$this->assertContains( 'enable_html', $settings( $this->listing() ) );
+
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'author' ) ) );
+		$this->assertFalse( current_user_can( 'unfiltered_html' ) );
+		$this->assertNotContains( 'enable_html', $settings( $this->listing() ) );
+	}
+
 	public function test_list_is_readable_at_the_read_tier() {
 		$this->assertTrue( wp_get_ability( 'saddle/divi-list-dynamic-sources' )->check_permissions( array() ) );
 	}

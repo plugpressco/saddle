@@ -344,6 +344,150 @@ class Saddle_Divi_Loop_Query_Test extends WP_UnitTestCase {
 		);
 	}
 
+	/* -------- sub types that can be looped -------- */
+
+	public function test_an_empty_sub_types_list_keeps_the_default_and_says_so() {
+		$id     = $this->page();
+		$result = $this->run_ability( 'divi-enable-loop', array( 'post_id' => $id, 'address' => '0.0.0.0', 'sub_types' => array() ) );
+		$this->assertNotWPError( $result );
+		$this->assertSame( 'post', $this->loop( $id )['subTypes'][0]['value'], 'With no sub type Divi would list every post type.' );
+		$this->assertStringContainsString( '"post"', implode( ' ', $this->filter_warnings( $result ) ) );
+
+		$this->run_ability( 'divi-edit-loop', array( 'post_id' => $id, 'address' => '0.0.0.0', 'query_type' => 'post_taxonomies', 'sub_types' => array( 'post_tag' ) ) );
+		$edited = $this->run_ability( 'divi-edit-loop', array( 'post_id' => $id, 'address' => '0.0.0.0', 'sub_types' => array() ) );
+		$this->assertNotWPError( $edited );
+		$this->assertSame( 'category', $this->loop( $id )['subTypes'][0]['value'] );
+	}
+
+	public function test_only_viewable_post_types_and_taxonomies_can_be_looped() {
+		register_post_type( 'saddle_hidden', array( 'public' => false ) );
+		register_taxonomy( 'saddle_hidden_tax', 'post', array( 'public' => false ) );
+		$id = $this->page();
+
+		foreach ( array(
+			array( 'post_types', 'saddle_hidden' ),
+			array( 'post_types', 'attachment' ),
+			array( 'post_taxonomies', 'saddle_hidden_tax' ),
+		) as $case ) {
+			$result = $this->run_ability( 'divi-enable-loop', array( 'post_id' => $id, 'address' => '0.0.0.0', 'query_type' => $case[0], 'sub_types' => array( $case[1] ) ) );
+			$this->assertWPError( $result, $case[1] );
+			$this->assertSame( 'saddle_bad_sub_type', $result->get_error_code() );
+			$this->assertStringContainsString( 'Valid values:', $result->get_error_message() );
+		}
+		$this->assertSame( array(), $this->loop( $id ) );
+
+		$out   = $this->run_ability( 'divi-list-loop-query-types', array() );
+		$types = array_column( $out['query_types'], 'sub_types', 'type' );
+		$this->assertNotContains( 'saddle_hidden', $types['post_types'], 'The list offers what the tools accept.' );
+		$this->assertNotContains( 'attachment', $types['post_types'] );
+		$this->assertContains( 'page', $types['post_types'] );
+		$this->assertNotContains( 'saddle_hidden_tax', $types['post_taxonomies'] );
+		$this->assertContains( 'category', $types['post_taxonomies'] );
+
+		unregister_post_type( 'saddle_hidden' );
+		unregister_taxonomy( 'saddle_hidden_tax' );
+	}
+
+	/* -------- who may loop users -------- */
+
+	public function test_a_user_loop_needs_an_account_that_can_list_users() {
+		$id     = $this->page();
+		$editor = self::factory()->user->create( array( 'role' => 'editor' ) );
+		wp_set_current_user( $editor );
+
+		$refused = $this->run_ability( 'divi-enable-loop', array( 'post_id' => $id, 'address' => '0.0.0.0', 'query_type' => 'user_roles', 'sub_types' => array( 'administrator' ) ) );
+		$this->assertWPError( $refused );
+		$this->assertSame( 'saddle_loop_needs_list_users', $refused->get_error_code() );
+		$this->assertSame( array(), $this->loop( $id ) );
+
+		$this->run_ability( 'divi-enable-loop', array( 'post_id' => $id, 'address' => '0.0.0.0' ) );
+		$switch = $this->run_ability( 'divi-edit-loop', array( 'post_id' => $id, 'address' => '0.0.0.0', 'query_type' => 'users' ) );
+		$this->assertWPError( $switch, 'Switching an existing loop to users is the same.' );
+
+		wp_get_current_user()->add_cap( 'list_users' );
+		$allowed = $this->run_ability( 'divi-edit-loop', array( 'post_id' => $id, 'address' => '0.0.0.0', 'query_type' => 'user_roles' ) );
+		$this->assertNotWPError( $allowed );
+	}
+
+	/* -------- custom field conditions -------- */
+
+	public function test_meta_query_keys_follow_the_custom_field_rule() {
+		$id = $this->page();
+
+		$protected = $this->run_ability( 'divi-enable-loop', array( 'post_id' => $id, 'address' => '0.0.0.0', 'meta_query' => array( array( 'key' => '_secret', 'value' => 'a', 'compare' => 'LIKE' ) ) ) );
+		$this->assertWPError( $protected );
+		$this->assertSame( 'saddle_protected_meta', $protected->get_error_code() );
+		$this->assertSame( array(), $this->loop( $id ) );
+
+		$allow = static function () {
+			return array( '_price' );
+		};
+		add_filter( 'saddle_dynamic_meta_allowlist', $allow );
+		$allowed = $this->run_ability( 'divi-enable-loop', array( 'post_id' => $id, 'address' => '0.0.0.0', 'meta_query' => array( array( 'key' => '_price', 'value' => '10', 'compare' => '>=', 'type' => 'NUMERIC' ) ) ) );
+		remove_filter( 'saddle_dynamic_meta_allowlist', $allow );
+		$this->assertNotWPError( $allowed, 'An allowed key works as in a binding.' );
+		$this->assertSame( '_price', $this->loop( $id )['metaQuery'][0]['metaKey'] );
+
+		// A user loop's conditions read user fields: an administrator's call.
+		$lister = self::factory()->user->create( array( 'role' => 'editor' ) );
+		get_user_by( 'id', $lister )->add_cap( 'list_users' );
+		wp_set_current_user( $lister );
+		$user_meta = $this->run_ability( 'divi-enable-loop', array( 'post_id' => $id, 'address' => '0.0.0.0', 'query_type' => 'user_roles', 'meta_query' => array( array( 'key' => 'billing_phone', 'value' => '555', 'compare' => 'LIKE' ) ) ) );
+		$this->assertWPError( $user_meta );
+		$this->assertSame( 'saddle_protected_meta', $user_meta->get_error_code() );
+	}
+
+	/* -------- changing what the loop lists -------- */
+
+	public function test_changing_the_loop_family_clears_ids_and_conditions_and_names_them() {
+		$post = self::factory()->post->create();
+		$id   = $this->page();
+		$this->run_ability(
+			'divi-enable-loop',
+			array(
+				'post_id'              => $id,
+				'address'              => '0.0.0.0',
+				'include_posts'        => array( $post ),
+				'meta_query'           => array( array( 'key' => 'price', 'value' => '1' ) ),
+				'exclude_current_post' => true,
+			)
+		);
+
+		$same_family = $this->run_ability( 'divi-edit-loop', array( 'post_id' => $id, 'address' => '0.0.0.0', 'query_type' => 'current_page' ) );
+		$this->assertNotWPError( $same_family );
+		$this->assertSame( (string) $post, $this->loop( $id )['includeSpecificPosts'][0]['value'], 'Still a post loop: the posts filter stays.' );
+
+		$result = $this->run_ability( 'divi-edit-loop', array( 'post_id' => $id, 'address' => '0.0.0.0', 'query_type' => 'user_roles' ) );
+		$this->assertNotWPError( $result );
+		$loop = $this->loop( $id );
+		foreach ( array( 'includeSpecificPosts', 'metaQuery', 'excludeCurrentPost' ) as $key ) {
+			$this->assertArrayNotHasKey( $key, $loop, 'A user loop would read post ids as user ids.' );
+		}
+		$warning = implode( ' ', $this->filter_warnings( $result ) );
+		$this->assertStringContainsString( 'include_posts', $warning );
+		$this->assertStringContainsString( 'meta_query', $warning );
+		$this->assertStringContainsString( 'exclude_current_post', $warning );
+	}
+
+	/* -------- ACF repeater name -------- */
+
+	public function test_a_repeater_name_is_stored_lowercase_as_divi_reads_it() {
+		// Divi reads the query type through sanitize_key() and then finds the
+		// repeater by name without regard to case. Declared here, after every
+		// test that needs ACF to be missing has run in this class.
+		if ( ! function_exists( 'acf_get_field_groups' ) ) {
+			function acf_get_field_groups() { // phpcs:ignore Squiz.Commenting.FunctionComment.Missing -- A test stand-in for the ACF probe.
+				return array();
+			}
+		}
+		$id     = $this->page();
+		$result = $this->run_ability( 'divi-enable-loop', array( 'post_id' => $id, 'address' => '0.0.0.0', 'query_type' => 'acf_repeater', 'repeater_field' => 'TeamMembers' ) );
+		$this->assertNotWPError( $result );
+		$this->assertSame( 'repeater_teammembers', $this->loop( $id )['queryType'] );
+	}
+
+	/* -------- reference -------- */
+
 	/* -------- reference -------- */
 
 	public function test_loop_reference_lists_types_orders_and_filters() {
@@ -359,5 +503,18 @@ class Saddle_Divi_Loop_Query_Test extends WP_UnitTestCase {
 		$this->assertSame( array( 'desc', 'asc' ), array_keys( $out['order'] ) );
 		$this->assertArrayHasKey( 'meta_query', $out['filters'] );
 		$this->assertArrayHasKey( 'loop_id', $out );
+	}
+
+	public function test_the_loop_reference_lists_site_values_only_to_accounts_that_can_edit_posts() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'subscriber' ) ) );
+		Saddle_Capabilities::set_tier( 'read' );
+		$out = $this->run_ability( 'divi-list-loop-query-types', array() );
+
+		$this->assertNotWPError( $out );
+		foreach ( $out['query_types'] as $type ) {
+			$this->assertSame( array(), $type['sub_types'], $type['type'] );
+		}
+		$this->assertStringContainsString( 'cannot edit posts', $out['note'] );
+		$this->assertContains( 'date', $out['query_types'][0]['order_by'], 'The fixed reference stays.' );
 	}
 }

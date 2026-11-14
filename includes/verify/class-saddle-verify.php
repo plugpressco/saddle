@@ -38,6 +38,11 @@ class Saddle_Verify {
 	const FINDINGS_CAP = 40;
 
 	/**
+	 * Cap on returned notes (lint advice, severity "note").
+	 */
+	const NOTES_CAP = 20;
+
+	/**
 	 * Score penalties per finding, by source (lint splits by severity).
 	 */
 	const PENALTY_STRUCTURAL = 25;
@@ -46,12 +51,33 @@ class Saddle_Verify {
 	const PENALTY_LINT_WARN  = 3;
 
 	/**
+	 * The post types the quality-loop tools (lint-page, verify-page,
+	 * render-node, get-preview-url, divi-get-rendered-page) accept for one
+	 * post: the content types, plus the post's own type when it is a Divi 5
+	 * page of a type the Divi tools edit (a project, a product, a type Divi's
+	 * builder is switched on for). Each tool still checks access to the post.
+	 *
+	 * @param int $post_id Post id.
+	 * @return string[]
+	 */
+	public static function page_types( $post_id ) {
+		$types = Saddle_Post_Types::content_types();
+		$post  = $post_id ? get_post( (int) $post_id ) : null;
+		if ( $post instanceof WP_Post && ! in_array( $post->post_type, $types, true )
+			&& class_exists( 'Saddle_Divi' ) && Saddle_Divi::is_active()
+			&& Saddle_Divi::editable_post_type( $post->post_type ) && 'divi5' === Saddle_Divi::post_builder( $post ) ) {
+			$types[] = $post->post_type;
+		}
+		return $types;
+	}
+
+	/**
 	 * Verify a post's persisted state.
 	 *
 	 * @param WP_Post                   $post     The post (freshly read by the caller).
 	 * @param string|null               $builder  Detected builder, null = native.
 	 * @param Saddle_Lint_Accessor|null $accessor Lint accessor, null = no judgment pass.
-	 * @return array { score, grade, counts, findings, overflow, skipped }
+	 * @return array { score, grade, counts, findings, notes, overflow, skipped }
 	 */
 	public static function run( WP_Post $post, $builder, $accessor ) {
 		$tree     = Saddle_Tree::parse( $post->post_content );
@@ -110,6 +136,16 @@ class Saddle_Verify {
 			$skipped[] = 'lint';
 		}
 
+		// Lint advice (severity "note") is design taste, not a defect: it is
+		// returned on its own, costs no points and never caps the grade.
+		$notes = array();
+		foreach ( $findings as $i => $finding ) {
+			if ( isset( $finding['severity'] ) && Saddle_Lint::SEVERITY_NOTE === $finding['severity'] ) {
+				$notes[] = $finding;
+				unset( $findings[ $i ] );
+			}
+		}
+		$notes    = self::merge( $notes );
 		$findings = self::merge( $findings );
 		$score    = self::score( $findings );
 		$grade    = self::grade( $score, $findings );
@@ -120,11 +156,15 @@ class Saddle_Verify {
 			$findings = array_slice( $findings, 0, self::FINDINGS_CAP );
 		}
 
+		$counts          = self::counts( $findings, $overflow );
+		$counts['notes'] = count( $notes );
+
 		return array(
 			'score'    => $score,
 			'grade'    => $grade,
-			'counts'   => self::counts( $findings, $overflow ),
+			'counts'   => $counts,
 			'findings' => $findings,
+			'notes'    => array_slice( $notes, 0, self::NOTES_CAP ),
 			'overflow' => $overflow,
 			'skipped'  => array_values( array_unique( $skipped ) ),
 		);

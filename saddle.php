@@ -58,6 +58,7 @@ require_once SADDLE_DIR . 'includes/class-saddle-blocks-tree.php';
 require_once SADDLE_DIR . 'includes/class-saddle-blocks-author.php';
 require_once SADDLE_DIR . 'includes/class-saddle-blocks-schema.php';
 require_once SADDLE_DIR . 'includes/class-saddle-recipes.php';
+require_once SADDLE_DIR . 'includes/class-saddle-recipe-content.php';
 require_once SADDLE_DIR . 'includes/class-saddle-blocks-echo.php';
 require_once SADDLE_DIR . 'includes/lint/interface-saddle-lint-accessor.php';
 require_once SADDLE_DIR . 'includes/lint/interface-saddle-lint-style-accessor.php';
@@ -119,6 +120,9 @@ require_once SADDLE_DIR . 'includes/builders/divi/trait-saddle-divi-attr-resolut
 require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-view.php';
 require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-bundle.php';
 require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-recipes.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-recipe-parts.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-playbook.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-option-groups.php';
 require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-lint-accessor.php';
 require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-lint-facts.php';
 require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-text-facts.php';

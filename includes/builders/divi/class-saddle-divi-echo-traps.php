@@ -32,6 +32,11 @@ class Saddle_Divi_Echo_Traps {
 	const CAPITALIZATION = array( 'uppercase', 'lowercase', 'capitalize', 'smallCaps', 'allSmallCaps' );
 
 	/**
+	 * The Divi version that moved text case into "capitalization".
+	 */
+	const TEXT_CASE_SINCE = '5.8.1';
+
+	/**
 	 * Background image sizes (BackgroundStyleUtils::get_background_size_css(),
 	 * the Visual Builder's own option list). Anything else renders `initial`.
 	 */
@@ -230,9 +235,11 @@ class Saddle_Divi_Echo_Traps {
 		}
 
 		// Divi 5.8.1 moved text case out of `style` (FontCapitalizationMigration);
-		// a newer site ignores it there.
+		// a newer site ignores it there. A saved node Divi still converts at
+		// render is judged as converted (text_case_as_rendered(), from
+		// Saddle_Divi_Verify).
 		$version = Saddle_Divi::version();
-		if ( isset( $data['style'] ) && ( null === $version || version_compare( $version, '5.8.1', '>=' ) ) ) {
+		if ( isset( $data['style'] ) && ( null === $version || version_compare( $version, self::TEXT_CASE_SINCE, '>=' ) ) ) {
 			foreach ( array_intersect( (array) $data['style'], self::CAPITALIZATION ) as $word ) {
 				$warnings[] = sprintf(
 					/* translators: 1: module + address, 2: written path, 3: text case word. */
@@ -399,5 +406,100 @@ class Saddle_Divi_Echo_Traps {
 	 */
 	public static function row_path( $base, array $row ) {
 		return implode( '.', array_merge( array( $base ), $row['sub'], array( $row['breakpoint'], $row['state'] ) ) );
+	}
+
+	/**
+	 * Whether Divi moves a saved node's text case out of "style" when the
+	 * page renders. Read from Divi 5.10.1's FontCapitalizationMigration
+	 * (migrate_content_block() and MigrationUtils::content_needs_migration()),
+	 * not render-tested: it converts a module whose own builderVersion is
+	 * below 5.8.1 (none counts as 0.0.0), and skips the whole page as soon
+	 * as any module on it was saved by 5.8.1 or later.
+	 *
+	 * @param mixed    $node_version  The node's builderVersion.
+	 * @param string[] $page_versions Every builderVersion on the page.
+	 * @return bool
+	 */
+	public static function text_case_migrates( $node_version, array $page_versions ) {
+		$node = is_string( $node_version ) && '' !== $node_version ? $node_version : '0.0.0';
+		if ( version_compare( $node, self::TEXT_CASE_SINCE, '>=' ) ) {
+			return false;
+		}
+		foreach ( $page_versions as $version ) {
+			if ( is_string( $version ) && version_compare( $version, self::TEXT_CASE_SINCE, '>=' ) ) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Attrs with every text case word moved from a font's "style" to its
+	 * "capitalization", as FontCapitalizationMigration moves it at render
+	 * ("capitalize" in style becomes smallCaps; a capitalization already
+	 * set wins).
+	 *
+	 * @param array $attrs Node attrs.
+	 * @return array
+	 */
+	public static function text_case_as_rendered( array $attrs ) {
+		foreach ( $attrs as $key => $value ) {
+			if ( ! is_array( $value ) ) {
+				continue;
+			}
+			$attrs[ $key ] = 'font' === (string) $key && self::is_breakpoint_map( $value ) ? self::move_text_case( $value ) : self::text_case_as_rendered( $value );
+		}
+		return $attrs;
+	}
+
+	/**
+	 * Whether a value is a breakpoint map (a breakpoint holding "value").
+	 *
+	 * @param array $value Candidate.
+	 * @return bool
+	 */
+	private static function is_breakpoint_map( array $value ) {
+		foreach ( $value as $states ) {
+			if ( is_array( $states ) && array_key_exists( 'value', $states ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Move text case words out of style in one font breakpoint map.
+	 *
+	 * @param array $font Breakpoint => state => font values.
+	 * @return array
+	 */
+	private static function move_text_case( array $font ) {
+		foreach ( $font as $breakpoint => $states ) {
+			if ( ! is_array( $states ) || ! array_key_exists( 'value', $states ) ) {
+				continue;
+			}
+			foreach ( $states as $state => $data ) {
+				if ( ! is_array( $data ) || ! isset( $data['style'] ) || ! is_array( $data['style'] ) ) {
+					continue;
+				}
+				$found = null;
+				$kept  = array();
+				foreach ( $data['style'] as $word ) {
+					if ( is_string( $word ) && in_array( $word, self::CAPITALIZATION, true ) ) {
+						$found = 'capitalize' === $word ? 'smallCaps' : $word;
+					} else {
+						$kept[] = $word;
+					}
+				}
+				if ( null === $found ) {
+					continue;
+				}
+				$font[ $breakpoint ][ $state ]['style'] = $kept;
+				if ( empty( $data['capitalization'] ) ) {
+					$font[ $breakpoint ][ $state ]['capitalization'] = $found;
+				}
+			}
+		}
+		return $font;
 	}
 }

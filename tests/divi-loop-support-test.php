@@ -11,6 +11,8 @@
  * @package Saddle
  */
 
+require_once __DIR__ . '/divi-test-paths.php';
+
 class Saddle_Divi_Loop_Support_Test extends WP_UnitTestCase {
 
 	private static $fixture_dir;
@@ -117,6 +119,15 @@ class Saddle_Divi_Loop_Support_Test extends WP_UnitTestCase {
 		$this->assertSame( $before, get_post( $id )->post_content, 'A refused loop writes nothing.' );
 	}
 
+	public function test_with_no_container_that_can_loop_the_refusal_is_one_whole_sentence() {
+		$tree   = Saddle_Divi_Tree::parse( '<!-- wp:saddletest/own-query --><!-- /wp:saddletest/own-query -->' );
+		$result = Saddle_Divi_Loop::check_support( $tree, '0', 'saddletest/own-query' );
+
+		$this->assertWPError( $result );
+		$this->assertStringContainsString( 'add a group or column around it and put the loop there.', $result->get_error_message() );
+		$this->assertStringNotContainsString( ': .', $result->get_error_message() );
+	}
+
 	public function test_loop_on_a_module_that_offers_one_has_no_warning() {
 		$result = $this->enable( $this->page( 'saddletest/card' ) );
 		$this->assertNotWPError( $result );
@@ -134,10 +145,7 @@ class Saddle_Divi_Loop_Support_Test extends WP_UnitTestCase {
 	 * Divi 5 copy exists (skipped elsewhere).
 	 */
 	public function test_real_divi_module_json_decides_which_modules_loop() {
-		$components = '/Users/fahim/Workspace/wp/divi-dev/wp-content/themes/Divi/includes/builder-5/visual-builder/packages/module-library/src/components';
-		if ( ! is_dir( $components . '/blog' ) ) {
-			$this->markTestSkipped( 'No local Divi 5 source.' );
-		}
+		$components = Saddle_Test_Divi_Paths::components_or_skip();
 		$this->use_dirs( array( $components ) );
 
 		$this->assertFalse( Saddle_Divi_Loop::supports_loop( 'divi/blog' ) );
