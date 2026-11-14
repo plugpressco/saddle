@@ -132,7 +132,11 @@ class Saddle_Divi_Quality_Lint_Test extends WP_UnitTestCase {
 			array( 'title' => array( 'decoration' => array( 'font' => array( 'font' => array( 'desktop' => array( 'value' => array( 'headingLevel' => 'h4' ) ) ) ) ) ) )
 		);
 		$this->assertSame( 4, $accessor->heading_level( $heading ) );
-		$this->assertSame( 2, $accessor->heading_level( Saddle_Divi_Tree::make_module( 'divi/heading' ) ), 'divi/heading defaults to h2 like the builder.' );
+		// This used to say h2 for a heading with no level. Divi renders it
+		// as an h1 (its default render attributes; seen on Divi 5.10.1).
+		$titled = Saddle_Divi_Tree::make_module( 'divi/heading', array( 'title' => array( 'innerContent' => array( 'desktop' => array( 'value' => 'Hello' ) ) ) ) );
+		$this->assertSame( 1, $accessor->heading_level( $titled ), 'divi/heading with no level is an h1.' );
+		$this->assertNull( $accessor->heading_level( Saddle_Divi_Tree::make_module( 'divi/heading' ) ), 'Divi prints no heading element without text.' );
 
 		$image = Saddle_Divi_Tree::make_module(
 			'divi/image',
@@ -489,5 +493,43 @@ class Saddle_Divi_Quality_Lint_Test extends WP_UnitTestCase {
 		$this->assertCount( 1, $findings, 'One advisory per run at the section, not one per row.' );
 		$this->assertSame( '0', $findings[0]['address'] );
 		$this->assertStringContainsString( '12 consecutive', $findings[0]['message'] );
+	}
+
+	/**
+	 * Stored values of an unexpected shape (an import, a module pack, a
+	 * hand-written attr) are read as no value, never cast.
+	 */
+	public function test_lint_and_verify_read_odd_value_shapes_without_a_php_warning() {
+		$odd   = array(
+			'module' => array(
+				'decoration' => array(
+					'sizing' => array( 'desktop' => array( 'value' => array( 'flexType' => array( 'x' ) ) ) ),
+					'layout' => array(
+						'desktop' => array(
+							'value' => array(
+								'display'          => 'grid',
+								'gridColumnWidths' => array( 'equalFixed' ),
+								'gridColumnCount'  => array( 3 ),
+							),
+						),
+					),
+				),
+			),
+		);
+		$block = static function ( $name, $attrs, $inner = '' ) {
+			return '<!-- wp:' . $name . ( null === $attrs ? '' : ' ' . wp_json_encode( $attrs ) ) . ' -->' . $inner . '<!-- /wp:' . $name . ' -->';
+		};
+		$row   = $block( 'divi/row', $odd, $block( 'divi/column', $odd, $block( 'divi/text', null ) ) . $block( 'divi/column', $odd, $block( 'divi/text', null ) ) );
+		$page  = $block( 'divi/placeholder', null, $block( 'divi/section', $odd, $row . $row ) );
+		$id    = self::factory()->post->create(
+			array(
+				'post_type'    => 'page',
+				'post_content' => wp_slash( $page ),
+			)
+		);
+
+		foreach ( array( 'saddle/lint-page', 'saddle/verify-page' ) as $tool ) {
+			$this->assertNotWPError( wp_get_ability( $tool )->execute( array( 'post_id' => $id ) ), $tool );
+		}
 	}
 }

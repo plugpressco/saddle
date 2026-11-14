@@ -176,7 +176,9 @@ class Saddle_Divi_Loop_Query_Test extends WP_UnitTestCase {
 		$this->assertNotWPError( $result );
 
 		$loop = $this->loop( $id );
-		$this->assertSame( array( array( 'value' => 'post', 'label' => 'post' ) ), $loop['subTypes'] );
+		// The label used to be the slug ("post"); divi-enable-loop labels a
+		// sub type with the post type's label, and so does the rewrite.
+		$this->assertSame( array( array( 'value' => 'post', 'label' => 'Posts' ) ), $loop['subTypes'] );
 		$this->assertSame( 'descending', $loop['order'] );
 		$this->assertSame( 4, $loop['postPerPage'] );
 		$this->assertSame( 'loop-old123', $loop['loopId'] );

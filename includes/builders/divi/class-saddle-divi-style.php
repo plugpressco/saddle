@@ -43,7 +43,8 @@ class Saddle_Divi_Style {
 		'animation'    => array( 'style', 'direction', 'duration', 'delay', 'intensity', 'startingOpacity', 'speedCurve', 'repeat' ),
 		'transition'   => array( 'duration', 'delay', 'speedCurve' ),
 		'layout'       => array( 'display', 'flexDirection', 'flexWrap', 'justifyContent', 'alignItems', 'alignContent', 'columnGap', 'rowGap', 'collapseEmptyColumns', 'gridColumnCount', 'gridColumnWidth', 'gridColumnWidths', 'gridColumnMinWidth', 'gridRowCount', 'gridRowHeight', 'gridRowHeights', 'gridRowMinHeight', 'gridTemplateColumns', 'gridTemplateRows', 'gridAutoFlow', 'gridAutoColumns', 'gridAutoRows', 'gridDensity', 'gridJustifyItems', 'gridOffsetRules' ),
-		// The fill switch Divi renders ghost buttons without (live-verified).
+		// The custom-button switch: before Divi 5.10 a styled button showed
+		// no fill without it.
 		'button'       => array( 'enable', 'alignment', 'icon' ),
 		'icon'         => array( 'color', 'unicode', 'type', 'weight', 'size', 'useSize', 'show' ),
 		'fit'          => array( 'objectFit', 'objectPosition' ),

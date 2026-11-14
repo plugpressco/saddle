@@ -97,7 +97,10 @@ class Saddle_Lint_Rule_Repeated_Row_Layout extends Saddle_Lint_Rule {
 		}
 		$widths = array();
 		foreach ( $columns as $column ) {
-			$widths[] = (string) $facts->value_of( $column['block'], array( 'module', 'decoration', 'sizing' ), 'flexType' );
+			// A stored value that is not one string (an import, a pack)
+			// counts as no width.
+			$width    = $facts->value_of( $column['block'], array( 'module', 'decoration', 'sizing' ), 'flexType' );
+			$widths[] = is_scalar( $width ) ? (string) $width : '';
 		}
 		return count( $columns ) . ':' . implode( ',', $widths );
 	}

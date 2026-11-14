@@ -80,21 +80,35 @@ class Saddle_Divi_Driver implements Saddle_Builder_Driver {
 	}
 
 	/**
-	 * Validate a tree and persist it to post_content — the single save path
-	 * every Divi write uses. An invalid tree never reaches the database.
+	 * Validate a tree and persist it to post_content: the single save path
+	 * every Divi write uses. An invalid tree never reaches the database, and
+	 * neither does a new or changed loop, binding or interaction that breaks
+	 * the rules of the tools that write them (Saddle_Divi_Write_Checks).
 	 *
 	 * @param WP_Post $post Target post.
 	 * @param array   $tree Block tree.
 	 * @return int|WP_Error Total module count on success.
 	 */
 	public function persist( WP_Post $post, array $tree ) {
-		// Every SaddleWP write to a page also saves its loops in the shape
-		// Divi reads, whatever an older write left there.
+		// Every SaddleWP write to a page also saves its loops' older value
+		// shapes in the form Divi reads (Saddle_Divi_Loop_Repair::repair()).
 		list( $tree ) = Saddle_Divi_Loop::repair_tree( $tree );
 
 		$valid = Saddle_Divi_Tree::validate( $tree );
 		if ( is_wp_error( $valid ) ) {
 			return $valid;
+		}
+
+		$encoded = self::encode_error( $tree );
+		if ( is_wp_error( $encoded ) ) {
+			return $encoded;
+		}
+
+		$content = Saddle_Divi_Tree::serialize( $tree );
+		$stored  = get_post( $post->ID );
+		$checked = Saddle_Divi_Write_Checks::check( $stored ? (string) $stored->post_content : '', $tree, $content );
+		if ( is_wp_error( $checked ) ) {
+			return $checked;
 		}
 
 		$result = wp_update_post(
@@ -107,7 +121,7 @@ class Saddle_Divi_Driver implements Saddle_Builder_Driver {
 				'post_status'  => $post->post_status,
 				// wp_update_post unslashes; serialized block JSON contains
 				// backslash escapes that must survive the round trip.
-				'post_content' => wp_slash( Saddle_Divi_Tree::serialize( $tree ) ),
+				'post_content' => wp_slash( $content ),
 			),
 			true
 		);
@@ -119,6 +133,33 @@ class Saddle_Divi_Driver implements Saddle_Builder_Driver {
 		update_post_meta( $post->ID, '_et_pb_use_divi_5', 'on' );
 
 		return count( Saddle_Divi_Tree::flatten( $tree ) );
+	}
+
+	/**
+	 * Refuse a tree whose attrs cannot be saved: WordPress writes a block
+	 * whose attrs JSON fails to encode (deeper than 512 levels) with no attrs
+	 * at all, which would wipe the module.
+	 *
+	 * @param array $tree Block tree.
+	 * @return true|WP_Error
+	 */
+	private static function encode_error( array $tree ) {
+		if ( false !== wp_json_encode( $tree ) ) {
+			return true;
+		}
+		foreach ( Saddle_Divi_Tree::flatten( $tree ) as $node ) {
+			if ( $node['attrs'] && false === wp_json_encode( $node['attrs'] ) ) {
+				return new WP_Error(
+					'saddle_attrs_not_saved',
+					sprintf(
+						/* translators: %s: node address. */
+						__( 'Node %s: its attributes are nested too deeply to be saved. Nothing was saved.', 'saddle' ),
+						$node['address']
+					)
+				);
+			}
+		}
+		return new WP_Error( 'saddle_attrs_not_saved', __( 'The page is nested too deeply to be saved. Nothing was saved.', 'saddle' ) );
 	}
 
 	/**

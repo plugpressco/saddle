@@ -6,13 +6,14 @@
  * @package Saddle
  */
 
+require_once __DIR__ . '/divi-test-paths.php';
+
 class Saddle_Divi_Schema_Module_Test extends WP_UnitTestCase {
 
 	private static $fixture_dir;
 
 	private static function divi_components() {
-		$dir = getenv( 'SADDLE_TEST_DIVI_COMPONENTS' ) ?: '/Users/fahim/Workspace/wp/divi-dev/wp-content/themes/Divi/includes/builder-5/visual-builder/packages/module-library/src/components';
-		return is_dir( $dir ) ? $dir : '';
+		return Saddle_Test_Divi_Paths::components();
 	}
 
 	private static function write_module( $folder, array $json, array $render = array() ) {

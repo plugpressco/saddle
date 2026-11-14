@@ -26,6 +26,31 @@ class Saddle_Recipe_Content {
 	);
 
 	/**
+	 * The list entries clean() leaves out because a list is past its limit,
+	 * as "key[position]" (positions count from 0, as given).
+	 *
+	 * @param array $input Ability input.
+	 * @return string[]
+	 */
+	public static function over_limit( array $input ) {
+		$out = array();
+		foreach ( self::LIMITS as $key => $limit ) {
+			if ( empty( $input[ $key ] ) || ! is_array( $input[ $key ] ) ) {
+				continue;
+			}
+			$kept = 0;
+			foreach ( array_values( $input[ $key ] ) as $i => $entry ) {
+				if ( $kept >= $limit ) {
+					$out[] = $key . '[' . $i . ']';
+				} elseif ( is_array( $entry ) && $entry ) {
+					++$kept;
+				}
+			}
+		}
+		return $out;
+	}
+
+	/**
 	 * Optional recipe content from get-section-recipe's input, cleaned into
 	 * one shape. Strings are kept word for word (tags stripped from short
 	 * labels; simple markup kept in body text). Anything missing or empty is

@@ -44,14 +44,17 @@ class Saddle_Divi_Row_Layout {
 				|| '' !== self::other_display( $attrs ) || ! self::unset_widths( $attrs, $children ) ) {
 				return array( $attrs, $children, '' );
 			}
-			$layout = Saddle_Divi_Columns::layout( count( $children ) );
-			$note   = sprintf(
-				/* translators: 1: row address, 2: number of columns, 3: layout name, 4: columns per line per screen size. */
-				__( 'Row %1$s holds %2$d columns and nothing set their widths, so SaddleWP gave it equal columns (%3$s): %4$s. Without widths Divi stacks every column at full width. Pass "columns" on the row for other widths.', 'saddle' ),
+			$layout   = Saddle_Divi_Columns::layout( count( $children ) );
+			$per_line = self::per_line( $layout );
+			$note     = sprintf(
+				/* translators: 1: row address, 2: number of columns, 3: layout name, 4: columns per line on desktop, 5: on tablets, 6: on phones. */
+				__( 'Row %1$s holds %2$d columns and nothing set their widths, so SaddleWP gave it equal columns (%3$s): %4$d per line on desktop, %5$d on tablets, %6$d on phones. Without widths Divi stacks every column at full width. Pass "columns" on the row for other widths.', 'saddle' ),
 				$address,
 				count( $children ),
 				$layout['name'],
-				self::describe( $layout )
+				$per_line[0],
+				$per_line[1],
+				$per_line[2]
 			);
 			list( $attrs, $children ) = Saddle_Divi_Columns::put( $attrs, $children, $layout, false );
 			return array( $attrs, $children, $note );
@@ -137,18 +140,16 @@ class Saddle_Divi_Row_Layout {
 	 * How many columns sit side by side per screen size, for a note.
 	 *
 	 * @param array $layout From layout().
-	 * @return string e.g. "3 per line on desktop, 3 on tablets, 1 on phones".
+	 * @return int[] Columns per line on desktop, tablets and phones.
 	 */
-	public static function describe( array $layout ) {
+	public static function per_line( array $layout ) {
 		$first = $layout['cols'][0];
 		$tab   = null !== $first[1] ? $first[1] : $first[0];
 		$phone = null !== $first[2] ? $first[2] : $tab;
-		return sprintf(
-			/* translators: 1: columns per line on desktop, 2: on tablets, 3: on phones. */
-			__( '%1$d per line on desktop, %2$d on tablets, %3$d on phones', 'saddle' ),
+		return array(
 			min( count( $layout['cols'] ), Saddle_Divi_Columns::per_line( $first[0] ) ),
 			min( count( $layout['cols'] ), Saddle_Divi_Columns::per_line( $tab ) ),
-			min( count( $layout['cols'] ), Saddle_Divi_Columns::per_line( $phone ) )
+			min( count( $layout['cols'] ), Saddle_Divi_Columns::per_line( $phone ) ),
 		);
 	}
 

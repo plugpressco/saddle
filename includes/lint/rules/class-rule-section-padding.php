@@ -73,7 +73,7 @@ class Saddle_Lint_Rule_Section_Padding extends Saddle_Lint_Rule {
 				self::SEVERITY_WARN,
 				sprintf(
 					/* translators: %s: block/module type. */
-					__( '%s breaks the page\'s vertical rhythm — most sections share one top/bottom padding, this one differs.', 'saddle' ),
+					__( '%s breaks the page\'s vertical rhythm: most sections share one top/bottom padding, this one differs.', 'saddle' ),
 					$entry['node']['type']
 				),
 				__( 'Match the other sections\' vertical padding (a consistent ~96px rhythm is the usual mark), unless this section is deliberately tighter, like a thin banner.', 'saddle' )

@@ -145,7 +145,7 @@ function saddle_register_block_abilities() {
 		'saddle/get-section-recipe',
 		array(
 			'label'               => __( 'Get a section recipe', 'saddle' ),
-			'description'         => __( 'Returns one section recipe as a ready-to-insert node tree in SaddleWP\'s authoring format, matched to the site\'s builder: core blocks on a block theme, the builder\'s modules when a page builder is active. Read-only. Optional content (heading, text, buttons, items, plans, quotes, questions) is put in place of the placeholders, word for word, on a Divi 5 site; "content_applied" says whether the builder used it, and where it is false swap the copy in yourself. Pass the nodes to set-blocks / add-block, or to the builder\'s set-page / add-module. After inserting, apply colors and sizes from get-design-system.', 'saddle' ),
+			'description'         => __( 'Returns one section recipe as a ready-to-insert node tree in SaddleWP\'s authoring format, matched to the site\'s builder: core blocks on a block theme, the builder\'s modules when a page builder is active. Read-only. Optional content (heading, text, buttons, items, plans, quotes, questions) is put in place of the placeholders, word for word, on a Divi 5 site; "content_applied" is true when the builder used all of it, and "content_ignored" lists what had no place (a key such as "items", or a list entry such as "buttons[2]"): put that copy in yourself. Pass the nodes to set-blocks / add-block, or to the builder\'s set-page / add-module. After inserting, apply colors and sizes from get-design-system.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -600,7 +600,10 @@ class Saddle_Blocks_Abilities {
 		 * Let a page-builder addon supply its own node tree for a recipe name,
 		 * so the recipe vocabulary is shared across builders. Return
 		 * array( 'builder' => '<slug>', 'nodes' => array(...) ) to override,
-		 * plus 'content_applied' => true when the nodes carry $content.
+		 * plus 'content_applied' => true when the nodes carry all of
+		 * $content, or false with 'content_ignored' => string[] naming what
+		 * had no place (a key such as "items", or an entry such as
+		 * "buttons[1]").
 		 *
 		 * @param array|null $override Builder-specific recipe, or null.
 		 * @param string     $name     Recipe name.
@@ -610,10 +613,14 @@ class Saddle_Blocks_Abilities {
 		 *                             questions); empty when none was passed.
 		 */
 		$override = apply_filters( 'saddle_section_recipe', null, $name, $nodes, $content );
+		$ignored  = array();
 		if ( is_array( $override ) && ! empty( $override['nodes'] ) ) {
 			$nodes   = $override['nodes'];
 			$builder = isset( $override['builder'] ) ? (string) $override['builder'] : 'custom';
 			$applied = ! empty( $override['content_applied'] );
+			if ( isset( $override['content_ignored'] ) && is_array( $override['content_ignored'] ) ) {
+				$ignored = array_values( array_filter( $override['content_ignored'], 'is_string' ) );
+			}
 		}
 		if ( empty( $nodes ) ) {
 			return new WP_Error(
@@ -631,7 +638,14 @@ class Saddle_Blocks_Abilities {
 			'usage'   => __( 'Insert these nodes via set-blocks/add-block on a block theme, or the builder\'s set-page/add-module. Replace any placeholder copy that is left, then apply colors and sizes from get-design-system.', 'saddle' ),
 		);
 		if ( $content ) {
-			$out['content_applied'] = $applied;
+			// List entries past a list's limit never reach the recipe.
+			if ( $applied || $ignored ) {
+				$ignored = array_values( array_unique( array_merge( $ignored, Saddle_Recipe_Content::over_limit( (array) $input ) ) ) );
+			}
+			$out['content_applied'] = $applied && ! $ignored;
+			if ( $ignored ) {
+				$out['content_ignored'] = $ignored;
+			}
 		}
 		return $out;
 	}

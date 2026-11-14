@@ -15,7 +15,9 @@ defined( 'ABSPATH' ) || exit;
 class Saddle_Divi_Setting_Values {
 
 	/**
-	 * Cap on choices read from WordPress for one select.
+	 * Cap on choices read from WordPress for one select, for the list an
+	 * agent is shown. Whether a value is valid is checked against the site
+	 * itself (live_choice_exists()).
 	 */
 	const MAX_CHOICES = 200;
 
@@ -143,6 +145,43 @@ class Saddle_Divi_Setting_Values {
 				return self::pairs( array_values( get_taxonomies( array( 'public' => true ), 'objects' ) ), 'name', 'label' );
 		}
 		return array();
+	}
+
+	/**
+	 * Whether one value is a real choice of a WordPress-supplied list, read
+	 * from the site directly, so a choice past the shown list's cap (the
+	 * 201st category) is still accepted.
+	 *
+	 * @param string $source One of the live_options() sources.
+	 * @param string $key    The setting's key.
+	 * @param string $value  The value written.
+	 * @return bool
+	 */
+	public static function live_choice_exists( $source, $key, $value ) {
+		$value = (string) $value;
+		$id    = ctype_digit( $value ) ? (int) $value : 0;
+		switch ( $source ) {
+			case 'menus':
+				return $id > 0 && false !== wp_get_nav_menu_object( $id );
+			case 'post_types':
+				return array_key_exists( $value, self::post_types() );
+			case 'categories':
+				if ( 'categories' === $key && in_array( $value, array( 'all', 'current' ), true ) ) {
+					return true;
+				}
+				$term = $id > 0 ? get_term( $id, 'category' ) : null;
+				return $term instanceof WP_Term;
+			case 'cf7_forms':
+				$form = $id > 0 ? get_post( $id ) : null;
+				return $form instanceof WP_Post && 'wpcf7_contact_form' === $form->post_type && 'publish' === $form->post_status;
+			case 'widget_areas':
+				global $wp_registered_sidebars;
+				return is_array( $wp_registered_sidebars ) && in_array( $value, wp_list_pluck( array_values( $wp_registered_sidebars ), 'id' ), true );
+			case 'taxonomies':
+				$taxonomy = get_taxonomy( $value );
+				return $taxonomy instanceof WP_Taxonomy && $taxonomy->public;
+		}
+		return false;
 	}
 
 	/**

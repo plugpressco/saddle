@@ -380,14 +380,15 @@ class Saddle_Divi_Dynamic {
 	 * @return string[]
 	 */
 	public static function meta_allowlist() {
-		$public = class_exists( 'Saddle_WC' ) && Saddle_WC::is_active() ? array( '_price', '_regular_price', '_sale_price', '_stock_status', '_sku' ) : array();
+		$public = class_exists( 'Saddle_WC' ) && Saddle_WC::is_active() ? array( '_price', '_regular_price', '_sale_price' ) : array();
 
 		/**
 		 * Meta keys that may be bound to public dynamic content, or used in a
 		 * loop's custom field conditions, despite the protected "_" prefix.
-		 * While WooCommerce is active it holds the product fields every
-		 * product page shows (price, regular and sale price, stock status,
-		 * SKU); empty otherwise. Add only keys you know are safe to show.
+		 * While WooCommerce is active it holds the three price fields (price,
+		 * regular and sale price); empty otherwise. A store can hide other
+		 * product fields, such as the SKU, so they are not in the default.
+		 * Add only keys you know are safe to show.
 		 *
 		 * @param string[] $allowlist Allowed protected meta keys.
 		 */
@@ -402,7 +403,7 @@ class Saddle_Divi_Dynamic {
 	 * @return array array( settings, warnings ).
 	 */
 	public static function limit_raw_html( array $settings ) {
-		if ( ! array_key_exists( 'enable_html', $settings ) || current_user_can( 'unfiltered_html' ) ) {
+		if ( ! array_key_exists( 'enable_html', $settings ) || self::may_show_raw_html() ) {
 			return array( $settings, array() );
 		}
 		unset( $settings['enable_html'] );
@@ -410,6 +411,17 @@ class Saddle_Divi_Dynamic {
 			$settings,
 			array( __( 'enable_html was left out: only an account that may post unfiltered HTML can show a value as raw HTML, so Divi escapes it.', 'saddle' ) ),
 		);
+	}
+
+	/**
+	 * Whether this account may show a dynamic value as raw HTML: Divi prints
+	 * it unescaped when settings.enable_html is "on", and its builder offers
+	 * that only to an account that may post unfiltered HTML.
+	 *
+	 * @return bool
+	 */
+	public static function may_show_raw_html() {
+		return current_user_can( 'unfiltered_html' );
 	}
 
 	/**

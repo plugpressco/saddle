@@ -190,8 +190,8 @@ class Saddle_Divi_Tree extends Saddle_Tree {
 					'address' => $child_address,
 					'type'    => $child_name,
 					'problem' => sprintf(
-						/* translators: 1: child module type, 2: parent module type, 3: what the parent holds. */
-						__( '%1$s cannot be placed inside %2$s. %2$s holds: %3$s.', 'saddle' ),
+						/* translators: 1: child module type, 2: parent module type, 3: a sentence saying what the parent holds. */
+						__( '%1$s cannot be placed inside %2$s. %3$s', 'saddle' ),
 						$child_name,
 						$name,
 						$verdict

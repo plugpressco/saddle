@@ -51,16 +51,34 @@ class Saddle_Lint_Rule_Code_Layout extends Saddle_Lint_Rule {
 			$violations[] = $this->violation(
 				$node['address'],
 				Saddle_Lint::SEVERITY_NOTE,
-				sprintf(
-					/* translators: 1: number of layout tags, 2: "yes"/"no" style tag, 3: "yes"/"no" table. */
-					__( 'This code module holds page layout as raw HTML (%1$d layout tags, a style tag: %2$s, a table: %3$s). The owner cannot edit it in the Visual Builder, and the site\'s colors and presets never reach it.', 'saddle' ),
-					$layout['structural'],
-					$layout['style'] ? __( 'yes', 'saddle' ) : __( 'no', 'saddle' ),
-					$layout['table'] ? __( 'yes', 'saddle' ) : __( 'no', 'saddle' )
-				),
+				self::message( $layout ),
 				__( 'Rebuild it from real modules (divi-list-modules, then divi-add-module) and style it through attrs. Keep the code module only for embeds such as a booking widget or a map iframe.', 'saddle' )
 			);
 		}
 		return $violations;
+	}
+
+	/**
+	 * The finding, one whole sentence for each mix of what the HTML holds.
+	 *
+	 * @param array $layout From Saddle_Divi_Text_Facts::code_layout().
+	 * @return string
+	 */
+	private static function message( array $layout ) {
+		$tail = __( 'The owner cannot edit it in the Visual Builder, and the site\'s colors and presets never reach it.', 'saddle' );
+		if ( $layout['style'] && $layout['table'] ) {
+			/* translators: 1: number of layout tags, 2: the sentence about editing. */
+			$text = __( 'This code module holds page layout as raw HTML: %1$d layout tags, a style tag and a table. %2$s', 'saddle' );
+		} elseif ( $layout['style'] ) {
+			/* translators: 1: number of layout tags, 2: the sentence about editing. */
+			$text = __( 'This code module holds page layout as raw HTML: %1$d layout tags and a style tag. %2$s', 'saddle' );
+		} elseif ( $layout['table'] ) {
+			/* translators: 1: number of layout tags, 2: the sentence about editing. */
+			$text = __( 'This code module holds page layout as raw HTML: %1$d layout tags and a table. %2$s', 'saddle' );
+		} else {
+			/* translators: 1: number of layout tags, 2: the sentence about editing. */
+			$text = __( 'This code module holds page layout as raw HTML: %1$d layout tags. %2$s', 'saddle' );
+		}
+		return sprintf( $text, (int) $layout['structural'], $tail );
 	}
 }

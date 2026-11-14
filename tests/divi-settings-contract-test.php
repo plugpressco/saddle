@@ -12,6 +12,8 @@
  * the Slider, the Menu and every module pack, and had to guess where "post
  * count" or "which menu" lived.
  */
+require_once __DIR__ . '/divi-test-paths.php';
+
 class Saddle_Divi_Settings_Contract_Test extends WP_UnitTestCase {
 
 	const KEYS = array( 'path', 'attr', 'key', 'sub_name', 'id', 'source', 'label', 'description', 'control', 'options', 'options_source', 'default', 'responsive', 'hover', 'sticky', 'dynamic', 'group', 'value_shape' );
@@ -21,13 +23,11 @@ class Saddle_Divi_Settings_Contract_Test extends WP_UnitTestCase {
 	private static $fixture_dir;
 
 	private static function divi_components() {
-		$dir = getenv( 'SADDLE_TEST_DIVI_COMPONENTS' ) ?: '/Users/fahim/Workspace/wp/divi-dev/wp-content/themes/Divi/includes/builder-5/visual-builder/packages/module-library/src/components';
-		return is_dir( $dir ) ? $dir : '';
+		return Saddle_Test_Divi_Paths::components();
 	}
 
 	private static function pack_modules() {
-		$dir = getenv( 'SADDLE_TEST_DIVI_PACK' ) ?: '/Users/fahim/Workspace/wp/divi-dev/wp-content/plugins/divi-torque-pro/modules-json';
-		return is_dir( $dir ) ? $dir : '';
+		return Saddle_Test_Divi_Paths::pack();
 	}
 
 	public static function set_up_before_class() {
@@ -348,6 +348,27 @@ class Saddle_Divi_Settings_Contract_Test extends WP_UnitTestCase {
 		$this->assertArrayHasKey( 'all', $categories, 'Divi reads "all" and "current" as special values.' );
 
 		$this->assertSame( $settings['post.advanced.order']['options'], Saddle_Divi_Settings::options( $settings['post.advanced.order'] ), 'Static choices come back as they are.' );
+	}
+
+	public function test_a_choice_past_the_shown_list_is_still_valid() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+		$ids = array();
+		for ( $i = 0; $i < Saddle_Divi_Setting_Values::MAX_CHOICES + 5; $i++ ) {
+			$ids[] = self::factory()->category->create( array( 'name' => sprintf( 'Cat %03d', $i ) ) );
+		}
+		$last  = (string) end( $ids );
+		$entry = $this->by_id( 'saddletest/feed' )['post.advanced.categories'];
+		$shown = Saddle_Divi_Settings::options( $entry );
+
+		$this->assertArrayNotHasKey( $last, $shown, 'The list shown stays capped.' );
+		$this->assertSame( array( $last ), Saddle_Divi_Setting_Input::value( $entry, array( $last ), 'node 0 (saddletest/feed), setting post.advanced.categories' ) );
+		$this->assertSame( array( 'all' ), Saddle_Divi_Setting_Input::value( $entry, 'all', 'x' ) );
+		$this->assertWPError( Saddle_Divi_Setting_Input::value( $entry, array( '999999' ), 'x' ), 'A category that does not exist is still refused.' );
+
+		$menu_entry = $this->by_id( 'saddletest/feed' )['menu.advanced.menuId'];
+		$menu       = (string) wp_create_nav_menu( 'Footer menu' );
+		$this->assertSame( $menu, Saddle_Divi_Setting_Input::value( $menu_entry, $menu, 'x' ) );
+		$this->assertWPError( Saddle_Divi_Setting_Input::value( $menu_entry, (string) $ids[0], 'x' ), 'A category id is not a menu.' );
 	}
 
 	public function test_live_choices_need_an_account_that_may_edit_posts() {

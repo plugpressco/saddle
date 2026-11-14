@@ -55,7 +55,36 @@ class Saddle_Divi_Echo_Attrs {
 			$warnings = array_merge( $warnings, self::dividers( $advanced['dividers'], $location ) );
 		}
 		$warnings = array_merge( $warnings, self::button_groups( $type, $attrs, $location ) );
-		return array_merge( $warnings, self::unknown_tokens( $attrs, $location ) );
+		return array_merge( $warnings, self::unknown_tokens( $attrs, $location ), self::unknown_presets( $attrs, $location ) );
+	}
+
+	/**
+	 * Preset ids (modulePreset, groupPreset) that are not on this site: Divi
+	 * applies nothing for them. Silent when Divi's preset data cannot be read.
+	 *
+	 * @param array  $attrs    Expanded attrs.
+	 * @param string $location Module + address.
+	 * @return string[]
+	 */
+	private static function unknown_presets( array $attrs, $location ) {
+		$ids = Saddle_Divi_Tokens::preset_references( $attrs );
+		if ( ! $ids ) {
+			return array();
+		}
+		$known = Saddle_Divi_Tokens::preset_ids();
+		if ( null === $known ) {
+			return array();
+		}
+		$warnings = array();
+		foreach ( array_diff( $ids, $known ) as $id ) {
+			$warnings[] = sprintf(
+				/* translators: 1: preset id, 2: module + address. */
+				__( 'The preset "%1$s" on %2$s does not exist on this site, so Divi applies nothing for it. Use an id from divi-list-global-presets with kind "all".', 'saddle' ),
+				$id,
+				$location
+			);
+		}
+		return $warnings;
 	}
 
 	/**

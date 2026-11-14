@@ -363,6 +363,76 @@ class Saddle_Divi_Recipes_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( '"title":"Mine"', wp_json_encode( $divi['nodes'] ) );
 	}
 
+	public function test_content_a_recipe_has_no_place_for_is_reported() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+		$get = static function ( array $input ) {
+			return wp_get_ability( 'saddle/get-section-recipe' )->execute( $input );
+		};
+
+		// A hero used to answer content_applied true for items it has no place for.
+		$hero = $get(
+			array(
+				'name'    => 'hero',
+				'heading' => 'Mine',
+				'items'   => array( array( 'title' => 'One' ) ),
+			)
+		);
+		$this->assertFalse( $hero['content_applied'] );
+		$this->assertSame( array( 'items' ), $hero['content_ignored'] );
+		$this->assertStringContainsString( '"title":"Mine"', wp_json_encode( $hero['nodes'] ), 'What fits is still used.' );
+
+		$cta = $get(
+			array(
+				'name'    => 'cta',
+				'buttons' => array( array( 'text' => 'Go' ), array( 'text' => 'Later' ) ),
+			)
+		);
+		$this->assertFalse( $cta['content_applied'] );
+		$this->assertSame( array( 'buttons[1]' ), $cta['content_ignored'] );
+
+		$over = $get(
+			array(
+				'name'    => 'hero',
+				'buttons' => array( array( 'text' => 'A' ), array( 'text' => 'B' ), array( 'text' => 'C' ) ),
+			)
+		);
+		$this->assertFalse( $over['content_applied'] );
+		$this->assertSame( array( 'buttons[2]' ), $over['content_ignored'], 'A list entry past the limit is named too.' );
+
+		$all = $get(
+			array(
+				'name'    => 'features',
+				'heading' => 'Why us',
+				'items'   => array( array( 'title' => 'Fast' ) ),
+			)
+		);
+		$this->assertTrue( $all['content_applied'] );
+		$this->assertArrayNotHasKey( 'content_ignored', $all );
+	}
+
+	public function test_a_recipe_filter_can_report_ignored_content() {
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
+		$filter = static function () {
+			return array(
+				'builder'         => 'custom',
+				'nodes'           => array( array( 'type' => 'core/paragraph' ) ),
+				'content_applied' => false,
+				'content_ignored' => array( 'quotes' ),
+			);
+		};
+		add_filter( 'saddle_section_recipe', $filter, 5 );
+		$got = wp_get_ability( 'saddle/get-section-recipe' )->execute(
+			array(
+				'name'   => 'hero',
+				'quotes' => array( array( 'text' => 'Great' ) ),
+			)
+		);
+		remove_filter( 'saddle_section_recipe', $filter, 5 );
+
+		$this->assertFalse( $got['content_applied'] );
+		$this->assertSame( array( 'quotes' ), $got['content_ignored'] );
+	}
+
 	/* -------- helpers -------- */
 
 	/** @var string Accent the palette filter answers with. */

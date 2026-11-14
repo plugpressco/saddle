@@ -98,7 +98,8 @@ class Saddle_Lint_Rule_Grid_Phone_Columns extends Saddle_Lint_Rule {
 	 */
 	private function desktop_columns( array $node, Saddle_Divi_Lint_Facts $facts, array $layout ) {
 		$block  = $node['block'];
-		$widths = (string) $facts->value_of( $block, $layout, 'gridColumnWidths' );
+		$widths = $facts->value_of( $block, $layout, 'gridColumnWidths' );
+		$widths = is_scalar( $widths ) ? (string) $widths : '';
 		if ( in_array( $widths, array( 'equalMinimum', 'equalFixed' ), true ) ) {
 			return null;
 		}

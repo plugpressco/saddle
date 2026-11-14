@@ -382,10 +382,11 @@ class Saddle_Divi_Schema {
 				'elementType' => isset( $attr['elementType'] ) ? (string) $attr['elementType'] : null,
 			);
 
-			// Verified live: a styled button renders as ghost/outline until the
-			// custom-button toggle is on. Surface it where agents will read it.
+			// Before Divi 5.10 a styled button showed no fill until the
+			// custom-button toggle was on (on 5.10.1 it shows either way).
+			// Setting it is harmless, so it is taught on every version.
 			if ( isset( $attr['elementType'] ) && 'button' === $attr['elementType'] ) {
-				$entry['style_note'] = sprintf( 'To render a FILLED button, also set attrs { "%s.decoration.button.desktop.value.enable": "on" } — background/font styling alone produces a ghost/outline button.', $name );
+				$entry['style_note'] = sprintf( 'For a filled button, set attrs { "%s.decoration.button.desktop.value.enable": "on" } as well as the background and font color: before Divi 5.10 the fill does not show without it.', $name );
 			}
 
 			if ( null !== $content_fields ) {

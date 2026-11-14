@@ -33,6 +33,71 @@ class Saddle_Divi_Recipes {
 	const ACCENT = 'var(--gcid-primary-color)';
 
 	/**
+	 * The content each built-in recipe has a place for: content key => how
+	 * many list entries it uses (0: all the cleaned list keeps).
+	 */
+	const SLOTS = array(
+		'hero'         => array(
+			'heading' => 0,
+			'text'    => 0,
+			'buttons' => 0,
+		),
+		'features'     => array(
+			'heading' => 0,
+			'text'    => 0,
+			'items'   => 0,
+		),
+		'pricing'      => array(
+			'heading' => 0,
+			'text'    => 0,
+			'plans'   => 0,
+		),
+		'testimonials' => array(
+			'heading' => 0,
+			'text'    => 0,
+			'quotes'  => 0,
+		),
+		'cta'          => array(
+			'heading' => 0,
+			'text'    => 0,
+			'buttons' => 1,
+		),
+		'faq'          => array(
+			'heading'   => 0,
+			'text'      => 0,
+			'questions' => 0,
+		),
+	);
+
+	/**
+	 * The content given that a built-in recipe has no place for: a key it
+	 * does not use ("items"), or a list entry past the ones it uses
+	 * ("buttons[1]"). Null for a recipe another plugin adds, which reports
+	 * its own.
+	 *
+	 * @param string $name    Recipe name.
+	 * @param array  $content Cleaned content.
+	 * @return string[]|null
+	 */
+	public static function ignored( $name, array $content ) {
+		if ( ! isset( self::SLOTS[ $name ] ) ) {
+			return null;
+		}
+		$slots = self::SLOTS[ $name ];
+		$out   = array();
+		foreach ( $content as $key => $value ) {
+			if ( ! array_key_exists( $key, $slots ) ) {
+				$out[] = (string) $key;
+			} elseif ( $slots[ $key ] && is_array( $value ) ) {
+				foreach ( array_slice( array_keys( array_values( $value ) ), $slots[ $key ] ) as $i ) {
+					$out[] = $key . '[' . $i . ']';
+				}
+			}
+		}
+		return $out;
+	}
+
+	/**
 	 * The Divi node tree for a recipe name, or null if unknown.
 	 *
 	 * @param string $name    Recipe name.

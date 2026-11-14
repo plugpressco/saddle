@@ -228,7 +228,7 @@ class Saddle_Divi_Lint_Echo_Test extends WP_UnitTestCase {
 		$unstyled         = $this->module( 'divi/button' );
 
 		$this->assertTrue( $accessor->is_button( $styled_no_enable ) );
-		$this->assertFalse( $accessor->button_is_filled( $styled_no_enable ), 'Styled without enable=on renders ghost (live-verified).' );
+		$this->assertFalse( $accessor->button_is_filled( $styled_no_enable ), 'Styled without enable=on shows no fill before Divi 5.10, and the version here is unknown.' );
 		$this->assertTrue( $accessor->button_is_filled( $styled_enabled ) );
 		$this->assertTrue( $accessor->button_is_filled( $unstyled ), 'An unstyled button inherits its preset — not the lint\'s business.' );
 	}

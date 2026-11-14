@@ -10,6 +10,8 @@
  * @package Saddle
  */
 
+require_once __DIR__ . '/divi-test-paths.php';
+
 class Saddle_Divi_Nesting_Test extends WP_UnitTestCase {
 
 	private static $fixture_dir;
@@ -156,7 +158,9 @@ class Saddle_Divi_Nesting_Test extends WP_UnitTestCase {
 	public function test_a_child_module_outside_its_parent_is_refused() {
 		$problem = $this->problem( $this->in_column( array( $this->b( 'fix/item' ) ) ) );
 		$this->assertStringContainsString( 'fix/item cannot be placed inside divi/column', $problem );
-		$this->assertStringContainsString( 'not a child module', $problem );
+		// The reason is one whole sentence about the parent (it used to be a
+		// phrase put inside another sentence).
+		$this->assertStringContainsString( 'divi/column holds any module except a child module such as an accordion item', $problem );
 
 		$this->assertWPError( $this->in_column( array( $this->b( 'fix/box', array( $this->b( 'fix/item' ) ) ) ) ) );
 	}
@@ -174,10 +178,7 @@ class Saddle_Divi_Nesting_Test extends WP_UnitTestCase {
 	}
 
 	public function test_the_real_divi_accordion_takes_its_items() {
-		$components = '/Users/fahim/Workspace/wp/divi-dev/wp-content/themes/Divi/includes/builder-5/visual-builder/packages/module-library/src/components';
-		if ( ! is_dir( $components ) ) {
-			$this->markTestSkipped( 'Needs the Divi 5 module.json files.' );
-		}
+		$components = Saddle_Test_Divi_Paths::components_or_skip();
 		remove_all_filters( 'saddle_divi_module_json_dirs' );
 		add_filter(
 			'saddle_divi_module_json_dirs',

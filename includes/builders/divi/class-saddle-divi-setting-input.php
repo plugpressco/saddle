@@ -159,10 +159,27 @@ class Saddle_Divi_Setting_Input {
 		$options = Saddle_Divi_Settings::options( $entry );
 		// No list to check against: a loop id, a choice Divi builds in the
 		// browser, or an account that may not read the WordPress list.
-		if ( ! $options || array_key_exists( $value, $options ) ) {
+		if ( ! $options || self::is_choice( $entry, $value, $options ) ) {
 			return $value;
 		}
 		return self::not_a_choice( $label, $options );
+	}
+
+	/**
+	 * Whether a value is one of a setting's choices. The list WordPress
+	 * supplies is capped for display, so a value past the cap is looked up
+	 * on the site itself.
+	 *
+	 * @param array                $entry   Settings entry.
+	 * @param string               $value   Value.
+	 * @param array<string,string> $options The choices read.
+	 * @return bool
+	 */
+	private static function is_choice( array $entry, $value, array $options ) {
+		if ( array_key_exists( (string) $value, $options ) ) {
+			return true;
+		}
+		return ! empty( $entry['options_source'] ) && Saddle_Divi_Setting_Values::live_choice_exists( (string) $entry['options_source'], isset( $entry['key'] ) ? (string) $entry['key'] : '', (string) $value );
 	}
 
 	/**
@@ -212,7 +229,7 @@ class Saddle_Divi_Setting_Input {
 		}
 		$out = array();
 		foreach ( $value as $item ) {
-			if ( ! is_scalar( $item ) || ! array_key_exists( (string) $item, $options ) ) {
+			if ( ! is_scalar( $item ) || ! self::is_choice( $entry, (string) $item, $options ) ) {
 				return self::not_a_choice( $label, $options );
 			}
 			$out[] = (string) $item;

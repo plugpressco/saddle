@@ -107,12 +107,12 @@ class Saddle_Divi_Interactions {
 		if ( false !== strpos( $effect, 'Attribute' ) ) {
 			$name  = isset( $input['attribute_name'] ) ? strtolower( trim( (string) $input['attribute_name'] ) ) : '';
 			$value = isset( $input['attribute_value'] ) ? sanitize_text_field( (string) $input['attribute_value'] ) : '';
-			if ( ! preg_match( '/^[a-z_:][a-z0-9_:-]{0,199}$/', $name ) || '' === $value ) {
-				return new WP_Error( 'saddle_bad_attribute', __( 'An attribute effect needs "attribute_name" (letters, digits, "-", "_" or ":", such as "class" or "data-state") and a non-empty "attribute_value" (such as "is-open").', 'saddle' ) );
+			if ( '' === $value ) {
+				return self::bad_attribute();
 			}
-			if ( 0 === strpos( $name, 'on' ) || in_array( $name, self::DENIED_ATTRIBUTES, true ) ) {
-				/* translators: %s: attribute name. */
-				return new WP_Error( 'saddle_denied_attribute', sprintf( __( 'An interaction may not change the "%s" attribute. Use "class" or a "data-" or "aria-" attribute.', 'saddle' ), $name ) );
+			$refused = self::attribute_name_error( $name );
+			if ( $refused ) {
+				return $refused;
 			}
 			$spec['attributeName']  = $name;
 			$spec['attributeValue'] = $value;
@@ -123,6 +123,39 @@ class Saddle_Divi_Interactions {
 			$spec['adminLabel'] = $label;
 		}
 		return $spec;
+	}
+
+	/**
+	 * The rule for the attribute an interaction changes, wherever the entry
+	 * is written: a plain attribute name (letters, digits, "-", "_" or ":"),
+	 * never an event handler (on…) or one of DENIED_ATTRIBUTES. The name is
+	 * compared trimmed and in lower case, as a browser reads it.
+	 *
+	 * @param mixed $name Attribute name as given or stored.
+	 * @return WP_Error|null The refusal, or null when the name may be used.
+	 */
+	public static function attribute_name_error( $name ) {
+		if ( ! is_string( $name ) ) {
+			return self::bad_attribute();
+		}
+		$name = strtolower( trim( $name ) );
+		if ( ! preg_match( '/^[a-z_:][a-z0-9_:-]{0,199}$/', $name ) ) {
+			return self::bad_attribute();
+		}
+		if ( 0 === strpos( $name, 'on' ) || in_array( $name, self::DENIED_ATTRIBUTES, true ) ) {
+			/* translators: %s: attribute name. */
+			return new WP_Error( 'saddle_denied_attribute', sprintf( __( 'An interaction may not change the "%s" attribute. Use "class" or a "data-" or "aria-" attribute.', 'saddle' ), $name ) );
+		}
+		return null;
+	}
+
+	/**
+	 * The refusal for a missing or malformed attribute name or value.
+	 *
+	 * @return WP_Error
+	 */
+	private static function bad_attribute() {
+		return new WP_Error( 'saddle_bad_attribute', __( 'An attribute effect needs "attribute_name" (letters, digits, "-", "_" or ":", such as "class" or "data-state") and a non-empty "attribute_value" (such as "is-open").', 'saddle' ) );
 	}
 
 	/**

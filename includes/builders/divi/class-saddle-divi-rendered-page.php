@@ -23,9 +23,13 @@ defined( 'ABSPATH' ) || exit;
  * which is why one response carries both.
  *
  * Only this site's own address is ever fetched (Saddle_HTTP::fetch_own_page(),
- * same scheme, host and port as home_url(), no cookies), and the signed URL
- * never leaves this request. A host that blocks requests to itself returns
- * an error that points at get-preview-url.
+ * same scheme, host and port as home_url(), no cookies). Divi prints the
+ * request's own address into some modules (a contact form's action, a
+ * login form's redirect), so the signed token and its preview arguments are
+ * taken out of the returned HTML and CSS (scrub()). The HTML is otherwise
+ * the page's own markup with script elements removed, not sanitized. A host
+ * that blocks requests to itself returns an error that points at
+ * get-preview-url.
  */
 class Saddle_Divi_Rendered_Page {
 
@@ -52,7 +56,8 @@ class Saddle_Divi_Rendered_Page {
 	 * @return array|WP_Error
 	 */
 	public static function read( WP_Post $post, $html_kb = self::HTML_KB, $css_kb = self::CSS_KB ) {
-		$fetched = Saddle_HTTP::fetch_own_page( self::preview_url( $post ) );
+		$url     = self::preview_url( $post );
+		$fetched = Saddle_HTTP::fetch_own_page( $url );
 		if ( is_wp_error( $fetched ) || $fetched['status'] < 200 || $fetched['status'] >= 300 ) {
 			return new WP_Error(
 				'saddle_render_unreachable',
@@ -66,7 +71,51 @@ class Saddle_Divi_Rendered_Page {
 				)
 			);
 		}
-		return self::extract( (string) $fetched['body'], $html_kb, $css_kb );
+		parse_str( (string) wp_parse_url( $url, PHP_URL_QUERY ), $args );
+		$token = isset( $args[ Saddle_Preview::QUERY_ARG ] ) && is_string( $args[ Saddle_Preview::QUERY_ARG ] ) ? $args[ Saddle_Preview::QUERY_ARG ] : '';
+		return self::extract( self::scrub( (string) $fetched['body'], $token ), $html_kb, $css_kb );
+	}
+
+	/**
+	 * Take the signed preview token, and the preview arguments sent with it,
+	 * out of every address on a page, in any of the forms Divi prints the
+	 * request's address in: plain, HTML-escaped (&amp;, &#038;) or encoded
+	 * inside another address (a login form's redirect).
+	 *
+	 * @param string $text  Page text.
+	 * @param string $token The token sent.
+	 * @return string
+	 */
+	public static function scrub( $text, $token ) {
+		$token = (string) $token;
+		if ( '' === $token || ( false === strpos( $text, $token ) && false === strpos( $text, rawurlencode( $token ) ) ) ) {
+			return $text;
+		}
+		$amp  = '(?:&amp;|&\#0*38;|&|%26)';
+		$eq   = '(?:=|%3D)';
+		$args = array();
+		foreach ( array_unique( array( $token, rawurlencode( $token ) ) ) as $form ) {
+			$args[] = preg_quote( Saddle_Preview::QUERY_ARG, '#' ) . $eq . preg_quote( $form, '#' );
+		}
+		$args[] = 'preview' . $eq . '1';
+
+		// Each address that carries the token, cleaned on its own.
+		$text = (string) preg_replace_callback(
+			'#[^\s"\'<>()]*' . preg_quote( Saddle_Preview::QUERY_ARG, '#' ) . '[^\s"\'<>()]*#i',
+			static function ( $found ) use ( $args, $amp ) {
+				$address = $found[0];
+				foreach ( $args as $arg ) {
+					// Not the first argument, then the first with others after
+					// it, then the only one.
+					$address = (string) preg_replace( '#' . $amp . $arg . '(?=$|' . $amp . '|\#)#i', '', $address );
+					$address = (string) preg_replace( '#(\?|%3F)' . $arg . $amp . '#i', '$1', $address );
+					$address = (string) preg_replace( '#(?:\?|%3F)' . $arg . '(?=$|\#)#i', '', $address );
+				}
+				return $address;
+			},
+			$text
+		);
+		return str_replace( array_unique( array( $token, rawurlencode( $token ) ) ), '', $text );
 	}
 
 	/**

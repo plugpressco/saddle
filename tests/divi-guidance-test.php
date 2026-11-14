@@ -186,6 +186,38 @@ class Saddle_Divi_Guidance_Test extends WP_UnitTestCase {
 		$this->assertStringNotContainsString( '"#0f172a"', $body, 'The example uses tokens, not hex.' );
 	}
 
+	public function test_the_playbook_matches_the_tools_and_a_fresh_site() {
+		$this->divi( true );
+		$body = $this->body();
+
+		foreach (
+			array(
+				'divi-list-global-presets kind=all'                 => 'group presets need kind=all',
+				'six or seven go three per line on tablets and two per line on phones' => 'what 6 to 8 columns do',
+				'image.innerContent.alt to loop_post_featured_image_alt_text' => 'the per-item alt',
+				'or the two interaction ids'                        => 'the interaction ids by hand',
+				'list-section-recipes lists the recipes'            => 'the recipe list, not a fixed six',
+				'one h1 per page'                                   => 'one h1',
+				'set the heading level on every heading'            => 'heading levels',
+				'Before Divi 5.10 the fill does not show'           => 'the button switch, softly',
+			) as $needle => $why
+		) {
+			$this->assertStringContainsString( $needle, $body, "The playbook must teach {$why}." );
+		}
+		$this->assertStringNotContainsString( 'hero|features|pricing|testimonials|cta|faq', $body );
+
+		// The worked example needs nothing a fresh Divi site lacks: no preset
+		// id to fill in, and only the four colors every Divi site has.
+		$start   = strpos( $body, "nodes:\n" );
+		$example = substr( $body, $start, strpos( $body, "\n\n", $start ) - $start );
+		$this->assertStringNotContainsString( 'modulePreset', $example );
+		preg_match_all( '/--(g[cv]id-[a-z0-9-]+)/', $example, $m );
+		$this->assertNotEmpty( $m[1] );
+		$this->assertSame( array(), array_diff( $m[1], array( 'gcid-primary-color', 'gcid-secondary-color', 'gcid-heading-color', 'gcid-body-color' ) ) );
+		preg_match_all( '/<([^>]+)>/', str_replace( array( '<p>', '</p>' ), '', $example ), $holes );
+		$this->assertSame( array( 'media library URL' ), $holes[1], 'Only the image URL is left to fill in.' );
+	}
+
 	/**
 	 * The worked example is real: it builds through the author and the
 	 * validator against Divi's own module.json files with no echo warning.

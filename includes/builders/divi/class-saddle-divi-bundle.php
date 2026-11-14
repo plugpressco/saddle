@@ -139,7 +139,7 @@ class Saddle_Divi_Bundle {
 						__( 'Structure: section > row > column > modules; trees are validated on every write, invalid ones rejected.', 'saddle' ),
 						__( 'Presets first, then tokens, then hand styling: a global color as var(--gcid-…), a variable by its "reference" (a font variable as its $variable token, never var()). A token change updates every page.', 'saddle' ),
 						__( 'A CSS id or class goes at module.advanced.htmlAttributes (desktop only). Screen sizes are the breakpoints divi-check-setup lists ("phone", not "phoneWide").', 'saddle' ),
-						__( 'A styled button needs the enable switch on ( <attr>.decoration.button.desktop.value.enable = "on" ) or it renders ghost.', 'saddle' ),
+						__( 'On a styled button, set the switch as well ( <attr>.decoration.button.desktop.value.enable = "on" ): before Divi 5.10 the fill does not show without it.', 'saddle' ),
 						__( 'After building, run verify-page and fix by address until the score is acceptable.', 'saddle' ),
 					)
 				)

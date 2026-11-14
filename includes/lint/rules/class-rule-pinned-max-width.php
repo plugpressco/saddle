@@ -75,11 +75,11 @@ class Saddle_Lint_Rule_Pinned_Max_Width extends Saddle_Lint_Rule {
 				self::SEVERITY_WARN,
 				sprintf(
 					/* translators: 1: module type, 2: max width. */
-					__( '%1$s caps its width at %2$s but nothing centers it — it renders pinned to the left edge with a dead right half.', 'saddle' ),
+					__( '%1$s caps its width at %2$s but nothing centers it, so it renders pinned to the left edge with a dead right half.', 'saddle' ),
 					(string) $node['type'],
 					$max_width
 				),
-				__( 'Center it: attrs { "module.decoration.sizing.desktop.value.alignment": "center" } (or auto side margins) — or make the asymmetry deliberate by placing content beside it.', 'saddle' )
+				__( 'Center it: attrs { "module.decoration.sizing.desktop.value.alignment": "center" } (or auto side margins), or make the asymmetry deliberate by placing content beside it.', 'saddle' )
 			);
 		}
 		return $violations;

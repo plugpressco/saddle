@@ -30,6 +30,11 @@ class Saddle_Divi_Tokens {
 	const GLOBAL_DATA = '\ET\Builder\Packages\GlobalData\GlobalData';
 
 	/**
+	 * Divi's GlobalPreset class.
+	 */
+	const GLOBAL_PRESET = '\ET\Builder\Packages\GlobalData\GlobalPreset';
+
+	/**
 	 * How deep a chain of colors pointing at colors is followed (Divi's own
 	 * resolver stops at 10).
 	 */
@@ -109,6 +114,81 @@ class Saddle_Divi_Tokens {
 		 */
 		$ids = apply_filters( 'saddle_divi_variable_ids', $ids );
 		return is_array( $ids ) ? array_values( $ids ) : null;
+	}
+
+	/**
+	 * The ids of the site's stored presets, module and option group presets
+	 * alike, from the data divi-list-global-presets reads
+	 * (GlobalPreset::get_data()), or null when unknown.
+	 *
+	 * @return string[]|null
+	 */
+	public static function preset_ids() {
+		$ids = null;
+		if ( class_exists( self::GLOBAL_PRESET ) && is_callable( array( self::GLOBAL_PRESET, 'get_data' ) ) ) {
+			$ids  = array();
+			$data = self::deep_array( call_user_func( array( self::GLOBAL_PRESET, 'get_data' ) ) );
+			foreach ( array( 'module', 'group' ) as $kind ) {
+				foreach ( isset( $data[ $kind ] ) && is_array( $data[ $kind ] ) ? $data[ $kind ] : array() as $bucket ) {
+					if ( is_array( $bucket ) && isset( $bucket['items'] ) && is_array( $bucket['items'] ) ) {
+						$ids = array_merge( $ids, array_map( 'strval', array_keys( $bucket['items'] ) ) );
+					}
+				}
+			}
+		}
+
+		/**
+		 * Filter the preset ids the Divi checks know.
+		 *
+		 * @param string[]|null $ids Preset ids, or null when Divi's preset data is not available.
+		 */
+		$ids = apply_filters( 'saddle_divi_preset_ids', $ids );
+		return is_array( $ids ) ? array_values( array_map( 'strval', $ids ) ) : null;
+	}
+
+	/**
+	 * The preset ids a module's attrs point at: modulePreset (one id or a
+	 * list) and each option group's groupPreset presetId. Divi's own
+	 * placeholders ("", "default", "_initial") are left out.
+	 *
+	 * @param array $attrs Module attrs.
+	 * @return string[]
+	 */
+	public static function preset_references( array $attrs ) {
+		$ids = array();
+		if ( isset( $attrs['modulePreset'] ) ) {
+			$ids = array_merge( $ids, (array) $attrs['modulePreset'] );
+		}
+		if ( isset( $attrs['groupPreset'] ) && is_array( $attrs['groupPreset'] ) ) {
+			$ids = array_merge( $ids, self::preset_id_values( $attrs['groupPreset'] ) );
+		}
+		$out = array();
+		foreach ( $ids as $id ) {
+			if ( is_string( $id ) && ! in_array( trim( $id ), array( '', 'default', '_initial' ), true ) ) {
+				$out[] = trim( $id );
+			}
+		}
+		return array_values( array_unique( $out ) );
+	}
+
+	/**
+	 * Every presetId under a groupPreset value. Its keys are option group ids
+	 * with dots in them ("button.decoration.button"), which a written payload
+	 * may have expanded into nested levels, so any depth is read.
+	 *
+	 * @param array $value groupPreset value.
+	 * @return array
+	 */
+	private static function preset_id_values( array $value ) {
+		$ids = array();
+		foreach ( $value as $key => $child ) {
+			if ( 'presetId' === $key ) {
+				$ids = array_merge( $ids, (array) $child );
+			} elseif ( is_array( $child ) ) {
+				$ids = array_merge( $ids, self::preset_id_values( $child ) );
+			}
+		}
+		return $ids;
 	}
 
 	/**

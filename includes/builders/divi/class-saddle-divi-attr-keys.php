@@ -33,6 +33,23 @@ class Saddle_Divi_Attr_Keys {
 	const DESKTOP_ONLY = array( 'advanced.htmlAttributes', 'decoration.interactions' );
 
 	/**
+	 * The most dotted parts a written key may have. Divi's deepest settings
+	 * are about a dozen levels down; a key far past that is a mistake, and
+	 * past 512 levels WordPress cannot save the module's attrs at all.
+	 */
+	const MAX_DEPTH = 32;
+
+	/**
+	 * A key cut to a length that fits in a message.
+	 *
+	 * @param string $key Key.
+	 * @return string
+	 */
+	private static function shorten( $key ) {
+		return strlen( $key ) > 120 ? substr( $key, 0, 117 ) . '...' : $key;
+	}
+
+	/**
 	 * Read a written key: "<path>", "<path>@<breakpoint>", "<path>:<state>"
 	 * or both, in either order.
 	 *
@@ -148,6 +165,17 @@ class Saddle_Divi_Attr_Keys {
 				return $parsed;
 			}
 			$segments = array_merge( $prefix, explode( '.', $parsed['base'] ) );
+			if ( count( $segments ) > self::MAX_DEPTH ) {
+				return new WP_Error(
+					'saddle_key_too_deep',
+					sprintf(
+						/* translators: 1: the key as written, 2: the most path segments allowed. */
+						__( 'The key "%1$s" is nested deeper than any Divi setting (at most %2$d dotted parts). Check the path in divi-get-style-schema.', 'saddle' ),
+						self::shorten( implode( '.', $segments ) ),
+						self::MAX_DEPTH
+					)
+				);
+			}
 			if ( null !== $parsed['breakpoint'] || null !== $parsed['state'] ) {
 				$write = self::suffixed( $type, $segments, $parsed, $value, (string) $key );
 				if ( is_wp_error( $write ) ) {

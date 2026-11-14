@@ -748,6 +748,10 @@ class Saddle_Divi_Abilities {
 			if ( ! current_user_can( 'read_post', $post->ID ) ) {
 				return new WP_Error( 'saddle_forbidden', __( 'You are not allowed to read that post.', 'saddle' ), array( 'status' => 403 ) );
 			}
+			$protected = self::password_guard( $post );
+			if ( is_wp_error( $protected ) ) {
+				return $protected;
+			}
 			$builder                         = Saddle_Divi::post_builder( $post );
 			$out['post']                     = array(
 				'id'      => $post->ID,
@@ -806,6 +810,22 @@ class Saddle_Divi_Abilities {
 			'modules' => array_values( $modules ),
 			'note'    => __( 'Build pages from these real module types (divi-get-module-schema explains any one of them). Never fake a layout by dumping HTML into a single module — pages must stay editable in the Visual Builder.', 'saddle' ),
 		);
+	}
+
+	/**
+	 * A password-protected post's stored layout is read only by an account
+	 * that can edit it, the rule of Saddle_Abilities::require_readable_post()
+	 * (and of core's REST edit context). The caller has checked read_post.
+	 *
+	 * @param WP_Post $post The post.
+	 * @return true|WP_Error
+	 */
+	private static function password_guard( WP_Post $post ) {
+		if ( '' === (string) $post->post_password || current_user_can( 'edit_post', $post->ID ) ) {
+			return true;
+		}
+		$readable = Saddle_Abilities::require_readable_post( array( 'post_id' => $post->ID ), 'post_id', array( $post->post_type ) );
+		return is_wp_error( $readable ) ? $readable : true;
 	}
 
 	/**
@@ -1593,6 +1613,10 @@ class Saddle_Divi_Abilities {
 		if ( ! current_user_can( 'edit_post', $post->ID ) ) {
 			return new WP_Error( 'saddle_denied', __( 'You cannot edit this post.', 'saddle' ) );
 		}
+		$check = Saddle_Divi::edit_post_check( $post );
+		if ( is_wp_error( $check ) ) {
+			return $check;
+		}
 
 		// Same builder guard as set_page: a Divi 4 page is left alone entirely,
 		// and these settings mean nothing on a page another builder owns.
@@ -1694,6 +1718,10 @@ class Saddle_Divi_Abilities {
 		if ( ! current_user_can( 'edit_post', $post->ID ) ) {
 			return new WP_Error( 'saddle_denied', __( 'You cannot edit this post.', 'saddle' ) );
 		}
+		$check = Saddle_Divi::edit_post_check( $post );
+		if ( is_wp_error( $check ) ) {
+			return $check;
+		}
 
 		// Builder guard: build on Divi 5 pages or empty posts. Never
 		// overwrite Divi 4 shortcodes or existing non-Divi content.
@@ -1784,6 +1812,10 @@ class Saddle_Divi_Abilities {
 		}
 		if ( ! current_user_can( 'read_post', $post->ID ) ) {
 			return new WP_Error( 'saddle_denied', __( 'You cannot read this post.', 'saddle' ) );
+		}
+		$protected = self::password_guard( $post );
+		if ( is_wp_error( $protected ) ) {
+			return $protected;
 		}
 
 		$builder = Saddle_Divi::post_builder( $post );
@@ -2016,7 +2048,7 @@ class Saddle_Divi_Abilities {
 		if ( empty( $value ) ) {
 			return new WP_Error( 'saddle_no_loop', __( 'This module has no loop to disable.', 'saddle' ) );
 		}
-		$value           = Saddle_Divi_Loop::normalize( $value );
+		$value           = Saddle_Divi_Loop_Repair::repair( $value );
 		$value['enable'] = 'off';
 		$loop_id         = isset( $value['loopId'] ) && is_string( $value['loopId'] ) ? $value['loopId'] : '';
 

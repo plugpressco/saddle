@@ -149,13 +149,14 @@ class Saddle_Divi_Loop_Filters {
 	}
 
 	/**
-	 * Refuse a meta_query key the binding rule refuses.
+	 * Refuse a meta_query key the binding rule refuses. Also used on loops
+	 * written as raw attrs (Saddle_Divi_Write_Checks).
 	 *
 	 * @param string $key       Meta key.
 	 * @param string $meta_type post, term or user.
 	 * @return WP_Error|null
 	 */
-	private static function refuse_key( $key, $meta_type ) {
+	public static function refuse_key( $key, $meta_type ) {
 		$rule = Saddle_Divi_Dynamic::meta_key_rule( $key, $meta_type );
 		if ( 'protected' === $rule ) {
 			return new WP_Error(

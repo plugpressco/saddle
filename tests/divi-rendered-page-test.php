@@ -38,6 +38,23 @@ class Saddle_Divi_Rendered_Page_Test extends WP_UnitTestCase {
 		if ( is_wp_error( $this->answer ) ) {
 			return $this->answer;
 		}
+		if ( 'echo' === $this->answer ) {
+			// Divi prints the request's own address into a contact form's
+			// action and a login form's redirect.
+			$region = '<div class="et-l et-l--post"><form class="et_pb_contact_form" method="post" action="' . esc_url( $url ) . '"></form>'
+				. '<a class="et_pb_login_link" href="https://example.org/wp-login.php?redirect_to=' . rawurlencode( $url ) . '">Log in</a></div>';
+			$body   = str_replace( 'body{font-size:14px}', 'body{background:url(' . $url . ')}', $this->page_html( $region ) );
+			return array(
+				'headers'  => array(),
+				'body'     => $body,
+				'response' => array(
+					'code'    => 200,
+					'message' => 'OK',
+				),
+				'cookies'  => array(),
+				'filename' => null,
+			);
+		}
 		if ( is_int( $this->answer ) ) {
 			return array(
 				'headers'  => array(),
@@ -207,6 +224,75 @@ class Saddle_Divi_Rendered_Page_Test extends WP_UnitTestCase {
 		$out = $this->run_tool( array( 'post_id' => $draft ) );
 		remove_filter( 'saddle_divi_active', '__return_false' );
 		$this->assertSame( 'saddle_no_divi', $out->get_error_code() );
+	}
+
+	public function test_the_signed_token_is_taken_out_of_the_returned_page() {
+		$id           = self::factory()->post->create( array( 'post_type' => 'page', 'post_status' => 'draft' ) );
+		$this->answer = 'echo';
+
+		$out = $this->run_tool( array( 'post_id' => $id ) );
+
+		$this->assertNotWPError( $out );
+		parse_str( (string) wp_parse_url( $this->requested[0], PHP_URL_QUERY ), $sent );
+		$token = $sent[ Saddle_Preview::QUERY_ARG ];
+		$all   = $out['html'] . wp_json_encode( $out['css'] );
+		$this->assertStringNotContainsString( $token, $all );
+		$this->assertStringNotContainsString( Saddle_Preview::QUERY_ARG, $all );
+		$this->assertStringNotContainsString( 'preview=1', $all );
+		$this->assertStringNotContainsString( 'preview%3D1', $all );
+		$this->assertStringContainsString( 'action="' . esc_url( home_url( '/?page_id=' . $id ) ) . '"', $out['html'], 'The rest of the address stays.' );
+		$this->assertStringContainsString( 'redirect_to=' . rawurlencode( home_url( '/?page_id=' . $id ) ) . '"', $out['html'] );
+	}
+
+	public function test_scrub_handles_every_argument_position() {
+		$token = '1700000000.abc123';
+		$cases = array(
+			'https://e.org/?preview=1&saddle_preview=' . $token . '&p=5' => 'https://e.org/?p=5',
+			'https://e.org/a/?preview=1&#038;saddle_preview=' . $token    => 'https://e.org/a/',
+			'https://e.org/?p=5&amp;preview=1&amp;saddle_preview=' . $token . '#top' => 'https://e.org/?p=5#top',
+			'x?r=https%3A%2F%2Fe.org%2F%3Fpreview%3D1%26saddle_preview%3D' . rawurlencode( $token ) . '%26p%3D5' => 'x?r=https%3A%2F%2Fe.org%2F%3Fp%3D5',
+		);
+		foreach ( $cases as $in => $want ) {
+			$this->assertSame( '<a href="' . $want . '">', Saddle_Divi_Rendered_Page::scrub( '<a href="' . $in . '">', $token ), $in );
+		}
+		$this->assertSame( '<p>preview=1 is text</p>', Saddle_Divi_Rendered_Page::scrub( '<p>preview=1 is text</p>', $token ), 'Text without the token is left alone.' );
+	}
+
+	public function test_every_call_needs_edit_rights_on_the_post() {
+		$id = self::factory()->post->create(
+			array(
+				'post_type'   => 'post',
+				'post_status' => 'publish',
+				'post_author' => self::factory()->user->create( array( 'role' => 'editor' ) ),
+			)
+		);
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'author' ) ) );
+		$this->assertTrue( current_user_can( 'read_post', $id ) );
+
+		$out = $this->run_tool( array( 'post_id' => $id ) );
+
+		$this->assertWPError( $out );
+		$this->assertSame( 'saddle_forbidden', $out->get_error_code() );
+		$this->assertSame( array(), $this->requested, 'Refused before any request.' );
+	}
+
+	public function test_one_call_at_a_time_per_account() {
+		$id   = self::factory()->post->create( array( 'post_type' => 'page', 'post_status' => 'draft' ) );
+		$lock = Saddle_Divi_Extra_Abilities::RENDER_LOCK . get_current_user_id();
+
+		set_transient( $lock, 1, 60 );
+		$busy = $this->run_tool( array( 'post_id' => $id ) );
+		$this->assertWPError( $busy );
+		$this->assertSame( 'saddle_render_busy', $busy->get_error_code() );
+		$this->assertSame( array(), $this->requested );
+		delete_transient( $lock );
+
+		$this->assertNotWPError( $this->run_tool( array( 'post_id' => $id ) ) );
+		$this->assertFalse( get_transient( $lock ), 'The lock is released after a call.' );
+
+		$this->answer = new WP_Error( 'http_request_failed', 'down' );
+		$this->assertWPError( $this->run_tool( array( 'post_id' => $id ) ) );
+		$this->assertFalse( get_transient( $lock ), 'and after a call that failed.' );
 	}
 
 	public function test_registered_as_a_read_tool() {

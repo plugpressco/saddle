@@ -38,6 +38,15 @@ class Saddle_Divi_Envelope {
 	 */
 	const STATES = array( 'value', 'hover', 'sticky', 'focus', 'checked', 'active' );
 
+	/**
+	 * Decoration attributes that hold a plain value, with no breakpoint or
+	 * state: Module::render() reads the two interaction ids straight from
+	 * module.decoration.interactionTrigger and .interactionTarget and prints
+	 * them as data attributes. Every other decoration key in the default
+	 * render attributes of Divi 5.10.1's core modules is an envelope.
+	 */
+	const PLAIN_DECORATION = array( 'interactionTrigger', 'interactionTarget' );
+
 
 	/**
 	 * Whether a path segment names a breakpoint.
@@ -150,6 +159,9 @@ class Saddle_Divi_Envelope {
 			case 'decoration':
 				if ( $n < 3 ) {
 					return 'partial';
+				}
+				if ( in_array( $s[2], self::PLAIN_DECORATION, true ) ) {
+					return null; // Stored as written.
 				}
 				if ( 'font' === $s[2] ) {
 					// FontStyle reads <attr>.decoration.font.font, beside

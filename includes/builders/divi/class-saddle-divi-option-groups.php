@@ -19,7 +19,7 @@ defined( 'ABSPATH' ) || exit;
  *
  *   "groupPreset": { "<group id>": { "presetId": ["<id>", …], "groupName": "<group name>" } }
  *
- * The paid add-on writes option group presets with the same map.
+ * Another plugin can write option group presets with the same map.
  */
 class Saddle_Divi_Option_Groups {
 

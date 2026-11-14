@@ -336,7 +336,7 @@ class Saddle_Verify {
 				'address'  => '',
 				'source'   => 'structural',
 				'severity' => 'error',
-				'message'  => __( 'The content is not block markup — the editor cannot address or edit it.', 'saddle' ),
+				'message'  => __( 'The content is not block markup, so the editor cannot address or edit it.', 'saddle' ),
 				'fix_hint' => __( 'Rebuild the content as blocks (set-blocks) instead of raw HTML.', 'saddle' ),
 			),
 		);
@@ -405,7 +405,7 @@ class Saddle_Verify {
 					'source'   => 'echo',
 					'severity' => 'error',
 					'message'  => (string) $warning,
-					'fix_hint' => __( 'This persisted attribute does nothing — rewrite it on a path the block actually supports, or remove it.', 'saddle' ),
+					'fix_hint' => __( 'This persisted attribute does nothing. Rewrite it on a path the block actually supports, or remove it.', 'saddle' ),
 				);
 			}
 		}

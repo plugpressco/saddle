@@ -178,6 +178,7 @@ class Saddle_Divi_Echo_Traps_Test extends WP_UnitTestCase {
 		remove_all_filters( 'saddle_divi_module_json_dirs' );
 		remove_all_filters( 'saddle_divi_global_colors' );
 		remove_all_filters( 'saddle_divi_variable_ids' );
+		remove_all_filters( 'saddle_divi_preset_ids' );
 		remove_filter( 'saddle_divi_active', '__return_true' );
 		delete_option( 'et_divi_builder_breakpoints' );
 		delete_transient( Saddle_Divi_Schema::INDEX_TRANSIENT );
@@ -656,6 +657,36 @@ class Saddle_Divi_Echo_Traps_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'divi-list-global-colors', $warnings[0] );
 		$this->assertStringContainsString( '"gvid-gone"', $warnings[1] );
 		$this->assertStringContainsString( 'divi-list-variables', $warnings[1] );
+	}
+
+	public function test_preset_ids_that_do_not_exist_warn() {
+		$attrs = array(
+			'modulePreset' => array( 'default', 'notarealpreset1' ),
+			'groupPreset'  => array(
+				'button.decoration.button' => array(
+					'presetId'  => array( 'realgroup1', 'gonegroup2' ),
+					'groupName' => 'divi/button',
+				),
+			),
+		);
+
+		// Without Divi's preset data the site's presets are unknown: no warning.
+		$this->assertSame( array(), $this->echo_text( $attrs ) );
+
+		add_filter(
+			'saddle_divi_preset_ids',
+			static function () {
+				return array( 'realgroup1', 'realmodule1' );
+			}
+		);
+		$warnings = $this->echo_text( $attrs );
+		$this->assertCount( 2, $warnings, implode( "\n", $warnings ) );
+		$this->assertStringContainsString( '"notarealpreset1"', $warnings[0] );
+		$this->assertStringContainsString( 'divi-list-global-presets', $warnings[0] );
+		$this->assertStringContainsString( '"gonegroup2"', $warnings[1] );
+
+		$this->assertSame( array(), $this->echo_text( array( 'modulePreset' => 'realmodule1' ) ), 'A preset the site has is silent.' );
+		$this->assertSame( array(), $this->echo_text( array( 'modulePreset' => array( 'default', '_initial', '' ) ) ), 'Divi\'s own placeholders are not ids.' );
 	}
 
 	public function test_button_groups_divi_drops_from_the_button_element() {

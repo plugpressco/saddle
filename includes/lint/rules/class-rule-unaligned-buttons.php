@@ -63,7 +63,7 @@ class Saddle_Lint_Rule_Unaligned_Buttons extends Saddle_Lint_Rule {
 					self::SEVERITY_WARN,
 					sprintf(
 						/* translators: 1: alignment, 2: sibling alignment. */
-						__( 'This button is aligned "%1$s" while its sibling button is aligned "%2$s" — they won\'t share a baseline.', 'saddle' ),
+						__( 'This button is aligned "%1$s" while its sibling button is aligned "%2$s", so they won\'t share a baseline.', 'saddle' ),
 						$entry['alignment'],
 						$baseline
 					),

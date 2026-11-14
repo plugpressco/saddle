@@ -124,13 +124,9 @@ class Saddle_Divi_Loop {
 		}
 		$base = self::base_type( $type );
 
-		// A user loop lists the site's users on the page.
-		if ( 'user_roles' === $base && ! current_user_can( 'list_users' ) ) {
-			return new WP_Error(
-				'saddle_loop_needs_list_users',
-				__( 'A user loop shows the site\'s users on the page, so it needs an account that can list users. Ask an administrator to set it up.', 'saddle' ),
-				array( 'status' => 403 )
-			);
+		$refused = self::type_access_error( $base );
+		if ( $refused ) {
+			return $refused;
 		}
 
 		$warnings = array();
@@ -351,6 +347,24 @@ class Saddle_Divi_Loop {
 	}
 
 	/**
+	 * The account rule for a loop family: a user loop lists the site's users
+	 * on the page, so it needs an account that can list users.
+	 *
+	 * @param string $base Query family (base_type()).
+	 * @return WP_Error|null The refusal, or null.
+	 */
+	public static function type_access_error( $base ) {
+		if ( 'user_roles' === $base && ! current_user_can( 'list_users' ) ) {
+			return new WP_Error(
+				'saddle_loop_needs_list_users',
+				__( 'A user loop shows the site\'s users on the page, so it needs an account that can list users. Ask an administrator to set it up.', 'saddle' ),
+				array( 'status' => 403 )
+			);
+		}
+		return null;
+	}
+
+	/**
 	 * The query family a stored type belongs to ("repeater_x" → "repeater").
 	 *
 	 * @param string $type Stored query type.
@@ -378,7 +392,7 @@ class Saddle_Divi_Loop {
 	 * @param string $base Query family.
 	 * @return string post, term or user.
 	 */
-	private static function meta_type( $base ) {
+	public static function meta_type( $base ) {
 		if ( 'post_taxonomies' === $base ) {
 			return 'term';
 		}
@@ -430,39 +444,60 @@ class Saddle_Divi_Loop {
 		}
 		$items = array();
 		foreach ( $names as $name ) {
-			$name  = trim( (string) $name );
-			$label = null;
-			if ( 'post_types' === $base && 'attachment' !== $name && post_type_exists( $name ) && is_post_type_viewable( $name ) ) {
-				$label = get_post_type_object( $name )->labels->name;
-			} elseif ( 'post_taxonomies' === $base && taxonomy_exists( $name ) && is_taxonomy_viewable( $name ) ) {
-				$label = get_taxonomy( $name )->label;
-			} elseif ( 'user_roles' === $base && wp_roles()->is_role( $name ) ) {
-				$label = translate_user_role( wp_roles()->roles[ $name ]['name'] );
-			} elseif ( 'menus' === $base && '' !== $name ) {
-				$menu = wp_get_nav_menu_object( ctype_digit( $name ) ? (int) $name : $name );
-				if ( $menu ) {
-					$name  = (string) $menu->term_id;
-					$label = $menu->name;
-				}
-			}
-			if ( null === $label ) {
+			$item = self::sub_type_item( $base, $name );
+			if ( null === $item ) {
 				return new WP_Error(
 					'saddle_bad_sub_type',
 					sprintf(
 						/* translators: 1: the value given, 2: the query type, 3: list of valid values. */
 						__( '"%1$s" is not a sub type a %2$s loop can use on this site. Valid values: %3$s.', 'saddle' ),
-						$name,
+						is_scalar( $name ) ? trim( (string) $name ) : '',
 						$base,
 						implode( ', ', self::sub_type_choices( $base ) )
 					)
 				);
 			}
-			$items[] = array(
-				'value' => $name,
-				'label' => wp_strip_all_tags( (string) $label ),
-			);
+			$items[] = $item;
 		}
 		return $items;
+	}
+
+	/**
+	 * One sub type as Divi's {value, label} item, or null when a loop of this
+	 * family may not name it here: only viewable post types (never
+	 * attachments) and viewable taxonomies, a role that exists, a menu that
+	 * exists (stored by id).
+	 *
+	 * @param string $base Query family.
+	 * @param mixed  $name Post type, taxonomy, role, or menu id or slug.
+	 * @return array|null
+	 */
+	public static function sub_type_item( $base, $name ) {
+		if ( ! is_scalar( $name ) ) {
+			return null;
+		}
+		$name  = trim( (string) $name );
+		$label = null;
+		if ( 'post_types' === $base && 'attachment' !== $name && post_type_exists( $name ) && is_post_type_viewable( $name ) ) {
+			$label = get_post_type_object( $name )->labels->name;
+		} elseif ( 'post_taxonomies' === $base && taxonomy_exists( $name ) && is_taxonomy_viewable( $name ) ) {
+			$label = get_taxonomy( $name )->label;
+		} elseif ( 'user_roles' === $base && wp_roles()->is_role( $name ) ) {
+			$label = translate_user_role( wp_roles()->roles[ $name ]['name'] );
+		} elseif ( 'menus' === $base && '' !== $name ) {
+			$menu = wp_get_nav_menu_object( ctype_digit( $name ) ? (int) $name : $name );
+			if ( $menu ) {
+				$name  = (string) $menu->term_id;
+				$label = $menu->name;
+			}
+		}
+		if ( null === $label ) {
+			return null;
+		}
+		return array(
+			'value' => $name,
+			'label' => wp_strip_all_tags( (string) $label ),
+		);
 	}
 
 	/**

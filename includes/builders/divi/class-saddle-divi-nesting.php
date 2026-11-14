@@ -50,7 +50,7 @@ class Saddle_Divi_Nesting {
 	 *
 	 * @param array $container Parent block.
 	 * @param array $child     Child block.
-	 * @return true|string True, or a plain phrase saying what the parent holds.
+	 * @return true|string True, or one sentence saying what the parent holds.
 	 */
 	public static function accepts( array $container, array $child ) {
 		$name  = (string) $container['blockName'];
@@ -73,22 +73,24 @@ class Saddle_Divi_Nesting {
 			$rules[ $name ] = array( 'divi/row-inner' );
 		}
 		if ( isset( $rules[ $name ] ) ) {
-			return self::matches( (array) $rules[ $name ], $type ) ? true : self::describe( (array) $rules[ $name ] );
+			return self::matches( (array) $rules[ $name ], $type ) ? true : self::describe( $name, (array) $rules[ $name ] );
 		}
 
 		$json = Saddle_Divi_Schema::module_json( $name );
 		if ( ! is_array( $json ) ) {
 			// No module.json here: hold anything but the page structure.
-			return in_array( $type, self::STRUCTURE, true ) ? __( 'modules, never sections, rows or columns', 'saddle' ) : true;
+			/* translators: %s: container module type. */
+			return in_array( $type, self::STRUCTURE, true ) ? sprintf( __( '%s holds modules, never sections, rows or columns.', 'saddle' ), $name ) : true;
 		}
 		if ( array_key_exists( 'childrenName', $json ) && array() === $json['childrenName'] ) {
 			return ( ! in_array( $type, self::NEVER_NESTED, true ) && 'child-module' !== self::category( $type ) )
 				? true
-				: __( 'other modules, rows and groups, never a child module such as an accordion item', 'saddle' );
+				/* translators: %s: container module type. */
+				: sprintf( __( '%s holds other modules, rows and groups, never a child module such as an accordion item.', 'saddle' ), $name );
 		}
 		$names = Saddle_Divi_Catalog::children( $name, $json );
 		if ( array( '*' ) === $names ) {
-			return self::matches( array( '*' ), $type ) ? true : self::describe( array( '*' ) );
+			return self::matches( array( '*' ), $type ) ? true : self::describe( $name, array( '*' ) );
 		}
 		$all = ! empty( $json['allowAllElements'] );
 		if ( in_array( $type, $names, true ) || ( $all && in_array( self::category( $type ), array( 'module', 'fullwidth-module' ), true ) ) ) {
@@ -99,15 +101,17 @@ class Saddle_Divi_Nesting {
 			if ( is_array( $child_json ) && isset( $child_json['parentName'] ) && $child_json['parentName'] === $name ) {
 				return true;
 			}
-			return __( 'nothing: it takes no child modules', 'saddle' );
+			/* translators: %s: container module type. */
+			return sprintf( __( '%s takes no child modules.', 'saddle' ), $name );
 		}
 		return $all
 			? sprintf(
-				/* translators: %s: comma-separated module types. */
-				__( '%s, or any module', 'saddle' ),
+				/* translators: 1: container module type, 2: comma-separated module types. */
+				__( '%1$s holds any module, and also: %2$s.', 'saddle' ),
+				$name,
 				implode( ', ', $names )
 			)
-			: implode( ', ', $names );
+			: self::describe( $name, $names );
 	}
 
 	/**
@@ -143,23 +147,31 @@ class Saddle_Divi_Nesting {
 	}
 
 	/**
-	 * A rule list in words.
+	 * What a container holds, as one whole sentence.
 	 *
+	 * @param string   $name    Container module type.
 	 * @param string[] $allowed Rule list.
 	 * @return string
 	 */
-	private static function describe( array $allowed ) {
+	private static function describe( $name, array $allowed ) {
 		$named = array_values( array_diff( $allowed, array( '*' ) ) );
 		if ( ! in_array( '*', $allowed, true ) ) {
-			return implode( ', ', $named );
+			return sprintf(
+				/* translators: 1: container module type, 2: comma-separated module types. */
+				__( '%1$s holds: %2$s.', 'saddle' ),
+				$name,
+				implode( ', ', $named )
+			);
 		}
 		return $named
 			? sprintf(
-				/* translators: %s: comma-separated module types. */
-				__( '%s and any module (not a child module such as an accordion item)', 'saddle' ),
+				/* translators: 1: container module type, 2: comma-separated module types. */
+				__( '%1$s holds any module except a child module such as an accordion item, and also: %2$s.', 'saddle' ),
+				$name,
 				implode( ', ', $named )
 			)
-			: __( 'any module (not a child module such as an accordion item)', 'saddle' );
+			/* translators: %s: container module type. */
+			: sprintf( __( '%s holds any module except a child module such as an accordion item.', 'saddle' ), $name );
 	}
 
 	/**

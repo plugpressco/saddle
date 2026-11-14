@@ -90,7 +90,7 @@ class Saddle_Lint_Rule_Text_Contrast extends Saddle_Lint_Rule {
 				self::SEVERITY_ERROR,
 				sprintf(
 					/* translators: 1: text color, 2: background color, 3: contrast ratio, 4: required minimum. */
-					__( 'Text %1$s on background %2$s has a contrast of %3$s:1 — below the WCAG AA minimum of %4$s:1.', 'saddle' ),
+					__( 'Text %1$s on background %2$s has a contrast of %3$s:1, below the WCAG AA minimum of %4$s:1.', 'saddle' ),
 					$text,
 					$background,
 					number_format_i18n( $ratio, 2 ),

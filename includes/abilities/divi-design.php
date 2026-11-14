@@ -236,8 +236,8 @@ class Saddle_Divi_Design {
 	}
 
 	/**
-	 * How a module refers to a variable of a type, the same string the paid
-	 * add-on returns when it creates one. Divi resolves its $variable token
+	 * How a module refers to a variable of a type, the same string another
+	 * plugin returns when it creates one. Divi resolves its $variable token
 	 * for every type; only that token loads a font's webfont and puts a
 	 * string, link or image into content, a gradient token goes in a
 	 * background gradient's "stops", and a number works as var(--<id>) in

@@ -23,6 +23,13 @@ defined( 'ABSPATH' ) || exit;
  * - "terms" and "users" are older names of "post_taxonomies" and
  *   "user_roles"; Divi's per-item reader prints no user values for "users".
  *
+ * The render-time repair and the repair every SaddleWP write applies
+ * (repair()) change only the two older shapes that keep what the author
+ * asked for: plain-text sub types become items, "asc" and "desc" become
+ * "ascending" and "descending". Older type names and a missing sub type are
+ * left as stored; divi-edit-loop rewrites them, behind its own checks
+ * (normalize()).
+ *
  * Divi runs a loop's query while it parses the page: its block parser calls
  * LoopUtils::parse_and_duplicate_loop_blocks() inside parse_blocks(), before
  * WordPress fires render_block_data for any block. So the render-time repair
@@ -85,8 +92,9 @@ class Saddle_Divi_Loop_Repair {
 		if ( ! is_array( $loop_data ) || ! is_array( $attrs ) || ! isset( $attrs['module']['advanced']['loop']['desktop']['value'] ) || ! is_array( $attrs['module']['advanced']['loop']['desktop']['value'] ) ) {
 			return $loop_data;
 		}
-		$value = $attrs['module']['advanced']['loop']['desktop']['value'];
-		if ( ! self::problems( $value ) || ! is_callable( array( self::LOOP_UTILS, 'get_query_args_from_attrs' ) ) ) {
+		$value    = $attrs['module']['advanced']['loop']['desktop']['value'];
+		$repaired = self::repair( $value );
+		if ( $repaired === $value || ! is_callable( array( self::LOOP_UTILS, 'get_query_args_from_attrs' ) ) ) {
 			return $loop_data;
 		}
 
@@ -95,7 +103,7 @@ class Saddle_Divi_Loop_Repair {
 			if ( ! is_array( $read ) || self::part( $read, 'query_args' ) !== self::part( $loop_data, 'query_args' ) || self::part( $read, 'query_type' ) !== self::part( $loop_data, 'query_type' ) ) {
 				return $loop_data;
 			}
-			$attrs['module']['advanced']['loop']['desktop']['value'] = self::normalize( $value );
+			$attrs['module']['advanced']['loop']['desktop']['value'] = $repaired;
 
 			$fixed = call_user_func( array( self::LOOP_UTILS, 'get_query_args_from_attrs' ), $attrs );
 		} catch ( Throwable $e ) {
@@ -141,7 +149,7 @@ class Saddle_Divi_Loop_Repair {
 				}
 			}
 		}
-		if ( isset( self::DEFAULT_SUB_TYPES[ $type ] ) && ! self::sub_type_items( $raw ) ) {
+		if ( isset( self::DEFAULT_SUB_TYPES[ $type ] ) && ! self::readable_items( $raw ) ) {
 			$found[] = 'no_sub_types';
 		}
 
@@ -153,56 +161,99 @@ class Saddle_Divi_Loop_Repair {
 	}
 
 	/**
-	 * Rewrite a stored loop into the shape Divi reads, whatever form an older
-	 * write left: older type names, string sub types, no sub type on a post
-	 * or taxonomy loop, "asc" or "desc".
+	 * Rewrite only the two older shapes that keep what the author asked for:
+	 * a plain-text sub type becomes a {value, label} item (labelled as
+	 * divi-enable-loop labels it), and "asc" or "desc" becomes "ascending"
+	 * or "descending". A plain-text sub type that a loop may not name here
+	 * (Saddle_Divi_Loop::sub_type_item()) stays as stored, which Divi skips
+	 * as before. Older type names and a missing sub type are left alone.
+	 * Used at render and on every SaddleWP write.
 	 *
 	 * @param array $value Stored loop value.
-	 * @return array
+	 * @return array The value, unchanged when nothing applies.
 	 */
-	public static function normalize( array $value ) {
+	public static function repair( array $value ) {
 		$type = isset( $value['queryType'] ) && is_string( $value['queryType'] ) ? $value['queryType'] : 'post_types';
-		if ( isset( self::ALIASES[ $type ] ) ) {
-			$type               = self::ALIASES[ $type ];
-			$value['queryType'] = $type;
+		$base = isset( self::ALIASES[ $type ] ) ? self::ALIASES[ $type ] : Saddle_Divi_Loop::base_type( $type );
+
+		$raw = isset( $value['subTypes'] ) ? $value['subTypes'] : null;
+		if ( is_string( $raw ) && '' !== trim( $raw ) ) {
+			$raw = array_values( array_filter( array_map( 'trim', explode( ',', $raw ) ), 'strlen' ) );
 		}
-		if ( array_key_exists( 'subTypes', $value ) ) {
-			$value['subTypes'] = self::sub_type_items( $value['subTypes'] );
+		if ( self::has_plain_entry( $raw ) ) {
+			$items = array();
+			foreach ( $raw as $entry ) {
+				$item    = is_scalar( $entry ) && '' !== trim( (string) $entry ) ? Saddle_Divi_Loop::sub_type_item( $base, $entry ) : null;
+				$items[] = null === $item ? $entry : $item;
+			}
+			// Kept as stored when no entry could be converted.
+			if ( self::readable_items( $items ) > self::readable_items( $value['subTypes'] ) ) {
+				$value['subTypes'] = $items;
+			}
 		}
-		if ( isset( self::DEFAULT_SUB_TYPES[ $type ] ) && empty( $value['subTypes'] ) ) {
-			$value['subTypes'] = array( self::default_item( $type ) );
-		}
-		if ( isset( $value['order'] ) && is_string( $value['order'] ) && '' !== trim( $value['order'] ) ) {
-			$value['order'] = self::order( $value['order'] );
+
+		$order = isset( $value['order'] ) && is_string( $value['order'] ) ? strtolower( trim( $value['order'] ) ) : '';
+		if ( in_array( $order, array( 'asc', 'desc' ), true ) ) {
+			$value['order'] = self::order( $order );
 		}
 		return $value;
 	}
 
 	/**
-	 * Any stored sub type form as {value, label} items.
+	 * Whether a stored sub type list holds a plain-text entry.
 	 *
-	 * @param mixed $raw Strings, items, or a comma-separated string.
-	 * @return array[]
+	 * @param mixed $raw Stored subTypes.
+	 * @return bool
 	 */
-	public static function sub_type_items( $raw ) {
-		if ( is_string( $raw ) ) {
-			$raw = array_filter( array_map( 'trim', explode( ',', $raw ) ) );
+	private static function has_plain_entry( $raw ) {
+		if ( ! is_array( $raw ) ) {
+			return false;
 		}
-		$items = array();
-		foreach ( is_array( $raw ) ? $raw : array() as $entry ) {
-			if ( is_array( $entry ) && isset( $entry['value'] ) && is_scalar( $entry['value'] ) && '' !== (string) $entry['value'] ) {
-				$items[] = array(
-					'value' => (string) $entry['value'],
-					'label' => isset( $entry['label'] ) && is_string( $entry['label'] ) ? $entry['label'] : (string) $entry['value'],
-				);
-			} elseif ( is_scalar( $entry ) && '' !== (string) $entry ) {
-				$items[] = array(
-					'value' => (string) $entry,
-					'label' => (string) $entry,
-				);
+		foreach ( $raw as $entry ) {
+			if ( is_scalar( $entry ) ) {
+				return true;
 			}
 		}
-		return $items;
+		return false;
+	}
+
+	/**
+	 * Rewrite a stored loop into the shape divi-enable-loop writes: the two
+	 * shapes repair() rewrites, plus the current type names and the default
+	 * sub type on a post or taxonomy loop that names none. Only the loop
+	 * tools use this, after their own checks (Saddle_Divi_Loop::build()).
+	 *
+	 * @param array $value Stored loop value.
+	 * @return array
+	 */
+	public static function normalize( array $value ) {
+		$value = self::repair( $value );
+		$type  = isset( $value['queryType'] ) && is_string( $value['queryType'] ) ? $value['queryType'] : 'post_types';
+		if ( isset( self::ALIASES[ $type ] ) ) {
+			$type               = self::ALIASES[ $type ];
+			$value['queryType'] = $type;
+		}
+		if ( isset( self::DEFAULT_SUB_TYPES[ $type ] ) && ! self::readable_items( isset( $value['subTypes'] ) ? $value['subTypes'] : null ) && ! self::has_plain_entry( isset( $value['subTypes'] ) ? $value['subTypes'] : null ) ) {
+			$value['subTypes'] = array( self::default_item( $type ) );
+		}
+		return $value;
+	}
+
+	/**
+	 * How many sub type entries Divi reads: {value, label} items whose value
+	 * is a string.
+	 *
+	 * @param mixed $raw Stored subTypes.
+	 * @return int
+	 */
+	public static function readable_items( $raw ) {
+		$count = 0;
+		foreach ( is_array( $raw ) ? $raw : array() as $entry ) {
+			if ( is_array( $entry ) && isset( $entry['value'] ) && is_string( $entry['value'] ) && '' !== $entry['value'] ) {
+				++$count;
+			}
+		}
+		return $count;
 	}
 
 	/**
@@ -252,9 +303,12 @@ class Saddle_Divi_Loop_Repair {
 				continue;
 			}
 			$value = Saddle_Divi_Loop::value( $node );
-			if ( $value && self::problems( $value ) ) {
-				$tree[ $i ]['attrs']['module']['advanced']['loop']['desktop']['value'] = self::normalize( $value );
-				++$count;
+			if ( $value ) {
+				$repaired = self::repair( $value );
+				if ( $repaired !== $value ) {
+					$tree[ $i ]['attrs']['module']['advanced']['loop']['desktop']['value'] = $repaired;
+					++$count;
+				}
 			}
 			if ( ! empty( $node['innerBlocks'] ) && is_array( $node['innerBlocks'] ) ) {
 				$inner                     = self::repair_tree( $node['innerBlocks'] );
@@ -286,42 +340,72 @@ class Saddle_Divi_Loop_Repair {
 	}
 
 	/**
-	 * One whole sentence per problem, for a verify-page finding.
+	 * What a visitor gets from a loop saved in an older shape, one whole
+	 * sentence per effect, for a verify-page finding. Shapes Divi already
+	 * reads as meant ("asc", "terms") give no sentence.
 	 *
 	 * @param array  $value    Stored loop value.
 	 * @param string $location Module and address.
 	 * @return string[]
 	 */
 	public static function explain( array $value, $location ) {
-		$lines = array();
-		foreach ( self::problems( $value ) as $problem ) {
-			if ( 'query_type' === $problem ) {
-				$lines[] = sprintf(
-					/* translators: 1: module and address, 2: stored query type. */
-					__( 'The loop on %1$s uses the older query type name "%2$s".', 'saddle' ),
-					$location,
-					(string) $value['queryType']
-				);
-			} elseif ( 'sub_types' === $problem ) {
+		$problems = self::problems( $value );
+		$type     = isset( $value['queryType'] ) && is_string( $value['queryType'] ) ? $value['queryType'] : 'post_types';
+		$base     = isset( self::ALIASES[ $type ] ) ? self::ALIASES[ $type ] : $type;
+		$order    = isset( $value['order'] ) && is_string( $value['order'] ) ? strtolower( trim( $value['order'] ) ) : '';
+		$desc     = in_array( 'order', $problems, true ) && 'desc' === $order;
+		$by_date  = ! isset( $value['orderBy'] ) || '' === $value['orderBy'] || 'date' === $value['orderBy'];
+		$lines    = array();
+
+		if ( in_array( 'query_type', $problems, true ) && 'users' === $type ) {
+			$lines[] = sprintf(
+				/* translators: %s: module and address. */
+				__( 'The loop on %s uses the older query type "users", so Divi lists the users but prints nothing for each of them.', 'saddle' ),
+				$location
+			);
+		}
+
+		if ( in_array( 'no_sub_types', $problems, true ) && 'post_types' === $base ) {
+			if ( $desc && $by_date ) {
+				$desc    = false;
 				$lines[] = sprintf(
 					/* translators: %s: module and address. */
-					__( 'The loop on %s lists its sub types as plain text, and Divi skips those.', 'saddle' ),
-					$location
-				);
-			} elseif ( 'no_sub_types' === $problem ) {
-				$lines[] = sprintf(
-					/* translators: %s: module and address. */
-					__( 'The loop on %s names no post type or taxonomy Divi can read, so Divi queries every one of them.', 'saddle' ),
+					__( 'The loop on %s names no post type that Divi can read and stores its order as "desc", so it lists every post type, including pages and media, oldest first.', 'saddle' ),
 					$location
 				);
 			} else {
 				$lines[] = sprintf(
-					/* translators: 1: module and address, 2: stored order. */
-					__( 'The loop on %1$s stores its order as "%2$s". Divi sorts newest first only for "descending".', 'saddle' ),
-					$location,
-					(string) $value['order']
+					/* translators: %s: module and address. */
+					__( 'The loop on %s names no post type that Divi can read, so it lists every post type, including pages and media.', 'saddle' ),
+					$location
 				);
 			}
+		} elseif ( in_array( 'no_sub_types', $problems, true ) ) {
+			$lines[] = sprintf(
+				/* translators: %s: module and address. */
+				__( 'The loop on %s names no taxonomy that Divi can read, so it lists the terms of every taxonomy.', 'saddle' ),
+				$location
+			);
+		} elseif ( in_array( 'sub_types', $problems, true ) ) {
+			$lines[] = sprintf(
+				/* translators: %s: module and address. */
+				__( 'The loop on %s lists some of its sub types as plain text, and Divi skips those.', 'saddle' ),
+				$location
+			);
+		}
+
+		if ( $desc ) {
+			$lines[] = $by_date && 'post_taxonomies' !== $base
+				? sprintf(
+					/* translators: %s: module and address. */
+					__( 'The loop on %s stores its order as "desc", so Divi lists it oldest first.', 'saddle' ),
+					$location
+				)
+				: sprintf(
+					/* translators: %s: module and address. */
+					__( 'The loop on %s stores its order as "desc", which Divi reads as ascending, so it lists the items in the opposite order.', 'saddle' ),
+					$location
+				);
 		}
 		return $lines;
 	}

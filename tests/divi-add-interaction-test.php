@@ -10,6 +10,8 @@
  * @package Saddle
  */
 
+require_once __DIR__ . '/divi-test-paths.php';
+
 class Saddle_Divi_Add_Interaction_Test extends WP_UnitTestCase {
 
 	private static $fixture_dir;
@@ -297,12 +299,7 @@ class Saddle_Divi_Add_Interaction_Test extends WP_UnitTestCase {
 	/* -------- on Divi's own modules -------- */
 
 	public function test_the_echo_and_verify_raise_nothing_on_a_real_divi_button() {
-		$theme      = getenv( 'SADDLE_DIVI_THEME_DIR' );
-		$theme      = $theme ? $theme : dirname( __DIR__, 3 ) . '/wp/divi-dev/wp-content/themes/Divi';
-		$components = rtrim( $theme, '/' ) . '/includes/builder-5/visual-builder/packages/module-library/src/components';
-		if ( ! is_dir( $components ) ) {
-			$this->markTestSkipped( 'No Divi 5 source on this machine.' );
-		}
+		$components = Saddle_Test_Divi_Paths::components_or_skip();
 		remove_all_filters( 'saddle_divi_module_json_dirs' );
 		add_filter(
 			'saddle_divi_module_json_dirs',

@@ -11,6 +11,8 @@
  * @package Saddle
  */
 
+require_once __DIR__ . '/divi-test-paths.php';
+
 class Saddle_Divi_Node_Settings_Test extends WP_UnitTestCase {
 
 	private static $fixture_dir;
@@ -546,10 +548,7 @@ class Saddle_Divi_Node_Settings_Test extends WP_UnitTestCase {
 	/* -------- the echo reads the canonical writes -------- */
 
 	public function test_the_echo_judges_suffixed_writes_at_their_real_paths() {
-		$components = '/Users/fahim/Workspace/wp/divi-dev/wp-content/themes/Divi/includes/builder-5/visual-builder/packages/module-library/src/components';
-		if ( ! is_dir( $components ) ) {
-			$this->markTestSkipped( 'Needs the Divi 5 module.json files.' );
-		}
+		$components = Saddle_Test_Divi_Paths::components_or_skip();
 		remove_all_filters( 'saddle_divi_module_json_dirs' );
 		add_filter(
 			'saddle_divi_module_json_dirs',

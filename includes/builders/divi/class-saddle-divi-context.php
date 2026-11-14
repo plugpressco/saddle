@@ -16,9 +16,20 @@ defined( 'ABSPATH' ) || exit;
 class Saddle_Divi_Context {
 
 	/**
-	 * The heading of the Divi section that leads the context.
+	 * The heading of the Divi section that leads the context, untranslated
+	 * (lead_heading() is the one printed).
 	 */
 	const LEAD_HEADING = '# Building pages with Divi 5';
+
+	/**
+	 * The heading of the Divi section, in the site's language like the rest
+	 * of the context.
+	 *
+	 * @return string
+	 */
+	private static function lead_heading() {
+		return __( '# Building pages with Divi 5', 'saddle' );
+	}
 
 	/**
 	 * Hook into the context filters. Only the always-relevant rules ride
@@ -67,15 +78,22 @@ class Saddle_Divi_Context {
 		if ( null !== $override || ! Saddle_Divi::is_active() || ! class_exists( 'Saddle_Divi_Recipes' ) ) {
 			return $override;
 		}
-		$tree = Saddle_Divi_Recipes::tree( (string) $name, is_array( $content ) ? $content : array() );
+		$content = is_array( $content ) ? $content : array();
+		$tree    = Saddle_Divi_Recipes::tree( (string) $name, $content );
 		if ( empty( $tree ) ) {
 			return $override;
 		}
-		return array(
+		$out     = array(
 			'builder'         => 'divi',
 			'nodes'           => $tree,
 			'content_applied' => true,
 		);
+		$ignored = Saddle_Divi_Recipes::ignored( (string) $name, $content );
+		if ( $ignored ) {
+			$out['content_applied'] = false;
+			$out['content_ignored'] = $ignored;
+		}
+		return $out;
 	}
 
 	/**
@@ -195,13 +213,13 @@ class Saddle_Divi_Context {
 			return $lines;
 		}
 		return array_merge(
-			array( self::LEAD_HEADING, '' ),
+			array( self::lead_heading(), '' ),
 			self::guidance_lines( (string) $tier ),
 			array(
 				'',
-				'# Pages not built with Divi',
+				__( '# Pages not built with Divi', 'saddle' ),
 				'',
-				'- A post or page that is not a Divi page (divi-check-setup tells) uses the block tools (get-blocks, set-blocks, add/edit/move/remove-block) and the build-page skill; context-bundle returns their design system.',
+				'- ' . __( 'A post or page that is not a Divi page (divi-check-setup tells) uses the block tools (get-blocks, set-blocks, add/edit/move/remove-block) and the build-page skill; context-bundle returns their design system.', 'saddle' ),
 				'',
 			)
 		);
@@ -217,10 +235,10 @@ class Saddle_Divi_Context {
 	 */
 	public static function append_divi_guidance( $context, $tier ) {
 		// Already leading the context, or appended by an older add-on.
-		if ( ! Saddle_Divi::is_active() || false !== strpos( $context, self::LEAD_HEADING . "\n" ) || false !== strpos( $context, "\n## Editing Divi pages" ) ) {
+		if ( ! Saddle_Divi::is_active() || false !== strpos( $context, self::lead_heading() . "\n" ) || false !== strpos( $context, self::LEAD_HEADING . "\n" ) || false !== strpos( $context, "\n## Editing Divi pages" ) ) {
 			return $context;
 		}
-		$lines = array_merge( array( '', self::LEAD_HEADING, '' ), self::guidance_lines( (string) $tier ) );
+		$lines = array_merge( array( '', self::lead_heading(), '' ), self::guidance_lines( (string) $tier ) );
 		return $context . implode( "\n", $lines ) . "\n";
 	}
 
@@ -232,18 +250,22 @@ class Saddle_Divi_Context {
 	 */
 	private static function guidance_lines( $tier ) {
 		$lines = array(
-			'This site runs Divi ' . Saddle_Divi::version() . '. Its pages are a module tree (section > row > column > module) stored as blocks.',
+			sprintf(
+				/* translators: %s: Divi version. */
+				__( 'This site runs Divi %s. Its pages are a module tree (section > row > column > module) stored as blocks.', 'saddle' ),
+				(string) Saddle_Divi::version()
+			),
 			'',
 		);
 
 		if ( class_exists( 'Saddle_Skills' ) ) {
-			$lines[] = '- Before building or editing a Divi page, read the divi-build-page skill (saddle/get-skill name=divi-build-page): study the site\'s best page and its presets first, then build, check and look.';
+			$lines[] = '- ' . __( 'Before building or editing a Divi page, read the divi-build-page skill (saddle/get-skill name=divi-build-page): study the site\'s best page and its presets first, then build, check and look.', 'saddle' );
 		} else {
-			$lines[] = '- Call saddle/divi-check-setup before editing, saddle/divi-get-page for the addressable module tree, divi-get-module-schema before composing an unfamiliar module, and re-read the page after every structural change (addresses shift).';
+			$lines[] = '- ' . __( 'Call saddle/divi-check-setup before editing, saddle/divi-get-page for the addressable module tree, divi-get-module-schema before composing an unfamiliar module, and re-read the page after every structural change (addresses shift).', 'saddle' );
 		}
-		$lines[] = '- Build and edit Divi pages only with the saddle/divi-* tools. Never write a Divi page\'s "content" with update-post or update-page: that destroys the layout. Build real modules, never HTML in a code module.';
-		$lines[] = '- Every write is validated (an invalid tree is refused, never repaired) and revision-backed. Read each response\'s "warnings" (what Divi will ignore) and "notes", then run verify-page.';
-		$lines[] = '- Traps the tools refuse or flag: a CSS id or class goes at module.advanced.htmlAttributes (desktop only); a font variable is written as its $variable token from divi-list-variables, never var(); the small screens are "tablet" and "phone" (not "phoneWide").';
+		$lines[] = '- ' . __( 'Build and edit Divi pages only with the saddle/divi-* tools. Never write a Divi page\'s "content" with update-post or update-page: that destroys the layout. Build real modules, never HTML in a code module.', 'saddle' );
+		$lines[] = '- ' . __( 'Every write is validated (an invalid tree is refused, never repaired) and revision-backed. Read each response\'s "warnings" (what Divi will ignore) and "notes", then run verify-page.', 'saddle' );
+		$lines[] = '- ' . __( 'Traps the tools refuse or flag: a CSS id or class goes at module.advanced.htmlAttributes (desktop only); a font variable is written as its $variable token from divi-list-variables, never var(); the small screens are "tablet" and "phone" (not "phoneWide").', 'saddle' );
 
 		// Tell the agent which purpose-built module packs are installed, so it
 		// prefers a ready-made module over composing an element from primitives.
@@ -254,7 +276,11 @@ class Saddle_Divi_Context {
 				foreach ( array_slice( $packs, 0, 8 ) as $p ) {
 					$summary[] = sprintf( '%s (%d)', $p['name'], $p['count'] );
 				}
-				$lines[] = '- Module packs installed: ' . implode( ', ', $summary ) . '. For a real web element (pricing table, carousel, testimonial, counter, …) search divi-list-modules and prefer a purpose-built module over one composed from core primitives.';
+				$lines[] = '- ' . sprintf(
+					/* translators: %s: comma-separated module packs, each with its module count. */
+					__( 'Module packs installed: %s. For a real web element (pricing table, carousel, testimonial, counter, …) search divi-list-modules and prefer a purpose-built module over one composed from core primitives.', 'saddle' ),
+					implode( ', ', $summary )
+				);
 			}
 		}
 
@@ -265,7 +291,7 @@ class Saddle_Divi_Context {
 		}
 
 		if ( 'read' === $tier ) {
-			$lines[] = '- The current access level is read-only: you can inspect Divi pages but not change them.';
+			$lines[] = '- ' . __( 'The current access level is read-only: you can inspect Divi pages but not change them.', 'saddle' );
 		}
 
 		return $lines;

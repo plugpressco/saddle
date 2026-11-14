@@ -157,6 +157,37 @@ class Saddle_Divi_Loop_Repair_Test extends WP_UnitTestCase {
 		$this->assertSame( array(), Saddle_Divi_Loop_Repair::problems( self::current_loop() ) );
 	}
 
+	public function test_the_repair_applied_at_render_and_on_writes_changes_only_two_shapes() {
+		$fixed = Saddle_Divi_Loop_Repair::repair( self::old_loops()['strings'] );
+		$this->assertSame( array( array( 'value' => 'post', 'label' => 'Posts' ) ), $fixed['subTypes'], 'A plain-text sub type becomes an item labelled like divi-enable-loop labels it.' );
+		$this->assertSame( 'descending', $fixed['order'] );
+
+		$this->assertSame( 'ascending', Saddle_Divi_Loop_Repair::repair( array( 'order' => 'asc' ) )['order'] );
+
+		// What the author asked for stays: these are the loop tools' to change.
+		$no_types = Saddle_Divi_Loop_Repair::repair( self::old_loops()['no sub types'] );
+		$this->assertArrayNotHasKey( 'subTypes', $no_types, 'A missing sub type list is not filled in.' );
+		$this->assertSame( array(), Saddle_Divi_Loop_Repair::repair( self::old_loops()['empty list'] )['subTypes'] );
+		$this->assertSame( 'users', Saddle_Divi_Loop_Repair::repair( self::old_loops()['users by name'] )['queryType'] );
+		$this->assertSame( self::old_loops()['terms, empty'], Saddle_Divi_Loop_Repair::repair( self::old_loops()['terms, empty'] ) );
+		$this->assertSame( self::current_loop(), Saddle_Divi_Loop_Repair::repair( self::current_loop() ) );
+	}
+
+	public function test_the_repair_keeps_a_plain_text_sub_type_a_loop_may_not_name() {
+		register_post_type( 'saddle_hidden_type', array( 'public' => false ) );
+		$loop = array(
+			'enable'    => 'on',
+			'queryType' => 'post_types',
+			'subTypes'  => array( 'saddle_hidden_type', 'attachment' ),
+		);
+
+		$this->assertSame( $loop, Saddle_Divi_Loop_Repair::repair( $loop ), 'Divi keeps skipping it, as it did before.' );
+
+		$mixed = Saddle_Divi_Loop_Repair::repair( array_merge( $loop, array( 'subTypes' => array( 'page', 'saddle_hidden_type' ) ) ) );
+		$this->assertSame( array( array( 'value' => 'page', 'label' => 'Pages' ), 'saddle_hidden_type' ), $mixed['subTypes'] );
+		unregister_post_type( 'saddle_hidden_type' );
+	}
+
 	public function test_repair_tree_rewrites_every_old_loop_at_any_depth_and_nothing_else() {
 		$old     = self::old_loops()['strings'];
 		$current = self::current_loop();
@@ -179,7 +210,11 @@ class Saddle_Divi_Loop_Repair_Test extends WP_UnitTestCase {
 		$this->assertSame( 2, $count );
 		$this->assertSame( $current, Saddle_Divi_Loop::value( Saddle_Divi_Tree::get( $fixed, '0.0.0' ) ), 'A loop already in shape is left as it is.' );
 		$this->assertSame( array(), Saddle_Divi_Loop_Repair::problems( Saddle_Divi_Loop::value( Saddle_Divi_Tree::get( $fixed, '0.0.0.0' ) ) ) );
-		$this->assertSame( 'post', Saddle_Divi_Loop::value( Saddle_Divi_Tree::get( $fixed, '0.0.1' ) )['subTypes'][0]['value'] );
+		// This used to fill in "post": a loop with no sub type is left as
+		// stored, and only its order is rewritten.
+		$no_types = Saddle_Divi_Loop::value( Saddle_Divi_Tree::get( $fixed, '0.0.1' ) );
+		$this->assertArrayNotHasKey( 'subTypes', $no_types );
+		$this->assertSame( 'descending', $no_types['order'] );
 
 		list( , $again ) = Saddle_Divi_Loop::repair_tree( $fixed );
 		$this->assertSame( 0, $again, 'A repaired tree needs nothing more.' );
@@ -209,8 +244,29 @@ class Saddle_Divi_Loop_Repair_Test extends WP_UnitTestCase {
 		$this->assertNotWPError( $result );
 
 		$loop = $this->stored_loop( $id );
-		$this->assertSame( array( array( 'value' => 'post', 'label' => 'post' ) ), $loop['subTypes'] );
+		// The label used to be the slug ("post"); it is the post type's
+		// label, as divi-enable-loop writes it.
+		$this->assertSame( array( array( 'value' => 'post', 'label' => 'Posts' ) ), $loop['subTypes'] );
 		$this->assertSame( 'descending', $loop['order'] );
+	}
+
+	public function test_another_write_keeps_an_old_user_loop_and_an_empty_sub_type_list_as_stored() {
+		foreach ( array( 'users by name', 'no sub types' ) as $label ) {
+			$id = $this->page( self::old_loops()[ $label ] );
+
+			$result = wp_get_ability( 'saddle/divi-edit-module' )->execute(
+				array(
+					'post_id' => $id,
+					'address' => '0.0.0.1',
+					'fields'  => array( 'title' => 'Hello' ),
+				)
+			);
+			$this->assertNotWPError( $result, $label );
+
+			$loop = $this->stored_loop( $id );
+			$this->assertSame( self::old_loops()[ $label ]['queryType'], $loop['queryType'], $label );
+			$this->assertSame( isset( self::old_loops()[ $label ]['subTypes'] ), isset( $loop['subTypes'] ), $label );
+		}
 	}
 
 	public function test_edit_loop_with_no_changes_saves_an_old_loop_in_the_current_shape() {
@@ -238,8 +294,9 @@ class Saddle_Divi_Loop_Repair_Test extends WP_UnitTestCase {
 		$this->assertCount( 1, $findings );
 		$this->assertSame( '0.0.0', $findings[0]['address'] );
 		$this->assertSame( 'error', $findings[0]['severity'] );
-		$this->assertStringContainsString( 'plain text', $findings[0]['message'] );
-		$this->assertStringContainsString( 'descending', $findings[0]['message'] );
+		// The finding says what a visitor gets: Divi skips the plain-text
+		// sub type, so the loop lists every post type, oldest first.
+		$this->assertSame( 'The loop on divi/column (node 0.0.0) names no post type that Divi can read and stores its order as "desc", so it lists every post type, including pages and media, oldest first.', $findings[0]['message'] );
 		$this->assertSame( 'Run divi-edit-loop on this address (no changes needed) to save it in the current format.', $findings[0]['fix_hint'] );
 
 		$off = self::old_loops()['strings'];
@@ -272,14 +329,21 @@ class Saddle_Divi_Loop_Repair_Test extends WP_UnitTestCase {
 		Saddle_Divi_Loop_Repair::hook();
 		$utils = 'ET\\Builder\\Packages\\Module\\Options\\Loop\\LoopUtils';
 
-		foreach ( array( 'strings', 'no sub types', 'empty list' ) as $label ) {
+		$attrs = self::block( self::old_loops()['strings'] )['attrs'];
+		$read  = $utils::get_query_args_from_attrs( $attrs );
+		$this->assertSame( array( 'any' ), $read['query_args']['post_type'], 'Divi alone skips the plain-text sub type.' );
+		$data = apply_filters( 'divi_loop_data_before_execution', $read, $attrs, array( 'attrs' => $attrs ) );
+		$this->assertSame( array( 'post' ), $data['query_args']['post_type'] );
+		$this->assertSame( 'publish', $data['query_args']['post_status'] );
+
+		// This used to fill in "post" at render too. A loop that names no
+		// sub type is left as Divi reads it; verify-page reports it and
+		// divi-edit-loop sets it.
+		foreach ( array( 'no sub types', 'empty list' ) as $label ) {
 			$attrs = self::block( self::old_loops()[ $label ] )['attrs'];
 			$read  = $utils::get_query_args_from_attrs( $attrs );
-			$this->assertSame( array( 'any' ), $read['query_args']['post_type'], "Divi alone would query every post type ({$label})." );
-
-			$data = apply_filters( 'divi_loop_data_before_execution', $read, $attrs, array( 'attrs' => $attrs ) );
-			$this->assertSame( array( 'post' ), $data['query_args']['post_type'], $label );
-			$this->assertSame( 'publish', $data['query_args']['post_status'], $label );
+			$data  = apply_filters( 'divi_loop_data_before_execution', $read, $attrs, array( 'attrs' => $attrs ) );
+			$this->assertSame( $read['query_args']['post_type'], $data['query_args']['post_type'], $label );
 		}
 
 		$attrs = self::block( self::old_loops()['strings'] )['attrs'];
