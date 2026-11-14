@@ -17,21 +17,21 @@ MCP server for WordPress: Claude, ChatGPT or Cursor build pages, fix SEO and run
 SaddleWP is a free MCP server for WordPress that runs on your own site. Connect the AI agent you already use and ask in plain words. It builds pages, fixes SEO and keeps your site updated with real WordPress tools. You decide what it may change.
 
 = The MCP server for WordPress, on your own site =
-* **Self-hosted:** your AI agent connects to your site directly. Your content does not go through our servers.
-* **One address:** turn on sign-in for agents once. Then an agent needs only your site's address, and an administrator approves it on your site. Sign-in needs HTTPS and pretty permalinks. Without it, an agent connects with a pasted key that works only with SaddleWP.
+* **Two ways in:** connect through your SaddleWP account, free for one site, with one address for all your sites. Or connect your agent straight to your site, and your content never goes through our servers.
+* **Sign-in for agents:** **Connect this site** turns it on. An administrator approves each agent on your site. It needs HTTPS and pretty permalinks; without them, an agent uses a key that works only with SaddleWP.
 * **Any MCP agent:** Claude, Claude Code, ChatGPT, Cursor, VS Code, Codex, Gemini CLI and others.
 
 = Connect Claude to WordPress =
 Add your site's address to Claude or Claude Code and approve it in your browser. Then ask Claude to draft a post or build a page in your theme's styles.
 
 = Connect ChatGPT to WordPress =
-Add your site as a connector in ChatGPT and approve it on your site. ChatGPT needs sign-in for agents. It reads your content first, and writes after you give it Edit content.
+Add your site as a connector in ChatGPT and approve it on your site. It reads your content first, and writes after you give it Edit content.
 
 = Connect Cursor, Codex, Gemini CLI and other MCP agents =
 Add the same address to Cursor, VS Code, Codex or Gemini CLI. Guides for each agent: [saddle.to/docs](https://saddle.to/docs).
 
 = Build =
-* **Pages that look like your site:** real block editor and Divi 5 pages in your theme's colors, fonts and patterns. A page check finds layout, contrast and accessibility problems, and a preview link shows the page before it goes live.
+* **Pages that look like your site:** real block editor and Divi 5 pages in your theme's colors, fonts and patterns.
 * **Content written your way:** drafts of new posts, updates to old ones, images from a link or from Unsplash, and menus kept in order. Teach it your voice and rules once with Skills, and it remembers.
 * **A site that keeps running:** plugin, theme and WordPress updates through WordPress's own updater, with its backup and rollback, and Site Health in plain words.
 
@@ -48,7 +48,7 @@ Add the same address to Cursor, VS Code, Codex or Gemini CLI. Guides for each ag
 = Safe on a live site =
 * A new agent can only read. You choose Read only, Edit content or Manage the site for each one.
 * Deletes, installs and other big changes show a preview first, and any tool can be set to ask first. You can let a Manage the site agent skip this; it is off until you turn it on.
-* Every change is logged, and most can be undone. SaddleWP never runs code from the AI.
+* Every change is logged, and most can be undone.
 
 = Who uses SaddleWP =
 * **Agencies and freelancers:** work on client sites from one AI agent.
@@ -129,19 +129,19 @@ Every feature in this free plugin stays free. SaddleWP → Get Premium shows Sad
 == Installation ==
 
 1. Install and activate SaddleWP from **Plugins → Add New**.
-2. Go to **SaddleWP → Agent setup** and pick your agent.
-3. Paste the address into your AI agent and approve the connection when your browser opens.
+2. In SaddleWP's welcome, click **Connect this site**. It turns on sign-in for agents and opens your SaddleWP account, which shows how to add your AI agent. Or choose **Connect directly instead**, pick your agent and paste the address into it.
+3. Approve the connection when your site asks.
 4. To allow changes, choose Edit content or Manage the site next to the agent on **SaddleWP → Agent setup**.
 
 == Frequently Asked Questions ==
 
 = Do I need an account? =
 
-No. SaddleWP is free and runs on your own site.
+No. You can connect your AI agent straight to your site, free and with no account. A SaddleWP account is optional: free for one site, it gives your agents one address for all your sites.
 
 = Does my content go through your servers? =
 
-No. Your AI agent connects to your site directly. SaddleWP sends no usage data unless you choose to share it on SaddleWP's Overview.
+Not when your AI agent connects directly. If you connect through your SaddleWP account, your agent's calls and your site's answers pass through `cloud.saddle.to`, and your site still decides each call. SaddleWP sends no usage data unless you choose to share it on SaddleWP's Overview.
 
 = Can I try SaddleWP before installing it? =
 
@@ -159,7 +159,7 @@ No. Every action uses standard WordPress functions.
 
 = Does it work with ChatGPT? =
 
-Yes. Go to **SaddleWP → Agent setup**, pick ChatGPT, and turn on sign-in when SaddleWP offers it. Then add your site as a connector in ChatGPT and approve it when ChatGPT sends you to your site.
+Yes. Connect through your SaddleWP account, or go to **SaddleWP → Agent setup**, open **Connect directly**, pick ChatGPT, and turn on sign-in when SaddleWP offers it. Then add your site as a connector in ChatGPT and approve it when ChatGPT sends you to your site.
 
 = Does it work with page builders? =
 
@@ -176,7 +176,7 @@ SaddleWP sends no tracking or usage data unless you choose to. It connects to an
 1. Upload from URL: WordPress downloads the one file you asked for.
 2. Connection check: SaddleWP sends a test request to your own site.
 3. Live page check (optional): This runs only when your AI agent asks for it after editing a published page. SaddleWP loads that page from your own site, as a visitor would, to confirm the change is live.
-4. Unsplash (optional): This runs only after you add your own API key under **SaddleWP → Settings**. SaddleWP sends your search words or a photo ID to `api.unsplash.com`. It downloads photos from `images.unsplash.com`. Each imported photo gets a caption that credits the photographer, as Unsplash requires. You can edit or remove it. See the [API Guidelines](https://help.unsplash.com/en/articles/2511245-unsplash-api-guidelines), [API Terms](https://unsplash.com/api-terms) and [Privacy Policy](https://unsplash.com/privacy).
+4. Unsplash (optional): This runs only after you add your own API key under **SaddleWP → Settings**. SaddleWP sends your search words or a photo ID to `api.unsplash.com`. It downloads photos from `images.unsplash.com`. Each imported photo gets a caption that credits the photographer, as Unsplash requires. See the [API Guidelines](https://help.unsplash.com/en/articles/2511245-unsplash-api-guidelines), [API Terms](https://unsplash.com/api-terms) and [Privacy Policy](https://unsplash.com/privacy).
 5. OAuth agent check (optional): This runs only when OAuth sign-in is on. SaddleWP reads a public web address the agent provides to confirm who the agent is. It sends nothing about your site.
 6. Updates and Site Health (optional): When your AI agent lists or applies updates, or reads Site Health, WordPress runs its own checks with WordPress.org and downloads the update packages it already offers, from WordPress.org or a plugin's own update server, exactly as the Updates screen does. After updating an active plugin, WordPress loads your own home page once to check for a fatal error.
 7. Plugin and theme directory (optional): When your AI agent searches for a plugin, or installs a plugin or theme, WordPress sends the search words or the slug to `api.wordpress.org`, as the **Add New** screens do. The same happens when you choose to add SaddleWP Analytics in SaddleWP's welcome or on Home. Like every WordPress.org request WordPress makes, it includes your WordPress version, language and site address. SaddleWP keeps search results on your site for an hour. An install downloads the package from `downloads.wordpress.org`. SaddleWP refuses a package from anywhere else.
@@ -184,7 +184,7 @@ SaddleWP sends no tracking or usage data unless you choose to. It connects to an
 8. Usage data (optional): A small card on SaddleWP's Overview and the Plugins screen asks once whether to share your name, email and basic site info with PlugPress, for better support. Nothing is sent until you click **Allow**, and **No thanks** sends nothing. Allow sends the name and email of the account that clicked it, your site address and title, WordPress and PHP versions, language, timezone, theme, your plugins with their versions, and a random id for your site to `console.plugpress.io`, then once a week while sharing is on, only when something changed. Turn it off with **Stop sharing site info** under SaddleWP on the Plugins screen, and PlugPress forgets what identifies your site. A copy of your site at another address is asked again. Add `define( 'PLUGPRESS_INSIGHT', false );` to `wp-config.php` to remove the card and the form entirely. See the [Privacy Policy](https://saddle.to/privacy/).
 9. SaddleWP news (optional): Only if you tick **Also email me SaddleWP news** on that card, or click **Subscribe** on the news card, the email address you typed goes to `console.plugpress.io`, which passes it to PlugPress's newsletter on `plugpress.io` without keeping it. You get an email to confirm first, and every newsletter has an unsubscribe link.
 10. Deactivation feedback (optional): When you deactivate SaddleWP on the Plugins screen, a short form asks why. **Skip and deactivate** sends nothing. **Send and deactivate** sends the reason you picked, what you typed, your email only if you tick **Reply to me**, SaddleWP's version, and your WordPress and PHP versions and language to `console.plugpress.io`. It never sends your site address.
-11. Your SaddleWP account (optional, only if you connect it): the welcome and **Agent setup** offer a link to our hosted service at `cloud.saddle.to`, with your site's address filled in. The plugin sends nothing to it. If you connect your site there, the service signs in like any AI agent: your site shows its own Allow screen, and you choose what it may do. After that, calls your AI agent makes through your account reach your site through that sign-in, and your site still decides each one. The service keeps what its [Privacy Policy](https://saddle.to/privacy/) lists. Disconnect any time in **Agent setup**.
+11. Your SaddleWP account (optional, only if you connect it): **Connect this site** in the welcome and **Agent setup** turns on sign-in for agents on your site and opens our hosted service at `cloud.saddle.to`, with your site's address filled in. The plugin sends nothing to it. If you connect your site there, the service signs in like any AI agent: your site shows its own Allow screen, and you choose what it may do. Then your AI agent's calls through your account, and your site's answers, pass through the service, and your site still decides each call. A direct connection never does. The service keeps what its [Privacy Policy](https://saddle.to/privacy/) lists. Disconnect any time in **Agent setup**.
 
 The WordPress.org version never checks for its own updates. The version from plugpress.co checks at most once every six hours. It sends only the plugin name and version number.
 
@@ -193,7 +193,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 * SaddleWP stores its settings, Skills, memory, activity log and short-lived confirmation codes on your site.
 * With OAuth on, it also stores approved agents and a one-way hash of their tokens.
 * For each connected agent, it stores the name the agent reports, when it connected and last called, and the names of its last five tools. It stores no tool inputs or results.
-* SaddleWP sends no personal data off your site unless you choose to: your name and email if you tick that part of usage data, an address you give for SaddleWP news, and a reply address you add to deactivation feedback. PlugPress keeps usage data while you share it and clears what identifies your site after 12 months without an update. It deletes deactivation feedback after 24 months.
+* SaddleWP sends no personal data off your site unless you choose to: what passes through your SaddleWP account once you connect it, your name and email if you tick that part of usage data, an address you give for SaddleWP news, and a reply address you add to deactivation feedback. PlugPress keeps usage data while you share it and clears what identifies your site after 12 months without an update. It deletes deactivation feedback after 24 months.
 * Deactivating or deleting SaddleWP deletes the agent keys it made, because nothing limits them while SaddleWP is off. Agents that connected with a key need to connect again after you turn SaddleWP back on. Keys you made yourself stay.
 * Uninstalling removes all SaddleWP data.
 
@@ -207,6 +207,11 @@ The WordPress.org version never checks for its own updates. The version from plu
 6. Welcome: SaddleWP looks around your site and helps you connect your first AI agent.
 
 == Changelog ==
+
+= 2.0.0 =
+* Changed: The welcome and Agent setup lead with one way in: your SaddleWP account. The Connect this site button turns on sign-in for agents on this site, then opens your account in a new tab with the site's address filled in. Before, the account could not finish connecting until you found that switch under Settings. SaddleWP sends nothing to the account; the button is a link.
+* Changed: Connecting your AI agent straight to this site stays one click away: "Connect directly instead" in the welcome, and the Connect directly row on Agent setup.
+* New: When a SaddleWP account can't reach the site, the welcome says why and offers what helps. A site on your computer connects directly, Plain permalinks link to Settings → Permalinks, and a site without HTTPS is told to ask its host.
 
 = 1.7.3 =
 * New: Saddle Rank, the free SEO and AI search plugin, is offered like Saddle Analytics: a tile in Home's Add-ons and a last question in the welcome. One click installs it from WordPress.org and turns it on, or turns on a copy you already have. Nothing is installed without your click, and only you can do it.

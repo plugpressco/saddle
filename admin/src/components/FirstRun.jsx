@@ -16,13 +16,15 @@
  * add it, one more question offers it (#367); it is part of the last step,
  * not a stored step.
  *
- * The agent step starts with the two ways to connect (2026-11-06,
- * ConnectWays): Saddle Cloud for all your sites, or just this site. Saddle
- * Cloud is a plain link in a new tab; the welcome then ends there (the
- * Analytics question, then Finish), since Cloud's own access is chosen on
- * this site's Allow screen. "Connect this site" asks which AI, and the rest
- * follows. Which way was picked is not stored: a reload on the agent step
- * shows both ways again.
+ * The agent step starts with one way in (#432, Saddle 2.0; ConnectWays):
+ * a SaddleWP account. Connect this site turns on sign-in for agents and
+ * opens the account in a new tab (AccountThread); once the account is
+ * connected, the welcome ends there (the Analytics question, then Finish),
+ * since the account's access is chosen on this site's Allow screen. "No
+ * account? Connect directly instead" asks which AI, and the rest follows.
+ * Where no account can reach the site, the card says why and leads with
+ * what helps. Which way was picked is not stored: a reload on the agent
+ * step shows the card again, or the end when the account is connected.
  */
 import { useState, useEffect, useRef } from '@wordpress/element';
 import {
@@ -37,7 +39,8 @@ import { api, connectionPath } from '../api';
 import { addAnalytics, addError, analyticsOffer } from '../analytics-addon';
 import { addRank, addRankError, rankOffer } from '../rank-addon';
 import ConnectWizard from './ConnectWizard';
-import ConnectWays from './ConnectWays';
+import ConnectWays, { AccountButton, useCloudConnected } from './ConnectWays';
+import { useOauthSettings } from './SignInCard';
 import WaitingLine from './WaitingLine';
 import { APPS } from '../connect-apps';
 import { createPulse } from '../pulse';
@@ -253,6 +256,101 @@ function You( { children } ) {
  */
 function Done( { children } ) {
 	return <p className="saddle-chat__done">{ children }</p>;
+}
+
+/**
+ * After Connect this site (#432): sign-in for agents is on, the SaddleWP
+ * account is open in another tab, and the welcome waits for its connection,
+ * looking again each time the owner comes back to this tab. Then the
+ * welcome's end. A resume with the account already connected starts at
+ * "Connected".
+ *
+ * @param {Object}   props
+ * @param {boolean}  props.clicked The owner clicked Connect this site here.
+ * @param {string}   props.signIn  '' while sign-in turns on, 'on', or why
+ *                                 it could not.
+ * @param {?Object}  props.oauth   The sign-in settings.
+ * @param {Function} props.onStart Called with the promise of sign-in, when
+ *                                 the account is opened again.
+ * @param {Function} props.onSite  Connect directly instead.
+ * @param {*}        props.ending  What follows once connected.
+ */
+function AccountThread( { clicked, signIn, oauth, onStart, onSite, ending } ) {
+	const connected = useCloudConnected( true );
+
+	return (
+		<>
+			{ clicked && <You>{ __( 'Connect this site', 'saddle' ) }</You> }
+			{ clicked && (
+				<Say>
+					{ 'on' === signIn && (
+						<Done>
+							{ __( 'Sign-in for agents is on.', 'saddle' ) }
+						</Done>
+					) }
+					{ '' !== signIn && 'on' !== signIn && (
+						<Notice tone="danger">{ signIn }</Notice>
+					) }
+					<p>
+						{ __(
+							'Your SaddleWP account opened in a new tab. Sign up or log in there, then approve this site when it asks.',
+							'saddle'
+						) }
+					</p>
+				</Say>
+			) }
+			{ true === connected ? (
+				<>
+					<Say cont={ clicked }>
+						<Done>
+							{ __(
+								'Connected to your SaddleWP account.',
+								'saddle'
+							) }
+						</Done>
+						<p>
+							{ __(
+								'Your account shows how to add SaddleWP to ChatGPT, Claude or another AI agent. Do that in its tab when you’re ready.',
+								'saddle'
+							) }
+						</p>
+					</Say>
+					{ ending }
+				</>
+			) : (
+				<>
+					<Say cont>
+						<p className="saddle-chat__wait">
+							<span
+								className="saddle-chat__typing"
+								aria-hidden="true"
+							>
+								<i />
+								<i />
+								<i />
+							</span>
+							{ __(
+								'I’ll know the moment your account connects…',
+								'saddle'
+							) }
+						</p>
+					</Say>
+					<div className="saddle-chat__replies">
+						<AccountButton
+							oauth={ oauth }
+							onStart={ onStart }
+							secondary
+						>
+							{ __( 'Open my SaddleWP account again', 'saddle' ) }
+						</AccountButton>
+						<Button variant="link" onClick={ onSite }>
+							{ __( 'Connect directly instead', 'saddle' ) }
+						</Button>
+					</div>
+				</>
+			) }
+		</>
+	);
 }
 
 /**
@@ -840,6 +938,13 @@ export default function FirstRun( {
 	const [ way, setWay ] = useState(
 		'read' === resumed.current || 'app' === resumed.current ? '' : 'site'
 	);
+	// Sign-in for agents (#432): the settings, and what Connect this site
+	// made of them: '' while it turns on, 'on', or why it could not.
+	const signIn = useOauthSettings();
+	const [ signInState, setSignInState ] = useState( '' );
+	// A resume on the agent step with the account already connected goes
+	// straight to the end.
+	const cloudOn = useCloudConnected();
 	// Whether the end offers Saddle Analytics, as the page knew it when the
 	// owner picked a way to connect: added on one way's end, it is not
 	// offered again on the other's.
@@ -870,7 +975,7 @@ export default function FirstRun( {
 			'saddle'
 		),
 		...( look ? lookLines( look ) : [] ),
-		__( 'Let’s connect your AI agent. There are two ways:', 'saddle' ),
+		__( 'Let’s connect your AI agent.', 'saddle' ),
 	];
 	// The hello needs nothing; the rest waits for the site read.
 	const available = ready ? intro.length : 1;
@@ -926,6 +1031,24 @@ export default function FirstRun( {
 			setAskRank( rankOffer().canAdd );
 			setWay( next );
 		}
+	};
+
+	// Connect this site: the account opened in a new tab, and sign-in for
+	// agents turning on.
+	const startAccount = ( started ) => {
+		pickWay( 'cloud' );
+		setSignInState( '' );
+		started
+			.then( ( next ) => {
+				signIn.set( next );
+				setSignInState( 'on' );
+			} )
+			.catch( ( e ) =>
+				setSignInState(
+					( e && errorText( e ) ) ||
+						__( 'Could not turn on sign-in for agents.', 'saddle' )
+				)
+			);
 	};
 
 	const skip = () => {
@@ -1049,22 +1172,34 @@ export default function FirstRun( {
 				{ moreIntro && ! instant && <Say cont={ shown > 0 } typing /> }
 
 				<div ref={ 'read' === step ? undefined : newest } key={ step }>
-					{ 'app' === step && 'site' !== way && (
-						<>
-							<div className="saddle-chat__ways">
-								<ConnectWays
-									heading={ false }
-									onSite={ () => pickWay( 'site' ) }
-									onCloud={ () => pickWay( 'cloud' ) }
-								/>
-							</div>
-							{ 'cloud' === way && ending }
-						</>
+					{ 'app' === step && '' === way && true !== cloudOn && (
+						<div className="saddle-chat__ways">
+							<ConnectWays
+								heading={ false }
+								oauth={ signIn.oauth }
+								onReload={ signIn.reload }
+								onSite={ () => pickWay( 'site' ) }
+								onCloud={ startAccount }
+							/>
+						</div>
 					) }
+
+					{ 'app' === step &&
+						( 'cloud' === way ||
+							( '' === way && true === cloudOn ) ) && (
+							<AccountThread
+								clicked={ 'cloud' === way }
+								signIn={ signInState }
+								oauth={ signIn.oauth }
+								onStart={ startAccount }
+								onSite={ () => pickWay( 'site' ) }
+								ending={ ending }
+							/>
+						) }
 
 					{ 'site' === way && ( 'app' === step || afterApp ) && (
 						<>
-							<You>{ __( 'Just this site', 'saddle' ) }</You>
+							<You>{ __( 'Connect directly', 'saddle' ) }</You>
 							<Say>
 								<p>
 									{ __( 'Which AI do you use?', 'saddle' ) }

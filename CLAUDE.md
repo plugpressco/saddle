@@ -116,11 +116,28 @@ and finding each fails at least one. Check every change against all three.
      setup and as the welcome's connect step
      (`components/ConnectWays.jsx`). The welcome's separate Cloud question
      at its end is gone. Once Cloud is connected, its card says "Connected
-     to Saddle Cloud" in place of the link.
+     to Saddle Cloud" in place of the link. **One way in, Saddle 2.0
+     (#432; Fahim 2026-11-13: "main onboarding now focus connect saddle
+     cloud service", "single site connection we try hide"; his pick and
+     "ok" on the mockup 2026-11-14):** the two cards became one, "Your
+     SaddleWP account", with one Connect this site button. Its click turns
+     on sign-in for agents on this site (the line under the button says
+     so; see the auth model) and opens the account's Connect page in a new
+     tab, still a link that sends nothing. The direct connection is "No
+     account? Connect directly instead" in the welcome and a closed
+     "Connect directly" row on Agent setup. Where no account can reach
+     the site (on this computer, Plain permalinks, no HTTPS:
+     `accountReach()` in `onboarding-logic.js`), the card says why and
+     offers what helps instead.
    - Direct MCP keeps working unchanged (R5 in `../planning/ROADMAP-PRODUCT.md`).
 
    "Nothing leaves your site" describes the plugin. It is false the moment it is
-   said of a Cloud-connected site; marketing keeps the two apart.
+   said of a Cloud-connected site; marketing keeps the two apart. Since Saddle
+   2.0 it is said only of the direct connection (decision 3 of
+   `../planning/SADDLE-2.0-ONBOARDING-LAUNCH.md`, Fahim 2026-11-13: "yes to
+   all as recommended"), because the welcome now leads with the account. The
+   readme says both: through the account, an agent's calls and the site's
+   answers pass through `cloud.saddle.to`; a direct connection never does.
 
    *Insight, decided by Fahim 2026-10-26 ("take what ever best decission is ..
    go ahead"); since 2026-10-28 through the PlugPress Insight SDK
@@ -491,6 +508,12 @@ owner to the consent screen. That is the whole of WPVibe's "paste one URL, one
 click in wp-admin" flow, self-hosted. The default is unchanged: the option
 starts `false`, the wizard offers the switch with a labelled button and never
 flips it on its own, and a plain-HTTP or plain-permalink site stays on keys.
+*Since Saddle 2.0 (#432, Fahim's pick 2026-11-14):* the welcome's and Agent
+setup's Connect this site button is a second labelled way to turn it on. The
+line under the button says the click turns on sign-in for agents and opens
+the SaddleWP account; it calls the same `POST /oauth-settings` as the
+wizard's button, and only on the owner's click. Without it a fresh install
+could not finish connecting the account (plan phase 1, 2026-11-13).
 
 Constraints that must not be relaxed: PKCE **S256 only** (never `plain`),
 redirect URIs matched by **exact string comparison** (never prefix), refresh
@@ -664,10 +687,9 @@ change. `Tested up to:` moves only when Fahim has verified against a newer WP.
   (`admin/src/get-pro-logic.js`, kept equal to saddle-cloud's
   `src/shared/plans.ts`), buttons to saddle.to's checkouts, and Free's button
   to Saddle Cloud. And the **one Saddle Cloud link** of non-negotiable #1's
-  amendment: since 2026-11-06 the first of the two ways to connect, at the
-  top of Agent setup and as the welcome's connect step
-  (`components/ConnectWays.jsx`). Nothing else: no notices, no nags, nothing
-  locked, no outbound request; Get Premium is gone once Saddle Pro is
+  amendment: since Saddle 2.0 (#432) the one way in, at the top of Agent
+  setup and as the welcome's connect step (`components/ConnectWays.jsx`).
+  Nothing else: no notices, no nags, nothing locked, no outbound request; Get Premium is gone once Saddle Pro is
   installed, active or not (`Saddle_Modules::offers_pro()`, the
   `saddle_show_get_pro` filter), and no agent reads about either
   (`Saddle_Modules_View::all()` and the context skip them). Builder
