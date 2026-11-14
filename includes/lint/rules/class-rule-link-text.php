@@ -18,7 +18,7 @@ class Saddle_Lint_Rule_Link_Text extends Saddle_Lint_Rule {
 	/**
 	 * Link texts that say nothing about the destination.
 	 */
-	const VAGUE = array( 'click here', 'here', 'read more', 'more', 'learn more', 'this', 'link', 'click', 'go', 'details' );
+	const VAGUE = array( 'click here', 'here', 'read more', 'more', 'learn more', 'this', 'link', 'click', 'go', 'details', 'submit', 'send', 'click me', 'more info', 'see more', 'view more', 'find out more', 'button' );
 
 	/**
 	 * Rule id.
@@ -50,8 +50,8 @@ class Saddle_Lint_Rule_Link_Text extends Saddle_Lint_Rule {
 						$node['address'],
 						self::SEVERITY_ERROR,
 						$link['button']
-							? __( 'Button has no text — a screen reader announces it as just "button".', 'saddle' )
-							: __( 'Link has no text — a screen reader announces it as just "link".', 'saddle' ),
+							? __( 'Button has no text, so a screen reader announces it as just "button".', 'saddle' )
+							: __( 'Link has no text, so a screen reader announces it as just "link".', 'saddle' ),
 						__( 'Give it visible text that says what it does, or an aria-label when it is an icon.', 'saddle' )
 					);
 				} elseif ( in_array( $name, self::VAGUE, true ) ) {

@@ -71,7 +71,7 @@ class Saddle_Lint_Rule_Mixed_Accents extends Saddle_Lint_Rule {
 				self::SEVERITY_WARN,
 				sprintf(
 					/* translators: %s: color. */
-					__( 'This button\'s accent %s belongs to a different hue family than the page\'s dominant accent — mixed accents read as unfinished.', 'saddle' ),
+					__( 'This button\'s accent %s belongs to a different hue family than the page\'s dominant accent. Mixed accents read as unfinished.', 'saddle' ),
 					$accent['color']
 				),
 				__( 'Use ONE accent color for all primary buttons (neutrals are fine for secondary actions), ideally a design-token color so it follows redesigns.', 'saddle' )

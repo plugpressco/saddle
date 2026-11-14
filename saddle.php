@@ -47,6 +47,68 @@ add_action(
 );
 
 /**
+ * Classes only agent calls use (writes, lint and verify, schemas, recipes,
+ * the playbook), loaded on first use instead of on every request. Every use
+ * names the class (new, a static call, class_exists(), a callable), which
+ * loads it; the loop classes stay loaded for the front end's loop repair.
+ *
+ * @param string $class_name Class name.
+ */
+function saddle_autoload_agent_classes( $class_name ) {
+	static $files = null;
+	if ( null === $files ) {
+		$files = array(
+			'Saddle_Recipe_Content'                => 'includes/class-saddle-recipe-content.php',
+			'Saddle_Divi_Envelope'                 => 'includes/builders/divi/class-saddle-divi-envelope.php',
+			'Saddle_Divi_Attr_Keys'                => 'includes/builders/divi/class-saddle-divi-attr-keys.php',
+			'Saddle_Divi_Key_Order'                => 'includes/builders/divi/class-saddle-divi-key-order.php',
+			'Saddle_Divi_Setting_Input'            => 'includes/builders/divi/class-saddle-divi-setting-input.php',
+			'Saddle_Divi_Node_Attrs'               => 'includes/builders/divi/class-saddle-divi-node-attrs.php',
+			'Saddle_Divi_Columns'                  => 'includes/builders/divi/class-saddle-divi-columns.php',
+			'Saddle_Divi_Row_Layout'               => 'includes/builders/divi/class-saddle-divi-row-layout.php',
+			'Saddle_Divi_Nesting'                  => 'includes/builders/divi/class-saddle-divi-nesting.php',
+			'Saddle_Divi_Components'               => 'includes/builders/divi/class-saddle-divi-components.php',
+			'Saddle_Divi_Style'                    => 'includes/builders/divi/class-saddle-divi-style.php',
+			'Saddle_Divi_Style_Advanced'           => 'includes/builders/divi/class-saddle-divi-style-advanced.php',
+			'Saddle_Divi_Style_Schema'             => 'includes/builders/divi/class-saddle-divi-style-schema.php',
+			'Saddle_Divi_Settings'                 => 'includes/builders/divi/class-saddle-divi-settings.php',
+			'Saddle_Divi_Setting_Values'           => 'includes/builders/divi/class-saddle-divi-setting-values.php',
+			'Saddle_Divi_Catalog'                  => 'includes/builders/divi/class-saddle-divi-catalog.php',
+			'Saddle_Divi_Module_Notes'             => 'includes/builders/divi/class-saddle-divi-module-notes.php',
+			'Saddle_Divi_Tokens'                   => 'includes/builders/divi/class-saddle-divi-tokens.php',
+			'Saddle_Divi_Echo_Traps'               => 'includes/builders/divi/class-saddle-divi-echo-traps.php',
+			'Saddle_Divi_Echo_Attrs'               => 'includes/builders/divi/class-saddle-divi-echo-attrs.php',
+			'Saddle_Divi_Lint_Rule_Hover_Contrast' => 'includes/builders/divi/class-saddle-divi-hover-contrast.php',
+			'Saddle_Divi_Loop_Filters'             => 'includes/builders/divi/class-saddle-divi-loop-filters.php',
+			'Saddle_Divi_Dynamic'                  => 'includes/builders/divi/class-saddle-divi-dynamic.php',
+			'Saddle_Divi_Dynamic_Sources'          => 'includes/builders/divi/class-saddle-divi-dynamic-sources.php',
+			'Saddle_Divi_Write_Checks'             => 'includes/builders/divi/class-saddle-divi-write-checks.php',
+			'Saddle_Divi_Recipe_Parts'             => 'includes/builders/divi/class-saddle-divi-recipe-parts.php',
+			'Saddle_Divi_Playbook'                 => 'includes/builders/divi/class-saddle-divi-playbook.php',
+			'Saddle_Divi_Option_Groups'            => 'includes/builders/divi/class-saddle-divi-option-groups.php',
+			'Saddle_Divi_Lint_Facts'               => 'includes/builders/divi/class-saddle-divi-lint-facts.php',
+			'Saddle_Divi_Text_Facts'               => 'includes/builders/divi/class-saddle-divi-text-facts.php',
+			'Saddle_Divi_Interactions'             => 'includes/builders/divi/class-saddle-divi-interactions.php',
+			'Saddle_Divi_Rendered_Page'            => 'includes/builders/divi/class-saddle-divi-rendered-page.php',
+			'Saddle_Lint_Rule_One_Main_Action'     => 'includes/lint/rules/class-rule-one-main-action.php',
+			'Saddle_Lint_Rule_Font_Families'       => 'includes/lint/rules/class-rule-font-families.php',
+			'Saddle_Lint_Rule_Button_Hover'        => 'includes/lint/rules/class-rule-button-hover.php',
+			'Saddle_Lint_Rule_Vanishing_Fill'      => 'includes/lint/rules/class-rule-vanishing-fill.php',
+			'Saddle_Lint_Rule_Emoji_Icon'          => 'includes/lint/rules/class-rule-emoji-icon.php',
+			'Saddle_Lint_Rule_Code_Layout'         => 'includes/lint/rules/class-rule-code-layout.php',
+			'Saddle_Lint_Rule_Nested_Card'         => 'includes/lint/rules/class-rule-nested-card.php',
+			'Saddle_Lint_Rule_Grid_Phone_Columns'  => 'includes/lint/rules/class-rule-grid-phone-columns.php',
+			'Saddle_Lint_Rule_Collapsed_Column'    => 'includes/lint/rules/class-rule-collapsed-column.php',
+			'Saddle_Lint_Rule_Repeated_Row_Layout' => 'includes/lint/rules/class-rule-repeated-row-layout.php',
+		);
+	}
+	if ( isset( $files[ $class_name ] ) ) {
+		require_once SADDLE_DIR . $files[ $class_name ];
+	}
+}
+spl_autoload_register( 'saddle_autoload_agent_classes' );
+
+/**
  * Load plugin classes.
  *
  * Note: Saddle_Ecosystem is intentionally NOT loaded — it is parked Phase 3
@@ -89,6 +151,8 @@ require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-tree.php';
 require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-author.php';
 require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-schema.php';
 require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-echo.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-loop.php';
+require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-loop-repair.php';
 require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-driver.php';
 require_once SADDLE_DIR . 'includes/builders/divi/trait-saddle-divi-attr-resolution.php';
 require_once SADDLE_DIR . 'includes/builders/divi/class-saddle-divi-view.php';
@@ -374,6 +438,7 @@ final class Saddle {
 			require_once SADDLE_DIR . 'includes/abilities/divi-design.php';
 			require_once SADDLE_DIR . 'includes/abilities/divi-templates.php';
 			require_once SADDLE_DIR . 'includes/abilities/divi-bundle.php';
+			require_once SADDLE_DIR . 'includes/abilities/divi-extras.php';
 			add_action( 'wp_abilities_api_categories_init', 'saddle_register_ability_category' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_abilities' );
 			add_action( 'wp_abilities_api_init', 'saddle_register_block_abilities' );
@@ -405,6 +470,7 @@ final class Saddle {
 			add_action( 'wp_abilities_api_init', 'saddle_register_divi_design_abilities', 30 );
 			add_action( 'wp_abilities_api_init', 'saddle_register_divi_template_abilities', 30 );
 			add_action( 'wp_abilities_api_init', 'saddle_register_divi_bundle_abilities', 30 );
+			add_action( 'wp_abilities_api_init', 'saddle_register_divi_extra_abilities', 30 );
 			// First-party integration wrappers run late (30) so the partner
 			// plugins' own abilities exist to discover.
 			add_action( 'wp_abilities_api_init', array( 'Saddle_Integrations', 'register_wrappers' ), 30 );
@@ -412,6 +478,7 @@ final class Saddle {
 			add_filter( 'saddle_context_sections', array( 'Saddle_Services', 'context_section' ) );
 			Saddle_Seo_Skills::register();
 			Saddle_Divi_Context::register();
+			Saddle_Divi_Loop_Repair::register();
 
 			// Wire the MCP transport after all plugins have loaded. This MUST be
 			// deferred (see setup_mcp_transport) so the bundled adapter can't

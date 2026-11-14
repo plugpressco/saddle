@@ -70,6 +70,30 @@ class Saddle_Divi {
 	}
 
 	/**
+	 * Whether a styled Divi button needs its custom-button switch
+	 * (<attr>.decoration.button.desktop.value.enable "on") to show its fill
+	 * on this site. Seen on Divi before 5.10. On Divi 5.10.1 a button with a
+	 * background and no switch got the same fill as one with it (rendered
+	 * on WordPress Playground, 2026-11-14). An unknown version counts as
+	 * older.
+	 *
+	 * @return bool
+	 */
+	public static function button_fill_needs_switch() {
+		return self::fill_switch_needed( self::version() );
+	}
+
+	/**
+	 * button_fill_needs_switch() for a given Divi version.
+	 *
+	 * @param string|null $version Divi version, null when unknown.
+	 * @return bool
+	 */
+	public static function fill_switch_needed( $version ) {
+		return null === $version || '' === (string) $version || version_compare( (string) $version, '5.10', '<' );
+	}
+
+	/**
 	 * Whether a theme folder holds Divi or Extra.
 	 *
 	 * The folder's name alone is not enough: WordPress keeps the folder a zip
@@ -153,11 +177,114 @@ class Saddle_Divi {
 	}
 
 	/**
+	 * Divi's own Library and Theme Builder post types. The Divi tools do not
+	 * open them by default; another plugin adds them through
+	 * saddle_divi_editable_post_types.
+	 */
+	const SITE_POST_TYPES = array( 'et_pb_layout', 'et_template', 'et_theme_builder', 'et_header_layout', 'et_body_layout', 'et_footer_layout', 'et_tb_item' );
+
+	/**
+	 * The post types the Divi tools edit: every public post type and every
+	 * type Divi's builder is switched on for
+	 * (et_builder_get_builder_post_types()), never attachments or Divi's
+	 * Library and Theme Builder types, through the
+	 * saddle_divi_editable_post_types filter. edit_post on the post itself
+	 * stays the real gate.
+	 *
+	 * @return string[]
+	 */
+	public static function post_types() {
+		$types = array_values( get_post_types( array( 'public' => true ), 'names' ) );
+		if ( function_exists( 'et_builder_get_builder_post_types' ) ) {
+			$types = array_merge( $types, (array) et_builder_get_builder_post_types() );
+		}
+		$types = array_diff( array_unique( array_map( 'strval', $types ) ), array_merge( array( 'attachment' ), self::SITE_POST_TYPES ) );
+
+		/**
+		 * Filter the post types the Divi tools edit (projects, products,
+		 * custom post types). edit_post on the post is still checked.
+		 *
+		 * @param string[] $types Post type names.
+		 */
+		$types = (array) apply_filters( 'saddle_divi_editable_post_types', array_values( $types ) );
+
+		return array_values( array_filter( array_unique( array_map( 'strval', $types ) ), 'post_type_exists' ) );
+	}
+
+	/**
+	 * The post types the Divi tools edit that the current account may edit
+	 * (its edit_posts capability for the type), for what an agent is told.
+	 *
+	 * @return string[]
+	 */
+	public static function editable_post_types() {
+		$out = array();
+		foreach ( self::post_types() as $type ) {
+			$object = get_post_type_object( $type );
+			if ( $object && current_user_can( $object->cap->edit_posts ) ) {
+				$out[] = $type;
+			}
+		}
+		return $out;
+	}
+
+	/**
+	 * Whether the Divi tools edit posts of this type.
+	 *
+	 * @param string $type Post type.
+	 * @return bool
+	 */
+	public static function editable_post_type( $type ) {
+		return in_array( (string) $type, self::post_types(), true );
+	}
+
+	/**
+	 * The refusal for a post id the Divi tools cannot open.
+	 *
+	 * @return WP_Error
+	 */
+	public static function not_editable() {
+		return new WP_Error(
+			'saddle_not_found',
+			sprintf(
+				/* translators: %s: comma-separated post types. */
+				__( 'No post with that ID that the Divi tools can edit. They edit these post types: %s.', 'saddle' ),
+				implode( ', ', self::post_types() )
+			)
+		);
+	}
+
+	/**
+	 * The last say on whether a Divi tool may write this post, asked after
+	 * the edit_post check has passed. Every Divi write calls it: through
+	 * editable_divi5_post(), and inline in divi-set-page and
+	 * divi-set-page-settings.
+	 *
+	 * @param WP_Post $post The post about to be written.
+	 * @return true|WP_Error True to go ahead, or the refusal to return.
+	 */
+	public static function edit_post_check( WP_Post $post ) {
+		/**
+		 * Filter whether a Divi tool may write this post. Runs after the
+		 * account's edit_post check has passed. Return a WP_Error to refuse
+		 * the write with that error's code and message; any other value lets
+		 * it through.
+		 *
+		 * @param true|WP_Error $allowed True, or a WP_Error from an earlier callback.
+		 * @param WP_Post       $post    The post about to be written.
+		 */
+		$check = apply_filters( 'saddle_divi_edit_post_check', true, $post );
+		return is_wp_error( $check ) ? $check : true;
+	}
+
+	/**
 	 * The shared editability gate for Divi 5 write abilities: Divi active, the
-	 * post exists and is a post/page, the user can edit it, and it is a Divi 5
-	 * page. Returns the WP_Post on success or a WP_Error the ability returns
-	 * verbatim. (divi-set-page keeps its own inline guard — it deliberately
-	 * allows an empty non-Divi post to be built into one.)
+	 * post exists and is of a type the Divi tools edit, the user can edit it,
+	 * the saddle_divi_edit_post_check filter lets it through, and it is a
+	 * Divi 5 page. Returns the WP_Post on success or a WP_Error the ability
+	 * returns verbatim. (divi-set-page and divi-set-page-settings keep their
+	 * own inline guard, because they allow an empty non-Divi post to be built
+	 * into one; they call edit_post_check() too.)
 	 *
 	 * @param int $post_id Target post id.
 	 * @return WP_Post|WP_Error
@@ -167,11 +294,15 @@ class Saddle_Divi {
 			return new WP_Error( 'saddle_no_divi', __( 'Divi 5 is not active on this site.', 'saddle' ) );
 		}
 		$post = $post_id ? get_post( (int) $post_id ) : null;
-		if ( ! $post || ! in_array( $post->post_type, array( 'post', 'page' ), true ) ) {
-			return new WP_Error( 'saddle_not_found', __( 'No post or page with that ID.', 'saddle' ) );
+		if ( ! $post || ! self::editable_post_type( $post->post_type ) ) {
+			return self::not_editable();
 		}
 		if ( ! current_user_can( 'edit_post', $post->ID ) ) {
 			return new WP_Error( 'saddle_denied', __( 'You cannot edit this post.', 'saddle' ) );
+		}
+		$check = self::edit_post_check( $post );
+		if ( is_wp_error( $check ) ) {
+			return $check;
 		}
 		if ( 'divi5' !== self::post_builder( $post ) ) {
 			return new WP_Error( 'saddle_not_divi5', __( 'This post is not a Divi 5 page. Use divi-set-page to build an empty post, or the regular content tools for non-Divi content.', 'saddle' ) );

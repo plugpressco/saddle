@@ -25,7 +25,7 @@ function saddle_register_lint_abilities() {
 		'saddle/lint-page',
 		array(
 			'label'               => __( 'Lint page design', 'saddle' ),
-			'description'         => __( 'Reviews a post or page\'s design and returns violations per node address: empty titles, button contrast below WCAG AA, ghost/outline buttons, duplicated backgrounds, mixed accent colors, unaligned sibling buttons, broken section padding rhythm, and equal card rows with no featured plan. Read-only — run it after building or editing a page, fix what you agree with (severity "error" first), then re-run. Works on native block pages and Divi 5 pages. This is the design half ON ITS OWN, with no score: use saddle/verify-page instead when you want the graded report, which adds structural and applied-vs-ignored findings and is the one to work down after a build.', 'saddle' ),
+			'description'         => __( 'Reviews a post or page\'s design and returns violations per node address: empty titles, button contrast below WCAG AA, ghost/outline buttons, duplicated backgrounds, mixed accent colors, unaligned sibling buttons, broken section padding rhythm, and equal card rows with no featured plan. Read-only — run it after building or editing a page, fix what you agree with (severity "error" first), then re-run. Severity "note" is design advice (a second filled button in a section, a third font, a button with no hover): verify-page counts notes apart and they cost no points. Works on native block pages and Divi 5 pages. This is the design half ON ITS OWN, with no score: use saddle/verify-page instead when you want the graded report, which adds structural and applied-vs-ignored findings and is the one to work down after a build.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -57,7 +57,7 @@ class Saddle_Lint_Abilities {
 	 */
 	public static function lint_page( $input = null ) {
 		$input = is_array( $input ) ? $input : array();
-		$post  = Saddle_Abilities::require_readable_post( $input );
+		$post  = Saddle_Abilities::require_readable_post( $input, 'post_id', Saddle_Verify::page_types( isset( $input['post_id'] ) ? (int) $input['post_id'] : 0 ) );
 		if ( is_wp_error( $post ) ) {
 			return $post;
 		}
@@ -74,9 +74,12 @@ class Saddle_Lint_Abilities {
 		);
 
 		$errors = 0;
+		$notes  = 0;
 		foreach ( $violations as $violation ) {
 			if ( 'error' === $violation['severity'] ) {
 				++$errors;
+			} elseif ( Saddle_Lint::SEVERITY_NOTE === $violation['severity'] ) {
+				++$notes;
 			}
 		}
 
@@ -86,8 +89,9 @@ class Saddle_Lint_Abilities {
 			'violations' => $violations,
 			'count'      => count( $violations ),
 			'errors'     => $errors,
+			'notes'      => $notes,
 			'note'       => $violations
-				? __( 'Fix "error" violations first (they are objective defects), weigh "warn" ones against the design intent, then re-run. Addresses match the page\'s current get-blocks/divi-get-page read.', 'saddle' )
+				? __( 'Fix "error" violations first (they are objective defects), weigh "warn" ones against the design intent, and treat "note" ones as advice, then re-run. Addresses match the page\'s current get-blocks/divi-get-page read.', 'saddle' )
 				: __( 'No design violations found.', 'saddle' ),
 		);
 	}

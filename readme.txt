@@ -213,6 +213,14 @@ The WordPress.org version never checks for its own updates. The version from plu
 * Changed: The welcome and Agent setup lead with one way in: your SaddleWP account. The Connect this site button turns on sign-in for agents on this site, then opens your account in a new tab with the site's address filled in. Before, the account could not finish connecting until you found that switch under Settings. SaddleWP sends nothing to the account; the button is a link.
 * Changed: Connecting your AI agent straight to this site stays one click away: "Connect directly instead" in the welcome, and the Connect directly row on Agent setup.
 * New: When a SaddleWP account can't reach the site, the welcome says why and offers what helps. A site on your computer connects directly, Plain permalinks link to Settings → Permalinks, and a site without HTTPS is told to ask its host.
+* New: Your AI agent sees every setting of every Divi 5 module, including modules from add-on packs, and SaddleWP checks each value before it saves.
+* New: Divi 5 rows take column layouts such as two halves or two thirds and one third. Rows can sit inside columns and groups, and your agent can set tablet, phone and hover styles.
+* New: Two Divi 5 tools. One adds a click or hover interaction between two modules. One reads a page's real HTML and CSS, so an agent can check its work without a browser.
+* New: Ten more design checks on Divi 5 pages, such as two main buttons in one section or a button with no hover style. They are advice and never lower the score.
+* New: Divi 5 loops take every loop option, and an image or a button link can show a value from each post.
+* Changed: The Divi 5 playbook for agents starts from your site's own pages and presets, and the section recipes take your content.
+* Fixed: A Divi 5 loop made through SaddleWP now lists only the post types you chose, newest first. Loops saved earlier are corrected when the page is shown and when it is next saved.
+* Fixed: SaddleWP no longer warns about custom CSS, a CSS ID or class, or form field focus styles on Divi 5 modules. It now warns about more values that Divi saves and ignores.
 
 = 1.7.3 =
 * New: Saddle Rank, the free SEO and AI search plugin, is offered like Saddle Analytics: a tile in Home's Add-ons and a last question in the welcome. One click installs it from WordPress.org and turns it on, or turns on a copy you already have. Nothing is installed without your click, and only you can do it.

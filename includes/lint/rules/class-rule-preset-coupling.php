@@ -74,7 +74,7 @@ class Saddle_Lint_Rule_Preset_Coupling extends Saddle_Lint_Rule {
 				self::SEVERITY_WARN,
 				sprintf(
 					/* translators: 1: preset id, 2: the overridden properties. */
-					__( 'Bound to global preset "%1$s" but locally overriding %2$s — editing the preset will silently not change this node, and editing this node leaves its preset siblings behind.', 'saddle' ),
+					__( 'Bound to global preset "%1$s" but locally overriding %2$s. Editing the preset will silently not change this node, and editing this node leaves its preset siblings behind.', 'saddle' ),
 					$preset,
 					implode( ', ', $overrides )
 				),

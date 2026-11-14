@@ -90,7 +90,7 @@ class Saddle_Lint_Rule_Text_Contrast extends Saddle_Lint_Rule {
 				self::SEVERITY_ERROR,
 				sprintf(
 					/* translators: 1: text color, 2: background color, 3: contrast ratio, 4: required minimum. */
-					__( 'Text %1$s on background %2$s has a contrast of %3$s:1 — below the WCAG AA minimum of %4$s:1.', 'saddle' ),
+					__( 'Text %1$s on background %2$s has a contrast of %3$s:1, below the WCAG AA minimum of %4$s:1.', 'saddle' ),
 					$text,
 					$background,
 					number_format_i18n( $ratio, 2 ),
@@ -113,6 +113,16 @@ class Saddle_Lint_Rule_Text_Contrast extends Saddle_Lint_Rule {
 	 * @return string|null
 	 */
 	private function effective_background( array $node, array $by_address, Saddle_Lint_Accessor $accessor ) {
+		// Divi: the nearest node that paints anything wins, read from its
+		// module background (not a child element's, such as a blurb's icon
+		// circle). A card whose fill comes from a gradient, an image or a
+		// container preset is a surface too, just an unknown one, so the
+		// walk stops there instead of judging the text against the section
+		// behind the card (a false positive recorded live on 2026-11-09).
+		if ( $accessor instanceof Saddle_Divi_Lint_Accessor ) {
+			return ( new Saddle_Divi_Lint_Facts() )->surface_under( $node, $by_address, true );
+		}
+
 		$current = $node;
 		while ( $current ) {
 			$background = $accessor->background_color( $current['block'] );
