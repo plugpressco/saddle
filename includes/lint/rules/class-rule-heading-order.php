@@ -55,7 +55,9 @@ class Saddle_Lint_Rule_Heading_Order extends Saddle_Lint_Rule {
 						$node['address'],
 						self::SEVERITY_WARN,
 						__( 'More than one h1 on the page. Assistive technology expects one top-level heading.', 'saddle' ),
-						__( 'Keep one h1 and set the others to h2. On Divi, set the heading level on every heading: a Heading module with none is an h1.', 'saddle' )
+						$accessor instanceof Saddle_Divi_Lint_Accessor
+							? __( 'Keep one h1 and set the others to h2. Set the heading level on every heading: a Heading module with none is an h1.', 'saddle' )
+							: __( 'Keep one h1 and demote the others to h2.', 'saddle' )
 					);
 				}
 				$h1_seen = true;
