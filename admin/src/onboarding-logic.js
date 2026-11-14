@@ -598,3 +598,35 @@ export function parseModules( res ) {
 	}
 	return res.areas.filter( ( a ) => a && 'string' === typeof a.key );
 }
+
+/**
+ * Whether a SaddleWP account can connect this site, and if not, why (#432).
+ * The account reaches the site from the internet and its agents sign in, so
+ * it needs a public address, pretty permalinks and HTTPS. Sign-in being off
+ * is not a reason: the owner's Connect this site click turns it on.
+ *
+ * A site on this computer comes first: no setting fixes that, and WordPress
+ * counts a local site as secure, so its readiness can look fine.
+ *
+ * @param {Object|null} oauth GET /oauth-settings, or null while it loads.
+ * @param {boolean}     local The site runs on this computer.
+ * @return {string} `wait` while it loads, `ok`, `local`, `permalinks` or
+ *                  `https`.
+ */
+export function accountReach( oauth, local ) {
+	if ( local ) {
+		return 'local';
+	}
+	if ( ! oauth ) {
+		return 'wait';
+	}
+	// A failed read has neither fact: say nothing false, and let the click
+	// report what the server answers.
+	if ( false === oauth.permalinks ) {
+		return 'permalinks';
+	}
+	if ( false === oauth.ssl ) {
+		return 'https';
+	}
+	return 'ok';
+}
