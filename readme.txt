@@ -4,7 +4,7 @@ Tags: mcp, mcp-server, claude, chatgpt, ai
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.7.3
+Stable tag: 1.7.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -208,7 +208,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 
 == Changelog ==
 
-= 2.0.0 =
+= 1.7.5 =
 * Changed: Get Premium's buttons open your SaddleWP account first. You sign up or log in, then pay for the plan you picked, so the plan lands on your account. Connect this site goes through the same sign-up.
 * Changed: The welcome and Agent setup lead with one way in: your SaddleWP account. The Connect this site button turns on sign-in for agents on this site, then opens your account in a new tab with the site's address filled in. Before, the account could not finish connecting until you found that switch under Settings. SaddleWP sends nothing to the account; the button is a link.
 * Changed: Connecting your AI agent straight to this site stays one click away: "Connect directly instead" in the welcome, and the Connect directly row on Agent setup.
