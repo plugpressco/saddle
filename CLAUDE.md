@@ -132,7 +132,12 @@ and finding each fails at least one. Check every change against all three.
    - Direct MCP keeps working unchanged (R5 in `../planning/ROADMAP-PRODUCT.md`).
 
    "Nothing leaves your site" describes the plugin. It is false the moment it is
-   said of a Cloud-connected site; marketing keeps the two apart.
+   said of a Cloud-connected site; marketing keeps the two apart. Since Saddle
+   2.0 it is said only of the direct connection (decision 3 of
+   `../planning/SADDLE-2.0-ONBOARDING-LAUNCH.md`, Fahim 2026-11-13: "yes to
+   all as recommended"), because the welcome now leads with the account. The
+   readme says both: through the account, an agent's calls and the site's
+   answers pass through `cloud.saddle.to`; a direct connection never does.
 
    *Insight, decided by Fahim 2026-10-26 ("take what ever best decission is ..
    go ahead"); since 2026-10-28 through the PlugPress Insight SDK
