@@ -108,7 +108,7 @@ class Saddle_Directory {
 		self::load_api();
 		$api = plugins_api( $action, $request + array( 'fields' => self::FIELDS ) );
 		if ( ! is_wp_error( $api ) && ! is_object( $api ) ) {
-			$api = new WP_Error( 'plugins_api_failed', __( 'WordPress.org sent an answer Saddle could not read.', 'saddle' ) );
+			$api = new WP_Error( 'plugins_api_failed', __( 'WordPress.org sent an answer SaddleWP could not read.', 'saddle' ) );
 		}
 		return $api;
 	}

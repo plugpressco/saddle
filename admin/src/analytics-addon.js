@@ -39,6 +39,6 @@ export const addAnalytics = analytics.add;
 export function addError( error ) {
 	return (
 		( error && error.message ) ||
-		__( 'Saddle Analytics could not be added.', 'saddle' )
+		__( 'SaddleWP Analytics could not be added.', 'saddle' )
 	);
 }

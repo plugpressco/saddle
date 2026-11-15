@@ -61,7 +61,7 @@ class Saddle_Lint_Rule_Unknown_Module extends Saddle_Lint_Rule {
 				self::SEVERITY_ERROR,
 				sprintf(
 					/* translators: %s: module type. */
-					__( '"%s" has no module.json on this site — the module may not exist here, and a nonexistent type renders nothing at all.', 'saddle' ),
+					__( '"%s" has no module.json on this site. The module may not exist here, and a nonexistent type renders nothing at all.', 'saddle' ),
 					$type
 				),
 				__( 'Pick a real module from divi-list-modules (this is usually a typo). If this pack registers modules without module.json and the page renders fine, ignore this finding.', 'saddle' )

@@ -9,7 +9,7 @@ export default function RankTile() {
 	return (
 		<AddonTile
 			addon="rank"
-			name={ __( 'Saddle Rank', 'saddle' ) }
+			name={ __( 'SaddleWP Rank', 'saddle' ) }
 			tagline={ __( 'SEO and AI search visibility', 'saddle' ) }
 			getOffer={ rankOffer }
 			add={ addRank }

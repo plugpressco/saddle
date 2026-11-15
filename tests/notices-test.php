@@ -279,7 +279,7 @@ class Saddle_Notices_Test extends WP_UnitTestCase {
 	public function test_the_plugins_notice_shows_to_an_admin_before_first_run() {
 		$html = $this->plugins_notice_html();
 
-		$this->assertStringContainsString( 'Saddle is installed. Connect your AI (2 minutes).', $html );
+		$this->assertStringContainsString( 'SaddleWP is installed. Connect your AI (2 minutes).', $html );
 		$this->assertStringContainsString( 'Get started', $html );
 		$this->assertStringContainsString( 'action=saddle_dismiss_notice', $html );
 		$this->assertStringContainsString( '_wpnonce=', $html );

@@ -571,7 +571,7 @@ class Saddle_OAuth_Endpoints {
 	private static function fatal( $message ) {
 		wp_die(
 			esc_html( $message ) . '<p>' . esc_html__( 'Nothing on your site has changed. You can close this window.', 'saddle' ) . '</p>',
-			esc_html__( 'Saddle did not authorize this agent', 'saddle' ),
+			esc_html__( 'SaddleWP did not authorize this agent', 'saddle' ),
 			array( 'response' => 400 )
 		);
 	}

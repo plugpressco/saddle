@@ -109,11 +109,11 @@ class Saddle_Lint_Rule_Sibling_Monotony extends Saddle_Lint_Rule {
 				self::SEVERITY_WARN,
 				sprintf(
 					/* translators: 1: sibling count, 2: module type. */
-					__( '%1$d identical %2$s cards — same radius, same padding, all centered. This is the layout every generated page defaults to.', 'saddle' ),
+					__( '%1$d identical %2$s cards: same radius, same padding, all centered. This is the layout every generated page defaults to.', 'saddle' ),
 					count( $siblings ),
 					(string) $types[0]
 				),
-				__( 'Break the monotony deliberately: feature one card, vary the rhythm or emphasis, or left-align the copy — sameness should be a choice, not a default.', 'saddle' )
+				__( 'Break the monotony deliberately: feature one card, vary the rhythm or emphasis, or left-align the copy. Sameness should be a choice, not a default.', 'saddle' )
 			);
 		}
 		return $violations;

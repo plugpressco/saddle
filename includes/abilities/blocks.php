@@ -33,7 +33,7 @@ function saddle_register_block_abilities() {
 		'saddle/list-block-types',
 		array(
 			'label'               => __( 'List block types', 'saddle' ),
-			'description'         => __( 'Returns the catalog of editor block types registered on this site, each with its title, category, one-line purpose, and how it is authored: "content" (Saddle composes valid markup from your content/attrs), "attrs-only" (dynamic block, attributes only), or "raw-html" (you must supply exact markup — prefer the other kinds). Read-only. Supports search and category filters. Build pages from real blocks — never approximate a layout by dumping everything into one core/html block.', 'saddle' ),
+			'description'         => __( 'Returns the catalog of editor block types registered on this site, each with its title, category, one-line purpose, and how it is authored: "content" (SaddleWP composes valid markup from your content/attrs), "attrs-only" (dynamic block, attributes only), or "raw-html" (you must supply exact markup — prefer the other kinds). Read-only. Supports search and category filters. Build pages from real blocks — never approximate a layout by dumping everything into one core/html block.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -128,7 +128,7 @@ function saddle_register_block_abilities() {
 		'saddle/list-section-recipes',
 		array(
 			'label'               => __( 'List section recipes', 'saddle' ),
-			'description'         => __( 'Lists Saddle\'s built-in section recipes — ready-to-insert blueprints for common page sections (hero, features, pricing, testimonials, call-to-action, FAQ) — as {name, title, description}. Read-only. Get one with get-section-recipe, then insert it and swap in real copy and design tokens. Building from a recipe beats composing a section from scratch.', 'saddle' ),
+			'description'         => __( 'Lists SaddleWP\'s built-in section recipes — ready-to-insert blueprints for common page sections (hero, features, pricing, testimonials, call-to-action, FAQ) — as {name, title, description}. Read-only. Get one with get-section-recipe, then insert it and swap in real copy and design tokens. Building from a recipe beats composing a section from scratch.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -145,15 +145,95 @@ function saddle_register_block_abilities() {
 		'saddle/get-section-recipe',
 		array(
 			'label'               => __( 'Get a section recipe', 'saddle' ),
-			'description'         => __( 'Returns one section recipe as a ready-to-insert node tree in Saddle\'s authoring format ({type, content, attrs, children}), matched to the site\'s builder — core blocks on a block theme, the builder\'s modules when a page builder is active. Read-only. Pass it (with real copy substituted) to set-blocks / add-block, or to the builder\'s set-page. After inserting, apply colors and sizes from get-design-system.', 'saddle' ),
+			'description'         => __( 'Returns one section recipe as a ready-to-insert node tree in SaddleWP\'s authoring format, matched to the site\'s builder: core blocks on a block theme, the builder\'s modules when a page builder is active. Read-only. Optional content (heading, text, buttons, items, plans, quotes, questions) is put in place of the placeholders, word for word, on a Divi 5 site; "content_applied" is true when the builder used all of it, and "content_ignored" lists what had no place (a key such as "items", or a list entry such as "buttons[2]"): put that copy in yourself. Pass the nodes to set-blocks / add-block, or to the builder\'s set-page / add-module. After inserting, apply colors and sizes from get-design-system.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
 				'required'   => array( 'name' ),
 				'properties' => array(
-					'name' => array(
+					'name'      => array(
 						'type'        => 'string',
 						'description' => __( 'Recipe name from list-section-recipes (e.g. "hero", "features", "pricing", "testimonials", "cta", "faq").', 'saddle' ),
+					),
+					'heading'   => array(
+						'type'        => 'string',
+						'description' => __( 'Optional: the section heading.', 'saddle' ),
+					),
+					'text'      => array(
+						'type'        => 'string',
+						'description' => __( 'Optional: the line under the heading (hero, cta, and an intro line elsewhere).', 'saddle' ),
+					),
+					'buttons'   => array(
+						'type'        => 'array',
+						'description' => __( 'Optional, hero and cta: up to 2 buttons, the main action first.', 'saddle' ),
+						'items'       => array(
+							'type'       => 'object',
+							'properties' => array(
+								'text' => array( 'type' => 'string' ),
+								'url'  => array( 'type' => 'string' ),
+							),
+						),
+					),
+					'items'     => array(
+						'type'        => 'array',
+						'description' => __( 'Optional, features: up to 12 cards. "icon" is the builder\'s icon value (on Divi the {unicode, type, weight} object divi-get-module-schema shows for a blurb).', 'saddle' ),
+						'items'       => array(
+							'type'       => 'object',
+							'properties' => array(
+								'title' => array( 'type' => 'string' ),
+								'text'  => array( 'type' => 'string' ),
+								'icon'  => array( 'type' => array( 'string', 'object' ) ),
+							),
+						),
+					),
+					'plans'     => array(
+						'type'        => 'array',
+						'description' => __( 'Optional, pricing: up to 4 plans. "price" is the number ("29"; "$29" also works), "currency" the symbol, "period" e.g. "month". Mark one "featured", else the middle plan is.', 'saddle' ),
+						'items'       => array(
+							'type'       => 'object',
+							'properties' => array(
+								'name'     => array( 'type' => 'string' ),
+								'price'    => array( 'type' => array( 'string', 'number' ) ),
+								'currency' => array( 'type' => 'string' ),
+								'period'   => array( 'type' => 'string' ),
+								'features' => array(
+									'type'  => 'array',
+									'items' => array( 'type' => 'string' ),
+								),
+								'button'   => array(
+									'type'       => 'object',
+									'properties' => array(
+										'text' => array( 'type' => 'string' ),
+										'url'  => array( 'type' => 'string' ),
+									),
+								),
+								'featured' => array( 'type' => 'boolean' ),
+							),
+						),
+					),
+					'quotes'    => array(
+						'type'        => 'array',
+						'description' => __( 'Optional, testimonials: up to 6 quotes.', 'saddle' ),
+						'items'       => array(
+							'type'       => 'object',
+							'properties' => array(
+								'text'    => array( 'type' => 'string' ),
+								'name'    => array( 'type' => 'string' ),
+								'role'    => array( 'type' => 'string' ),
+								'company' => array( 'type' => 'string' ),
+							),
+						),
+					),
+					'questions' => array(
+						'type'        => 'array',
+						'description' => __( 'Optional, faq: up to 20 questions with their answers.', 'saddle' ),
+						'items'       => array(
+							'type'       => 'object',
+							'properties' => array(
+								'question' => array( 'type' => 'string' ),
+								'answer'   => array( 'type' => 'string' ),
+							),
+						),
 					),
 				),
 			),
@@ -237,7 +317,7 @@ function saddle_register_block_abilities() {
 		'saddle/set-blocks',
 		array(
 			'label'               => __( 'Build page blocks', 'saddle' ),
-			'description'         => __( 'Replaces a post or page\'s entire content with a new block tree — the bulk-build tool for "design this page". Each node is {"type","content","attrs","children"}: "content" carries the text/media payload and Saddle composes editor-valid markup (see saddle/get-block-schema per type); "attrs" are block attributes — use preset slugs from saddle/get-design-system for colors and sizes. The tree is validated against each block\'s placement rules and rejected with per-node errors if invalid — nothing partial is saved. If the response carries "warnings", those attributes will silently not render (unknown attribute, preset slug, or style group) — fix and re-edit. The previous content is kept as a WordPress revision. Refuses page-builder-built posts.', 'saddle' ),
+			'description'         => __( 'Replaces a post or page\'s entire content with a new block tree — the bulk-build tool for "design this page". Each node is {"type","content","attrs","children"}: "content" carries the text/media payload and SaddleWP composes editor-valid markup (see saddle/get-block-schema per type); "attrs" are block attributes — use preset slugs from saddle/get-design-system for colors and sizes. The tree is validated against each block\'s placement rules and rejected with per-node errors if invalid — nothing partial is saved. If the response carries "warnings", those attributes will silently not render (unknown attribute, preset slug, or style group) — fix and re-edit. The previous content is kept as a WordPress revision. Refuses page-builder-built posts.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -513,29 +593,61 @@ class Saddle_Blocks_Abilities {
 
 		$nodes   = Saddle_Recipes::gutenberg( $name );
 		$builder = 'block-theme';
+		$content = Saddle_Recipe_Content::clean( is_array( $input ) ? $input : array() );
+		$applied = false;
 
 		/**
 		 * Let a page-builder addon supply its own node tree for a recipe name,
 		 * so the recipe vocabulary is shared across builders. Return
-		 * array( 'builder' => '<slug>', 'nodes' => array(...) ) to override.
+		 * array( 'builder' => '<slug>', 'nodes' => array(...) ) to override,
+		 * plus 'content_applied' => true when the nodes carry all of
+		 * $content, or false with 'content_ignored' => string[] naming what
+		 * had no place (a key such as "items", or an entry such as
+		 * "buttons[1]").
 		 *
 		 * @param array|null $override Builder-specific recipe, or null.
 		 * @param string     $name     Recipe name.
-		 * @param array      $nodes    The default (Gutenberg) node tree.
+		 * @param array|null $nodes    The default (Gutenberg) node tree.
+		 * @param array      $content  The cleaned optional content (heading,
+		 *                             text, buttons, items, plans, quotes,
+		 *                             questions); empty when none was passed.
 		 */
-		$override = apply_filters( 'saddle_section_recipe', null, $name, $nodes );
+		$override = apply_filters( 'saddle_section_recipe', null, $name, $nodes, $content );
+		$ignored  = array();
 		if ( is_array( $override ) && ! empty( $override['nodes'] ) ) {
 			$nodes   = $override['nodes'];
 			$builder = isset( $override['builder'] ) ? (string) $override['builder'] : 'custom';
+			$applied = ! empty( $override['content_applied'] );
+			if ( isset( $override['content_ignored'] ) && is_array( $override['content_ignored'] ) ) {
+				$ignored = array_values( array_filter( $override['content_ignored'], 'is_string' ) );
+			}
+		}
+		if ( empty( $nodes ) ) {
+			return new WP_Error(
+				'saddle_unknown_recipe',
+				__( 'This recipe is not available for the builder this site runs. Pick another from list-section-recipes.', 'saddle' ),
+				array( 'status' => 400 )
+			);
 		}
 
-		return array(
+		$out = array(
 			'name'    => $name,
 			'title'   => $catalog[ $name ]['title'],
 			'builder' => $builder,
 			'nodes'   => $nodes,
-			'usage'   => __( 'Insert these nodes (with real copy) via set-blocks/add-block on a block theme, or the builder\'s set-page/add-module. The recipe is intentionally token-free — apply colors and sizes from get-design-system after inserting.', 'saddle' ),
+			'usage'   => __( 'Insert these nodes via set-blocks/add-block on a block theme, or the builder\'s set-page/add-module. Replace any placeholder copy that is left, then apply colors and sizes from get-design-system.', 'saddle' ),
 		);
+		if ( $content ) {
+			// List entries past a list's limit never reach the recipe.
+			if ( $applied || $ignored ) {
+				$ignored = array_values( array_unique( array_merge( $ignored, Saddle_Recipe_Content::over_limit( (array) $input ) ) ) );
+			}
+			$out['content_applied'] = $applied && ! $ignored;
+			if ( $ignored ) {
+				$out['content_ignored'] = $ignored;
+			}
+		}
+		return $out;
 	}
 
 	/**
@@ -613,7 +725,7 @@ class Saddle_Blocks_Abilities {
 		if ( null === $store ) {
 			return new WP_Error(
 				'saddle_no_design_store',
-				__( 'This site has nowhere to put a design system: it is not a block theme, and no page builder Saddle understands is active. On a classic theme the palette lives in the theme\'s own options or CSS, which Saddle does not edit.', 'saddle' ),
+				__( 'This site has nowhere to put a design system: it is not a block theme, and no page builder SaddleWP understands is active. On a classic theme the palette lives in the theme\'s own options or CSS, which SaddleWP does not edit.', 'saddle' ),
 				array( 'status' => 409 )
 			);
 		}

@@ -23,6 +23,7 @@ import {
 	tryPrompt,
 	selfCheckFindings,
 	parseModules,
+	accountReach,
 } from '../../admin/src/onboarding-logic';
 
 describe( 'the step machine', () => {
@@ -552,5 +553,42 @@ describe( 'resuming the connect step', () => {
 				appOf
 			)
 		).toBe( 'app' );
+	} );
+} );
+
+describe( 'whether a SaddleWP account can reach the site (#432)', () => {
+	const ready = { enabled: false, permalinks: true, ssl: true, ready: true };
+
+	it( 'is ok on a public site with permalinks and HTTPS, sign-in off', () => {
+		expect( accountReach( ready, false ) ).toBe( 'ok' );
+	} );
+
+	it( 'puts a site on this computer first, whatever its settings say', () => {
+		expect( accountReach( ready, true ) ).toBe( 'local' );
+		expect( accountReach( null, true ) ).toBe( 'local' );
+	} );
+
+	it( 'waits while the settings load', () => {
+		expect( accountReach( null, false ) ).toBe( 'wait' );
+	} );
+
+	it( 'names Plain permalinks before HTTPS', () => {
+		expect(
+			accountReach( { ...ready, permalinks: false, ssl: false }, false )
+		).toBe( 'permalinks' );
+	} );
+
+	it( 'names HTTPS last', () => {
+		expect( accountReach( { ...ready, ssl: false }, false ) ).toBe(
+			'https'
+		);
+	} );
+
+	it( 'claims no missing setting after a failed settings read', () => {
+		// useOauthSettings() falls back to { enabled: false, ready: false }:
+		// the click then says what the server answers.
+		expect( accountReach( { enabled: false, ready: false }, false ) ).toBe(
+			'ok'
+		);
 	} );
 } );

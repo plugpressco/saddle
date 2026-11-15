@@ -87,7 +87,7 @@ class Saddle_Insight_SDK_Test extends WP_UnitTestCase {
 		set_current_screen( 'toplevel_page_saddle' );
 		$_GET['page'] = 'saddle';
 		$html         = $this->bar();
-		$this->assertStringContainsString( 'Get better support for Saddle', $html );
+		$this->assertStringContainsString( 'Get better support for SaddleWP', $html );
 		$this->assertStringContainsString( 'Your profile', $html, 'What is shared names the profile.' );
 		$this->assertStringContainsString( '>Allow<', $html );
 		$this->assertMatchesRegularExpression( '/<input type="checkbox" name="news">/', $html, 'The news box starts unticked.' );
@@ -96,7 +96,7 @@ class Saddle_Insight_SDK_Test extends WP_UnitTestCase {
 
 		$this->share( false );
 		$html = $this->bar();
-		$this->assertStringContainsString( 'Saddle news', $html, 'Site info answered: only the news is left to ask.' );
+		$this->assertStringContainsString( 'SaddleWP news', $html, 'Site info answered: only the news is left to ask.' );
 		$this->assertStringNotContainsString( '>Allow<', $html );
 
 		$this->share( false, array( 'saddle' => time() ) );
@@ -131,7 +131,7 @@ class Saddle_Insight_SDK_Test extends WP_UnitTestCase {
 	public function test_card_is_a_plain_notice_on_the_plugins_screen() {
 		set_current_screen( 'plugins' );
 		$html = $this->bar();
-		$this->assertStringContainsString( 'Get better support for Saddle', $html );
+		$this->assertStringContainsString( 'Get better support for SaddleWP', $html );
 		$this->assertStringNotContainsString( 'data-slot', $html, 'Saddle\'s slot is for its own page only.' );
 	}
 

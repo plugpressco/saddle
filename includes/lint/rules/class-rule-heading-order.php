@@ -12,8 +12,9 @@ defined( 'ABSPATH' ) || exit;
  * skipped on the way down (h2 → h4 orphans the missing h3 in the outline),
  * and more than one h1 (the page loses its single top landmark). Moving UP
  * levels (h4 → h2, a new section) is always fine. The first heading is never
- * judged against an invisible predecessor — the page title usually lives
- * outside the content tree.
+ * judged against an invisible predecessor: the page title usually lives
+ * outside the content tree. Each module counts once, also inside a loop that
+ * repeats it.
  */
 class Saddle_Lint_Rule_Heading_Order extends Saddle_Lint_Rule {
 
@@ -53,8 +54,10 @@ class Saddle_Lint_Rule_Heading_Order extends Saddle_Lint_Rule {
 					$violations[] = $this->violation(
 						$node['address'],
 						self::SEVERITY_WARN,
-						__( 'More than one h1 on the page — assistive tech expects a single top-level heading.', 'saddle' ),
-						__( 'Keep one h1 and demote the others to h2.', 'saddle' )
+						__( 'More than one h1 on the page. Assistive technology expects one top-level heading.', 'saddle' ),
+						$accessor instanceof Saddle_Divi_Lint_Accessor
+							? __( 'Keep one h1 and set the others to h2. Set the heading level on every heading: a Heading module with none is an h1.', 'saddle' )
+							: __( 'Keep one h1 and demote the others to h2.', 'saddle' )
 					);
 				}
 				$h1_seen = true;
@@ -66,7 +69,7 @@ class Saddle_Lint_Rule_Heading_Order extends Saddle_Lint_Rule {
 					self::SEVERITY_WARN,
 					sprintf(
 						/* translators: 1: previous heading level, 2: this heading level. */
-						__( 'Heading level jumps from h%1$d to h%2$d — the skipped level breaks the outline for screen readers.', 'saddle' ),
+						__( 'Heading level jumps from h%1$d to h%2$d, and the skipped level breaks the outline for screen readers.', 'saddle' ),
 						$previous,
 						$level
 					),

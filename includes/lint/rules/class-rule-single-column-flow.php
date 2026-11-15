@@ -99,20 +99,20 @@ class Saddle_Lint_Rule_Single_Column_Flow extends Saddle_Lint_Rule {
 	 * Turn a completed run into at most one advisory.
 	 *
 	 * @param array[]     $run    Consecutive matching siblings.
-	 * @param string|null $parent Their shared parent address.
+	 * @param string|null $parent_address Their shared parent address.
 	 * @return array[]
 	 */
-	private function flush( array $run, $parent ) {
+	private function flush( array $run, $parent_address ) {
 		if ( count( $run ) < self::MIN_RUN ) {
 			return array();
 		}
 		return array(
 			$this->violation(
-				null === $parent ? $run[0]['address'] : $parent,
+				null === $parent_address ? $run[0]['address'] : $parent_address,
 				self::SEVERITY_WARN,
 				sprintf(
 					/* translators: %d: number of consecutive single-column wrappers. */
-					__( '%d consecutive single-column rows, each holding one module — this reads as a document, not a designed page.', 'saddle' ),
+					__( '%d consecutive single-column rows, each holding one module. This reads as a document, not a designed page.', 'saddle' ),
 					count( $run )
 				),
 				__( 'Recompose instead of stacking: merge running text into one module, group related items into 2-3 column rows (features, cards, lists), or pair text with media in an asymmetric split. Keep single-column only where a full-width moment is deliberate.', 'saddle' )

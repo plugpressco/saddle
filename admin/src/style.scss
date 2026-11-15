@@ -2748,24 +2748,19 @@ body.saddle-admin-page {
 	margin-top: 8px;
 }
 
-/* ---------- The two ways to connect (2026-11-06) ---------- */
-// Saddle Cloud for all your sites, or just this site: two cards of the same
-// size side by side, stacked when narrow, each with its one button at the
-// foot so the two line up. On Agent setup they sit flat on the soft grey
-// inside one white card, under its heading and a few agent logos; in the
-// welcome, where there is no card around them, each is a white card.
+/* ---------- One way in: a SaddleWP account (#432) ---------- */
+// One card: its tile, name and chip, a line, then the button with a line
+// under it saying what the click does. On Agent setup it sits flat on the
+// soft grey inside one white card, under its heading and a few agent
+// logos, with the closed "Connect directly" row below; in the welcome,
+// where there is no card around it, it is a white card with the small
+// direct link at its foot.
 .saddle-ways__head {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
 	justify-content: space-between;
 	gap: var( --pp-space-3 ) var( --pp-space-6 );
-}
-
-.saddle-ways__cards {
-	display: grid;
-	grid-template-columns: repeat( auto-fit, minmax( 240px, 1fr ) );
-	gap: var( --pp-space-3 );
 }
 
 .saddle-way {
@@ -2787,15 +2782,24 @@ body.saddle-admin-page {
 	box-shadow: var( --s-card-edge );
 }
 
-.saddle-way__top {
+.saddle-account__head {
 	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: var( --pp-space-2 );
-	margin-block-end: var( --pp-space-3 );
+	align-items: flex-start;
+	gap: var( --pp-space-3 );
+}
+
+.saddle-account__intro {
+	display: grid;
+	gap: 2px;
+	min-width: 0;
+	padding-block-start: 1px;
 }
 
 .saddle-way__name {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var( --pp-space-2 );
 	margin: 0;
 	font-size: var( --s-text-title );
 	font-weight: 600;
@@ -2811,14 +2815,39 @@ body.saddle-admin-page {
 	text-wrap: pretty;
 }
 
-// The button, or "Connected to Saddle Cloud", at the foot. Its height is
-// kept while Saddle looks whether Cloud is connected, so nothing jumps.
-.saddle-way__action {
+// The button and what the click does, or "Connected", under the words.
+// Its height is kept while Saddle looks whether the account is connected,
+// so nothing jumps.
+.saddle-account__action {
 	display: flex;
-	align-items: center;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: var( --pp-space-2 );
 	min-block-size: 36px;
-	margin-block-start: auto;
 	padding-block-start: var( --pp-space-4 );
+}
+
+.saddle-account__hint {
+	margin: 0;
+	font-size: var( --s-text-sm );
+	line-height: 1.5;
+	color: var( --s-fg-muted );
+}
+
+.saddle-account .pp-notice {
+	margin-block-start: var( --pp-space-3 );
+}
+
+.saddle-account__direct {
+	margin: var( --pp-space-4 ) 0 0;
+	padding-block-start: var( --pp-space-4 );
+	border-block-start: 1px solid var( --pp-n-100 );
+	font-size: var( --s-text );
+	color: var( --s-fg-muted );
+
+	.pp-btn {
+		font-size: inherit;
+	}
 }
 
 .saddle-way__done {
@@ -2831,12 +2860,77 @@ body.saddle-admin-page {
 	color: var( --saddle-pop-mint-ink );
 }
 
-// In the welcome the cards are Saddle's answer choices, under its line,
-// where the quick replies go.
+// Agent setup's closed "Connect directly" row: a whole-width button that
+// opens the per-agent steps below the card.
+.saddle-direct {
+	display: flex;
+	align-items: center;
+	gap: var( --pp-space-3 );
+	inline-size: 100%;
+	padding: var( --pp-space-3 ) var( --pp-space-4 );
+	border: 0;
+	border-radius: var( --s-radius-card );
+	background: var( --pp-n-50 );
+	color: var( --s-fg );
+	font: inherit;
+	text-align: start;
+	cursor: pointer;
+
+	&:hover {
+		background: var( --pp-canvas );
+	}
+
+	&:focus-visible {
+		outline: 2px solid var( --pp-accent );
+		outline-offset: 2px;
+	}
+}
+
+.saddle-direct__icon,
+.saddle-direct__chevron {
+	display: inline-flex;
+	flex: none;
+	color: var( --s-fg-muted );
+}
+
+.saddle-direct__words {
+	display: grid;
+	flex: 1;
+	gap: 2px;
+	min-width: 0;
+}
+
+.saddle-direct__name {
+	font-size: var( --s-text );
+	font-weight: 600;
+}
+
+.saddle-direct__text {
+	font-size: var( --s-text );
+	line-height: 1.5;
+	color: var( --s-fg-subtle );
+}
+
+// In the welcome the card is Saddle's answer, under its line, where the
+// quick replies go.
 .saddle-chat__ways {
 	margin-block: 12px 8px;
 	padding-inline-start: 40px;
 	animation: saddle-step-in 0.28s var( --s-ease ) both;
+}
+
+// "I'll know the moment your account connects…", with the typing dots.
+.saddle-chat__wait {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin: 0;
+	font-size: var( --s-text );
+	color: var( --s-fg-muted );
+
+	.saddle-chat__typing {
+		padding-block-start: 0;
+	}
 }
 
 /* ---------- Get Premium (#373) ---------- */

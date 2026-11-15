@@ -45,7 +45,7 @@ class Saddle_Lint_Rule_Missing_Alt extends Saddle_Lint_Rule {
 			$violations[] = $this->violation(
 				$node['address'],
 				self::SEVERITY_WARN,
-				__( 'Image has no alt text — screen readers announce nothing useful for it.', 'saddle' ),
+				__( 'Image has no alt text, so screen readers announce nothing useful for it.', 'saddle' ),
 				__( 'Describe what the image shows in a short alt text. Leave alt empty only when the image is purely decorative.', 'saddle' )
 			);
 		}

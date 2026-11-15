@@ -25,7 +25,7 @@ const ADVICE = {
 		tone: 'warning',
 		title: __( 'Your host is removing a WordPress header', 'saddle' ),
 		body: __(
-			'A security or firewall layer on your hosting strips the X-WP-Nonce header before WordPress sees it. Saddle also sends its sign-in token another way, so reloading may fix this. If it keeps happening, ask your host to let that header through.',
+			'A security or firewall layer on your hosting strips the X-WP-Nonce header before WordPress sees it. SaddleWP also sends its sign-in token another way, so reloading may fix this. If it keeps happening, ask your host to let that header through.',
 			'saddle'
 		),
 		forHost: __(
@@ -40,7 +40,7 @@ const ADVICE = {
 			'saddle'
 		),
 		body: __(
-			'The sign-in token WordPress uses for admin requests isn’t reaching it, as a header or in the address. Saddle can’t work around that. Your host needs to stop filtering these requests.',
+			'The sign-in token WordPress uses for admin requests isn’t reaching it, as a header or in the address. SaddleWP can’t work around that. Your host needs to stop filtering these requests.',
 			'saddle'
 		),
 		forHost: __(
@@ -52,7 +52,7 @@ const ADVICE = {
 		tone: 'danger',
 		title: __( 'Your login isn’t reaching WordPress', 'saddle' ),
 		body: __(
-			'A caching or security layer is dropping your WordPress login cookie from requests to the site’s API. The requests arrive as if nobody is signed in, and Saddle can’t work around that.',
+			'A caching or security layer is dropping your WordPress login cookie from requests to the site’s API. The requests arrive as if nobody is signed in, and SaddleWP can’t work around that.',
 			'saddle'
 		),
 		forHost: __(
@@ -80,7 +80,7 @@ const ADVICE = {
 	} ),
 	unreachable: () => ( {
 		tone: 'danger',
-		title: __( 'Saddle can’t reach this site’s API', 'saddle' ),
+		title: __( 'SaddleWP can’t reach this site’s API', 'saddle' ),
 		body: __(
 			'Even the check that needs no sign-in didn’t answer, so requests to /wp-json/ are being blocked or redirected before WordPress handles them. Your host or a security plugin is the place to look.',
 			'saddle'

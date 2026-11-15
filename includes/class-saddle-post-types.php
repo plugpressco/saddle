@@ -82,7 +82,7 @@ class Saddle_Post_Types {
 			'saddle_unknown_post_type',
 			sprintf(
 				/* translators: %s: post type name. */
-				__( '"%s" is not a content type Saddle manages here. Call saddle/list-post-types for the ones you can use.', 'saddle' ),
+				__( '"%s" is not a content type SaddleWP manages here. Call saddle/list-post-types for the ones you can use.', 'saddle' ),
 				$type
 			),
 			array( 'status' => 400 )

@@ -6,8 +6,8 @@
  * Centred: a heading and one line. Then the plans as one table of four
  * cards whose rows line up (subgrid): the plan's icon (Pro wears the crown)
  * and what it is for, the price a year, the sites it covers, the button
- * (Free's to Saddle Cloud with this site filled in, the others to their
- * checkout on saddle.to), the same two numbers on every card (AI agent calls
+ * (each through the SaddleWP account's `/start`, #434: Free's with this site
+ * filled in, the others to their checkout), the same two numbers on every card (AI agent calls
  * an hour or a month, SEO credits a month), then what it adds. Then four
  * short answers and the money-back line. Every button opens a new tab; the
  * page sends nothing.
@@ -117,7 +117,7 @@ export default function GetPro() {
 				</h2>
 				<p className="saddle-plans__lede">
 					{ __(
-						'Saddle is free and stays free. Saddle Cloud connects one AI agent to all your sites, free to start.',
+						'SaddleWP is free and stays free. Your SaddleWP account connects one AI agent to all your sites, free to start.',
 						'saddle'
 					) }
 				</p>

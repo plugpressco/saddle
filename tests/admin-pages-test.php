@@ -122,7 +122,7 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 		$this->assertStringStartsWith( '<span class="saddle-get-pro-crown"', $items['saddle-plans'][0] );
 		$this->assertStringContainsString( '<svg class="saddle-nav-icon" width="16" height="16" aria-hidden="true"', $items['saddle-plans'][0] );
 		$this->assertStringEndsWith( '</span>Get Premium', $items['saddle-plans'][0] );
-		$this->assertSame( 'Get Premium ‹ Saddle', $items['saddle-plans'][3], 'The page title stays plain text.' );
+		$this->assertSame( 'Get Premium ‹ SaddleWP', $items['saddle-plans'][3], 'The page title stays plain text.' );
 	}
 
 	/**
@@ -243,7 +243,7 @@ class Saddle_Admin_Pages_Test extends WP_UnitTestCase {
 			}
 			$this->assertSame( $labels[ $slug ], $item[0], 'No icon before the label (#369): ' . $slug );
 		}
-		$this->assertSame( 'Analytics ‹ Saddle', $this->saddle_items()['saddle-analytics'][3] );
+		$this->assertSame( 'Analytics ‹ SaddleWP', $this->saddle_items()['saddle-analytics'][3] );
 	}
 
 	public function test_a_label_is_escaped() {

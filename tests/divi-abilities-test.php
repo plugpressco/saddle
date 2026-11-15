@@ -50,6 +50,36 @@ class Saddle_Divi_Abilities_Test extends WP_UnitTestCase {
 		$this->assertContains( 'divi/text', $types );
 	}
 
+	public function test_a_password_protected_layout_is_read_only_with_edit_rights() {
+		$id = self::factory()->post->create(
+			array(
+				'post_status'   => 'publish',
+				'post_password' => 'secret',
+				'post_content'  => '<!-- wp:divi/section --><!-- wp:divi/row --><!-- wp:divi/column --><!-- wp:divi/text {"content":{"innerContent":{"desktop":{"value":"Members only"}}}} /--><!-- /wp:divi/column --><!-- /wp:divi/row --><!-- /wp:divi/section -->',
+			)
+		);
+		add_filter( 'saddle_divi_active', '__return_true' );
+
+		$this->assertNotWPError( wp_get_ability( 'saddle/divi-get-page' )->execute( array( 'post_id' => $id ) ), 'An editor of the post reads it.' );
+
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'subscriber' ) ) );
+		Saddle_Capabilities::set_tier( 'read' );
+		$this->assertTrue( current_user_can( 'read_post', $id ) );
+		foreach ( array( 'saddle/divi-get-page', 'saddle/divi-check-setup' ) as $name ) {
+			$result = wp_get_ability( $name )->execute(
+				array(
+					'post_id' => $id,
+					'mode'    => 'full',
+				)
+			);
+			$this->assertWPError( $result, $name );
+			$this->assertSame( 'saddle_password_protected', $result->get_error_code(), $name );
+			$this->assertStringNotContainsString( 'Members only', wp_json_encode( $result->get_all_error_data() ), $name );
+		}
+		remove_filter( 'saddle_divi_active', '__return_true' );
+		delete_option( Saddle_Capabilities::OPTION );
+	}
+
 	public function test_get_page_refuses_a_non_divi_post() {
 		$post_id = self::factory()->post->create( array( 'post_content' => '<p>Plain content</p>' ) );
 

@@ -217,6 +217,47 @@ class Saddle_Module_Nav_Test extends WP_UnitTestCase {
 		);
 	}
 
+	public function test_a_module_can_keep_its_settings_tab_off_its_own_page() {
+		$schema = static function () {
+			return array(
+				'store'  => array( 'option' => 'demo_nav_settings' ),
+				'fields' => array(
+					'on' => array(
+						'type'    => 'boolean',
+						'default' => true,
+						'label'   => 'On',
+					),
+				),
+			);
+		};
+		add_filter(
+			'saddle_modules',
+			static function ( $modules ) use ( $schema ) {
+				$modules['elsewhere'] = array(
+					'title'        => 'Elsewhere',
+					'tabs'         => array(
+						'overview' => 'Overview',
+						'extra'    => 'Extra',
+					),
+					'settings_tab' => false,
+					'settings'     => $schema,
+				);
+				// Anything but false keeps the tab, as before.
+				$modules['default'] = array(
+					'title'        => 'Default',
+					'settings_tab' => 0,
+					'settings'     => $schema,
+				);
+				return $modules;
+			}
+		);
+		$modules = Saddle_Modules::modules();
+
+		$this->assertSame( array( 'overview', 'extra' ), array_keys( $modules['elsewhere']['tabs'] ), 'No Settings tab is added.' );
+		$this->assertTrue( is_callable( $modules['elsewhere']['settings'] ), 'The schema is still there for the settings tools.' );
+		$this->assertArrayHasKey( 'settings', $modules['default']['tabs'], 'Only false turns the tab off.' );
+	}
+
 	/* --------------------------------------------------------------- resolving */
 
 	public function test_an_empty_or_unknown_page_lands_on_the_first() {

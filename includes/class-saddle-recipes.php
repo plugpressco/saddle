@@ -16,6 +16,11 @@
  * "unset" on a site that doesn't define them). The response tells the agent to
  * apply tokens from get-design-system after inserting.
  *
+ * get-section-recipe also takes optional content (heading, text, buttons,
+ * items, plans, quotes, questions). Saddle_Recipe_Content cleans it into one
+ * shape and the builder's filter receives it; the Gutenberg bodies here
+ * ignore it.
+ *
  * @package Saddle
  */
 
@@ -27,11 +32,41 @@ defined( 'ABSPATH' ) || exit;
 class Saddle_Recipes {
 
 	/**
-	 * The recipe catalog: name => { title, description }.
+	 * The recipe catalog: name => { title, description }. A page builder
+	 * adds the recipes only it serves through `saddle_section_recipe_catalog`;
+	 * the six built-in names cannot be replaced.
 	 *
 	 * @return array<string, array{title:string, description:string}>
 	 */
 	public static function catalog() {
+		$catalog = self::builtin_catalog();
+
+		/**
+		 * Filter the extra section recipes a page builder serves itself.
+		 * Its get-section-recipe body comes through `saddle_section_recipe`.
+		 *
+		 * @param array $extra name => array( 'title' => string, 'description' => string ).
+		 */
+		$extra = apply_filters( 'saddle_section_recipe_catalog', array() );
+		foreach ( (array) $extra as $name => $meta ) {
+			$name = sanitize_key( (string) $name );
+			if ( '' === $name || isset( $catalog[ $name ] ) || ! is_array( $meta ) || empty( $meta['title'] ) ) {
+				continue;
+			}
+			$catalog[ $name ] = array(
+				'title'       => sanitize_text_field( (string) $meta['title'] ),
+				'description' => sanitize_text_field( isset( $meta['description'] ) ? (string) $meta['description'] : '' ),
+			);
+		}
+		return $catalog;
+	}
+
+	/**
+	 * The six built-in recipes every builder serves.
+	 *
+	 * @return array<string, array{title:string, description:string}>
+	 */
+	private static function builtin_catalog() {
 		return array(
 			'hero'         => array(
 				'title'       => __( 'Hero', 'saddle' ),

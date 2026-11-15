@@ -187,7 +187,7 @@ class Saddle_Blocks_Schema {
 					'category'    => $summary['category'],
 					'dynamic'     => false,
 					'attributes'  => (object) array(),
-					'note'        => __( 'This block registers only in the editor\'s JS on this site, so its attribute list is not exposed here — but Saddle authors it fully; follow the example below.', 'saddle' ),
+					'note'        => __( 'This block registers only in the editor\'s JS on this site, so its attribute list is not exposed here — but SaddleWP authors it fully; follow the example below.', 'saddle' ),
 					'authoring'   => self::authoring_guidance( $name, 'content' ),
 				);
 			}
@@ -274,7 +274,7 @@ class Saddle_Blocks_Schema {
 		if ( 'raw-html' === $mode ) {
 			return array(
 				'mode' => $mode,
-				'how'  => __( 'A static block Saddle has no template for. Prefer building from the templated core blocks; if you must use this type, pass {"type","attrs","html"} where "html" is the exact saved inner markup (markup-sourced attributes included) — you own its validity in the editor.', 'saddle' ),
+				'how'  => __( 'A static block SaddleWP has no template for. Prefer building from the templated core blocks; if you must use this type, pass {"type","attrs","html"} where "html" is the exact saved inner markup (markup-sourced attributes included) — you own its validity in the editor.', 'saddle' ),
 			);
 		}
 
@@ -385,15 +385,15 @@ class Saddle_Blocks_Schema {
 		// compose_button() moves attrs.url into the href. Say so where it
 		// applies, so the text never forbids what the example does.
 		$how = array(
-			'core/button'  => __( 'Author it as {"type","content","attrs"}. Put the label in "content" and the link in attrs.url. The url attribute is markup-sourced, and Saddle writes it into the markup as the link\'s href. Preset classes from attrs like backgroundColor, textColor and fontSize go on the link; use slugs from saddle/get-design-system.', 'saddle' ),
-			'core/buttons' => __( 'Author it as {"type","attrs","children"}, with one core/button per child. Give each button its label as "content" and its link as attrs.url; Saddle writes the link into the markup as the href.', 'saddle' ),
+			'core/button'  => __( 'Author it as {"type","content","attrs"}. Put the label in "content" and the link in attrs.url. The url attribute is markup-sourced, and SaddleWP writes it into the markup as the link\'s href. Preset classes from attrs like backgroundColor, textColor and fontSize go on the link; use slugs from saddle/get-design-system.', 'saddle' ),
+			'core/buttons' => __( 'Author it as {"type","attrs","children"}, with one core/button per child. Give each button its label as "content" and its link as attrs.url; SaddleWP writes the link into the markup as the href.', 'saddle' ),
 		);
 
 		$guidance = array(
 			'mode' => $mode,
 			'how'  => isset( $how[ $name ] )
 				? $how[ $name ]
-				: __( 'Author it as {"type","content","attrs","children"}. "content" carries the text or media payload. Saddle composes the editor-valid markup from it, including preset classes from attrs like backgroundColor, textColor and fontSize; use slugs from saddle/get-design-system. "attrs" are the block attributes above. Leave markup-sourced ones out of attrs, because "content" feeds them.', 'saddle' ),
+				: __( 'Author it as {"type","content","attrs","children"}. "content" carries the text or media payload. SaddleWP composes the editor-valid markup from it, including preset classes from attrs like backgroundColor, textColor and fontSize; use slugs from saddle/get-design-system. "attrs" are the block attributes above. Leave markup-sourced ones out of attrs, because "content" feeds them.', 'saddle' ),
 		);
 		if ( isset( $examples[ $name ] ) ) {
 			$guidance['example'] = $examples[ $name ];

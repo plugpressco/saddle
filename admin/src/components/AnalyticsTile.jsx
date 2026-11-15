@@ -10,7 +10,7 @@ export default function AnalyticsTile() {
 	return (
 		<AddonTile
 			addon="analytics"
-			name={ __( 'Saddle Analytics', 'saddle' ) }
+			name={ __( 'SaddleWP Analytics', 'saddle' ) }
 			tagline={ __( 'Visitor stats, no cookies', 'saddle' ) }
 			getOffer={ analyticsOffer }
 			add={ addAnalytics }

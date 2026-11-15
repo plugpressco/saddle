@@ -76,9 +76,9 @@ class Saddle_Offer_Runner {
 			// the run; the switch holds until the update starts.
 			if ( 'core' === $type && self::is_major( $offer->current ) && ! self::core_majors_allowed() ) {
 				$item['status']  = 'skipped';
-				$item['message'] = __( 'Major WordPress releases were turned off in Saddle → Settings before the update started.', 'saddle' );
+				$item['message'] = __( 'Major WordPress releases were turned off in SaddleWP → Settings before the update started.', 'saddle' );
 				/* translators: %s: new WordPress version. */
-				Saddle_Log::record_action( 'update-core', 'core', sprintf( __( 'The update of WordPress to %s did not run: major releases were turned off in Saddle → Settings.', 'saddle' ), $offer->current ) );
+				Saddle_Log::record_action( 'update-core', 'core', sprintf( __( 'The update of WordPress to %s did not run: major releases were turned off in SaddleWP → Settings.', 'saddle' ), $offer->current ) );
 				continue;
 			}
 			// On a failure core's skin opens an output buffer and never closes

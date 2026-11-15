@@ -33,7 +33,7 @@ function saddle_register_core_update_abilities() {
 		'saddle/update-core',
 		array(
 			'label'               => __( 'Update WordPress', 'saddle' ),
-			'description'         => __( 'Updates WordPress itself to a release WordPress already offers for background updates (see list-updates). Minor and security releases (7.1.2 to 7.1.3) are always allowed. A major release (7.1 to 7.2) is allowed only when the owner has turned on "Major WordPress releases" in Saddle → Settings, which is off by default and which no tool can change; otherwise it is refused, and the owner updates it in Dashboard → Updates or turns that setting on. When both are offered, the minor release comes first. It takes two calls. The first changes nothing: it returns a preview with the installed and new version, whether it is minor or major, the PHP and MySQL versions it needs against this site\'s, and for a major release the active plugins not tested with it and what cannot be undone, plus a confirm_token. Call again with that token to queue the update. WordPress\'s own updater then runs it in the background, with a short maintenance message for visitors; check list-updates a minute later for the result under "runs". A core update cannot be undone: WordPress has no rollback for one, and a major release also upgrades the database. Refuses development versions, a site where the last automatic core update failed critically, and sites where WordPress cannot change files.', 'saddle' ),
+			'description'         => __( 'Updates WordPress itself to a release WordPress already offers for background updates (see list-updates). Minor and security releases (7.1.2 to 7.1.3) are always allowed. A major release (7.1 to 7.2) is allowed only when the owner has turned on "Major WordPress releases" in SaddleWP → Settings, which is off by default and which no tool can change; otherwise it is refused, and the owner updates it in Dashboard → Updates or turns that setting on. When both are offered, the minor release comes first. It takes two calls. The first changes nothing: it returns a preview with the installed and new version, whether it is minor or major, the PHP and MySQL versions it needs against this site\'s, and for a major release the active plugins not tested with it and what cannot be undone, plus a confirm_token. Call again with that token to queue the update. WordPress\'s own updater then runs it in the background, with a short maintenance message for visitors; check list-updates a minute later for the result under "runs". A core update cannot be undone: WordPress has no rollback for one, and a major release also upgrades the database. Refuses development versions, a site where the last automatic core update failed critically, and sites where WordPress cannot change files.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -96,7 +96,7 @@ class Saddle_Core_Update_Abilities {
 			return new WP_Error( 'saddle_updates_unavailable', implode( ' ', $blocked ), array( 'status' => 409 ) );
 		}
 		if ( ! current_user_can( 'update_core' ) ) {
-			return new WP_Error( 'saddle_cannot_update_core', __( 'The WordPress account this agent is connected as cannot update WordPress here (on a multisite network, only a network administrator can). No Saddle setting changes that.', 'saddle' ), array( 'status' => 403 ) );
+			return new WP_Error( 'saddle_cannot_update_core', __( 'The WordPress account this agent is connected as cannot update WordPress here (on a multisite network, only a network administrator can). No SaddleWP setting changes that.', 'saddle' ), array( 'status' => 403 ) );
 		}
 
 		$offer = self::choose();
@@ -110,7 +110,7 @@ class Saddle_Core_Update_Abilities {
 		$risks = $major ? array(
 			__( 'WordPress has no automatic rollback for a core update. If the new version breaks a plugin or the theme, the site stays on it until someone fixes it.', 'saddle' ),
 			__( 'A major release upgrades the database, so going back means restoring a database backup.', 'saddle' ),
-			__( 'Saddle runs on WordPress\'s own APIs. If the release changes them, this agent may lose its connection before it can report the result.', 'saddle' ),
+			__( 'SaddleWP runs on WordPress\'s own APIs. If the release changes them, this agent may lose its connection before it can report the result.', 'saddle' ),
 		) : array();
 
 		return Saddle_Approval::gate(
@@ -187,7 +187,7 @@ class Saddle_Core_Update_Abilities {
 			return new WP_Error( 'saddle_updates_unavailable', implode( ' ', $blocked ), array( 'status' => 409 ) );
 		}
 		if ( ! current_user_can( 'update_languages' ) ) {
-			return new WP_Error( 'saddle_cannot_update_translations', __( 'The WordPress account this agent is connected as cannot update translations here (on a multisite network, only a network administrator can). No Saddle setting changes that.', 'saddle' ), array( 'status' => 403 ) );
+			return new WP_Error( 'saddle_cannot_update_translations', __( 'The WordPress account this agent is connected as cannot update translations here (on a multisite network, only a network administrator can). No SaddleWP setting changes that.', 'saddle' ), array( 'status' => 403 ) );
 		}
 
 		$namer = new Language_Pack_Upgrader( new Automatic_Upgrader_Skin() );
@@ -249,13 +249,13 @@ class Saddle_Core_Update_Abilities {
 			return new WP_Error(
 				'saddle_core_development',
 				/* translators: %s: installed WordPress version. */
-				sprintf( __( 'This site runs a development version of WordPress (%s). Saddle does not update development versions; update it in Dashboard → Updates.', 'saddle' ), $current ),
+				sprintf( __( 'This site runs a development version of WordPress (%s). SaddleWP does not update development versions; update it in Dashboard → Updates.', 'saddle' ), $current ),
 				array( 'status' => 409 )
 			);
 		}
 		$failed = get_site_option( 'auto_core_update_failed' );
 		if ( is_array( $failed ) && ! empty( $failed['critical'] ) ) {
-			return new WP_Error( 'saddle_core_update_failed_before', __( 'The last automatic WordPress update on this site failed critically. WordPress stops updating itself until someone updates it in Dashboard → Updates, and Saddle does the same.', 'saddle' ), array( 'status' => 409 ) );
+			return new WP_Error( 'saddle_core_update_failed_before', __( 'The last automatic WordPress update on this site failed critically. WordPress stops updating itself until someone updates it in Dashboard → Updates, and SaddleWP does the same.', 'saddle' ), array( 'status' => 409 ) );
 		}
 
 		$best = array(
@@ -278,7 +278,7 @@ class Saddle_Core_Update_Abilities {
 				return new WP_Error(
 					'saddle_major_core_update',
 					/* translators: %s: new WordPress version. */
-					sprintf( __( 'WordPress %s is a major release. Saddle applies one only when the owner turns on "Major WordPress releases" in Saddle → Settings, and it is off on this site. Tell the user they can update it in Dashboard → Updates, or turn that setting on and ask again. Do not retry.', 'saddle' ), $best['major']->current ),
+					sprintf( __( 'WordPress %s is a major release. SaddleWP applies one only when the owner turns on "Major WordPress releases" in SaddleWP → Settings, and it is off on this site. Tell the user they can update it in Dashboard → Updates, or turn that setting on and ask again. Do not retry.', 'saddle' ), $best['major']->current ),
 					array( 'status' => 409 )
 				);
 			}

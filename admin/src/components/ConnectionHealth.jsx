@@ -87,7 +87,7 @@ export default function ConnectionHealth() {
 		return (
 			<p className="saddle-health saddle-health--muted">
 				{ __(
-					'Saddle couldn’t check your server. If AI agents report “unauthorized” with the right password, ask your host to pass the Authorization header through to WordPress.',
+					'SaddleWP couldn’t check your server. If AI agents report “unauthorized” with the right password, ask your host to pass the Authorization header through to WordPress.',
 					'saddle'
 				) }
 			</p>
@@ -109,7 +109,7 @@ export default function ConnectionHealth() {
 					'saddle'
 				) }
 				description={ __(
-					'A security or firewall layer on your hosting strips the X-WP-Nonce header from requests. Saddle works around it, but other plugins’ settings screens may break. Ask your host to let that header through.',
+					'A security or firewall layer on your hosting strips the X-WP-Nonce header from requests. SaddleWP works around it, but other plugins’ settings screens may break. Ask your host to let that header through.',
 					'saddle'
 				) }
 			>
@@ -139,7 +139,7 @@ export default function ConnectionHealth() {
 			title={
 				bearerOnly
 					? __(
-							'Your server is blocking agents that sign in through Saddle',
+							'Your server is blocking agents that sign in through SaddleWP',
 							'saddle'
 					  )
 					: __( 'Your server is blocking agent sign-ins', 'saddle' )
@@ -147,7 +147,7 @@ export default function ConnectionHealth() {
 			description={
 				bearerOnly
 					? __(
-							'Agents connected with a pasted key work. Agents that sign in through Saddle, such as ChatGPT, send a different header. Your web server removes it before WordPress sees it. Those agents finish signing in, then report that the site has no actions. The rule below lets that header through.',
+							'Agents connected with a pasted key work. Agents that sign in through SaddleWP, such as ChatGPT, send a different header. Your web server removes it before WordPress sees it. Those agents finish signing in, then report that the site has no actions. The rule below lets that header through.',
 							'saddle'
 					  )
 					: __(
@@ -182,7 +182,7 @@ export default function ConnectionHealth() {
 			{ fixOutcome === 'still_stripped' && (
 				<p className="saddle-health__body">
 					{ __(
-						'Saddle added the rule, but the header still isn’t arriving. A proxy or your host’s own configuration removes it first. Send the rule below to your host and ask them to allow the Authorization header.',
+						'SaddleWP added the rule, but the header still isn’t arriving. A proxy or your host’s own configuration removes it first. Send the rule below to your host and ask them to allow the Authorization header.',
 						'saddle'
 					) }
 				</p>
@@ -199,7 +199,7 @@ export default function ConnectionHealth() {
 			{ ! report.htaccess_fixable && (
 				<p className="saddle-health__body">
 					{ __(
-						'Saddle can’t edit this server’s configuration automatically. Add the matching rule below yourself, or send it to your hosting support.',
+						'SaddleWP can’t edit this server’s configuration automatically. Add the matching rule below yourself, or send it to your hosting support.',
 						'saddle'
 					) }
 				</p>

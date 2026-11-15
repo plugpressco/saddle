@@ -66,7 +66,7 @@ class Saddle_Services_Connector {
 			self::ID,
 			array(
 				'name'           => 'Unsplash',
-				'description'    => __( 'Stock photos for your AI agents, through Saddle.', 'saddle' ),
+				'description'    => __( 'Stock photos for your AI agents, through SaddleWP.', 'saddle' ),
 				'type'           => 'stock_photos',
 				'authentication' => array(
 					'method'          => 'api_key',

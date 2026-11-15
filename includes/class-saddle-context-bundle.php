@@ -141,7 +141,7 @@ class Saddle_Context_Bundle {
 		return array(
 			'total'  => count( $all ),
 			'common' => $common,
-			'note'   => __( 'These are the types Saddle composes with worked examples. Every other registered block is available too — search the full catalog with list-block-types, then read get-block-schema before using one.', 'saddle' ),
+			'note'   => __( 'These are the types SaddleWP composes with worked examples. Every other registered block is available too — search the full catalog with list-block-types, then read get-block-schema before using one.', 'saddle' ),
 		);
 	}
 
@@ -194,7 +194,7 @@ class Saddle_Context_Bundle {
 		if ( ! function_exists( 'wp_is_block_theme' ) || ! wp_is_block_theme() ) {
 			return array(
 				'block_theme' => false,
-				'note'        => __( 'Classic theme: no block templates or parts. The header and footer are in the theme\'s PHP files, which Saddle does not edit.', 'saddle' ),
+				'note'        => __( 'Classic theme: no block templates or parts. The header and footer are in the theme\'s PHP files, which SaddleWP does not edit.', 'saddle' ),
 			);
 		}
 

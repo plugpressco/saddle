@@ -607,7 +607,7 @@ class Saddle_MCP {
 		if ( 'basic' === $scheme ) {
 			return new WP_Error(
 				'saddle_credential_rejected',
-				__( 'Your sign-in key was rejected — it was most likely revoked or removed. Reconnect the agent from Saddle to issue a fresh key.', 'saddle' ),
+				__( 'Your sign-in key was rejected — it was most likely revoked or removed. Reconnect the agent from SaddleWP to issue a fresh key.', 'saddle' ),
 				array(
 					'status' => 401,
 					'reason' => 'credential_rejected',
@@ -617,7 +617,7 @@ class Saddle_MCP {
 
 		return new WP_Error(
 			'saddle_no_credentials',
-			__( 'The request arrived without a sign-in key. If you did connect one, your host may be stripping the Authorization header — open Saddle and run the connection check to confirm and fix it.', 'saddle' ),
+			__( 'The request arrived without a sign-in key. If you did connect one, your host may be stripping the Authorization header — open SaddleWP and run the connection check to confirm and fix it.', 'saddle' ),
 			array(
 				'status' => 401,
 				'reason' => 'no_credentials',
@@ -939,7 +939,7 @@ class Saddle_MCP {
 	 */
 	public static function server_name() {
 		$site = trim( (string) get_bloginfo( 'name' ) );
-		return '' === $site ? 'Saddle' : sprintf( 'Saddle (%s)', $site );
+		return '' === $site ? 'SaddleWP' : sprintf( 'SaddleWP (%s)', $site );
 	}
 
 	/**
@@ -958,7 +958,7 @@ class Saddle_MCP {
 			// FEWER checks: a paused site still answered, and every tier got the
 			// same payload. Pause is the owner saying stop; honour it here too.
 			if ( class_exists( 'Saddle_Capabilities' ) && Saddle_Capabilities::is_paused() ) {
-				return __( 'Saddle is paused on this site, so no tools will run. The site owner can resume it from the AI switch at the top of any Saddle page. Do not retry until they do.', 'saddle' );
+				return __( 'SaddleWP is paused on this site, so no tools will run. The site owner can resume it from the AI switch at the top of any SaddleWP page. Do not retry until they do.', 'saddle' );
 			}
 
 			// Some agents keep only the start of this text: Claude Code stops at
@@ -977,7 +977,7 @@ class Saddle_MCP {
 			}
 			return $text;
 		}
-		return __( 'Saddle exposes tiered, approval-gated access to this site\'s posts, pages, and media. Call saddle/get-instructions for the current scope and safety rules before acting.', 'saddle' );
+		return __( 'SaddleWP exposes tiered, approval-gated access to this site\'s posts, pages, and media. Call saddle/get-instructions for the current scope and safety rules before acting.', 'saddle' );
 	}
 
 	/**
@@ -1174,7 +1174,7 @@ class Saddle_MCP {
 		$name      = self::ability_name_for_tool( $requested );
 
 		if ( '' === $name ) {
-			return self::error_envelope( $id, -32602, __( 'Invalid params: a Saddle tool name is required.', 'saddle' ) );
+			return self::error_envelope( $id, -32602, __( 'Invalid params: a SaddleWP tool name is required.', 'saddle' ) );
 		}
 
 		$ability = wp_get_ability( $name );
@@ -1214,7 +1214,7 @@ class Saddle_MCP {
 					$code    = $reason['code'];
 					$message = $reason['message'];
 				} else {
-					$message .= ' ' . __( 'None of Saddle’s site-wide gates (pause, access level, per-tool toggles) blocked this — the connected WordPress account likely lacks a capability this tool requires, or the specific item is protected. Do not retry the same call.', 'saddle' );
+					$message .= ' ' . __( 'None of SaddleWP’s site-wide gates (pause, access level, per-tool toggles) blocked this — the connected WordPress account likely lacks a capability this tool requires, or the specific item is protected. Do not retry the same call.', 'saddle' );
 				}
 			}
 
