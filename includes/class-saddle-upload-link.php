@@ -294,7 +294,7 @@ class Saddle_Upload_Link {
 		Saddle_Log::record(
 			array(
 				'action'     => self::ABILITY,
-				'summary'    => __( 'Refused an upload: the link was made before Saddle was paused, the tool was switched off, or the agent\'s access changed', 'saddle' ),
+				'summary'    => __( 'Refused an upload: the link was made before SaddleWP was paused, the tool was switched off, or the agent\'s access changed', 'saddle' ),
 				'type'       => 'denied',
 				'connection' => $connection,
 			)
@@ -302,7 +302,7 @@ class Saddle_Upload_Link {
 
 		return new WP_Error(
 			'saddle_upload_link_revoked',
-			__( 'This upload link no longer works: since it was made, Saddle was paused, the tool was switched off, or the agent\'s access changed. Nothing was stored.', 'saddle' ),
+			__( 'This upload link no longer works: since it was made, SaddleWP was paused, the tool was switched off, or the agent\'s access changed. Nothing was stored.', 'saddle' ),
 			array( 'status' => 403 )
 		);
 	}

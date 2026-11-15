@@ -78,7 +78,7 @@ class Saddle_Modules_View {
 			'key'       => $key,
 			'kind'      => $module ? 'module' : 'core',
 			'title'     => $area['title'],
-			'product'   => ! empty( $area['product'] ) ? $area['product'] : ( $module ? $area['title'] : 'Saddle' ),
+			'product'   => ! empty( $area['product'] ) ? $area['product'] : ( $module ? $area['title'] : 'SaddleWP' ),
 			'version'   => ! empty( $area['version'] ) ? $area['version'] : ( $module ? '' : SADDLE_VERSION ),
 			'summary'   => self::summary( $key, $area ),
 			'admin_url' => Saddle_Modules::url( $key ),
@@ -110,7 +110,7 @@ class Saddle_Modules_View {
 			'home'        => __( 'Whether AI access is on, what your connected agents have been doing, and what is left to set up.', 'saddle' ),
 			'connections' => __( 'The AI agents connected to this site: connect another, and choose what each may do.', 'saddle' ),
 			'context'     => __( 'What every connected agent knows about this site: your instructions, skills and memory.', 'saddle' ),
-			'logs'        => __( 'Every change your agents made and every attempt Saddle blocked, newest first, with Undo.', 'saddle' ),
+			'logs'        => __( 'Every change your agents made and every attempt SaddleWP blocked, newest first, with Undo.', 'saddle' ),
 			'settings'    => __( 'Safety switches, outside accounts like Unsplash, single tools, sign-in, plugins that add tools and the connection check.', 'saddle' ),
 		);
 

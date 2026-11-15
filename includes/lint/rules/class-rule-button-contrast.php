@@ -56,7 +56,7 @@ class Saddle_Lint_Rule_Button_Contrast extends Saddle_Lint_Rule {
 				self::SEVERITY_ERROR,
 				sprintf(
 					/* translators: 1: text color, 2: background color, 3: contrast ratio. */
-					__( 'Button text %1$s on background %2$s has a contrast of %3$s:1 — below the WCAG AA minimum of 4.5:1.', 'saddle' ),
+					__( 'Button text %1$s on background %2$s has a contrast of %3$s:1, below the WCAG AA minimum of 4.5:1.', 'saddle' ),
 					$text,
 					$background,
 					number_format_i18n( $ratio, 2 )

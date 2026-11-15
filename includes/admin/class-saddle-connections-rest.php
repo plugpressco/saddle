@@ -162,7 +162,7 @@ class Saddle_Connections_REST {
 		$role = sanitize_key( (string) $request->get_param( 'role' ) );
 
 		if ( ! in_array( $role, Saddle_Access::ROLES, true ) ) {
-			return new WP_Error( 'saddle_unknown_role', __( 'That is not an access role Saddle knows.', 'saddle' ), array( 'status' => 400 ) );
+			return new WP_Error( 'saddle_unknown_role', __( 'That is not an access role SaddleWP knows.', 'saddle' ), array( 'status' => 400 ) );
 		}
 
 		$found = null;

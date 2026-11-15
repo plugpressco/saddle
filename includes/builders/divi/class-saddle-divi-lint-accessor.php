@@ -19,15 +19,18 @@ defined( 'ABSPATH' ) || exit;
  *   background   <attr>.decoration.background.desktop.value.color
  *   text color   <attr>.decoration.font.font.desktop.value.color (the font
  *                group nests its value under an extra `font` key)
- *   button fill  <attr>.decoration.button.desktop.value.enable — live-
- *                verified: a styled button renders ghost until this is "on"
+ *   button fill  <attr>.decoration.button.desktop.value.enable: before
+ *                Divi 5.10 a styled button shows no fill until this is "on"
  *   alignment    <attr>.decoration.sizing.desktop.value.alignment
  *   padding      <attr>.decoration.spacing.desktop.value.padding
  *   title        title.innerContent.desktop.value
  *
- * Global-color references (var(--gcid-…)) resolve through Divi's GlobalData
- * palette when the Divi runtime is present; otherwise the raw var() string
- * is returned — rules compare it for equality and skip contrast math.
+ * Global-color references (var(--gcid-…) and the Visual Builder's
+ * $variable({"type":"color",…})$ token) resolve through Divi's GlobalData
+ * palette when the Divi runtime is present; otherwise the raw string is
+ * returned — rules compare it for equality and skip contrast math. The
+ * *_at() readers add tablet, phone and the states, inherited the way Divi
+ * inherits them.
  *
  * Also implements the companion Saddle_Lint_Style_Accessor (free ≥ 0.9) for
  * the deeper quality rules. The additional canonical shapes, verified
@@ -79,13 +82,7 @@ class Saddle_Divi_Lint_Accessor implements Saddle_Lint_Accessor, Saddle_Lint_Sty
 	 * @return string|null
 	 */
 	public function background_color( array $node ) {
-		foreach ( $this->attrs( $node ) as $attr ) {
-			$color = $this->path( $attr, array( 'decoration', 'background', 'desktop', 'value', 'color' ) );
-			if ( is_string( $color ) && '' !== $color ) {
-				return $this->resolve_global_color( $color );
-			}
-		}
-		return null;
+		return $this->background_color_at( $node );
 	}
 
 	/**
@@ -96,13 +93,48 @@ class Saddle_Divi_Lint_Accessor implements Saddle_Lint_Accessor, Saddle_Lint_Sty
 	 * @return string|null
 	 */
 	public function text_color( array $node ) {
-		foreach ( $this->attrs( $node ) as $attr ) {
-			$color = $this->path( $attr, array( 'decoration', 'font', 'font', 'desktop', 'value', 'color' ) );
-			if ( is_string( $color ) && '' !== $color ) {
-				return $this->resolve_global_color( $color );
-			}
-		}
-		return null;
+		return $this->text_color_at( $node );
+	}
+
+	/**
+	 * The background color at a breakpoint and state, inherited the way
+	 * Divi inherits (a hover with no color of its own shows the value's).
+	 *
+	 * @param array  $node       Raw block array.
+	 * @param string $breakpoint desktop, tablet or phone.
+	 * @param string $state      value, hover, sticky, ….
+	 * @return string|null
+	 */
+	public function background_color_at( array $node, $breakpoint = 'desktop', $state = 'value' ) {
+		$color = $this->value_at( $node, array( 'decoration', 'background' ), array( 'color' ), $breakpoint, $state );
+		return is_string( $color ) ? $this->resolve_global_color( $color ) : null;
+	}
+
+	/**
+	 * The text color at a breakpoint and state, inherited the way Divi
+	 * inherits.
+	 *
+	 * @param array  $node       Raw block array.
+	 * @param string $breakpoint desktop, tablet or phone.
+	 * @param string $state      value, hover, sticky, ….
+	 * @return string|null
+	 */
+	public function text_color_at( array $node, $breakpoint = 'desktop', $state = 'value' ) {
+		$color = $this->value_at( $node, array( 'decoration', 'font', 'font' ), array( 'color' ), $breakpoint, $state );
+		return is_string( $color ) ? $this->resolve_global_color( $color ) : null;
+	}
+
+	/**
+	 * Whether the node itself sets a text or background color for a state
+	 * at desktop (hover is a desktop pointer state).
+	 *
+	 * @param array  $node  Raw block array.
+	 * @param string $state hover, sticky, ….
+	 * @return bool
+	 */
+	public function sets_state_color( array $node, $state ) {
+		return $this->sets_at( $node, array( 'decoration', 'background' ), array( 'color' ), 'desktop', $state )
+			|| $this->sets_at( $node, array( 'decoration', 'font', 'font' ), array( 'color' ), 'desktop', $state );
 	}
 
 	/**
@@ -116,15 +148,21 @@ class Saddle_Divi_Lint_Accessor implements Saddle_Lint_Accessor, Saddle_Lint_Sty
 	}
 
 	/**
-	 * Live-verified Divi behavior: a button with visual styling but without
-	 * the custom-button enable switch renders as a ghost/outline. An
-	 * UNstyled button inherits its preset and counts as filled — the lint
-	 * targets the styled-but-forgot-enable accident, not deliberate presets.
+	 * Whether a button shows a solid fill. Before Divi 5.10 a button with
+	 * visual styling but without the custom-button enable switch rendered as
+	 * a ghost/outline; on Divi 5.10.1 the fill shows without the switch, so
+	 * from 5.10 every button counts as filled
+	 * (Saddle_Divi::button_fill_needs_switch()). An UNstyled button inherits
+	 * its preset and counts as filled: the lint targets the styled-but-
+	 * forgot-the-switch accident, not deliberate presets.
 	 *
 	 * @param array $node Raw block array.
 	 * @return bool
 	 */
 	public function button_is_filled( array $node ) {
+		if ( ! Saddle_Divi::button_fill_needs_switch() ) {
+			return true;
+		}
 		foreach ( $this->attrs( $node ) as $attr ) {
 			$enable = $this->path( $attr, array( 'decoration', 'button', 'desktop', 'value', 'enable' ) );
 			if ( 'on' === $enable ) {
@@ -200,20 +238,21 @@ class Saddle_Divi_Lint_Accessor implements Saddle_Lint_Accessor, Saddle_Lint_Sty
 	}
 
 	/**
-	 * The CSS class(es) the node delegates to theme stylesheets via the
-	 * advanced html group, or null when none.
+	 * The CSS class(es) the node renders and so delegates to theme
+	 * stylesheets, or null when none. Divi reads them only from
+	 * module.advanced.htmlAttributes.desktop.value.class
+	 * (IdClassesClassnames::get_html_attributes(), Module.php in 5.10.1). No
+	 * Divi 5 code reads a class under advanced.html, which holds the element
+	 * type and the HTML before and after: a class there never renders, and
+	 * the echo says so instead.
 	 *
 	 * @param array $node Raw block array.
 	 * @return string|null
 	 */
 	public function css_class( array $node ) {
-		foreach ( $this->attrs( $node ) as $attr ) {
-			$class = $this->path( $attr, array( 'advanced', 'html', 'desktop', 'value', 'class' ) );
-			if ( is_string( $class ) && '' !== trim( $class ) ) {
-				return trim( $class );
-			}
-		}
-		return null;
+		$attrs = $this->attrs( $node );
+		$class = isset( $attrs['module'] ) ? $this->path( $attrs['module'], array( 'advanced', 'htmlAttributes', 'desktop', 'value', 'class' ) ) : null;
+		return is_string( $class ) && '' !== trim( $class ) ? trim( $class ) : null;
 	}
 
 	/**
@@ -328,8 +367,10 @@ class Saddle_Divi_Lint_Accessor implements Saddle_Lint_Accessor, Saddle_Lint_Sty
 
 	/**
 	 * Heading level off the font decoration ('h1'…'h6', the exact value the
-	 * builder renders as the tag). divi/heading defaults to h2 when unset,
-	 * matching the builder's default.
+	 * builder renders as the tag). With no level set, the module's own
+	 * default from its default render attributes, for a heading element that
+	 * has text (Divi prints no element for an empty one): divi/heading is an
+	 * h1, a blurb title an h4 (Divi 5.10.1).
 	 *
 	 * @param array $node Raw block array.
 	 * @return int|null
@@ -339,7 +380,39 @@ class Saddle_Divi_Lint_Accessor implements Saddle_Lint_Accessor, Saddle_Lint_Sty
 		if ( is_string( $level ) && preg_match( '/^h([1-6])$/i', trim( $level ), $m ) ) {
 			return (int) $m[1];
 		}
-		return 'divi/heading' === (string) $node['blockName'] ? 2 : null;
+		$attrs = isset( $node['attrs'] ) && is_array( $node['attrs'] ) ? $node['attrs'] : array();
+		foreach ( self::default_heading_levels( (string) $node['blockName'] ) as $attr => $default ) {
+			$text = isset( $attrs[ $attr ] ) && is_array( $attrs[ $attr ] ) ? $this->path( $attrs[ $attr ], array( 'innerContent', 'desktop', 'value' ) ) : null;
+			if ( is_string( $text ) && '' !== trim( wp_strip_all_tags( $text ) ) ) {
+				return $default;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * A module's heading elements and the level each renders with when none
+	 * is set, from its default render attributes (the title first). When
+	 * those cannot be read, divi/heading is an h1, as in Divi 5.10.1.
+	 *
+	 * @param string $type Module type.
+	 * @return array<string,int> attr name => level.
+	 */
+	private static function default_heading_levels( $type ) {
+		$levels = array();
+		foreach ( Saddle_Divi_Schema::render_defaults( $type ) as $attr => $value ) {
+			$level = is_array( $value ) && isset( $value['decoration']['font']['font']['desktop']['value']['headingLevel'] ) ? $value['decoration']['font']['font']['desktop']['value']['headingLevel'] : null;
+			if ( is_string( $level ) && preg_match( '/^h([1-6])$/i', trim( $level ), $m ) ) {
+				$levels[ (string) $attr ] = (int) $m[1];
+			}
+		}
+		if ( isset( $levels['title'] ) ) {
+			$levels = array( 'title' => $levels['title'] ) + $levels;
+		}
+		if ( ! $levels && 'divi/heading' === $type ) {
+			$levels = array( 'title' => 1 );
+		}
+		return $levels;
 	}
 
 	/**

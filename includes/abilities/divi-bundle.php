@@ -19,7 +19,7 @@ function saddle_register_divi_bundle_abilities() {
 		'saddle/divi-context-bundle',
 		array(
 			'label'               => __( 'Get the Divi context bundle', 'saddle' ),
-			'description'         => __( 'Returns this site\'s whole Divi working memory in ONE call: the full module catalog (with installed module packs), the design system (global colors, variables, presets, fonts), the site\'s brand basics, and the authoring conventions. Call this ONCE at the start of a session instead of divi-list-modules + divi-list-global-colors + divi-list-variables + divi-get-global-fonts separately. Cached and cheap; the "version" changes when anything in it does. Read-only.', 'saddle' ),
+			'description'         => __( 'Returns this site\'s whole Divi working memory in ONE call: the module catalog in short form (each module\'s type, title and group, and what a container holds, with installed module packs), the design system (global colors, variables, presets, fonts), the site\'s brand basics, and the authoring conventions. Call this ONCE at the start of a session instead of divi-list-global-colors + divi-list-variables + divi-get-global-fonts separately; call divi-list-modules when you need each module\'s purpose or a search. Cached and cheap; the "version" changes when anything in it does. Read-only.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',

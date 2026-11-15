@@ -991,7 +991,7 @@ function KeyStep( { app, made, keys } ) {
 			/>
 			<p className="saddle-connect__hint">
 				{ __(
-					'The key is shown once. If you leave without copying it, Saddle deletes it.',
+					'The key is shown once. If you leave without copying it, SaddleWP deletes it.',
 					'saddle'
 				) }
 			</p>

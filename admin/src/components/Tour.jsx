@@ -40,7 +40,7 @@ function stopsFor() {
 			find: () => visible( document.querySelector( '.saddle-ai' ) ),
 			title: __( 'Pause your AI from here', 'saddle' ),
 			description: __(
-				'It shows AI on or Paused at the top of every Saddle page. Click it to pause every agent at once.',
+				'It shows AI on or Paused at the top of every SaddleWP page. Click it to pause every agent at once.',
 				'saddle'
 			),
 			side: 'bottom',
@@ -50,7 +50,7 @@ function stopsFor() {
 			id: 'menu',
 			find: () =>
 				visible( document.getElementById( 'toplevel_page_saddle' ) ),
-			title: __( 'Everything else is in the Saddle menu', 'saddle' ),
+			title: __( 'Everything else is in the SaddleWP menu', 'saddle' ),
 			description: __(
 				'Your add-ons, Context, Agent setup and Settings.',
 				'saddle'
@@ -68,7 +68,7 @@ function stopsFor() {
 				),
 			title: __( 'Every change is in Logs', 'saddle' ),
 			description: __(
-				'Changes your AI made and what Saddle blocked, newest first, with Undo.',
+				'Changes your AI made and what SaddleWP blocked, newest first, with Undo.',
 				'saddle'
 			),
 			side: 'right',

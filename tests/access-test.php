@@ -177,7 +177,7 @@ class Saddle_Access_Test extends WP_UnitTestCase {
 
 		$reason = Saddle_Capabilities::denial_reason( 'saddle/create-post' );
 		$this->assertSame( 'saddle_tier_denied', $reason['code'] );
-		$this->assertStringContainsString( 'Saddle → Agent setup', $reason['message'] );
+		$this->assertStringContainsString( 'SaddleWP → Agent setup', $reason['message'] );
 	}
 
 	public function test_a_key_is_not_raised_by_a_high_legacy_site_tier() {
@@ -238,7 +238,7 @@ class Saddle_Access_Test extends WP_UnitTestCase {
 		Saddle_Access::set_role( 'key:' . $uuid, 'write' );
 		$this->sign_in_with_key( $uuid );
 
-		$this->assertStringContainsString( 'Your access on this site: Edit content. The owner sets it for each agent on Saddle → Agent setup.', Saddle_Context::system_context() );
+		$this->assertStringContainsString( 'Your access on this site: Edit content. The owner sets it for each agent on SaddleWP → Agent setup.', Saddle_Context::system_context() );
 
 		Saddle_Access::set_role( 'key:' . $uuid, 'read' );
 		$this->assertStringContainsString( 'Your access on this site: Read only.', Saddle_Context::system_context() );
@@ -513,12 +513,12 @@ class Saddle_Access_Test extends WP_UnitTestCase {
 		Saddle_Capabilities::set_paused( true );
 		$reason = Saddle_Capabilities::denial_reason( 'saddle/list-posts' );
 		Saddle_Capabilities::set_paused( false );
-		$this->assertStringContainsString( 'the AI switch at the top of any Saddle page', $reason['message'] );
+		$this->assertStringContainsString( 'the AI switch at the top of any SaddleWP page', $reason['message'] );
 
 		Saddle_Capabilities::set_disabled_abilities( array( 'list-posts' ) );
 		$reason = Saddle_Capabilities::denial_reason( 'saddle/list-posts' );
 		Saddle_Capabilities::set_disabled_abilities( array() );
-		$this->assertStringContainsString( 'Saddle → Settings', $reason['message'] );
+		$this->assertStringContainsString( 'SaddleWP → Settings', $reason['message'] );
 
 		foreach ( glob( SADDLE_DIR . 'includes/{*,*/*}.php', GLOB_BRACE ) as $file ) {
 			if ( false !== strpos( $file, '/includes/lib/' ) ) {
@@ -526,8 +526,10 @@ class Saddle_Access_Test extends WP_UnitTestCase {
 			}
 			$this->assertStringNotContainsString( 'Saddle → Permissions', (string) file_get_contents( $file ), $file );
 			$this->assertStringNotContainsString( 'Saddle → Apps', (string) file_get_contents( $file ), $file );
+			$this->assertStringNotContainsString( 'SaddleWP → Permissions', (string) file_get_contents( $file ), $file );
+			$this->assertStringNotContainsString( 'SaddleWP → Apps', (string) file_get_contents( $file ), $file );
 			// Every other way #285's removed screens were named (#296).
-			$this->assertDoesNotMatchRegularExpression( '/Permissions screen|Integrations screen|Saddle Permissions/', (string) file_get_contents( $file ), $file );
+			$this->assertDoesNotMatchRegularExpression( '/Permissions screen|Integrations screen|Saddle(WP)? Permissions/', (string) file_get_contents( $file ), $file );
 		}
 	}
 }

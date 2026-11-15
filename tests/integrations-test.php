@@ -574,7 +574,7 @@ class Saddle_Integrations_Test extends WP_UnitTestCase {
 	public function test_the_integration_block_is_a_real_heading_in_the_context() {
 		$context = Saddle_Context::system_context();
 
-		$this->assertStringContainsString( '# Plugins connected to Saddle', $context );
+		$this->assertStringContainsString( '# Plugins connected to SaddleWP', $context );
 		$this->assertStringNotContainsString( 'First-party integrations:', $context );
 	}
 
@@ -746,13 +746,13 @@ class Saddle_Integrations_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * #212 (analytics), #241 (rank), and later Bridle and Mailpuff each add a slug to FIRST_PARTY on
+	 * #212 (analytics), #241 (rank), and later Bridle, Mailpuff and Saddle Media (#416) each add a slug to FIRST_PARTY on
 	 * the same line, and the merge of the second conflicted with the first.
 	 * Pin every PlugPress slug so a resolution can never silently switch one
 	 * plugin's tools off on every site.
 	 */
 	public function test_every_plugpress_plugin_is_first_party() {
-		foreach ( array( 'waggle', 'mailyard', 'analytics', 'rank', 'bridle', 'bridle-kb', 'mailpuff' ) as $slug ) {
+		foreach ( array( 'waggle', 'mailyard', 'analytics', 'rank', 'bridle', 'bridle-kb', 'mailpuff', 'media' ) as $slug ) {
 			$this->assertTrue( Saddle_Integrations::is_first_party( $slug ), "{$slug} must be first-party" );
 			$this->assertContains( $slug, Saddle_Integrations::FIRST_PARTY );
 		}

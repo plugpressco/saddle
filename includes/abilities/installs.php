@@ -64,7 +64,7 @@ function saddle_register_install_abilities() {
 		'saddle/install-plugin',
 		array(
 			'label'               => __( 'Install a plugin', 'saddle' ),
-			'description'         => __( 'Installs one plugin from the WordPress.org directory, by its slug (find it with search-plugins). Nothing else can be installed: no zip, no URL, no file. It takes two calls. The first call changes nothing: it returns a preview with the plugin\'s name, author, version, active installs, rating and last update, the WordPress version it was tested up to against this site\'s, the PHP it needs against this site\'s, any warnings (not tested with this WordPress, not updated in two years, needs other plugins), and a confirm_token. Call again with the same "slug" and that token to queue the install. WordPress\'s own installer then runs it in the background, the way Plugins → Add New does; check list-updates a minute later for the result under "runs" (installed, skipped or failed). The plugin arrives INACTIVE: turn it on with activate-plugin, its own confirmed step. Refuses a plugin that is already installed, a slug WordPress.org does not have or has closed, a plugin that needs a newer PHP or WordPress, and sites where WordPress cannot change files. Installs cannot be undone from Saddle; the site owner removes a plugin in wp-admin under Plugins.', 'saddle' ),
+			'description'         => __( 'Installs one plugin from the WordPress.org directory, by its slug (find it with search-plugins). Nothing else can be installed: no zip, no URL, no file. It takes two calls. The first call changes nothing: it returns a preview with the plugin\'s name, author, version, active installs, rating and last update, the WordPress version it was tested up to against this site\'s, the PHP it needs against this site\'s, any warnings (not tested with this WordPress, not updated in two years, needs other plugins), and a confirm_token. Call again with the same "slug" and that token to queue the install. WordPress\'s own installer then runs it in the background, the way Plugins → Add New does; check list-updates a minute later for the result under "runs" (installed, skipped or failed). The plugin arrives INACTIVE: turn it on with activate-plugin, its own confirmed step. Refuses a plugin that is already installed, a slug WordPress.org does not have or has closed, a plugin that needs a newer PHP or WordPress, and sites where WordPress cannot change files. Installs cannot be undone from SaddleWP; the site owner removes a plugin in wp-admin under Plugins.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -90,7 +90,7 @@ function saddle_register_install_abilities() {
 		'saddle/install-theme',
 		array(
 			'label'               => __( 'Install a theme', 'saddle' ),
-			'description'         => __( 'Installs one theme from the WordPress.org directory, by its slug, as in wordpress.org/themes/<slug>/. Nothing else can be installed: no zip, no URL, no file. It takes two calls. The first call changes nothing: it returns a preview with the theme\'s name, author, version, active installs, rating and last update, the WordPress and PHP versions it needs against this site\'s, its parent theme if it is a child theme, any warnings, and a confirm_token. Call again with the same "slug" and that token to queue the install. WordPress\'s own installer then runs it in the background; check list-updates a minute later for the result under "runs" (installed, skipped or failed). The theme is NOT activated: switch to it with activate-theme, its own confirmed step. Refuses a theme that is already installed, a slug WordPress.org does not have, a theme that needs a newer PHP or WordPress, a child theme whose parent theme is not installed (install the parent first), and sites where WordPress cannot change files. Installs cannot be undone from Saddle; the site owner removes a theme in wp-admin under Appearance → Themes.', 'saddle' ),
+			'description'         => __( 'Installs one theme from the WordPress.org directory, by its slug, as in wordpress.org/themes/<slug>/. Nothing else can be installed: no zip, no URL, no file. It takes two calls. The first call changes nothing: it returns a preview with the theme\'s name, author, version, active installs, rating and last update, the WordPress and PHP versions it needs against this site\'s, its parent theme if it is a child theme, any warnings, and a confirm_token. Call again with the same "slug" and that token to queue the install. WordPress\'s own installer then runs it in the background; check list-updates a minute later for the result under "runs" (installed, skipped or failed). The theme is NOT activated: switch to it with activate-theme, its own confirmed step. Refuses a theme that is already installed, a slug WordPress.org does not have, a theme that needs a newer PHP or WordPress, a child theme whose parent theme is not installed (install the parent first), and sites where WordPress cannot change files. Installs cannot be undone from SaddleWP; the site owner removes a theme in wp-admin under Appearance → Themes.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -248,8 +248,8 @@ class Saddle_Install_Abilities {
 			return new WP_Error(
 				'saddle_cannot_install',
 				$theme
-					? __( 'The WordPress account this agent is connected as cannot install themes here (on a multisite network, only a network administrator can). No Saddle setting changes that.', 'saddle' )
-					: __( 'The WordPress account this agent is connected as cannot install plugins here (on a multisite network, only a network administrator can). No Saddle setting changes that.', 'saddle' ),
+					? __( 'The WordPress account this agent is connected as cannot install themes here (on a multisite network, only a network administrator can). No SaddleWP setting changes that.', 'saddle' )
+					: __( 'The WordPress account this agent is connected as cannot install plugins here (on a multisite network, only a network administrator can). No SaddleWP setting changes that.', 'saddle' ),
 				array( 'status' => 403 )
 			);
 		}
@@ -300,8 +300,8 @@ class Saddle_Install_Abilities {
 						'arrives_inactive'   => true,
 						'runs_in_background' => true,
 						'undo'               => $theme
-							? __( 'Saddle cannot undo an install. To remove the theme, delete it in wp-admin under Appearance → Themes.', 'saddle' )
-							: __( 'Saddle cannot undo an install. To remove the plugin, delete it in wp-admin under Plugins.', 'saddle' ),
+							? __( 'SaddleWP cannot undo an install. To remove the theme, delete it in wp-admin under Appearance → Themes.', 'saddle' )
+							: __( 'SaddleWP cannot undo an install. To remove the plugin, delete it in wp-admin under Plugins.', 'saddle' ),
 					)
 				),
 				// The gate logs the confirmed call with this line, once.

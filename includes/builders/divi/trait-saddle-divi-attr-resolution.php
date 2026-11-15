@@ -111,28 +111,83 @@ trait Saddle_Divi_Attr_Resolution {
 	}
 
 	/**
-	 * Resolve a var(--gcid-…) reference through Divi's global palette when
-	 * the runtime is available; anything else passes through raw.
+	 * Resolve a global color reference through Divi's global palette: the
+	 * var(--gcid-…) form and the $variable({"type":"color",…})$ token the
+	 * Visual Builder writes, opacity included (Saddle_Divi_Tokens). Anything
+	 * else, or a palette this process cannot read, passes through raw.
 	 *
 	 * @param string $color Color value.
 	 * @return string
 	 */
 	private function resolve_global_color( $color ) {
-		if ( ! preg_match( '/^var\(\s*--(gcid-[a-z0-9-]+)\s*\)$/i', trim( $color ), $m ) ) {
+		if ( false === strpos( (string) $color, 'gcid-' ) ) {
 			return $color;
 		}
-
 		if ( null === $this->global_colors ) {
-			$this->global_colors = array();
-			if ( class_exists( '\ET\Builder\Packages\GlobalData\GlobalData' ) ) {
-				foreach ( (array) \ET\Builder\Packages\GlobalData\GlobalData::get_global_colors() as $id => $entry ) {
-					if ( isset( $entry['color'] ) && is_string( $entry['color'] ) ) {
-						$this->global_colors[ (string) $id ] = $entry['color'];
-					}
-				}
+			$colors              = Saddle_Divi_Tokens::global_colors();
+			$this->global_colors = null === $colors ? array() : $colors;
+		}
+		return Saddle_Divi_Tokens::resolve_color( $color, $this->global_colors );
+	}
+
+	/**
+	 * The breakpoint > state cells a value at ($breakpoint, $state) is read
+	 * from, nearest first, the way Divi inherits (ModuleUtils::
+	 * get_inherit_breakpoint_map()): a state falls back to the value at the
+	 * same breakpoint, and a value falls back to the next larger screen.
+	 *
+	 * @param string $breakpoint desktop, tablet or phone.
+	 * @param string $state      value, hover, sticky, ….
+	 * @return array[] Each [breakpoint, state].
+	 */
+	private function inherit_order( $breakpoint, $state ) {
+		$chains = array(
+			'desktop' => array( 'desktop' ),
+			'tablet'  => array( 'tablet', 'desktop' ),
+			'phone'   => array( 'phone', 'tablet', 'desktop' ),
+		);
+		$order  = 'value' === $state ? array() : array( array( $breakpoint, $state ) );
+		foreach ( isset( $chains[ $breakpoint ] ) ? $chains[ $breakpoint ] : array( $breakpoint, 'desktop' ) as $bp ) {
+			$order[] = array( $bp, 'value' );
+		}
+		return $order;
+	}
+
+	/**
+	 * The value a field takes at a breakpoint and state, following Divi's
+	 * inheritance: the nearest cell any of the node's attr envelopes sets,
+	 * envelopes in document order within a cell. At desktop and value this
+	 * is exactly first_at_path().
+	 *
+	 * @param array    $node       Raw block array.
+	 * @param string[] $group      Keys from an attr to its breakpoints (decoration, font, font).
+	 * @param string[] $field      Keys inside the value (color).
+	 * @param string   $breakpoint Breakpoint.
+	 * @param string   $state      State.
+	 * @return mixed Null when nothing in the chain sets it.
+	 */
+	private function value_at( array $node, array $group, array $field, $breakpoint = 'desktop', $state = 'value' ) {
+		foreach ( $this->inherit_order( $breakpoint, $state ) as $cell ) {
+			$value = $this->first_at_path( $node, array_merge( $group, $cell, $field ) );
+			if ( null !== $value ) {
+				return $value;
 			}
 		}
+		return null;
+	}
 
-		return isset( $this->global_colors[ $m[1] ] ) ? $this->global_colors[ $m[1] ] : $color;
+	/**
+	 * Whether any attr envelope writes the field in exactly this
+	 * breakpoint and state, no inheritance.
+	 *
+	 * @param array    $node       Raw block array.
+	 * @param string[] $group      Keys from an attr to its breakpoints.
+	 * @param string[] $field      Keys inside the value.
+	 * @param string   $breakpoint Breakpoint.
+	 * @param string   $state      State.
+	 * @return bool
+	 */
+	private function sets_at( array $node, array $group, array $field, $breakpoint, $state ) {
+		return null !== $this->first_at_path( $node, array_merge( $group, array( $breakpoint, $state ), $field ) );
 	}
 }

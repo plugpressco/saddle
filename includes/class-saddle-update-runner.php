@@ -112,7 +112,7 @@ class Saddle_Update_Runner {
 			$reasons[] = __( 'This site does not allow file changes (DISALLOW_FILE_MODS, or a host setting). Updates have to be applied by the host.', 'saddle' );
 		}
 		if ( defined( 'AUTOMATIC_UPDATER_DISABLED' ) && AUTOMATIC_UPDATER_DISABLED ) {
-			$reasons[] = __( 'Background updates are switched off (AUTOMATIC_UPDATER_DISABLED). Saddle applies updates through the background updater, so it is off too.', 'saddle' );
+			$reasons[] = __( 'Background updates are switched off (AUTOMATIC_UPDATER_DISABLED). SaddleWP applies updates through the background updater, so it is off too.', 'saddle' );
 		}
 		$updater = new WP_Automatic_Updater();
 		if ( empty( $reasons ) && $updater->is_disabled() ) {

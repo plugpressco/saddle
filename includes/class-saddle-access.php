@@ -174,7 +174,7 @@ class Saddle_Access {
 	 */
 	public static function set_role( $connection_id, $role ) {
 		if ( ! in_array( $role, self::ROLES, true ) ) {
-			return new WP_Error( 'saddle_unknown_role', __( 'That is not an access role Saddle knows.', 'saddle' ), array( 'status' => 400 ) );
+			return new WP_Error( 'saddle_unknown_role', __( 'That is not an access role SaddleWP knows.', 'saddle' ), array( 'status' => 400 ) );
 		}
 
 		list( $kind, $ref ) = array_pad( explode( ':', (string) $connection_id, 2 ), 2, '' );

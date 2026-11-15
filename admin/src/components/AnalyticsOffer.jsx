@@ -45,7 +45,7 @@ export default function AnalyticsOffer() {
 			<>
 				<p className="saddle-offer__done" role="status">
 					<icons.CheckCircle size={ 16 } />
-					{ __( 'Saddle Analytics is on.', 'saddle' ) }
+					{ __( 'SaddleWP Analytics is on.', 'saddle' ) }
 				</p>
 				<Button variant="primary" href={ offer.url }>
 					{ __( 'Open Analytics', 'saddle' ) }
@@ -66,15 +66,15 @@ export default function AnalyticsOffer() {
 						: __( 'Installing from WordPress.org…', 'saddle' ) ) }
 				{ 'busy' !== phase &&
 					( installed
-						? __( 'Turn on Saddle Analytics', 'saddle' )
-						: __( 'Install Saddle Analytics', 'saddle' ) ) }
+						? __( 'Turn on SaddleWP Analytics', 'saddle' )
+						: __( 'Install SaddleWP Analytics', 'saddle' ) ) }
 			</Button>
 		);
 	} else {
 		action = (
 			<p className="saddle-offer__note">
 				{ __(
-					'Ask a site administrator to install Saddle Analytics.',
+					'Ask a site administrator to install SaddleWP Analytics.',
 					'saddle'
 				) }{ ' ' }
 				<a href={ DIRECTORY } target="_blank" rel="noopener noreferrer">
@@ -103,7 +103,7 @@ export default function AnalyticsOffer() {
 			</h2>
 			<p className="saddle-offer__lede">
 				{ __(
-					'Saddle Analytics is free and counts visits without cookies. Add it and the stats show here.',
+					'SaddleWP Analytics is free and counts visits without cookies. Add it and the stats show here.',
 					'saddle'
 				) }
 			</p>

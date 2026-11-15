@@ -25,7 +25,7 @@ function saddle_register_verify_abilities() {
 		'saddle/verify-page',
 		array(
 			'label'               => __( 'Verify a page', 'saddle' ),
-			'description'         => __( 'Re-reads a page\'s SAVED state and returns one scored report (0–100 + grade): structural problems, attributes the builder silently ignores (your styling never took effect), and design/accessibility violations — each finding at a node address with a fix hint. Run it after building or editing: fix structural and "ignored" findings first, then errors, then re-run until the score is acceptable. This is how you know your work actually landed, not just that the write calls returned. After editing a PUBLISHED page, also pass check_public: true: it loads the live page as a visitor would and reports "stale" if a page cache or CDN is still serving the old version (then call flush-cache and check again).', 'saddle' ),
+			'description'         => __( 'Re-reads a page\'s SAVED state and returns one scored report (0–100 + grade): structural problems, attributes the builder silently ignores (your styling never took effect), and design/accessibility violations, each finding at a node address with a fix hint. Run it after building or editing: fix structural and "ignored" findings first, then errors, then re-run until the score is acceptable. Lint advice of severity "note" (a second filled button, a third font, a button with no hover) is returned apart in "notes": it costs no points and never lowers the grade, so weigh it against the design. This is how you know your work actually landed, not just that the write calls returned. After editing a PUBLISHED page, also pass check_public: true: it loads the live page as a visitor would and reports "stale" if a page cache or CDN is still serving the old version (then call flush-cache and check again).', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -62,7 +62,7 @@ class Saddle_Verify_Abilities {
 	 */
 	public static function verify_page( $input = null ) {
 		$input = is_array( $input ) ? $input : array();
-		$post  = Saddle_Abilities::require_readable_post( $input );
+		$post  = Saddle_Abilities::require_readable_post( $input, 'post_id', Saddle_Verify::page_types( isset( $input['post_id'] ) ? (int) $input['post_id'] : 0 ) );
 		if ( is_wp_error( $post ) ) {
 			return $post;
 		}
@@ -100,9 +100,11 @@ class Saddle_Verify_Abilities {
 			$report,
 			array(
 				'note'     => $report['findings']
-					? __( 'Fix in order: structural, then "ignored" (echo — that styling never took effect), then errors, then warnings. Addresses match get-blocks/divi-get-page; re-read after structural edits, then re-run verify-page until the score is acceptable.', 'saddle' )
-					: __( 'Everything checked out: the persisted state is structurally sound, every attribute takes effect, and no design violations were found.', 'saddle' ),
-				'coverage' => __( 'This score covers only what the server can verify — persisted structure, attributes, and design rules. It is NOT a visual sign-off: a page can pass every server-side check and still look wrong. Open get-preview-url and judge the real pixels before calling the page done.', 'saddle' ),
+					? __( 'Fix in order: structural, then "ignored" (echo: that styling never took effect), then errors, then warnings. Addresses match get-blocks/divi-get-page; re-read after structural edits, then re-run verify-page until the score is acceptable.', 'saddle' )
+					: ( $report['notes']
+						? __( 'No defects: the persisted state is structurally sound, every attribute takes effect, and no design rule failed. "notes" holds design advice that costs no points; act on it where it fits the design.', 'saddle' )
+						: __( 'Everything checked out: the persisted state is structurally sound, every attribute takes effect, and no design violations were found.', 'saddle' ) ),
+				'coverage' => __( 'This score covers only what the server can verify: persisted structure, attributes, and design rules. It is NOT a visual sign-off: a page can pass every server-side check and still look wrong. Open get-preview-url and judge the real pixels before calling the page done.', 'saddle' ),
 			)
 		);
 

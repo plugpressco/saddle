@@ -84,7 +84,7 @@ class Saddle_Blocks_Author {
 				'saddle_unknown_block',
 				sprintf(
 					/* translators: %s: block type. */
-					__( '"%s" is not a block type this site\'s server knows, so Saddle cannot compose valid markup for it. Pick a type from saddle/list-block-types.', 'saddle' ),
+					__( '"%s" is not a block type this site\'s server knows, so SaddleWP cannot compose valid markup for it. Pick a type from saddle/list-block-types.', 'saddle' ),
 					$type
 				)
 			);
@@ -261,7 +261,7 @@ class Saddle_Blocks_Author {
 			'saddle_no_template',
 			sprintf(
 				/* translators: %s: block type. */
-				__( 'Saddle has no composition template for the static block "%s". Either build the layout from the supported core blocks (see saddle/get-block-schema), or pass this node an explicit "html" string with the exact saved markup — you then own its validity in the editor.', 'saddle' ),
+				__( 'SaddleWP has no composition template for the static block "%s". Either build the layout from the supported core blocks (see saddle/get-block-schema), or pass this node an explicit "html" string with the exact saved markup — you then own its validity in the editor.', 'saddle' ),
 				$type
 			)
 		);

@@ -22,7 +22,7 @@ describe( 'plan cards', () => {
 		] );
 	} );
 
-	it( 'sends Free to Saddle Cloud with this site, the rest to their checkout', () => {
+	it( 'sends every plan through the account: Free with this site, the rest to their checkout', () => {
 		expect(
 			planCards( 'https://example.com/' ).map( ( c ) => [
 				c.href,
@@ -30,12 +30,15 @@ describe( 'plan cards', () => {
 			] )
 		).toEqual( [
 			[
-				'https://cloud.saddle.to/connect?site=https%3A%2F%2Fexample.com',
+				'https://cloud.saddle.to/start?site=https%3A%2F%2Fexample.com',
 				'Start free',
 			],
-			[ 'https://saddle.to/go/go-5/', 'Choose Go' ],
-			[ 'https://saddle.to/go/pro-20/', 'Choose Pro' ],
-			[ 'https://saddle.to/go/reach-50/', 'Choose Ultimate' ],
+			[ 'https://cloud.saddle.to/start?plan=go', 'Choose Go' ],
+			[ 'https://cloud.saddle.to/start?plan=pro', 'Choose Pro' ],
+			[
+				'https://cloud.saddle.to/start?plan=ultimate',
+				'Choose Ultimate',
+			],
 		] );
 	} );
 
@@ -70,13 +73,11 @@ describe( 'plan cards', () => {
 } );
 
 describe( 'Saddle Cloud', () => {
-	it( 'links to Connect a site with the address, or without one', () => {
+	it( 'links to the account door with the address, or without one', () => {
 		expect( cloudConnectUrl( 'https://shop.example.com/blog/' ) ).toBe(
-			'https://cloud.saddle.to/connect?site=https%3A%2F%2Fshop.example.com%2Fblog'
+			'https://cloud.saddle.to/start?site=https%3A%2F%2Fshop.example.com%2Fblog'
 		);
-		expect( cloudConnectUrl( '' ) ).toBe(
-			'https://cloud.saddle.to/connect'
-		);
+		expect( cloudConnectUrl( '' ) ).toBe( 'https://cloud.saddle.to/start' );
 	} );
 
 	it( 'stops offering itself once a connection is Saddle Cloud', () => {

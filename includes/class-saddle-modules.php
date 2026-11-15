@@ -133,6 +133,13 @@ class Saddle_Modules {
 		 * `script`, `content` and the `status`, `setup` and `settings`
 		 * callables.
 		 *
+		 * `settings_tab => false` keeps Core from adding a Settings tab for a
+		 * module whose schema has fields. It is for a module that draws its
+		 * settings on Saddle's own Settings page (`saddle.admin.settingsCards`
+		 * with `kit.SettingsForm`), so the same fields are not shown twice.
+		 * The schema, the settings tools and what agents read are unchanged.
+		 * Older Core ignores the key and adds the tab.
+		 *
 		 * A module page has four levels, one control each: the Saddle submenu
 		 * picks the module; the left sidebar picks a section (`tabs`, `&tab=`);
 		 * the icon tab row picks a page inside the section (`subtabs`,
@@ -197,8 +204,11 @@ class Saddle_Modules {
 			}
 
 			// A module whose schema has fields gets a Settings tab, unless it
-			// draws one of its own.
-			if ( isset( $callables['settings'] ) && ! isset( $tabs['settings'] ) ) {
+			// draws one of its own, or says its settings are drawn somewhere
+			// else (`settings_tab => false`): on Saddle's own Settings page,
+			// through saddle.admin.settingsCards.
+			$wants_tab = ! array_key_exists( 'settings_tab', $module ) || false !== $module['settings_tab'];
+			if ( $wants_tab && isset( $callables['settings'] ) && ! isset( $tabs['settings'] ) ) {
 				$called = Saddle_Settings_Registry::safely( $callables['settings'] );
 				if ( $called['ok'] && Saddle_Settings_Registry::normalize( $called['value'] ) ) {
 					$tabs['settings'] = __( 'Settings', 'saddle' );

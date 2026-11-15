@@ -221,7 +221,7 @@ class Saddle_OAuth_Bearer {
 
 		return new WP_Error(
 			'saddle_oauth_scope',
-			__( 'This agent signed in through Saddle and can only reach Saddle’s tools — the rest of the WordPress API is off limits to it by design.', 'saddle' ),
+			__( 'This agent signed in through SaddleWP and can only reach SaddleWP’s tools — the rest of the WordPress API is off limits to it by design.', 'saddle' ),
 			array( 'status' => 403 )
 		);
 	}
@@ -276,7 +276,7 @@ class Saddle_OAuth_Bearer {
 
 		if ( 403 === $status ) {
 			$params['error']             = 'insufficient_scope';
-			$params['error_description'] = 'The access token does not carry a Saddle scope.';
+			$params['error_description'] = 'The access token does not carry a SaddleWP scope.';
 		} elseif ( '' !== self::$failure ) {
 			$params['error']             = 'invalid_token';
 			$params['error_description'] = 'insecure_transport' === self::$failure

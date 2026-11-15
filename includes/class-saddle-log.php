@@ -33,7 +33,7 @@ class Saddle_Log {
 		register_post_type(
 			self::CPT,
 			array(
-				'label'               => 'Saddle Activity',
+				'label'               => 'SaddleWP Activity',
 				'public'              => false,
 				'publicly_queryable'  => false,
 				'show_ui'             => false,

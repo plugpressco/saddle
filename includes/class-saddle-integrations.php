@@ -34,11 +34,12 @@ class Saddle_Integrations {
 	 * `mailpuff` is Mailpuff, PlugPress's newsletter plugin (mailpuff/*); it
 	 * was Saddle CRM, enrolled as `crm`, until it left the Saddle family on
 	 * 2026-10-08, then Stirrup for a while. No released install enrols as
-	 * `crm` or `stirrup`.
+	 * `crm` or `stirrup`. `media` is Saddle Media, the media library add-on
+	 * (saddle-media/*).
 	 *
 	 * @var string[]
 	 */
-	const FIRST_PARTY = array( 'waggle', 'mailyard', 'analytics', 'rank', 'bridle', 'bridle-kb', 'mailpuff' );
+	const FIRST_PARTY = array( 'waggle', 'mailyard', 'analytics', 'rank', 'bridle', 'bridle-kb', 'mailpuff', 'media' );
 
 	/**
 	 * Option holding the third-party slugs the owner has switched on.
@@ -165,7 +166,7 @@ class Saddle_Integrations {
 		if ( self::is_first_party( $slug ) ) {
 			return new WP_Error(
 				'saddle_integration_first_party',
-				__( 'PlugPress integrations are always on. Turn individual tools off under Saddle → Settings → Advanced.', 'saddle' ),
+				__( 'PlugPress integrations are always on. Turn individual tools off under SaddleWP → Settings → Advanced.', 'saddle' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -294,8 +295,8 @@ class Saddle_Integrations {
 				'- ' . sprintf(
 					/* translators: %s: a list of plugin names, such as "Divi 5, Yoast SEO and WooCommerce". */
 					_n(
-						'Saddle has tools for %s, but that plugin is not active here, so its tools are not offered. If a request needs it, say it is not active on this site.',
-						'Saddle has tools for %s, but those plugins are not active here, so their tools are not offered. If a request needs one, say that plugin is not active on this site.',
+						'SaddleWP has tools for %s, but that plugin is not active here, so its tools are not offered. If a request needs it, say it is not active on this site.',
+						'SaddleWP has tools for %s, but those plugins are not active here, so their tools are not offered. If a request needs one, say that plugin is not active on this site.',
 						count( $absent ),
 						'saddle'
 					),
@@ -361,7 +362,7 @@ class Saddle_Integrations {
 			}
 			$lines[] = sprintf(
 				/* translators: %s: plugin name. */
-				__( '- %s is installed, but the site owner has not switched on its tools. If they are needed, tell the user they can turn it on under Saddle → Settings.', 'saddle' ),
+				__( '- %s is installed, but the site owner has not switched on its tools. If they are needed, tell the user they can turn it on under SaddleWP → Settings.', 'saddle' ),
 				$row['title']
 			);
 		}
@@ -369,7 +370,7 @@ class Saddle_Integrations {
 		if ( $lines ) {
 			$sections[] = array(
 				'id'       => 'first-party-integrations',
-				'title'    => __( 'Plugins connected to Saddle', 'saddle' ),
+				'title'    => __( 'Plugins connected to SaddleWP', 'saddle' ),
 				'lines'    => $lines,
 				'priority' => 40,
 			);

@@ -11,6 +11,8 @@
  * @package Saddle
  */
 
+require_once __DIR__ . '/divi-test-paths.php';
+
 class Saddle_Divi_Context_Bundle_Test extends WP_UnitTestCase {
 
 	private $admin;
@@ -64,6 +66,62 @@ class Saddle_Divi_Context_Bundle_Test extends WP_UnitTestCase {
 		parent::tear_down();
 	}
 
+	/* -------- caches follow SaddleWP's own version -------- */
+
+	public function test_a_bundle_cached_under_a_key_without_saddlewps_version_is_rebuilt() {
+		// The key before SaddleWP's version joined it: Divi's version, the
+		// active plugins, the design system (empty here, Divi is not loaded).
+		$plugins = (array) get_option( 'active_plugins', array() );
+		$old_key = substr( md5( (string) Saddle_Divi::version() . '|' . md5( implode( ',', $plugins ) ) . '|' ), 0, 12 );
+		set_transient(
+			Saddle_Divi_Bundle::TRANSIENT,
+			array(
+				'version' => $old_key,
+				'modules' => array( array( 'type' => 'stale/module' ) ),
+			)
+		);
+
+		$bundle = Saddle_Divi_Bundle::get();
+		$this->assertNotSame( $old_key, $bundle['version'] );
+		$this->assertSame( 'saddletest/plain-box', $bundle['modules'][0]['type'], 'An update of SaddleWP rebuilds the bundle.' );
+	}
+
+	public function test_the_module_index_cache_carries_saddlewps_version_and_the_catalog_facts() {
+		$cached = get_transient( Saddle_Divi_Schema::INDEX_TRANSIENT );
+		$this->assertSame( SADDLE_VERSION, $cached['s'] );
+		$this->assertSame( 'Plain Box', $cached['sum']['saddletest/plain-box']['title'] );
+		$this->assertSame( $cached['sum']['saddletest/plain-box'], Saddle_Divi_Schema::summary( 'saddletest/plain-box' ) );
+		$this->assertNull( Saddle_Divi_Schema::summary( 'saddletest/none' ) );
+	}
+
+	/**
+	 * Listing every module keeps only the catalog facts in memory, not each
+	 * decoded module.json. On Divi 5.10.1's core modules plus ~200 pack
+	 * modules the listing held about 41 MB before.
+	 */
+	public function test_listing_modules_keeps_no_decoded_module_json_in_memory() {
+		$dirs = array( Saddle_Test_Divi_Paths::components_or_skip() );
+		$pack = Saddle_Test_Divi_Paths::pack();
+		if ( '' !== $pack ) {
+			$dirs[] = $pack;
+		}
+		remove_all_filters( 'saddle_divi_module_json_dirs' );
+		add_filter(
+			'saddle_divi_module_json_dirs',
+			static function () use ( $dirs ) {
+				return $dirs;
+			}
+		);
+		Saddle_Divi_Schema::index( true );
+
+		$before  = memory_get_usage();
+		$modules = Saddle_Divi_Catalog::modules();
+		$held    = memory_get_usage() - $before;
+
+		$this->assertGreaterThan( 80, count( $modules ) );
+		$this->assertLessThan( 3 * MB_IN_BYTES, $held, 'The catalog rows only.' );
+	}
+
 	/* -------- the one-call bundle -------- */
 
 	public function test_bundle_ability_returns_catalog_conventions_and_version() {
@@ -79,6 +137,41 @@ class Saddle_Divi_Context_Bundle_Test extends WP_UnitTestCase {
 		// instead of serving empty palettes as truth.
 		$this->assertArrayNotHasKey( 'design_system', $result );
 		$this->assertArrayHasKey( 'note', $result );
+	}
+
+	/**
+	 * The bundle rides every session, so its catalog is the compact one: a
+	 * group and a container's child types, no purpose line (that is in
+	 * divi-list-modules). On Divi 5.10.1's 85 modules the catalog was 6,900
+	 * bytes before groups and child types came in, and is 6,458 after.
+	 */
+	public function test_the_bundle_catalog_is_compact() {
+		$result = wp_get_ability( 'saddle/divi-context-bundle' )->execute( array() );
+		$this->assertSame(
+			array(
+				'type'  => 'saddletest/plain-box',
+				'title' => 'Plain Box',
+				'group' => 'pack: saddletest',
+			),
+			$result['modules'][0]
+		);
+
+		$dir = Saddle_Test_Divi_Paths::components_or_skip();
+		remove_all_filters( 'saddle_divi_module_json_dirs' );
+		add_filter(
+			'saddle_divi_module_json_dirs',
+			static function () use ( $dir ) {
+				return array( $dir );
+			}
+		);
+		Saddle_Divi_Schema::index( true );
+		Saddle_Divi_Bundle::flush();
+
+		$modules = Saddle_Divi_Bundle::get()['modules'];
+		$by_type = array_column( $modules, null, 'type' );
+		$this->assertSame( array( 'divi/row' ), $by_type['divi/section']['children'] );
+		$this->assertArrayNotHasKey( 'purpose', $by_type['divi/section'] );
+		$this->assertLessThanOrEqual( 6900, strlen( (string) wp_json_encode( $modules ) ), 'No bigger than the catalog it replaced.' );
 	}
 
 	public function test_bundle_is_cached_and_signature_self_corrects_on_plugin_churn() {

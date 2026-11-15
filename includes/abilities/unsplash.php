@@ -240,8 +240,10 @@ class Saddle_Unsplash_Abilities {
 			$media = Saddle_Abilities::get_media( array( 'id' => $existing ) );
 			if ( ! is_wp_error( $media ) ) {
 				// Keep the "pass your search words" contract honest even on a
-				// dedupe hit: one cheap DB write, still zero HTTP.
-				if ( ! empty( $agent_tags ) ) {
+				// dedupe hit: one cheap DB write, still zero HTTP. Only for a
+				// caller who may edit that file: the tool's own gate covers
+				// uploading a new one, not changing someone else's (#422).
+				if ( ! empty( $agent_tags ) && current_user_can( 'edit_post', $existing ) ) {
 					wp_set_object_terms( $existing, $agent_tags, Saddle_Unsplash::TAXONOMY, true );
 				}
 				$media['already_in_library'] = true;
@@ -337,6 +339,18 @@ class Saddle_Unsplash_Abilities {
 		if ( ! empty( $terms ) ) {
 			wp_set_object_terms( $attachment_id, $terms, Saddle_Unsplash::TAXONOMY, true );
 		}
+
+		/**
+		 * Fires after a new Unsplash photo was saved to the media library,
+		 * with its title, credit, tags and source in place.
+		 *
+		 * It does not fire when the photo was already in the library and
+		 * nothing was downloaded.
+		 *
+		 * @param int   $attachment_id The new media item.
+		 * @param array $photo         The photo as Unsplash's API returned it.
+		 */
+		do_action( 'saddle_unsplash_imported', (int) $attachment_id, $photo );
 
 		Saddle_Log::record_action(
 			'unsplash-import',

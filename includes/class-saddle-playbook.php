@@ -136,7 +136,7 @@ class Saddle_Playbook {
 	private static function head() {
 		$look = self::has_block_templates()
 			? __( '2. LOOK AT THE SITE — saddle/get-template on the header and footer parts. What wraps every page tells you the width, the spacing and the tone you are designing into. Skipping this is how a page ends up looking bolted on.', 'saddle' )
-			: __( '2. LOOK AT THE SITE — this is a classic theme, so the header and footer live in theme files Saddle does not read. Open saddle/get-blocks on an existing page instead: what is already there tells you the width, the spacing and the tone you are designing into. Skipping this is how a page ends up looking bolted on.', 'saddle' );
+			: __( '2. LOOK AT THE SITE — this is a classic theme, so the header and footer live in theme files SaddleWP does not read. Open saddle/get-blocks on an existing page instead: what is already there tells you the width, the spacing and the tone you are designing into. Skipping this is how a page ends up looking bolted on.', 'saddle' );
 
 		return array(
 			__( '# Building a page in WordPress — agent playbook', 'saddle' ),

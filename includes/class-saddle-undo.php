@@ -121,9 +121,9 @@ class Saddle_Undo {
 			} elseif ( 'update-translations' === $entry['action'] ) {
 				$reasons[] = __( 'Translation updates can’t be undone: WordPress keeps no copy of the translation files it replaced.', 'saddle' );
 			} elseif ( in_array( $entry['action'], array( 'install-plugin', 'install-theme' ), true ) ) {
-				$reasons[] = __( 'Installs can’t be undone here: Saddle never deletes a plugin or theme. Delete it in wp-admin under Plugins or Appearance → Themes.', 'saddle' );
+				$reasons[] = __( 'Installs can’t be undone here: SaddleWP never deletes a plugin or theme. Delete it in wp-admin under Plugins or Appearance → Themes.', 'saddle' );
 			} else {
-				$reasons[] = __( 'Nothing was recorded to undo for this change: it predates undo, or it changed nothing Saddle can restore.', 'saddle' );
+				$reasons[] = __( 'Nothing was recorded to undo for this change: it predates undo, or it changed nothing SaddleWP can restore.', 'saddle' );
 			}
 		} elseif ( ! empty( $entry['journal']['overflow'] ) ) {
 			$reasons[] = sprintf(

@@ -84,7 +84,7 @@ export default function SelfCheck( {
 
 			<p className="saddle-wizard__hint">
 				{ __(
-					'The agent connects only when you use it. Once you add Saddle, ask it something about your site.',
+					'The agent connects only when you use it. Once you add SaddleWP, ask it something about your site.',
 					'saddle'
 				) }
 			</p>

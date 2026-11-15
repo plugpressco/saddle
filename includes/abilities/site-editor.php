@@ -138,7 +138,7 @@ class Saddle_Site_Editor_Abilities {
 		if ( ! function_exists( 'wp_is_block_theme' ) || ! wp_is_block_theme() ) {
 			return new WP_Error(
 				'saddle_not_block_theme',
-				__( 'This site does not use a block theme, so it has no block templates or template parts. Its header and footer live in the theme\'s PHP files, which Saddle does not edit.', 'saddle' ),
+				__( 'This site does not use a block theme, so it has no block templates or template parts. Its header and footer live in the theme\'s PHP files, which SaddleWP does not edit.', 'saddle' ),
 				array( 'status' => 409 )
 			);
 		}

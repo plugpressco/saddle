@@ -601,11 +601,11 @@ export function ConnectionDetails() {
 						<HelpTip>
 							{ saddleData.adapter
 								? __(
-										'Saddle is using the MCP Adapter plugin, which is active on this site. It changes only how requests are carried, not your tools, access levels or approvals.',
+										'SaddleWP is using the MCP Adapter plugin, which is active on this site. It changes only how requests are carried, not your tools, access levels or approvals.',
 										'saddle'
 								  )
 								: __(
-										'Saddle speaks MCP itself, so there is nothing else to install. If you add the MCP Adapter plugin, Saddle uses it. Your tools, access levels and approvals stay the same.',
+										'SaddleWP speaks MCP itself, so there is nothing else to install. If you add the MCP Adapter plugin, SaddleWP uses it. Your tools, access levels and approvals stay the same.',
 										'saddle'
 								  ) }
 						</HelpTip>

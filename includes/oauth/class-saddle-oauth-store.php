@@ -88,7 +88,7 @@ class Saddle_OAuth_Store {
 		register_post_type(
 			self::CPT,
 			array(
-				'label'               => 'Saddle OAuth',
+				'label'               => 'SaddleWP OAuth',
 				'public'              => false,
 				'publicly_queryable'  => false,
 				'show_ui'             => false,
