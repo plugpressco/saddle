@@ -25,7 +25,7 @@ It works with:
 ### Content
 
 - **Posts and pages:** Create, edit and delete posts and pages.
-- **Media:** Upload images from a URL and edit their details.
+- **Media:** Upload images and files from a URL or from your computer, and edit their details.
 - **Categories and tags:** Create and list categories and tags.
 - **Search:** Find posts, pages and media.
 - **Users:** List users and read their profiles.

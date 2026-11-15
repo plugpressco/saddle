@@ -75,7 +75,7 @@ Add the same address to Cursor, VS Code, Codex or Gemini CLI. There is a guide f
 = Content =
 * Posts and pages: Create, edit and delete posts and pages.
 * Custom content types: Work with the post types your plugins and theme add, such as products, events or docs.
-* Media: Upload images from a URL and edit their details.
+* Media: Upload images and files from a URL or from your computer, and edit their details.
 * Categories, tags and search: Create categories and tags, and find any post, page or media item.
 * Menus: Create a menu, add, rename, move and remove its items, and choose which menu shows in each theme location.
 * Users: List users and read their profiles.
@@ -251,6 +251,10 @@ The WordPress.org version never checks for its own updates. The version from plu
 6. Welcome: SaddleWP looks around your site and helps you connect your first AI agent.
 
 == Changelog ==
+
+= 1.7.7 =
+* New: Your AI agent can upload a file from your computer. It asks SaddleWP for a link that works once, for ten minutes, and sends the file to it. Before, an upload needed a public web address.
+* Changed: The Docs link in SaddleWP's header opens the guides on saddle.to.
 
 = 1.7.6 =
 * Changed: A shorter plugin page on WordPress.org. The description, the list of external services and the questions say the same in fewer words. Nothing in the plugin itself changed.

@@ -62,6 +62,8 @@ class Saddle_Log {
 	 *                           (a write answered in rehearsal mode, nothing
 	 *                           saved) or 'denied'
 	 *                           (an attempt that was refused). Default 'executed'.
+	 *     @type string $connection The connection to name (`key:…`, `oauth:…`).
+	 *                           Optional. Default: this request's own.
 	 * }
 	 */
 	public static function record( array $args ) {
@@ -96,7 +98,13 @@ class Saddle_Log {
 		// log says "via Claude Code" rather than the WordPress user every
 		// connection shares. Stored, not looked up later, so the entry keeps
 		// the name after the key is revoked.
-		$connection = class_exists( 'Saddle_Access' ) ? Saddle_Access::current_connection() : '';
+		// An upload link's file arrives outside the agent's own request, so that
+		// caller names the connection the link was made for.
+		if ( isset( $args['connection'] ) ) {
+			$connection = (string) $args['connection'];
+		} else {
+			$connection = class_exists( 'Saddle_Access' ) ? Saddle_Access::current_connection() : '';
+		}
 		if ( '' !== $connection ) {
 			update_post_meta( $post_id, '_saddle_connection', $connection );
 			$app = Saddle_Connections::label( $connection, get_current_user_id() );

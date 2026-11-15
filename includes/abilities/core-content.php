@@ -462,7 +462,7 @@ function saddle_register_abilities() {
 		'saddle/upload-media',
 		array(
 			'label'               => __( 'Upload media', 'saddle' ),
-			'description'         => __( 'Adds a file to the media library and returns the new attachment id and URL. Pass EITHER source_url (the site downloads that one URL, nothing else) OR data: the file itself, base64-encoded, with a filename. Use data when the file has no public URL, such as an image you generated or one on the user\'s computer. WordPress checks that the file\'s content matches its extension and that the type is allowed on this site. Additive (non-destructive). Optionally set title, alt text, caption, description, and the post to attach it to.', 'saddle' ),
+			'description'         => __( 'Adds a file to the media library and returns the new attachment id and URL. Pass EITHER source_url (the site downloads that one URL, nothing else) OR data: the file itself, base64-encoded, with a filename. Use data when the file has no public URL, such as an image you generated or one on the user\'s computer. For a local file larger than a few kilobytes, an agent that can run a shell command should use create-upload-link instead, because data has to be written out in full. WordPress checks that the file\'s content matches its extension and that the type is allowed on this site. Additive (non-destructive). Optionally set title, alt text, caption, description, and the post to attach it to.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -493,6 +493,41 @@ function saddle_register_abilities() {
 			'execute_callback'    => array( 'Saddle_Abilities', 'upload_media' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'write', 'upload_files', 'upload-media' ),
 			'meta'                => saddle_ability_meta( false, false, false, 'write', true ),
+		)
+	);
+
+	wp_register_ability(
+		'saddle/create-upload-link',
+		array(
+			'label'               => __( 'Create upload link', 'saddle' ),
+			'description'         => __( 'Returns a single-use address for sending one local file straight to the media library. For an agent that can run a shell command: use it instead of upload-media "data" for any file on the user\'s computer larger than a few kilobytes. Pass the filename and its exact size in bytes, then run the returned command, an HTTP PUT of the raw file with no extra headers. The answer to that PUT is the new media item (id and URL). The address works once and expires in 10 minutes; if the upload fails, ask for a new one. WordPress checks that the file\'s content matches its extension and that the type is allowed on this site. Additive (non-destructive). Optionally set title, alt text, caption, description, and the post to attach it to. If you cannot run commands, use upload-media.', 'saddle' ),
+			'category'            => 'saddle',
+			'input_schema'        => array(
+				'type'       => 'object',
+				'required'   => array( 'filename', 'size' ),
+				'properties' => array(
+					'filename'    => array(
+						'type'        => 'string',
+						'description' => __( 'The stored filename, with extension, e.g. "hero.png".', 'saddle' ),
+					),
+					'size'        => array(
+						'type'        => 'integer',
+						'minimum'     => 1,
+						'description' => __( 'The file\'s exact size in bytes. The upload is refused if the size sent differs.', 'saddle' ),
+					),
+					'title'       => array( 'type' => 'string' ),
+					'alt'         => array( 'type' => 'string' ),
+					'caption'     => array( 'type' => 'string' ),
+					'description' => array( 'type' => 'string' ),
+					'post_id'     => array(
+						'type'        => 'integer',
+						'description' => __( 'Attach the media to this post/page ID.', 'saddle' ),
+					),
+				),
+			),
+			'execute_callback'    => array( 'Saddle_Upload_Link', 'create' ),
+			'permission_callback' => Saddle_Capabilities::permission( 'write', 'upload_files', 'create-upload-link' ),
+			'meta'                => saddle_ability_meta( false, false, false, 'write' ),
 		)
 	);
 
@@ -1741,7 +1776,44 @@ class Saddle_Abilities {
 			return new WP_Error( 'saddle_invalid_data', __( '"data" is not valid base64.', 'saddle' ), array( 'status' => 400 ) );
 		}
 
-		$max_bytes = min( (int) apply_filters( 'saddle_max_upload_bytes', 64 * MB_IN_BYTES ), (int) wp_max_upload_size() );
+		return self::upload_bytes_to_library( $bytes, $filename, $post_id );
+	}
+
+	/**
+	 * The largest file an agent may send, in bytes: Saddle's own cap or the
+	 * site's upload limit, whichever is lower.
+	 *
+	 * @return int
+	 */
+	public static function max_upload_bytes() {
+		return min( (int) apply_filters( 'saddle_max_upload_bytes', 64 * MB_IN_BYTES ), (int) wp_max_upload_size() );
+	}
+
+	/**
+	 * Hand a file's bytes to core's attachment controller.
+	 *
+	 * The one place Saddle passes file content on: `upload-media` with `data`
+	 * decodes into it, and an upload link (Saddle_Upload_Link) delivers into
+	 * it. Core writes the file, checks the content against the extension and
+	 * creates the attachment, as the current user and under core's own
+	 * permission check. Saddle writes nothing to disk.
+	 *
+	 * @param string $bytes    The file's content.
+	 * @param string $filename Sanitized filename with extension.
+	 * @param int    $post_id  Post to attach to, or 0.
+	 * @return int|WP_Error Attachment ID.
+	 */
+	public static function upload_bytes_to_library( $bytes, $filename, $post_id = 0 ) {
+		$bytes = (string) $bytes;
+		$type  = wp_check_filetype( (string) $filename );
+		if ( '' === (string) $filename || empty( $type['type'] ) ) {
+			return new WP_Error( 'saddle_file_type_not_allowed', __( 'That file type is not allowed on this site. Use an extension WordPress accepts for uploads, such as .jpg, .png, .webp or .pdf.', 'saddle' ), array( 'status' => 400 ) );
+		}
+		if ( '' === $bytes ) {
+			return new WP_Error( 'saddle_invalid_data', __( 'The file is empty.', 'saddle' ), array( 'status' => 400 ) );
+		}
+
+		$max_bytes = self::max_upload_bytes();
 		if ( $max_bytes > 0 && strlen( $bytes ) > $max_bytes ) {
 			return new WP_Error(
 				'saddle_file_too_large',
@@ -1810,7 +1882,24 @@ class Saddle_Abilities {
 			return $attachment_id;
 		}
 
-		// Apply optional metadata.
+		return self::finish_upload( $attachment_id, $input );
+	}
+
+	/**
+	 * What follows every upload: the optional title, caption, description and
+	 * alt text, the log entry, and the media item as the answer.
+	 *
+	 * @param int         $attachment_id The new attachment.
+	 * @param array       $input         { title, caption, description, alt }, all optional.
+	 * @param string|null $connection    The connection to name in the log, for
+	 *                                   an upload that arrives outside that
+	 *                                   agent's own request (an upload link).
+	 *                                   Null: the request's own connection.
+	 * @return array|WP_Error
+	 */
+	public static function finish_upload( $attachment_id, array $input, $connection = null ) {
+		$attachment_id = (int) $attachment_id;
+
 		$update = array( 'ID' => $attachment_id );
 		if ( isset( $input['title'] ) ) {
 			$update['post_title'] = sanitize_text_field( $input['title'] );
@@ -1828,15 +1917,19 @@ class Saddle_Abilities {
 			update_post_meta( $attachment_id, '_wp_attachment_image_alt', sanitize_text_field( $input['alt'] ) );
 		}
 
-		Saddle_Log::record_action(
-			'upload-media',
-			$attachment_id,
-			sprintf(
+		$entry = array(
+			'action'  => 'upload-media',
+			'target'  => (string) $attachment_id,
+			'summary' => sprintf(
 				/* translators: %d: attachment id. */
 				__( 'Uploaded media #%d', 'saddle' ),
 				$attachment_id
-			)
+			),
 		);
+		if ( null !== $connection ) {
+			$entry['connection'] = (string) $connection;
+		}
+		Saddle_Log::record( $entry );
 
 		return self::get_media( array( 'id' => $attachment_id ) );
 	}
