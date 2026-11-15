@@ -4,7 +4,7 @@ Tags: mcp, ai, seo, chatgpt, claude
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.7.5
+Stable tag: 1.7.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -251,6 +251,9 @@ The WordPress.org version never checks for its own updates. The version from plu
 6. Welcome: SaddleWP looks around your site and helps you connect your first AI agent.
 
 == Changelog ==
+
+= 1.7.6 =
+* Changed: A shorter plugin page on WordPress.org. The description, the list of external services and the questions say the same in fewer words. Nothing in the plugin itself changed.
 
 = 1.7.5 =
 * Changed: Get Premium's buttons open your SaddleWP account first. You sign up or log in, then pay for the plan you picked, so the plan lands on your account. Connect this site goes through the same sign-up.
