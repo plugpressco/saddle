@@ -391,13 +391,18 @@ class Saddle_Divi_Design_Lint_Test extends WP_UnitTestCase {
 		$this->assertSame( array(), $this->of( $this->lint( $this->page( $broken ) ), 'repeated-row-layout' ), 'A single-column moment breaks the run.' );
 	}
 
-	/* -------- link-text: weak labels -------- */
+	/* -------- link-text: block pages keep their list -------- */
 
-	public function test_submit_is_a_weak_label() {
+	/**
+	 * The rule runs on block editor pages only. Its list of vague labels is
+	 * the one those pages were always judged by: a label such as "Submit"
+	 * does not start costing points on a page that did not change.
+	 */
+	public function test_block_page_labels_are_judged_by_the_same_list_as_before() {
 		$markup     = '<!-- wp:button --><div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="/contact">Submit</a></div><!-- /wp:button -->'
-			. '<!-- wp:button --><div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="/contact">Send your brief</a></div><!-- /wp:button -->';
+			. '<!-- wp:button --><div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="/more">Learn more</a></div><!-- /wp:button -->';
 		$violations = Saddle_Lint::run( Saddle_Tree::parse( $markup ), new Saddle_Lint_Gutenberg_Accessor() );
-		$this->assertSame( array( '0 warn' ), $this->of( $violations, 'link-text' ) );
+		$this->assertSame( array( '1 warn' ), $this->of( $violations, 'link-text' ) );
 	}
 
 	/* -------- severities -------- */
