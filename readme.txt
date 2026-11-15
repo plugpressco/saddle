@@ -1,6 +1,6 @@
 === SaddleWP – MCP Server to Build, Rank & Grow Your Site with Claude, ChatGPT & Cursor ===
 Contributors: badhonrocks
-Tags: mcp, mcp-server, claude, chatgpt, ai
+Tags: mcp, ai, seo, chatgpt, claude
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
@@ -8,46 +8,70 @@ Stable tag: 1.7.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-MCP server for WordPress: Claude, ChatGPT or Cursor build pages, fix SEO and run updates on your own site. Read-only to start; deletes ask first.
+SaddleWP is the MCP server for WordPress. Claude, ChatGPT or Cursor build pages, fix SEO and run updates on your site. Read-only until you allow more.
 
 == Description ==
 
-**Your WordPress site, ready for Claude, ChatGPT and Cursor.**
+**SaddleWP connects your AI agent to your WordPress site.**
 
-SaddleWP is a free MCP server for WordPress that runs on your own site. Connect the AI agent you already use and ask in plain words. It builds pages, fixes SEO and keeps your site updated with real WordPress tools. You decide what it may change.
+SaddleWP is a free MCP server for WordPress. It runs on your own site. Connect Claude, ChatGPT, Cursor or any other MCP agent, then ask in plain words: build a page, fix an SEO title, show this week's visitors, run the updates. Your agent does the work with real WordPress tools. You decide what it may change.
 
-= The MCP server for WordPress, on your own site =
-* **Two ways in:** connect through your SaddleWP account, free for one site, with one address for all your sites. Or connect your agent straight to your site, and your content never goes through our servers.
-* **Sign-in for agents:** **Connect this site** turns it on. An administrator approves each agent on your site. It needs HTTPS and pretty permalinks; without them, an agent uses a key that works only with SaddleWP.
-* **Any MCP agent:** Claude, Claude Code, ChatGPT, Cursor, VS Code, Codex, Gemini CLI and others.
+[SaddleWP website](https://saddle.to) · [Docs](https://saddle.to/docs/) · [Live demo](https://demo.saddle.to/) · [Plans](https://saddle.to/pricing/) · [PlugPress](https://plugpress.io)
+
+= What is SaddleWP? =
+SaddleWP is a free core plugin with add-ons. Each part does one job.
+
+* **SaddleWP** (this plugin): the WordPress MCP server. It gives AI agents safe tools for your content, pages, plugins and settings. [saddle.to/ai](https://saddle.to/ai/)
+* **[SaddleWP Rank](https://wordpress.org/plugins/saddle-rank/)**: SEO for WordPress, and AI search visibility. Free. [saddle.to/seo](https://saddle.to/seo/)
+* **[SaddleWP Analytics](https://wordpress.org/plugins/saddle-analytics/)**: analytics for WordPress, cookieless, kept in your own database. Free. [saddle.to/analytics](https://saddle.to/analytics/)
+* **SaddleWP Pro**: a paid add-on for Divi 5 sites. [saddle.to/pricing](https://saddle.to/pricing/)
+* **Your SaddleWP account**: optional, free for one site. One connection for all your sites.
+
+SaddleWP Rank and SaddleWP Analytics need this plugin. SaddleWP can install each one for you with one click.
+
+= MCP for WordPress =
+MCP, the Model Context Protocol, is how an AI agent uses tools. SaddleWP is the MCP server for WordPress: it turns your site's posts, pages, media, menus, plugins and settings into tools an agent can call.
+
+* **Any MCP agent:** Claude, Claude Code, ChatGPT, Cursor, VS Code, Codex, Gemini CLI, Windsurf and others.
+* **Two ways to connect:** through your SaddleWP account, with one address for all your sites. Or straight to your site, and your content never goes through our servers.
+* **Sign-in for agents:** **Connect this site** turns it on. An administrator approves each agent on your site. It needs HTTPS and pretty permalinks. Without them, an agent uses a key that works only with SaddleWP.
 
 = Connect Claude to WordPress =
 Add your site's address to Claude or Claude Code and approve it in your browser. Then ask Claude to draft a post or build a page in your theme's styles.
 
 = Connect ChatGPT to WordPress =
-Add your site as a connector in ChatGPT and approve it on your site. It reads your content first, and writes after you give it Edit content.
+Add your site as a connector in ChatGPT and approve it on your site. ChatGPT reads your content first. It writes after you give it Edit content.
 
 = Connect Cursor, Codex, Gemini CLI and other MCP agents =
-Add the same address to Cursor, VS Code, Codex or Gemini CLI. Guides for each agent: [saddle.to/docs](https://saddle.to/docs).
+Add the same address to Cursor, VS Code, Codex or Gemini CLI. There is a guide for each agent at [saddle.to/docs](https://saddle.to/docs/).
 
-= Build =
+= Build: pages, content and updates =
 * **Pages that look like your site:** real block editor and Divi 5 pages in your theme's colors, fonts and patterns.
 * **Content written your way:** drafts of new posts, updates to old ones, images from a link or from Unsplash, and menus kept in order. Teach it your voice and rules once with Skills, and it remembers.
 * **A site that keeps running:** plugin, theme and WordPress updates through WordPress's own updater, with its backup and rollback, and Site Health in plain words.
 
-= Rank =
+= Rank: SEO for WordPress =
 * **SEO fixes:** your AI agent rewrites SEO titles and descriptions with SaddleWP Rank, Yoast SEO, Rank Math or All in One SEO.
-* **Ready for AI answers:** with SaddleWP Rank it also writes FAQ schema and page summaries, fixes broken links, redirects missing pages and keeps an llms.txt, so search engines and AI answers can read your pages.
-* **Where you rank:** with your SaddleWP account, Google Search Console and keyword tracking, and weekly Google checks that show whether Google's AI Overview cites you.
+* **Site repairs:** with SaddleWP Rank it also fixes broken links, redirects missing pages and writes FAQ schema.
+* **Where you rank:** with your SaddleWP account, Google Search Console and keyword tracking.
 
-= Grow =
-* **Know who visits:** with [SaddleWP Analytics](https://wordpress.org/plugins/saddle-analytics/), free and cookieless, ask "how many people did ChatGPT send us this week?" and get the numbers your dashboard shows.
+= Rank: AI visibility for WordPress =
+People now ask ChatGPT, Claude, Perplexity and Gemini the questions they used to type into Google.
+
+* **Readable by AI:** SaddleWP Rank keeps an llms.txt, writes page summaries, and scores each page on how easy it is to quote in an AI answer.
+* **Your choice:** two switches decide whether AI answer engines may show your site, and whether AI companies may train on it.
+* **Who reads you:** SaddleWP Analytics lists the AI crawlers that visit, and counts the people AI chat apps send you.
+* **Whether you are cited:** with your SaddleWP account, a weekly Google check shows whether Google's AI Overview cites you.
+
+= Grow: analytics for WordPress =
+* **Know who visits:** with SaddleWP Analytics, ask "how many people did ChatGPT send us this week?" and get the numbers your dashboard shows.
+* **Private by design:** it counts visits without cookies, and the data stays in your own database.
 * **Find what to write next:** with your account, keyword research, competitors checked every week and article plans your AI agent writes as drafts.
 * **Every site from one chat:** with your account, one AI connection for all your sites, with uptime alerts.
 
 = Safe on a live site =
 * A new agent can only read. You choose Read only, Edit content or Manage the site for each one.
-* Deletes, installs and other big changes show a preview first, and any tool can be set to ask first. You can let a Manage the site agent skip this; it is off until you turn it on.
+* Deletes, installs and other big changes show a preview first, and any tool can be set to ask first. You can let a Manage the site agent skip this. It is off until you turn it on.
 * Every change is logged, and most can be undone.
 
 = Who uses SaddleWP =
@@ -67,13 +91,16 @@ Add the same address to Cursor, VS Code, Codex or Gemini CLI. Guides for each ag
 = Block editor pages =
 * Block pages: Build pages with real blocks that stay editable in the block editor, and add, edit, move or remove single blocks.
 * Theme styles: Use your theme's colors, fonts, spacing and patterns, and add a palette, type scale and spacing to a block theme.
-* Templates and patterns: Read templates, template parts and global styles. On a block theme, change a template, the header or the footer, add a template part, or save a section as a pattern. Changes are saved in the database; theme files are never edited.
+* Templates and patterns: Read templates, template parts and global styles. On a block theme, change a template, the header or the footer, add a template part, or save a section as a pattern. Changes are saved in the database. Theme files are never edited.
 
 = Divi 5 pages =
 These tools work on sites running Divi 5.
 
 * Divi pages: Build and edit pages with real Divi modules. Add, edit, move and remove modules, and change page settings.
+* Module settings: Read every setting of a module, including modules from add-on packs, and set it with a checked value.
+* Layout and styles: Set column layouts on rows, place rows inside columns and groups, and style a module for tablet, phone and hover.
 * Loops and dynamic content: Repeat a module for each post in a query, and show live post data in module fields.
+* Interactions: Make a click or a hover on one module show, hide or change another.
 * Display conditions and presets: Show or hide a module by rule, and apply a saved preset.
 * Divi design data: Read global colors, fonts, variables and presets, and list Library items and Theme Builder templates.
 
@@ -82,6 +109,7 @@ SaddleWP edits Divi 5 pages only. It leaves Divi 4 shortcode pages untouched.
 = Check the result =
 * Page check: Find layout, contrast and accessibility problems on a block or Divi 5 page, with a score and a fix for each problem.
 * Node view: See the real styles and HTML of any part of a page.
+* Rendered page: Read the real HTML and CSS of a Divi 5 page, so an agent can check its work without a browser.
 * Preview: Get a short-lived preview link to see the page before it goes live.
 
 = Integrations =
@@ -102,7 +130,7 @@ The SEO and WooCommerce tools work when that plugin is active.
 These tools stay off until you give an agent Manage the site.
 
 * Settings: Change the site title, permalinks and reading options.
-* Plugins and themes: Activate, deactivate and switch them after a preview. Install by name from WordPress.org only; a new install arrives inactive. SaddleWP never installs from a zip or a link, and never deletes a plugin or theme.
+* Plugins and themes: Activate, deactivate and switch them after a preview. Install by name from WordPress.org only. A new install arrives inactive. SaddleWP never installs from a zip or a link, and never deletes a plugin or theme.
 * Updates: Apply plugin, theme, WordPress and translation updates through WordPress's own updater, which keeps a backup. Major WordPress releases need SaddleWP's own switch in Settings, which is off by default.
 * Site Health and cache: Read Site Health results and clear the cache.
 
@@ -118,9 +146,12 @@ These tools stay off until you give an agent Manage the site.
 SaddleWP never runs code from the AI, has no shell access and cannot write files. The one file it changes is .htaccess, only when you click Fix it for me in the connection check, to pass sign-in headers to WordPress. Uninstalling SaddleWP removes it.
 
 = SaddleWP Pro =
-[SaddleWP Pro](https://saddle.to) is a paid add-on for Divi 5 sites, and it needs this free plugin. It adds Divi design system, Library and Theme Builder edits, building or cloning whole pages, site-wide image and preset changes with undo, a design brief, and WooCommerce bulk edits with undo.
+[SaddleWP Pro](https://saddle.to/pricing/) is a paid add-on for Divi 5 sites, and it needs this free plugin. It adds Divi design system, Library and Theme Builder edits, building or cloning whole pages, site-wide image and preset changes with undo, a design brief, and WooCommerce bulk edits with undo.
 
-Every feature in this free plugin stays free. SaddleWP → Get Premium shows SaddleWP's plans and prices only while SaddleWP Pro is not installed. It sends nothing; its buttons open saddle.to or `cloud.saddle.to`.
+Every feature in this free plugin stays free. SaddleWP → Get Premium shows SaddleWP's plans and prices only while SaddleWP Pro is not installed. It sends nothing. Its buttons open saddle.to or `cloud.saddle.to`.
+
+= Who makes SaddleWP =
+SaddleWP is made by [PlugPress](https://plugpress.io). Questions and ideas are welcome.
 
 = Credits =
 * Iconoir icons (MIT): [iconoir.com](https://iconoir.com)
@@ -135,17 +166,29 @@ Every feature in this free plugin stays free. SaddleWP → Get Premium shows Sad
 
 == Frequently Asked Questions ==
 
-= Do I need an account? =
+= What is an MCP server for WordPress? =
 
-No. You can connect your AI agent straight to your site, free and with no account. A SaddleWP account is optional: free for one site, it gives your agents one address for all your sites.
+MCP, the Model Context Protocol, is the standard way an AI agent uses tools. An MCP server for WordPress gives the agent tools for your site: read a post, build a page, update a plugin. SaddleWP is that server. It runs inside your own WordPress, so there is nothing else to host.
 
-= Does my content go through your servers? =
+= Can ChatGPT log in to WordPress? =
 
-Not when your AI agent connects directly. If you connect through your SaddleWP account, your agent's calls and your site's answers pass through `cloud.saddle.to`, and your site still decides each call. SaddleWP sends no usage data unless you choose to share it on SaddleWP's Overview.
+Yes, with your approval, and it never gets your password. You add your site to ChatGPT as a connector. ChatGPT sends you to your own site, and an administrator approves it there. It then works with the access you chose: Read only, Edit content or Manage the site. You can disconnect it at any time on **SaddleWP → Agent setup**.
 
-= Can I try SaddleWP before installing it? =
+= How do I connect ChatGPT to WordPress? =
 
-Yes. Click Live Preview on this page. You can explore every screen. To connect an AI agent, install SaddleWP on a real site, because the preview runs only in your browser.
+Connect through your SaddleWP account. Or go to **SaddleWP → Agent setup**, open **Connect directly**, pick ChatGPT, and turn on sign-in when SaddleWP offers it. Then add your site as a connector in ChatGPT and approve it when ChatGPT sends you to your site.
+
+= Can Claude edit my WordPress site? =
+
+Yes. Add your site's address to Claude or Claude Code and approve it in your browser. Claude starts as Read only. Give it Edit content to write posts and pages, or Manage the site for plugins, themes and settings.
+
+= Can an AI agent write and publish WordPress posts? =
+
+Yes, with Edit content. It can save a post as a draft or publish it. Turn on Drafts only to keep every new post a draft until you publish it yourself.
+
+= Is it safe to let AI change a live WordPress site? =
+
+SaddleWP is built for that. A new agent can only read. Deletes, installs and other big changes show a preview first. Every change is logged, and most can be undone. SaddleWP never runs code from the AI and cannot write files.
 
 = Can the AI delete my content? =
 
@@ -157,9 +200,29 @@ If you turn on Run without asking for an agent with Manage the site, that agent 
 
 No. Every action uses standard WordPress functions.
 
-= Does it work with ChatGPT? =
+= Can my AI agent see my WordPress analytics? =
 
-Yes. Connect through your SaddleWP account, or go to **SaddleWP → Agent setup**, open **Connect directly**, pick ChatGPT, and turn on sign-in when SaddleWP offers it. Then add your site as a connector in ChatGPT and approve it when ChatGPT sends you to your site.
+Yes, with [SaddleWP Analytics](https://wordpress.org/plugins/saddle-analytics/), the free add-on. It counts visits without cookies and keeps the data on your site. Then ask your agent for visitors, top pages, or how many people ChatGPT sent you.
+
+= How do I get my WordPress site into AI answers? =
+
+No plugin can promise a citation. [SaddleWP Rank](https://wordpress.org/plugins/saddle-rank/), the free add-on, helps AI answer engines read your site. It keeps an llms.txt, lets you choose whether AI answer engines and AI training crawlers may read it, and scores each page on how easy it is to quote.
+
+= Does SaddleWP work with Yoast SEO or Rank Math? =
+
+Yes. Your AI agent can read and edit SEO titles and descriptions through Yoast SEO, Rank Math or All in One SEO. SaddleWP Rank does the same and adds redirects, broken link fixes and llms.txt.
+
+= Do I need an account? =
+
+No. You can connect your AI agent straight to your site, free and with no account. A SaddleWP account is optional: free for one site, it gives your agents one address for all your sites.
+
+= Does my content go through your servers? =
+
+Not when your AI agent connects directly. If you connect through your SaddleWP account, your agent's calls and your site's answers pass through `cloud.saddle.to`, and your site still decides each call. SaddleWP sends no usage data unless you choose to share it on SaddleWP's Overview.
+
+= Can I try SaddleWP before installing it? =
+
+Yes. Click Live Preview on this page. You can explore every screen. To connect an AI agent, install SaddleWP on a real site, because the preview runs only in your browser.
 
 = Does it work with page builders? =
 
