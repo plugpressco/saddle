@@ -18,6 +18,8 @@ SaddleWP is a free MCP server for WordPress. It runs on your own site. Connect C
 
 [SaddleWP website](https://saddle.to) · [Docs](https://saddle.to/docs/) · [Live demo](https://demo.saddle.to/) · [Plans](https://saddle.to/pricing/) · [PlugPress](https://plugpress.io)
 
+[youtube https://youtu.be/Na2ELrfnPJ8]
+
 = What is SaddleWP? =
 SaddleWP is a free core plugin with add-ons. Each part does one job.
 
