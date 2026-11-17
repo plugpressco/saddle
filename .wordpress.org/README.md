@@ -4,26 +4,21 @@ These files are for the WordPress.org plugin directory's SVN `assets/` folder
 (the sibling of `trunk/`) — they are NOT shipped inside the plugin zip
 (excluded in Gruntfile.js).
 
-- `icon.svg`: the white brand mark (`assets/brand/mark.svg`) on Saddle magenta
-  `#d000c4`, full bleed (2026-10-23; was ink on transparent).
-- `icon-128x128.png` / `icon-256x256.png`: rendered from `icon.svg`:
+- `icon.svg`: the social profile icon (`docs/brand/saddle-social-icon.svg`,
+  Fahim's set of 2026-11-13): the white arch of the mark on Saddle magenta
+  `#d000c4`, full bleed. `icon-128x128.png` / `icon-256x256.png` are rendered
+  from it:
 
       rsvg-convert -w 256 -h 256 icon.svg -o icon-256x256.png
       rsvg-convert -w 128 -h 128 icon.svg -o icon-128x128.png
 
-- `banner-772x250.png` / `banner-1544x500.png`: a flat, minimal banner
-  (2026-11-17): ink background, the magenta mark and "SaddleWP", the line
-  "Build, rank and grow your website with AI.", and three Build / Rank / Grow
-  rows with a sun yellow dot. No gradients, no app logos. **Generated, do not
-  hand-edit the PNGs.** Built by `docs/brand/build.py` (the whole brand kit comes from it); `src/banner.svg` is its output. To re-render both sizes only:
-
-      cd .wordpress.org
-      rsvg-convert -w 1544 -h 500 src/banner.svg -o banner-1544x500.png
-      rsvg-convert -w  772 -h 250 src/banner.svg -o banner-772x250.png
-
-  (`brew install librsvg`. The first cut of this art was rendered from a
-  scratchpad SVG that was never committed and had to be rebuilt from the PNG
-  during the WP.org round-1 fixes — hence the source lives here now.)
+- `banner-772x250.png` / `banner-1544x500.png`: cut from the brand kit's X
+  cover (`docs/brand/saddle-cover-x-1500x500.png`): the SaddleWP name, the line
+  "Build, rank and grow your website with AI." and the magenta sun over the
+  pixel hills. The 1544 version scales the cover to width (nearest neighbour,
+  so the dots stay crisp) and crops the height; the 772 version halves it.
+  **Generated, do not hand-edit the PNGs.** Change the cover in `docs/brand/`
+  and cut both again.
 
 ⚠️ The banner tagline must not contain "WordPress". Listing graphics fall under
 the same trademark rule as the plugin name — the round-1 review called out
