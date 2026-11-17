@@ -15,7 +15,7 @@ These files are for the WordPress.org plugin directory's SVN `assets/` folder
   (2026-11-17): ink background, the magenta mark and "SaddleWP", the line
   "Build, rank and grow your website with AI.", and three Build / Rank / Grow
   rows with a sun yellow dot. No gradients, no app logos. **Generated, do not
-  hand-edit the PNGs.** Source is `src/banner.svg`; re-render both sizes with:
+  hand-edit the PNGs.** Built by `docs/brand/build.py` (the whole brand kit comes from it); `src/banner.svg` is its output. To re-render both sizes only:
 
       cd .wordpress.org
       rsvg-convert -w 1544 -h 500 src/banner.svg -o banner-1544x500.png
