@@ -70,6 +70,7 @@ class PlugPress_Insight {
 		add_action( self::CRON, array( __CLASS__, 'weekly' ) );
 		if ( is_admin() ) {
 			add_action( 'admin_init', array( __CLASS__, 'schedule' ) );
+			add_action( 'admin_menu', array( __CLASS__, 'menu' ), 99 );
 			// Priority 0: before hosts that fold notices away, such as Saddle.
 			add_action( 'admin_notices', array( __CLASS__, 'bar' ), 0 );
 			add_action( 'admin_footer', array( __CLASS__, 'dialog' ) );
@@ -188,6 +189,90 @@ class PlugPress_Insight {
 	}
 
 	/**
+	 * The one PlugPress page, shared by every PlugPress plugin on the site.
+	 * Only the newest copy of the SDK runs, so it is added once. It makes no
+	 * request: the text is in the SDK.
+	 */
+	public static function menu() {
+		// Another plugin already took the address: leave it alone.
+		if ( ! empty( $GLOBALS['admin_page_hooks']['plugpress'] ) ) {
+			return;
+		}
+		add_menu_page(
+			__( 'PlugPress', 'saddle' ),
+			__( 'PlugPress', 'saddle' ),
+			'manage_options',
+			'plugpress',
+			array( __CLASS__, 'about' ),
+			'dashicons-admin-plugins',
+			81
+		);
+	}
+
+	/**
+	 * The page: who PlugPress is, the PlugPress plugins on this site, where to
+	 * get help, and the site info switch.
+	 */
+	public static function about() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+		$state  = self::state();
+		$brands = array_keys( self::brands() );
+		$brand  = $brands ? reset( $brands ) : '';
+		$rows   = self::$products;
+		usort(
+			$rows,
+			static function ( $a, $b ) {
+				return strcasecmp( $a['name'], $b['name'] );
+			}
+		);
+		$links = array(
+			'https://plugpress.io/'         => __( 'Website', 'saddle' ),
+			'https://plugpress.io/docs/'    => __( 'Documentation', 'saddle' ),
+			'https://plugpress.io/support/' => __( 'Support', 'saddle' ),
+			'https://plugpress.io/privacy/' => __( 'Privacy policy', 'saddle' ),
+		);
+		?>
+		<div class="wrap plugpress-insight-about">
+			<h1><?php esc_html_e( 'PlugPress', 'saddle' ); ?></h1>
+			<p><?php esc_html_e( 'PlugPress makes WordPress plugins. This page lists the ones on this site and where to get help.', 'saddle' ); ?></p>
+
+			<h2><?php esc_html_e( 'Your PlugPress plugins', 'saddle' ); ?></h2>
+			<table class="widefat striped plugpress-insight-about__plugins">
+				<thead><tr><th><?php esc_html_e( 'Plugin', 'saddle' ); ?></th><th><?php esc_html_e( 'Version', 'saddle' ); ?></th></tr></thead>
+				<tbody>
+				<?php foreach ( $rows as $plugin ) : ?>
+					<tr><td><?php echo esc_html( $plugin['name'] ); ?></td><td><?php echo esc_html( $plugin['version'] ); ?></td></tr>
+				<?php endforeach; ?>
+				</tbody>
+			</table>
+
+			<h2><?php esc_html_e( 'Help', 'saddle' ); ?></h2>
+			<p>
+				<?php
+				$last = array_key_last( $links );
+				foreach ( $links as $url => $label ) {
+					echo '<a href="' . esc_url( $url ) . '" target="_blank" rel="noopener">' . esc_html( $label ) . '</a>' . ( $url === $last ? '' : ' &middot; ' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above.
+				}
+				?>
+			</p>
+
+			<h2><?php esc_html_e( 'Site info', 'saddle' ); ?></h2>
+			<?php if ( true === $state['usage'] ) : ?>
+				<p><?php esc_html_e( 'You share basic site info with PlugPress: your name and email, the site address and title, and the versions of WordPress, PHP, your theme and your plugins. No posts and no visitor data. It is sent once a week, only when something changed.', 'saddle' ); ?></p>
+				<p><button type="button" class="button" data-plugpress-do="off"><?php esc_html_e( 'Stop sharing', 'saddle' ); ?></button></p>
+			<?php else : ?>
+				<p><?php esc_html_e( 'Nothing is shared with PlugPress. If you allow it, PlugPress gets your name and email, the site address and title, and the versions of WordPress, PHP, your theme and your plugins, to give better support. No posts and no visitor data.', 'saddle' ); ?></p>
+				<?php if ( $brand ) : ?>
+					<p><button type="button" class="button button-primary" data-plugpress-do="allow" data-plugpress-product="<?php echo esc_attr( $brand ); ?>"><?php esc_html_e( 'Allow', 'saddle' ); ?></button></p>
+				<?php endif; ?>
+			<?php endif; ?>
+		</div>
+		<?php
+	}
+
+	/**
 	 * Feedback on Deactivate, printed once on the Plugins screen, before the
 	 * footer scripts. The script opens it from a registered plugin's
 	 * Deactivate link.
@@ -250,7 +335,8 @@ class PlugPress_Insight {
 	public static function assets() {
 		$screen  = get_current_screen();
 		$plugins = $screen && 'plugins' === $screen->id && current_user_can( 'activate_plugins' );
-		if ( ! $plugins && ! self::product_on_screen() ) {
+		$about   = $screen && 'toplevel_page_plugpress' === $screen->id;
+		if ( ! $plugins && ! $about && ! self::product_on_screen() ) {
 			return;
 		}
 		$file    = $GLOBALS['plugpress_insight_sdk']['dir'] . '/class-plugpress-insight.php';
