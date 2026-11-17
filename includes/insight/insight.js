@@ -117,6 +117,14 @@
 		} );
 	} );
 
+	// The PlugPress page: Allow and Stop sharing, then the page loads again.
+	document.querySelectorAll( '[data-plugpress-do]' ).forEach( ( button ) => {
+		button.addEventListener( 'click', () => {
+			button.disabled = true;
+			post( { do: button.dataset.plugpressDo, product: button.dataset.plugpressProduct || '' } ).finally( () => window.location.reload() );
+		} );
+	} );
+
 	// Feedback, from each registered plugin's Deactivate link.
 	const dialog = document.querySelector( '.plugpress-insight-dialog' );
 	if ( ! dialog ) {
