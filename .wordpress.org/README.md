@@ -11,11 +11,11 @@ These files are for the WordPress.org plugin directory's SVN `assets/` folder
       rsvg-convert -w 256 -h 256 icon.svg -o icon-256x256.png
       rsvg-convert -w 128 -h 128 icon.svg -o icon-128x128.png
 
-- `banner-772x250.png` / `banner-1544x500.png`: a light, minimal banner
-  (2026-10-23): the magenta mark and "Saddle", one line on what it does, and
-  one "Needs your OK" card with Reject and Approve. No app logos. **Generated,
-  do not hand-edit the PNGs.** Source is `src/banner.svg`; re-render both
-  sizes with:
+- `banner-772x250.png` / `banner-1544x500.png`: a flat, minimal banner
+  (2026-11-17): ink background, the magenta mark and "SaddleWP", the line
+  "Build, rank and grow your website with AI.", and three Build / Rank / Grow
+  rows with a sun yellow dot. No gradients, no app logos. **Generated, do not
+  hand-edit the PNGs.** Source is `src/banner.svg`; re-render both sizes with:
 
       cd .wordpress.org
       rsvg-convert -w 1544 -h 500 src/banner.svg -o banner-1544x500.png
@@ -27,8 +27,8 @@ These files are for the WordPress.org plugin directory's SVN `assets/` folder
 
 ⚠️ The banner tagline must not contain "WordPress". Listing graphics fall under
 the same trademark rule as the plugin name — the round-1 review called out
-"graphic resources such as this plugin icons and banners" explicitly. It now
-reads "Let your AI work on your live site without handing it the keys."
+"graphic resources such as this plugin icons and banners" explicitly. The banner
+text is "Build, rank and grow your website with AI."
 
 After the plugin is approved these are synced to SVN `assets/` automatically by
 `.github/workflows/release.yml` on every real release tag (#176). Only
