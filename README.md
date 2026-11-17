@@ -7,6 +7,7 @@ Saddle connects AI agents to your WordPress site through MCP. Your AI can read a
 - **Download:** [WordPress.org](https://wordpress.org/plugins/saddle/)
 - **License:** GPL-2.0-or-later
 - **Author:** [PlugPress](https://plugpress.io/)
+- **Video:** [Watch SaddleWP in action](https://youtu.be/Na2ELrfnPJ8)
 
 ## Who it is for
 
