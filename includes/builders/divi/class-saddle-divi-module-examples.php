@@ -182,36 +182,46 @@ class Saddle_Divi_Module_Examples {
 	 * @return WP_Post[]
 	 */
 	private static function candidates( $type, $exclude ) {
-		$query = new WP_Query(
-			array(
-				'post_type'           => Saddle_Divi::post_types(),
-				'post_status'         => 'publish',
-				's'                   => '<!-- wp:' . $type,
-				'sentence'            => true,
-				'search_columns'      => array( 'post_content' ),
-				'orderby'             => 'modified',
-				'order'               => 'DESC',
-				'posts_per_page'      => self::CANDIDATES,
-				'post__not_in'        => $exclude > 0 ? array( $exclude ) : array(),
-				'no_found_rows'       => true,
-				'ignore_sticky_posts' => true,
-			)
-		);
-		return array_filter(
-			$query->posts,
-			static function ( $post ) {
-				return $post instanceof WP_Post;
-			}
-		);
+		$ids = self::candidate_ids( Saddle_Divi::post_types(), '<!-- wp:' . $type, self::CANDIDATES, $exclude );
+		_prime_post_caches( $ids, false, false );
+		return array_values( array_filter( array_map( 'get_post', $ids ) ) );
 	}
 
 	/**
-	 * Whether the calling account may see this post's layout.
+	 * Ids of published posts of these types whose content holds $needle,
+	 * newest first. A direct query, not a WP_Query search, so a search
+	 * plugin or a snippet that keeps pages out of search cannot change what
+	 * is found. Also used by Saddle_Divi_Site_Style.
+	 *
+	 * @param string[] $types   Post types.
+	 * @param string   $needle  Text the content must hold.
+	 * @param int      $limit   Ids at most.
+	 * @param int      $exclude A post to leave out (0 for none).
+	 * @return int[]
+	 */
+	public static function candidate_ids( array $types, $needle, $limit, $exclude = 0 ) {
+		global $wpdb;
+		$types = array_values( array_filter( array_map( 'strval', $types ) ) );
+		if ( ! $types ) {
+			return array();
+		}
+		$in  = implode( ', ', array_fill( 0, count( $types ), '%s' ) );
+		$sql = "SELECT ID FROM %i WHERE post_type IN ($in) AND post_status = %s AND post_content LIKE %s AND ID <> %d ORDER BY post_modified_gmt DESC LIMIT %d";
+		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- $in is only "%s" placeholders, one per type, filled by prepare().
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Ids only; the callers cache what they build from them.
+		$ids = $wpdb->get_col( $wpdb->prepare( $sql, array_merge( array( $wpdb->posts ), $types, array( 'publish', '%' . $wpdb->esc_like( $needle ) . '%', (int) $exclude, (int) $limit ) ) ) );
+		// phpcs:enable
+		return array_map( 'intval', (array) $ids );
+	}
+
+	/**
+	 * Whether the calling account may see this post's layout. Also used by
+	 * Saddle_Divi_Site_Style.
 	 *
 	 * @param WP_Post $post Post.
 	 * @return bool
 	 */
-	private static function readable( WP_Post $post ) {
+	public static function readable( WP_Post $post ) {
 		if ( current_user_can( 'edit_post', $post->ID ) ) {
 			return true;
 		}

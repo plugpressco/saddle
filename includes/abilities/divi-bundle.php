@@ -19,7 +19,7 @@ function saddle_register_divi_bundle_abilities() {
 		'saddle/divi-context-bundle',
 		array(
 			'label'               => __( 'Get the Divi context bundle', 'saddle' ),
-			'description'         => __( 'Returns this site\'s whole Divi working memory in ONE call: the module catalog in short form (each module\'s type, title and group, and what a container holds, with installed module packs), the design system (global colors, variables, presets, fonts), the site\'s brand basics, and the authoring conventions. Call this ONCE at the start of a session instead of divi-list-global-colors + divi-list-variables + divi-get-global-fonts separately; call divi-list-modules when you need each module\'s purpose or a search. Cached and cheap; the "version" changes when anything in it does. Read-only.', 'saddle' ),
+			'description'         => __( 'Returns this site\'s whole Divi working memory in ONE call: the module catalog in short form (each module\'s type, title and group, and what a container holds, with installed module packs), the design system (global colors, variables, presets, fonts), the site\'s brand basics, the authoring conventions, and "site_style": how the site\'s own pages are styled (the colors, section padding, type sizes, fonts, buttons, cards and presets they use most, each with a count and its global color token), from up to 6 published pages you can read. Call this ONCE at the start of a session instead of divi-list-global-colors + divi-list-variables + divi-get-global-fonts separately; call divi-list-modules when you need each module\'s purpose or a search, and divi-get-site-style for longer style lists. The catalog, design system and conventions are cached, and the "version" changes when anything in them changes. "site_style" is not part of the version: it is cached for up to 12 hours, and the cache resets when a Divi page is saved, the global colors change, or Divi or SaddleWP is updated. Read-only.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -28,6 +28,27 @@ function saddle_register_divi_bundle_abilities() {
 			),
 			'execute_callback'    => array( 'Saddle_Divi_Bundle_Abilities', 'context_bundle' ),
 			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'divi-context-bundle' ),
+			'meta'                => saddle_ability_meta( true, false, true, 'read' ),
+		)
+	);
+
+	// The tool gate is read; each page read is then checked for the caller
+	// in the callback (Saddle_Divi_Module_Examples::readable()): read_post,
+	// edit_post for a type visitors cannot view, and a password is never
+	// bypassed.
+	saddle_register_ability_once(
+		'saddle/divi-get-site-style',
+		array(
+			'label'               => __( 'Get the Divi site style', 'saddle' ),
+			'description'         => __( 'Returns how this site\'s own Divi pages are styled, read from up to 6 published Divi pages you can read (the front page first, then the most recently edited): the colors used for section backgrounds, card backgrounds (groups and columns that read as cards), other module and column backgrounds (this tool only, not the bundle), headings, body text, button fills and button text; section padding (top and bottom) and row width; heading sizes per level and body size; fonts and weights; button radius, padding and whether hover changes them; card radius, shadow and padding; and the presets used most, with their names. Each list gives the values most used first, with how many times each is used. "tokens" names the global color a color matches, so you write the token instead of the hex. "default" means nothing is set, so Divi\'s own value shows. A "@phone" list appears when phones get different values from desktop. A value set only through a preset is not read; the presets are counted instead. Use it before designing a page, so the page matches the site; then read one page with divi-get-page only if you need more. divi-context-bundle carries the same summary with shorter lists. Cached for up to 12 hours; the cache resets when a Divi page is saved, the global colors change, or Divi or SaddleWP is updated. Read-only.', 'saddle' ),
+			'category'            => 'saddle',
+			'input_schema'        => array(
+				'type'       => 'object',
+				'default'    => (object) array(),
+				'properties' => array(),
+			),
+			'execute_callback'    => array( 'Saddle_Divi_Site_Style', 'tool' ),
+			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'divi-get-site-style' ),
 			'meta'                => saddle_ability_meta( true, false, true, 'read' ),
 		)
 	);
@@ -47,6 +68,10 @@ class Saddle_Divi_Bundle_Abilities {
 		if ( ! Saddle_Divi::is_active() ) {
 			return new WP_Error( 'saddle_no_divi', __( 'Divi 5 is not active on this site.', 'saddle' ) );
 		}
-		return Saddle_Divi_Bundle::get();
+		// The bundle's cache is shared by every account; the style summary
+		// depends on the pages this account may read, so it is added here.
+		$bundle               = Saddle_Divi_Bundle::get();
+		$bundle['site_style'] = Saddle_Divi_Site_Style::for_bundle();
+		return $bundle;
 	}
 }
