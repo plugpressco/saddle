@@ -91,6 +91,9 @@ function saddle_autoload_agent_classes( $class_name ) {
 			'Saddle_Divi_Interactions'             => 'includes/builders/divi/class-saddle-divi-interactions.php',
 			'Saddle_Divi_Rendered_Page'            => 'includes/builders/divi/class-saddle-divi-rendered-page.php',
 			'Saddle_Divi_Module_Examples'          => 'includes/builders/divi/class-saddle-divi-module-examples.php',
+			'Saddle_Divi_Site_Style'               => 'includes/builders/divi/class-saddle-divi-site-style.php',
+			'Saddle_Divi_Style_Tally'              => 'includes/builders/divi/class-saddle-divi-style-tally.php',
+			'Saddle_Divi_Style_Values'             => 'includes/builders/divi/class-saddle-divi-style-values.php',
 			'Saddle_Lint_Rule_One_Main_Action'     => 'includes/lint/rules/class-rule-one-main-action.php',
 			'Saddle_Lint_Rule_Font_Families'       => 'includes/lint/rules/class-rule-font-families.php',
 			'Saddle_Lint_Rule_Button_Hover'        => 'includes/lint/rules/class-rule-button-hover.php',
@@ -375,6 +378,10 @@ final class Saddle {
 		add_action( 'upgrader_process_complete', array( 'Saddle_Divi_Schema', 'flush_index' ) );
 		add_action( 'saddle_flush_cache', array( 'Saddle_Divi_Schema', 'flush_index' ) );
 		add_action( 'saddle_flush_cache', array( 'Saddle_Divi_Bundle', 'flush' ) );
+		// The site style summary is keyed by the pages it read, so it never
+		// serves a stale set; a saved Divi page clears it all the same.
+		add_action( 'save_post', array( 'Saddle_Divi_Site_Style', 'saved' ), 10, 2 );
+		add_action( 'saddle_flush_cache', array( 'Saddle_Divi_Site_Style', 'flush' ) );
 
 		// OAuth 2.1 authorization server. Off by default; Saddle_OAuth::register()
 		// wires only the bearer resolver and the 401 challenge until the owner

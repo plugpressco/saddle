@@ -206,12 +206,13 @@ class Saddle_Divi_Module_Examples {
 	}
 
 	/**
-	 * Whether the calling account may see this post's layout.
+	 * Whether the calling account may see this post's layout. Also used by
+	 * Saddle_Divi_Site_Style.
 	 *
 	 * @param WP_Post $post Post.
 	 * @return bool
 	 */
-	private static function readable( WP_Post $post ) {
+	public static function readable( WP_Post $post ) {
 		if ( current_user_can( 'edit_post', $post->ID ) ) {
 			return true;
 		}

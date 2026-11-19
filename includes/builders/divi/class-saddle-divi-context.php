@@ -180,7 +180,7 @@ class Saddle_Divi_Context {
 			$skills,
 			array(
 				'name'        => 'divi-build-page',
-				'description' => __( 'Build or edit a Divi 5 page with the saddle/divi-* tools: study the site\'s best page and presets first, find modules and their settings, the node format (fields, settings, attrs, columns, @phone and :hover), a responsive pass, then verify-page, the rendered HTML and real pixels, with a worked example.', 'saddle' ),
+				'description' => __( 'Build or edit a Divi 5 page with the saddle/divi-* tools: study the site\'s style (site_style) and its presets first, find modules and their settings, the node format (fields, settings, attrs, columns, @phone and :hover), a responsive pass, then verify-page, the rendered HTML and real pixels, with a worked example.', 'saddle' ),
 				'when_to_use' => __( 'creating, rebuilding, restyling or editing any page on this Divi site, or a new page for it', 'saddle' ),
 				'source'      => 'saddle',
 				'body'        => self::divi_skill_body(),
@@ -259,7 +259,7 @@ class Saddle_Divi_Context {
 		);
 
 		if ( class_exists( 'Saddle_Skills' ) ) {
-			$lines[] = '- ' . __( 'Before building or editing a Divi page, read the divi-build-page skill (saddle/get-skill name=divi-build-page): study the site\'s best page and its presets first, then build, check and look.', 'saddle' );
+			$lines[] = '- ' . __( 'Before building or editing a Divi page, read the divi-build-page skill (saddle/get-skill name=divi-build-page): study the site\'s style (site_style) and its presets first, then build, check and look.', 'saddle' );
 		} else {
 			$lines[] = '- ' . __( 'Call saddle/divi-check-setup before editing, saddle/divi-get-page for the addressable module tree, divi-get-module-schema before composing an unfamiliar module, and re-read the page after every structural change (addresses shift).', 'saddle' );
 		}
