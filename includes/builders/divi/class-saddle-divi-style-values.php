@@ -30,6 +30,12 @@ class Saddle_Divi_Style_Values {
 	const LEVELS = array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' );
 
 	/**
+	 * What a counted color may look like: hex, rgb(a), hsl(a), a CSS
+	 * variable or a color keyword. Anything else is not counted.
+	 */
+	const COLOR = '/^(#[0-9a-f]{3,8}|(rgba?|hsla?)\([^()]{1,60}\)|var\(--[a-z0-9_-]{1,80}\)|[a-z]{3,30})$/i';
+
+	/**
 	 * A node's attr envelopes by element name.
 	 *
 	 * @param array $node Raw block array.
@@ -147,7 +153,8 @@ class Saddle_Divi_Style_Values {
 	 * A stored color as [value, token]: the value resolved through the
 	 * site's palette and normalized, and the global color token when it was
 	 * written as one (null otherwise, and for a shifted global color, which
-	 * is not the token itself). Null for no color.
+	 * is not the token itself). Null for no color, or one that does not
+	 * look like a color (COLOR).
 	 *
 	 * @param mixed $color Color as stored.
 	 * @return array|null
@@ -164,7 +171,47 @@ class Saddle_Divi_Style_Values {
 		}
 		$value = $this->resolve_global_color( $color );
 		$value = $value === $color && null !== $token ? $token : self::normal( $value );
-		return array( $value, $token );
+		return preg_match( self::COLOR, $value ) ? array( $value, $token ) : null;
+	}
+
+	/**
+	 * The site's global colors as value => token, each value written the
+	 * way color() writes it; the first global color wins a shared value.
+	 *
+	 * @param array<string,string>|null $colors Saddle_Divi_Tokens::global_colors().
+	 * @return array<string,string>
+	 */
+	public static function palette( $colors ) {
+		$colors  = (array) $colors;
+		$palette = array();
+		foreach ( $colors as $id => $value ) {
+			$hex = self::normal( (string) Saddle_Divi_Tokens::resolve_color( $value, $colors ) );
+			if ( ! isset( $palette[ $hex ] ) ) {
+				$palette[ $hex ] = Saddle_Divi::css_var( $id );
+			}
+		}
+		return $palette;
+	}
+
+	/**
+	 * Each stored preset's name and what it styles (a module type or an
+	 * option group), by id; empty when Divi's preset data cannot be read.
+	 *
+	 * @return array<string,array>
+	 */
+	public static function preset_names() {
+		if ( ! class_exists( 'Saddle_Divi_Design' ) || ! class_exists( Saddle_Divi_Tokens::GLOBAL_PRESET ) ) {
+			return array();
+		}
+		$data  = Saddle_Divi_Design::deep_array( call_user_func( array( Saddle_Divi_Tokens::GLOBAL_PRESET, 'get_data' ) ) );
+		$names = array();
+		foreach ( Saddle_Divi_Design::presets_from( is_array( $data ) ? $data : array(), array( 'kind' => 'all' ) )['presets'] as $row ) {
+			$names[ $row['id'] ] = array(
+				'name' => $row['name'],
+				'for'  => 'module' === $row['kind'] ? $row['module'] : $row['group_name'],
+			);
+		}
+		return $names;
 	}
 
 	/**

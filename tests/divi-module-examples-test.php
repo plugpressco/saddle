@@ -15,6 +15,8 @@ class Saddle_Divi_Module_Examples_Test extends WP_UnitTestCase {
 
 	public function tear_down() {
 		remove_filter( 'saddle_divi_active', '__return_true' );
+		remove_all_actions( 'pre_get_posts' );
+		remove_all_filters( 'posts_search' );
 		Saddle_Capabilities::set_tier( 'read' );
 		parent::tear_down();
 	}
@@ -202,6 +204,22 @@ class Saddle_Divi_Module_Examples_Test extends WP_UnitTestCase {
 		$this->assertSame( array(), $result['examples'] );
 		$this->assertSame( 0, $result['uses'] );
 		$this->assertStringContainsString( 'divi-get-module-schema', $result['note'] );
+	}
+
+	public function test_a_search_filter_cannot_hide_the_pages() {
+		$id = $this->page( array( $this->flip( 'Found' ) ) );
+		// A common snippet: keep pages out of search results.
+		add_action(
+			'pre_get_posts',
+			static function ( $query ) {
+				if ( $query->is_search() ) {
+					$query->set( 'post_type', 'post' );
+				}
+			}
+		);
+		add_filter( 'posts_search', '__return_empty_string' );
+
+		$this->assertSame( array( $id ), wp_list_pluck( $this->find( array( 'type' => 'divitorque/flip-box' ) )['examples'], 'post_id' ) );
 	}
 
 	public function test_a_type_must_name_its_namespace() {

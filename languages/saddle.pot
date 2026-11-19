@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-19T23:15:48+00:00\n"
+"POT-Creation-Date: 2026-11-19T23:44:37+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -1562,7 +1562,7 @@ msgid "Get the Divi context bundle"
 msgstr ""
 
 #: includes/abilities/divi-bundle.php:22
-msgid "Returns this site's whole Divi working memory in ONE call: the module catalog in short form (each module's type, title and group, and what a container holds, with installed module packs), the design system (global colors, variables, presets, fonts), the site's brand basics, the authoring conventions, and \"site_style\": how the site's own pages are styled (the colors, section padding, type sizes, fonts, buttons, cards and presets they use most, each with a count and its global color token), from up to 6 published pages you can read. Call this ONCE at the start of a session instead of divi-list-global-colors + divi-list-variables + divi-get-global-fonts separately; call divi-list-modules when you need each module's purpose or a search, and divi-get-site-style for longer style lists. Cached and cheap; the \"version\" changes when anything but \"site_style\" does. Read-only."
+msgid "Returns this site's whole Divi working memory in ONE call: the module catalog in short form (each module's type, title and group, and what a container holds, with installed module packs), the design system (global colors, variables, presets, fonts), the site's brand basics, the authoring conventions, and \"site_style\": how the site's own pages are styled (the colors, section padding, type sizes, fonts, buttons, cards and presets they use most, each with a count and its global color token), from up to 6 published pages you can read. Call this ONCE at the start of a session instead of divi-list-global-colors + divi-list-variables + divi-get-global-fonts separately; call divi-list-modules when you need each module's purpose or a search, and divi-get-site-style for longer style lists. The catalog, design system and conventions are cached, and the \"version\" changes when anything in them changes. \"site_style\" is not part of the version: it is cached for up to 12 hours, and the cache resets when a Divi page is saved, the global colors change, or Divi or SaddleWP is updated. Read-only."
 msgstr ""
 
 #: includes/abilities/divi-bundle.php:42
@@ -1570,13 +1570,13 @@ msgid "Get the Divi site style"
 msgstr ""
 
 #: includes/abilities/divi-bundle.php:43
-msgid "Returns how this site's own Divi pages are styled, read from up to 6 published Divi pages you can read (the front page first, then the most recently edited): the colors used for section backgrounds, card backgrounds, headings, body text, button fills and button text; section padding (top and bottom) and row width; heading sizes per level and body size; fonts and weights; button radius, padding and whether hover changes them; card radius, shadow and padding; and the presets used most, with their names. Each list gives the values most used first, with how many times each is used. \"tokens\" names the global color a color matches, so you write the token instead of the hex. \"default\" means nothing is set, so Divi's own value shows. A \"@phone\" list appears when phones get other values than desktop. A value set only through a preset is not read; the presets are counted instead. Use it before designing a page, so the page matches the site; then read one page with divi-get-page only if you need more. divi-context-bundle carries the same summary with shorter lists. Cached until a Divi page is saved. Read-only."
+msgid "Returns how this site's own Divi pages are styled, read from up to 6 published Divi pages you can read (the front page first, then the most recently edited): the colors used for section backgrounds, card backgrounds (groups and columns that read as cards), other module and column backgrounds (this tool only, not the bundle), headings, body text, button fills and button text; section padding (top and bottom) and row width; heading sizes per level and body size; fonts and weights; button radius, padding and whether hover changes them; card radius, shadow and padding; and the presets used most, with their names. Each list gives the values most used first, with how many times each is used. \"tokens\" names the global color a color matches, so you write the token instead of the hex. \"default\" means nothing is set, so Divi's own value shows. A \"@phone\" list appears when phones get different values from desktop. A value set only through a preset is not read; the presets are counted instead. Use it before designing a page, so the page matches the site; then read one page with divi-get-page only if you need more. divi-context-bundle carries the same summary with shorter lists. Cached for up to 12 hours; the cache resets when a Divi page is saved, the global colors change, or Divi or SaddleWP is updated. Read-only."
 msgstr ""
 
 #: includes/abilities/divi-bundle.php:69
 #: includes/abilities/divi-extras.php:252
 #: includes/builders/divi/class-saddle-divi-module-examples.php:61
-#: includes/builders/divi/class-saddle-divi-site-style.php:68
+#: includes/builders/divi/class-saddle-divi-site-style.php:70
 #: includes/builders/divi/class-saddle-divi.php:294
 msgid "Divi 5 is not active on this site."
 msgstr ""
@@ -6219,19 +6219,19 @@ msgstr ""
 msgid "Off"
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-site-style.php:90
+#: includes/builders/divi/class-saddle-divi-site-style.php:92
 msgid "Shortened to fit. divi-get-site-style has every list."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-site-style.php:207
+#: includes/builders/divi/class-saddle-divi-site-style.php:208
 msgid "No published Divi page this account can read was found, so there is no site style to report yet. Use the design system instead: global colors, variables, presets and fonts."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-site-style.php:242
-msgid "What this site's own Divi pages use, from the pages listed: each value with how many times it is used, most used first. \"default\" means nothing is set, so Divi's own value shows. \"tokens\" names the global color a color matches: write the token. A value set only through a preset is not read; \"presets\" lists the presets used most. A \"@phone\" list is shown only when phones get something else than desktop."
+#: includes/builders/divi/class-saddle-divi-site-style.php:252
+msgid "What this site's own Divi pages use, from the pages listed: each value with how many times it is used, most used first. \"default\" means nothing is set, so Divi's own value shows. \"tokens\" names the global color a color matches: write the token. A value set only through a preset is not read; \"presets\" lists the presets used most. A \"@phone\" list is shown only when phones get something other than desktop."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-site-style.php:243
+#: includes/builders/divi/class-saddle-divi-site-style.php:253
 msgid "Uses per value, most used first. \"default\": nothing set. Write a color as its \"tokens\" entry. divi-get-site-style has longer lists."
 msgstr ""
 
@@ -9863,7 +9863,7 @@ msgid "This persisted attribute does nothing. Rewrite it on a path the block act
 msgstr ""
 
 #. translators: %s: minimum WordPress version.
-#: saddle.php:668
+#: saddle.php:669
 #, php-format
 msgid "SaddleWP requires WordPress %s or later (the core Abilities API). The MCP server is disabled until you upgrade."
 msgstr ""

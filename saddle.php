@@ -378,9 +378,10 @@ final class Saddle {
 		add_action( 'upgrader_process_complete', array( 'Saddle_Divi_Schema', 'flush_index' ) );
 		add_action( 'saddle_flush_cache', array( 'Saddle_Divi_Schema', 'flush_index' ) );
 		add_action( 'saddle_flush_cache', array( 'Saddle_Divi_Bundle', 'flush' ) );
-		// The site style summary is keyed by the pages it read, so it never
-		// serves a stale set; a saved Divi page clears it all the same.
+		// The site style summary is keyed by the pages it read, the global
+		// colors and the versions; a saved Divi page or an update clears it.
 		add_action( 'save_post', array( 'Saddle_Divi_Site_Style', 'saved' ), 10, 2 );
+		add_action( 'upgrader_process_complete', array( 'Saddle_Divi_Site_Style', 'flush' ) );
 		add_action( 'saddle_flush_cache', array( 'Saddle_Divi_Site_Style', 'flush' ) );
 
 		// OAuth 2.1 authorization server. Off by default; Saddle_OAuth::register()

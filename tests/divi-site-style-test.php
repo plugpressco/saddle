@@ -27,6 +27,9 @@ class Saddle_Divi_Site_Style_Test extends WP_UnitTestCase {
 	public function tear_down() {
 		remove_filter( 'saddle_divi_active', '__return_true' );
 		remove_all_filters( 'saddle_divi_global_colors' );
+		remove_all_actions( 'pre_get_posts' );
+		remove_all_filters( 'posts_search' );
+		add_action( 'save_post', array( 'Saddle_Divi_Site_Style', 'saved' ), 10, 2 );
 		update_option( 'show_on_front', 'posts' );
 		Saddle_Divi_Site_Style::flush();
 		Saddle_Capabilities::set_tier( 'read' );
@@ -331,14 +334,166 @@ class Saddle_Divi_Site_Style_Test extends WP_UnitTestCase {
 	public function test_a_private_draft_or_password_page_is_never_read_for_a_reader() {
 		$this->page( array( $this->section( '#111111', array() ) ), array( 'post_status' => 'draft' ) );
 		$this->page( array( $this->section( '#222222', array() ) ), array( 'post_status' => 'private' ) );
-		$this->page( array( $this->section( '#333333', array() ) ), array( 'post_password' => 'secret' ) );
-		$open = $this->page( array( $this->section( '#444444', array() ) ) );
+		$locked = $this->page( array( $this->section( '#333333', array() ) ), array( 'post_password' => 'secret' ) );
+		$open   = $this->page( array( $this->section( '#444444', array() ) ) );
+
+		// The administrator asks first and fills the cache: they may edit the
+		// password page, so they read it.
+		$admin = $this->style();
+		$this->assertEqualsCanonicalizing( array( $locked, $open ), wp_list_pluck( $admin['pages'], 'id' ) );
+		$this->assertArrayHasKey( '#333333', self::map( $admin['colors']['section_backgrounds'] ) );
 
 		wp_set_current_user( self::factory()->user->create( array( 'role' => 'subscriber' ) ) );
 		$style = $this->style();
 
 		$this->assertSame( array( $open ), wp_list_pluck( $style['pages'], 'id' ) );
 		$this->assertSame( array( '#444444' => 1 ), self::map( $style['colors']['section_backgrounds'] ) );
+		$this->assertStringNotContainsString( '#333333', wp_json_encode( $style ), 'Nothing of the password page reaches the subscriber through the shared cache.' );
+	}
+
+	public function test_a_page_that_turns_private_drops_out_while_the_cache_is_full() {
+		remove_action( 'save_post', array( 'Saddle_Divi_Site_Style', 'saved' ), 10 );
+		$secret = $this->page( array( $this->section( '#111111', array() ) ) );
+		$this->page( array( $this->section( '#222222', array() ) ) );
+		$this->assertCount( 2, $this->style()['pages'] );
+
+		wp_update_post(
+			array(
+				'ID'          => $secret,
+				'post_status' => 'private',
+			)
+		);
+		$this->assertContains( $secret, get_transient( Saddle_Divi_Site_Style::TRANSIENT )['ids'], 'The shared candidate list still names it.' );
+
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'subscriber' ) ) );
+		$style = $this->style();
+		$this->assertSame( array( '#222222' => 1 ), self::map( $style['colors']['section_backgrounds'] ), 'Each page is checked again on every call.' );
+	}
+
+	public function test_a_palette_change_is_never_served_stale() {
+		$this->page( array( $this->section( 'var(--gcid-brand)', array() ) ) );
+		remove_all_filters( 'saddle_divi_global_colors' );
+		add_filter(
+			'saddle_divi_global_colors',
+			static function () {
+				return array( 'gcid-brand' => '#111111' );
+			}
+		);
+		$this->assertSame( array( '#111111' => 1 ), self::map( $this->style()['colors']['section_backgrounds'] ) );
+
+		remove_all_filters( 'saddle_divi_global_colors' );
+		add_filter(
+			'saddle_divi_global_colors',
+			static function () {
+				return array( 'gcid-brand' => '#222222' );
+			}
+		);
+		$style = $this->style();
+		$this->assertSame( array( '#222222' => 1 ), self::map( $style['colors']['section_backgrounds'] ) );
+		$this->assertSame( 'var(--gcid-brand)', $style['tokens']['#222222'] );
+	}
+
+	public function test_an_update_clears_the_cache() {
+		$this->page( array( $this->section( '#111111', array() ) ) );
+		$this->style();
+		$this->assertNotFalse( has_action( 'upgrader_process_complete', array( 'Saddle_Divi_Site_Style', 'flush' ) ), 'An update of Divi, SaddleWP or anything else clears it.' );
+		Saddle_Divi_Site_Style::flush();
+		$this->assertFalse( get_transient( Saddle_Divi_Site_Style::TRANSIENT ) );
+	}
+
+	public function test_module_backgrounds_are_kept_apart_from_cards() {
+		$text  = $this->block( 'divi/text', array( 'module' => array( 'decoration' => array( 'background' => self::value( array( 'color' => '#abcdef' ) ) ) ) ) );
+		$plain = $this->block( 'divi/group', array( 'module' => array( 'decoration' => array( 'background' => self::value( array( 'color' => '#fedcba' ) ) ) ) ) );
+		$face  = $this->block( 'saddletest/flip', array( 'back' => array( 'decoration' => array( 'background' => self::value( array( 'color' => '#0B0E1F' ) ) ) ) ) );
+		$this->page( array( $this->section( '', array(), array( $text, $plain, $face ) ) ) );
+
+		$style = $this->style();
+		$this->assertSame(
+			array(
+				'#abcdef' => 1,
+				'#fedcba' => 1,
+				'#0b0e1f' => 1,
+			),
+			self::map( $style['colors']['module_backgrounds'] ),
+			'A group with no radius or shadow is not a card; a flip card\'s face counts here too.'
+		);
+		$this->assertArrayNotHasKey( 'card_backgrounds', $style['colors'] );
+		$this->assertStringNotContainsString( 'module_backgrounds', wp_json_encode( Saddle_Divi_Site_Style::for_bundle() ), 'The bundle leaves module backgrounds out.' );
+	}
+
+	public function test_every_button_element_counts() {
+		$button = static function ( $color ) {
+			return array(
+				'decoration' => array(
+					'button'     => self::value( array( 'enable' => 'on' ) ),
+					'background' => self::value( array( 'color' => $color ) ),
+				),
+			);
+		};
+		$this->page(
+			array(
+				$this->section(
+					'',
+					array(),
+					array(
+						$this->block(
+							'saddletest/hero',
+							array(
+								'buttonOne'      => $button( '#111111' ),
+								'buttonTwo'      => $button( '#222222' ),
+								'readMoreButton' => $button( '#111111' ),
+							)
+						),
+					)
+				),
+			)
+		);
+
+		$style = $this->style();
+		$this->assertSame(
+			array(
+				'#111111' => 2,
+				'#222222' => 1,
+			),
+			self::map( $style['colors']['buttons'] )
+		);
+		$this->assertArrayNotHasKey( 'module_backgrounds', $style['colors'], 'A button fill is not a module background.' );
+	}
+
+	public function test_long_values_are_cut_and_junk_colors_skipped() {
+		$this->page(
+			array(
+				$this->section(
+					'not a color; background: url(x)',
+					array(),
+					array( $this->heading( 'Long', 'h2', '40px', array( 'family' => str_repeat( 'Family ', 60 ) ) ) )
+				),
+				$this->section( '#123456', array() ),
+			)
+		);
+
+		$style = $this->style();
+		$this->assertSame( array( '#123456' => 1 ), self::map( $style['colors']['section_backgrounds'] ), 'Text that is not a color is not counted.' );
+		foreach ( array_keys( self::map( $style['type']['fonts'] ) ) as $font ) {
+			$this->assertLessThanOrEqual( Saddle_Divi_Style_Tally::VALUE_MAX, mb_strlen( (string) $font ) );
+		}
+		$this->assertLessThanOrEqual( Saddle_Divi_Site_Style::BUNDLE_BYTES, strlen( wp_json_encode( Saddle_Divi_Site_Style::for_bundle() ) ) );
+	}
+
+	public function test_a_search_filter_cannot_hide_the_pages() {
+		$id = $this->page( array( $this->section( '#111111', array() ) ) );
+		// A common snippet: keep pages out of search results.
+		add_action(
+			'pre_get_posts',
+			static function ( $query ) {
+				if ( $query->is_search() ) {
+					$query->set( 'post_type', 'post' );
+				}
+			}
+		);
+		add_filter( 'posts_search', '__return_empty_string' );
+
+		$this->assertSame( array( $id ), wp_list_pluck( $this->style()['pages'], 'id' ) );
 	}
 
 	public function test_the_front_page_comes_first() {
@@ -525,9 +680,35 @@ class Saddle_Divi_Site_Style_Test extends WP_UnitTestCase {
 				$this->section(
 					'#0b0e1f',
 					array(),
-					array(
-						$this->heading( 'Long font', 'h2', '40px', array( 'family' => str_repeat( 'Very Long Family ', 100 ) ) ),
-						$this->block( 'divi/group', array( 'modulePreset' => array( 'preset-one' ) ) ),
+					array_merge(
+						// Junk sizes, each still 80 characters after the cut, on every level.
+						array_map(
+							function ( $level ) {
+								return $this->block(
+									'divi/heading',
+									array(
+										'title' => array(
+											'innerContent' => self::value( 'Heading' ),
+											'decoration'   => array(
+												'font' => array(
+													'font' => array(
+														'desktop' => array(
+															'value' => array(
+																'headingLevel' => 'h' . $level,
+																'size'         => str_repeat( 'd', 100 ),
+															),
+														),
+														'phone'   => array( 'value' => array( 'size' => str_repeat( 'p', 100 ) ) ),
+													),
+												),
+											),
+										),
+									)
+								);
+							},
+							range( 1, 6 )
+						),
+						array( $this->block( 'divi/group', array( 'modulePreset' => array( 'preset-one' ) ) ) )
 					)
 				),
 			)

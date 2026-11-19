@@ -14,11 +14,12 @@ defined( 'ABSPATH' ) || exit;
  *
  * Values are read with Saddle_Divi_Style_Values and the page check's own
  * facts (Saddle_Divi_Lint_Facts: what a section paints, what a card is,
- * whether a button is filled and changes on hover). Only values a node
- * sets itself are read: Core does not resolve what a preset sets, so
- * presets are counted by id instead. A size, padding, width or radius a
- * node leaves unset counts as "default"; an unset color or font is not
- * counted.
+ * whether a button changes on hover). Only values a node sets itself
+ * are read: Core does not resolve what a preset sets, so presets are
+ * counted by id instead. A size, padding, width or radius a node leaves
+ * unset counts as "default"; an unset color or font is not counted. Each
+ * value is cut to VALUE_MAX characters and each list to LIST_MAX values,
+ * so the counts stay small whatever a page holds.
  *
  * Shapes, from Divi 5.10.1 module.json files:
  *   background   <element>.decoration.background.<bp>.value.color
@@ -27,9 +28,12 @@ defined( 'ABSPATH' ) || exit;
  *   heading      <element>.decoration.font.font.<bp>.value.{headingLevel,size,color,family,weight},
  *                <element>.decoration.headingFont.<h1…h6>.font.<bp>.value (text modules)
  *   body text    <element>.decoration.bodyFont.body.font.<bp>.value
- *   button       button.decoration.{background,font.font,border,spacing}; a divi/button
- *                keeps its padding on module.decoration.spacing
- *   card         module.decoration.{border.radius,boxShadow.style,spacing.padding}
+ *   button       <any element named *button*>.decoration.{button.enable,background,
+ *                font.font,border,spacing}; a divi/button keeps its padding on
+ *                module.decoration.spacing
+ *   card         module.decoration.{background,border.radius,boxShadow.style,
+ *                spacing.padding} of a node Saddle_Divi_Lint_Facts::is_card() accepts;
+ *                every other background is a module background
  */
 class Saddle_Divi_Style_Tally {
 
@@ -37,6 +41,12 @@ class Saddle_Divi_Style_Tally {
 	 * The body text group, from an element's attr to the breakpoints.
 	 */
 	const BODY = array( 'decoration', 'bodyFont', 'body', 'font' );
+
+	/**
+	 * Longest value counted, in characters, and most values kept per list.
+	 */
+	const VALUE_MAX = 80;
+	const LIST_MAX  = 50;
 
 	/**
 	 * Uses by value, per fact ("<part>/<list>" as the answer shows it, and
@@ -125,14 +135,16 @@ class Saddle_Divi_Style_Tally {
 		}
 
 		$elements = $this->values->elements( $node );
+		$card     = isset( $elements['module'] ) && $this->facts->is_card( $node );
 		foreach ( $elements as $name => $attr ) {
-			if ( 'button' === (string) $name ) {
-				$this->button( $node, $attr );
-			} elseif ( ! preg_match( Saddle_Divi_Lint_Facts::SMALL_ELEMENTS, (string) $name ) ) {
-				$this->element( $type, (string) $name, $attr );
+			$name = (string) $name;
+			if ( false !== stripos( $name, 'button' ) ) {
+				$this->button( $node, $name, $attr );
+			} elseif ( ! preg_match( Saddle_Divi_Lint_Facts::SMALL_ELEMENTS, $name ) ) {
+				$this->element( $type, $name, $attr, $card && 'module' === $name );
 			}
 		}
-		if ( isset( $elements['module'] ) && $this->facts->is_card( $node ) ) {
+		if ( $card ) {
 			$this->card( $elements['module'] );
 		}
 	}
@@ -164,11 +176,12 @@ class Saddle_Divi_Style_Tally {
 	 * @param string $type Module type.
 	 * @param string $name Element name.
 	 * @param array  $attr Its attr envelope.
+	 * @param bool   $card Whether it is the module element of a card.
 	 */
-	private function element( $type, $name, array $attr ) {
+	private function element( $type, $name, array $attr, $card ) {
 		$background = $this->values->get( $attr, array( 'decoration', 'background', 'desktop', 'value', 'color' ) );
 		if ( is_string( $background ) && ! Saddle_Divi_Lint_Facts::is_transparent( $background ) ) {
-			$this->color( 'colors/card_backgrounds', $background );
+			$this->color( $card ? 'colors/card_backgrounds' : 'colors/module_backgrounds', $background );
 		}
 
 		$level = $this->values->level( $type, $name, $attr );
@@ -207,16 +220,20 @@ class Saddle_Divi_Style_Tally {
 	}
 
 	/**
-	 * A button element: fill, text color, radius, padding, hover, font.
-	 * Before Divi 5.10 a fill shows only with the button switch on
-	 * (Saddle_Divi_Lint_Facts::button_fill()); from 5.10 it always shows.
+	 * A button element (button, buttonOne, readMoreButton): fill, text
+	 * color, radius, padding, hover, font. Before Divi 5.10 a fill shows
+	 * only with the element's button switch on, as
+	 * Saddle_Divi_Lint_Facts::button_fill() reads it; from 5.10 it always
+	 * shows.
 	 *
-	 * @param array $node   Raw block array.
-	 * @param array $button The button attr envelope.
+	 * @param array  $node   Raw block array.
+	 * @param string $name   Element name.
+	 * @param array  $button The element's attr envelope.
 	 */
-	private function button( array $node, array $button ) {
+	private function button( array $node, $name, array $button ) {
 		$fill = $this->values->get( $button, array( 'decoration', 'background', 'desktop', 'value', 'color' ) );
-		$show = Saddle_Divi::button_fill_needs_switch() ? null !== $this->facts->button_fill( $node ) : is_string( $fill ) && ! Saddle_Divi_Lint_Facts::is_transparent( $fill );
+		$on   = 'on' === $this->values->get( $button, array( 'decoration', 'button', 'desktop', 'value', 'enable' ) );
+		$show = is_string( $fill ) && ! Saddle_Divi_Lint_Facts::is_transparent( $fill ) && ( $on || ! Saddle_Divi::button_fill_needs_switch() );
 		if ( $show ) {
 			$this->color( 'colors/buttons', $fill );
 		}
@@ -224,7 +241,7 @@ class Saddle_Divi_Style_Tally {
 		$this->count( 'buttons/radius', Saddle_Divi_Style_Values::corners( $this->values->get( $button, array( 'decoration', 'border', 'desktop', 'value', 'radius' ) ) ) );
 
 		$padding = $this->values->get( $button, array( 'decoration', 'spacing', 'desktop', 'value', 'padding' ) );
-		if ( null === $padding && 'divi/button' === (string) $node['blockName'] ) {
+		if ( null === $padding && 'button' === $name && 'divi/button' === (string) $node['blockName'] ) {
 			// A divi/button hides its button element's spacing (Saddle_Divi_Module_Notes).
 			$padding = $this->values->at( $node, 'module', array( 'decoration', 'spacing' ), 'padding' );
 		}
@@ -264,16 +281,21 @@ class Saddle_Divi_Style_Tally {
 	}
 
 	/**
-	 * Add one use of a value ('' adds nothing).
+	 * Add one use of a value ('' adds nothing), cut to VALUE_MAX
+	 * characters. A list already holding LIST_MAX values takes no new one.
 	 *
 	 * @param string $fact  Fact key.
 	 * @param string $value Value.
 	 */
 	private function count( $fact, $value ) {
-		$value = (string) $value;
+		$value = mb_substr( (string) $value, 0, self::VALUE_MAX );
 		if ( '' === $value ) {
 			return;
 		}
-		$this->counts[ $fact ][ $value ] = isset( $this->counts[ $fact ][ $value ] ) ? $this->counts[ $fact ][ $value ] + 1 : 1;
+		if ( isset( $this->counts[ $fact ][ $value ] ) ) {
+			++$this->counts[ $fact ][ $value ];
+		} elseif ( ! isset( $this->counts[ $fact ] ) || count( $this->counts[ $fact ] ) < self::LIST_MAX ) {
+			$this->counts[ $fact ][ $value ] = 1;
+		}
 	}
 }
