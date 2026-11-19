@@ -76,6 +76,7 @@ function saddle_autoload_agent_classes( $class_name ) {
 			'Saddle_Divi_Catalog'                  => 'includes/builders/divi/class-saddle-divi-catalog.php',
 			'Saddle_Divi_Module_Notes'             => 'includes/builders/divi/class-saddle-divi-module-notes.php',
 			'Saddle_Divi_Module_Guide'             => 'includes/builders/divi/class-saddle-divi-module-guide.php',
+			'Saddle_Divi_Node_Check'               => 'includes/builders/divi/class-saddle-divi-node-check.php',
 			'Saddle_Divi_Tokens'                   => 'includes/builders/divi/class-saddle-divi-tokens.php',
 			'Saddle_Divi_Echo_Traps'               => 'includes/builders/divi/class-saddle-divi-echo-traps.php',
 			'Saddle_Divi_Echo_Attrs'               => 'includes/builders/divi/class-saddle-divi-echo-attrs.php',

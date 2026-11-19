@@ -123,17 +123,32 @@ class Saddle_Divi_Driver implements Saddle_Builder_Driver {
 
 	/**
 	 * Every check a tree passes before it is saved, without saving it:
-	 * the loop repair every write applies (Saddle_Divi_Loop_Repair), the
-	 * structure, attrs that can be encoded, and the loop, binding and
-	 * interaction rules (Saddle_Divi_Write_Checks). persist() saves what
-	 * this returns; a module pack's guide example is checked with it too
-	 * (Saddle_Divi_Module_Notes).
+	 * structure() and the loop, binding and interaction rules
+	 * (Saddle_Divi_Write_Checks). persist() saves what this returns.
 	 *
 	 * @param array  $tree           Block tree.
 	 * @param string $stored_content The page content as stored now ('' for none).
 	 * @return array|WP_Error [repaired tree, serialized content].
 	 */
 	public static function prepare( array $tree, $stored_content = '' ) {
+		$ready = self::structure( $tree );
+		if ( is_wp_error( $ready ) ) {
+			return $ready;
+		}
+		$checked = Saddle_Divi_Write_Checks::check( (string) $stored_content, $ready[0], $ready[1] );
+		return is_wp_error( $checked ) ? $checked : $ready;
+	}
+
+	/**
+	 * The checks of prepare() that read only the tree, the same for every
+	 * account: the loop repair every write applies (Saddle_Divi_Loop_Repair),
+	 * the structure, and attrs that can be encoded. A module pack's guide
+	 * example is checked with these (Saddle_Divi_Node_Check).
+	 *
+	 * @param array $tree Block tree.
+	 * @return array|WP_Error [repaired tree, serialized content].
+	 */
+	public static function structure( array $tree ) {
 		// Every SaddleWP write to a page also saves its loops' older value
 		// shapes in the form Divi reads (Saddle_Divi_Loop_Repair::repair()).
 		list( $tree ) = Saddle_Divi_Loop::repair_tree( $tree );
@@ -142,85 +157,11 @@ class Saddle_Divi_Driver implements Saddle_Builder_Driver {
 		if ( is_wp_error( $valid ) ) {
 			return $valid;
 		}
-
 		$encoded = self::encode_error( $tree );
 		if ( is_wp_error( $encoded ) ) {
 			return $encoded;
 		}
-
-		$content = Saddle_Divi_Tree::serialize( $tree );
-		$checked = Saddle_Divi_Write_Checks::check( (string) $stored_content, $tree, $content );
-		if ( is_wp_error( $checked ) ) {
-			return $checked;
-		}
-		return array( $tree, $content );
-	}
-
-	/**
-	 * What would stop one authoring node from saving as it is, '' when
-	 * nothing: it is built the way divi-set-page builds a page (inside the
-	 * section, row and column it needs), passed through prepare(), and its
-	 * fields and style paths must be ones Divi renders (the echo a write
-	 * returns as warnings). Saves nothing.
-	 *
-	 * @param array $node Authoring node {type, fields?, settings?, attrs?, children?}.
-	 * @return string
-	 */
-	public static function check_node( array $node ) {
-		$tree = Saddle_Divi_Author::expand( array( self::in_page( $node ) ) );
-		$tree = is_wp_error( $tree ) ? $tree : self::prepare( $tree );
-		if ( is_wp_error( $tree ) ) {
-			$data  = $tree->get_error_data();
-			$first = is_array( $data ) && isset( $data['violations'][0]['problem'] ) ? ' ' . $data['violations'][0]['address'] . ': ' . $data['violations'][0]['problem'] : '';
-			return $tree->get_error_message() . $first;
-		}
-		$warnings = Saddle_Divi_Echo::check_subtree( $node, '' );
-		return $warnings ? (string) $warnings[0] : '';
-	}
-
-	/**
-	 * A node inside the page structure it needs: a module in a column, row
-	 * and section; a child module in its parent first; a full-width module
-	 * in a full-width section.
-	 *
-	 * @param array $node Authoring node with a "type".
-	 * @return array A root node.
-	 */
-	private static function in_page( array $node ) {
-		$type = trim( (string) $node['type'] );
-		if ( in_array( $type, Saddle_Divi_Tree::root_types(), true ) ) {
-			return $node;
-		}
-		$json     = Saddle_Divi_Schema::module_json( $type );
-		$category = is_array( $json ) && isset( $json['category'] ) ? (string) $json['category'] : '';
-		if ( 'fullwidth-module' === $category ) {
-			return array(
-				'type'     => 'divi/fullwidth-section',
-				'children' => array( $node ),
-			);
-		}
-		if ( 'child-module' === $category && ! empty( $json['parentName'] ) && is_string( $json['parentName'] ) ) {
-			$node = array(
-				'type'     => $json['parentName'],
-				'children' => array( $node ),
-			);
-		}
-		if ( ! in_array( $type, array( 'divi/column', 'divi/row' ), true ) ) {
-			$node = array(
-				'type'     => 'divi/column',
-				'children' => array( $node ),
-			);
-		}
-		if ( 'divi/row' !== $type ) {
-			$node = array(
-				'type'     => 'divi/row',
-				'children' => array( $node ),
-			);
-		}
-		return array(
-			'type'     => 'divi/section',
-			'children' => array( $node ),
-		);
+		return array( $tree, Saddle_Divi_Tree::serialize( $tree ) );
 	}
 
 	/**

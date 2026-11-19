@@ -14,9 +14,8 @@ defined( 'ABSPATH' ) || exit;
  *
  * Divi's own module.json files carry no description, so core modules get a
  * hand-kept one-line purpose. A module's guide (Saddle_Divi_Module_Guide)
- * gives the purpose first, and its use_when line when it has one; without
- * a guide, a module pack's line comes from its module.json "description",
- * else its title.
+ * gives purpose and use_when first; else a pack module's line comes from
+ * its module.json "description", else its title.
  */
 class Saddle_Divi_Catalog {
 
@@ -30,9 +29,8 @@ class Saddle_Divi_Catalog {
 	/**
 	 * The full catalog, sorted by type, filtered by a search when given.
 	 *
-	 * Each entry: type, title, purpose, use_when (only from a guide), group,
-	 * container, child, and children (types, or "*" for any content
-	 * module) on a container.
+	 * Each entry: type, title, purpose, use_when (guides only), group, container,
+	 * child, and children (types, or "*" for any content module) on a container.
 	 *
 	 * @param string $search Words that must all appear in the type, title,
 	 *                       purpose, use_when or group. Empty for everything.
@@ -68,11 +66,7 @@ class Saddle_Divi_Catalog {
 				'type'    => $type,
 				'title'   => $title,
 				'purpose' => $purpose,
-			);
-			if ( isset( $guide['use_when'] ) ) {
-				$entry['use_when'] = $guide['use_when'];
-			}
-			$entry += array(
+			) + ( isset( $guide['use_when'] ) ? array( 'use_when' => $guide['use_when'] ) : array() ) + array(
 				'group'     => self::group( $type, (string) $file ),
 				'container' => (bool) $children,
 				'child'     => isset( $summary['category'] ) && 'child-module' === $summary['category'],
@@ -141,8 +135,7 @@ class Saddle_Divi_Catalog {
 	}
 
 	/**
-	 * Keep the entries whose type, title, purpose, use_when or group holds
-	 * every word.
+	 * Keep the entries whose type, title, purpose, use_when or group hold every word.
 	 *
 	 * @param array[] $entries Catalog entries.
 	 * @param string  $search  Search words.

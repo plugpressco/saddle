@@ -15,12 +15,13 @@ defined( 'ABSPATH' ) || exit;
  * divi-get-module-schema the rest, and Saddle_Divi_Module_Notes merges the
  * notes with its own.
  *
- * Each guide is read once per request and cleaned here: strings trimmed to
- * one line and capped, key settings kept only when the module has them,
- * and the example checked once with the checks a write uses
- * (Saddle_Divi_Driver::check_node()). What fails is left out, never shown,
- * and with WP_DEBUG the reason goes to _doing_it_wrong(). A guide that is
- * not an array is ignored.
+ * Each guide is read once per request and cleaned here: strings joined
+ * into one line and capped, kept as text (no tag stripping: "<id>" is
+ * text the agent must read), key settings kept only when the module has
+ * them, and the example checked once with Saddle_Divi_Node_Check, the
+ * same for every account. What fails is left out, never shown, and with
+ * WP_DEBUG the reason goes to _doing_it_wrong(). A guide that is not an
+ * array is ignored.
  *
  * A class of its own, not more of Saddle_Divi_Module_Notes, because the
  * reader, its caps and its per-request caches would more than double that
@@ -210,8 +211,10 @@ class Saddle_Divi_Module_Guide {
 	}
 
 	/**
-	 * One plain line: tags and line breaks gone, cut to $max characters
-	 * with an ellipsis. '' for anything but a string.
+	 * One line of text: invalid UTF-8 dropped, lines joined, whitespace
+	 * collapsed, control characters removed, cut to $max characters with
+	 * an ellipsis. Tags stay: the text is data an agent reads, like a
+	 * skill body, never HTML a browser renders. '' for anything but a string.
 	 *
 	 * @param mixed $value Value.
 	 * @param int   $max   Characters kept.
@@ -221,7 +224,8 @@ class Saddle_Divi_Module_Guide {
 		if ( ! is_string( $value ) ) {
 			return '';
 		}
-		$value = sanitize_text_field( $value );
+		$value = wp_check_invalid_utf8( $value, true );
+		$value = trim( (string) preg_replace( '/\p{C}/u', '', (string) preg_replace( '/\s+/u', ' ', $value ) ) );
 		if ( mb_strlen( $value ) > $max ) {
 			$value = rtrim( mb_substr( $value, 0, $max - 1 ) ) . '…';
 		}
@@ -248,15 +252,15 @@ class Saddle_Divi_Module_Guide {
 			$paths   = array_values( array_intersect( $paths, array_keys( $known ) ) );
 			if ( $unknown ) {
 				/* translators: 1: module type, 2: comma-separated setting paths. */
-				self::mistake( sprintf( __( 'The guide for %1$s names key settings the module does not have, so they were left out: %2$s.', 'saddle' ), $type, implode( ', ', $unknown ) ) );
+				self::mistake( sprintf( __( 'The guide for %1$s names key settings the module does not have, so these were left out: %2$s.', 'saddle' ), $type, implode( ', ', $unknown ) ) );
 			}
 		}
 		return array_slice( $paths, 0, self::KEY_SETTINGS_MAX );
 	}
 
 	/**
-	 * The example when it is one node under EXAMPLE_BYTES that a write
-	 * would save as it is; else null, with a debug note.
+	 * The example when it is one node under EXAMPLE_BYTES that would save
+	 * and render as written; else null, with a debug note.
 	 *
 	 * @param string $type    Module type.
 	 * @param mixed  $example The guide's example.
@@ -264,17 +268,21 @@ class Saddle_Divi_Module_Guide {
 	 */
 	private static function checked( $type, $example ) {
 		if ( ! is_array( $example ) || ! isset( $example['type'] ) || ! is_string( $example['type'] ) ) {
-			$problem = __( 'it must be one node with a "type".', 'saddle' );
-		} elseif ( strlen( (string) wp_json_encode( $example ) ) > self::EXAMPLE_BYTES ) {
-			$problem = __( 'it is larger than 2 KB of JSON.', 'saddle' );
-		} else {
-			$problem = Saddle_Divi_Driver::check_node( $example );
+			/* translators: %s: module type. */
+			self::mistake( sprintf( __( 'The guide example for %s was left out because it is not one node with a "type".', 'saddle' ), $type ) );
+			return null;
 		}
+		if ( strlen( (string) wp_json_encode( $example ) ) > self::EXAMPLE_BYTES ) {
+			/* translators: %s: module type. */
+			self::mistake( sprintf( __( 'The guide example for %s was left out because it is larger than 2 KB of JSON.', 'saddle' ), $type ) );
+			return null;
+		}
+		$problem = Saddle_Divi_Node_Check::problem( $example );
 		if ( '' === $problem ) {
 			return $example;
 		}
-		/* translators: 1: module type, 2: what is wrong with the example. */
-		self::mistake( sprintf( __( 'The guide example for %1$s was left out: %2$s', 'saddle' ), $type, $problem ) );
+		/* translators: 1: module type, 2: the check's own message, one or more whole sentences. */
+		self::mistake( sprintf( __( 'The guide example for %1$s was left out because a page built from it would not save or render as written. The check says: %2$s', 'saddle' ), $type, $problem ) );
 		return null;
 	}
 

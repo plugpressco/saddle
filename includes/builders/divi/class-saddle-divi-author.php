@@ -104,6 +104,16 @@ class Saddle_Divi_Author {
 	}
 
 	/**
+	 * Put back notes saved with notes(), after an expansion that is only a
+	 * check (Saddle_Divi_Node_Check), so the next write's notes are its own.
+	 *
+	 * @param string[] $notes Notes from notes().
+	 */
+	public static function restore_notes( array $notes ) {
+		self::$notes = $notes;
+	}
+
+	/**
 	 * The nodes as the applied-vs-ignored echo should read them: "fields"
 	 * holding the plain desktop content only, and "attrs" holding every
 	 * attrs write (and suffixed field) at its canonical path. Settings are

@@ -82,6 +82,7 @@ class Saddle_Divi_Module_Guide_Test extends WP_UnitTestCase {
 					'elementType' => 'heading',
 					'settings'    => array(
 						'innerContent' => self::item( 'frontTitle.innerContent', 'divi/text' ),
+						'decoration'   => array( 'font' => array() ),
 					),
 				),
 			),
@@ -113,7 +114,6 @@ class Saddle_Divi_Module_Guide_Test extends WP_UnitTestCase {
 				'name'       => 'saddletest-pack/flips-item',
 				'title'      => 'Flip Cards Item',
 				'category'   => 'child-module',
-				'parentName' => 'saddletest-pack/flips',
 				'attributes' => array(
 					'frontTitle' => array(
 						'type'     => 'object',
@@ -302,7 +302,7 @@ class Saddle_Divi_Module_Guide_Test extends WP_UnitTestCase {
 		$schema = $this->schema( 'saddletest-pack/flip' );
 		$guide  = $schema['guide'];
 		$this->assertSame( 140, mb_strlen( $guide['purpose'] ) );
-		$this->assertStringStartsWith( 'A card that turns over. xxx', $guide['purpose'], 'Tags and line breaks are gone.' );
+		$this->assertStringStartsWith( 'A card that <b>turns</b> over. xxx', $guide['purpose'], 'Line breaks are joined; tags stay, as text.' );
 		$this->assertStringEndsWith( '…', $guide['purpose'] );
 		$this->assertSame( 160, mb_strlen( $guide['use_when'] ) );
 		$this->assertSame(
@@ -354,6 +354,32 @@ class Saddle_Divi_Module_Guide_Test extends WP_UnitTestCase {
 		$this->schema( 'saddletest-pack/flip', 'full' );
 		$this->schema( 'saddletest-pack/flip', 'full' );
 		$this->assertSame( $after_first, $checks, 'Checked once per request.' );
+	}
+
+	/**
+	 * Real module.json files name a child's parent only from the parent's
+	 * side (childrenName); none carries "parentName". The pair is committed
+	 * in tests/fixtures, so this runs in CI.
+	 */
+	public function test_a_child_found_through_its_parents_children_list_passes() {
+		remove_all_filters( 'saddle_divi_module_json_dirs' );
+		add_filter(
+			'saddle_divi_module_json_dirs',
+			static function () {
+				return array( self::$fixture_dir, __DIR__ . '/fixtures/divi/guide-pack' );
+			}
+		);
+		Saddle_Divi_Schema::index( true );
+		$child = Saddle_Divi_Schema::module_json( 'saddletest-guide/tabs-item' );
+		$this->assertArrayNotHasKey( 'parentName', $child, 'Shaped like a real module.json.' );
+
+		$node = array(
+			'type'   => 'saddletest-guide/tabs-item',
+			'fields' => array( 'title' => 'First tab' ),
+		);
+		$this->guide_for( 'saddletest-guide/tabs-item', array( 'example' => $node ) );
+
+		$this->assertSame( $node, Saddle_Divi_Module_Guide::example( 'saddletest-guide/tabs-item' ) );
 	}
 
 	public function test_a_child_module_example_is_checked_inside_its_parent() {
@@ -435,6 +461,61 @@ class Saddle_Divi_Module_Guide_Test extends WP_UnitTestCase {
 			),
 			'over 2 KB'          => array( array_merge( $node, array( 'fields' => array( 'frontTitle' => str_repeat( 'a', 2100 ) ) ) ) ),
 		);
+	}
+
+	public function test_text_in_angle_brackets_is_kept() {
+		$this->guide_for(
+			'saddletest-pack/flip',
+			array(
+				'purpose' => "A card.\n Put <p>Text</p> in the back,\tnot <id>.",
+				'notes'   => array( "Use <strong> for one word.\x07" ),
+			)
+		);
+
+		$schema = $this->schema( 'saddletest-pack/flip' );
+		$this->assertSame( 'A card. Put <p>Text</p> in the back, not <id>.', $schema['guide']['purpose'], 'Guide text is data, as a skill body is: lines joined, tags kept.' );
+		$this->assertSame( array( 'Use <strong> for one word.' ), $schema['notes'], 'A control character is removed.' );
+	}
+
+	public function test_checking_an_example_leaves_the_write_notes_alone() {
+		Saddle_Divi_Author::expand(
+			array(
+				array(
+					'type'     => 'divi/section',
+					'children' => array(
+						array(
+							'type'     => 'divi/row',
+							'children' => array( array( 'type' => 'divi/column' ), array( 'type' => 'divi/column' ) ),
+						),
+					),
+				),
+			)
+		);
+		$notes = Saddle_Divi_Author::notes();
+		$this->assertNotEmpty( $notes, 'A row with two columns and no widths gets a note.' );
+
+		$this->guide_for( 'saddletest-pack/flip', $this->flip_guide() );
+		$this->assertNotNull( Saddle_Divi_Module_Guide::example( 'saddletest-pack/flip' ) );
+
+		$this->assertSame( $notes, Saddle_Divi_Author::notes(), 'The check builds a page of its own, but the current write keeps its notes.' );
+	}
+
+	public function test_an_advisory_echo_finding_keeps_the_example() {
+		$node = $this->example_node();
+
+		$node['attrs']['frontTitle.decoration.font.font'] = array( 'family' => 'var(--gvid-heading-font)' );
+		$this->assertNotSame( array(), Saddle_Divi_Echo::check_nodes( Saddle_Divi_Author::echo_nodes( array( $node ), '0' ), '0' ), 'divi-set-page would warn: a font written as var() is an advisory finding.' );
+
+		$this->guide_for( 'saddletest-pack/flip', array( 'example' => $node ) );
+		$this->assertSame( $node, Saddle_Divi_Module_Guide::example( 'saddletest-pack/flip' ), 'Only what Divi ignores drops an example.' );
+	}
+
+	public function test_an_example_is_the_same_for_every_account() {
+		$node = array_merge( $this->example_node(), array( 'fields' => array( 'frontTitle' => Saddle_Divi_Dynamic::token( 'loop_user_username', array() ) ) ) );
+		$this->guide_for( 'saddletest-pack/flip', array( 'example' => $node ) );
+
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'subscriber' ) ) );
+		$this->assertSame( $node, Saddle_Divi_Module_Guide::example( 'saddletest-pack/flip' ), 'The account rules of a write (here: listing users) are not applied to an example.' );
 	}
 
 	/* -------- no guide -------- */
