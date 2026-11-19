@@ -90,6 +90,7 @@ function saddle_autoload_agent_classes( $class_name ) {
 			'Saddle_Divi_Text_Facts'               => 'includes/builders/divi/class-saddle-divi-text-facts.php',
 			'Saddle_Divi_Interactions'             => 'includes/builders/divi/class-saddle-divi-interactions.php',
 			'Saddle_Divi_Rendered_Page'            => 'includes/builders/divi/class-saddle-divi-rendered-page.php',
+			'Saddle_Divi_Module_Examples'          => 'includes/builders/divi/class-saddle-divi-module-examples.php',
 			'Saddle_Lint_Rule_One_Main_Action'     => 'includes/lint/rules/class-rule-one-main-action.php',
 			'Saddle_Lint_Rule_Font_Families'       => 'includes/lint/rules/class-rule-font-families.php',
 			'Saddle_Lint_Rule_Button_Hover'        => 'includes/lint/rules/class-rule-button-hover.php',

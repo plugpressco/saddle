@@ -104,6 +104,43 @@ function saddle_register_divi_extra_abilities() {
 			'meta'                => saddle_ability_meta( true, false, true, 'read' ),
 		)
 	);
+
+	// A site-wide read: the permission_callback gates the TOOL with "read",
+	// which covers every published post a visitor can open. Each post is
+	// then checked in the callback (Saddle_Divi_Module_Examples::readable()):
+	// read_post, edit_post for a type visitors cannot view (the Library),
+	// and a password is never bypassed.
+	saddle_register_ability_once(
+		'saddle/divi-find-module-examples',
+		array(
+			'label'               => __( 'Find Divi module examples', 'saddle' ),
+			'description'         => __( 'Shows how this site already uses one Divi module type: up to 5 configured examples from its own published pages, Library items included, the most configured first and each one different in its settings and styling. Each example gives the page (post_id, title, link, address), the column layout of the row it sits in, and the node as the site stores it ({type, attrs, children}), ready to pass to divi-set-page or divi-add-module with the user\'s own text. Call it before styling a module the site already uses, above all a module pack\'s, whose schema lists settings but not what a good one looks like: the owner\'s own pages do. Interactions and HTML ids are left out. "uses" and "pages" count every use seen. Only the 20 newest posts that mention the module are read. Read-only.', 'saddle' ),
+			'category'            => 'saddle',
+			'input_schema'        => array(
+				'type'       => 'object',
+				'required'   => array( 'type' ),
+				'properties' => array(
+					'type'            => array(
+						'type'        => 'string',
+						'description' => __( 'The module type with its namespace, e.g. "divi/blurb" or "divitorque/flip-box" (divi-list-modules lists them).', 'saddle' ),
+					),
+					'limit'           => array(
+						'type'        => 'integer',
+						'minimum'     => 1,
+						'maximum'     => Saddle_Divi_Module_Examples::LIMIT_MAX,
+						'description' => __( 'Examples wanted. Default 3, at most 5.', 'saddle' ),
+					),
+					'exclude_post_id' => array(
+						'type'        => 'integer',
+						'description' => __( 'Leave out this post, usually the page you are building.', 'saddle' ),
+					),
+				),
+			),
+			'execute_callback'    => array( 'Saddle_Divi_Module_Examples', 'find' ),
+			'permission_callback' => Saddle_Capabilities::permission( 'read', 'read', 'divi-find-module-examples' ),
+			'meta'                => saddle_ability_meta( true, false, true, 'read' ),
+		)
+	);
 }
 
 /**
