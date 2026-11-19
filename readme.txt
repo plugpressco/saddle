@@ -255,6 +255,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 = 1.7.7 =
 * New: Your AI agent can upload a file from your computer. It asks SaddleWP for a link that works once, for ten minutes, and sends the file to it. Before, an upload needed a public web address.
 * Changed: The Docs link in SaddleWP's header opens the guides on saddle.to.
+* Fixed: The page check no longer reports white text on a dark Divi card as unreadable. When a module paints its own inner parts, such as a flip card's faces, an accordion toggle or a pricing band, the check no longer judges its text against the section behind it.
 
 = 1.7.6 =
 * Changed: A shorter plugin page on WordPress.org. The description, the list of external services and the questions say the same in fewer words. Nothing in the plugin itself changed.
