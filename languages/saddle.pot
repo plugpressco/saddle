@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-19T21:43:40+00:00\n"
+"POT-Creation-Date: 2026-11-19T23:37:28+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -155,7 +155,7 @@ msgstr ""
 #: includes/abilities/aioseo.php:233
 #: includes/abilities/core-content.php:2390
 #: includes/abilities/divi.php:744
-#: includes/abilities/divi.php:1811
+#: includes/abilities/divi.php:1816
 #: includes/abilities/rank-math.php:244
 #: includes/abilities/rank-math.php:271
 #: includes/abilities/rank-math.php:294
@@ -554,7 +554,7 @@ msgid "Edited %1$s at %2$s on post #%3$d."
 msgstr ""
 
 #: includes/abilities/blocks.php:1200
-#: includes/abilities/divi.php:1368
+#: includes/abilities/divi.php:1373
 msgid "Provide \"from_address\"."
 msgstr ""
 
@@ -640,8 +640,8 @@ msgid "No post or page with that ID."
 msgstr ""
 
 #: includes/abilities/blocks.php:1541
-#: includes/abilities/divi.php:1614
-#: includes/abilities/divi.php:1719
+#: includes/abilities/divi.php:1619
+#: includes/abilities/divi.php:1724
 #: includes/builders/divi/class-saddle-divi.php:301
 msgid "You cannot edit this post."
 msgstr ""
@@ -1309,7 +1309,7 @@ msgid "This site is set to drafts-only: the requested publication or schedule wa
 msgstr ""
 
 #: includes/abilities/core-content.php:2354
-#: includes/abilities/divi.php:1814
+#: includes/abilities/divi.php:1819
 msgid "You cannot read this post."
 msgstr ""
 
@@ -1805,11 +1805,11 @@ msgid "List Divi modules"
 msgstr ""
 
 #: includes/abilities/divi.php:50
-msgid "Returns the Divi 5 module types on this site: Divi's own and those of every active module pack. Each has a one-line purpose, a group (layout, text, media, forms, posts, navigation, shop, or \"pack: <plugin>\"), whether it is a child module, and, for a container, the child types it holds in \"children\" (\"*\" means any content module). Pass \"search\" (e.g. \"pricing\", \"slider\") to get only the matching modules instead of the whole list. Read-only. Then call divi-get-module-schema for one type. Use real modules; never approximate a layout by dumping HTML into a code module."
+msgid "Returns the Divi 5 module types on this site: Divi's own and those of every active module pack. Each has a one-line purpose (a module pack's own when it gives one, with \"use_when\": when to pick the module), a group (layout, text, media, forms, posts, navigation, shop, or \"pack: <plugin>\"), whether it is a child module, and, for a container, the child types it holds in \"children\" (\"*\" means any content module). Pass \"search\" (e.g. \"pricing\", \"slider\") to get only the matching modules instead of the whole list. Read-only. Then call divi-get-module-schema for one type. Use real modules; never approximate a layout by dumping HTML into a code module."
 msgstr ""
 
 #: includes/abilities/divi.php:58
-msgid "Optional words that must all appear in the module's type, title, purpose or group, e.g. \"pricing\" or \"post grid\"."
+msgid "Optional words that must all appear in the module's type, title, purpose, use_when or group, e.g. \"pricing\" or \"post grid\"."
 msgstr ""
 
 #: includes/abilities/divi.php:71
@@ -1885,7 +1885,7 @@ msgid "Get Divi module schema"
 msgstr ""
 
 #: includes/abilities/divi.php:178
-msgid "Returns one Divi module type's schema, for Divi's own modules and every module pack on this site. \"attributes\": its content, with the exact \"fields\" syntax (a string, or an object with named fields). \"settings\": every other option (post count, which menu, autoplay, arrows, prices), each with its path, control (toggle, select, text, number, range, color, icon, upload, list, link, other), choices and default; toggles take the strings \"on\" and \"off\". \"notes\": known traps for this module. \"children\": what a container holds. Pass detail=\"full\" for each setting's label, description and whether it can differ by screen size, on hover or when sticky, plus \"option_groups\" ({option group id: group name}), the groups an option group preset can style on this module. For styling paths use divi-get-style-schema."
+msgid "Returns one Divi module type's schema, for Divi's own modules and every module pack on this site. \"attributes\": its content, with the exact \"fields\" syntax (a string, or an object with named fields). \"settings\": every other option (post count, which menu, autoplay, arrows, prices), each with its path, control (toggle, select, text, number, range, color, icon, upload, list, link, other), choices and default; toggles take the strings \"on\" and \"off\". \"guide\": a module pack's own guide when it gives one (purpose, use_when, and key_settings: the setting paths to set first, in order). \"notes\": known traps for this module. \"children\": what a container holds. Pass detail=\"full\" for each setting's label, description and whether it can differ by screen size, on hover or when sticky, plus \"option_groups\" ({option group id: group name}), the groups an option group preset can style on this module, and the guide's \"example\", one node ready for divi-set-page or divi-add-module. For styling paths use divi-get-style-schema."
 msgstr ""
 
 #: includes/abilities/divi.php:186
@@ -2176,82 +2176,82 @@ msgstr ""
 msgid "Provide a module \"type\", e.g. \"divi/button\"."
 msgstr ""
 
-#: includes/abilities/divi.php:978
+#: includes/abilities/divi.php:983
 msgid "Provide a module \"type\", e.g. \"divi/text\"."
 msgstr ""
 
-#: includes/abilities/divi.php:998
+#: includes/abilities/divi.php:1003
 msgid "Provide the module to add as \"node\"."
 msgstr ""
 
 #. translators: 1: module type, 2: post ID, 3: address.
-#: includes/abilities/divi.php:1035
+#: includes/abilities/divi.php:1040
 #, php-format
 msgid "Added %1$s to Divi page #%2$d at %3$s."
 msgstr ""
 
-#: includes/abilities/divi.php:1048
+#: includes/abilities/divi.php:1053
 msgid "The added node is in \"changed\" — no re-read needed for it. Other addresses shift after edits; re-read before addressing other nodes."
 msgstr ""
 
 #. translators: %s: node address.
-#: includes/abilities/divi.php:1073
-#: includes/abilities/divi.php:1377
-#: includes/abilities/divi.php:1488
-#: includes/abilities/divi.php:2320
+#: includes/abilities/divi.php:1078
+#: includes/abilities/divi.php:1382
+#: includes/abilities/divi.php:1493
+#: includes/abilities/divi.php:2325
 #: includes/builders/divi/class-saddle-divi-interactions.php:176
 #: includes/builders/divi/class-saddle-divi-tree.php:47
 #, php-format
 msgid "No module at address %s."
 msgstr ""
 
-#: includes/abilities/divi.php:1082
+#: includes/abilities/divi.php:1087
 msgid "Provide \"fields\", \"settings\", \"attrs\", \"unset\" and/or \"columns\" to change."
 msgstr ""
 
-#: includes/abilities/divi.php:1105
+#: includes/abilities/divi.php:1110
 msgid "Each \"unset\" entry is a dotted attribute path, e.g. \"module.decoration.background.desktop.value.gradient\"."
 msgstr ""
 
 #. translators: 1: module type, 2: address, 3: post ID.
-#: includes/abilities/divi.php:1149
+#: includes/abilities/divi.php:1154
 #, php-format
 msgid "Edited %1$s at %2$s on Divi page #%3$d."
 msgstr ""
 
 #. translators: 1: node address, 2: module type.
-#: includes/abilities/divi.php:1189
-#: includes/builders/divi/class-saddle-divi-author.php:208
+#: includes/abilities/divi.php:1194
+#: includes/builders/divi/class-saddle-divi-author.php:218
 #, php-format
 msgid "Node %1$s (%2$s): \"columns\" goes on a divi/row only. Nothing was saved."
 msgstr ""
 
-#: includes/abilities/divi.php:1371
+#: includes/abilities/divi.php:1376
 msgid "A module cannot be moved into its own subtree."
 msgstr ""
 
 #. translators: 1: module type, 2: old address, 3: new address, 4: post ID.
-#: includes/abilities/divi.php:1410
+#: includes/abilities/divi.php:1415
 #, php-format
 msgid "Moved %1$s from %2$s to %3$s on Divi page #%4$d."
 msgstr ""
 
-#: includes/abilities/divi.php:1424
+#: includes/abilities/divi.php:1429
 msgid "The moved node is in \"changed\" at its new address. Other addresses shift after edits; re-read before addressing other nodes."
 msgstr ""
 
-#: includes/abilities/divi.php:1506
+#: includes/abilities/divi.php:1511
 msgid "Recoverable from the post’s revisions. Addresses shift — re-read the page."
 msgstr ""
 
 #. translators: 1: module type, 2: address, 3: post ID.
-#: includes/abilities/divi.php:1527
+#: includes/abilities/divi.php:1532
 #, php-format
 msgid "Removed %1$s at %2$s from Divi page #%3$d."
 msgstr ""
 
 #. translators: 1: module type, 2: number of modules inside it, 3: address, 4: post ID.
-#: includes/abilities/divi.php:1549
+#: includes/abilities/divi.php:1554
 #, php-format
 msgid "Remove %1$s and the %2$d module inside it at %3$s on Divi page #%4$d. Recoverable from revisions."
 msgid_plural "Remove %1$s and the %2$d modules inside it at %3$s on Divi page #%4$d. Recoverable from revisions."
@@ -2259,268 +2259,268 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: 1: module type, 2: number of modules inside it, 3: address, 4: post ID.
-#: includes/abilities/divi.php:1562
+#: includes/abilities/divi.php:1567
 #, php-format
 msgid "Removed %1$s and the %2$d module inside it at %3$s from Divi page #%4$d."
 msgid_plural "Removed %1$s and the %2$d modules inside it at %3$s from Divi page #%4$d."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/abilities/divi.php:1606
+#: includes/abilities/divi.php:1611
 msgid "Divi 5 is not active on this site, so its page settings would do nothing."
 msgstr ""
 
-#: includes/abilities/divi.php:1625
+#: includes/abilities/divi.php:1630
 msgid "This post is built with legacy Divi 4 shortcodes, which SaddleWP does not edit."
 msgstr ""
 
-#: includes/abilities/divi.php:1628
+#: includes/abilities/divi.php:1633
 msgid "This post is not a Divi page, so Divi page settings would not apply to it."
 msgstr ""
 
 #. translators: %s: comma-separated list of accepted values.
-#: includes/abilities/divi.php:1648
+#: includes/abilities/divi.php:1653
 #, php-format
 msgid "Unknown layout. Use one of: %s."
 msgstr ""
 
-#: includes/abilities/divi.php:1711
+#: includes/abilities/divi.php:1716
 msgid "Divi 5 is not active on this site, so a Divi layout would not render. Use the regular content tools instead."
 msgstr ""
 
-#: includes/abilities/divi.php:1730
-#: includes/abilities/divi.php:1826
+#: includes/abilities/divi.php:1735
+#: includes/abilities/divi.php:1831
 msgid "This post is built with legacy Divi 4 shortcodes, which SaddleWP does not edit. Leave its content untouched."
 msgstr ""
 
-#: includes/abilities/divi.php:1733
+#: includes/abilities/divi.php:1738
 msgid "This post already has non-Divi content. Building a Divi layout would overwrite it — edit it with update-post/update-page instead, or use an empty page."
 msgstr ""
 
-#: includes/abilities/divi.php:1738
+#: includes/abilities/divi.php:1743
 msgid "Provide at least one section node."
 msgstr ""
 
 #. translators: 1: post ID, 2: module count.
-#: includes/abilities/divi.php:1757
+#: includes/abilities/divi.php:1762
 #, php-format
 msgid "Built Divi layout for post #%1$d (%2$d modules). Previous layout kept as a revision."
 msgstr ""
 
-#: includes/abilities/divi.php:1784
+#: includes/abilities/divi.php:1789
 msgid "The page is NOT published (drafts 404 for visitors) — publish it with update-page status=publish when ready."
 msgstr ""
 
-#: includes/abilities/divi.php:1786
+#: includes/abilities/divi.php:1791
 msgid "The previous layout is recoverable from the post's revisions."
 msgstr ""
 
-#: includes/abilities/divi.php:1827
+#: includes/abilities/divi.php:1832
 msgid "This post is not built with Divi. Use the regular content tools instead."
 msgstr ""
 
-#: includes/abilities/divi.php:1891
+#: includes/abilities/divi.php:1896
 msgid "Posts of the post types in sub_types (default [\"post\"]). Only post types with public pages."
 msgstr ""
 
-#: includes/abilities/divi.php:1897
+#: includes/abilities/divi.php:1902
 msgid "Terms of the taxonomies in sub_types (default [\"category\"]), e.g. a card per category. Only taxonomies with public pages."
 msgstr ""
 
-#: includes/abilities/divi.php:1903
+#: includes/abilities/divi.php:1908
 msgid "Users with the roles in sub_types, or every user when it is empty. Needs an account that can list users."
 msgstr ""
 
-#: includes/abilities/divi.php:1909
+#: includes/abilities/divi.php:1914
 msgid "Items of the menu named in sub_types (an id or slug; required)."
 msgstr ""
 
-#: includes/abilities/divi.php:1915
+#: includes/abilities/divi.php:1920
 msgid "The posts the page itself lists: the blog page, an archive, a search. For Theme Builder archive and search templates. Takes no sub_types."
 msgstr ""
 
-#: includes/abilities/divi.php:1921
+#: includes/abilities/divi.php:1926
 msgid "The rows of an ACF repeater field, named in repeater_field. Needs Advanced Custom Fields with repeaters."
 msgstr ""
 
-#: includes/abilities/divi.php:1923
+#: includes/abilities/divi.php:1928
 msgid "loop_acf_<repeater>|||<sub field>, listed by divi-list-dynamic-sources on a site with repeaters"
 msgstr ""
 
-#: includes/abilities/divi.php:1938
+#: includes/abilities/divi.php:1943
 msgid "Newest first, or Z to A (the default). Stored as \"descending\"."
 msgstr ""
 
-#: includes/abilities/divi.php:1939
+#: includes/abilities/divi.php:1944
 msgid "Oldest first, or A to Z. Stored as \"ascending\"."
 msgstr ""
 
-#: includes/abilities/divi.php:1942
+#: includes/abilities/divi.php:1947
 msgid "Only these post ids (user ids on a user loop)."
 msgstr ""
 
-#: includes/abilities/divi.php:1943
+#: includes/abilities/divi.php:1948
 msgid "Leave out these ids. Exclusions win."
 msgstr ""
 
-#: includes/abilities/divi.php:1944
+#: includes/abilities/divi.php:1949
 msgid "Only posts in these terms: {\"category\": [12, \"news\"]}."
 msgstr ""
 
-#: includes/abilities/divi.php:1945
+#: includes/abilities/divi.php:1950
 msgid "Leave out posts in these terms, same shape."
 msgstr ""
 
-#: includes/abilities/divi.php:1947
+#: includes/abilities/divi.php:1952
 msgid "Custom field conditions: [{\"key\",\"value\",\"compare\",\"type\"}]; an item matching any one condition is kept. Custom fields whose names start with \"_\" are refused unless the site allows them, and a user loop's conditions need an administrator."
 msgstr ""
 
-#: includes/abilities/divi.php:1948
+#: includes/abilities/divi.php:1953
 msgid "Leave out the post being viewed."
 msgstr ""
 
-#: includes/abilities/divi.php:1949
+#: includes/abilities/divi.php:1954
 msgid "Leave sticky posts out."
 msgstr ""
 
-#: includes/abilities/divi.php:1951
+#: includes/abilities/divi.php:1956
 msgid "Every loop has an id (\"loop-…\"), made when the loop is turned on and kept by later edits. A Pagination module (divi/post-nav) or a Post Filter (divi/post-filter) follows a loop when its attrs set \"module.advanced.targetLoop.desktop.value\" to that id."
 msgstr ""
 
-#: includes/abilities/divi.php:1953
+#: includes/abilities/divi.php:1958
 msgid "Put the loop on the module that should repeat, usually the column or group holding one card. Inside it, bind values with divi-apply-dynamic-content and the loop_ sources for its type: a plain post_title shows the page's own title on every item."
 msgstr ""
 
-#: includes/abilities/divi.php:1954
+#: includes/abilities/divi.php:1959
 msgid "This account cannot edit posts, so the sub_types lists are empty. Put the loop on the module that should repeat, usually the column or group holding one card."
 msgstr ""
 
-#: includes/abilities/divi.php:1994
+#: includes/abilities/divi.php:1999
 msgid "This module has no loop to edit. Use divi-enable-loop first."
 msgstr ""
 
 #. translators: 1: address, 2: post ID.
-#: includes/abilities/divi.php:2021
+#: includes/abilities/divi.php:2026
 #, php-format
 msgid "Enabled a loop on the module at %1$s on Divi page #%2$d."
 msgstr ""
 
 #. translators: 1: address, 2: post ID.
-#: includes/abilities/divi.php:2021
+#: includes/abilities/divi.php:2026
 #, php-format
 msgid "Edited the loop on the module at %1$s on Divi page #%2$d."
 msgstr ""
 
-#: includes/abilities/divi.php:2049
+#: includes/abilities/divi.php:2054
 msgid "This module has no loop to disable."
 msgstr ""
 
 #. translators: 1: address, 2: post ID.
-#: includes/abilities/divi.php:2065
+#: includes/abilities/divi.php:2070
 #, php-format
 msgid "Disabled the loop on the module at %1$s on Divi page #%2$d."
 msgstr ""
 
-#: includes/abilities/divi.php:2072
+#: includes/abilities/divi.php:2077
 msgid "This loop has no id yet; divi-edit-loop gives it one when it turns the loop back on."
 msgstr ""
 
 #. translators: %s: settings context, e.g. "dynamic content".
-#: includes/abilities/divi.php:2120
+#: includes/abilities/divi.php:2125
 #, php-format
 msgid "Too many %s settings (max 30 keys)."
 msgstr ""
 
 #. translators: %s: settings context.
-#: includes/abilities/divi.php:2134
+#: includes/abilities/divi.php:2139
 #, php-format
 msgid "Invalid %s settings key: keys must be non-empty strings under 64 characters."
 msgstr ""
 
 #. translators: 1: settings context, 2: key name.
-#: includes/abilities/divi.php:2146
+#: includes/abilities/divi.php:2151
 #, php-format
 msgid "The %1$s setting \"%2$s\" must be a scalar value, not a nested structure."
 msgstr ""
 
 #. translators: 1: settings context, 2: key name.
-#: includes/abilities/divi.php:2160
+#: includes/abilities/divi.php:2165
 #, php-format
 msgid "The %1$s setting \"%2$s\" is too long (max 2000 characters)."
 msgstr ""
 
-#: includes/abilities/divi.php:2209
+#: includes/abilities/divi.php:2214
 msgid "dynamic content"
 msgstr ""
 
 #. translators: 1: source, 2: address, 3: post ID.
-#: includes/abilities/divi.php:2229
+#: includes/abilities/divi.php:2234
 #, php-format
 msgid "Bound %1$s to a module field at %2$s on Divi page #%3$d."
 msgstr ""
 
-#: includes/abilities/divi.php:2268
+#: includes/abilities/divi.php:2273
 msgid "This field holds several parts, so a static \"value\" needs one part, e.g. \"button.innerContent.text\"."
 msgstr ""
 
 #. translators: 1: address, 2: post ID.
-#: includes/abilities/divi.php:2287
+#: includes/abilities/divi.php:2292
 #, php-format
 msgid "Cleared a dynamic binding on the module at %1$s on Divi page #%2$d."
 msgstr ""
 
-#: includes/abilities/divi.php:2433
+#: includes/abilities/divi.php:2438
 msgid "Provide the \"preset_id\" from divi-list-global-presets."
 msgstr ""
 
 #. translators: 1: preset id, 2: address, 3: post ID.
-#: includes/abilities/divi.php:2462
+#: includes/abilities/divi.php:2467
 #, php-format
 msgid "Applied preset %1$s to the module at %2$s on Divi page #%3$d."
 msgstr ""
 
-#: includes/abilities/divi.php:2489
+#: includes/abilities/divi.php:2494
 msgid "settings.roles = list of role slugs."
 msgstr ""
 
-#: includes/abilities/divi.php:2493
+#: includes/abilities/divi.php:2498
 msgid "settings.postTypes = list of post type slugs."
 msgstr ""
 
-#: includes/abilities/divi.php:2497
+#: includes/abilities/divi.php:2502
 msgid "settings.categories = list of category ids."
 msgstr ""
 
-#: includes/abilities/divi.php:2501
+#: includes/abilities/divi.php:2506
 msgid "settings.tags = list of tag ids."
 msgstr ""
 
-#: includes/abilities/divi.php:2505
+#: includes/abilities/divi.php:2510
 msgid "settings.authors = list of author ids."
 msgstr ""
 
-#: includes/abilities/divi.php:2517
+#: includes/abilities/divi.php:2522
 msgid "settings for view count + window."
 msgstr ""
 
-#: includes/abilities/divi.php:2520
+#: includes/abilities/divi.php:2525
 msgid "Set with divi-set-display-conditions: each condition is {conditionName, displayRule, settings?, operator?}. operator OR/AND joins multiple. conditionSettings vary per type — this is the common set, not exhaustive."
 msgstr ""
 
-#: includes/abilities/divi.php:2539
+#: includes/abilities/divi.php:2544
 msgid "Provide \"conditions\" as a list (empty to clear)."
 msgstr ""
 
-#: includes/abilities/divi.php:2545
+#: includes/abilities/divi.php:2550
 msgid "Each condition needs a string \"conditionName\". See divi-list-condition-types."
 msgstr ""
 
-#: includes/abilities/divi.php:2548
+#: includes/abilities/divi.php:2553
 msgid "display condition"
 msgstr ""
 
 #. translators: 1: count, 2: address, 3: post ID.
-#: includes/abilities/divi.php:2574
+#: includes/abilities/divi.php:2579
 #, php-format
 msgid "Set %1$d display condition(s) on the module at %2$s on Divi page #%3$d."
 msgstr ""
@@ -4656,7 +4656,7 @@ msgid "\"%s\" names a state with no screen size before it. Write \"…desktop.va
 msgstr ""
 
 #. translators: 1: node address, 2: the unknown key(s), 3: the valid keys.
-#: includes/builders/divi/class-saddle-divi-author.php:195
+#: includes/builders/divi/class-saddle-divi-author.php:205
 #, php-format
 msgid "Node at %1$s has an unrecognized key: %2$s. Module content goes in \"fields\" (e.g. {\"type\":\"divi/heading\",\"fields\":{\"title\":\"…\"}}); valid node keys are %3$s."
 msgstr ""
@@ -4685,340 +4685,340 @@ msgstr ""
 msgid "The design-system slice (colors/variables/presets/fonts) was unavailable in this process — use the divi-list-global-colors / divi-list-variables tools directly if you need it."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:205
+#: includes/builders/divi/class-saddle-divi-catalog.php:210
 msgid "Stack of collapsible panels; holds accordion items."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:206
+#: includes/builders/divi/class-saddle-divi-catalog.php:211
 msgid "One panel of an accordion: a title and its content."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:207
+#: includes/builders/divi/class-saddle-divi-catalog.php:212
 msgid "Audio player with cover image, title and artist."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:208
+#: includes/builders/divi/class-saddle-divi-catalog.php:213
 msgid "Two images compared with a slider."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:209
+#: includes/builders/divi/class-saddle-divi-catalog.php:214
 msgid "List or grid of posts from a query."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:210
+#: includes/builders/divi/class-saddle-divi-catalog.php:215
 msgid "Icon or image with a title and short text: the classic feature card."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:211
+#: includes/builders/divi/class-saddle-divi-catalog.php:216
 msgid "Breadcrumb trail to the current page."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:212
+#: includes/builders/divi/class-saddle-divi-catalog.php:217
 msgid "A call-to-action button."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:213
+#: includes/builders/divi/class-saddle-divi-catalog.php:218
 msgid "Shows another canvas of this page in place."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:214
+#: includes/builders/divi/class-saddle-divi-catalog.php:219
 msgid "Animated circle that fills to a percentage."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:215
+#: includes/builders/divi/class-saddle-divi-catalog.php:220
 msgid "Raw HTML, CSS or script. Not for layout."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:216
+#: includes/builders/divi/class-saddle-divi-catalog.php:221
 msgid "Vertical slot inside a row; holds content modules."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:217
+#: includes/builders/divi/class-saddle-divi-catalog.php:222
 msgid "Column inside an inner row."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:218
+#: includes/builders/divi/class-saddle-divi-catalog.php:223
 msgid "The post's comments and comment form."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:219
+#: includes/builders/divi/class-saddle-divi-catalog.php:224
 msgid "One field of a contact form."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:220
+#: includes/builders/divi/class-saddle-divi-catalog.php:225
 msgid "Contact form that emails its messages; holds its fields."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:221
+#: includes/builders/divi/class-saddle-divi-catalog.php:226
 msgid "Shows and styles a Contact Form 7 form."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:222
+#: includes/builders/divi/class-saddle-divi-catalog.php:227
 msgid "Countdown to a date and time."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:223
+#: includes/builders/divi/class-saddle-divi-catalog.php:228
 msgid "One bar of a bar counter."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:224
+#: includes/builders/divi/class-saddle-divi-catalog.php:229
 msgid "Animated progress bars; holds bar counters."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:225
+#: includes/builders/divi/class-saddle-divi-catalog.php:230
 msgid "Call-to-action band with title, text and button."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:226
+#: includes/builders/divi/class-saddle-divi-catalog.php:231
 msgid "Horizontal line or spacer."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:227
+#: includes/builders/divi/class-saddle-divi-catalog.php:232
 msgid "Panel of modules that opens on hover or click."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:228
+#: includes/builders/divi/class-saddle-divi-catalog.php:233
 msgid "Project grid with category filter buttons."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:229
+#: includes/builders/divi/class-saddle-divi-catalog.php:234
 msgid "Raw code across a fullwidth section."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:230
+#: includes/builders/divi/class-saddle-divi-catalog.php:235
 msgid "Hero banner with title, text, buttons and image."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:231
+#: includes/builders/divi/class-saddle-divi-catalog.php:236
 msgid "Image across a fullwidth section."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:232
+#: includes/builders/divi/class-saddle-divi-catalog.php:237
 msgid "Google map across a fullwidth section; holds map pins."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:233
+#: includes/builders/divi/class-saddle-divi-catalog.php:238
 msgid "Navigation menu across a fullwidth section."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:234
+#: includes/builders/divi/class-saddle-divi-catalog.php:239
 msgid "Carousel or grid of projects across a fullwidth section."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:235
-#: includes/builders/divi/class-saddle-divi-catalog.php:257
+#: includes/builders/divi/class-saddle-divi-catalog.php:240
+#: includes/builders/divi/class-saddle-divi-catalog.php:262
 msgid "The post's own content, in a Theme Builder template."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:236
+#: includes/builders/divi/class-saddle-divi-catalog.php:241
 msgid "Slider of posts across a fullwidth section."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:237
+#: includes/builders/divi/class-saddle-divi-catalog.php:242
 msgid "The post's title and meta across a fullwidth section."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:238
+#: includes/builders/divi/class-saddle-divi-catalog.php:243
 msgid "Slider across a fullwidth section; holds slides."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:239
+#: includes/builders/divi/class-saddle-divi-catalog.php:244
 msgid "Image gallery as a grid or a slider."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:240
+#: includes/builders/divi/class-saddle-divi-catalog.php:245
 msgid "A Library layout kept in sync everywhere it is used. Not built by hand."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:241
+#: includes/builders/divi/class-saddle-divi-catalog.php:246
 msgid "Box that groups modules inside a column, with its own layout."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:242
+#: includes/builders/divi/class-saddle-divi-catalog.php:247
 msgid "Carousel whose slides are groups."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:243
+#: includes/builders/divi/class-saddle-divi-catalog.php:248
 msgid "A heading (h1 to h6)."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:244
+#: includes/builders/divi/class-saddle-divi-catalog.php:249
 msgid "One icon, optionally linked."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:245
+#: includes/builders/divi/class-saddle-divi-catalog.php:250
 msgid "List with an icon per item; holds icon list items."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:246
+#: includes/builders/divi/class-saddle-divi-catalog.php:251
 msgid "One item of an icon list."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:247
+#: includes/builders/divi/class-saddle-divi-catalog.php:252
 msgid "A single image."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:248
+#: includes/builders/divi/class-saddle-divi-catalog.php:253
 msgid "Posts from a connected Instagram account."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:249
+#: includes/builders/divi/class-saddle-divi-catalog.php:254
 msgid "A text link with an optional icon."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:250
+#: includes/builders/divi/class-saddle-divi-catalog.php:255
 msgid "Login form."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:251
+#: includes/builders/divi/class-saddle-divi-catalog.php:256
 msgid "Lottie animation from a JSON file."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:252
+#: includes/builders/divi/class-saddle-divi-catalog.php:257
 msgid "Google map; holds map pins."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:253
+#: includes/builders/divi/class-saddle-divi-catalog.php:258
 msgid "One pin on a map."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:254
+#: includes/builders/divi/class-saddle-divi-catalog.php:259
 msgid "Navigation menu with logo, cart and search icons."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:255
+#: includes/builders/divi/class-saddle-divi-catalog.php:260
 msgid "Number that counts up when shown."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:256
+#: includes/builders/divi/class-saddle-divi-catalog.php:261
 msgid "Grid or list of projects."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:258
+#: includes/builders/divi/class-saddle-divi-catalog.php:263
 msgid "Filter controls for a loop on the page; holds filter items."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:259
+#: includes/builders/divi/class-saddle-divi-catalog.php:264
 msgid "One filter control of a post filter."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:260
+#: includes/builders/divi/class-saddle-divi-catalog.php:265
 msgid "Pagination links for the main query or a loop on the page."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:261
+#: includes/builders/divi/class-saddle-divi-catalog.php:266
 msgid "Slider of posts."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:262
+#: includes/builders/divi/class-saddle-divi-catalog.php:267
 msgid "The post's title, meta and featured image."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:263
+#: includes/builders/divi/class-saddle-divi-catalog.php:268
 msgid "One plan of a pricing table."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:264
+#: includes/builders/divi/class-saddle-divi-catalog.php:269
 msgid "Side-by-side pricing plans; holds pricing tables."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:265
+#: includes/builders/divi/class-saddle-divi-catalog.php:270
 msgid "Horizontal layout inside a section; holds columns."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:266
+#: includes/builders/divi/class-saddle-divi-catalog.php:271
 msgid "Row inside a column of a specialty section."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:267
+#: includes/builders/divi/class-saddle-divi-catalog.php:272
 msgid "Search form."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:268
+#: includes/builders/divi/class-saddle-divi-catalog.php:273
 msgid "Top-level page band. Pages are a stack of sections."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:269
+#: includes/builders/divi/class-saddle-divi-catalog.php:274
 msgid "The widgets of one widget area."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:270
+#: includes/builders/divi/class-saddle-divi-catalog.php:275
 msgid "Email opt-in form for a mailing list provider."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:271
+#: includes/builders/divi/class-saddle-divi-catalog.php:276
 msgid "One extra field of an email opt-in form."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:272
+#: includes/builders/divi/class-saddle-divi-catalog.php:277
 msgid "One slide of a slider."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:273
+#: includes/builders/divi/class-saddle-divi-catalog.php:278
 msgid "Slider of full slides with text and buttons; holds slides."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:274
+#: includes/builders/divi/class-saddle-divi-catalog.php:279
 msgid "Row of social network icons; holds social networks."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:275
+#: includes/builders/divi/class-saddle-divi-catalog.php:280
 msgid "One social network icon."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:276
+#: includes/builders/divi/class-saddle-divi-catalog.php:281
 msgid "An inline SVG graphic."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:277
+#: includes/builders/divi/class-saddle-divi-catalog.php:282
 msgid "One tab of a tabs module."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:278
+#: includes/builders/divi/class-saddle-divi-catalog.php:283
 msgid "Table of contents built from the page's headings."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:279
+#: includes/builders/divi/class-saddle-divi-catalog.php:284
 msgid "Tabbed content; holds tabs."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:280
+#: includes/builders/divi/class-saddle-divi-catalog.php:285
 msgid "Person card with photo, name, role and social links."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:281
+#: includes/builders/divi/class-saddle-divi-catalog.php:286
 msgid "Quote with author attribution."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:282
+#: includes/builders/divi/class-saddle-divi-catalog.php:287
 msgid "Rich text content."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:283
+#: includes/builders/divi/class-saddle-divi-catalog.php:288
 msgid "Timeline of events; holds timeline items."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:284
+#: includes/builders/divi/class-saddle-divi-catalog.php:289
 msgid "One event of a timeline."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:285
+#: includes/builders/divi/class-saddle-divi-catalog.php:290
 msgid "One collapsible content panel."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:286
+#: includes/builders/divi/class-saddle-divi-catalog.php:291
 msgid "Popover text shown on hover or click of its parent module."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:287
+#: includes/builders/divi/class-saddle-divi-catalog.php:292
 msgid "Embedded or uploaded video."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:288
+#: includes/builders/divi/class-saddle-divi-catalog.php:293
 msgid "Slider of videos; holds video slider items."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-catalog.php:289
+#: includes/builders/divi/class-saddle-divi-catalog.php:294
 msgid "One video of a video slider."
 msgstr ""
 
@@ -5159,12 +5159,12 @@ msgid "The current access level is read-only: you can inspect Divi pages but not
 msgstr ""
 
 #. translators: %s: node address.
-#: includes/builders/divi/class-saddle-divi-driver.php:156
+#: includes/builders/divi/class-saddle-divi-driver.php:185
 #, php-format
 msgid "Node %s: its attributes are nested too deeply to be saved. Nothing was saved."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-driver.php:162
+#: includes/builders/divi/class-saddle-divi-driver.php:191
 msgid "The page is nested too deeply to be saved. Nothing was saved."
 msgstr ""
 
@@ -5772,60 +5772,84 @@ msgstr ""
 msgid "Some examples were too large to return whole: a container keeps its first children only, and an example still too large was skipped. Read the full node with divi-get-page post_id and address."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-module-notes.php:45
-msgid "Choose a menu in menu.advanced.menuId (a nav menu id). With none chosen, Divi shows the menu in the theme's primary-menu location. When that, or the chosen menu, gives nothing, it lists every page and category instead."
+#. translators: 1: module type, 2: comma-separated setting paths.
+#: includes/builders/divi/class-saddle-divi-module-guide.php:255
+#, php-format
+msgid "The guide for %1$s names key settings the module does not have, so these were left out: %2$s."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-module-notes.php:47
-msgid "Text colour: module.advanced.text.text.desktop.value.color = \"light\" gives DARK text (for a light background) and \"dark\" gives LIGHT text. This module starts on \"light\", so on a dark background set \"dark\"."
+#. translators: %s: module type.
+#: includes/builders/divi/class-saddle-divi-module-guide.php:272
+#, php-format
+msgid "The guide example for %s was left out because it is not one node with a \"type\"."
+msgstr ""
+
+#. translators: %s: module type.
+#: includes/builders/divi/class-saddle-divi-module-guide.php:277
+#, php-format
+msgid "The guide example for %s was left out because it is larger than 2 KB of JSON."
+msgstr ""
+
+#. translators: 1: module type, 2: the check's own message, one or more whole sentences.
+#: includes/builders/divi/class-saddle-divi-module-guide.php:285
+#, php-format
+msgid "The guide example for %1$s was left out because a page built from it would not save or render as written. The check says: %2$s"
 msgstr ""
 
 #: includes/builders/divi/class-saddle-divi-module-notes.php:49
+msgid "Choose a menu in menu.advanced.menuId (a nav menu id). With none chosen, Divi shows the menu in the theme's primary-menu location. When that, or the chosen menu, gives nothing, it lists every page and category instead."
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-module-notes.php:51
+msgid "Text colour: module.advanced.text.text.desktop.value.color = \"light\" gives DARK text (for a light background) and \"dark\" gives LIGHT text. This module starts on \"light\", so on a dark background set \"dark\"."
+msgstr ""
+
+#: includes/builders/divi/class-saddle-divi-module-notes.php:53
 msgid "Maps need a Google Maps API key, saved once for the whole site in Divi Theme Options, General, Google API Key. The map's height is module.decoration.sizing height, 440px by default. Pins are divi/map-pin children with pin = { address, zoom, lat, lng }."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-module-notes.php:57
+#: includes/builders/divi/class-saddle-divi-module-notes.php:61
 msgid "post.advanced.categories is a list of category ids; an empty list or \"all\" means every category, \"current\" means the category being viewed."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-module-notes.php:62
-#: includes/builders/divi/class-saddle-divi-module-notes.php:63
+#: includes/builders/divi/class-saddle-divi-module-notes.php:66
+#: includes/builders/divi/class-saddle-divi-module-notes.php:67
 msgid "The slides are its divi/slide children. With none, the slider renders empty."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-module-notes.php:64
+#: includes/builders/divi/class-saddle-divi-module-notes.php:68
 msgid "The panels are its divi/accordion-item children, each with a title and content."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-module-notes.php:65
+#: includes/builders/divi/class-saddle-divi-module-notes.php:69
 msgid "The tabs are its divi/tab children, each with a title and content."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-module-notes.php:67
+#: includes/builders/divi/class-saddle-divi-module-notes.php:71
 msgid "The form fields are its divi/contact-field children."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-module-notes.php:69
+#: includes/builders/divi/class-saddle-divi-module-notes.php:73
 msgid "Messages go to email.advanced.receiver. Left empty, they go to the site admin email."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-module-notes.php:71
+#: includes/builders/divi/class-saddle-divi-module-notes.php:75
 msgid "Each plan is a divi/pricing-table child."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-module-notes.php:72
+#: includes/builders/divi/class-saddle-divi-module-notes.php:76
 msgid "icon is an object { unicode, type, weight }, e.g. { \"unicode\": \"&#x21;\", \"type\": \"divi\", \"weight\": \"400\" }, not a string or an emoji."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-module-notes.php:73
+#: includes/builders/divi/class-saddle-divi-module-notes.php:77
 msgid "Spacing and box shadow on the button element are hidden in Divi; put padding, margin and shadow on module.decoration instead. Alignment is module.advanced.alignment."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-module-notes.php:74
+#: includes/builders/divi/class-saddle-divi-module-notes.php:78
 msgid "Its slides are divi/group children; each group holds the slide's modules."
 msgstr ""
 
-#: includes/builders/divi/class-saddle-divi-module-notes.php:75
+#: includes/builders/divi/class-saddle-divi-module-notes.php:79
 msgid "Pick the widget area in content: fields.sidebar = { \"area\": \"sidebar-1\" }, a registered widget area id. The widgets come from Appearance, Widgets, not from the page."
 msgstr ""
 
@@ -5893,6 +5917,12 @@ msgstr ""
 #: includes/builders/divi/class-saddle-divi-node-attrs.php:198
 #, php-format
 msgid "Node %1$s (%2$s): %3$s Nothing was saved."
+msgstr ""
+
+#. translators: 1: node address, 2: what is wrong there, one sentence.
+#: includes/builders/divi/class-saddle-divi-node-check.php:53
+#, php-format
+msgid "Node %1$s breaks the page structure: %2$s"
 msgstr ""
 
 #: includes/builders/divi/class-saddle-divi-recipes.php:210
@@ -9838,7 +9868,7 @@ msgid "This persisted attribute does nothing. Rewrite it on a path the block act
 msgstr ""
 
 #. translators: %s: minimum WordPress version.
-#: saddle.php:661
+#: saddle.php:663
 #, php-format
 msgid "SaddleWP requires WordPress %s or later (the core Abilities API). The MCP server is disabled until you upgrade."
 msgstr ""

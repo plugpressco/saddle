@@ -90,26 +90,12 @@ class Saddle_Divi_Driver implements Saddle_Builder_Driver {
 	 * @return int|WP_Error Total module count on success.
 	 */
 	public function persist( WP_Post $post, array $tree ) {
-		// Every SaddleWP write to a page also saves its loops' older value
-		// shapes in the form Divi reads (Saddle_Divi_Loop_Repair::repair()).
-		list( $tree ) = Saddle_Divi_Loop::repair_tree( $tree );
-
-		$valid = Saddle_Divi_Tree::validate( $tree );
-		if ( is_wp_error( $valid ) ) {
-			return $valid;
+		$stored = get_post( $post->ID );
+		$ready  = self::prepare( $tree, $stored ? (string) $stored->post_content : '' );
+		if ( is_wp_error( $ready ) ) {
+			return $ready;
 		}
-
-		$encoded = self::encode_error( $tree );
-		if ( is_wp_error( $encoded ) ) {
-			return $encoded;
-		}
-
-		$content = Saddle_Divi_Tree::serialize( $tree );
-		$stored  = get_post( $post->ID );
-		$checked = Saddle_Divi_Write_Checks::check( $stored ? (string) $stored->post_content : '', $tree, $content );
-		if ( is_wp_error( $checked ) ) {
-			return $checked;
-		}
+		list( $tree, $content ) = $ready;
 
 		$result = wp_update_post(
 			array(
@@ -133,6 +119,49 @@ class Saddle_Divi_Driver implements Saddle_Builder_Driver {
 		update_post_meta( $post->ID, '_et_pb_use_divi_5', 'on' );
 
 		return count( Saddle_Divi_Tree::flatten( $tree ) );
+	}
+
+	/**
+	 * Every check a tree passes before it is saved, without saving it:
+	 * structure() and the loop, binding and interaction rules
+	 * (Saddle_Divi_Write_Checks). persist() saves what this returns.
+	 *
+	 * @param array  $tree           Block tree.
+	 * @param string $stored_content The page content as stored now ('' for none).
+	 * @return array|WP_Error [repaired tree, serialized content].
+	 */
+	public static function prepare( array $tree, $stored_content = '' ) {
+		$ready = self::structure( $tree );
+		if ( is_wp_error( $ready ) ) {
+			return $ready;
+		}
+		$checked = Saddle_Divi_Write_Checks::check( (string) $stored_content, $ready[0], $ready[1] );
+		return is_wp_error( $checked ) ? $checked : $ready;
+	}
+
+	/**
+	 * The checks of prepare() that read only the tree, the same for every
+	 * account: the loop repair every write applies (Saddle_Divi_Loop_Repair),
+	 * the structure, and attrs that can be encoded. A module pack's guide
+	 * example is checked with these (Saddle_Divi_Node_Check).
+	 *
+	 * @param array $tree Block tree.
+	 * @return array|WP_Error [repaired tree, serialized content].
+	 */
+	public static function structure( array $tree ) {
+		// Every SaddleWP write to a page also saves its loops' older value
+		// shapes in the form Divi reads (Saddle_Divi_Loop_Repair::repair()).
+		list( $tree ) = Saddle_Divi_Loop::repair_tree( $tree );
+
+		$valid = Saddle_Divi_Tree::validate( $tree );
+		if ( is_wp_error( $valid ) ) {
+			return $valid;
+		}
+		$encoded = self::encode_error( $tree );
+		if ( is_wp_error( $encoded ) ) {
+			return $encoded;
+		}
+		return array( $tree, Saddle_Divi_Tree::serialize( $tree ) );
 	}
 
 	/**
