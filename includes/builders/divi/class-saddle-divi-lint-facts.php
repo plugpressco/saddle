@@ -20,6 +20,9 @@ defined( 'ABSPATH' ) || exit;
  * Shapes, from Divi 5.10.1 source (Background, Button, BoxShadow, Border
  * declarations):
  *   surface      module.decoration.background.<bp>.<state>.{color,gradient,image,video}
+ *   inner panel  <element>.decoration.background.desktop.value on any other
+ *                element: a flip card's front and back, a toggle, a pricing
+ *                band, a specialty section's column1 (70 core elements)
  *   button fill  button.decoration.button.desktop.value.enable = "on" and
  *                button.decoration.background.desktop.value.color
  *   button icon  button.decoration.button.desktop.value.icon.{enable,onHover}
@@ -54,9 +57,20 @@ class Saddle_Divi_Lint_Facts {
 	);
 
 	/**
+	 * Elements whose own fill is never what a module's text sits on: a
+	 * button (button-contrast judges it), an icon circle, a sale badge,
+	 * slider arrows and dots, pagination. Matched on the element name, so
+	 * a module pack's "readMoreButton" or "starIcon" counts too.
+	 */
+	const SMALL_ELEMENTS = '/button|icon|badge|arrow|dotnav|pagination/i';
+
+	/**
 	 * What a node paints behind its content at desktop: its own module
 	 * background. A gradient, image or video covers the color, so the
-	 * surface is unknown; so is a container whose preset may paint one.
+	 * surface is unknown; so is a container whose preset may paint one,
+	 * and so is a node that paints an inner panel (a flip card's faces, a
+	 * toggle, a pricing band), because which panel a text sits on cannot
+	 * be told from the attrs.
 	 *
 	 * @param array $node        Raw block array.
 	 * @param bool  $as_ancestor Whether the node is read as an ancestor (its
@@ -69,7 +83,7 @@ class Saddle_Divi_Lint_Facts {
 		$background = isset( $attrs['module'] ) ? $this->path( $attrs['module'], array( 'decoration', 'background', 'desktop', 'value' ) ) : null;
 		$background = is_array( $background ) ? $background : array();
 
-		if ( $this->covers( $background ) ) {
+		if ( $this->covers( $background ) || $this->paints_inner_panel( $attrs ) ) {
 			return array(
 				'paints' => true,
 				'color'  => null,
@@ -113,6 +127,31 @@ class Saddle_Divi_Lint_Facts {
 			$current = $this->parent_of( $current, $by_address );
 		}
 		return null;
+	}
+
+	/**
+	 * Whether an element other than the module paints a background at
+	 * desktop: a solid color, a gradient, an image or a video. Small
+	 * elements (SMALL_ELEMENTS) do not count.
+	 *
+	 * @param array[] $attrs The node's attr envelopes, by element name.
+	 * @return bool
+	 */
+	private function paints_inner_panel( array $attrs ) {
+		foreach ( $attrs as $name => $attr ) {
+			if ( 'module' === $name || preg_match( self::SMALL_ELEMENTS, (string) $name ) ) {
+				continue;
+			}
+			$background = $this->path( $attr, array( 'decoration', 'background', 'desktop', 'value' ) );
+			if ( ! is_array( $background ) ) {
+				continue;
+			}
+			$color = isset( $background['color'] ) && is_string( $background['color'] ) ? trim( $background['color'] ) : '';
+			if ( $this->covers( $background ) || ( '' !== $color && ! self::is_transparent( $color ) ) ) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**

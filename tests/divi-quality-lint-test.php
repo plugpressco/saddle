@@ -276,16 +276,44 @@ class Saddle_Divi_Quality_Lint_Test extends WP_UnitTestCase {
 
 	public function test_pinned_max_width_silent_on_centered_deliberate_or_uncapped() {
 		// Centered.
-		$centered = $this->divi_page( array( $this->sized_text( array( 'maxWidth' => '640px', 'alignment' => 'center' ) ) ) );
+		$centered = $this->divi_page(
+			array(
+				$this->sized_text(
+					array(
+						'maxWidth'  => '640px',
+						'alignment' => 'center',
+					)
+				),
+			)
+		);
 		$this->assertSame( array(), $this->by_rule( $this->lint( $centered )['violations'], 'pinned-max-width' ) );
 
 		// Explicit left = a deliberate choice.
-		$left = $this->divi_page( array( $this->sized_text( array( 'maxWidth' => '640px', 'alignment' => 'left' ) ) ) );
+		$left = $this->divi_page(
+			array(
+				$this->sized_text(
+					array(
+						'maxWidth'  => '640px',
+						'alignment' => 'left',
+					)
+				),
+			)
+		);
 		$this->assertSame( array(), $this->by_rule( $this->lint( $left )['violations'], 'pinned-max-width' ) );
 
 		// Auto side margins center without alignment.
 		$auto = $this->divi_page(
-			array( $this->sized_text( array( 'maxWidth' => '640px' ), array( 'margin' => array( 'left' => 'auto', 'right' => 'auto' ) ) ) )
+			array(
+				$this->sized_text(
+					array( 'maxWidth' => '640px' ),
+					array(
+						'margin' => array(
+							'left'  => 'auto',
+							'right' => 'auto',
+						),
+					)
+				),
+			)
 		);
 		$this->assertSame( array(), $this->by_rule( $this->lint( $auto )['violations'], 'pinned-max-width' ) );
 
@@ -349,7 +377,31 @@ class Saddle_Divi_Quality_Lint_Test extends WP_UnitTestCase {
 		$this->assertSame( array(), $this->by_rule( $this->lint( $page( array( 'modulePreset' => array( 'card-preset' ) ) ) )['violations'], 'text-contrast' ) );
 
 		// A gradient card is an unknown surface too.
-		$gradient = array( 'module' => array( 'decoration' => array( 'background' => array( 'desktop' => array( 'value' => array( 'gradient' => array( 'enabled' => 'on', 'stops' => array( array( 'position' => 0, 'color' => '#ffffff' ), array( 'position' => 100, 'color' => '#f1f5f9' ) ) ) ) ) ) ) ) );
+		$gradient = array(
+			'module' => array(
+				'decoration' => array(
+					'background' => array(
+						'desktop' => array(
+							'value' => array(
+								'gradient' => array(
+									'enabled' => 'on',
+									'stops'   => array(
+										array(
+											'position' => 0,
+											'color'    => '#ffffff',
+										),
+										array(
+											'position' => 100,
+											'color'    => '#f1f5f9',
+										),
+									),
+								),
+							),
+						),
+					),
+				),
+			),
+		);
 		$this->assertSame( array(), $this->by_rule( $this->lint( $page( $gradient ) )['violations'], 'text-contrast' ) );
 
 		// A white card: judged against the card, and it passes.
@@ -371,6 +423,99 @@ class Saddle_Divi_Quality_Lint_Test extends WP_UnitTestCase {
 			)
 		);
 		$this->assertSame( array(), $this->by_rule( $this->lint( $this->divi_page( array( $blurb ) ) )['violations'], 'text-contrast' ) );
+	}
+
+	/**
+	 * #452: a module that paints an inner panel. Recorded live on Divi 5.19:
+	 * a module pack's flip card, white titles on a #0B0E1F back face and a
+	 * photo front, in a white section, was reported as white on white.
+	 */
+	public function test_text_contrast_skips_a_module_that_paints_an_inner_panel() {
+		$fill     = static function ( $color ) {
+			return array( 'decoration' => array( 'background' => array( 'desktop' => array( 'value' => array( 'color' => $color ) ) ) ) );
+		};
+		$white    = array( 'module' => $fill( '#ffffff' ) );
+		$title    = array(
+			'innerContent' => array( 'desktop' => array( 'value' => 'Hover this card' ) ),
+			'decoration'   => array( 'font' => array( 'font' => array( 'desktop' => array( 'value' => array( 'color' => '#ffffff' ) ) ) ) ),
+		);
+		$on_white = function ( $module, array $section = array() ) use ( $white ) {
+			return self::factory()->post->create(
+				array(
+					'post_type'    => 'page',
+					'post_content' => $this->module_markup( 'divi/section', array_merge( $white, $section ), '<!-- wp:divi/row --><!-- wp:divi/column -->' . $module . '<!-- /wp:divi/column --><!-- /wp:divi/row -->' ),
+				)
+			);
+		};
+		$contrast = function ( $post_id ) {
+			return $this->by_rule( $this->lint( $post_id )['violations'], 'text-contrast' );
+		};
+
+		$flip = array(
+			'frontTitle' => $title,
+			'backTitle'  => $title,
+			'front'      => array(
+				'decoration' => array(
+					'background' => array(
+						'desktop' => array(
+							'value' => array(
+								'image'    => array( 'url' => 'https://example.com/photo.jpg' ),
+								'gradient' => array(
+									'enabled' => 'on',
+									'stops'   => array(
+										array(
+											'position' => 0,
+											'color'    => 'rgba(5,8,23,0)',
+										),
+										array(
+											'position' => 100,
+											'color'    => 'rgba(5,8,23,0.9)',
+										),
+									),
+								),
+							),
+						),
+					),
+				),
+			),
+			'back'       => $fill( '#0B0E1F' ),
+		);
+		$this->assertSame( array(), $contrast( $on_white( $this->module_markup( 'divitorque/flip-box', $flip ) ) ), 'Faces painted: the text is not judged against the section.' );
+
+		// One solid panel is enough: a core toggle with a dark closed state.
+		$toggle = array(
+			'title'        => $title,
+			'closedToggle' => $fill( '#0f172a' ),
+		);
+		$this->assertSame( array(), $contrast( $on_white( $this->module_markup( 'divi/toggle', $toggle ) ) ) );
+
+		// A specialty section's painted column is an inner panel of the section.
+		$plain = $this->module_markup( 'divi/heading', array( 'title' => $title ) );
+		$this->assertSame( array(), $contrast( $on_white( $plain, array( 'column1' => $fill( '#0f172a' ) ) ) ) );
+
+		// A transparent panel paints nothing: white on white is still an error.
+		$this->assertCount(
+			1,
+			$contrast(
+				$on_white(
+					$this->module_markup(
+						'divitorque/flip-box',
+						array(
+							'frontTitle' => $title,
+							'back'       => $fill( 'transparent' ),
+						)
+					)
+				)
+			)
+		);
+
+		// A small element's fill is not a panel: a dark read-more button does
+		// not hide white text on a white section.
+		$card = array(
+			'title'          => $title,
+			'readMoreButton' => $fill( '#0f172a' ),
+		);
+		$this->assertCount( 1, $contrast( $on_white( $this->module_markup( 'divitorque/info-card', $card ) ) ) );
 	}
 
 	/* -------- theme-css-class -------- */
