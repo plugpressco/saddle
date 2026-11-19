@@ -254,6 +254,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 
 = 1.7.7 =
 * New: Your AI agent can upload a file from your computer. It asks SaddleWP for a link that works once, for ten minutes, and sends the file to it. Before, an upload needed a public web address.
+* New: On a Divi site, your AI agent can see how your own pages already use a module, such as a flip card or a pricing table, and reuse those settings and styles on a new page.
 * Changed: The Docs link in SaddleWP's header opens the guides on saddle.to.
 * Fixed: The page check no longer reports white text on a dark Divi card as unreadable. When a module paints its own inner parts, such as a flip card's faces, an accordion toggle or a pricing band, the check no longer judges its text against the section behind it.
 
