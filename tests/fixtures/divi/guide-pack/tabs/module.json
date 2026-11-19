@@ -1,0 +1,7 @@
+{
+	"name": "saddletest-guide/tabs",
+	"title": "Guide Tabs",
+	"category": "module",
+	"childrenName": [ "saddletest-guide/tabs-item" ],
+	"attributes": {}
+}

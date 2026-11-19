@@ -47,7 +47,7 @@ function saddle_register_divi_abilities() {
 		'saddle/divi-list-modules',
 		array(
 			'label'               => __( 'List Divi modules', 'saddle' ),
-			'description'         => __( 'Returns the Divi 5 module types on this site: Divi\'s own and those of every active module pack. Each has a one-line purpose, a group (layout, text, media, forms, posts, navigation, shop, or "pack: <plugin>"), whether it is a child module, and, for a container, the child types it holds in "children" ("*" means any content module). Pass "search" (e.g. "pricing", "slider") to get only the matching modules instead of the whole list. Read-only. Then call divi-get-module-schema for one type. Use real modules; never approximate a layout by dumping HTML into a code module.', 'saddle' ),
+			'description'         => __( 'Returns the Divi 5 module types on this site: Divi\'s own and those of every active module pack. Each has a one-line purpose (a module pack\'s own when it gives one, with "use_when": when to pick the module), a group (layout, text, media, forms, posts, navigation, shop, or "pack: <plugin>"), whether it is a child module, and, for a container, the child types it holds in "children" ("*" means any content module). Pass "search" (e.g. "pricing", "slider") to get only the matching modules instead of the whole list. Read-only. Then call divi-get-module-schema for one type. Use real modules; never approximate a layout by dumping HTML into a code module.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -55,7 +55,7 @@ function saddle_register_divi_abilities() {
 				'properties' => array(
 					'search' => array(
 						'type'        => 'string',
-						'description' => __( 'Optional words that must all appear in the module\'s type, title, purpose or group, e.g. "pricing" or "post grid".', 'saddle' ),
+						'description' => __( 'Optional words that must all appear in the module\'s type, title, purpose, use_when or group, e.g. "pricing" or "post grid".', 'saddle' ),
 					),
 				),
 			),
@@ -175,7 +175,7 @@ function saddle_register_divi_abilities() {
 		'saddle/divi-get-module-schema',
 		array(
 			'label'               => __( 'Get Divi module schema', 'saddle' ),
-			'description'         => __( 'Returns one Divi module type\'s schema, for Divi\'s own modules and every module pack on this site. "attributes": its content, with the exact "fields" syntax (a string, or an object with named fields). "settings": every other option (post count, which menu, autoplay, arrows, prices), each with its path, control (toggle, select, text, number, range, color, icon, upload, list, link, other), choices and default; toggles take the strings "on" and "off". "notes": known traps for this module. "children": what a container holds. Pass detail="full" for each setting\'s label, description and whether it can differ by screen size, on hover or when sticky, plus "option_groups" ({option group id: group name}), the groups an option group preset can style on this module. For styling paths use divi-get-style-schema.', 'saddle' ),
+			'description'         => __( 'Returns one Divi module type\'s schema, for Divi\'s own modules and every module pack on this site. "attributes": its content, with the exact "fields" syntax (a string, or an object with named fields). "settings": every other option (post count, which menu, autoplay, arrows, prices), each with its path, control (toggle, select, text, number, range, color, icon, upload, list, link, other), choices and default; toggles take the strings "on" and "off". "guide": a module pack\'s own guide when it gives one (purpose, use_when, and key_settings: the setting paths to set first, in order). "notes": known traps for this module. "children": what a container holds. Pass detail="full" for each setting\'s label, description and whether it can differ by screen size, on hover or when sticky, plus "option_groups" ({option group id: group name}), the groups an option group preset can style on this module, and the guide\'s "example", one node ready for divi-set-page or divi-add-module. For styling paths use divi-get-style-schema.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -955,6 +955,11 @@ class Saddle_Divi_Abilities {
 		$notes = Saddle_Divi_Module_Notes::for_module( $type );
 		if ( $notes ) {
 			$schema['notes'] = $notes;
+		}
+		// A pack's guide sits beside the title, where an agent reads first.
+		$guide = Saddle_Divi_Module_Guide::for_schema( $type, $full );
+		if ( $guide ) {
+			$schema = array_slice( $schema, 0, 2, true ) + array( 'guide' => $guide ) + array_slice( $schema, 2, null, true );
 		}
 		if ( $full ) {
 			$groups = Saddle_Divi_Option_Groups::of_module( $type );

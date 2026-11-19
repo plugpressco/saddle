@@ -1,0 +1,21 @@
+{
+	"name": "saddletest-guide/tabs-item",
+	"title": "Guide Tab",
+	"category": "child-module",
+	"attributes": {
+		"title": {
+			"type": "object",
+			"settings": {
+				"innerContent": {
+					"groupType": "group-item",
+					"item": {
+						"attrName": "title.innerContent",
+						"label": "Title",
+						"groupSlug": "content",
+						"component": { "type": "field", "name": "divi/text" }
+					}
+				}
+			}
+		}
+	}
+}

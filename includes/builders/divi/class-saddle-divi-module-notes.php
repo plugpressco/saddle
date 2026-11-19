@@ -17,7 +17,9 @@ defined( 'ABSPATH' ) || exit;
 class Saddle_Divi_Module_Notes {
 
 	/**
-	 * The notes for one module type.
+	 * The notes for one module type: the hand-kept ones, those added
+	 * through `saddle_divi_module_notes`, then those of the module's guide
+	 * (Saddle_Divi_Module_Guide) that are not there already.
 	 *
 	 * @param string $type Module type, e.g. 'divi/menu'.
 	 * @return string[]
@@ -32,7 +34,9 @@ class Saddle_Divi_Module_Notes {
 		 * @param string[] $notes One plain sentence or two per note.
 		 * @param string   $type  Module type.
 		 */
-		return array_values( array_filter( array_map( 'strval', (array) apply_filters( 'saddle_divi_module_notes', $notes, (string) $type ) ) ) );
+		$notes = array_values( array_filter( array_map( 'strval', (array) apply_filters( 'saddle_divi_module_notes', $notes, (string) $type ) ) ) );
+		$guide = Saddle_Divi_Module_Guide::guide( $type );
+		return isset( $guide['notes'] ) ? Saddle_Divi_Module_Guide::merge( $notes, $guide['notes'] ) : $notes;
 	}
 
 	/**

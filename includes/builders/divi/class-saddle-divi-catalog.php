@@ -13,8 +13,9 @@ defined( 'ABSPATH' ) || exit;
  * the same module.json index the schema reads.
  *
  * Divi's own module.json files carry no description, so core modules get a
- * hand-kept one-line purpose; a module pack's line comes from its module.json
- * "description" when it has one, else its title.
+ * hand-kept one-line purpose. A module's guide (Saddle_Divi_Module_Guide)
+ * gives purpose and use_when first; else a pack module's line comes from
+ * its module.json "description", else its title.
  */
 class Saddle_Divi_Catalog {
 
@@ -28,11 +29,11 @@ class Saddle_Divi_Catalog {
 	/**
 	 * The full catalog, sorted by type, filtered by a search when given.
 	 *
-	 * Each entry: type, title, purpose, group, container, child, and
-	 * children (types, or "*" for any content module) on a container.
+	 * Each entry: type, title, purpose, use_when (guides only), group, container,
+	 * child, and children (types, or "*" for any content module) on a container.
 	 *
 	 * @param string $search Words that must all appear in the type, title,
-	 *                       purpose or group. Empty for everything.
+	 *                       purpose, use_when or group. Empty for everything.
 	 * @return array[]
 	 */
 	public static function modules( $search = '' ) {
@@ -51,7 +52,10 @@ class Saddle_Divi_Catalog {
 				$parents[ $child ] = $type;
 			}
 			$title = isset( $summary['title'] ) && '' !== $summary['title'] ? $summary['title'] : $type;
-			if ( isset( $purposes[ $type ] ) ) {
+			$guide = Saddle_Divi_Module_Guide::guide( $type );
+			if ( isset( $guide['purpose'] ) ) {
+				$purpose = $guide['purpose'];
+			} elseif ( isset( $purposes[ $type ] ) ) {
 				$purpose = $purposes[ $type ];
 			} elseif ( isset( $summary['description'] ) ) {
 				$purpose = $summary['description'];
@@ -59,9 +63,10 @@ class Saddle_Divi_Catalog {
 				$purpose = $title;
 			}
 			$entry = array(
-				'type'      => $type,
-				'title'     => $title,
-				'purpose'   => $purpose,
+				'type'    => $type,
+				'title'   => $title,
+				'purpose' => $purpose,
+			) + ( isset( $guide['use_when'] ) ? array( 'use_when' => $guide['use_when'] ) : array() ) + array(
 				'group'     => self::group( $type, (string) $file ),
 				'container' => (bool) $children,
 				'child'     => isset( $summary['category'] ) && 'child-module' === $summary['category'],
@@ -130,7 +135,7 @@ class Saddle_Divi_Catalog {
 	}
 
 	/**
-	 * Keep the entries whose type, title, purpose or group holds every word.
+	 * Keep the entries whose type, title, purpose, use_when or group hold every word.
 	 *
 	 * @param array[] $entries Catalog entries.
 	 * @param string  $search  Search words.
@@ -140,7 +145,7 @@ class Saddle_Divi_Catalog {
 		$words = array_filter( preg_split( '/\s+/', strtolower( trim( $search ) ) ) );
 		$hits  = array();
 		foreach ( $entries as $entry ) {
-			$haystack = strtolower( $entry['type'] . ' ' . $entry['title'] . ' ' . $entry['purpose'] . ' ' . $entry['group'] );
+			$haystack = strtolower( $entry['type'] . ' ' . $entry['title'] . ' ' . $entry['purpose'] . ' ' . ( isset( $entry['use_when'] ) ? $entry['use_when'] . ' ' : '' ) . $entry['group'] );
 			foreach ( $words as $word ) {
 				if ( false === strpos( $haystack, $word ) ) {
 					continue 2;
