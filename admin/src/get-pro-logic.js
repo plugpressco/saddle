@@ -130,13 +130,13 @@ function plans() {
 			name: __( 'Ultimate', 'saddle' ),
 			job: __( 'For freelancers and small agencies', 'saddle' ),
 			year: 199,
-			sites: 10,
+			sites: 25,
 			hour: 500,
 			credits: 2500,
 			start: 'ultimate',
 			lead: __( 'Everything in Pro, plus', 'saddle' ),
 			items: [
-				__( 'Up to 10 sites', 'saddle' ),
+				__( 'Up to 25 sites', 'saddle' ),
 				__( 'More SEO credits', 'saddle' ),
 				__( 'More AI agent calls', 'saddle' ),
 			],
@@ -256,7 +256,7 @@ export function questions() {
 			),
 		},
 		{
-			q: __( 'I run more than 10 sites', 'saddle' ),
+			q: __( 'I run more than 25 sites', 'saddle' ),
 			a: __(
 				'Write to team@saddle.to and we will set up a plan for the sites and SEO credits you need.',
 				'saddle'

@@ -18,7 +18,7 @@ describe( 'plan cards', () => {
 			[ 'free', 'Free', 0, '1 site' ],
 			[ 'go', 'Go', 49, '1 site' ],
 			[ 'pro', 'Pro', 99, 'Up to 3 sites' ],
-			[ 'reach', 'Ultimate', 199, 'Up to 10 sites' ],
+			[ 'reach', 'Ultimate', 199, 'Up to 25 sites' ],
 		] );
 	} );
 
