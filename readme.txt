@@ -252,6 +252,9 @@ The WordPress.org version never checks for its own updates. The version from plu
 
 == Changelog ==
 
+= 1.7.8 =
+* Changed: Get Premium shows Ultimate for up to 25 sites (was 10), at the same $199 a year, as saddle.to does.
+
 = 1.7.7 =
 * New: Your AI agent can upload a file from your computer. It asks SaddleWP for a link that works once, for ten minutes, and sends the file to it. Before, an upload needed a public web address.
 * New: On a Divi site, your AI agent can see how your own pages already use a module, such as a flip card or a pricing table, and reuse those settings and styles on a new page.
