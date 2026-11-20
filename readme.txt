@@ -4,7 +4,7 @@ Tags: mcp, ai, seo, chatgpt, claude
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.7.6
+Stable tag: 1.7.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -258,6 +258,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 * New: On a Divi site, your AI agent gets a short summary of how your own pages look before it designs a new one: the colors, section spacing, heading sizes, fonts, buttons and cards they use most, read from up to six published pages. Colors you set by hand count too, from section, card and other module backgrounds, so a new page matches the site, not Divi's defaults.
 * New: A Divi module pack can tell your AI agent what each of its modules is for, when to pick it, which settings matter most, and give one example. SaddleWP checks that the example would save and show as written, and leaves out one that would not.
 * Changed: The Docs link in SaddleWP's header opens the guides on saddle.to.
+* New: A PlugPress page in wp-admin shows the PlugPress plugins on this site, where to get help, and the site info switch. It sends nothing.
 * Fixed: The page check no longer reports white text on a dark Divi card as unreadable. When a module paints its own inner parts, such as a flip card's faces, an accordion toggle or a pricing band, the check no longer judges its text against the section behind it.
 
 = 1.7.6 =
