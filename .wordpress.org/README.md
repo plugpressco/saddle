@@ -4,31 +4,26 @@ These files are for the WordPress.org plugin directory's SVN `assets/` folder
 (the sibling of `trunk/`) — they are NOT shipped inside the plugin zip
 (excluded in Gruntfile.js).
 
-- `icon.svg`: the white brand mark (`assets/brand/mark.svg`) on Saddle magenta
-  `#d000c4`, full bleed (2026-10-23; was ink on transparent).
-- `icon-128x128.png` / `icon-256x256.png`: rendered from `icon.svg`:
+- `icon.svg`: the social profile icon (`docs/brand/saddle-social-icon.svg`,
+  Fahim's set of 2026-11-13): the white arch of the mark on Saddle magenta
+  `#d000c4`, full bleed. `icon-128x128.png` / `icon-256x256.png` are rendered
+  from it:
 
       rsvg-convert -w 256 -h 256 icon.svg -o icon-256x256.png
       rsvg-convert -w 128 -h 128 icon.svg -o icon-128x128.png
 
-- `banner-772x250.png` / `banner-1544x500.png`: a light, minimal banner
-  (2026-10-23): the magenta mark and "Saddle", one line on what it does, and
-  one "Needs your OK" card with Reject and Approve. No app logos. **Generated,
-  do not hand-edit the PNGs.** Source is `src/banner.svg`; re-render both
-  sizes with:
-
-      cd .wordpress.org
-      rsvg-convert -w 1544 -h 500 src/banner.svg -o banner-1544x500.png
-      rsvg-convert -w  772 -h 250 src/banner.svg -o banner-772x250.png
-
-  (`brew install librsvg`. The first cut of this art was rendered from a
-  scratchpad SVG that was never committed and had to be rebuilt from the PNG
-  during the WP.org round-1 fixes — hence the source lives here now.)
+- `banner-772x250.png` / `banner-1544x500.png`: cut from the brand kit's X
+  cover (`docs/brand/saddle-cover-x-1500x500.png`): the SaddleWP name, the line
+  "Build, rank and grow your website with AI." and the magenta sun over the
+  pixel hills. The 1544 version scales the cover to width (nearest neighbour,
+  so the dots stay crisp) and crops the height; the 772 version halves it.
+  **Generated, do not hand-edit the PNGs.** Change the cover in `docs/brand/`
+  and cut both again.
 
 ⚠️ The banner tagline must not contain "WordPress". Listing graphics fall under
 the same trademark rule as the plugin name — the round-1 review called out
-"graphic resources such as this plugin icons and banners" explicitly. It now
-reads "Let your AI work on your live site without handing it the keys."
+"graphic resources such as this plugin icons and banners" explicitly. The banner
+text is "Build, rank and grow your website with AI."
 
 After the plugin is approved these are synced to SVN `assets/` automatically by
 `.github/workflows/release.yml` on every real release tag (#176). Only
