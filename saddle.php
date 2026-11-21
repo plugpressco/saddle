@@ -214,6 +214,7 @@ require_once SADDLE_DIR . 'includes/integrations/yoast/class-saddle-yoast-schema
 require_once SADDLE_DIR . 'includes/integrations/rank-math/class-saddle-rank-math.php';
 require_once SADDLE_DIR . 'includes/integrations/rank-math/class-saddle-rank-math-seo.php';
 require_once SADDLE_DIR . 'includes/integrations/aioseo/class-saddle-aioseo.php';
+require_once SADDLE_DIR . 'includes/integrations/aioseo/class-saddle-aioseo-keywords.php';
 require_once SADDLE_DIR . 'includes/integrations/aioseo/class-saddle-aioseo-seo.php';
 require_once SADDLE_DIR . 'includes/integrations/woocommerce/class-saddle-wc.php';
 require_once SADDLE_DIR . 'includes/integrations/class-saddle-seo-skills.php';

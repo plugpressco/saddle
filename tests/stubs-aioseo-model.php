@@ -9,7 +9,7 @@
  * on divi-dev, and matching Waggle's proven aioseo-writer). This stub is a
  * property bag with that find-or-build/save shape, enough for unit coverage
  * of the field mapping, the robots default-switch logic, and the keyphrases
- * focus handling. Live behavior is verified separately with real AIOSEO.
+ * handling (the old `keyphrases` shape and AIOSEO 5's keyword columns). Live behavior is verified separately with real AIOSEO.
  *
  * @package Saddle
  */
@@ -25,6 +25,9 @@ namespace AIOSEO\Plugin\Common\Models {
 			public $title                    = '';
 			public $description              = '';
 			public $keyphrases               = null;
+			// AIOSEO 5.0.0+ keeps the keyphrases in these two columns as well.
+			public $focus_keyword            = null;
+			public $additional_keywords      = null;
 			public $canonical_url            = '';
 			public $og_title                 = '';
 			public $og_description           = '';

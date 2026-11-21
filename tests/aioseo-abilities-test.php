@@ -4,8 +4,9 @@
  *
  * Coverage: tier enforcement, per-object capability, the robots
  * default-switch logic (the master switch only returns to default when no
- * flag remains; any flag forces custom robots), keyphrases focus handling
- * (additional keyphrases preserved), the twitter/og custom-source toggles,
+ * flag remains; any flag forces custom robots), the focus and additional
+ * keyphrases in both of AIOSEO's storage shapes (the old `keyphrases`
+ * structure and AIOSEO 5's keyword columns), the twitter/og custom-source toggles,
  * length warnings, and the not-active error shape. Against the in-memory
  * Post-model stub in tests/stubs-aioseo-model.php — live behavior verified
  * separately with real AIOSEO on divi-dev.
@@ -28,6 +29,8 @@ class Saddle_Aioseo_Abilities_Test extends WP_UnitTestCase {
 	public function tear_down() {
 		Saddle_Capabilities::set_tier( 'read' );
 		remove_filter( 'saddle_aioseo_active', '__return_false' );
+		remove_filter( 'saddle_aioseo_keyword_columns', '__return_true' );
+		remove_filter( 'saddle_aioseo_pro', '__return_true' );
 		parent::tear_down();
 	}
 
@@ -145,6 +148,213 @@ class Saddle_Aioseo_Abilities_Test extends WP_UnitTestCase {
 		$this->assertSame( 'new focus', $saved['focus']['keyphrase'] );
 		$this->assertSame( 77, $saved['focus']['score'], 'Sibling focus keys survive.' );
 		$this->assertSame( 'extra one', $saved['additional'][0]['keyphrase'], 'Additional keyphrases survive.' );
+	}
+
+	/* -------- additional keyphrases (#466) -------- */
+
+	private function keyphrases_of( $post_id ) {
+		return json_decode( (string) wp_json_encode( \AIOSEO\Plugin\Common\Models\Post::getPost( $post_id )->keyphrases ), true );
+	}
+
+	private function seed_keyphrases( $post_id, array $keyphrases ) {
+		$model             = \AIOSEO\Plugin\Common\Models\Post::getPost( $post_id );
+		$model->keyphrases = json_decode( (string) wp_json_encode( $keyphrases ) );
+		$model->save();
+		return $model;
+	}
+
+	public function test_additional_keywords_round_trip() {
+		$post_id = $this->post_id();
+
+		$edit = wp_get_ability( 'saddle/aioseo-edit-post-seo' )->execute(
+			array(
+				'post_id'             => $post_id,
+				'additional_keywords' => array( 'divi modules', '  Flip Box ', 'DIVI MODULES', '', '<b>pricing table</b>' ),
+			)
+		);
+
+		$this->assertNotWPError( $edit );
+		$this->assertSame(
+			array( 'divi modules', 'Flip Box', 'pricing table' ),
+			$edit['changed']['additional_keywords'],
+			'Trimmed, tags stripped, empty and repeated keyphrases dropped.'
+		);
+
+		$get = wp_get_ability( 'saddle/aioseo-get-post-seo' )->execute( array( 'post_id' => $post_id ) );
+		$this->assertSame( array( 'divi modules', 'Flip Box', 'pricing table' ), $get['additional_keywords'] );
+		$this->assertSame( '', $get['focus_keyword'] );
+
+		$saved = $this->keyphrases_of( $post_id );
+		$this->assertSame(
+			array(
+				'keyphrase' => 'divi modules',
+				'score'     => 0,
+			),
+			$saved['additional'][0],
+			'A new entry has the shape AIOSEO\'s own editor writes.'
+		);
+		$this->assertSame( '', $saved['focus']['keyphrase'], 'An empty focus still saves as an object.' );
+	}
+
+	public function test_additional_keywords_replace_the_list_and_keep_known_scores() {
+		$post_id = $this->post_id();
+		$this->seed_keyphrases(
+			$post_id,
+			array(
+				'focus'      => array( 'keyphrase' => 'the focus', 'score' => 77 ),
+				'additional' => array(
+					array( 'keyphrase' => 'extra one', 'score' => 51, 'analysis' => array( 'keyphraseInTitle' => array( 'score' => 9 ) ) ),
+					array( 'keyphrase' => 'dropped', 'score' => 12 ),
+				),
+			)
+		);
+
+		wp_get_ability( 'saddle/aioseo-edit-post-seo' )->execute(
+			array( 'post_id' => $post_id, 'additional_keywords' => array( 'Extra One', 'brand new' ) )
+		);
+
+		$saved = $this->keyphrases_of( $post_id );
+		$this->assertSame( array( 'Extra One', 'brand new' ), wp_list_pluck( $saved['additional'], 'keyphrase' ), 'The list is replaced.' );
+		$this->assertSame( 51, $saved['additional'][0]['score'], 'A keyphrase already on the post keeps its score.' );
+		$this->assertSame( 9, $saved['additional'][0]['analysis']['keyphraseInTitle']['score'], 'And its analysis.' );
+		$this->assertSame( 0, $saved['additional'][1]['score'] );
+		$this->assertSame( 'the focus', $saved['focus']['keyphrase'], 'The focus keyphrase is untouched.' );
+		$this->assertSame( 77, $saved['focus']['score'] );
+	}
+
+	public function test_empty_additional_keywords_clears_the_list() {
+		$post_id = $this->post_id();
+		$this->seed_keyphrases(
+			$post_id,
+			array(
+				'focus'      => array( 'keyphrase' => 'the focus', 'score' => 77 ),
+				'additional' => array( array( 'keyphrase' => 'extra one', 'score' => 51 ) ),
+			)
+		);
+
+		$edit = wp_get_ability( 'saddle/aioseo-edit-post-seo' )->execute( array( 'post_id' => $post_id, 'additional_keywords' => array() ) );
+
+		$this->assertNotWPError( $edit );
+		$this->assertSame( array(), $edit['changed']['additional_keywords'] );
+		$this->assertSame( array(), $edit['warnings'], 'Nothing to warn about when the list is empty.' );
+		$this->assertSame( array(), $this->keyphrases_of( $post_id )['additional'] );
+	}
+
+	public function test_additional_keywords_warn_without_aioseo_pro() {
+		$post_id = $this->post_id();
+		$input   = array( 'post_id' => $post_id, 'additional_keywords' => array( 'one' ) );
+
+		$edit = wp_get_ability( 'saddle/aioseo-edit-post-seo' )->execute( $input );
+		$this->assertCount( 1, $edit['warnings'] );
+		$this->assertStringContainsString( 'AIOSEO Pro', $edit['warnings'][0] );
+
+		add_filter( 'saddle_aioseo_pro', '__return_true' );
+		$edit = wp_get_ability( 'saddle/aioseo-edit-post-seo' )->execute( $input );
+		$this->assertSame( array(), $edit['warnings'] );
+	}
+
+	/* -------- AIOSEO 5's keyword columns (#466) -------- */
+
+	public function test_aioseo_5_columns_are_written_with_the_old_structure() {
+		add_filter( 'saddle_aioseo_keyword_columns', '__return_true' );
+		$post_id = $this->post_id();
+		// A post that already has a focus keyphrase: AIOSEO 5 ignores a
+		// write that only reaches `keyphrases` (the bug #466 names).
+		$model                = $this->seed_keyphrases( $post_id, array( 'focus' => array( 'keyphrase' => 'old focus', 'score' => 60 ), 'additional' => array() ) );
+		$model->focus_keyword = 'old focus';
+		$model->save();
+
+		$edit = wp_get_ability( 'saddle/aioseo-edit-post-seo' )->execute(
+			array(
+				'post_id'             => $post_id,
+				'focus_keyword'       => 'new focus',
+				'additional_keywords' => array( 'first extra', 'second extra' ),
+			)
+		);
+
+		$this->assertNotWPError( $edit );
+		$this->assertSame( 'new focus', $edit['changed']['focus_keyword'] );
+		$this->assertSame( array( 'first extra', 'second extra' ), $edit['changed']['additional_keywords'] );
+
+		$model = \AIOSEO\Plugin\Common\Models\Post::getPost( $post_id );
+		$this->assertSame( 'new focus', $model->focus_keyword, 'The column AIOSEO 5 reads.' );
+		$this->assertSame(
+			array(
+				array( 'word' => 'first extra', 'score' => 0 ),
+				array( 'word' => 'second extra', 'score' => 0 ),
+			),
+			json_decode( (string) wp_json_encode( $model->additional_keywords ), true ),
+			'AIOSEO 5 keeps additional keyphrases as { word, score }.'
+		);
+
+		$saved = $this->keyphrases_of( $post_id );
+		$this->assertSame( 'new focus', $saved['focus']['keyphrase'], 'The old structure stays in step.' );
+		$this->assertSame( array( 'first extra', 'second extra' ), wp_list_pluck( $saved['additional'], 'keyphrase' ) );
+	}
+
+	public function test_aioseo_5_read_prefers_the_columns_and_falls_back() {
+		add_filter( 'saddle_aioseo_keyword_columns', '__return_true' );
+		$post_id = $this->post_id();
+		$model   = $this->seed_keyphrases(
+			$post_id,
+			array(
+				'focus'      => array( 'keyphrase' => 'stale focus' ),
+				'additional' => array( array( 'keyphrase' => 'old extra', 'score' => 30 ) ),
+			)
+		);
+
+		$get = wp_get_ability( 'saddle/aioseo-get-post-seo' )->execute( array( 'post_id' => $post_id ) );
+		$this->assertSame( 'stale focus', $get['focus_keyword'], 'Empty columns: the old structure answers, as in AIOSEO.' );
+		$this->assertSame( array( 'old extra' ), $get['additional_keywords'] );
+
+		$model->focus_keyword       = 'column focus';
+		$model->additional_keywords = json_decode( '[{"word":"column extra","score":40}]' );
+		$model->save();
+
+		$get = wp_get_ability( 'saddle/aioseo-get-post-seo' )->execute( array( 'post_id' => $post_id ) );
+		$this->assertSame( 'column focus', $get['focus_keyword'] );
+		$this->assertSame( array( 'column extra' ), $get['additional_keywords'] );
+	}
+
+	public function test_aioseo_5_columns_keep_scores_and_clear_to_null() {
+		add_filter( 'saddle_aioseo_keyword_columns', '__return_true' );
+		$post_id                    = $this->post_id();
+		$model                      = \AIOSEO\Plugin\Common\Models\Post::getPost( $post_id );
+		$model->focus_keyword       = 'the focus';
+		$model->additional_keywords = json_decode( '[{"word":"kept","score":40},{"word":"dropped","score":10}]' );
+		$model->save();
+
+		wp_get_ability( 'saddle/aioseo-edit-post-seo' )->execute( array( 'post_id' => $post_id, 'additional_keywords' => array( 'kept', 'added' ) ) );
+
+		$model = \AIOSEO\Plugin\Common\Models\Post::getPost( $post_id );
+		$this->assertSame(
+			array(
+				array( 'word' => 'kept', 'score' => 40 ),
+				array( 'word' => 'added', 'score' => 0 ),
+			),
+			json_decode( (string) wp_json_encode( $model->additional_keywords ), true )
+		);
+		$this->assertSame( 'the focus', $model->focus_keyword, 'Additional keyphrases alone leave the focus column alone.' );
+		$this->assertSame( 40, $this->keyphrases_of( $post_id )['additional'][0]['score'], 'The old structure carries the column\'s score.' );
+
+		wp_get_ability( 'saddle/aioseo-edit-post-seo' )->execute( array( 'post_id' => $post_id, 'focus_keyword' => '', 'additional_keywords' => array() ) );
+
+		$model = \AIOSEO\Plugin\Common\Models\Post::getPost( $post_id );
+		$this->assertNull( $model->focus_keyword, 'AIOSEO stores no keyphrase as NULL.' );
+		$this->assertNull( $model->additional_keywords );
+	}
+
+	public function test_older_aioseo_gets_no_keyword_columns() {
+		$post_id = $this->post_id();
+
+		wp_get_ability( 'saddle/aioseo-edit-post-seo' )->execute(
+			array( 'post_id' => $post_id, 'focus_keyword' => 'a focus', 'additional_keywords' => array( 'an extra' ) )
+		);
+
+		$model = \AIOSEO\Plugin\Common\Models\Post::getPost( $post_id );
+		$this->assertNull( $model->focus_keyword, 'Before 5.0.0 the columns do not exist, so nothing is set on them.' );
+		$this->assertNull( $model->additional_keywords );
+		$this->assertSame( 'a focus', $this->keyphrases_of( $post_id )['focus']['keyphrase'] );
 	}
 
 	public function test_robots_default_only_returns_when_no_flag_remains() {
