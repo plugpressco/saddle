@@ -82,8 +82,7 @@ class Saddle_Aioseo_Seo {
 			$out[ $friendly ] = (string) ( $model->{$column} ?? '' );
 		}
 
-		$out['focus_keyword']  = self::focus_keyphrase( $model->keyphrases ?? null );
-		$out                   = array_merge( $out, Saddle_Aioseo::robots_read( $model ) );
+		$out                   = array_merge( $out, Saddle_Aioseo_Keywords::read( $model ), Saddle_Aioseo::robots_read( $model ) );
 		$out['pillar_content'] = Saddle_Aioseo::truthy( $model->pillar_content ?? false );
 
 		return $out;
@@ -126,17 +125,7 @@ class Saddle_Aioseo_Seo {
 			$model->twitter_use_og = false;
 		}
 
-		if ( array_key_exists( 'focus_keyword', $input ) ) {
-			$keyphrases = self::normalize_keyphrases( $model->keyphrases ?? null );
-			if ( ! isset( $keyphrases['focus'] ) || ! is_array( $keyphrases['focus'] ) ) {
-				$keyphrases['focus'] = array();
-			}
-			$keyphrases['focus']['keyphrase'] = sanitize_text_field( (string) $input['focus_keyword'] );
-			// The model round-trips keyphrases as a JSON-decoded object
-			// (Waggle's writer pins this shape).
-			$model->keyphrases = json_decode( (string) wp_json_encode( $keyphrases ) );
-			$touched[]         = 'focus_keyword';
-		}
+		$touched = array_merge( $touched, Saddle_Aioseo_Keywords::apply( $model, $input ) );
 
 		$robots_changes = Saddle_Aioseo::robots_changes( $model, $input );
 		if ( is_wp_error( $robots_changes ) ) {
@@ -175,38 +164,14 @@ class Saddle_Aioseo_Seo {
 			return $current;
 		}
 
+		$warnings = Saddle_Seo_Advice::length_warnings( $current['title'], $current['description'] );
+		if ( in_array( 'additional_keywords', $touched, true ) && $current['additional_keywords'] && ! Saddle_Aioseo::is_pro() ) {
+			$warnings[] = __( 'Additional keyphrases are an AIOSEO Pro feature. They were saved, but the AIOSEO editor on this site does not show them.', 'saddle' );
+		}
+
 		return array(
 			'changed'  => array_intersect_key( $current, array_flip( $touched ) ),
-			'warnings' => Saddle_Seo_Advice::length_warnings( $current['title'], $current['description'] ),
+			'warnings' => $warnings,
 		);
-	}
-
-	/**
-	 * The focus keyphrase inside any keyphrases shape.
-	 *
-	 * @param mixed $keyphrases Raw keyphrases (JSON string / object / array / null).
-	 * @return string
-	 */
-	private static function focus_keyphrase( $keyphrases ) {
-		$data = self::normalize_keyphrases( $keyphrases );
-		return isset( $data['focus']['keyphrase'] ) && is_string( $data['focus']['keyphrase'] )
-			? $data['focus']['keyphrase']
-			: '';
-	}
-
-	/**
-	 * Coerce any keyphrases shape to array (same normalization Waggle's
-	 * writer and importer share, so the three agree by construction).
-	 *
-	 * @param mixed $keyphrases Raw keyphrases value.
-	 * @return array
-	 */
-	private static function normalize_keyphrases( $keyphrases ) {
-		if ( is_string( $keyphrases ) ) {
-			$keyphrases = json_decode( $keyphrases, true );
-		} elseif ( is_object( $keyphrases ) ) {
-			$keyphrases = json_decode( (string) wp_json_encode( $keyphrases ), true );
-		}
-		return is_array( $keyphrases ) ? $keyphrases : array();
 	}
 }

@@ -53,6 +53,41 @@ class Saddle_Aioseo {
 	}
 
 	/**
+	 * Whether this AIOSEO keeps keyphrases in their own columns
+	 * (`focus_keyword`, `additional_keywords`), as it does since 5.0.0.
+	 * Told by the model method that arrived with the columns.
+	 *
+	 * @return bool
+	 */
+	public static function has_keyword_columns() {
+		$has = method_exists( '\AIOSEO\Plugin\Common\Models\Post', 'getKeywordColumnsFromKeyphrases' );
+
+		/**
+		 * Filter the keyword-column detection (tests / edge setups).
+		 *
+		 * @param bool $has Whether AIOSEO has the keyword columns.
+		 */
+		return (bool) apply_filters( 'saddle_aioseo_keyword_columns', $has );
+	}
+
+	/**
+	 * Whether the active AIOSEO is the Pro build, the one whose editor has
+	 * additional keyphrases.
+	 *
+	 * @return bool
+	 */
+	public static function is_pro() {
+		$pro = function_exists( 'aioseo' ) && ! empty( aioseo()->pro );
+
+		/**
+		 * Filter AIOSEO Pro detection (tests / edge setups).
+		 *
+		 * @param bool $pro Whether AIOSEO Pro is considered active.
+		 */
+		return (bool) apply_filters( 'saddle_aioseo_pro', $pro );
+	}
+
+	/**
 	 * The standard "not active" error — abilities always register, each
 	 * refuses cleanly without the plugin (Divi/Yoast/Rank Math precedent).
 	 *

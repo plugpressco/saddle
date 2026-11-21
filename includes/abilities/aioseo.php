@@ -51,7 +51,7 @@ function saddle_register_aioseo_abilities() {
 		'saddle/aioseo-get-post-seo',
 		array(
 			'label'               => __( 'Get AIOSEO post SEO', 'saddle' ),
-			'description'         => __( 'Returns a post\'s AIOSEO fields: title, description, focus keyword, canonical URL, robots (index/follow/advanced), Open Graph + Twitter title/description/image, and whether it is marked pillar content. Read-only. Per-term SEO is an AIOSEO Pro feature and has no tool yet.', 'saddle' ),
+			'description'         => __( 'Returns a post\'s AIOSEO fields: title, description, focus keyword, additional keyphrases, canonical URL, robots (index/follow/advanced), Open Graph + Twitter title/description/image, and whether it is marked pillar content. Read-only. Per-term SEO is an AIOSEO Pro feature and has no tool yet.', 'saddle' ),
 			'category'            => 'saddle',
 			'input_schema'        => array(
 				'type'       => 'object',
@@ -94,6 +94,11 @@ function saddle_register_aioseo_abilities() {
 					'focus_keyword'       => array(
 						'type'        => 'string',
 						'description' => __( 'Focus keyphrase. Additional keyphrases and their scores are preserved.', 'saddle' ),
+					),
+					'additional_keywords' => array(
+						'type'        => 'array',
+						'items'       => array( 'type' => 'string' ),
+						'description' => __( 'Additional keyphrases, as a list. It replaces the post\'s whole list, so read the current ones first and pass every keyphrase to keep; an empty list removes them all. A keyphrase already on the post keeps its score. The AIOSEO editor shows them only with AIOSEO Pro.', 'saddle' ),
 					),
 					'canonical'           => array(
 						'type'        => 'string',
