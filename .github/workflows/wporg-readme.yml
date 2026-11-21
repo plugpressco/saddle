@@ -1,0 +1,119 @@
+name: Update the WordPress.org readme
+
+# Sends readme.txt, and nothing else, to WordPress.org: trunk and the tag the
+# readme names as its Stable tag. It is for fixing the listing between
+# releases (wording, length, a link). It never touches plugin code, and it
+# never moves a version.
+#
+# Start it by hand from the Actions tab, on main. It is a dry run unless you
+# untick "Dry run": a dry run shows the difference and sends nothing.
+#
+# Before a real run, read the difference. main's readme goes out as it is, so
+# it must not describe changes that are not released yet.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Dry run (show the difference, send nothing)
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wporg-readme
+  cancel-in-progress: false
+
+jobs:
+  readme:
+    name: Send readme.txt to WordPress.org SVN
+    runs-on: ubuntu-latest
+    # The same GitHub Environment as the release deploy, so one reviewer rule
+    # and one pair of secrets cover both.
+    environment: wordpress-org
+    steps:
+      - name: Only from main
+        run: |
+          if [ "$GITHUB_REF_NAME" != "main" ]; then
+            echo "::error::Run this from main, not $GITHUB_REF_NAME."
+            exit 1
+          fi
+
+      - name: Require the SVN secrets
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+        run: |
+          if [ -z "$SVN_USERNAME" ] || [ -z "$SVN_PASSWORD" ]; then
+            echo "::error::SVN_USERNAME / SVN_PASSWORD are not set."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      - name: Read the stable tag
+        id: stable
+        run: |
+          set -euo pipefail
+          STABLE="$(grep -m1 -oE 'Stable tag:[[:space:]]*[0-9][0-9A-Za-z.-]*' readme.txt | sed -E 's/Stable tag:[[:space:]]*//')"
+          if [ -z "$STABLE" ]; then
+            echo "::error::readme.txt has no Stable tag."
+            exit 1
+          fi
+          echo "version=$STABLE" >> "$GITHUB_OUTPUT"
+          echo "Stable tag: $STABLE"
+
+      - name: Install Subversion
+        run: sudo apt-get update -q && sudo apt-get install -y -q subversion
+
+      - name: Send the readme
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          STABLE: ${{ steps.stable.outputs.version }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          svn checkout --depth empty https://plugins.svn.wordpress.org/saddle svn --non-interactive
+          cd svn
+          svn update --set-depth empty trunk --non-interactive
+          svn update --set-depth empty tags --non-interactive
+          svn update --set-depth empty "tags/$STABLE" --non-interactive
+          svn update trunk/readme.txt "tags/$STABLE/readme.txt" --non-interactive
+
+          # The stable tag must be a version WordPress.org already has. After a
+          # version bump on main and before its release, this stops the run.
+          if [ ! -f "tags/$STABLE/readme.txt" ] || [ ! -f trunk/readme.txt ]; then
+            echo "::error::tags/$STABLE/readme.txt or trunk/readme.txt is not on WordPress.org. Release $STABLE first."
+            exit 1
+          fi
+
+          cp ../readme.txt trunk/readme.txt
+          cp ../readme.txt "tags/$STABLE/readme.txt"
+
+          CHANGED="$(svn status)"
+          if [ -z "$CHANGED" ]; then
+            echo "The readme on WordPress.org is already the same. Nothing to send."
+            exit 0
+          fi
+          echo "$CHANGED"
+
+          # Only the two readme files may differ.
+          if echo "$CHANGED" | grep -vE '^M[[:space:]]+(trunk|tags/[0-9A-Za-z.-]+)/readme\.txt$' | grep -q .; then
+            echo "::error::Something other than readme.txt would change. Stopping."
+            exit 1
+          fi
+
+          svn diff | head -n 400
+
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "Dry run: nothing was sent."
+            exit 0
+          fi
+
+          svn commit -m "Update readme for $STABLE" \
+            --username "$SVN_USERNAME" --password "$SVN_PASSWORD" \
+            --non-interactive --no-auth-cache
+          echo "## Sent readme.txt to WordPress.org (trunk and tags/$STABLE)" >> "$GITHUB_STEP_SUMMARY"
