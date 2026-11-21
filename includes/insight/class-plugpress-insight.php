@@ -189,8 +189,9 @@ class PlugPress_Insight {
 	}
 
 	/**
-	 * The one PlugPress page, shared by every PlugPress plugin on the site.
-	 * Only the newest copy of the SDK runs, so it is added once. It makes no
+	 * The one PlugPress page, shared by every PlugPress plugin on the site, as
+	 * Settings > PlugPress (never a top-level menu). Only the newest copy of the
+	 * SDK runs, so it is added once. It makes no
 	 * request: the text is in the SDK.
 	 */
 	public static function menu() {
@@ -198,14 +199,12 @@ class PlugPress_Insight {
 		if ( ! empty( $GLOBALS['admin_page_hooks']['plugpress'] ) ) {
 			return;
 		}
-		add_menu_page(
+		add_options_page(
 			__( 'PlugPress', 'saddle' ),
 			__( 'PlugPress', 'saddle' ),
 			'manage_options',
 			'plugpress',
-			array( __CLASS__, 'about' ),
-			'dashicons-admin-plugins',
-			81
+			array( __CLASS__, 'about' )
 		);
 	}
 
@@ -335,7 +334,7 @@ class PlugPress_Insight {
 	public static function assets() {
 		$screen  = get_current_screen();
 		$plugins = $screen && 'plugins' === $screen->id && current_user_can( 'activate_plugins' );
-		$about   = $screen && 'toplevel_page_plugpress' === $screen->id;
+		$about   = $screen && 'settings_page_plugpress' === $screen->id;
 		if ( ! $plugins && ! $about && ! self::product_on_screen() ) {
 			return;
 		}

@@ -24,9 +24,9 @@
 defined( 'ABSPATH' ) || exit;
 
 // Keep the newest copy. It loads once every plugin has loaded.
-if ( empty( $GLOBALS['plugpress_insight_sdk'] ) || version_compare( '1.1.0', $GLOBALS['plugpress_insight_sdk']['version'], '>' ) ) {
+if ( empty( $GLOBALS['plugpress_insight_sdk'] ) || version_compare( '1.1.1', $GLOBALS['plugpress_insight_sdk']['version'], '>' ) ) {
 	$GLOBALS['plugpress_insight_sdk'] = array(
-		'version' => '1.1.0',
+		'version' => '1.1.1',
 		'dir'     => __DIR__,
 	);
 }
