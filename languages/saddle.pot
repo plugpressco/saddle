@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-20T00:12:54+00:00\n"
+"POT-Creation-Date: 2026-11-21T01:27:58+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: saddle\n"
@@ -57,7 +57,7 @@ msgid "Get AIOSEO post SEO"
 msgstr ""
 
 #: includes/abilities/aioseo.php:54
-msgid "Returns a post's AIOSEO fields: title, description, focus keyword, canonical URL, robots (index/follow/advanced), Open Graph + Twitter title/description/image, and whether it is marked pillar content. Read-only. Per-term SEO is an AIOSEO Pro feature and has no tool yet."
+msgid "Returns a post's AIOSEO fields: title, description, focus keyword, additional keyphrases, canonical URL, robots (index/follow/advanced), Open Graph + Twitter title/description/image, and whether it is marked pillar content. Read-only. Per-term SEO is an AIOSEO Pro feature and has no tool yet."
 msgstr ""
 
 #: includes/abilities/aioseo.php:62
@@ -96,63 +96,67 @@ msgstr ""
 msgid "Focus keyphrase. Additional keyphrases and their scores are preserved."
 msgstr ""
 
-#: includes/abilities/aioseo.php:100
+#: includes/abilities/aioseo.php:101
+msgid "Additional keyphrases, as a list. It replaces the post's whole list, so read the current ones first and pass every keyphrase to keep; an empty list removes them all. A keyphrase already on the post keeps its score. The AIOSEO editor shows them only with AIOSEO Pro."
+msgstr ""
+
+#: includes/abilities/aioseo.php:105
 #: includes/abilities/rank-math.php:101
 #: includes/abilities/yoast.php:102
 msgid "Canonical URL override."
 msgstr ""
 
-#: includes/abilities/aioseo.php:105
+#: includes/abilities/aioseo.php:110
 msgid "Search-index directive. \"default\" inherits the site setting — only honored when no other robots flag remains set."
 msgstr ""
 
-#: includes/abilities/aioseo.php:110
+#: includes/abilities/aioseo.php:115
 msgid "Link-follow directive."
 msgstr ""
 
-#: includes/abilities/aioseo.php:114
+#: includes/abilities/aioseo.php:119
 msgid "Comma list of advanced robots flags: noarchive, nosnippet, noimageindex. Empty string clears them."
 msgstr ""
 
-#: includes/abilities/aioseo.php:118
+#: includes/abilities/aioseo.php:123
 #: includes/abilities/rank-math.php:119
 msgid "Open Graph (Facebook) title override."
 msgstr ""
 
-#: includes/abilities/aioseo.php:122
+#: includes/abilities/aioseo.php:127
 #: includes/abilities/rank-math.php:123
 msgid "Open Graph (Facebook) description override."
 msgstr ""
 
-#: includes/abilities/aioseo.php:126
+#: includes/abilities/aioseo.php:131
 msgid "Open Graph custom image URL. Setting it switches the OG image source to \"custom\"."
 msgstr ""
 
-#: includes/abilities/aioseo.php:130
+#: includes/abilities/aioseo.php:135
 msgid "Twitter card title override. Setting any twitter field stops the card mirroring Open Graph."
 msgstr ""
 
-#: includes/abilities/aioseo.php:134
+#: includes/abilities/aioseo.php:139
 #: includes/abilities/rank-math.php:135
 #: includes/abilities/yoast.php:136
 msgid "Twitter card description override."
 msgstr ""
 
-#: includes/abilities/aioseo.php:138
+#: includes/abilities/aioseo.php:143
 msgid "Twitter card custom image URL. Setting it switches the Twitter image source to \"custom\"."
 msgstr ""
 
-#: includes/abilities/aioseo.php:142
+#: includes/abilities/aioseo.php:147
 msgid "Mark/unmark this post as AIOSEO pillar content."
 msgstr ""
 
-#: includes/abilities/aioseo.php:176
+#: includes/abilities/aioseo.php:181
 msgid "AIOSEO is not active on this site. The aioseo-* tools are unavailable; use the regular content tools."
 msgstr ""
 
-#: includes/abilities/aioseo.php:184
-#: includes/abilities/aioseo.php:211
-#: includes/abilities/aioseo.php:233
+#: includes/abilities/aioseo.php:189
+#: includes/abilities/aioseo.php:216
+#: includes/abilities/aioseo.php:238
 #: includes/abilities/core-content.php:2390
 #: includes/abilities/divi.php:744
 #: includes/abilities/divi.php:1816
@@ -165,8 +169,8 @@ msgstr ""
 msgid "No post with that ID."
 msgstr ""
 
-#: includes/abilities/aioseo.php:187
-#: includes/abilities/aioseo.php:214
+#: includes/abilities/aioseo.php:192
+#: includes/abilities/aioseo.php:219
 #: includes/abilities/divi.php:749
 #: includes/abilities/rank-math.php:247
 #: includes/abilities/rank-math.php:274
@@ -175,14 +179,14 @@ msgstr ""
 msgid "You are not allowed to read that post."
 msgstr ""
 
-#: includes/abilities/aioseo.php:236
+#: includes/abilities/aioseo.php:241
 #: includes/abilities/rank-math.php:297
 #: includes/abilities/yoast.php:346
 msgid "You do not have permission to edit this post."
 msgstr ""
 
 #. translators: %d: post ID.
-#: includes/abilities/aioseo.php:277
+#: includes/abilities/aioseo.php:282
 #, php-format
 msgid "Edited AIOSEO fields on post #%d."
 msgstr ""
@@ -9085,36 +9089,40 @@ msgid "Stop sharing site info"
 msgstr ""
 
 #: includes/integrations/aioseo/class-saddle-aioseo-seo.php:77
-#: includes/integrations/aioseo/class-saddle-aioseo-seo.php:104
+#: includes/integrations/aioseo/class-saddle-aioseo-seo.php:103
 msgid "AIOSEO's post model is unavailable."
 msgstr ""
 
-#: includes/integrations/aioseo/class-saddle-aioseo-seo.php:162
+#: includes/integrations/aioseo/class-saddle-aioseo-seo.php:151
 #: includes/integrations/rank-math/class-saddle-rank-math-seo.php:131
 #: includes/integrations/yoast/class-saddle-yoast-seo.php:138
 msgid "Provide at least one SEO field to change."
 msgstr ""
 
-#: includes/integrations/aioseo/class-saddle-aioseo-seo.php:168
+#: includes/integrations/aioseo/class-saddle-aioseo-seo.php:157
 msgid "AIOSEO refused the save."
 msgstr ""
 
-#: includes/integrations/aioseo/class-saddle-aioseo.php:64
+#: includes/integrations/aioseo/class-saddle-aioseo-seo.php:169
+msgid "Additional keyphrases are an AIOSEO Pro feature. They were saved, but the AIOSEO editor on this site does not show them."
+msgstr ""
+
+#: includes/integrations/aioseo/class-saddle-aioseo.php:99
 msgid "AIOSEO is not active on this site."
 msgstr ""
 
-#: includes/integrations/aioseo/class-saddle-aioseo.php:136
+#: includes/integrations/aioseo/class-saddle-aioseo.php:171
 #: includes/integrations/rank-math/class-saddle-rank-math.php:106
 msgid "robots_index expects one of: default, index, noindex."
 msgstr ""
 
-#: includes/integrations/aioseo/class-saddle-aioseo.php:145
+#: includes/integrations/aioseo/class-saddle-aioseo.php:180
 #: includes/integrations/rank-math/class-saddle-rank-math.php:119
 msgid "robots_follow expects \"follow\" or \"nofollow\"."
 msgstr ""
 
 #. translators: %s: comma-separated list of accepted tokens.
-#: includes/integrations/aioseo/class-saddle-aioseo.php:158
+#: includes/integrations/aioseo/class-saddle-aioseo.php:193
 #: includes/integrations/rank-math/class-saddle-rank-math.php:135
 #, php-format
 msgid "robots_advanced expects a comma list of: %s (empty clears them)."
@@ -9893,7 +9901,7 @@ msgid "This persisted attribute does nothing. Rewrite it on a path the block act
 msgstr ""
 
 #. translators: %s: minimum WordPress version.
-#: saddle.php:671
+#: saddle.php:672
 #, php-format
 msgid "SaddleWP requires WordPress %s or later (the core Abilities API). The MCP server is disabled until you upgrade."
 msgstr ""
@@ -12668,7 +12676,7 @@ msgid "Everything in Pro, plus"
 msgstr ""
 
 #: admin/src/get-pro-logic.js:139
-msgid "Up to 10 sites"
+msgid "Up to 25 sites"
 msgstr ""
 
 #: admin/src/get-pro-logic.js:173
@@ -12746,7 +12754,7 @@ msgid "Yes, from your SaddleWP account. Moving up, you pay the difference. Every
 msgstr ""
 
 #: admin/src/get-pro-logic.js:259
-msgid "I run more than 10 sites"
+msgid "I run more than 25 sites"
 msgstr ""
 
 #: admin/src/get-pro-logic.js:260
