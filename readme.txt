@@ -4,7 +4,7 @@ Tags: mcp, ai, seo, chatgpt, claude
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.7.7
+Stable tag: 1.7.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -252,7 +252,7 @@ The WordPress.org version never checks for its own updates. The version from plu
 
 == Changelog ==
 
-= 1.7.8 =
+= 1.7.9 =
 * New: On a site with All in One SEO, your AI agent can read and set a post's additional keyphrases, not only the focus keyphrase. The list it sends replaces the post's list, and a keyphrase already on the post keeps its score. The All in One SEO editor shows additional keyphrases only with AIOSEO Pro.
 * Fixed: On All in One SEO 5, a focus keyphrase changed by your AI agent now takes effect. All in One SEO 5 keeps keyphrases in a new place, and SaddleWP still wrote the old one, so a post that already had a focus keyphrase kept showing it.
 * Changed: Get Premium shows Ultimate for up to 25 sites (was 10), at the same $199 a year, as saddle.to does.
