@@ -4,7 +4,7 @@ Tags: mcp, ai, seo, chatgpt, claude
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.7.9
+Stable tag: 1.7.10
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -251,6 +251,9 @@ The WordPress.org version never checks for its own updates. The version from plu
 6. Welcome: SaddleWP looks around your site and helps you connect your first AI agent.
 
 == Changelog ==
+
+= 1.7.10 =
+* Removed: The PlugPress page and its menu item in wp-admin, added in 1.7.7. "Stop sharing site info" stays under SaddleWP on the Plugins screen.
 
 = 1.7.9 =
 * New: On a site with All in One SEO, your AI agent can read and set a post's additional keyphrases, not only the focus keyphrase. The list it sends replaces the post's list, and a keyphrase already on the post keeps its score. The All in One SEO editor shows additional keyphrases only with AIOSEO Pro.
